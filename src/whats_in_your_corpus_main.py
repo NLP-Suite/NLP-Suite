@@ -19,6 +19,7 @@ import statistics_txt_util
 import WordNet_util
 import Stanford_CoreNLP_annotator_util
 import topic_modeling_gensim_util
+import topic_modeling_mallet_util
 import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -102,22 +103,29 @@ def run(inputFilename,inputDir, outputDir,
                                          True)
             routine_options = reminders_util.getReminder_list(config_filename)
 
-            # run with all default values; do not run Mallet
-            output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics=20,
-                                                  remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createExcelCharts=createExcelCharts)
-            if output!=None:
-                filesToOpen.extend(output)
-
             if open_GUI_var == True:
                 call("python topic_modeling_gensim_main.py", shell=True)
+            else:
+                # run with all default values; do not run Mallet
+                output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics=20,
+                                                      remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createExcelCharts=createExcelCharts)
+                if output!=None:
+                    filesToOpen.extend(output)
 
         if topics_Mallet_var==True:
-            if IO_libraries_util.inputProgramFileCheck('topic_modeling_Mallet_main.py')==False:
-                return
-            call("python topic_modeling_mallet_main.py", shell=True)
+            # def run(inputDir, outputDir, openOutputFiles, createExcelCharts, OptimizeInterval, numTopics):
 
-        if open_GUI_var == True:
-            call("python topic_modeling_gensim_main.py", shell=True)
+            if open_GUI_var == True:
+                call("python topic_modeling_mallet_main.py", shell=True)
+            else:
+                # running with default values
+                output = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts, OptimizeInterval=True, numTopics=20)
+                if output != None:
+                    filesToOpen.extend(output)
+
+            # if IO_libraries_util.inputProgramFileCheck('topic_modeling_Mallet_main.py')==False:
+            #     return
+            # call("python topic_modeling_mallet_main.py", shell=True)
 
     nouns_var=False
     verbs_var=False
@@ -345,40 +353,40 @@ topics_Gensim_checkbox = tk.Checkbutton(window,text="via Gensim", variable=topic
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,topics_Gensim_checkbox,True)
 
 open_GUI_var.set(0)
-open_GUI_checkbox = tk.Checkbutton(window,state='disabled',text="open Gensim GUI", variable=open_GUI_var, onvalue=1, offvalue=0)
+open_GUI_checkbox = tk.Checkbutton(window,text="open Gensim/Mallet GUI", variable=open_GUI_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,open_GUI_checkbox)
 
 def activate_topics(*args):
+    open_GUI_checkbox.configure(state='normal')
     if topics_var.get()==True:
         topics_Gensim_var.set(1)
         topics_Mallet_checkbox.configure(state='normal')
         topics_Gensim_checkbox.configure(state='normal')
-        open_GUI_checkbox.configure(state='normal')
     else:
         topics_Gensim_var.set(0)
         topics_Mallet_checkbox.configure(state='disabled')
         topics_Gensim_checkbox.configure(state='disabled')
-        open_GUI_checkbox.configure(state='disabled')
+        # open_GUI_checkbox.configure(state='disabled')
 topics_var.trace('w',activate_topics)
 
 def activate_Mallet(*args):
     if topics_var.get()==True and topics_Mallet_var.get()==True:
         topics_Gensim_var.set(0)
         topics_Gensim_checkbox.configure(state='disabled')
-        open_GUI_checkbox.configure(state='disabled')
+        # open_GUI_checkbox.configure(state='disabled')
     else:
         topics_Gensim_var.set(0)
         topics_Gensim_checkbox.configure(state='normal')
-        open_GUI_checkbox.configure(state='normal')
+        # open_GUI_checkbox.configure(state='normal')
 topics_Mallet_var.trace('w',activate_Mallet)
 
 def activate_Gensim(*args):
     if topics_var.get()==True and topics_Gensim_var.get()==True:
         topics_Mallet_checkbox.configure(state='disabled')
-        open_GUI_checkbox.configure(state='disabled')
+        # open_GUI_checkbox.configure(state='disabled')
     else:
         topics_Mallet_checkbox.configure(state='normal')
-        open_GUI_checkbox.configure(state='normal')
+        # open_GUI_checkbox.configure(state='normal')
 topics_Gensim_var.trace('w',activate_Gensim)
 
 def activate_allOptions(*args):
