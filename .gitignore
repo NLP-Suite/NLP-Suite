@@ -1,3 +1,2 @@
 *.jar
-./lib/namesGender/SS_state_year.csv
-./TIPS/*
+lib/namesGender/SS_state_year.csv
