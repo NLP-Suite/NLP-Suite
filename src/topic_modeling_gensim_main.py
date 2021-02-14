@@ -53,6 +53,7 @@ def run(inputDir, outputDir, openOutputFiles,createExcelCharts, num_topics, remo
     if not IO_internet_util.check_internet_availability_warning('Gensim Topic Modeling'):
         return
 
+    # testing
     topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics,
                                           remove_stopwords_var, lemmatize_var, nounsOnly_var, Mallet_var, openOutputFiles,createExcelCharts)
 
