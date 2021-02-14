@@ -1,0 +1,205 @@
+import sys
+import GUI_util
+# import IO_libraries_util
+#
+# if IO_libraries_util.install_all_packages(GUI_util.window, "IO_csv_util",
+# 								['os', 'tkinter','csv','pandas']) == False:
+# 	sys.exit(0)
+
+import csv
+import tkinter.messagebox as mb
+import pandas as pd
+
+#if any column header contains just numbers the function will return FALSE
+def csvFile_has_header(file_path):
+    is_header=False
+    if file_path=='':
+        return is_header
+    reader = csv.reader(open(file_path, "r",encoding='utf-8',errors='ignore'))
+    i = next(reader)
+    is_header = not any(cell.isdigit() for cell in i)
+    return is_header
+
+# Take in file name, output is a list of rows each with columns 1->11 in the conll table
+# Used to divide sentences etc.
+def get_csv_data(file_name,withHeader):
+    data=[]
+    headers=''
+    delimiter=','
+    if file_name=='':
+        return data, headers
+    #numColumns=get_csvfile_numberofColumns(file_name)
+    withHeader=csvFile_has_header(file_name)
+    #print("io IO delimiter ",get_csvfile_numberofColumns(file_name))
+    #TODO does not work; gives an error
+    #print ("\n\n\n\ndetectCsvHeader(file_name) ",detectCsvHeader(file_name))
+    with open(file_name,encoding='utf-8',errors='ignore') as f:
+        reader = csv.reader(f,delimiter=delimiter)
+        if withHeader==True:
+            headers=next(reader, None) #ADDED to skip header in new .csv CoNLL
+        #data = [r[:numColumns] for r in reader]
+        data = [r for r in reader]
+        #f.close()
+    if len(data)==0:
+        mb.showwarning(title='Empty csv file', message='The csv file\n\n' + file_name + '\n\nis empty. Please, check the file and try again.')
+    return data, headers
+
+# csv file contains headers,
+#   then the first row will be headers
+def get_csvfile_headers (csvFile,ask_Question=False):
+    headers=''
+    answer=True
+    if ask_Question:
+        answer=mb.askyesno("File headers","Does the selected input file\n\n"+csvFile+"\n\nhave headers?")
+    if csvFile!='' and answer ==True:
+        with open(csvFile,'r',encoding="utf-8",errors='ignore') as f:
+            reader = csv.reader(f)
+            try:
+                headers=next(reader)
+            except: # empty files will break the next
+                # mb.showwarning("Warning","The selected csv file has no records.\n\nPlease, check the file content and select a different file.")
+                # headers=''
+                return headers
+            f.seek(0)
+    return headers
+
+# convert header alphabetic value for CSV files with or without headers to its numeric column value
+# column numbers start at 0
+def get_columnNumber_from_headerValue(headers,header_value):
+    column_number = 0
+    for i in range(len(headers)):
+        if header_value == headers[i]:
+            column_number = i
+            return column_number
+
+# convert header alphabetic value for CSV files with or without headers to its numeric column value
+# column numbers start at 0
+def get_headerValue_fromcolumnNumber(headers,column_number):
+    column_number = 0
+    for i in range(len(headers)):
+        if i==column_number:
+            header_value= headers[i]
+            column_number = i
+            return header_value
+
+# the function extracts all the values in a column of a csv file
+# the function is used, for instance, to create the values of a dropdown menu
+#   for an example, see annotator_GUI.py
+def get_csv_field_values(inputfile_name, column_name):
+    unique_values = set()
+    if inputfile_name == '' or column_name == '':
+        return ['']
+
+    with open(inputfile_name, 'r', encoding="utf-8", errors='ignore') as f:
+        csvreader = csv.reader(f)
+        fields = next(csvreader)
+        # get the column number that we want to extract
+        col_num = get_columnNumber_from_headerValue(fields, column_name)
+        for row in csvreader:
+            unique_values.add(row[col_num])
+    return sorted(list(unique_values))
+
+# get the number of columns of a csv file
+def get_csvfile_numberofColumns (csvFile):
+    countColumns=0
+    if csvFile!='':
+        with open(csvFile,'r',encoding="utf-8",errors='ignore') as f:
+            reader = csv.reader(f)
+            try:
+                first_row=next(reader)
+            except:
+                mb.showwarning(title='Warning', message='The csv file\n\n' + str(csvFile) + '\n\nis empty.')
+                return
+            countColumns = len(first_row)
+            f.seek(0)
+    return countColumns
+
+def GetNumberOfRecordInCSVFile(inputFilename,encodingValue='utf-8'):
+    with open(inputFilename,'r',encoding=encodingValue,errors='ignore') as f:
+        return sum(1 for line in f)
+
+# list_output has the following type format [['PRONOUN ANALYSIS','FREQUENCY'], ['PRP', 105], ['PRP$', 11], ['WP', 5], ['WP$', 0]]
+# path_output is the name of the outputfile with path
+# returns True when an error is found
+def list_to_csv(window,list_output,path_output,colnum=0):
+    if list_output==None:
+        return True
+    try:
+        #if a specific column number is given, generate only the colnum columns as output
+        if colnum!=0:
+            list_output = [i[:colnum] for i in list_output]
+        #when writing a csv file newline='' prevents writing an extra blank line after every record
+        #bad non utf-8 characters may be exported in lines when checking for non utf-8 characters
+        with open(path_output,'w',newline='', encoding='utf-8',errors='surrogateescape') as csvFile:
+        # with open(path_output,'w',newline='', encoding='utf-8',errors='ignore') as csvFile: #bad non utf-8 characters may be exported in lines when checking for non utf-8 characters
+            writer = csv.writer(csvFile)
+            # saving the case of a single list, for example
+            # ['inheriting', 'instilled', 'interacting', 'looked', 'loved', 'nyc', 'paused', 'seemed']
+            if isinstance(list_output[0], list):
+                # case of list of list, for example
+                # [['PRONOUN ANALYSIS','FREQUENCY'], ['PRP', 105],...]
+                writer.writerows(list_output)
+            else:
+                current = list_output
+                for item in current:
+                    writer.writerow([item])
+        csvFile.close()
+        return False
+    except OSError as e:
+        if 'Invalid argument' in str(e):
+            mb.showwarning(title='Output file error',
+                           message="Could not write the file\n\n" + path_output + "\n\nThe filename contains an invalid argument. Please, check the filename and try again!")
+        elif 'Permission denied' in str(e):
+            mb.showwarning(title='Output file error', message="Could not write the file " + path_output + "\n\nA file with the same name is already open. Please, close the csv file and try again!")
+        else:
+            mb.showwarning(title='Output file error',
+                           message="Could not write the file " + path_output + "\n\nThe following error occurred while opening the file in output:\n\n" + str(e) + "\n\nPlease, close the Excel file and try again!")
+        return True
+
+def openCSVOutputFile(outputCSVFilename, IO='w', encoding='utf-8',errors='ignore', newline=''):
+
+    try:
+        with open(outputCSVFilename,'w') as csvfile:
+            csvfile.close()
+            return False
+    except OSError as e:
+        if 'Invalid argument' in str(e):
+            mb.showwarning(title='Output file error',
+                           message="Could not write the file\n\n" + outputCSVFilename + "\n\nThe filename contains an invalid argument. Please, check the filename and try again!")
+        elif 'Permission denied' in str(e):
+            mb.showwarning(title='Output file error', message="Could not write the file " + outputCSVFilename + "\n\nA file with the same name is already open. Please, close the csv file and try again!")
+        else:
+            mb.showwarning(title='Output file error',
+                           message="Could not write the file " + outputCSVFilename + "\n\nThe following error occurred while opening the file in output:\n\n" + str(e) + "\n\nPlease, close the Excel file and try again!")
+        return True
+
+# triggered by a df.to_csv
+def df_to_csv(window,data_frame, outputFilename, index=False):
+    try:
+        data_frame.to_csv(outputFilename,index)
+        return False
+    except IOError:
+        mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and try again!")
+        return True
+
+# sort a csv file by a set of columns
+# headers_tobe_sorted is a list of type ['Document ID','Sort order']
+def sort_csvFile_by_columns(inputFilename, outputFilename, headers_tobe_sorted):
+    df = pd.read_csv(inputFilename)
+    df = df.sort_values(by=headers_tobe_sorted)
+    df.to_csv(outputFilename)
+
+# the function dresses a filename as an hyperlink
+#   to be used in a csv file;
+#   when you click on the hyperlink from the csv file, the file will open
+# fileName can be a filename + path
+# fileName can also be a full path with NO filename
+def dressFilenameForCSVHyperlink(fileName):
+    fileName='=hyperlink("'+str(fileName)+'")'
+    return fileName
+
+def undressFilenameForCSVHyperlink(fileName):
+    fileName=fileName.replace('=hyperlink("','')
+    fileName=fileName.replace('")','')
+    return fileName
+

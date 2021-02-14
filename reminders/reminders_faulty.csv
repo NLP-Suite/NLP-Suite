@@ -1,0 +1,80 @@
+Routine,Title,Message,Event,Status
+NLP,NLP Suite welcome & system requirements,Welcome to the NLP Suite a package of Python 3 and Java tools designed for text processing and visualization. The Suite requires several FREWARE software components in order to run. You will need to download and install them.\n\n1. JAVA. Several scripts are based on the FREEWARE Java. You can download and install Java at https://www.java.com/en/download\n\n2. STANFORD CORENLP. The core text analyses of the NLP Suite are based on the FREEWARE Stanford CoreNLP. You can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n3. GEPHI. The visualization of network graphs requires the installation of the FREEWARE software Gephi. You can download and install Gephi at https://gephi.org/users/download/\n\n4. GOOGLE EARTH PRO. The visualization of geographic maps requires the installation of the FREEWARE software Google Earth Pro. You can download and install Google Earth Pro at https://www.google.com/earth/versions/#download-pro.\n\n5. MALLET. Mallet topic modelling requires the installation of the FREEWARE Mallet. You can download and install Mallet at http://mallet.cs.umass.edu/download.php.\n\n6. WORDNET. Aggregating and disaggregating words requires the installation of the FREWARE WordNet. You can download WordNet at https://wordnet.princeton.edu/download/current-version.,Yes,Yes
+NLP,NLP Suite architecture & filenames,The Python scripts in the NLP Suite have filenames that clearly identify the Suite architecture.\n\nThe filename suffix designates three different types of files: main GUI and util.\n\nmain files are the only ones that you can run in command line independently of others; they will call both GUI and util files.\n\nGUI files lay out on the screen the widgets of a script for easy Graphical User Interface (GUI).\n\nALL SCRIPTS SUFFIXED BY main CAN BE RUN INDIPENDENTLY OF THE NLP SUITE. Thus on command line you can type\nPython annotatormain.py\nAnd it will fire up the annotator GUI independently of NLP_main.py.\n\nThe filename prefix cluster together scripts used for the same purpose. Thus annotator identifies all files dealing with html annotation.,No,Yes
+NLP,NLP Suite reminders,Several NLP Suite scripts will fire up reminders for the user. You can turn them off once you are familiar with a script. You can always turn any reminder back ON (or OFF for that matter) if you select the reminders dropdown menu at the bottom of each GUI and then select a specific reminder (if reminders are available for that GUI).,No,Yes
+NLP,NLP Suite IO options in GUIs,You do not need to select IO options in the main NLP GUI. You will have to enter these values again in the GUI opened by a specific tool. Only for those Menu options marked as NO GUI you will need to enter IO information directly on the NLP GUI.,No,Yes
+SVO,SVO output,"Depending upon the options you select, the SVO pipeline will produce in output different types of files: cvf files, wordcloud image, Google Earth Pro map, and Gephi network graph.\n\nWhile cvf and png files are easy to read, less so are Google Earth Pro kml files and, particularly, Gephi gexf files.\n\nPLEASE, read the Gephi TIPS file before you run the SVO pipeline.",No,Yes
+SVO,SVO input,"The SVO pipeline allows you to start from a TXT file in input and extract from it via OpenIE the SVOs and visualize them.\n\nBut you can also select a CSV file in input, the output file previosuly created by OpenIE characerized by the suffix '-svo.csv', and use that file to visualize the results without having to rerun OpenIE.",No,Yes
+SVO,SVO system requirements,The extraction and visualization of SVOs requires several software components.\n\n1. The extraction of SVOs requires the Stanford CoreNLP set of NLP tools. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP requires to have the Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/\n\n3. The visualization of the SVO output as GIS maps and network graphs further requires the installation of the FREEWARE software Gephi and Google Earth Pro.\n\n3a. You can download and install the FREEWARE GEPHI at https://gephi.org/users/download/\n\n3b. You can download and install the FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro,No,Yes
+Excel,Excel Charts,"The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).\n\nFirst, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).\n\nSecond, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.",No,Yes
+GIS,GIS Nominatim geocoder,"If the Nominatim geocoder service exits with the error 'too many requests', you can break up the csv location file and process each subfile for geocoding as normal csv files.",No,Yes
+GIS,Google Earth Pro download,The GIS pipeline requires a copy of the FREEWARE Google Earth Pro installed on your machine.\n\nYou can download and install the FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro,No,Yes
+sentiment-concreteness-analysis,VADER,"VADER heavily relies on a number of NLTK libraries. If VADER fails to run, make sure that in command line you run\n\npython -m nltk.downloader all",Yes,Yes
+WordNet,WordNet system requirements,The scripts in this GUI require the FREWARE WordNet on your machine. You can download WordNet at https://wordnet.princeton.edu/download/current-version.,No,Yes
+WordNet,WordNet input file button,"The Select INPUT file button is disabled (grayed out) when you open WordNet. Different options require either no file or different file types.\n\nPlease, tick a checkbox to activate the button.",No,Yes
+topic-modeling-mallet,Mallet download and installation,The Mallet topic modelling tool requires a copy of the FREEWARE Mallet installed on your machine. You can download the FREEWARE Mallet at http://mallet.cs.umass.edu/download.php.\n\nMallet in turn requires a copy of the JAVA development kit installed on your machine.\n\nRead carrefully the Mallet and Java installation TIPS.,No,Yes
+sentiment-concreteness-analysis,Stanford CoreNLP Sentiment Analysis system requirements,"The Stanford CoreNLP Sentiment Analysis tool requires two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/",Yes,Yes
+Stanford-CoreNLP,Stanford CoreNLP system requirements,"Some of the NLP tools in this GUI require two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/",No,Yes
+file-splitter,Output directory of split files,"This is a reminder that all file splitter scripts save the split files inside a subdirectory by the name of split_files of the directory where the input txt files are located, regardless of the choice of output directory.",No,Yes
+social-science-research,Plagiarist,"The 'plagiarist' script, based on Lucene, can process files with embedded dates.\n\nIf the filenames in the input directory embed dates, please tick the checkbox 'Filename embeds date' above.",No,Yes
+social-science-research,Filename checker,"The 'filename checker' script can process files with embedded dates. If the filenames in the input directory embed dates, please tick the checkbox 'Filename embeds date' above.",No,Yes
+shape-of-stories,Best topic estimation,The function that estimates the best topics is VERY slow and make take an hour or longer. You can follow its progress in command line.,Yes,Yes
+annotator-gender,Time to download new US SS data,"It has been more than two years since the US Social Security gender data have been downloaded to your machine.
+
+Check on the US Social Security website whether more current data are available at US Social Security website
+
+https://www.ssa.gov/oact/babynames/limits.html",Yes,Yes
+narrative-analysis,GUI front end,"The script GUI is a convenient front end that displays all the options available for the GUI 
+
+No Input/Output options are displayed in this GUI since any selected option, when RUN, will open a specialized GUI with its own Input/Output requirements.",No,Yes
+sentence-analysis,GUI front end,"The script GUI is a convenient front end that displays all the options available for the GUI 
+
+No Input/Output options are displayed in this GUI since any selected option, when RUN, will open a specialized GUI with its own Input/Output requirements.",No,Yes
+Senten,GUI front end,"The script GUI is a convenient front end that displays all the options available for the GUI 
+
+No Input/Output options are displayed in this GUI since any selected option, when RUN, will open a specialized GUI with its own Input/Output requirements.",No,Yes
+style-analysis,GUI front end,"The script GUI is a convenient front end that displays all the options available for the GUI 
+
+No Input/Output options are displayed in this GUI since any selected option, when RUN, will open a specialized GUI with its own Input/Output requirements.",No,Yes
+NLP,GUI front end,"The script GUI is a convenient front end that displays all the options available for the GUI 
+
+No Input/Output options are displayed in this GUI since any selected option, when RUN, will open a specialized GUI with its own Input/Output requirements.",Yes,Yes
+NER,Open reminders,,No,Yes
+noun-verb,Open reminders,,No,Yes
+*,Excel Charts,"The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).
+
+First, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).
+
+Second, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.",Yes,Yes
+*,csv files,"If csv ouput files open displaying weird characters in a Windows OS (e.g., a€), most likely the cause is due to non utf-8 compliant input text. Apostrophes and quotes are the typical culprits, but also other punctuation characters.
+
+Please, run the tool to check documents for utf-8 compliance and, if necessary, run the tool for automatic apostrophe and quote conversion from non utf-8 to utf-8.
+
+To learm more on utf-8 compliance, read the TIPS on utf-8 compliance.",Yes,Yes
+n-grams-co-occurrences-viewer,subprocess.call(cmd) error,"subprocess.call(cmd) error
+
+If the VIEWER you are running exits with an error code about a file not found, most likely your selected INPUT & OUTPUT directory options are too long for Windows to handle.
+
+You may need to move your input and output folders so as to have a shorter path (e.g., desktop).",Yes,Yes
+Stanford-CoreNLP,CoNLL table analyzer,"The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' where you can:
+
+  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;
+  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words).",Yes,Yes
+sentiment-concreteness-analysis,VADER Mean/Median,"VADER cannot compute sentence mean and median values because VADER computes a single compound value for the entire sentence.
+
+Use the hedonometer to compute separate values and word list of words found.",Yes,Yes
+sentiment-concreteness-analysis,Stanford CoreNLP,"The Stanford CoreNLP Sentiment Analysis tool requires two components.
+
+1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.
+
+2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/",Yes,Yes
+shape-of-stories,Stanford CoreNLP Sentiment Analysis system requirements,"The Stanford CoreNLP Sentiment Analysis tool requires two components.
+
+1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.
+
+2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/",Yes,Yes
+NLP,tkinter MacOS bug,"MacOS bug in tkinter (https://www.python.org/download/mac/tcltk/).
+
+Python's integrated development environment, IDLE, and the tkinter GUI toolkit it uses, depend on the Tk GUI toolkit which is not part of Python itself. For best results, it is important that the proper release of Tcl/Tk is installed on your machine. For recent Python installers for macOS downloadable from this website, here is a summary of current recommendations followed by more detailed information.",Yes,Yesannotator,DBpedia/YAGO options,"Please, using the dropdown menu, select an ontology class or enter a sub-class in the 'Sub-class' widget (for sub-classes, consult the TIPS files on ontology classes). If you select an ontology class from the dropdown menu, the 'Select color' widget will become available. You MUST select a color to be associated to the selected ontology class. After selecting a color, the + button will become available for multiple selections of class/color.
+
+You can select the same color for different classes.",Yes,Yes

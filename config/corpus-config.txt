@@ -1,0 +1,6 @@
+C:/Program Files (x86)/stanford-corenlp-4.1.0
+EMPTY LINE
+C:/Users/rfranzo/Desktop/CORPUS DATA/Sample text
+EMPTY LINE
+EMPTY LINE
+C:/Program Files (x86)/NLP_backup/Output

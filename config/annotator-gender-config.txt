@@ -1,0 +1,6 @@
+EMPTY LINE
+C:/Program Files (x86)/NLP/sampleData/Murphy - Miracles thicker than fog.txt
+
+EMPTY LINE
+EMPTY LINE
+C:/Program Files (x86)/NLP_backup/Output

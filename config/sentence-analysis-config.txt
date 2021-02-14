@@ -1,0 +1,6 @@
+EMPTY LINE
+C:/Program Files (x86)/NLP_backup/Output/merged_Dir_Sample text.txt
+
+EMPTY LINE
+EMPTY LINE
+C:/Program Files (x86)/NLP_backup/Output

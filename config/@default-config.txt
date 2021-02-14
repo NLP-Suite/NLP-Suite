@@ -1,0 +1,6 @@
+C:/Program Files (x86)/stanford-corenlp-4.0.0
+C:/Program Files (x86)/NLP/sampleData/Murphy - Six miracles 2.txt
+
+EMPTY LINE
+EMPTY LINE
+C:/Program Files (x86)/NLP_backup/Output/CoNLL
