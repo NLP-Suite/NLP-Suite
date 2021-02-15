@@ -151,15 +151,17 @@ def createChart(inputFilename,outputDir,columns_to_be_plotted,hover_label):
 
 
 # check within subdirectory
-def check_for_typo_sub_dir(CoreNLPDir, inputDir, outputDir, openOutputFiles, createExcelCharts, NERs, similarity_value, by_all_tokens_var,spelling_checker_var):
+def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs, similarity_value, by_all_tokens_var,spelling_checker_var):
     filesToOpen=[]
+    if inputDir=='':
+        return
     subdir = [f.path for f in os.scandir(inputDir) if f.is_dir()]
     if subdir == []:
         mb.showwarning(title='Check Subdir option',
                        message='There are no sub directories under the selected input directory\n\n' + inputDir +'\n\nPlease, uncheck your subdir option if you want to process this directory and try again.')
     df_list = []
     for dir in subdir:
-        dfs = check_for_typo(CoreNLPDir, dir, outputDir, openOutputFiles, createExcelCharts, NERs, similarity_value, by_all_tokens_var,spelling_checker_var)
+        dfs = check_for_typo(dir, outputDir, openOutputFiles, createExcelCharts, NERs, similarity_value, by_all_tokens_var)
         df_list.append(dfs)
     if len(df_list) > 0:
         df_complete_list = [df[0] for df in df_list]
@@ -472,7 +474,7 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
 # output csv header list: ['NNPs', 'sentenceID', 'DocumentID', 'fileName', 'NamedEntity', 'potential_Typo']
 
 # using Levenshtein distance to check for typos
-def check_for_typo(CoreNLPDir, inputDir, outputDir, openOutputFiles, createExcelCharts, NERs, similarity_value, checker_package, by_all_tokens_var):
+def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs, similarity_value, by_all_tokens_var):
     filesToOpen=[]
     all_word_dict = []
     ner_dict = {}
@@ -488,6 +490,7 @@ def check_for_typo(CoreNLPDir, inputDir, outputDir, openOutputFiles, createExcel
     fileID=0
     subfolder=[]
     nFiles = nFolders = 0
+
     NLP = StanfordCoreNLP('http://localhost', port=9000)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity start', 'Started running Word similarity at', True)
@@ -536,7 +539,17 @@ def check_for_typo(CoreNLPDir, inputDir, outputDir, openOutputFiles, createExcel
 
     print('Finished running CoreNLP. Processed '+str(len(list_to_check))+' words. Now computing word differences...')
     # IO_util.timed_alert(GUI_util.window, 5000, 'Word similarity', 'Finished running Stanford CoreNLP...\n\nProcessed '+str(len(list_to_check))+' words.\n\nNow computing word differences... PLEASE, be patient. This may take a while...')
+    # These headers reflect the items returned from the processing above
+    # THEIR ORDER CANNOT BE CHANGED, UNLESS ABOVE ORDER OF PROCESSING IS ALSO CHANGED
+    headers1 = ['Words', 'Word frequency in document', 'Sentence ID', 'Document ID',
+                'Sentence', 'Document', 'Document path', 'Named Entity (NER)',
+                'Similar word in directory', 'Similar-word frequency in directory', 'Typo?']
     if by_all_tokens_var:
+        # headers 2 rearranges the headers but must have the same values
+        headers2=['Words', 'Word frequency in document', 'Similar word in directory',
+                 'Similar-word frequency in directory', 'Typo?',
+                 'Number of documents processed', 'Sentence ID', 'Sentence',
+                 'Document ID', 'Document', 'Document path', 'Processed directory']
         for word in list_to_check:
             word.insert(1, word_freq_dict.get(word[0]))
             checker_against = all_word_dict
@@ -550,65 +563,75 @@ def check_for_typo(CoreNLPDir, inputDir, outputDir, openOutputFiles, createExcel
                 word.append('')
                 word.append('')
             print(word)
-        else:
-            for word in list_to_check:
-                word.insert(1, word_freq_dict.get(word[0]))
-                # [('word', Count:int)]
-                for each_ner in NERs:
-                    if word[-1] == each_ner:
-                        checker_against = ner_dict.get(each_ner)
-                        value_tuple = check_edit_dist(word[0], checker_against, similarity_value)
-                        if value_tuple[0]:
-                            word.append(value_tuple[1])  # returned similar word from check_edit_list
-                            word.append(value_tuple[2])  # returned similar word frequency from check_edit_list
-                            word.append('Typo?')
-                        else:
-                            word.append('')
-                            word.append('')
-                            word.append('')
+    # Processing NER
+    else:
+        # headers 2 rearranges the headers but must have the same values
+        # it includes the NER tag
+        headers2=['Words', 'Named Entity (NER)', 'Word frequency in document',
+                  'Similar word in directory',
+                 'Similar-word frequency in directory', 'Typo?',
+                 'Number of documents processed', 'Sentence ID', 'Sentence',
+                  'Document ID', 'Document', 'Document path', 'Processed directory']
+        for word in list_to_check:
+            word.insert(1, word_freq_dict.get(word[0]))
+            # [('word', Count:int)]
+            for each_ner in NERs:
+                if word[-1] == each_ner:
+                    checker_against = ner_dict.get(each_ner)
+                    value_tuple = check_edit_dist(word[0], checker_against, similarity_value)
+                    if value_tuple[0]:
+                        word.append(value_tuple[1])  # returned similar word from check_edit_list
+                        word.append(value_tuple[2])  # returned similar word frequency from check_edit_list
+                        word.append('Typo?')
+                    else:
+                        word.append('')
+                        word.append('')
+                        word.append('')
 
-        df = pd.DataFrame(list_to_check,
-                     columns=['Words', 'Word_frequency_IN_document', 'Sentence ID', 'Document ID','Sentence', 'Document','Filename_Path','Named_Entity(NER)',
-                              'Similar_word_in_dir', 'Similar_word_frequency_in_dir','Typo?'])
-        for index, row in df.iterrows():
-            if row['Similar_word_in_dir'] != None:
-                tmp = df[df['Words'] == row['Similar_word_in_dir']]
-                df.loc[index, 'Number_of_documents_processed'] = tmp.File_Name.nunique()
-        # df['Processed_dir'] = inputDir
-        df['Processed_dir'] = IO_csv_util.dressFilenameForCSVHyperlink(inputDir)
-        df_complete = df[['Words', 'Named_Entity(NER)', 'Word_frequency_IN_document', 'Similar_word_in_dir', 'Similar_word_frequency_in_dir', 'Typo?',
-                 'Number_of_documents_processed','Sentence ID', 'Document ID','Sentence','Document','Filename_Path','Processed_dir']]
-        df_simple = df.drop_duplicates(subset=['Words', 'Document ID'], keep='last')
+    df = pd.DataFrame(list_to_check, columns=headers1)
+    for index, row in df.iterrows():
+        if row['Similar-word frequency in directory'] != None:
+            tmp = df[df['Words'] == row['Similar word in directory']]
+            df.loc[index, 'Number of documents processed'] = tmp.Document.nunique()
+    df['Processed directory'] = IO_csv_util.dressFilenameForCSVHyperlink(inputDir)
+    df = df[headers2]
 
-        if by_all_tokens_var:
-            outputFileName_complete = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
-                                                                              str(similarity_value), 'Edit_dist_algo',
-                                                                              'all_words', 'Full-table')
-            outputFileName_simple = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
-                                                                            str(similarity_value), 'Edit_dist_algo',
-                                                                            'all_words', 'Concise-table')
-        else:
-            outputFileName_complete = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
-                                                                              str(similarity_value), 'Edit_dist_algo',
-                                                                              'NERs', 'Full-table')
-            outputFileName_simple = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
-                                                                            str(similarity_value), 'Edit_dist_algo', 'NERs',
-                                                                                'Concise-table')
-        if len(df_simple) > 0 and len(df_complete) > 0:
-                df_simple.to_csv(outputFileName_simple, index=False)
-                df_complete.to_csv(outputFileName_complete, index=False)
-                filesToOpen.append(outputFileName_simple)
-                filesToOpen.append(outputFileName_complete)
+    # complete includes all repeats
+    df_complete = df[headers2]
 
-                filesToOpen.append(outputFileName_simple)
-                filesToOpen.append(outputFileName_complete)
+    # simple excludes all repeats
+    df_simple = df.drop_duplicates(subset=['Words', 'Document ID'], keep='last')
 
-                if createExcelCharts:
-                    Excel_outputFileName=createChart(outputFileName_simple, outputDir, [[10, 10]], '')
+    if by_all_tokens_var:
+        outputFileName_complete = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
+                                                                          str(similarity_value), 'Edit_dist_algo',
+                                                                          'all_words', 'Full-table')
+        outputFileName_simple = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
+                                                                        str(similarity_value), 'Edit_dist_algo',
+                                                                        'all_words', 'Concise-table')
+    else:
+        outputFileName_complete = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
+                                                                          str(similarity_value), 'Edit_dist_algo',
+                                                                          'NERs', 'Full-table')
+        outputFileName_simple = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
+                                                                        str(similarity_value), 'Edit_dist_algo', 'NERs',
+                                                                            'Concise-table')
+    if len(df_simple) > 0 and len(df_complete) > 0:
+            df_simple.to_csv(outputFileName_simple, index=False)
+            df_complete.to_csv(outputFileName_complete, index=False)
+            filesToOpen.append(outputFileName_simple)
+            filesToOpen.append(outputFileName_complete)
 
-                    if Excel_outputFileName != "":
-                        filesToOpen.append(Excel_outputFileName)
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity end', 'Finished running Word similarity at', True)
+            filesToOpen.append(outputFileName_simple)
+            filesToOpen.append(outputFileName_complete)
+
+            if createExcelCharts:
+                Excel_outputFileName=createChart(outputFileName_simple, outputDir, [[10, 10]], '')
+
+                if Excel_outputFileName != "":
+                    filesToOpen.append(Excel_outputFileName)
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity end', 'Finished running Word similarity at', True)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)

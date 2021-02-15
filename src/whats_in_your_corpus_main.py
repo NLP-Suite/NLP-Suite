@@ -36,7 +36,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             topics_Gensim_var.get(),
                             open_GUI_var.get(),
                             what_else_var.get(),
-                            what_else_menu_var.get())
+                            what_else_menu_var.get(),
+                            memory_var.get())
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 def run(inputFilename,inputDir, outputDir,
@@ -49,7 +50,8 @@ def run(inputFilename,inputDir, outputDir,
         topics_Gensim_var,
         open_GUI_var,
         what_else_var,
-        what_else_menu_var):
+        what_else_menu_var,
+        memory_var):
 
     filesToOpen=[]
     inputFilename='' # only corpus in dir used
@@ -158,7 +160,6 @@ def run(inputFilename,inputDir, outputDir,
         nature_var=True
 
     if (what_else_var and what_else_menu_var == '*') or nouns_var==True or verbs_var==True or people_organizations_var==True or gender_var==True or dialogues_var==True or times_var==True or locations_var==True:
-        memory_var=4
         if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py')==False:
             return
 
@@ -307,19 +308,19 @@ topics_var= tk.IntVar()
 topics_Mallet_var= tk.IntVar()
 topics_Gensim_var= tk.IntVar()
 open_GUI_var= tk.IntVar()
+
+memory_var = tk.IntVar()
 nouns_var= tk.IntVar()
 verbs_var= tk.IntVar()
 
 what_else_var= tk.IntVar()
 what_else_menu_var= tk.StringVar()
-
 people_organizations_var= tk.IntVar()
-
 locations_var= tk.IntVar()
 times_var= tk.IntVar()
-
 dialogues_var= tk.IntVar()
 nature_var= tk.IntVar()
+
 
 def clear(e):
     corpus_statistics_var.set(1)
@@ -406,6 +407,7 @@ def activate_allOptions(*args):
         what_else_checkbox.configure(state='normal')
 open_GUI_var.trace('w',activate_allOptions)
 
+
 what_else_var.set(1)
 what_else_checkbox = tk.Checkbutton(window,text="What else is in your corpus? (via Stanford CoreNLP and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,what_else_checkbox,True)
@@ -416,7 +418,7 @@ what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues','No
                                'References to nature')
 what_else_menu.config(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 470, y_multiplier_integer,
-                                               what_else_menu)
+                                               what_else_menu, True)
 
 def activate_what_else_menu(*args):
     if what_else_var.get()==True:
@@ -426,6 +428,18 @@ def activate_what_else_menu(*args):
 what_else_var.trace('w',activate_what_else_menu)
 
 activate_what_else_menu()
+
+# memory options
+
+memory_var_lb = tk.Label(window, text='Memory ')
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 700, y_multiplier_integer,
+                                               memory_var_lb, True)
+
+memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
+memory_var.pack()
+memory_var.set(4)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 750, y_multiplier_integer,
+                                               memory_var)
 
 TIPS_lookup = {'Statistical measures':'TIPS_NLP_Statistical measures.pdf','Topic modeling':'TIPS_NLP_Topic modeling.pdf','Topic modeling and corpus size':'TIPS_NLP_Topic modeling and corpus size.pdf','Topic modeling (Gensim)':'TIPS_NLP_Topic modeling Gensim.pdf','Topic modeling (Mallet)':'TIPS_NLP_Topic modeling Mallet.pdf','Mallet installation':'TIPS_NLP_Topic modeling Mallet installation.pdf','NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf','WordNet':'TIPS_NLP_WordNet.pdf','Stanford CoreNLP date extractor (NER normalized date)':'TIPS_NLP_Stanford CoreNLP date extractor.pdf',"Gender annotator":"TIPS_NLP_Gender annotator.pdf"}
 TIPS_options='Statistical measures','Topic modeling','Topic modeling and corpus size','Topic modeling (Gensim)','Topic modeling (Mallet)','Mallet installation','NER (Named Entity Recognition)','Stanford CoreNLP date extractor (NER normalized date)','WordNet','Gender annotator'

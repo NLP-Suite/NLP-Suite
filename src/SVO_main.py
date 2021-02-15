@@ -253,10 +253,12 @@ def run(inputFilename, inputDir, outputDir, utf8_var, Coref, Coref_Option, memor
             outputCorefedDir = os.path.join(outputDir, "CoRefed_Files")
             if not os.path.exists(os.path.dirname(outputCorefedDir)):
                 os.makedirs(os.path.dirname(outputCorefedDir))
-            file_open, error = stanford_coref.run(inputFilename, inputDir, outputCorefedDir, memory_var, Coref_Option,
+            file_open, error = stanford_coref.run(inputFilename, inputDir, outputCorefedDir, openOutputFiles, createExcelCharts,
+                                                  memory_var, Coref_Option,
                                               Manual_Coref_var)
         else:
             file_open, error = stanford_coref.run(inputFilename, inputDir, outputDir,
+                                                  openOutputFiles, createExcelCharts,
                                                   memory_var, Coref_Option,
                                                   Manual_Coref_var)
             if len(file_open) > 0:

@@ -54,7 +54,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         if IO_libraries_util.inputProgramFileCheck("Stanford_CoreNLP_coReference_resolution_util.py") == False:
             return
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(inputFilename, inputDir,
-                                                                           outputDir, memory_var,
+                                                                           outputDir, openOutputFiles, createExcelCharts,, memory_var,
                                                                            CoRef_Option, manual_Coref)
         if error_indicator == 0:
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
@@ -112,24 +112,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
         # NER normalized date annotator ---------------------------------------------------------------------------------------------------------------------------
 
-        if CoreNLP_annotators_menu_var == 'Normalized NER date':
+        if 'Normalized' in CoreNLP_annotators_menu_var:
             # date_extractor
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
                 return
 
-            # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
-            #                                    'Started running Stanford CoreNLP NER NORMALIZED-DATE annotator at',
-            #                                    True,
-            #                                    'You can follow CoreNLP in command line.')
-            filesToOpen = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
                                                                            outputDir,
                                                                            openOutputFiles, createExcelCharts,
                                                                            'normalized-date', False, memory_var)
-            # filesToOpen.extend(files)
-
-            # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-            #                                    'Finished running Stanford CoreNLP NER NORMALIZED-DATE annotator at',
-            #                                    True)
+            if len(tempOutputFiles)>0:
+                filesToOpen.extend(tempOutputFiles)
 
         # quote annotator ---------------------------------------------------------------------------------------------------------------------------
 
@@ -138,31 +131,28 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
                 return
 
-            # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
-            #                                    'Started running Stanford CoreNLP QUOTE annotator at', True,
-            #                                    'You can follow CoreNLP in command line.')
-            # @ replace calling to quote_extractor_util to calling to CoreNLP_annotate directly @
-            filesToOpen = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
                                                                            'quote', False,
                                                                            memory_var)
-            # filesToOpen.append(outputQuotefilePath)
-            # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-            #                                    'Finished running Stanford CoreNLP QUOTE annotator at', True)
+
+            if len(tempOutputFiles)>0:
+                filesToOpen.extend(tempOutputFiles)
 
         # gender annotator ---------------------------------------------------------------------------------------------------------------------------
 
-        # if CoreNLP_annotators_menu_var == 'Gender annotator':
-        #     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
-        #                                        'Started running Stanford CoreNLP GENDER annotator at', True)
-            filesToOpen = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+        if 'Gender' in CoreNLP_annotators_menu_var:
+            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+                return
+
+            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
                                                                            'gender', False, memory_var)
-            # filesToOpen.append(output)
-            # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-            #                                    'Finished running Stanford CoreNLP GENDER annotator at', True)
+
+            if len(tempOutputFiles)>0:
+                filesToOpen.extend(tempOutputFiles)
 
         # Sentiment analysis annotator ---------------------------------------------------------------------------------------------------------------------------
 
@@ -171,17 +161,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
                 return
 
-            # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
-            #                                    'Started running Stanford CoreNLP SENTIMENT ANALYSIS at', True,
-            #                                    'You can follow CoreNLP in command line.')
-            filesToOpen = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
                                                                            'sentiment', False,
                                                                            memory_var)
-            # filesToOpen.append(outputQuotefilePath)
-            # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Stanford CoreNLP Sentiment Analysis',
-            #                                    'Finished running Stanford CoreNLP SENTIMENT ANALYSIS at', True)
+            if len(tempOutputFiles)>0:
+                filesToOpen.extend(tempOutputFiles)
+
         if openOutputFiles:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 

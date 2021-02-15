@@ -226,15 +226,17 @@ def checkSingleFile(inputFilename, corefed_file, manual_Coref, coRefOptions, fil
 
 
 # return file_to_open
-def run(inputFilename, input_main_dir_path, output_dir_path, memory_var,coRefOptions, manual_Coref):
+def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts,
+        memory_var,coRefOptions, manual_Coref):
     # check that the CoreNLPdir as been setup
+
     CoreNLPdir=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_coreference_util', 'Stanford CoreNLP')
     if CoreNLPdir== '':
         return
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Analysis start',
-                        'Started running Stanford CoreNLP ' + coRefOptions + ' Co-Reference Resolution at', True,
-                        'PLEASE, BE PATIENT... Depending upon the size of the document/number of documents processed this may take from a few minutes to a few hours.')
+    # IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Analysis start',
+    #                     'Started running Stanford CoreNLP ' + coRefOptions + ' Co-Reference Resolution at', True,
+    #                     'PLEASE, BE PATIENT... Depending upon the size of the document/number of documents processed this may take from a few minutes to a few hours.')
 
     files_to_open = []
     error = 0
