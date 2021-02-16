@@ -13,3 +13,5 @@ config/*.txt
 config/*.csv
 
 __pycache__
+
+*.zip
