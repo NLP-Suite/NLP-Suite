@@ -54,7 +54,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         if IO_libraries_util.inputProgramFileCheck("Stanford_CoreNLP_coReference_resolution_util.py") == False:
             return
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(inputFilename, inputDir,
-                                                                           outputDir, openOutputFiles, createExcelCharts,, memory_var,
+                                                                           outputDir, openOutputFiles, createExcelCharts, memory_var,
                                                                            CoRef_Option, manual_Coref)
         if error_indicator == 0:
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',

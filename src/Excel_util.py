@@ -44,9 +44,9 @@ def checkExcel_extension(output_file_name,hover_info_column_list):
 #   two series: [[['Name1','Frequency'], ['A', 7]], [['Name2','Frequency'], ['B', 4]]]
 #   three series: [[['Name1','Frequency'], ['A', 7]], [['Name2','Frequency'], ['B', 4]], [['Name3','Frequency'], ['C', 9]]]
 #   more series: ..........
-# n is no longer needs to be passed since we compute the series length below
 # inputFilename has the full path
 # columns_to_be_plotted is a double list [[0, 1], [0, 2], [0, 3]]
+# TODO HOW DOES THIS DIFFER FROM def prepare_csv_data_for_chart?
 def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_list,
                                count_var=0, column_yAxis_field_list = []):
     withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
@@ -55,6 +55,8 @@ def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_
     count_msg, withHeader_msg = build_timed_alert_message(chart_type_list[0],withHeader_var,count_var)
     if count_var == 1:
         dataRange = get_dataRange(columns_to_be_plotted, data)
+        # TODO hover_over labels not being passed, neither are any potential aggregate columns
+        #   get_data_to_be_plotted_with_counts is less general than
         data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange)
     else:
         try:
@@ -192,10 +194,64 @@ def get_dataRange(columns_to_be_plotted, data):
 
 # TODO if hover_over columns are passed, it should concatenate all values, instead of displaying the first one only
 #   (e.g. an example run the going UP function in WordNet)
+# this function seems to be less general than def compute_csv_column_frequencies; that function handl;es aggregation and hover over effects
+# we should consolidate the two and use the most general one under he heading get_data_to_be_plotted_with_counts
 
-def get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange):
+# def get_data_to_be_plotted_with_counts(inputFileName,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange):
+#     CALL compute_column_frequencies(columns_to_be_plotted, dataRange, headers,column_yAxis_field_list)
+#
+#     CALLED compute_column_frequencies(columns_to_be_plotted, data_list, headers,specific_column_value_list=[]):
+
+def get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,specific_column_value_list,data_list):
     data_to_be_plotted=[]
-    data_to_be_plotted = compute_column_frequencies_4Excel(columns_to_be_plotted, dataRange, headers, column_yAxis_field_list)
+    # data_to_be_plotted = compute_column_frequencies_4Excel(columns_to_be_plotted, dataRange, headers, column_yAxis_field_list)
+
+    column_list=[]
+    column_frequencies=[]
+    column_stats=[]
+    specific_column_value=''
+    complete_column_frequencies=[]
+    if len(data_list) != 0:
+        for k in range(len(columns_to_be_plotted)):
+            res=[]
+            if len(specific_column_value_list)>0:
+                specific_column_value=specific_column_value_list[k]
+            #get all the values in the selected column
+            column_list = [i[1] for i in data_list[k]]
+            counts = Counter(column_list).most_common()
+            if len(headers) > 0:
+                id_name_num = columns_to_be_plotted[k][0]
+                id_name = headers[id_name_num]
+                column_name_num = columns_to_be_plotted[k][1]
+                column_name = headers[column_name_num]
+                if len(specific_column_value_list)==0:
+                    column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
+                else:
+                    for y in range(len(specific_column_value_list)):
+                        column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column " + str(column_name)]]
+            else:
+                id_name_num = columns_to_be_plotted[k][0]
+                id_name = "column_" + str(id_name_num+1)
+                column_name_num = columns_to_be_plotted[k][1]
+                column_name = "column_" + str(column_name_num+1)
+                if len(specific_column_value)==0:
+                    column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
+                else:
+                    for y in range(len(specific_column_value_list)):
+                        column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column_" + str(column_name_num+1)]]
+            if len(specific_column_value) == 0:
+                for value, count in counts:
+                    column_frequencies.append([value, count])
+            else:
+                for i in range(len(column_list)):
+                    if column_list[i] == specific_column_value:
+                        res.append(1)
+                    else:
+                        res.append(0)
+                for j in range(len(data_list[k])):
+                    column_frequencies.append([data_list[k][j][0], res[j]])
+            data_to_be_plotted.append(column_frequencies)
+
     return data_to_be_plotted
 
 # [[0,2]], [0], [2]
@@ -425,6 +481,8 @@ def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, output
 
 # hover_col and group_col will be copied from the original file
 # called from statistics_csv_util.compute_csv_column_frequencies_NEW
+
+# TODO HOW DOES THIS DIFFER FROM def prepare_data_to_be_plotted?
 def prepare_csv_data_for_chart(window,inputfile, inputDataFrame, outputpath, select_col : list, hover_col : list, group_col : list, fileNameType, chartType, openOutputFiles, createExcelCharts,count_var=0):
     filesToOpen=[]
     outputCsvfilename = IO_files_util.generate_output_file_name(inputfile, '', outputpath, '.csv')
@@ -485,53 +543,53 @@ def prepare_csv_data_for_chart(window,inputfile, inputDataFrame, outputpath, sel
 
 
 # TODO does it compute frequencies by some aggregate values (e.g., document ID)?
-def compute_column_frequencies_4Excel(columns_to_be_plotted, data_list, headers,specific_column_value_list=[]):
-    column_list=[]
-    column_frequencies=[]
-    column_stats=[]
-    specific_column_value=''
-    complete_column_frequencies=[]
-    if len(data_list) != 0:
-        for k in range(len(columns_to_be_plotted)):
-            res=[]
-            if len(specific_column_value_list)>0:
-                specific_column_value=specific_column_value_list[k]
-            #get all the values in the selected column
-            column_list = [i[1] for i in data_list[k]]
-            counts = Counter(column_list).most_common()
-            if len(headers) > 0:
-                id_name_num = columns_to_be_plotted[k][0]
-                id_name = headers[id_name_num]
-                column_name_num = columns_to_be_plotted[k][1]
-                column_name = headers[column_name_num]
-                if len(specific_column_value_list)==0:
-                    column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
-                else:
-                    for y in range(len(specific_column_value_list)):
-                        column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column " + str(column_name)]]
-            else:
-                id_name_num = columns_to_be_plotted[k][0]
-                id_name = "column_" + str(id_name_num+1)
-                column_name_num = columns_to_be_plotted[k][1]
-                column_name = "column_" + str(column_name_num+1)
-                if len(specific_column_value)==0:
-                    column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
-                else:
-                    for y in range(len(specific_column_value_list)):
-                        column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column_" + str(column_name_num+1)]]
-            if len(specific_column_value) == 0:
-                for value, count in counts:
-                    column_frequencies.append([value, count])
-            else:
-                for i in range(len(column_list)):
-                    if column_list[i] == specific_column_value:
-                        res.append(1)
-                    else:
-                        res.append(0)
-                for j in range(len(data_list[k])):
-                    column_frequencies.append([data_list[k][j][0], res[j]])
-            complete_column_frequencies.append(column_frequencies)
-    return complete_column_frequencies
+# def compute_column_frequencies_4Excel(columns_to_be_plotted, data_list, headers,specific_column_value_list=[]):
+#     column_list=[]
+#     column_frequencies=[]
+#     column_stats=[]
+#     specific_column_value=''
+#     complete_column_frequencies=[]
+#     if len(data_list) != 0:
+#         for k in range(len(columns_to_be_plotted)):
+#             res=[]
+#             if len(specific_column_value_list)>0:
+#                 specific_column_value=specific_column_value_list[k]
+#             #get all the values in the selected column
+#             column_list = [i[1] for i in data_list[k]]
+#             counts = Counter(column_list).most_common()
+#             if len(headers) > 0:
+#                 id_name_num = columns_to_be_plotted[k][0]
+#                 id_name = headers[id_name_num]
+#                 column_name_num = columns_to_be_plotted[k][1]
+#                 column_name = headers[column_name_num]
+#                 if len(specific_column_value_list)==0:
+#                     column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
+#                 else:
+#                     for y in range(len(specific_column_value_list)):
+#                         column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column " + str(column_name)]]
+#             else:
+#                 id_name_num = columns_to_be_plotted[k][0]
+#                 id_name = "column_" + str(id_name_num+1)
+#                 column_name_num = columns_to_be_plotted[k][1]
+#                 column_name = "column_" + str(column_name_num+1)
+#                 if len(specific_column_value)==0:
+#                     column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
+#                 else:
+#                     for y in range(len(specific_column_value_list)):
+#                         column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column_" + str(column_name_num+1)]]
+#             if len(specific_column_value) == 0:
+#                 for value, count in counts:
+#                     column_frequencies.append([value, count])
+#             else:
+#                 for i in range(len(column_list)):
+#                     if column_list[i] == specific_column_value:
+#                         res.append(1)
+#                     else:
+#                         res.append(0)
+#                 for j in range(len(data_list[k])):
+#                     column_frequencies.append([data_list[k][j][0], res[j]])
+#             complete_column_frequencies.append(column_frequencies)
+#     return complete_column_frequencies
 
 
 # when hover-over data are displayed the Excel filename extension MUST be xlsm (for macro VBA enabling)
@@ -1009,6 +1067,7 @@ def header_check(inputFile):
 
 # input can be a csv filename or a dataFrame
 # output is a dataFrame
+# TODO any funtion that plots data by sentence index shoulld really check that the required sentence IDs are all there and insert them otherwise
 def add_missing_IDs(input):
     if isinstance(input, pd.DataFrame):
         df = input

@@ -178,6 +178,8 @@ pydict["File cleaner (Change to utf-8 non utf-8 apostrophes & quotes)"] = ["file
 pydict["File cleaner (Find & Replace string)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File cleaner (Remove blank lines from txt file(s))"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File classifier (dumb classifier via embedded date) (file name)"] = ["file_filename_checker_main.py", 1]
+pydict["File finder (file name)"] = ["file_manager_main.py", 1]
+pydict["File finder (file content for words/collocations)"] = ["file_finder_byWord_main.py", 1]
 pydict["File-type converter (pdf, docx, rtf --> txt)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File matcher (file name)"] = ["file_matcher_main.py", 1]
 pydict["File merger (file content)"] = ["file_merger_main.py", 1]
@@ -197,7 +199,7 @@ pydict["N-grams (word & character)"] = ["NGrams_CoOccurrences_Viewer_main.py", 1
 pydict["N-grams viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Nominalization"] = ["nominalization_main.py", 1]
 pydict["Search text file(s) for n-grams & co-occurrences"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
-pydict["Search text file(s) for words/collocations"] = ["search_byWord_main.py", 1]
+pydict["Search text file(s) for words/collocations"] = ["file_finder_byWord_main.py", 1]
 pydict["Sentence analysis (An overall GUI)"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence complexity"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence/text readability (via textstat)"] = ["sentence_analysis_main.py", 1]
@@ -216,6 +218,7 @@ pydict["Spelling checker cleaner (Find & Replace string)"] = ["file_checker_conv
 # pydict["Spelling checker (via textblob)"] = ["file_spell_checker_main.py", 1]
 pydict["SQL database (via SQLite)"] = ["DB_SQL_main.py", 1]
 pydict["Stanford CoreNLP"] = ["Stanford_CoreNLP_main.py", 1]
+pydict["Semantic analysis (via TensorFlow)"] = ["", 0]
 pydict["SRL Semantic Role Labeling"] = ["", 0]
 pydict["SVO extractor & visualization"] = ["SVO_main.py", 1]
 pydict["Dictionary items by sentence index"] = ["sentence_analysis_util.dictionary_items_bySentenceID", 0, 3, 'txt']
@@ -225,6 +228,7 @@ pydict["utf-8 compliance"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["Style analysis"] = ["style_analysis_main.py", 1]
 pydict["Narrative analysis"] = ["narrative_analysis_main.py", 1]
 pydict["WHAT\'S IN YOUR CORPUS? A SWEEPING VIEW"] = ["whats_in_your_corpus_main.py", 1]
+pydict["Corpus statistics (Sentences, words, lines)"] = ["statistics_NLP_main.py", 1]
 pydict["Word clouds"] = ["wordclouds_main.py", 1]
 pydict["WordNet"] = ["WordNet_main.py", 1]
 pydict["Word2Vec (via Gensim)"] = ["", 0]
@@ -275,6 +279,8 @@ pre_processing_menu = tk.OptionMenu(window, pre_processing_tools_var,
                                     'File cleaner (Change to utf-8 non utf-8 apostrophes & quotes)',
                                     'File cleaner (Find & Replace string)',
                                     'File cleaner (Remove blank lines from txt file(s))',
+                                    'File finder (file name)',
+                                    'File finder (file content for words/collocations)',
                                     'File-type converter (pdf, docx, rtf --> txt)',
                                     'File merger (file content)',
                                     'File splitter (file content)',
@@ -343,6 +349,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 # tools that apply exclusively to a corpus
 corpus_tools_menu = tk.OptionMenu(window, corpus_tools_var,
                                   'WHAT\'S IN YOUR CORPUS? A SWEEPING VIEW',
+                                  'Corpus statistics (Sentences, words, lines)',
                                   'Co-Occurrences viewer',
                                   'N-grams viewer',
                                   'Shape of stories',
@@ -392,6 +399,7 @@ corpus_document_tools_menu = tk.OptionMenu(window, corpus_document_tools_var,
                                            # 'Spelling checker (via autocorrect)',
                                            # 'Spelling checker (via pyspellchecker)',
                                            # 'Spelling checker (via textblob)',
+                                           'Semantic analysis (via TensorFlow)',
                                            'SRL Semantic Role Labeling',
                                            'SVO extractor & visualization',
                                            'Word clouds',

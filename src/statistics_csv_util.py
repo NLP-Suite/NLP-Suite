@@ -1,22 +1,18 @@
 #written by Roberto Franzosi October 2019
 
 import sys
-
-import IO_files_util
 import GUI_util
 import IO_libraries_util
-import IO_csv_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Statistics",['csv','tkinter','os','collections','pandas','itertools'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"Statistics",['csv','tkinter','os','collections','pandas','scipy','itertools'])==False:
     sys.exit(0)
 
 import tkinter as tk
 import tkinter.messagebox as mb
-import collections
 from collections import Counter
-import os
 import csv
-from itertools import groupby
+import IO_files_util
+import IO_csv_util
 import pandas as pd
 import numpy as np
 from scipy import stats
@@ -103,7 +99,9 @@ def compute_field_statistics_NoGroupBy(window,inputFilename, outputDir, openOutp
         numberOfColumns= IO_csv_util.get_csvfile_numberofColumns(inputFilename)
         loopValue=range(numberOfColumns)
     # insert headers
-    headers=['Column header','Number of documents','Count','Mean','Mode','Median','Standard deviation','Minimum','Maximum','Skewness','Kurtosis','25% quantile','50% quantile','75% quantile']
+    headers=['Column header','Number of documents',
+             'Count','Mean','Mode','Median','Standard deviation','Minimum','Maximum',
+                   'Skewness','Kurtosis','25% quantile','50% quantile','75% quantile']
     stats.append(headers)
     for currentColumn in loopValue:
         #reading csv file
@@ -149,7 +147,7 @@ def percentile(n):
     return percentile_
 
 
-#written by Yi Wang March 2020
+#written by Yi Wang March 2020, edited Landau/Franzosi February 20021
 def compute_field_statistics_groupBy(window,inputFilename, outputDir, groupByField: list, openOutputFiles, createExcelCharts, columnNumber=-1):
     filesToOpen=[]
     output_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'CSV', 'group_stats')
@@ -171,8 +169,6 @@ def compute_field_statistics_groupBy(window,inputFilename, outputDir, groupByFie
                        message="The input file\n\n" + inputFilename + "\n\nhas character encoding that breaks the code. The statistical function only works with utf-8 compliant files.\n\nPlease, check your input file encoding and try again!")
         return None
 
-    # TODO should list results ONLY for a specific column if that column is passed in columnNumber
-    #   similar to compute_field_statistics_NoGroupBy
     df_group = df.groupby(groupByField).agg([np.sum, np.mean, lambda x: stats.mode(x)[0], np.median,
                                          np.std, np.min, np.max,
                                          stats.skew, stats.kurtosis,
@@ -187,8 +183,9 @@ def compute_field_statistics_groupBy(window,inputFilename, outputDir, groupByFie
         df_list = [pd.concat([df_group[index]],keys=[index],names=['column header']) for index in df_group.columns.levels[0]]
     df_group = pd.concat(df_list,axis=0)
     # putting data into the original headers
-    df_group.columns = ['Count','Mean','Mode','Median','Standard deviation',
-                        'Minimum','Maximum','Skewness','Kurtosis','25% quantile','50% quantile','75% quantile']
+    headers_stats=['Count','Mean','Mode','Median','Standard deviation','Minimum','Maximum',
+                   'Skewness','Kurtosis','25% quantile','50% quantile','75% quantile']
+    df_group.columns = headers_stats
     df_group.to_csv(output_name)
     filesToOpen.append(output_name)
     if openOutputFiles==True:

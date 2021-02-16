@@ -16,17 +16,12 @@
 
 
 import sys
-
-import GUI_IO_util
-import IO_files_util
 import GUI_util
 import IO_libraries_util
-import IO_user_interface_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"GIS_distance_util",['os','tkinter','csv','pandas','geopy'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"GIS_distance_util",['tkinter','csv','pandas','geopy'])==False:
 	sys.exit(0)
 
-import os
 import tkinter.messagebox as mb
 import pandas as pd
 import csv
@@ -39,6 +34,8 @@ from geopy.distance import great_circle
 
 import GIS_location_util
 import GIS_geocode_util
+import IO_files_util
+import IO_user_interface_util
 
 import IO_csv_util
 

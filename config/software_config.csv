@@ -1,4 +1,4 @@
 software,path,download_link
 Stanford CoreNLP,C:/Program Files (x86)/stanford-corenlp-4.1.0,https://nlp.stanford.edu/software/stanford-corenlp-latest.zip
-Mallet,C:/Mallet,http://mallet.cs.umass.edu/download.php
-WordNet,C:/Program Files (x86)/WordNet-3.0,https://wordnet.princeton.edu/download/current-version
+Mallet,,http://mallet.cs.umass.edu/download.php
+WordNet,,https://wordnet.princeton.edu/download/current-version

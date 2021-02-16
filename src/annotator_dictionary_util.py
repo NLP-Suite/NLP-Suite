@@ -77,7 +77,11 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csvValue_colo
                 if len(csvValue_color_list) == 0:
                     for term in dictionary[0]:
                         tagString= tagAnnotations[0]+term+tagAnnotations[1]
-                        tmp = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, tmp)
+                        try: # to avoid encoding or other problems in term
+                            tmp = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, tmp)
+                        except:
+                            print('  Could not annotate',term)
+                            tmp = term
                 else:
                     for i in range(len(dictionary)):
                         terms = dictionary[i]
@@ -88,7 +92,11 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csvValue_colo
                             tagAnnotations = ['<span style=\"color: ' + color + '\">','</span>']
                         for term in terms:
                             tagString = tagAnnotations[0] + term + tagAnnotations[1]
-                            tmp = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, tmp)
+                            try: # to avoid encoding or other problems in term
+                                tmp = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, tmp)
+                            except:
+                                print('  Could not annotate', term)
+                                tmp = term
                 writeout.append(tmp)
             writeout.append("<br />\n<br />\n")
         f.close()

@@ -18,6 +18,7 @@ import csv
 import nltk
 
 import statistics_csv_util
+import IO_user_interface_util
 
 #whether stopwordst were already downloaded can be tested, see stackoverflow
 #   https://stackoverflow.com/questions/23704510/how-do-i-test-whether-an-nltk-resource-is-already-installed-on-the-machine-runni
@@ -136,6 +137,8 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
         'Line']
     if IO_csv_util.openCSVOutputFile(outputFilenameCSV):
         return
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running line length analysis at', True)
+
     with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -156,6 +159,8 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
                    writer.writerows(currentLine)
                    line = fp.readline()
     csvfile.close()
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running line length analysis at', True)
 
     # compute statistics about line length ungrouped
     tempOutputfile=statistics_csv_util.compute_field_statistics_NoGroupBy(window, outputFilenameCSV, outputDir, openOutputFiles, createExcelCharts, 3)
@@ -216,6 +221,9 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
         'Word20','Frequency20']
     if IO_csv_util.openCSVOutputFile(outputFilenameCSV):
         return
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running corpus statistics at', True)
+
     with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
@@ -261,20 +269,31 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             writer = csv.writer(csvfile)
             writer.writerows(currentLine)
         csvfile.close()
-        # output=statistics_csv_util.compute_field_statistics_NoGroupBy(window,outputFilenameCSV,outputDir,openOutputFiles,createExcelCharts)
-        # corpus statistics
-        # if createExcelCharts==True:
-        #     columns_to_be_plotted=[[1,3],[1,4]]
-        #     hover_label=['Document','Document']
-        #     inputFilename=outputFilenameCSV
-        #     Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-        #                                               outputFileLabel='corpus_stats',
-        #                                               chart_type_list=["line"],
-        #                                               chart_title='Corpus statistics\nCorpus directory: '+inputDir,
-        #                                               column_xAxis_label_var='Document',
-        #                                               hover_info_column_list=hover_label)
-        #     if Excel_outputFilename != "":
-        #         filesToOpen.append(Excel_outputFilename)
+
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running corpus statistics at', True)
+
+        # compute statistics about doc length grouped by Document
+        list = ['Document ID']
+        tempOutputfile = statistics_csv_util.compute_field_statistics_groupBy(window, outputFilenameCSV, outputDir,
+                                                                              list, openOutputFiles,
+                                                                              createExcelCharts)
+                                                                              # ,4)  # 'number of words in doc'
+        if tempOutputfile != None:
+            filesToOpen.extend(tempOutputfile)
+
+        if createExcelCharts==True:
+            columns_to_be_plotted=[[1,3],[1,4]]
+            hover_label=['Document','Document']
+            inputFilename=outputFilenameCSV
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                      outputFileLabel='corpus_stats',
+                                                      chart_type_list=["bar"],
+                                                      # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
+                                                      chart_title='Corpus Statistics: Frequency of Sentences & Words by Document',
+                                                      column_xAxis_label_var='Document',
+                                                      hover_info_column_list=hover_label)
+            if Excel_outputFilename != "":
+                filesToOpen.append(Excel_outputFilename)
 
         # TODO
         #   we should create 10 classes of values by distance to the median of

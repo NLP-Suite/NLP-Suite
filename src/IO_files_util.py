@@ -246,8 +246,8 @@ def checkDirectory(path, message=True):
 		return True
 	else:
 		if message:
-			mb.showwarning(title='File path error',
-						   message='Error in filename and path. Please, check DIRECTORY PATH and try again')
+			mb.showwarning(title='Directory error',
+						   message='The directory ' + path + ' does not exist. It may have been renamed, deleted, moved. Please, check the DIRECTORY and try again')
 		return False
 
 

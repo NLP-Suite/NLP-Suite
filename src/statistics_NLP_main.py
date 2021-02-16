@@ -16,8 +16,10 @@ import IO_files_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelCharts,
-        corpus_stats, stopwords_var, lemmatize_var, n_grams, n_grams_menu_var, n_grams_list, all_csv_stats,csv_field_stats,
+        corpus_stats, corpus_options_menu_var, n_grams, n_grams_menu_var, n_grams_list, all_csv_stats,csv_field_stats,
         csv_list,hover_over_list, groupBy_list, script_to_run):
+
+    filesToOpen=[]
 
     window=GUI_util.window
     if input_main_dir_path=='' and corpus_stats:
@@ -53,22 +55,35 @@ def run(inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelC
             mb.showwarning(title='Warning', message='You have selected to compute the frequency of a csv file field but no field has been selected.\n\nPlease, select a csv file field and try again.')
             return
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running ' + script_to_run + ' at', True)
-
     if corpus_stats:
-        statistics_txt_util.compute_corpus_statistics(window,inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelCharts,stopwords_var, lemmatize_var)
-        if "Compute lines length" or "*" in corpus_options_menu_var.get():
-            statistics_txt_util.read_line(window, inputFilename, input_main_dir_path, outputDir,
-                                                          openOutputFiles, createExcelCharts)
+        stopwords_var = False
+        lemmatize_var = False
+        if corpus_options_menu_var=='*':
+            stopwords_var=True
+            lemmatize_var=True
+        if 'Lemmatize' in corpus_options_menu_var:
+            lemmatize_var=True
+        if 'stopwords' in corpus_options_menu_var:
+            stopwords_var=True
+        if "*" in corpus_options_menu_var or lemmatize_var==True or stopwords_var==True:
+            tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,input_main_dir_path,outputDir,False,createExcelCharts,stopwords_var, lemmatize_var)
+            if tempOutputFiles!=None:
+                filesToOpen.extend(tempOutputFiles)
+
+        if "Compute lines length" or "*" in corpus_options_menu_var:
+            tempOutputFiles=statistics_txt_util.read_line(window, inputFilename, input_main_dir_path, outputDir,
+                                                          False, createExcelCharts)
+            if tempOutputFiles!=None:
+                filesToOpen.extend(tempOutputFiles)
 
     elif all_csv_stats:
-        statistics_csv_util.compute_field_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,createExcelCharts)
+        tempOutputFiles=statistics_csv_util.compute_field_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,createExcelCharts)
     elif csv_field_stats:
         if len(csv_list) == 0:
             mb.showwarning(title='Warning', message='You have selected to compute the frequency of a csv file field but no field has been selected.\n\nPlease, select a csv file field and try again.')
             return
         columns_to_be_plotted=[] # field not used
-        statistics_csv_util.compute_stats_NLP_main(window,
+        tempOutputFiles=statistics_csv_util.compute_stats_NLP_main(window,
                                                            inputFilename,
                                                            '',
                                                            outputDir,
@@ -109,20 +124,19 @@ def run(inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelC
                 return
 
         if n_grams_word_var or bySentenceIndex_word_var:
-            statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_main_dir_path,outputDir,n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts,
+            tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_main_dir_path,outputDir,n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts,
                                                               bySentenceIndex_word_var)
         if n_grams_character_var or bySentenceIndex_character_var:
-            statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_main_dir_path,outputDir,n_grams_size, normalize, excludePunctuation,  0, openOutputFiles, createExcelCharts,
+            tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_main_dir_path,outputDir,n_grams_size, normalize, excludePunctuation,  0, openOutputFiles, createExcelCharts,
                                                               bySentenceIndex_character_var)
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams end',
                                            'Finished running ' + n_grams_menu_var + ' n-grams at', True)
 
         # statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_main_dir_path,outputDir,4, normalize, excludePunctuation,  1,openOutputFiles,createExcelCharts,bySentenceIndex_word)
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running ' + script_to_run + ' at', True)
+    # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running ' + script_to_run + ' at', True)
 
-    # if openOutputFiles == 1:
-    #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
-
+    if openOutputFiles == 1:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 #def run(inputFilename,input_main_dir_path,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
@@ -133,8 +147,9 @@ run_script_command=lambda: run(
                 GUI_util.open_csv_output_checkbox.get(),
                 GUI_util.create_Excel_chart_output_checkbox.get(),
                 corpus_stats_var.get(),
-                stopwords_var.get(),
-                lemmatize_var.get(),
+                corpus_options_menu_var.get(),
+                # stopwords_var.get(),
+                # lemmatize_var.get(),
                 n_grams_var.get(),
                 n_grams_menu_var.get(),
                 n_grams_list,
@@ -187,8 +202,8 @@ groupBy_list = []
 
 corpus_stats_var = tk.IntVar()
 corpus_options_menu_var = tk.StringVar()
-stopwords_var = tk.IntVar()
-lemmatize_var = tk.IntVar()
+# stopwords_var = tk.IntVar()
+# lemmatize_var = tk.IntVar()
 
 all_csv_stats_var = tk.IntVar()
 csv_field_stats_var = tk.IntVar()

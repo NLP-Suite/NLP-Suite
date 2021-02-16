@@ -4,14 +4,11 @@ import os
 import tkinter as tk
 import tkinter.messagebox as mb
 import subprocess
-
-import IO_user_interface_util
-
-from pathlib import Path
-import GUI_IO_util
-
 from typing import List
 
+import IO_user_interface_util
+import IO_files_util
+import GUI_IO_util
 
 # import pip not used
 # def install(package):
@@ -161,6 +158,11 @@ def inputExternalProgramFileCheck(software_dir, programName):
                            message="The selected software directory\n  " + software_dir + "'\nis NOT the expected CoreNLP directory.\n\nPlease, select the appropriate CoreNLP directory and try again!\n\nYou can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\nPlease, read the TIPS_NLP_Stanford CoreNLP download install run.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
             return False
     if programName == 'Mallet':
+        # check that Mallet has no spaces in path
+        if ' ' in software_dir:
+            mb.showerror(title='Mallet directory error',
+                         message='The selected Mallet directory \n   ' + software_dir + '\ncontains a blank (space) in the path. The Mallet code cannot handle paths that contain a space and will break.\n\nPlease, place place Mallet in a directory with a path containing no spaces and try again.')
+            return False
         if 'bin' in fileList and 'class' in fileList:
             return True
         else:
@@ -264,10 +266,21 @@ def get_external_software_dir(calling_script, package, warning=True):
                 print("MISSING SOFTWARE", row[0])
                 missing_software = missing_software + str(row[0]).upper() + ' download at ' + str(row[2] + '\n\n')
                 download_software = row[2]
+            # else:
+            #     software_dir=row[1]
                 # missing_software_csv.append(row)
         else:
-            if package.lower() in row[0].lower():
-                return row[1] # software
+            if calling_script != 'NLP_menu':
+                if package.lower() in row[0].lower():
+                    software_dir = row[1]
+            # check that the software directory still exists and the package has not been moved
+            if os.path.isdir(row[1]) == False:
+                mb.showwarning(title='Directory error',
+                               message='The directory\n  ' + row[
+                                   1] + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-select the ' +
+                                       row[0].upper() + ' directory.')
+                row[1] = ''
+                pass
     if len(missing_software) > 0:
         if calling_script == 'NLP_menu':  # called from NLP_main GUI. We just need to warn the user to download and install options
             message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts.\n\n' + missing_software + 'If you have already downloaded the software, please, select next the directory where you installed it; ESC or CANCEL to exit, if you haven\'t installed it yet.'
@@ -298,4 +311,6 @@ def get_external_software_dir(calling_script, package, warning=True):
                         else:
                             software_dir=None
         save_software_config(existing_csv)
+        if software_dir == '':
+            software_dir = None
     return software_dir

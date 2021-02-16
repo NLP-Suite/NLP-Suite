@@ -60,6 +60,10 @@ def CoreNLP_annotate(inputFilename,
     if CoreNLPdir== '':
         return filesToOpen
 
+    errorFound, error_code, system_output=IO_libraries_util.check_java_installation('SVO extractor')
+    if errorFound:
+        return filesToOpen
+
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, "You can follow CoreNLP annotator in command line.")
 
     # decide on directory or single file
@@ -121,7 +125,7 @@ def CoreNLP_annotate(inputFilename,
         files.extend(listOfFiles)
         Ndocs = len(files)
     if Ndocs==0:
-        return
+        return filesToOpen
 
     # get corresponding func, output format and annotator params from upper 3 dicts
     routine_list = []#storing the annotator, output format (column titles of csv), output
@@ -166,8 +170,8 @@ def CoreNLP_annotate(inputFilename,
             parsedjson = json.loads(tempVar)
         except:
             mb.showwarning('Stanford CoreNLP annotator Error',
-                               'The Stanford CoreNLP CoreNLP Annotator failed to run on your input, exiting with the following error:\n\n' + tempVar + '\n\nTHE ERROR MAY HAPPEN WHEN CoreNLP HANGS. REBOOT YOUR MACHINE AND TRY AGAIN.')
-            return
+                               'The Stanford CoreNLP CoreNLP Annotator failed to process the input document\n  ' + tail + '\nexiting with the following error:\n\n' + tempVar + '\n\nTHE ERROR MAY HAPPEN WHEN CoreNLP HANGS. REBOOT YOUR MACHINE AND TRY AGAIN.\n\nTHE ERROR IS ALSO LIKELY TO HAPPEN WHEN THE STANFORD CORENLP HAS BEEN STORED TO A CLOUD SERVICE (e.g., OneDrive) OR INSIDE THE /NLP/src DIRECTORY. TRY TO MOVE THE STANFORD CORENLP FOLDER TO A DIFFERENT LOCATION.')
+            continue # process next document
         # routine_list contains all annotators
         for run in routine_list:
             # params = run[0]
