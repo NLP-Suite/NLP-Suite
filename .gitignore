@@ -6,9 +6,6 @@ desktop.ini
 
 .idea
 
-reminders/*.txt
-reminders/*.csv
-
 config/*.txt
 config/*.csv
 
