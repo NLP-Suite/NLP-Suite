@@ -1,4 +1,5 @@
 # Reminders
 
-This is where all of the config reminder files will live.
-Do not remove me. I am a place holder for the reminders folder in the NLP Suite repository.
+This README is a place holder for the directory structure.
+Do not remove me to preserve the reminders folder in the repository.
+

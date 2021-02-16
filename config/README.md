@@ -1,4 +1,4 @@
-# NLP Suite Config
+# Config
 
-This is where all the config files will live.
-Do not remove me! I am a place holder for the config folder in the NLP Suite Repository.
+This README is a place holder for the directory structure.
+Do not remove me to preserve the config folder in the repository.
