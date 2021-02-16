@@ -1,6 +1,0 @@
-EMPTY LINE
-C:/Program Files (x86)/NLP_backup/Output/The Atlanta Constitution_07-20-1897_1_1-svoResult-woFilter.txt
-
-EMPTY LINE
-EMPTY LINE
-C:/Program Files (x86)/NLP_backup/Output

@@ -1,6 +1,0 @@
-C:/Program Files (x86)/stanford-corenlp-4.0.0
-EMPTY LINE
-
-C:\Users\rfranzo\Documents\My Projects\Emory\CURRENT\GA Race Relations\COMPILATIONS Newspaper events\Compilations_TXT
-EMPTY LINE
-C:\Program Files (x86)\NLP_backup\Output

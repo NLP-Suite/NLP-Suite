@@ -1,6 +1,0 @@
-C:/Mallet
-EMPTY LINE
-C:/Mallet/mydata
-EMPTY LINE
-EMPTY LINE
-C:/Mallet/test

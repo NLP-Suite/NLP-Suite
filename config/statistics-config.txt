@@ -1,6 +1,0 @@
-EMPTY LINE
-C:/Program Files (x86)/NLP_backup/Output/test.csv
-
-EMPTY LINE
-EMPTY LINE
-C:/Program Files (x86)/NLP_backup/Output
