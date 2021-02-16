@@ -1,2 +1,15 @@
 *.jar
+
 lib/namesGender/SS_state_year.csv
+
+desktop.ini
+
+.idea
+
+reminders/*.txt
+reminders/*.csv
+
+config/*.txt
+config/*.csv
+
+__pycache__
