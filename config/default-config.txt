@@ -1,6 +1,0 @@
-EMPTY LINE
-
-C:/Users/rfranzo/Desktop/CORPUS DATA/Sample text
-EMPTY LINE
-EMPTY LINE
-C:/Program Files (x86)/NLP_backup/Output

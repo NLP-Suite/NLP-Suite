@@ -1,6 +1,0 @@
-
-C:/Program Files (x86)/NLP_backup/Output/CoNLL/NLP_SCNLP_Murphy Miracles thicker than fog CORENLP_CoNLL.csv
-
-
-
-C:/Program Files (x86)/NLP_backup/Output

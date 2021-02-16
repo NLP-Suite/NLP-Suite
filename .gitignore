@@ -1,2 +1,14 @@
 *.jar
+
 lib/namesGender/SS_state_year.csv
+
+desktop.ini
+
+.idea
+
+config/*.txt
+config/*.csv
+
+__pycache__
+
+*.zip
