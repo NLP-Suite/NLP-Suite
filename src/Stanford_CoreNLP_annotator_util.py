@@ -71,6 +71,11 @@ def CoreNLP_annotate(inputFilename,
         inputFilename = inputDir
     # decide on to provide output or to return value
 
+    global extract_date_from_text_var, extract_date_from_filename_var
+
+    extract_date_from_text_var=False
+    extract_date_from_filename_var=False
+
     produce_split_files=False
     # @ change coref-text to coref, change coref-spreadsheet to gender@
     params_option = {
@@ -159,6 +164,12 @@ def CoreNLP_annotate(inputFilename,
 
     #annotating each input file
     docID=0
+
+    if isinstance(routine_list[0][2][0],list):
+        run_output = [[], []]
+    else:
+        run_output = []
+
     for doc in files:
         docID = docID + 1
         head, tail = os.path.split(doc)
@@ -178,7 +189,7 @@ def CoreNLP_annotate(inputFilename,
             annotator_chosen = run[0]
             routine = run[1]
             output_format = run[2]
-            run_output = run[3]
+            # run_output = run[3]
 
             #generating output from json file for specific annotators
             sub_result = routine(docID, doc, parsedjson, **kwargs)
@@ -189,7 +200,12 @@ def CoreNLP_annotate(inputFilename,
                     text_file.write(sub_result)
                 filesToOpen.append(outputFilename)
             else:
-                    #add output to the ouptut storage list in routine_list
+                #add output to the output storage list in routine_list
+                if len(run[2])>1:
+                    for i in range(0, len(run[2])):
+                        for j in sub_result[i]:
+                            run_output[i].append(j)
+                else:
                     run_output.extend(sub_result)
     
     #generate output csv files and write output 
@@ -197,7 +213,7 @@ def CoreNLP_annotate(inputFilename,
         annotator_chosen = run[0]
         routine = run[1]
         output_format = run[2]
-        run_output = run[3]
+        # run_output = run[3]
         if isinstance(output_format[0],list): # multiple outputs
             for index, sub_output in enumerate(output_format):
                 outputFilename = IO_files_util.generate_output_file_name(str(doc), '', outputDir,
@@ -207,8 +223,7 @@ def CoreNLP_annotate(inputFilename,
                 filesToOpen.append(outputFilename)
                 df = pd.DataFrame(run_output[index], columns=output_format[index])
                 df.to_csv(outputFilename, index=False)
-
-        else:
+        else: # single, merged output
             # generate output file name
             if annotator_chosen == 'NER':
                 print("Annotator: NER")
@@ -229,6 +244,8 @@ def CoreNLP_annotate(inputFilename,
                                                                              'CoreNLP_'+annotator_chosen)
             filesToOpen.append(outputFilename)
             if output_format != 'text': # output is csv file
+                # when NER values (notably, locations) are extracted with the date option
+                #   for dinamic GIS maps (as called from GIS_main with date options)
                 if extract_date_from_text_var or extract_date_from_filename_var:
                     output_format=['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document','Date']
                 # if NER_sentence_var == 1:
@@ -373,7 +390,6 @@ def date_get_info(norm_date):
 def process_json_ner(documentID, document, json, **kwargs):
     print("   Processing Json output file for NER annotator")
     # establish the kwarg local vars
-    global extract_date_from_text_var, extract_date_from_filename_var
     extract_date_from_text_var = False
     extract_date_from_filename_var = False
     request_NER = []
