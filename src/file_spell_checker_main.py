@@ -91,17 +91,6 @@ def run(inputFilename, inputDir, outputDir,
                            message='The Levenshtein\'s distance can only be computed for documents in a directory and/or sub-directories.\n\nPlease, select a directory in input and try again.')
             return
 
-        # # check that the CoreNLPdir as been setup
-        # CoreNLPdir = IO_libraries_util.get_external_software_dir('spell_checker_main', 'Stanford CoreNLP')
-        # if CoreNLPdir == '':
-        #     return filesToOpen
-        #
-        # p = subprocess.Popen(
-        #     ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-        #      'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
-        #
-        # time.sleep(5)
-
         if check_withinSubDir and (not spelling_checker_var):
             # TODO files need t be added to filesToOpen
             outputFiles = file_spell_checker_util.check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles,
@@ -116,10 +105,6 @@ def run(inputFilename, inputDir, outputDir,
 
         if outputFiles!=None:
             filesToOpen.extend(outputFiles)
-
-        # p.kill()
-        # script for checking, change directories depending on your own config
-        # check_for_typo(os.getcwd() + '/StanfordNLP/stanford-corenlp-full-2018-10-05', os.getcwd() + '/test_files/2/', os.getcwd())
 
 
     if openOutputFiles:

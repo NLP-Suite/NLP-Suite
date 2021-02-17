@@ -80,8 +80,8 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csvValue_colo
                         try: # to avoid encoding or other problems in term
                             tmp = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, tmp)
                         except:
-                            print('  Could not annotate',term)
-                            tmp = term
+                            print('  Could not annotate \'',term, '\'')
+                            # tmp = term
                 else:
                     for i in range(len(dictionary)):
                         terms = dictionary[i]
@@ -95,8 +95,8 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csvValue_colo
                             try: # to avoid encoding or other problems in term
                                 tmp = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, tmp)
                             except:
-                                print('  Could not annotate', term)
-                                tmp = term
+                                print('  Could not annotate \'',term, '\'')
+                                # tmp = term
                 writeout.append(tmp)
             writeout.append("<br />\n<br />\n")
         f.close()

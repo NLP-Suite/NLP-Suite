@@ -405,7 +405,8 @@ def get_additional_csvFile(window,title,fileType):
 	noHeaders = False
 	menu_values=[]
 	import os
-	filePath = tk.filedialog.askopenfilename(title = title, initialdir = os.getcwd(), filetypes = fileType)
+	initialFolder == os.path.dirname(os.path.abspath(__file__))
+	filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
 	if len(filePath)>0:
 		select_csv_field_menu.configure(state='normal')
 		selectedCsvFile.config(state='normal')

@@ -152,9 +152,6 @@ def run(inputFilename, inputDir, outputDir,
                                                             by_all_tokens_var, spelling_checker_var, openOutputFiles,
                                                             createExcelCharts)
         p.kill()
-        # script for checking, change directories depending on your own config
-        # check_for_typo(os.getcwd() + '/StanfordNLP/stanford-corenlp-full-2018-10-05', os.getcwd() + '/test_files/2/', os.getcwd())
-
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_similarity_command = lambda: run(GUI_util.inputFilename.get(),

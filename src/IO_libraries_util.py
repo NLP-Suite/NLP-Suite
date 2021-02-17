@@ -296,7 +296,8 @@ def get_external_software_dir(calling_script, package, warning=True):
                 title = row[0].upper() + ' software'
                 software_dir=None
                 while software_dir==None:
-                    software_dir = tk.filedialog.askdirectory(initialdir=os.getcwd(), title=title + '. Please, select the directory where the software was installed; or press CANCEL or ESC if you have not downloaded the software yet.')
+                    initialFolder == os.path.dirname(os.path.abspath(__file__))
+                    software_dir = tk.filedialog.askdirectory(initialdir=initialFolder, title=title + '. Please, select the directory where the software was installed; or press CANCEL or ESC if you have not downloaded the software yet.')
                     software_name=''
                     if software_dir != '':
                         # check that it is the correct software directory

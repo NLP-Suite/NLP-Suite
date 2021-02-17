@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"WordNet",['os','tkinter','subprocess','nltk','pandas'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"WordNet",['os','csv','tkinter','subprocess','nltk','pandas'])==False:
     sys.exit(0)
 
 import os
@@ -14,6 +14,7 @@ import subprocess
 import tkinter.messagebox as mb
 from nltk.corpus import wordnet as wn
 import pandas as pd
+import csv
 
 import Excel_util
 import IO_files_util
@@ -167,7 +168,7 @@ def ancestor_GoingUP(WordNetDir, inputFile, outputDir, noun_verb,openOutputFiles
     if createExcelCharts:
         columns_to_be_plotted = [[1, 1]]
         chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb
-        hover_label=['Word']
+        hover_label=['Words']
         inputFilename = outputFilenameCSV1
         Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='_bar_chart',

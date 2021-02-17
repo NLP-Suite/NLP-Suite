@@ -13,7 +13,7 @@ import tkinter.messagebox as mb
 
 import GUI_IO_util
 import IO_files_util
-import IO_user_interface_util
+import file_finder_byWord_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -31,33 +31,8 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
         return
 
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', "Started running the file search script at", True)
+    file_finder_byWord_util.run(inputFilename, input_main_dir_path, output_dir_path, search_by_dictionary_var, search_by_keyword_var, keyword_value_var, lemmatize_var)
 
-
-    if input_main_dir_path=='' and inputFilename!='':
-        inputDir=os.path.dirname(inputFilename)
-        files=[inputFilename]
-    elif input_main_dir_path!='':
-        inputDir=input_main_dir_path
-        files= IO_files_util.getFileList(inputFilename, inputDir, 'txt')
-    if len(files) == 0:
-        return
-
-    #print("files",files)
-    for file in files:
-        #print("file",file)
-        if search_by_dictionary_var:
-            break
-        if search_by_keyword_var:
-            output_dir_path = inputDir + os.sep + "search_result_csv"
-            if not os.path.exists(output_dir_path):
-                os.mkdir(output_dir_path)
-            if file[-4:]=='.txt':
-                import file_finder_byWord_util
-                file_finder_byWord_util.run(file, output_dir_path, keyword_value_var, lemmatize_var)
-                    
-            
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end", "Finished running the file search script at", True)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -127,7 +102,8 @@ dictionary_button=tk.Button(window, width=20, text='Select dictionary file',comm
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20, y_multiplier_integer,dictionary_button,True)
 
 def get_dictionary_file(window,title,fileType):
-	filePath = tk.filedialog.askopenfilename(title = title, initialdir = os.getcwd(), filetypes = fileType)
+	initialFolder == os.path.dirname(os.path.abspath(__file__))
+	filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
 	if len(filePath)>0:
 		#always disabled; user cannot tinker with the selection
 		#selectedCsvFile.config(state='disabled')

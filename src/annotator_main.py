@@ -761,7 +761,8 @@ di_activateCsvFieldValue()
 
 def get_dictionary_file(window,title,fileType):
 	#annotator_dictionary_var.set('')
-	filePath = tk.filedialog.askopenfilename(title = title, initialdir = os.getcwd(), filetypes = fileType)
+	initialFolder == os.path.dirname(os.path.abspath(__file__))
+	filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
 	if len(filePath)>0:
 		annotator_dictionary_file.config(state='normal')
 		annotator_dictionary_file_var.set(filePath)

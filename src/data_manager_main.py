@@ -302,7 +302,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.entry_box_x_coordinat
 
 def get_additional_csvFile(window, title, fileType):
     import os
-    filePath = tk.filedialog.askopenfilename(title=title, initialdir=os.getcwd(), filetypes=fileType)
+    initialFolder == os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title=title, initialdir=initialFolder, filetypes=fileType)
     if len(filePath) > 0:
         select_csv_field_merge_var.set('')
         select_csv_field_concatenate_var.set('')

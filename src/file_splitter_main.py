@@ -257,7 +257,6 @@ y_multiplier_integer = y_multiplier_integer + 1
 
 def getTOCFile():
     if TOC_var.get() == True:
-        # filePath = tk.filedialog.askopenfilename(title = 'Select INPUT txt file', initialdir = os.getcwd(), filetypes = [("txt files", "*.txt")])
         filePath = tk.filedialog.askopenfilename(title='Select INPUT txt file', initialdir=GUI_util.inputFilename.get(),
                                                  filetypes=[("txt files", "*.txt")])
         if len(filePath) > 0:

@@ -416,7 +416,8 @@ def exit_window():
 
 def select_conll_input_dir():
     global inputCoNLLtable
-    in_file_path = filedialog.askopenfilename(initialdir = os.getcwd(), title='Select INPUT MERGED CoNLL table (.conll extension for old CoreNLP; .csv for new CoreNLP); switch extension type below near File name:',filetypes = (("csv files","*.csv"),("CoNLL tables","*.conll")))
+    initialFolder == os.path.dirname(os.path.abspath(__file__))
+    in_file_path = filedialog.askopenfilename(initialdir = initialFolder, title='Select INPUT MERGED CoNLL table (.conll extension for old CoreNLP; .csv for new CoreNLP); switch extension type below near File name:',filetypes = (("csv files","*.csv"),("CoNLL tables","*.conll")))
     if len(in_file_path)<4:
         CoNLL_input_file_path.set("")
     else:
@@ -429,7 +430,8 @@ def select_conll_input_dir():
 #where the new KWIC table will be saved
 def select_KWIC_output_dir():
     global KWIC_create_output_filename
-    out_file = filedialog.asksaveasfilename(initialdir = os.getcwd(), initialfile=IO_files_util.generate_output_file_name(inputCoNLLtable, KWIC_create_output_filename, '.csv', 'KWIC', 'Table'), title='Save output KWIC csv file', filetypes = (("csv", "*.csv"), ("all files", "*.*")))
+    initialFolder == os.path.dirname(os.path.abspath(__file__))
+    out_file = filedialog.asksaveasfilename(initialdir = initialFolder, initialfile=IO_files_util.generate_output_file_name(inputCoNLLtable, KWIC_create_output_filename, '.csv', 'KWIC', 'Table'), title='Save output KWIC csv file', filetypes = (("csv", "*.csv"), ("all files", "*.*")))
     if len(out_file)<4:
     	KWIC_create_output_file_path.set("")
     else:
@@ -439,7 +441,8 @@ def select_KWIC_output_dir():
 
 def select_existing_KWIC():
     global inputKWICfile
-    in_file_path = filedialog.askopenfilename(initialdir = os.getcwd(), title='Select input KWIC csv file',filetypes = (("csv","*.csv"),("all files","*.*")))
+    initialFolder == os.path.dirname(os.path.abspath(__file__))
+    in_file_path = filedialog.askopenfilename(initialdir =initialFolder, title='Select input KWIC csv file',filetypes = (("csv","*.csv"),("all files","*.*")))
     if len(in_file_path)<4:
     	KWIC_input_file_path.set("")
     else:
@@ -455,7 +458,8 @@ def select_existing_KWIC():
 
 def select_KWIC_Search_Output_dir():
     global KWIC_search_output_filename
-    out_file= filedialog.asksaveasfilename(initialdir = os.getcwd(), initialfile=IO_files_util.generate_output_file_name(inputKWICfile, KWIC_search_output_filename, '.csv', 'KWIC', 'Search'), title='Save output KWIC search csv file', filetypes = (("csv", "*.csv"), ("all files", "*.*")))
+    initialFolder == os.path.dirname(os.path.abspath(__file__))
+    out_file= filedialog.asksaveasfilename(initialdir = initialFolder, initialfile=IO_files_util.generate_output_file_name(inputKWICfile, KWIC_search_output_filename, '.csv', 'KWIC', 'Search'), title='Save output KWIC search csv file', filetypes = (("csv", "*.csv"), ("all files", "*.*")))
     if len(out_file)<4:
         KWIC_search_output_file_path.set("")
     else:

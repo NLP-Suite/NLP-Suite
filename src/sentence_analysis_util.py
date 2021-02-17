@@ -41,7 +41,8 @@ def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,creat
     # when running the function w/o a GUI, as currently is mostly the case,
     #   we would not be able to pass a dictionary file to the function
     if input_dictionary_file=='':
-        input_dictionary_file = tk.filedialog.askopenfilename(title = "Select dictionary csv file", initialdir = os.getcwd(), filetypes = [("csv files", "*.csv")])
+        initialFolder == os.path.dirname(os.path.abspath(__file__))
+        input_dictionary_file = tk.filedialog.askopenfilename(title = "Select dictionary csv file", initialdir = initialFolder, filetypes = [("csv files", "*.csv")])
         if len(input_dictionary_file)==0:
             return
 

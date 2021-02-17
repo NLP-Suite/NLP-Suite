@@ -202,6 +202,18 @@ def get_dataRange(columns_to_be_plotted, data):
 #
 #     CALLED compute_column_frequencies(columns_to_be_plotted, data_list, headers,specific_column_value_list=[]):
 
+
+# -----------------------------------------------------------------
+# MUST COMPUTTE HOVER OVER VALUES!!! see below
+
+# create a list of unique words to be displayed in hover over
+# result = IO_files_util.openCSVFile(outputFilenameCSV1, 'r', 'utf-8')
+# DataCaptured = csv.reader(result)
+# words = set()
+# for row in DataCaptured:
+#     words.add(row[0])
+
+
 def get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,specific_column_value_list,data_list):
     data_to_be_plotted=[]
     # data_to_be_plotted = compute_column_frequencies_4Excel(columns_to_be_plotted, dataRange, headers, column_yAxis_field_list)

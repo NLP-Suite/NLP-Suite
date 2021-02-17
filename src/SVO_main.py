@@ -623,11 +623,11 @@ config_option=[0,6,1,0,0,1]
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
 # location of this src python file
-scriptPath = os.getcwd()
+scriptPath = GUI_IO_util.scriptPath
 #one folder UP, the NLP folder
-NLPPath=os.path.normpath(os.getcwd() + os.sep + os.pardir)
+NLPPath=GUI_IO_util.NLPPath
 #subdirectory of script directory where config files are saved
-libPath = os.path.join(NLPPath,'lib'+os.sep+'wordLists')
+libPath = GUI_IO_util.libPath +os.sep+'wordLists'
 
 # GUI CHANGES add following lines to every special GUI
 # +3 is the number of lines starting at 1 of IO widgets
@@ -740,7 +740,8 @@ SVO_extractor_var.trace('w',activateFilters)
 def getDictFile(checkbox_var,dict_var,checkbox_value,dictFile):
     filePath=''
     if checkbox_value==1:
-        filePath = tk.filedialog.askopenfilename(title = 'Select INPUT csv ' + dictFile + ' dictionary filter file', initialdir = os.getcwd(), filetypes = [("csv files", "*.csv")])
+        initialFolder == os.path.dirname(os.path.abspath(__file__))
+        filePath = tk.filedialog.askopenfilename(title = 'Select INPUT csv ' + dictFile + ' dictionary filter file', initialdir = initialFolder, filetypes = [("csv files", "*.csv")])
         if len(filePath)==0:
             checkbox_var.set(0)
     dict_var.set(filePath)
