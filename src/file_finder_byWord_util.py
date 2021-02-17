@@ -21,7 +21,7 @@ from nltk.data import load
 # from nltk import tokenize
 from nltk.tokenize import sent_tokenize, word_tokenize
 
-from nltk.corpus import wordnet#lemmatization
+from nltk.corpus import wordnet #lemmatization
 #https://wordnet.princeton.edu/documentation/morphy7wn
 #https://stackoverflow.com/questions/31016540/lemmatize-plural-nouns-using-nltk-and-wordnet
 

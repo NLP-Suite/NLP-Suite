@@ -163,9 +163,9 @@ def writeOutput(inputPath, input_filename, outputPath, output_filename, fieldnam
     if not os.path.isdir(os.path.join(inputPath, input_filename)):
         with open(outputPath + os.sep + output_filename, 'a', errors='ignore', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames)
-            printLine = {'File_Name': input_filename, 'Path_To_File': IO_csv_util.dressFilenameForCSVHyperlink(inputPath),
-                         'File_Name_With_Path': IO_csv_util.dressFilenameForCSVHyperlink(
-                             inputPath + os.sep + input_filename)}
+            head, tail = os.path.split(input_filename)
+            printLine = {'File_Name': tail, 'Path_To_File': IO_csv_util.dressFilenameForCSVHyperlink(inputPath),
+                         'File_Name_With_Path': IO_csv_util.dressFilenameForCSVHyperlink(input_filename)}
             if by_creation_date_var == 1:
                 printLine['Creation_date'] = creation_date
                 printLine['Modification_date'] = modification_date

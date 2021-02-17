@@ -147,7 +147,7 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
         for doc in inputDocs:
             print("\nProcessing file " + str(documentID) + "/" + str(Ndocs) + " " + doc)
             documentID += 1
-            with open(doc) as fp:
+            with open(doc, encoding='utf-8', errors='ignore') as fp:
                 lineID = 0
                 line = fp.readline()
                 while line:
