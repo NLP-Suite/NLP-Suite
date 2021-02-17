@@ -103,7 +103,7 @@ def CoreNLP_annotate(inputFilename,
     output_format_option = {
         'POS':[['Verbs'],['Nouns']],
         'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document'],
-        # TODO NER with date for dynamic GIS
+        # TODO NER with date for dynamic GIS; modified below
         # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
         'sentiment': ['Document ID', 'Document','Sentence ID', 'Sentence', 'Sentiment number', 'Sentiment label'],
         'quote': ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of Quotes'],
@@ -221,22 +221,20 @@ def CoreNLP_annotate(inputFilename,
                     outputFilename_tag=ner.replace('COUNTRY_STATE_OR_PROVINCE_CITY','LOCATIONS')
                 elif len(ner)>10: # if all NER tags have been selected the filename would become way too long!
                     outputFilename_tag='tags'
+
                 outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
                                                                                  'CoreNLP_NER_'+outputFilename_tag)
             else:
                 outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
                                                                              'CoreNLP_'+annotator_chosen)
             filesToOpen.append(outputFilename)
-            if output_format != 'text':
+            if output_format != 'text': # output is csv file
+                if extract_date_from_text_var or extract_date_from_filename_var:
+                    output_format=['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document','Date']
+                # if NER_sentence_var == 1:
+                #     df = Excel_util.add_missing_IDs(df)
                 df = pd.DataFrame(run_output, columns=output_format)
                 df.to_csv(outputFilename, index=False)
-        # # TODO date & by sentence index; code from the old Stanford_CoreNLP_NER_main
-        # if extract_date_from_text_var or extract_date_from_filename_var:
-        #     df = pd.DataFrame(data, columns=['Word', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date'])
-        # else:
-        #     df = pd.DataFrame(data, columns=['Word', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
-        # if NER_sentence_var == 1:
-        #     df = Excel_util.add_missing_IDs(df)
 
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
@@ -371,13 +369,14 @@ def date_get_info(norm_date):
         tense = "OTHER"
     return tense
 
-# TODO please fix the documentID value in csv output
+# TODO fix the documentID value in csv output
 def process_json_ner(documentID, document, json, **kwargs):
     print("   Processing Json output file for NER annotator")
     # establish the kwarg local vars
-    dateExtractedFromFileContent = False
+    global extract_date_from_text_var, extract_date_from_filename_var
+    extract_date_from_text_var = False
+    extract_date_from_filename_var = False
     request_NER = []
-    filename_embeds_date_var = False
     date_format = ''
     date_separator_var = ''
     date_position_var = 0
@@ -386,12 +385,12 @@ def process_json_ner(documentID, document, json, **kwargs):
     for key, value in kwargs.items():
         if key == 'extract_date_from_text_var' and value == True:
             # TODO when saving the data, we need to use an NER output_format with an extra 'Date' column for dynamic GIS
-            dateExtractedFromFileContent = True
+            extract_date_from_text_var = True
         if key == 'NERs':
             request_NER = value
         if key == 'extract_date_from_filename_var' and value == True:
             # TODO when saving the data, we need to use an NER output_format with an extra 'Date' column for dynamic GIS
-            filename_embeds_date_var = True
+            extract_date_from_filename_var = True
         if key == 'date_format':
             date_format = value
         if key == 'date_separator_var':
@@ -400,7 +399,7 @@ def process_json_ner(documentID, document, json, **kwargs):
             date_position_var = value
     NER = []
     # get date string of this sub file
-    if filename_embeds_date_var:
+    if extract_date_from_filename_var:
         date, date_str = IO_files_util.getDateFromFileName(document, date_separator_var, date_position_var,
                                                            date_format)
 
@@ -421,11 +420,11 @@ def process_json_ner(documentID, document, json, **kwargs):
                     IO_csv_util.dressFilenameForCSVHyperlink(document)]
             # check in NER value column
             if temp[1] in request_NER:
-                if filename_embeds_date_var:
+                if extract_date_from_filename_var:
                     temp.append(date_str)
                     NER.append(temp)
                 else:
-                    if dateExtractedFromFileContent:
+                    if extract_date_from_text_var:
                         # annotated is a string in json format, we can retrieve normalizedNER from it
                         try:
                             # Attempt to pull out normalizedNER
