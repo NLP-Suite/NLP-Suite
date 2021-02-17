@@ -1,0 +1,1 @@
+start /wait "" Anaconda3-Windows-x86_64.exe /InstallationType=JustMe /AddToPath=1 /S /D=%UserProfile%\Anaconda

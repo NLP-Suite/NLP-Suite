@@ -1,0 +1,1 @@
+start cmd.exe @cmd /k "conda activate NLP && cd %~dp0/src"
