@@ -103,12 +103,12 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
             defaultSize = 7000
             minsize=4000
             maxsize=30000
-            message='Windows/DBpedia can process files of size smaller than the Windows command line. In Windows, 32767 seems to be the command line size but ' + str(defaultSize) + ' sometimes fails. ' + adjust
+            message = 'Windows/DBpedia can process files of size smaller than the Windows command line. In Windows, 32767 seems to be the command line size but ' + str(defaultSize) + ' sometimes fails. ' + adjust
         else:
-            defaultSize = 30000
-            minsize = 20000
-            maxsize=100000
-            message='Mac/DBpedia set a limit to the file size that it can process.' + adjust
+            defaultSize = 3000
+            minsize = 3000
+            maxsize = 100000
+            message = 'Mac/DBpedia set a limit to the file size that it can process.' + adjust
         contents = open(file, 'r', encoding='utf-8',errors='ignore').read()
         if len(contents)>defaultSize:
             splitFileValue=GUI_IO_util.slider_widget(GUI_util.window,message, minsize, maxsize, defaultSize)
