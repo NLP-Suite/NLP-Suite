@@ -50,8 +50,8 @@ msg_multipleDocsCoNLL="\n\nFOR CONLL FILES THAT INCLUDE MULTIPLE DOCUMENTS, THE 
 #global TIPSPath
 #subdirectory of script directory where reminders file is saved
 
-scriptPath = os.getcwd()
-NLPPath=os.path.normpath(os.getcwd() + os.sep + os.pardir)
+scriptPath = os.path.dirname(os.path.abspath(__file__))
+NLPPath=os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + os.sep + os.pardir)
 configPath = os.path.join(NLPPath,'config')
 libPath = os.path.join(NLPPath,'lib')
 image_libPath = os.path.join(NLPPath,'lib'+os.sep+'images')
