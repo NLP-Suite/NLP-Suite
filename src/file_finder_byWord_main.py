@@ -102,7 +102,7 @@ dictionary_button=tk.Button(window, width=20, text='Select dictionary file',comm
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20, y_multiplier_integer,dictionary_button,True)
 
 def get_dictionary_file(window,title,fileType):
-	initialFolder == os.path.dirname(os.path.abspath(__file__))
+	initialFolder = os.path.dirname(os.path.abspath(__file__))
 	filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
 	if len(filePath)>0:
 		#always disabled; user cannot tinker with the selection

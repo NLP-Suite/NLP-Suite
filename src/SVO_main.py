@@ -740,7 +740,7 @@ SVO_extractor_var.trace('w',activateFilters)
 def getDictFile(checkbox_var,dict_var,checkbox_value,dictFile):
     filePath=''
     if checkbox_value==1:
-        initialFolder == os.path.dirname(os.path.abspath(__file__))
+        initialFolder = os.path.dirname(os.path.abspath(__file__))
         filePath = tk.filedialog.askopenfilename(title = 'Select INPUT csv ' + dictFile + ' dictionary filter file', initialdir = initialFolder, filetypes = [("csv files", "*.csv")])
         if len(filePath)==0:
             checkbox_var.set(0)

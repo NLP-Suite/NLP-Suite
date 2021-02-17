@@ -118,7 +118,7 @@ window.bind("<Escape>", clear)
 
 def get_additional_csvFile(window,title,fileType):
 	import os
-	initialFolder == os.path.dirname(os.path.abspath(__file__))
+	initialFolder = os.path.dirname(os.path.abspath(__file__))
 	filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
 	if len(filePath)>0:
 		selectedCsvFile.config(state='normal')

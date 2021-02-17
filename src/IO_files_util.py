@@ -124,7 +124,7 @@ def selectFile(window, IsInputFile, checkCoNLL, changeVar, changeVar1, title, fi
 			   initialFolder=''):
 	filePath = ""
 	if initialFolder == '':
-		initialFolder == os.path.dirname(os.path.abspath(__file__))
+		initialFolder = os.path.dirname(os.path.abspath(__file__))
 	if IsInputFile == True:  # as opposed to output file
 		# when the file string is blank, the directory option should always also be available
 		filePath = tk.filedialog.askopenfilename(initialdir=initialFolder, title=title, filetypes=fileType)
@@ -153,7 +153,7 @@ def selectFile(window, IsInputFile, checkCoNLL, changeVar, changeVar1, title, fi
 
 def selectDirectory(window, changeVar, changeVar1, title, initialFolder=''):
 	if initialFolder == '':
-		initialFolder == os.path.dirname(os.path.abspath(__file__))
+		initialFolder = os.path.dirname(os.path.abspath(__file__))
 	path = tk.filedialog.askdirectory(initialdir=initialFolder, title=title)
 	# when the directory string is blank, the file option should always also be available
 	if len(path) < 3:

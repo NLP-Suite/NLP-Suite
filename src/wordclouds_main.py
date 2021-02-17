@@ -174,7 +174,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 def get_image(window,title,fileType):
     import os
     selectedImage_var.set('')
-    initialFolder == os.path.dirname(os.path.abspath(__file__))
+    initialFolder = os.path.dirname(os.path.abspath(__file__))
     filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
     if len(filePath)>0:
         selectedImage.config(state='normal')
