@@ -1,5 +1,4 @@
-cd "$(dirname "$0")"
-source $HOME/anaconda/bin/activate
+cd "$(dirname "$0")/.."
 
 if ! command -v git &> /dev/null
 then

@@ -4,10 +4,10 @@ conda create -y -n NLP python=3.9
 conda activate NLP
 
 conda install -y -c conda-forge scikit-learn
-pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r ../requirements.txt
 
 conda activate NLP
-python download_nltk.py
+python ../src/download_nltk.py
 
 conda activate NLP
 python -m spacy download en
