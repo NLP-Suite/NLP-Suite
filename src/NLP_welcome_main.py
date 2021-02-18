@@ -155,6 +155,7 @@ def display_buttons():
                             command=lambda: GUI_IO_util.cite_NLP(window))
     cite_button.grid(row=5, column=4, columnspan=2, pady=10, padx=10, sticky=tk.W)
 
+
 def display_enter_button():
     # display Enter NLP button
     enter_button = tk.Button(window, text='Enter NLP Suite', width=20, height=2, foreground="red",
@@ -170,6 +171,7 @@ def display_enter_button():
                              text='Emory University',
                              foreground="black", font=("Arial", 12,"italic"))
     emory.grid(row=9, column=0, columnspan=3, sticky=(tk.N,tk.W),padx=30)
+
 
 def update_images():
     img = next(photos1)
