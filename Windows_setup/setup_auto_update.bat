@@ -1,1 +1,1 @@
-cd %~dp0/../ && git init . && git remote add -t \* -f origin https://github.com/NLP-Suite/NLP-Suite.git && git checkout -f current
+cd %~dp0/../ && git init . && git remote add -t \* -f origin https://github.com/NLP-Suite/NLP-Suite.git && git checkout -f current && git add -A . && git stash
