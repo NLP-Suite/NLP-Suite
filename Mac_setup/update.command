@@ -8,4 +8,4 @@ then
     brew install git
 fi
 
-git pull origin
+git pull -f origin
