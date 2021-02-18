@@ -2,11 +2,11 @@
 
 ![logo](https://github.com/NLP-Suite/NLP-Suite/blob/current/lib/images/logo.png)
 
-NLP Suite is a tool that allows users of all experiences to perform natural language processing analysis. MORE DETAILED INTRO
+NLP Suite is a tool that allows users of all experiences to perform natural language processing analysis. MORE DETAILED INTRO - coming soon..
 
 ## Installation Intructions
 
-To install NLP Suite, you will need to 
+To install NLP Suite, you will need to - coming soon..
 
 ## Supported Systems
 
