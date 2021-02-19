@@ -152,7 +152,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_v
         return
     # set up the double list conll from the conll data
     try:
-        connl = connl[['Form','Lemma','Postag','SentenceID','DocumentID','Document']]
+        connl = connl[['Form','Lemma','POStag','Sentence ID','Document ID','Document']]
     except:
         mb.showwarning("Warning",
                        "The file \n\n" + ConnlTable + "\n\ndoes not appear to be a CoNLL table with expected column names: Form,Lemma,Postag, SentenceID, DocumentID, Document.\n\nPlease, select the right input file and try again.")
@@ -166,9 +166,9 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_v
     # the CoNLL table value is not found in the dictionary Word value
     connl.fillna('Not in INPUT dictionary for ' + noun_verb, inplace = True)
     # add the WordNet category to the conll list
-    connl = connl[['Form','Lemma','Postag','Category','SentenceID','DocumentID','Document']]
+    connl = connl[['Form','Lemma','POStag','Category','Sentence ID','Document ID','Document']]
     # put headers on conll list
-    connl.columns = ['Form','Lemma','Postag','Category','SentenceID','DocumentID','Document']
+    connl.columns = ['Form','Lemma','POStag','Category','Sentence ID','Document ID','Document']
 
     Row_list = []
     # Iterate over each row
@@ -185,7 +185,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_v
             if index < len(Row_list)-1 and Row_list[index+1][4] - Row_list[index][4] > 1:
                 for i in range(Row_list[index+1][4]-1,Row_list[index][4],-1):
                     Row_list.insert(index+1,['','','','',i,Row_list[index][5],Row_list[index][6]])
-    df = pd.DataFrame(Row_list,index=['Form','Lemma','Postag','WordNet Category','SentenceID','DocumentID','Document'])
+    df = pd.DataFrame(Row_list,index=['Form','Lemma','POStag','WordNet Category','Sentence ID','Document ID','Document'])
     df = Excel_util.add_missing_IDs(df)
     df.to_csv(outputFilename,index=False)
 
@@ -197,7 +197,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_v
                                                  openOutputFiles,
                                                  createExcelCharts,
                                                  [[4,5]],
-                                                 ['WordNet Category'],['Form'], ['DocumentID','SentenceID','Document'],
+                                                 ['WordNet Category'],['Form'], ['Document ID','Sentence ID','Document'],
                                                 )
         if len(outputFiles) > 0:
             filesToOpen.extend(outputFiles)
