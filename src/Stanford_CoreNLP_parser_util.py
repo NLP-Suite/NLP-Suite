@@ -42,7 +42,7 @@ def prepare_text(filename_path):
 
 # dateInclude indicates whether there is date embedded in the file name. 
 # 1: included 0: not included
-def run(inputFilename, inputPath, outputPath, parser_menu_var, openOutputFiles, createExcelCharts, memory_var, compute_sentence, dateInclude, sep = "_", date_field_position = 3, dateFormat = "mm-dd-yyyy"):
+def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, createExcelCharts, memory_var, compute_sentence, dateInclude, sep = "_", date_field_position = 3, dateFormat = "mm-dd-yyyy"):
     # collecting all files that needs to be processed
     # when processing a directory as input
     #   Document is the directory name
@@ -58,14 +58,14 @@ def run(inputFilename, inputPath, outputPath, parser_menu_var, openOutputFiles, 
     if errorFound:
         return filesToOpen
 
-    if len(inputPath) != 0:
-        inputDocs = [os.path.join(inputPath, f) for f in os.listdir(inputPath) if f[:2] != '~$' and f[-4:] == '.txt']
+    if len(inputDir) != 0:
+        inputDocs = [os.path.join(inputDir, f) for f in os.listdir(inputDir) if f[:2] != '~$' and f[-4:] == '.txt']
         if len(inputDocs) == 0:
             mb.showwarning("Warning", "There are no txt files in the input directory.\n\nPlease, select a different directory and try again.\n\nThe program will exit.")
             print("There are no txt files in the input directory. The program will exit.")
             return
         # head contains the path only
-        head, Document = os.path.split(inputPath)
+        head, Document = os.path.split(inputDir)
     else:
         inputDocs = [inputFilename]
         # head contains the path only
@@ -84,21 +84,21 @@ def run(inputFilename, inputPath, outputPath, parser_menu_var, openOutputFiles, 
     # wait for subprocess
     time.sleep(5)
     nlpObject = StanfordCoreNLP('http://localhost:9000')
-    # nlpProps = {'annotators': 'tokenize,ssplit,pos,lemma,ner,parse,regexner,NormalizedNamedEntityTagAnnotation','outputFormat': 'json', 'outputDirectory': outputPath, 'replaceExtension': True}
+    # nlpProps = {'annotators': 'tokenize,ssplit,pos,lemma,ner,parse,regexner,NormalizedNamedEntityTagAnnotation','outputFormat': 'json', 'outputDirectory': outputDir, 'replaceExtension': True}
     if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
-        nlpProps = {'annotators': 'tokenize,ssplit,pos,lemma,ner, parse,regexner,', 'parse.model': 'edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz','outputFormat': 'json', 'outputDirectory': outputPath, 'replaceExtension': True}
+        nlpProps = {'annotators': 'tokenize,ssplit,pos,lemma,ner, parse,regexner,', 'parse.model': 'edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz','outputFormat': 'json', 'outputDirectory': outputDir, 'replaceExtension': True}
     elif parser_menu_var == 'Neural Network':
-        nlpProps = {'annotators': 'tokenize,ssplit,pos,lemma,ner, depparse,regexner,', 'parse.model': 'edu/stanford/nlp/models/parser/nndep/english_UD.gz','outputFormat': 'json', 'outputDirectory': outputPath, 'replaceExtension': True}
-    outputCoNLLfilePath = os.path.join(outputPath,
-                                       IO_files_util.generate_output_file_name(Document, '', outputPath, '.csv', 'CoreNLP', 'CoNLL'))
+        nlpProps = {'annotators': 'tokenize,ssplit,pos,lemma,ner, depparse,regexner,', 'parse.model': 'edu/stanford/nlp/models/parser/nndep/english_UD.gz','outputFormat': 'json', 'outputDirectory': outputDir, 'replaceExtension': True}
+    outputCoNLLfilePath = os.path.join(outputDir,
+                                       IO_files_util.generate_output_file_name(Document, '', outputDir, '.csv', 'CoreNLP', 'CoNLL'))
     
     with open(outputCoNLLfilePath, "w",newline = "", encoding='utf-8',errors='ignore') as csvFile:
         writer = csv.writer(csvFile)
         if dateInclude == 0:
-            writer.writerow(["ID", "Form", "Lemma", "Postag", "NER", "Head", "Deprel", "Clausal Tag", "Record ID", "Sentence ID", "Document ID", "Document"])
+            writer.writerow(["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clausal Tag", "Record ID", "Sentence ID", "Document ID", "Document"])
         else:
             writer.writerow(
-                ["ID", "Form", "Lemma", "Postag", "NER", "Head", "Deprel", "Clausal Tag", "Record ID", "Sentence ID",
+                ["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clausal Tag", "Record ID", "Sentence ID",
                  "Document ID", "Document", "Date"])
     recordID = 1
     DocumentID = 1
@@ -107,6 +107,7 @@ def run(inputFilename, inputPath, outputPath, parser_menu_var, openOutputFiles, 
         # split_file is the same as file if file is shorter than 90,000 characters
         split_file = prepare_text(file)
         sentenceID = 1
+        filesError=[]
         if dateInclude == 1:
         	date, dateStr = IO_files_util.getDateFromFileName(file, sep, date_field_position, dateFormat)
         for doc in split_file:
@@ -117,28 +118,21 @@ def run(inputFilename, inputPath, outputPath, parser_menu_var, openOutputFiles, 
             fullText = f.read()
             f.close()
             nlpObject = StanfordCoreNLP('http://localhost:9000')
-            output = nlpObject.annotate(fullText, nlpProps)
-            if isinstance(output, str):
-                msg="Stanford CoreNLP failed to process your document\n\n" + tail + "\n\nPlease, CHECK CAREFULLY THE REASONS FOR FAILURE REPORTED BY STANFORD CORENLP IN COMMAND LINE, MOST LIKELY IN RED. If necessary, then edit the file leading to errors if necessary.\n\n"
-                msgPrint = "Stanford CoreNLP failed to process your document " + tail
-                if nDocs>1:
-                    msg=msg+"Processing will continue with the next file."
-                    msgPrint += " Processing will continue with the next file."
-                mb.showwarning("Stanford CoreNLP Error", msg)
-                print("\n\n"+msgPrint)
-                continue # process next document
+            CoreNLP_output = nlpObject.annotate(fullText, nlpProps)
+            # the output is dict???
+            errorFound, filesError, parsedjson = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, False, nDocs, filesError)
+            if errorFound: continue # process next document
             if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
-                # print("IN CORENLP parser util output['sentences']",output['sentences'])
                 sent_list_clause = [Stanford_CoreNLP_clausal_util.clausal_info_extract_from_string(parsed_sent['parse'])
-                        for parsed_sent in output['sentences']]
+                        for parsed_sent in CoreNLP_output['sentences']]
             with open(outputCoNLLfilePath, "a",newline = "", encoding='utf-8',errors='ignore') as csvFile:
                 writer = csv.writer(csvFile)
-                for i in range(len(output["sentences"])):
+                for i in range(len(CoreNLP_output["sentences"])):
                     if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
                         cur_clause = sent_list_clause[i]
                     clauseID = 0
-                    tokens = output["sentences"][i]["tokens"]
-                    dependencies = output["sentences"][i]["enhancedDependencies"]
+                    tokens = CoreNLP_output["sentences"][i]["tokens"]
+                    dependencies = CoreNLP_output["sentences"][i]["enhancedDependencies"]
                     depLib = {}
                     keys = []
                     for item in dependencies:
@@ -180,16 +174,24 @@ def run(inputFilename, inputPath, outputPath, parser_menu_var, openOutputFiles, 
         DocumentID += 1
 
     csvFile.close()
-    print ("\nCoNLL table output written to: ", outputCoNLLfilePath)
     p.kill()  #close the Stanford server
+    if len(filesError)>0:
+        mb.showwarning("Stanford CoreNLP Error", 'Stanford CoreNLP parser has found '+str(len(filesError))+' files that could not be processed by Stanford CoreNLP.\n\nPlease, read the error output file carefully to see the errors generated by CoreNLP.')
+        errorFile = os.path.join(outputDir,
+                                           IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                                   'CoreNLP', 'file_ERRORS'))
+        IO_csv_util.list_to_csv(GUI_util.window, filesError, errorFile)
+        filesToOpen.append(errorFile)
+
+    print ("\nCoNLL table output written to: ", outputCoNLLfilePath)
 
     filesToOpen.append(outputCoNLLfilePath) 
 
     if compute_sentence:
-        sentence_table=IO_CoNLL_util.compute_sentence_table(outputCoNLLfilePath,outputPath)
+        sentence_table=IO_CoNLL_util.compute_sentence_table(outputCoNLLfilePath,outputDir)
         filesToOpen.append(sentence_table) 
 
-    if len(inputPath) != 0:
+    if len(inputDir) != 0:
         mb.showwarning(title='Warning', message='The output filename generated by Stanford CoreNLP is the name of the directory processed in input, rather than any individual file in the directory. The output CoNLL table includes all ' + str(DocumentID-1) + ' files in the input directory processed by CoreNLP.\n\nThe different files are listed in the output csv file under the headers \'Document ID\' and \'Document\'.')
 
     if openOutputFiles==True:

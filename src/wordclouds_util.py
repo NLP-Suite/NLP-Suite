@@ -241,7 +241,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, differen
             if doc[-4:]=='.csv':#processing CoNLL table that contains pos values
                 try: 
                     df = pd.read_csv(doc)
-                    postags_ = df['Postag']
+                    postags_ = df['POStag']
                     forms_ = df['Form']
                     #text: summing tokens in each line together
                     currenttext = (" ").join(forms_)
