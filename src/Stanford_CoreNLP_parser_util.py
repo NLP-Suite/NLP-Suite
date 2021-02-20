@@ -119,7 +119,6 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
             f.close()
             nlpObject = StanfordCoreNLP('http://localhost:9000')
             CoreNLP_output = nlpObject.annotate(fullText, nlpProps)
-            # the output is dict???
             errorFound, filesError, parsedjson = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, False, nDocs, filesError)
             if errorFound: continue # process next document
             if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
