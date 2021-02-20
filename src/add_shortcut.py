@@ -74,7 +74,7 @@ def prepend_env_pathext(values):
 
 if __name__ == '__main__':
     prepend_env('Path', [
-        os.path.dirname(os.path.abspath(__file__))
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.sep, os.path.pardir)
     ])
 
     # allow running of these filetypes without having to type the extension
