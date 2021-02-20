@@ -22,7 +22,7 @@ annotator-gender,Time to download new US SS data,"It has been more than two year
 
 Check on the US Social Security website whether more current data are available at US Social Security website
 
-https://www.ssa.gov/oact/babynames/limits.html",Yes,Yes
+https://www.ssa.gov/oact/babynames/limits.html",Yes,No
 sentence-analysis,GUI front end,"The script GUI is a convenient front end that displays all the options available for the GUI 
 
 No Input/Output options are displayed in this GUI since any selected option, when RUN, will open a specialized GUI with its own Input/Output requirements.",No,Yes
