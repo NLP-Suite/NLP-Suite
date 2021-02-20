@@ -18,6 +18,8 @@ import GUI_IO_util
 import IO_files_util
 import IO_csv_util
 import reminders_util
+import annotator_dictionary_util
+
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -32,8 +34,8 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
 		bold_DBpedia_YAGO_var,
 		annotator_dictionary_var, 
 		annotator_add_dictionary_var, 
-		dictionary_file, 
-		color_var, bold_var, 
+		dictionary_file,
+		color_var, bold_var,
 		csvValue_color_list, 
 		annotator_extractor,
 		CoreNLP_gender_annotator_var):
@@ -72,8 +74,8 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
 		tagAnnotations = ['<span style=\"color: ' + color_var + '; font-weight: bold\">','</span>']
 	else:
 		tagAnnotations = ['<span style=\"color: ' + color_var + '\">','</span>']
-	
-	if annotator_DBpedia_var==True: 
+
+	if annotator_DBpedia_var==True:
 		if IO_libraries_util.inputProgramFileCheck('annotator_DBpedia_util.py')==False:
 			return
 		import annotator_DBpedia_util
@@ -88,8 +90,8 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
 		#http://mappings.DBpedia.org/server/ontology/classes/
 		# def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes, color1, colorls):
 
-		if len(DBpedia_YAGO_color_list)==0: # no colors entered; use blue as default
-			DBpedia_YAGO_color_list=['', '|', 'blue', '|']
+		if len(DBpedia_YAGO_color_list) == 0:  # no colors entered; use blue as default
+			DBpedia_YAGO_color_list = ['', '|', 'blue', '|']
 		temp = [a for a in DBpedia_YAGO_color_list if a is not "|"]
 		colorls = []
 		for i in range(len(temp)):
@@ -103,7 +105,9 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
 	elif annotator_dictionary_var==True:
 		if IO_libraries_util.inputProgramFileCheck('annotator_dictionary_util.py')==False:
 			return
-		import annotator_dictionary_util
+		# if csvValue_color_list==[]:
+		# 	mb.showwarning(title='Warning', message='You have selected to annotate your corpus using dictionary entries, but you have not provided a color to be associated with the selected csv column.\n\nPlease, select a color from the dropdown menu and try again.')
+		# 	return
 		filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, output_dir_path, dictionary_file, csvValue_color_list, bold_var, tagAnnotations, '.txt')
 	elif annotator_add_dictionary_var==True:
 		if IO_libraries_util.inputProgramFileCheck('annotator_dictionary_util.py')==False:

@@ -166,15 +166,20 @@ def CoreNLP_annotate(inputFilename,
         run_output = []
         POS_WordNet=False
 
-    params = {'annotators':param_string}
-    if DoCleanXML:
-        params['annotators'] = params['annotators'] + ',cleanXML'
+    # params = {'annotators':param_string}
+    # if DoCleanXML:
+    #     params['annotators'] = params['annotators'] + ',cleanXML'
 
     p = subprocess.Popen(
         ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
          'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
     time.sleep(5)
-    nlp = StanfordCoreNLP('http://localhost:9000')
+
+    # TODO we need to specify the model and all the other variables like Cynthia does in the parser; I believe that quote and gender may be using neural network (please, check)
+    # if 'quote' not in param_string and 'gender' not in param_string:
+    #     nlp = {'annotators': param_string 'tokenize,ssplit,pos,lemma,ner, parse,regexner,', 'parse.model': 'edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz','outputFormat': 'json', 'outputDirectory': outputDir, 'replaceExtension': True}
+    # else: # 'Neural Network' approoach
+    #     nlp = {'annotators': 'tokenize,ssplit,pos,lemma,ner, depparse,regexner,', 'parse.model': 'edu/stanford/nlp/models/parser/nndep/english_UD.gz','outputFormat': 'json', 'outputDirectory': outputDir, 'replaceExtension': True}
 
     #annotating each input file
     docID=0
@@ -187,9 +192,10 @@ def CoreNLP_annotate(inputFilename,
         head, tail = os.path.split(doc)
         print("\nProcessing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
         text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
+        nlp = StanfordCoreNLP('http://localhost:9000')
         CoreNLP_output = nlp.annotate(text, properties=params)
-        errorFound, filesError, parsedjson = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, json,
-                                                                              nDocs, filesError)
+        errorFound, filesError, parsedjson = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc,
+                                                                              True, nDocs, filesError)
         if errorFound: continue  # process next document
 
         # routine_list contains all annotators
@@ -303,7 +309,6 @@ def CoreNLP_annotate(inputFilename,
         errorFile = os.path.join(outputDir,
                                            IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                                    'CoreNLP', 'file_ERRORS'))
-        errorFile.insert(0, 'Document ID', 'Document', 'Error')
         IO_csv_util.list_to_csv(GUI_util.window, filesError, errorFile)
         filesToOpen.append(errorFile)
 

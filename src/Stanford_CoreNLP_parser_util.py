@@ -119,8 +119,8 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
             f.close()
             nlpObject = StanfordCoreNLP('http://localhost:9000')
             CoreNLP_output = nlpObject.annotate(fullText, nlpProps)
-            json=False
-            errorFound, filesError, parsedjson = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc,json, nDocs, filesError)
+            # the output is dict???
+            errorFound, filesError, parsedjson = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, False, nDocs, filesError)
             if errorFound: continue # process next document
             if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
                 sent_list_clause = [Stanford_CoreNLP_clausal_util.clausal_info_extract_from_string(parsed_sent['parse'])
@@ -180,7 +180,6 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
         errorFile = os.path.join(outputDir,
                                            IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                                    'CoreNLP', 'file_ERRORS'))
-        errorFile.insert(0, 'Document ID', 'Document', 'Error')
         IO_csv_util.list_to_csv(GUI_util.window, filesError, errorFile)
         filesToOpen.append(errorFile)
 
