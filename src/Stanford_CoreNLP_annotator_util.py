@@ -166,9 +166,9 @@ def CoreNLP_annotate(inputFilename,
         run_output = []
         POS_WordNet=False
 
-    # params = {'annotators':param_string}
-    # if DoCleanXML:
-    #     params['annotators'] = params['annotators'] + ',cleanXML'
+    params = {'annotators':param_string}
+    if DoCleanXML:
+        params['annotators'] = params['annotators'] + ',cleanXML'
 
     p = subprocess.Popen(
         ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
