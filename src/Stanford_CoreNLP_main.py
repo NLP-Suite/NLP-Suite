@@ -22,8 +22,6 @@ import statistics_csv_util
 import Stanford_CoreNLP_annotator_util
 import annotator_dictionary_util
 import Stanford_CoreNLP_coreference_util
-
-
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 # https://stackoverflow.com/questions/45886128/unable-to-set-up-my-own-stanford-corenlp-server-with-error-could-not-delete-shu

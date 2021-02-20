@@ -30,7 +30,6 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
     createExcelCharts,
     script_to_run,
     IO_values):
-
     if script_to_run=='':
         mb.showwarning('No option selection','No option has been selected.\n\nPlease, select an option and try again.')
         return
