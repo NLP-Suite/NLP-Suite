@@ -68,9 +68,6 @@ def run(inputFilename,inputDir, outputDir,
     if corpus_statistics_var==True:
         if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py')==False:
             return
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
-                                           'Started running corpus statistics at', True,
-                                           'You can follow the script in command line.')
 
         lemmatize = False
         stopwords = False
@@ -87,9 +84,6 @@ def run(inputFilename,inputDir, outputDir,
                 filesToOpen.extend(output)
 
         if '*' in corpus_options_menu_var or 'lines' in corpus_options_menu_var:
-            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
-                                               'Started running line statistics at', True,
-                                               'You can follow the script in command line.')
             output = statistics_txt_util.read_line(window, '', inputDir, outputDir, False, createExcelCharts)
             if output!=None:
                 filesToOpen.extend(output)
@@ -124,10 +118,6 @@ def run(inputFilename,inputDir, outputDir,
                 output = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts, OptimizeInterval=True, numTopics=20)
                 if output != None:
                     filesToOpen.extend(output)
-
-            # if IO_libraries_util.inputProgramFileCheck('topic_modeling_Mallet_main.py')==False:
-            #     return
-            # call("python topic_modeling_mallet_main.py", shell=True)
 
     nouns_var=False
     verbs_var=False
@@ -164,9 +154,6 @@ def run(inputFilename,inputDir, outputDir,
             return
 
         if nouns_var or verbs_var:
-
-            # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
-            #                                    'Started running Stanford CoreNLP POS annotator at', True, 'You can follow the script in command line.')
 
             if nouns_var or verbs_var or what_else_menu_var == '*':
                 WordNetDir = IO_libraries_util.get_external_software_dir('wats_in_your_corpus', 'WordNet')
@@ -260,8 +247,6 @@ def run(inputFilename,inputDir, outputDir,
                                                                       NERs=NER_list)
             if output != None:
                 filesToOpen.extend(output)
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-                                           'Finished running Stanford CoreNLP annotator at',True)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)

@@ -1,6 +1,8 @@
 import time
 import tkinter as tk
 import tkinter.messagebox as mb
+import os
+import json
 
 def timed_alert(window,timeout,message_title,message_text,time_needed=False,extraLine='',printInCommandLine=True):
     if time_needed==True:
@@ -43,3 +45,43 @@ def single_file_output_save(inputDir,script):
 def subdirectory_file_output_save(inputDir,inputSubdir, IO, script):
     if len(inputDir) != 0:
         mb.showwarning(title='Warning', message='The ' + script + ' script has saved output in \n\n  ' + inputSubdir + '\n\na subdirectory of the ' + IO + ' directory\n\n  ' + inputDir)
+
+# inputFilename has complete path
+# filesError is []
+def process_CoreNLP_error(window, CoreNLP_output, inputFilename, json_output, nDocs, filesError):
+    parsedjson = ''
+    errorFound=False
+    silent = False
+    duration = 1000
+    head, tail = os.path.split(inputFilename)
+    if json_output:
+        try:
+            parsedjson = json.loads(CoreNLP_output)
+        except:
+            errorFound = True
+    else:
+        if isinstance(CoreNLP_output, str):
+            errorFound = True
+            parsedjson = ''
+    if errorFound:
+        if len(filesError)>2:
+            silent=True
+        elif len(filesError) == 2:
+            duration = 1000
+        elif len(filesError)==1:
+            duration=2000
+        elif len(filesError)==0:
+            filesError.append(['Document ID', 'Document', 'Error'])
+            duration=3000
+        msg = 'Stanford CoreNLP failed to process your document\n\n' + tail + '\n\nexiting with the following error:\n\n   ' + str(parsedjson) + '\n\nPlease, CHECK CAREFULLY THE REASONS FOR FAILURE REPORTED BY STANFORD CORENLP IN COMMAND LINE, MOST LIKELY IN RED. If necessary, then edit the file leading to errors if necessary.'
+        msgPrint = "Stanford CoreNLP failed to process your document " + tail
+        # + '\nexiting with the following error:\n\n' + CoreNLP_output + '\n\nTHE ERROR MAY HAPPEN WHEN CoreNLP HANGS. REBOOT YOUR MACHINE AND TRY AGAIN.\n\nTHE ERROR IS ALSO LIKELY TO HAPPEN WHEN THE STANFORD CORENLP HAS BEEN STORED TO A CLOUD SERVICE (e.g., OneDrive) OR INSIDE THE /NLP/src DIRECTORY. TRY TO MOVE THE STANFORD CORENLP FOLDER TO A DIFFERENT LOCATION.
+        if nDocs > 1:
+            msg = msg + "Processing will continue with the next file."
+            msgPrint += " Processing will continue with the next file."
+        # mb.showwarning("Stanford CoreNLP Error", msg)
+        if not silent:
+            timed_alert(window, duration, 'Stanford CoreNLP error',msg)
+        print("\n\n" + msgPrint)
+        filesError.append([len(filesError),inputFilename, str(parsedjson)])
+    return errorFound, filesError, parsedjson

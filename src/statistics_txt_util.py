@@ -7,6 +7,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window,"statistics_txt_util",['nltk','csv','tkinter','os','string','collections','re','textstat','itertools'])==False:
     sys.exit(0)
 
+import os
 import tkinter.messagebox as mb
 import collections
 import re
@@ -145,19 +146,29 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
         writer = csv.writer(csvfile)
         documentID = 0
         for doc in inputDocs:
-            print("\nProcessing file " + str(documentID) + "/" + str(Ndocs) + " " + doc)
+            head, tail = os.path.split(doc)
             documentID += 1
-            with open(doc, encoding='utf-8', errors='ignore') as fp:
+            print("\nProcessing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
+            with open(doc, encoding='utf-8', errors='ignore') as file:
                 lineID = 0
-                line = fp.readline()
+                try:
+                    line = file.readline()
+                except OSError as e:
+                    print(str(e))
+                    if 'UnicodeDecodeError' in str(e):
+                        mb.showwarning(title='Input file error',
+                                       message="The file\n\n" + doc + "\n\ncontains an invalid character. Please, check the file and try again. You may need to run the script to clean apostrophes and quotes.")
+                    line='THE LINE CONTAINS ILLEGAL, NON UTF-8 CHARACTERS. PLEASE, CHECK.'
+                    print('   ',line)
+                    # continue
                 while line:
                    lineID += 1
                    words = nltk.word_tokenize(line)
-                   print("Line {}: Length (in characters) {} Length (in words) {}".format(lineID, len(line), len(words)))
+                   # print("Line {}: Length (in characters) {} Length (in words) {}".format(lineID, len(line), len(words)))
                    currentLine = [
                        [documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc), len(line), len(words),lineID,line.strip()]]
                    writer.writerows(currentLine)
-                   line = fp.readline()
+                   line = file.readline()
     csvfile.close()
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running line length analysis at', True)
@@ -231,9 +242,10 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
         #currentLine.append([Ndocs])
         index=0
         for doc in inputDocs:
+            head, tail = os.path.split(doc)
             index=index+1
             # currentLine.append([index])
-            print("\nProcessing file " + str(index) + "/" + str(Ndocs) + " " + doc)
+            print("\nProcessing file " + str(index) + "/" + str(Ndocs) + " " + tail)
             #currentLine.append([doc])
             fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
 
@@ -356,16 +368,13 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
 
     i=0
     for file in files:
+        head, tail = os.path.split(file)
         i=i+1
-        print("\nProcessing file " + str(i) + "/" + str(nFile) + ' ' + file)
+        print("\nProcessing file " + str(i) + "/" + str(nFile) + ' ' + tail)
         ngramsList = get_ngramlist(file, ngramsNumber, wordgram, excludePunctuation, bySentenceID, isdir=True)
         container.append(ngramsList)
 
     for index, f in enumerate(container):
-
-        # print("currentFile",str(f[0][1][len(f[0][1])-1]))
-
-        # print("\nProcessing file " + str(index+1) + "/" + str(nFile) + ' ' + str(f[0][1][len(f[0][1])-1]))
 
         for n in f:
             for skip, gram in enumerate(n):
@@ -649,9 +658,10 @@ def yule(window, inputFilename, inputDir, outputDir, hideMessage=False):
 
     Ndocs=str(len(inputDocs))
     for doc in inputDocs:
+        head, tail = os.path.split(doc)
         d = {}
         index = index + 1
-        print("\nProcessing file " + str(index) + "/" + str(Ndocs) + " " + doc)
+        print("\nProcessing file " + str(index) + "/" + str(Ndocs) + " " + tail)
         fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
         words = filter(lambda w: len(w) > 0,
                   [w.strip("0123456789!:,.?(){}[]") for w in fullText.translate(string.punctuation).lower().split()])
@@ -708,8 +718,9 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
 
     Ndocs=str(len(inputDocs))
     for doc in inputDocs:
+        head, tail = os.path.split(doc)
         index = index + 1
-        print("\nProcessing file " + str(index) + "/" + str(Ndocs) + " " + doc)
+        print("\nProcessing file " + str(index) + "/" + str(Ndocs) + " " + tail)
         fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
         # words = fullText.translate(string.punctuation).lower().split()
         words = fullText.translate(string.punctuation).split()
