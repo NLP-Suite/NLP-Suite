@@ -212,7 +212,7 @@ def get_dataRange(columns_to_be_plotted, data):
 # words = set()
 # for row in DataCaptured:
 #     words.add(row[0])
-
+# also IO_csv_util.get_csv_field_values(inputfile_name, column_name)
 
 def get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,specific_column_value_list,data_list):
     data_to_be_plotted=[]

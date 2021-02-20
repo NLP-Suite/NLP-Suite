@@ -82,9 +82,10 @@ def get_headerValue_fromcolumnNumber(headers,column_number):
             column_number = i
             return header_value
 
-# the function extracts all the values in a column of a csv file
+# the function extracts all the UNIQUE values in a column of a csv file
 # the function is used, for instance, to create the values of a dropdown menu
 #   for an example, see annotator_GUI.py
+#   column_name is the header
 def get_csv_field_values(inputfile_name, column_name):
     unique_values = set()
     if inputfile_name == '' or column_name == '':
@@ -93,11 +94,14 @@ def get_csv_field_values(inputfile_name, column_name):
     with open(inputfile_name, 'r', encoding="utf-8", errors='ignore') as f:
         csvreader = csv.reader(f)
         fields = next(csvreader)
-        # get the column number that we want to extract
+        # from the column header get the column number that we want to extract
         col_num = get_columnNumber_from_headerValue(fields, column_name)
         for row in csvreader:
             unique_values.add(row[col_num])
-    return sorted(list(unique_values))
+        sorted_unique_values=sorted(unique_values)
+        # convert set to list; to obtain a string of values simply str(sorted_unique_values)
+        # the list is sorted with proper names, with capital initial first, then the improper names
+    return list(sorted_unique_values)
 
 # get the number of columns of a csv file
 def get_csvfile_numberofColumns (csvFile):
