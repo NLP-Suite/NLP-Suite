@@ -178,7 +178,7 @@ def CoreNLP_annotate(inputFilename,
     # TODO we need to specify the model and all the other variables like Cynthia does in the parser; I believe that quote and gender may be using neural network (please, check)
     # if 'quote' not in param_string and 'gender' not in param_string:
     #     nlp = {'annotators': param_string 'tokenize,ssplit,pos,lemma,ner, parse,regexner,', 'parse.model': 'edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz','outputFormat': 'json', 'outputDirectory': outputDir, 'replaceExtension': True}
-    # else: # 'Neural Network' approoach
+    # else: # 'Neural Network' approach
     #     nlp = {'annotators': 'tokenize,ssplit,pos,lemma,ner, depparse,regexner,', 'parse.model': 'edu/stanford/nlp/models/parser/nndep/english_UD.gz','outputFormat': 'json', 'outputDirectory': outputDir, 'replaceExtension': True}
 
     #annotating each input file
