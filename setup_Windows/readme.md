@@ -8,12 +8,12 @@
     - SKIP THIS STEP IF YOU ALREADY HAVE ANACONDA INSTALLED ON YOUR MACHINE
     - If you'd like to skip this step, make sure you have Anaconda in $PATH. One way to check is to type conda in a command-line window, press enter, and see if there is an error.
 4. Run "STEP2-install_components" through right-click -> run using Powershell
-5. Double click to run setup_auto_update.command
+5. Double click to run setup_auto_update.bat
 
-If you encountered any issue, feel free to start a new issue. 
+If you encountered any problems, feel free to start a new issue. 
 
 # Update Instructions
 
-To update the program to newest version, simply double click update.command
+To update the program to newest version, simply double click update.bat
 
 The program will also automatically update on exit. 
