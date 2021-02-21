@@ -8,6 +8,8 @@ In an age of BIG DATA, the purpose of the suite is rather to provide humanists a
 
 Furthermore, the NLP suite is designed for non-specialists, for scholars with **no knowledge or little knowledge of Natural Language Processing.**
 
+To learn more about NLP Suite, its architecture, and screenshots, visit the [NLP Suite Wiki](https://github.com/NLP-Suite/NLP-Suite/wiki)
+
 ## Installation
 
 To install NLP Suite:
