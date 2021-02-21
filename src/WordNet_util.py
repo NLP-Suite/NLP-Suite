@@ -168,7 +168,7 @@ def ancestor_GoingUP(WordNetDir, inputFile, outputDir, noun_verb,openOutputFiles
     if createExcelCharts:
         columns_to_be_plotted = [[1, 1]]
         chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb
-        hover_label=['Words']
+        hover_label=['Word']
         inputFilename = outputFilenameCSV1
         Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='_bar_chart',
