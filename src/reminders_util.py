@@ -30,10 +30,11 @@ def generate_reminder_list(path: str) -> None:
     """
     if not os.path.exists(path):
         os.makedirs(path, exist_ok=True)
-    if sys.platform == 'darwin':
-        os.system("cp ../reminders/default.csv ../reminders/reminders.csv")
-    else:
-        os.system("copy ../reminders/default.csv ../reminders/reminders.csv")
+    if not os.path.isfile(path+os.sep+'reminders.csv'):
+        if sys.platform == 'win32':
+            os.system(f"copy ..{os.sep}reminders{os.sep}default.csv ..{os.sep}reminders{os.sep}reminders.csv")
+        else: # darwin and linux
+            os.system(f"cp ..{os.sep}reminders{os.sep}default.csv ..{os.sep}reminders{os.sep}reminders.csv")
 #
 # config_filename is the first column in reminders.csv
 #   it refers to the general Python script that calls the reminder
