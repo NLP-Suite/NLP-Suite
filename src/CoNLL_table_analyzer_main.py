@@ -556,7 +556,7 @@ noun_analysis_var.trace('w',activate_CoNLL_options)
 verb_analysis_var.trace('w',activate_CoNLL_options)
 function_words_analysis_var.trace('w',activate_CoNLL_options)
 
-TIPS_lookup = {'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf", 'Part of Speech Tags': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf", 'DEPREL (Stanford Dependency Relations)': "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf", 'NLP Searches': "TIPS_NLP_NLP Searches.pdf",'Excel Charts':'TIPS_NLP_Excel Charts.pdf','Excel Enabling Macros':'TIPS_NLP_Excel Enabling macros.pdf','Network Graphs (via Gephi)':'TIPS_NLP_Gephi network graphs.pdf'}
+TIPS_lookup = {'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf", 'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf", 'DEPREL (Stanford Dependency Relations)': "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf", 'NLP Searches': "TIPS_NLP_NLP Searches.pdf",'Excel Charts':'TIPS_NLP_Excel Charts.pdf','Excel Enabling Macros':'TIPS_NLP_Excel Enabling macros.pdf','Network Graphs (via Gephi)':'TIPS_NLP_Gephi network graphs.pdf'}
 TIPS_options='CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','Excel Charts','Excel Enabling Macros','Network Graphs (via Gephi)'
 
 # add all the lines lines to the end to every special GUI

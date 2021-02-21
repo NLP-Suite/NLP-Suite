@@ -205,7 +205,6 @@ def run(inputFilename,
 			GUI_util.inputFilename.set(geocodedLocationsoutputFilename)
 
 
-
 	if inputIsGeocoded==False:
 		mb.showwarning(title='Warning',message='No geocoding option selected. The GIS script will exit.')
 		return

@@ -54,7 +54,7 @@ def compute_stats(data):
     deprel_counter = Counter(deprel_list)
     return postag_list, postag_counter, deprel_list, deprel_counter
 
-def pronoun_stats(input_file_name,outputDir, data, data_divided_sents, openOutputFiles,createExcelCharts):
+def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputFiles,createExcelCharts):
     filesToOpen = []  # Store all files that are to be opened once finished
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Pronoun Analysis at', True)
     

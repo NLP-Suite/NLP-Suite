@@ -200,7 +200,7 @@ def CoreNLP_annotate(inputFilename,
         nlp = StanfordCoreNLP('http://localhost:9000')
         CoreNLP_output = nlp.annotate(text, properties=params)
         errorFound, filesError, parsedjson = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc,
-                                                                              True, nDocs, filesError)
+                                                                              nDocs, filesError)
         if errorFound: continue  # process next document
 
         # routine_list contains all annotators
