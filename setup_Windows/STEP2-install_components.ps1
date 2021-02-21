@@ -1,7 +1,9 @@
+cd %~dp0
+
 conda create -n NLP -y
 conda activate NLP
 
-pip install -r requirements.txt
+pip install -r ../requirements.txt
 
 conda activate NLP
 python ../src/download_nltk.py
@@ -14,6 +16,9 @@ $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\NLP_Suite.lnk")
 $Shortcut.TargetPath = "${PSScriptRoot}\run.bat"
 $Shortcut.IconLocation = "${PSScriptRoot}\logo.ico"
 $Shortcut.Save()
+
+copy run.bat ../run.bat
+copy nlp.bat ../nlp.bat
 
 Write-Host "----------------------" -ForegroundColor Green
 Write-Host "Installation complete!" -ForegroundColor Green
