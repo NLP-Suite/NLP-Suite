@@ -121,7 +121,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
 	elif CoreNLP_gender_annotator_var==True: 
 		if IO_libraries_util.inputProgramFileCheck('annotator_gender_main.py')==False:
 			return
-		call("python annotator_gender_main.py", shell=True)
+		call("python3annotator_gender_main.py", shell=True)
 	else:
 		mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options and try again.')
 		return

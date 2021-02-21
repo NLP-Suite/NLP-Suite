@@ -363,7 +363,7 @@ def GUI_top(config_input_output_options,config_filename):
 
     if (os.path.isfile(os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-1.0.txt'))) and (IO_libraries_util.inputProgramFileCheck('license_GUI.py')):
         if not os.path.isfile(GUI_IO_util.configPath + os.sep + 'license-config.txt'):
-            call("python " + "license_GUI.py", shell=True)
+            call("python3" + "license_GUI.py", shell=True)
     else:
         # The error message is displayed at the end of the script after the whole GUI has been displayed
         global noLicenceError
