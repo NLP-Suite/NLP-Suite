@@ -205,7 +205,6 @@ def run(inputFilename,
 			GUI_util.inputFilename.set(geocodedLocationsoutputFilename)
 
 
-
 	if inputIsGeocoded==False:
 		mb.showwarning(title='Warning',message='No geocoding option selected. The GIS script will exit.')
 		return
@@ -241,7 +240,7 @@ def run(inputFilename,
 			if inputFilename.endswith('.csv'):
 				configArray=['EMPTY LINE', inputFilename, 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
 				config_util.saveConfig(GUI_util.window, 'GIS-Google-Earth-config.txt', configArray,True)
-			call("python GIS_Google_Earth_main.py", shell=True)
+			call("python3 GIS_Google_Earth_main.py", shell=True)
 			return
 		if IO_libraries_util.inputProgramFileCheck('GIS_KML_util.py') == False:
 			return

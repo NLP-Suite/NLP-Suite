@@ -85,6 +85,10 @@ def CoreNLP_annotate(inputFilename,
         'POS': {'annotators':'tokenize,ssplit,pos,lemma'},
         'NER': {'annotators':'tokenize,ssplit,pos,lemma,ner'},
         'quote': {'annotators': 'tokenize,ssplit,pos,lemma,ner,depparse,coref,quote'},
+        # https://nlp.stanford.edu/software/dcoref.shtml
+        # 2015 The deterministic coreference resolution system is still supported in StanfordCoreNLP by using the annotator dcoref.
+        # But CoreNLP now has better neural network coref
+        # https://stanfordnlp.github.io/CoreNLP/coref.html#neural-system
         'coref': {'annotators':'dcoref'},
         'gender': {'annotators': 'dcoref'},
         'sentiment': {'annotators':'sentiment'},
@@ -174,6 +178,7 @@ def CoreNLP_annotate(inputFilename,
         ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
          'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
     time.sleep(5)
+    # nlp = StanfordCoreNLP('http://localhost:9000')
 
     # TODO we need to specify the model and all the other variables like Cynthia does in the parser; I believe that quote and gender may be using neural network (please, check)
     # if 'quote' not in param_string and 'gender' not in param_string:
@@ -195,7 +200,7 @@ def CoreNLP_annotate(inputFilename,
         nlp = StanfordCoreNLP('http://localhost:9000')
         CoreNLP_output = nlp.annotate(text, properties=params)
         errorFound, filesError, parsedjson = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc,
-                                                                              True, nDocs, filesError)
+                                                                              nDocs, filesError)
         if errorFound: continue  # process next document
 
         # routine_list contains all annotators

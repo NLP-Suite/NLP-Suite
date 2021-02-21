@@ -57,28 +57,19 @@ def subdirectory_file_output_save(inputDir, inputSubdir, IO, script):
 
 # inputFilename has complete path
 # filesError is []
-def process_CoreNLP_error(window, CoreNLP_output, inputFilename, json_output, nDocs, filesError):
-    parsedjson = ''
+def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesError):
     errorFound = False
     silent = False
     duration = 1000
     head, tail = os.path.split(inputFilename)
-    if json_output:
-        try:
-            parsedjson = json.loads(CoreNLP_output)
-        except Exception as e:
+    if isinstance(CoreNLP_output, str):
+         logger.warning("[Warning] Stanford CoreNLP is not JSON. Trying to convert output to JSON.. ")
+         try:
+             CoreNLP_output = json.loads(CoreNLP_output)
+             logger.warning("[Info] Successfully converted CoreNLP output to JSON. Proceeding as normal.")
+         except Exception as e:
+            logger.error("[Error] Could not convert output to JSON!")
             errorFound = True
-    else:
-        if isinstance(CoreNLP_output, str):
-             logger.warning("[Warning] Stanford CoreNLP is not JSON. Trying to convert output to JSON.. ")
-             try:
-                 parsedjson = json.loads(CoreNLP_output)
-                 logger.warning("[Info] Successfully converted CoreNLP output to JSON. Proceeding as normal.")
-             except Exception as e:
-                logger.error("[Error] Could not convert output to JSON!")
-                errorFound = True
-                parsedjson = ''
-
     if errorFound:
         if len(filesError) > 2:
             silent = True
@@ -90,7 +81,7 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, json_output, nD
             filesError.append(['Document ID', 'Document', 'Error'])
             duration = 3000
         msg = 'Stanford CoreNLP failed to process your document\n\n' + tail + '\n\nexiting with the following error:\n\n   ' + str(
-            parsedjson) + '\n\nPlease, CHECK CAREFULLY THE REASONS FOR FAILURE REPORTED BY STANFORD CORENLP IN COMMAND LINE, MOST LIKELY IN RED. If necessary, then edit the file leading to errors if necessary.'
+            CoreNLP_output) + '\n\nPlease, CHECK CAREFULLY THE REASONS FOR FAILURE REPORTED BY STANFORD CORENLP. If necessary, then edit the file leading to errors if necessary.'
         msgPrint = "Stanford CoreNLP failed to process your document " + tail
         # + '\nexiting with the following error:\n\n' + CoreNLP_output + '\n\nTHE ERROR MAY HAPPEN WHEN CoreNLP HANGS. REBOOT YOUR MACHINE AND TRY AGAIN.\n\nTHE ERROR IS ALSO LIKELY TO HAPPEN WHEN THE STANFORD CORENLP HAS BEEN STORED TO A CLOUD SERVICE (e.g., OneDrive) OR INSIDE THE /NLP/src DIRECTORY. TRY TO MOVE THE STANFORD CORENLP FOLDER TO A DIFFERENT LOCATION.
         if nDocs > 1:
@@ -100,5 +91,5 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, json_output, nD
         if not silent:
             timed_alert(window, duration, 'Stanford CoreNLP error', msg)
         print("\n\n" + msgPrint)
-        filesError.append([len(filesError), inputFilename, str(parsedjson)])
-    return errorFound, filesError, parsedjson
+        filesError.append([len(filesError), inputFilename, str(CoreNLP_output)])
+    return errorFound, filesError, CoreNLP_output

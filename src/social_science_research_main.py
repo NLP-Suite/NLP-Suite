@@ -35,7 +35,7 @@ def check_filename(output_dir_path):
 	if IO_libraries_util.inputProgramFileCheck('file_checker_converter_cleaner_main.py') == False:
 		return
 	if platform == "win32":
-		subprocess.call("python file_manager_main.py", shell=True)
+		subprocess.call("python3 file_manager_main.py", shell=True)
 	# linux # OS X
 	elif platform == "linux" or platform == "linux2" or platform == "darwin":
 		subprocess.call("sudo python3 file_manager_main.py", shell=True)
@@ -46,7 +46,7 @@ def character(output_dir_path):
 	if IO_libraries_util.inputProgramFileCheck('WordNet_main.py') == False:
 		return
 	if platform == "win32":
-		subprocess.call("python WordNet_main.py character", shell=True)
+		subprocess.call("python3 WordNet_main.py character", shell=True)
 	# linux # OS X
 	elif platform == "linux" or platform == "linux2" or platform == "darwin":
 		subprocess.call("sudo python3 WordNet_main.py character", shell=True)
@@ -57,7 +57,7 @@ def find_character_home(output_dir_path):
 	if IO_libraries_util.inputProgramFileCheck('file_classifier_main.py') == False:
 		return
 	if platform == "win32":
-		subprocess.call("python file_classifier_main.py character home", shell=True)
+		subprocess.call("python3 file_classifier_main.py character home", shell=True)
 	# linux # OS X
 	elif platform == "linux" or platform == "linux2" or platform == "darwin":
 		subprocess.call("sudo python3 file_classifier_main.py character home", shell=True)
@@ -88,7 +88,7 @@ def ancestor(input_main_dir_path, output_dir_path):
 	if IO_libraries_util.inputProgramFileCheck('WordNet_main.py') == False:
 		return
 	if platform == "win32":
-		subprocess.call("python WordNet.py ancestor", shell=True)
+		subprocess.call("python3 WordNet.py ancestor", shell=True)
 	# linux # OS X
 	elif platform == "linux" or platform == "linux2" or platform == "darwin":
 		subprocess.call("sudo python3 WordNet_main.py ancestor", shell=True)
@@ -240,7 +240,7 @@ def Levenshtein():
 	if IO_libraries_util.inputProgramFileCheck('file_spell_checker_main.py') == False:
 		return
 	if platform == "win32":
-		subprocess.call("python file_spell_checker_main.py", shell=True)
+		subprocess.call("python3 file_spell_checker_main.py", shell=True)
 	# linux # OS X
 	elif platform == "linux" or platform == "linux2" or platform == "darwin":
 		subprocess.call("sudo python3 file_spell_checker_main.py", shell=True)
