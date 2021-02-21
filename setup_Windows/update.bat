@@ -1,1 +1,1 @@
-cd %~dp0/../ && git pull -f origin
+cd %~dp0\..\ && git pull -f origin
