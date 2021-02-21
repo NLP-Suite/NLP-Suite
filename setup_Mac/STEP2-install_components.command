@@ -8,6 +8,8 @@ source $HOME/anaconda/bin/activate
 conda create -y -n NLP python=3.9
 conda activate NLP
 
+cp run.command ../run.command
+
 conda install -y -c conda-forge scikit-learn
 pip install -r ../requirements.txt
 
