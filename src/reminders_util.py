@@ -21,6 +21,19 @@ from csv import writer
 #       e.g., file_splitter_util
 #       e.g., GIS_geocoder_util
 
+def generate_reminder_list(path: str) -> None:
+    """
+    Generate The Reminder List with Default Text
+
+    Args:
+        path - the path to the reminders file
+    """
+    if not os.path.exists(path):
+        os.makedirs(path, exist_ok=True)
+    if sys.platform == 'darwin':
+        os.system("cp ../reminders/default.csv ../reminders/reminders.csv")
+    else:
+        os.system("copy ../reminders/default.csv ../reminders/reminders.csv")
 #
 # config_filename is the first column in reminders.csv
 #   it refers to the general Python script that calls the reminder
@@ -31,7 +44,6 @@ from csv import writer
 #   the message is passed (an example is found in GUI_frontEnd in GUI_IO_util.py)
 # triggered_by_GUI_event is passed when triggered by an event in the GUI (a checkbox ticked, a file opened)
 #   (e.g., in shape_of_stories_GUI)
-
 def getReminder_list(config_filename,silent=False):
     routine=config_filename[:-len('-config.txt')]
     title_options=[]
@@ -40,7 +52,13 @@ def getReminder_list(config_filename,silent=False):
         return title_options
     try:
         df = pd.read_csv(remindersFile)
-    except:
+    except FileNotFoundError:
+        if silent == False:
+            mb.showwarning(title='Reminders file generated', message="The reminders.csv file saved in the reminders subdirectory was not found. If this is your first time running NLP Suite, do not worry. A default reminders.csv has been automatically generated for you.")
+        generate_reminder_list(GUI_IO_util.remindersPath)
+        return getReminder_list(config_filename, silent)
+    except Exception as e:
+        print(str(e))
         if silent==False:
             mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory is ill formed. Most likely, it contains extra , in one of the three fields (Routine, Title, Message).\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.\n\nIf any of the fields contain , the field content must be enclosed in \"\".")
         return None
@@ -110,7 +128,11 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
     try:
         df = pd.read_csv(remindersFile)
-    except:
+    except FileNotFoundError:
+        generate_reminder_list(GUI_IO_util.remindersPath)
+        mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory was not found. If this is your first time running NLP Suite, do not worry. A default reminders.csv has been automatically generated for you.")
+        return checkReminder(config_filename, title_options, message, triggered_by_GUI_event)
+    except Exception:
         mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory is ill formed. Most likely, it contains extra , in one of the three fields (Routine, Title, Message).\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.\n\nIf any of the fields contain , the field content must be enclosed in \"\".")
         return None # open_message
     # get the row number of the routine that we are looking at
