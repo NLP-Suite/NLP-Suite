@@ -3,6 +3,7 @@
 lib/namesGender/SS_state_year.csv
 
 reminders/*
+!reminders/default.csv
 
 desktop.ini
 
