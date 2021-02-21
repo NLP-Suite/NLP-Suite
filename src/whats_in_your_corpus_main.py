@@ -100,7 +100,7 @@ def run(inputFilename,inputDir, outputDir,
             routine_options = reminders_util.getReminder_list(config_filename)
 
             if open_GUI_var == True:
-                call("python3 topic_modeling_gensim_main.py", shell=True)
+                call("python topic_modeling_gensim_main.py", shell=True)
             else:
                 # run with all default values; do not run Mallet
                 output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics=20,
@@ -112,7 +112,7 @@ def run(inputFilename,inputDir, outputDir,
             # def run(inputDir, outputDir, openOutputFiles, createExcelCharts, OptimizeInterval, numTopics):
 
             if open_GUI_var == True:
-                call("python3 topic_modeling_mallet_main.py", shell=True)
+                call("python topic_modeling_mallet_main.py", shell=True)
             else:
                 # running with default values
                 output = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts, OptimizeInterval=True, numTopics=20)
