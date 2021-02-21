@@ -59,7 +59,7 @@ window = GUI_util.window
 def run_NLP():
     if IO_libraries_util.inputProgramFileCheck('NLP_menu_main.py') == False:
         return
-    call("python3 NLP_menu_main.py", shell=True)
+    call("python NLP_menu_main.py", shell=True)
 
 
 images = []
