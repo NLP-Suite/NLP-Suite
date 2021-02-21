@@ -554,7 +554,7 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
 	elif script_to_run.endswith('.py'):  # with GUI
 		if IO_libraries_util.inputProgramFileCheck(script_to_run) == False:
 			return
-		call("python3" + script_to_run, shell=True)
+		call("python3 " + script_to_run, shell=True)
 	elif script_to_run.endswith('.jar'):  # with GUI
 		run_jar_script(script_to_run, inputFilename, input_main_dir_path, output_dir_path, openOutputFiles,
 					   createExcelCharts)

@@ -12,7 +12,7 @@ conda install -y -c conda-forge scikit-learn
 pip install -r ../requirements.txt
 
 conda activate NLP
-python ../src/download_nltk.py
+python3 ../src/download_nltk.py
 
 conda activate NLP
-python -m spacy download en
+python3 -m spacy download en

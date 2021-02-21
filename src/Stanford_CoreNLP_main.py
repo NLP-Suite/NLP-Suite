@@ -97,7 +97,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                                              "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' where you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words).",
                                              True)
 
-                call("python3CoNLL_table_analyzer_main.py", shell=True)
+                call("python3 CoNLL_table_analyzer_main.py", shell=True)
 
     if CoreNLP_annotators_var and CoreNLP_annotators_menu_var != '':
 
@@ -106,7 +106,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         if CoreNLP_annotators_menu_var == 'NER annotator':
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_NER_main.py') == False:
                 return
-            call("python3Stanford_CoreNLP_NER_main.py", shell=True)
+            call("python3 Stanford_CoreNLP_NER_main.py", shell=True)
 
         # NER normalized date annotator ---------------------------------------------------------------------------------------------------------------------------
 
