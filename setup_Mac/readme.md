@@ -14,7 +14,7 @@
 
 - Note: The NLP suite relies on many Python packages, so it may not work on macs with Apple Silicon. 
 
-If you encountered any problems, feel free to [start a new issue](https://github.com/NLP-Suite/NLP-Suite/issues/new/choose). 
+If you encounter any problems, feel free to [start a new issue](https://github.com/NLP-Suite/NLP-Suite/issues/new/choose). 
 
 # Update Instructions
 
