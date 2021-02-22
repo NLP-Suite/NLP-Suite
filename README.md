@@ -8,7 +8,7 @@ In an age of BIG DATA, the purpose of the suite is rather to provide humanists a
 
 Furthermore, the NLP suite is designed for non-specialists, for scholars with **no knowledge or little knowledge of Natural Language Processing.**
 
-The NLP Suite was developed by **Roberto Franzosi at Emory University** with the help of many Emory current and past undergraduate students: Matthew Chau, Jian Chen, Wei Dai, Wenqin Dong, Yilin Dong, Yuhang Feng, Jack Hester, Ziyang Hu, Hang Jiang, Josh Karol, Brett Landau, Rafael Piloto, Ishan Saran, Gabriel Wang, Yi Wang, Angel Xie, Catherine Xie, Doris Zhou.
+The NLP Suite was developed by **Roberto Franzosi** at **Emory University** with the help of many current and past **Emory undergraduate students**: Matthew Chau, Jian Chen, Wei Dai, Wenqin Dong, Yilin Dong, Yuhang Feng, Jack Hester, Ziyang Hu, Hang Jiang, Josh Karol, Brett Landau, Rafael Piloto, Ishan Saran, Gabriel Wang, Yi Wang, Angel Xie, Catherine Xie, Doris Zhou.
 
 
 To learn more about NLP Suite, its architecture, and screenshots, visit the [NLP Suite Wiki](https://github.com/NLP-Suite/NLP-Suite/wiki)
