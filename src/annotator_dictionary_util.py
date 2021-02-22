@@ -32,20 +32,21 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
     categories = []
     for i in num_cats:
         categories.append(csvValue_color_list[i])
-        # We want a list in dictionary for each category we ahve
+        # We want a list in dictionary for each category we have
         dictionary.append([])
     for i in num_colors:
         color_list.append(csvValue_color_list[i])
     with open(dictFile, 'r', encoding='utf-8', errors='ignore') as read_obj:
         csv_reader = reader(read_obj)
         for row in csv_reader:
-            # We check every line of the csv input to see if it matches one of the target categories
-            for c in range(len(categories)):
-                # Check if the current row has category value equivalent to one of our categories
-                if row[catColNum] == categories[c]:
-                    # dictionary[c] represents the list of words from category 'c'
-                    if row[wordColNum] not in dictionary[c]:
-                        dictionary[c].append(row[wordColNum])
+            if len(categories)>0:
+                # We check every line of the csv input to see if it matches one of the target categories
+                for c in range(len(categories)):
+                    # Check if the current row has category value equivalent to one of our categories
+                    if row[catColNum] == categories[c]:
+                        # dictionary[c] represents the list of words from category 'c'
+                        if row[wordColNum] not in dictionary[c]:
+                            dictionary[c].append(row[wordColNum])
             else:
                 dictionary.append(row[wordColNum])
 
@@ -80,21 +81,24 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csvValue_colo
         text=open(file, 'r', encoding='utf-8',errors='ignore').read()
         writeout.append(tail + '<br />\n')  # add the filename and a hard return
         if len(csvValue_color_list) == 0:
+            terms = dictionary
             # check reserved_dictionary list FIRST if any of the reserved annotator terms (bold, color, font, span, style, weight) appear in the list
             #   reserved terms must be processed first to avoid replacing terms twice
             # process reserved tag words first to avoid re-tagging already tagged words leading to tagging errors
-            for term in dictionary:
+            for term in terms:
                 if term not in text:
                     continue
                 for term1 in reserved_dictionary:
                     if term1 in dictionary:
                         tagString = tagAnnotations[0] + term1 + tagAnnotations[1]
-                        text = text.replace(term1, tagString)
+                        # use regular expression replace to check for distinct words (e.g., he not tagging he in held)
+                        text = re.sub(rf"\b(?=\w){term1}\b(?!\w)", tagString, text)
                         # remove term from dictionary, to avoid double processing in next tagging
-                        dictionary.remove(str(term1))
+                        terms.remove(str(term1))
                         continue
                 tagString = tagAnnotations[0] + term + tagAnnotations[1]
-                text = text.replace(term, tagString)
+                # use regular expression replace to check for distinct words (e.g., he not tagging he in held)
+                text = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, text)
         else:
             for i in range(len(dictionary)):
                 terms = dictionary[i]
@@ -104,15 +108,21 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csvValue_colo
                 else:
                     tagAnnotations = ['<span style=\"color: ' + color + '\">','</span>']
                 for term in terms:
+                    if term not in text:
+                        continue
+                    for term1 in reserved_dictionary:
+                        if term1 in terms:
+                            tagString = tagAnnotations[0] + term1 + tagAnnotations[1]
+                            # use regular expression replace to check for distinct words (e.g., he not tagging he in held)
+                            text = re.sub(rf"\b(?=\w){term1}\b(?!\w)", tagString, text)
+                            # remove term from dictionary, to avoid double processing in next tagging
+                            terms.remove(str(term1))
+                            continue
                     tagString = tagAnnotations[0] + term + tagAnnotations[1]
-                    try: # to avoid encoding or other problems in term
-                        tmp = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, tmp)
-                    except:
-                        print('  Could not annotate \'',term, '\'')
-                        # tmp = term
+                    # use regular expression replace to check for distinct words (e.g., he not tagging he in held)
+                    text = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, text)
         writeout.append(text)
         writeout.append("<br />\n<br />\n") # add 2 hard returns
-    # f.close()
 
     if fileType=='.html':
         if "_multiDict_annotated_" in file:

@@ -253,6 +253,9 @@ def checkDirectory(path, message=True):
 # check to make sure the file exists, and optionally that the desired extension matches the file's
 # also gives user the option to generate a message box warning of why
 def checkFile(filePath, extension=None, silent=False):
+	if 'reminders.csv' in filePath:
+		head, tail = os.path.split(filePath)
+		reminders_util.generate_reminder_list(head)
 	if not os.path.isfile(filePath):
 		if not silent:
 			print("The file " + filePath + " could not be found.")
