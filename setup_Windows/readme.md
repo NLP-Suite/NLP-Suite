@@ -1,4 +1,4 @@
-# Setup instructions for Windows:
+# Setup Instructions for Windows
 
 1. Download the NLP Suite through [this link](https://github.com/NLP-Suite/NLP-Suite/releases).
 
