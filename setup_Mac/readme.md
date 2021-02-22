@@ -18,6 +18,6 @@ If you encounter any problems, feel free to [start a new issue](https://github.c
 
 # Update Instructions
 
-To update the program to newest version, simply double click update.command
+To update the program to the newest version, simply double click update.command
 
 The program will also automatically update on exit.
