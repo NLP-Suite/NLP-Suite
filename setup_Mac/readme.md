@@ -21,3 +21,7 @@ If you encounter any problems, feel free to [start a new issue](https://github.c
 To update the program to the newest version, simply double click update.command
 
 The program will also automatically update on exit.
+
+## Shortcuts
+
+Run the `add_terminal_shortcut.command` file by double clicking it. This will add a shortcut to your terminal that will allow you to type `nlp` and automatically be placed into your NLP Anaconda environment as well as in your NLP Suite Directory. You can remove the alias this script creates by running the `remove_terminal_shortcut.command`.
