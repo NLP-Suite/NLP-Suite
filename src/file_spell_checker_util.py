@@ -193,7 +193,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createExcelChar
 #   else(the word is longer than or equal to user-supplied word length (default 4 characters):
 #       2 or more character mistake will be considered as typo
 
-# checklist contains words with more than 1 time of appearence
+# checklist contains words with more than 1 time of appearance
 # similarity_value is the gaging_difference attribute
 def check_edit_dist(input_word, checklist, similarity_value):
     exist_typo = False
@@ -541,6 +541,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
     # IO_util.timed_alert(GUI_util.window, 5000, 'Word similarity', 'Finished running Stanford CoreNLP...\n\nProcessed '+str(len(list_to_check))+' words.\n\nNow computing word differences... PLEASE, be patient. This may take a while...')
     # These headers reflect the items returned from the processing above
     # THEIR ORDER CANNOT BE CHANGED, UNLESS ABOVE ORDER OF PROCESSING IS ALSO CHANGED
+    # These headers are then used selectively for the output (see headers2)
     headers1 = ['Words', 'Word frequency in document', 'Sentence ID', 'Document ID',
                 'Sentence', 'Document', 'Document path', 'Named Entity (NER)',
                 'Similar word in directory', 'Similar-word frequency in directory', 'Typo?']
