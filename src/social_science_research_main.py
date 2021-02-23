@@ -38,7 +38,7 @@ def check_filename(output_dir_path):
 		subprocess.call("python file_manager_main.py", shell=True)
 	# linux # OS X
 	elif platform == "linux" or platform == "linux2" or platform == "darwin":
-		subprocess.call("sudo python3 file_manager_main.py", shell=True)
+		subprocess.call("sudo Python file_manager_main.py", shell=True)
 	# files are opened in the file_filename_checker_main GUI
 
 
@@ -49,7 +49,7 @@ def character(output_dir_path):
 		subprocess.call("python WordNet_main.py character", shell=True)
 	# linux # OS X
 	elif platform == "linux" or platform == "linux2" or platform == "darwin":
-		subprocess.call("sudo python3 WordNet_main.py character", shell=True)
+		subprocess.call("sudo Python WordNet_main.py character", shell=True)
 	# files are opened in the WordNet GUI
 
 
@@ -60,7 +60,7 @@ def find_character_home(output_dir_path):
 		subprocess.call("python file_classifier_main.py character home", shell=True)
 	# linux # OS X
 	elif platform == "linux" or platform == "linux2" or platform == "darwin":
-		subprocess.call("sudo python3 file_classifier_main.py character home", shell=True)
+		subprocess.call("sudo Python file_classifier_main.py character home", shell=True)
 	# files are opened in the file_classifier_main.py GUI
 
 def missing_character(CoreNLPdir, input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createExcelCharts, checkNER):
@@ -91,7 +91,7 @@ def ancestor(input_main_dir_path, output_dir_path):
 		subprocess.call("python WordNet.py ancestor", shell=True)
 	# linux # OS X
 	elif platform == "linux" or platform == "linux2" or platform == "darwin":
-		subprocess.call("sudo python3 WordNet_main.py ancestor", shell=True)
+		subprocess.call("sudo Python WordNet_main.py ancestor", shell=True)
 	# files are opened in the WordNet GUI
 
 
@@ -243,7 +243,7 @@ def Levenshtein():
 		subprocess.call("python file_spell_checker_main.py", shell=True)
 	# linux # OS X
 	elif platform == "linux" or platform == "linux2" or platform == "darwin":
-		subprocess.call("sudo python3 file_spell_checker_main.py", shell=True)
+		subprocess.call("sudo Python file_spell_checker_main.py", shell=True)
 	# files are opened in the spell_checker_main
 
 

@@ -27,10 +27,10 @@ text_area = tk.Text()
 # text_area.configure(height=440)
 text_area.pack()
 
-if (os.path.isfile(os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-1.0.txt'))):
-	f= open(os.path.join(GUI_IO_util.libPath, "LICENSE-NLP-1.0.txt"))
+if (os.path.isfile(os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-Suite-1.0.txt'))):
+	f= open(os.path.join(GUI_IO_util.libPath, "LICENSE-NLP-Suite-1.0.txt"))
 else:
-    mb.showwarning(title='Fatal error', message="The licence agreement file 'LICENSE-NLP-1.0.txt' could not be found in the 'lib' subdirectory of your main NLP Suite directory\n" + GUI_IO_util.scriptPath + "\n\nPlease, make sure to copy this file in the 'lib' subdirectory.\n\nThe NLP Suite will now exit.")
+    mb.showwarning(title='Fatal error', message="The licence agreement file 'LICENSE-NLP-Suite-1.0.txt' could not be found in the 'lib' subdirectory of your main NLP Suite directory\n" + GUI_IO_util.scriptPath + "\n\nPlease, make sure to copy this file in the 'lib' subdirectory.\n\nThe NLP Suite will now exit.")
     sys.exit()
 	
 text_area.insert(tk.END, f.read())

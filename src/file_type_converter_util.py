@@ -13,7 +13,7 @@ import GUI_util
 import IO_libraries_util
 import IO_user_interface_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"file_type_converter_util",['os','__main__','tkinter','ntpath','shutil','docx','pdfminer','striprtf'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"file_type_converter_util",['os','__main__','tkinter','docx','pdfminer','striprtf'])==False:
     sys.exit(0)
 
 import os
@@ -28,8 +28,6 @@ from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import XMLConverter, HTMLConverter, TextConverter
 from pdfminer.layout import LAParams
 from docx import Document #pip install python-docx
-import shutil
-import ntpath
 from os.path import splitext
 from striprtf.striprtf import rtf_to_text
 
@@ -157,7 +155,7 @@ def docx_converter(window,fileName,inputdirectory,outputdirectory,openOutputFile
                     textFile.write(para.text+'\n') #line of texts
     if openOutputFiles and len(fileName)>0:
         IO_files_util.openFile(window, textFilename)
-        
+
 def rtf_converter(window,fileName,inputdirectory,outputdirectory,openOutputFiles):
     textFilename=''
     if len(inputdirectory)>0:
@@ -207,7 +205,16 @@ def rtf_converter(window,fileName,inputdirectory,outputdirectory,openOutputFiles
                 except OSError as exc:
                     if exc.errno != errno.EEXIST:
                         raise
+            # https://stackoverflow.com/questions/60897366/how-to-read-rtf-file-and-convert-into-python3-strings-and-can-be-stored-in-pyth
+            # TODO although there are suggestions on the web that simply reading an rtf file as txt
+            #   and save it would solve the problem, that is unlikely to do the trick
+            # striprtf may be a good solution
+            # https://stackoverflow.com/questions/44580580/how-to-convert-rtf-string-to-plain-text-in-python-using-any-library
+            # text = "Whatever your rtf text goes here"
+            # python striprtf(text)
+            # https://stackoverflow.com/questions/188545/regular-expression-for-extracting-text-from-an-rtf-string/188877#188877
             with open(textFilename,"w", encoding="utf-8",errors='ignore') as textFile:
+                # TODO why read one line at a time?
                 for l in lines:
                     textFile.write(l+'\n') #line of texts
     if openOutputFiles and len(fileName)>0:

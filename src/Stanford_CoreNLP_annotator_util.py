@@ -53,7 +53,9 @@ def CoreNLP_annotate(inputFilename,
                      annotator_params,
                      DoCleanXML,
                      memory_var, **kwargs):
-
+    speed_assessment = []#storing the information used for speed assessment
+    speed_assessment_format = ['Part','Part ID','Time','Annotator', 'Tokens to Annotate', 'Params', 'Number of Params','Parse Model']#the column titles of the csv output of speed assessment
+    start_time = time.time()#start time
     filesToOpen = []
     # check that the CoreNLPdir as been setup
     CoreNLPdir=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_annotator', 'Stanford CoreNLP')
@@ -78,25 +80,37 @@ def CoreNLP_annotate(inputFilename,
 
     produce_split_files=False
     # @ change coref-text to coref, change coref-spreadsheet to gender@
-    params_option = {
-        'tokenize': {'annotators':'tokenize'},
-        'ssplit': {'annotators':'tokenize, ssplit'},
-        'MWT': {'annotators':'tokenize,ssplit,mwt'},
-        'POS': {'annotators':'tokenize,ssplit,pos,lemma'},
-        'NER': {'annotators':'tokenize,ssplit,pos,lemma,ner'},
-        'quote': {'annotators': 'tokenize,ssplit,pos,lemma,ner,depparse,coref,quote'},
-        # https://nlp.stanford.edu/software/dcoref.shtml
-        # 2015 The deterministic coreference resolution system is still supported in StanfordCoreNLP by using the annotator dcoref.
-        # But CoreNLP now has better neural network coref
-        # https://stanfordnlp.github.io/CoreNLP/coref.html#neural-system
-        'coref': {'annotators':'dcoref'},
-        'gender': {'annotators': 'dcoref'},
-        'sentiment': {'annotators':'sentiment'},
-        'normalized-date': {'annotators': 'tokenize,ssplit,ner'},
-        'openIE':{"annotators": "tokenize,ssplit,pos,depparse,natlog,openie"}
-    }
+    # params_option = {
+    #     'tokenize': {'annotators':'tokenize'},
+    #     'ssplit': {'annotators':'tokenize, ssplit'},
+    #     'MWT': {'annotators':'tokenize,ssplit,mwt'},
+    #     'POS': {'annotators':'tokenize,ssplit,pos,lemma'},
+    #     'NER': {'annotators':'tokenize,ssplit,pos,lemma,ner'},
+    #     'quote': {'annotators': 'tokenize,ssplit,pos,lemma,ner,depparse,coref,quote'},
+    #     # https://nlp.stanford.edu/software/dcoref.shtml
+    #     # 2015 The deterministic coreference resolution system is still supported in StanfordCoreNLP by using the annotator dcoref.
+    #     # But CoreNLP now has better neural network coref
+    #     # https://stanfordnlp.github.io/CoreNLP/coref.html#neural-system
+    #     'coref': {'annotators':'dcoref'},
+    #     'gender': {'annotators': 'dcoref'},
+    #     'sentiment': {'annotators':'sentiment'},
+    #     'normalized-date': {'annotators': 'tokenize,ssplit,ner'},
+    #     'openIE':{"annotators": "tokenize,ssplit,pos,depparse,natlog,openie"}
+    # }
     # @ change coref-text to coref, change coref-spreadsheet to gender@
-    
+    params_option = {
+        'tokenize': {'annotators':['tokenize']},
+        'ssplit': {'annotators':['tokenize', 'ssplit']},
+        'MWT': {'annotators': ['tokenize','ssplit','mwt']},
+        'POS': {'annotators': ['tokenize','ssplit','pos','lemma']},
+        'NER': {'annotators':['tokenize','ssplit','pos','lemma','ner']},
+        'quote': {'annotators': ['tokenize','ssplit','pos','lemma','ner','depparse','coref','quote']},
+        'coref': {'annotators':['dcoref']},
+        'gender': {'annotators': ['dcoref']},
+        'sentiment': {'annotators':['sentiment']},
+        'normalized-date': {'annotators': ['tokenize','ssplit','ner']},
+        'openIE':{"annotators": ['tokenize','ssplit','pos','depparse','natlog','openie']}
+    }
     routine_option = {
         'sentiment': process_json_sentiment,
         'POS':process_json_postag,
@@ -123,7 +137,7 @@ def CoreNLP_annotate(inputFilename,
         # Dec. 21
         'openIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'Sentence']
     }
-
+    param_number = 0
     files = []#storing names of txt files
     nDocs = 0#number of input documents
     
@@ -146,19 +160,38 @@ def CoreNLP_annotate(inputFilename,
         annotator_params = [annotator_params]
     param_string = ''#the input string of nlp annotator properties
     for annotator in annotator_params:
+        if "gender" in annotator or "quote" in annotator:
+            neural_network = True
+            parse_model = "NN"
+        else:
+            neural_network = False
+            parse_model = "PCFG"
         routine = routine_option.get(annotator)
         output_format = output_format_option.get(annotator)
         #building annotator input string
-        params = params_option.get(annotator)["annotators"]
-        annotators_ = params.split(',')  # nltk.word_tokenize(params)
-        annotators_[:] = (value for value in annotators_ if value != ',')#tokenize each property
+        # params = params_option.get(annotator)["annotators"]
+        # annotators_ = params.split(',')  # nltk.word_tokenize(params)
+        # annotators_[:] = (value for value in annotators_ if value != ',')#tokenize each property
+        # for param in annotators_:
+        #     if not param in param_string: #the needed annotator property is not containted in the string
+        #         if param_string == '':
+        #             param_string = param
+        #         else:
+        #             param_string = param_string + ", " + param
+        annotators_ = params_option.get(annotator)["annotators"]#tokenize each property
         for param in annotators_:
             if not param in param_string: #the needed annotator property is not containted in the string
+                param_number += 1
                 if param_string == '':
                     param_string = param
                 else:
                     param_string = param_string + ", " + param
-        routine_list.append([annotator, routine,output_format,[]])
+         #put all annotators whose parse model is neural network at the end of the list
+        #so that the model would just need be switched once
+        if neural_network:
+            routine_list.append([annotator, routine,output_format,[],parse_model])
+        else:
+            routine_list.insert(0, [annotator, routine,output_format,[],parse_model])
 
     # the third item in routine_list is typ[ically a single lit [], but for POS it becomes a double list ['Verbs'],[Nouns]]
     # the case needs special handling
@@ -170,7 +203,8 @@ def CoreNLP_annotate(inputFilename,
         run_output = []
         POS_WordNet=False
 
-    params = {'annotators':param_string}
+    # params = {'annotators':param_string}
+    params = {'annotators':param_string, 'parse.model': 'edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz','outputFormat': 'json', 'outputDirectory': outputDir, 'replaceExtension': True}
     if DoCleanXML:
         params['annotators'] = params['annotators'] + ',cleanXML'
 
@@ -178,6 +212,7 @@ def CoreNLP_annotate(inputFilename,
         ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
          'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
     time.sleep(5)
+
     # nlp = StanfordCoreNLP('http://localhost:9000')
 
     # TODO we need to specify the model and all the other variables like Cynthia does in the parser; I believe that quote and gender may be using neural network (please, check)
@@ -191,25 +226,51 @@ def CoreNLP_annotate(inputFilename,
     filesError=[]
     json = True
     errorFound=False
-
+    #record the time comsumption before annotating text in each file
+    speed_assessment.append(["Pre corpus analysis",0,time.time() - start_time,'',None,'', None,''])
+    # ['Part','Part ID','Time','Annotator', 'Tokens to Annotate', 'Params', 'Number of ','parse model']
     for doc in files:
+        
+        file_length = 0#the number of tokens
+        doc_start_time = time.time()
+        model_switch = False
         docID = docID + 1
         head, tail = os.path.split(doc)
         print("\nProcessing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
         text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
         nlp = StanfordCoreNLP('http://localhost:9000')
         CoreNLP_output = nlp.annotate(text, properties=params)
-        errorFound, filesError, parsedjson = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc,
-                                                                              nDocs, filesError)
+        errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, nDocs, filesError)
         if errorFound: continue  # process next document
+        #get file length
+        file_length=len(doc)
+        # TODO Claude the code breaks below when using neural networks
+        #   if you look at the parser neural networks produce a slightly differrent output from PCFG
+        #   so much so that that sent_list_clause is computed ONLY for PCFG otherwise the code
+        #   in the next few commented lines taken from parser_util breaks
+        #   it that why you get an error with the second doc? I get it right away
+        # if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
+        #     sent_list_clause = [Stanford_CoreNLP_clausal_util.clausal_info_extract_from_string(parsed_sent['parse'])
+        #                         for parsed_sent in CoreNLP_output['sentences']]
 
+        # for sentence in CoreNLP_output['sentences']:
+        #     # token_num += len(sentence["tokens"])
+        #     file_length += len(sentence["tokens"])
+        #record the time comsumption before running each route
+        speed_assessment.append([doc, docID, time.time()-doc_start_time,'',file_length, param_string, param_number, ''])
         # routine_list contains all annotators
         for run in routine_list:
+            annotator_start_time = time.time()
             # params = run[0]
             annotator_chosen = run[0]
             routine = run[1]
             output_format = run[2]
-
+            parse_model = run[4]
+            if parse_model == "NN" and model_switch == False:
+                model_switch = True
+                params_NN = params
+                params_NN['parse.model'] = 'edu/stanford/nlp/models/parser/nndep/english_UD.gz'
+                CoreNLP_output = nlp.annotate(text, properties=params_NN)
             if isinstance(routine_list[0][2][0], list):
                 run_output = [[], []]
                 POS_WordNet = True
@@ -220,7 +281,7 @@ def CoreNLP_annotate(inputFilename,
             # run_output = run[3]
 
             #generating output from json file for specific annotators
-            sub_result = routine(docID, doc, parsedjson, **kwargs)
+            sub_result = routine(docID, doc, CoreNLP_output, **kwargs)
             #write html file from txt input
             if output_format == 'text':
                 outputFilename = IO_files_util.generate_output_file_name(doc, '', outputDir, '.txt', 'CoreNLP_'+annotator_chosen)
@@ -236,8 +297,10 @@ def CoreNLP_annotate(inputFilename,
                             run_output[i].append(j)
                 else:
                     run_output.extend(sub_result)
-    
+            speed_assessment.append([doc, docID, time.time()-annotator_start_time,annotator_chosen,file_length, param_string, param_number, parse_model])
+            # ['Part','Part ID','Time','Annotator', 'Tokens to Annotate', 'Params', 'Number of ','parse model']
     #generate output csv files and write output 
+    output_start_time = time.time()
     for run in routine_list:
         annotator_chosen = run[0]
         routine = run[1]
@@ -316,10 +379,18 @@ def CoreNLP_annotate(inputFilename,
                                                                                    'CoreNLP', 'file_ERRORS'))
         IO_csv_util.list_to_csv(GUI_util.window, filesError, errorFile)
         filesToOpen.append(errorFile)
-
+    #record the time consumption of generating outputfiles and visualization
+    speed_assessment.append(["Output Production", -1, time.time()-output_start_time,'',None, '', None, ''])
+    #record the time consumption of running the whole analysis 
+    speed_assessment.append(["Whole Function", -2, time.time()-start_time,'',None, '', None, ''])
+    speed_csv = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
+                                                                           'CoreNLP_speed_assessment')
+    df = pd.DataFrame(speed_assessment, columns=speed_assessment_format)  
+    df.to_csv(speed_csv, index=False)
+    filesToOpen.append(speed_csv)
     if len(inputDir) != 0:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Output warning', 'The output filename generated by Stanford CoreNLP is the name of the directory processed in input, rather than any individual file in the directory. The output file(s) include all ' + str(nDocs) + ' files in the input directory processed by CoreNLP.\n\nThe different files are listed in the output csv file under the headers \'Document ID\' and \'Document\'.')
-
+        
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True)
     return filesToOpen
 
@@ -536,10 +607,9 @@ def process_json_ner(documentID, document, json, **kwargs):
 def process_json_sentiment(documentID, document, json, **kwargs):
     print("   Processing Json output file for SENTIMENT annotator")
     sentiment = []
-    for s in json["sentences"]:
-        text = " ".join([t["word"] for t in s["tokens"]])
-        temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document),s['index'] + 1, text, s["sentimentValue"], s["sentiment"].lower()]
-        print(temp)
+    for sentence in json["sentences"]:
+        text = " ".join([t["word"] for token in sentence["tokens"]])
+        temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentence['index'] + 1, text, sentence["sentimentValue"], sentence["sentiment"].lower()]
         sentiment.append(temp)
     return sentiment
 
@@ -586,6 +656,8 @@ def process_json_gender(documentID, document, json, **kwargs):
     result = []
     mentions = []
     sent_dict = {}
+    # TODO Claude take a look at the note above
+    #  the code breaks in sentence in json['sentences'] below
     for sentence in json['sentences']:
         complete_sent = ''
         for token in sentence['tokens']:
@@ -626,7 +698,7 @@ def process_json_quote(documentID, document, json, **kwargs):
     # iterate over those sentence indexes and find its complete sentence
     for quoted_sent_id, number_of_quotes in quoted_sentences.items():
         sentence_data = json['sentences'][quoted_sent_id]
-        # for sentence in parsedjson['sentences']:
+        # for sentence in CoreNLP_output['sentences']:
         complete_sent = ''
         for token in sentence_data['tokens']:
             if token['originalText'] in string.punctuation:

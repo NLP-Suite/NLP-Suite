@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env Python
 # -*- coding: utf-8 -*-
 """
 Created on Fri Oct  9 18:16:43 2020
@@ -391,7 +391,7 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
     data_words_bigrams = make_bigrams(data_words_nostops)
 
     # Initialize spacy 'en_core_web_sm' model, keeping only tagger component (for efficiency)
-    # python3 -m spacy download en
+    # Python -m spacy download en
     nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
 
     if nounsOnly == True:

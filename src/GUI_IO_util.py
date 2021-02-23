@@ -142,6 +142,7 @@ Several Emory undergraduate students have contributed over the years to the deve
         Hang Jiang\n\
         Josh Karol\n\
         Brett Landau\n\
+        Rafael Piloto\n\
         Ishan Saran\n\
         Gabriel Wang\n\
         Yi Wang\n\
