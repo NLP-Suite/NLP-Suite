@@ -361,7 +361,12 @@ def GUI_top(config_input_output_options,config_filename):
         openDirectory_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
         openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer4)
 
-    if (os.path.isfile(os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-Suite-1.0.txt'))) and (IO_libraries_util.inputProgramFileCheck('license_GUI.py')):
+    old_license_file=os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-1.0.txt')
+    if os.path.isfile(old_license_file):
+        # rename the file to the new standard
+        os.rename(old_license_file, os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-Suite-1.0.txt'))
+
+    if (os.path.isfile(os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-Suite-1.0.txt')) and (IO_libraries_util.inputProgramFileCheck('license_GUI.py'))):
         if not os.path.isfile(GUI_IO_util.configPath + os.sep + 'license-config.txt'):
             call("python " + "license_GUI.py", shell=True)
     else:

@@ -190,11 +190,12 @@ def rtf_converter(window,fileName,inputdirectory,outputdirectory,openOutputFiles
         #fileExtension = os.path.splitext(doc)[1]
         if fileExtension =="rtf":
             lines = []#list of each line in the txt files
-            with open(doc, 'r', encoding='utf-8',errors='ignore') as iptf: #read each line
-                line = iptf.readline()
-                while line: 
-                    lines.append(line)
-                    line = iptf.readline()
+            fullText = open(doc, 'r', encoding='utf-8',errors='ignore').read()
+            # https://stackoverflow.com/questions/60897366/how-to-read-rtf-file-and-convert-into-python3-strings-and-can-be-stored-in-pyth
+            # https://stackoverflow.com/questions/44580580/how-to-convert-rtf-string-to-plain-text-in-python-using-any-library
+            # https://stackoverflow.com/questions/188545/regular-expression-for-extracting-text-from-an-rtf-string/188877#188877
+            text = rtf_to_text(fullText)
+            # text=fullText
             common = os.path.commonprefix([doc, inputdirectory])
             relativePath = os.path.relpath(doc, common)
             textFilename = os.path.join(outputdirectory, os.path.splitext(relativePath)[0] + ".txt")
@@ -205,18 +206,8 @@ def rtf_converter(window,fileName,inputdirectory,outputdirectory,openOutputFiles
                 except OSError as exc:
                     if exc.errno != errno.EEXIST:
                         raise
-            # https://stackoverflow.com/questions/60897366/how-to-read-rtf-file-and-convert-into-python3-strings-and-can-be-stored-in-pyth
-            # TODO although there are suggestions on the web that simply reading an rtf file as txt
-            #   and save it would solve the problem, that is unlikely to do the trick
-            # striprtf may be a good solution
-            # https://stackoverflow.com/questions/44580580/how-to-convert-rtf-string-to-plain-text-in-python-using-any-library
-            # text = "Whatever your rtf text goes here"
-            # python striprtf(text)
-            # https://stackoverflow.com/questions/188545/regular-expression-for-extracting-text-from-an-rtf-string/188877#188877
             with open(textFilename,"w", encoding="utf-8",errors='ignore') as textFile:
-                # TODO why read one line at a time?
-                for l in lines:
-                    textFile.write(l+'\n') #line of texts
+                textFile.write(text)
     if openOutputFiles and len(fileName)>0:
         IO_files_util.openFile(window, textFilename)
     
