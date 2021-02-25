@@ -17,3 +17,8 @@ __pycache__
 *.zip
 
 .DS_Store
+
+nlp.bat
+run.bat
+!reminders/nlp.bat
+!reminders/run.bat

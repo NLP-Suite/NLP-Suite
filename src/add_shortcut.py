@@ -8,6 +8,7 @@ from winreg import (
     KEY_ALL_ACCESS, KEY_READ, REG_EXPAND_SZ, REG_SZ
 )
 import os
+from pathlib import Path
 
 # Test Git
 
@@ -73,8 +74,10 @@ def prepend_env_pathext(values):
 
 
 if __name__ == '__main__':
+    path = Path(os.path.dirname(os.path.abspath(__file__))).parent
+    print(get_env('Path'))
     prepend_env('Path', [
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), os.path.sep, os.path.pardir)
+        os.path.abspath(path)
     ])
 
     # allow running of these filetypes without having to type the extension
