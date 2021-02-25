@@ -97,6 +97,7 @@ def noun_POSTAG_DEPREL_compute_frequencies(data, data_divided_sents):
     noun_ner_stats = [['Noun NER Tags', 'Frequencies'],
         ['COUNTRY', ner_counter['COUNTRY']],
         ['CITY', ner_counter['CITY']],
+        ['LOCATION', ner_counter['LOCATION']],
         ['PERSON', ner_counter['PERSON']],
         ['ORGANIZATION', ner_counter['ORGANIZATION']],
         ['STATE_OR_PROVINCE', ner_counter['STATE_OR_PROVINCE']]]

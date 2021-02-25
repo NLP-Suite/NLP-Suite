@@ -239,7 +239,8 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
 			errorFound=IO_csv_util.list_to_csv(GUI_util.window,column_stats,output_file_name_xlsx)
 			if errorFound==True:
 				return
-			Excel_util.create_excel_chart(GUI_util.window,[column_stats],output_file_name_xlsx,"Searched token Postag Values (" + searchField_kw + ")",["pie"])
+
+			output_file_name_xlsx=Excel_util.create_excel_chart(GUI_util.window,[column_stats],inputFilename, outputDir,"QueryCoNLL_POS","Searched token POStag Values (" + searchField_kw + ")",["pie"])
 			filesToOpen.append(output_file_name_xlsx)
 
 			output_file_name_xlsx=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC', 'kw_deprel', 'stats_pie_chart')
@@ -247,7 +248,7 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
 			errorFound=IO_csv_util.list_to_csv(GUI_util.window,column_stats,output_file_name_xlsx)
 			if errorFound==True:
 				return
-			Excel_util.create_excel_chart(GUI_util.window,[column_stats],output_file_name_xlsx,"Searched token Deprel Values (" + searchField_kw + ")",["pie"])
+			output_file_name_xlsx=Excel_util.create_excel_chart(GUI_util.window,[column_stats],inputFilename, outputDir,"QueryCoNLL_DepRel","Searched token DEPrel Values (" + searchField_kw + ")",["pie"])
 			filesToOpen.append(output_file_name_xlsx)
 
 			output_file_name_xlsx=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC', 'co_kw_postag', 'stats_pie_chart')
@@ -255,7 +256,7 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
 			errorFound=IO_csv_util.list_to_csv(GUI_util.window,column_stats,output_file_name_xlsx)
 			if errorFound==True:
 				return
-			Excel_util.create_excel_chart(GUI_util.window,[column_stats],output_file_name_xlsx,"Co-token Postag Values (" + searchField_kw + ")",["pie"])
+			output_file_name_xlsx=Excel_util.create_excel_chart(GUI_util.window,[column_stats],inputFilename, outputDir,"QueryCoNLL_CoOcc_POS","Co-token POStag Values (" + searchField_kw + ")",["pie"])
 			filesToOpen.append(output_file_name_xlsx)
 
 			output_file_name_xlsx=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC', 'co_kw_deprel', 'stats_pie_chart')
@@ -263,7 +264,8 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
 			errorFound=IO_csv_util.list_to_csv(GUI_util.window,column_stats,output_file_name_xlsx)
 			if errorFound==True:
 				return
-			Excel_util.create_excel_chart(GUI_util.window,[column_stats],output_file_name_xlsx,"Co-token Deprel Values (" + searchField_kw + ")",["pie"])
+
+			output_file_name_xlsx=Excel_util.create_excel_chart(GUI_util.window,[column_stats],inputFilename, outputDir,"QueryCoNLL_CoOcc_DEP","Co-token DEPrel Values (" + searchField_kw + ")",["pie"])
 			filesToOpen.append(output_file_name_xlsx)
 			IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CoNLL search at',True)
 

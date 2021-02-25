@@ -156,6 +156,34 @@ def docx_converter(window,fileName,inputdirectory,outputdirectory,openOutputFile
     if openOutputFiles and len(fileName)>0:
         IO_files_util.openFile(window, textFilename)
 
+def csv_converter(window,fileName,inputDir,outputDir,openOutputFiles):
+    if fileName!='':
+        if fileName[:2] != '~$' and fileName[-4:]=='.csv':
+            inputDocs=[fileName]
+        else:
+            tk.messagebox.showinfo("csv converter","The input file " + fileName + " is not of type csv.\n\nPlease, select a csv type file for input and try again.")
+            return
+        inputDocs=[fileName]
+    else:
+        if inputDir!='':
+            tk.messagebox.showinfo("csv converter","No input filename. The csv converter works only on a single csv file, rather than a whole directory. Please, select an input csv file and try again.")
+            return
+        else:
+            tk.messagebox.showinfo("csv converter","No input filename. Please, select an input csv file and try again.")
+            return
+        tk.messagebox.showinfo("csv converter","The function is still under construction.\n\nSorry!")
+        return
+        # TODO add a REMINDER that if they need to use some of the csv fields as filters,
+        #   they need to use first the Data manager to extract specific fields by specific values
+        #   for instance, in the csv output of the gender annotator, you may want to extract all the sentences
+        #       WHERE the gender is Male and/or Female for separate analysis
+        # TODO Check headers if Sentence is present and export sentences
+        # TODO If Document ID present, loop through all documents
+        #   ask the user if they want to export the Document (i.e., filename) adding it before each document sentence
+        #   If the values of Document ID > 1  further ask if they want to create separate files or a single merged file
+        #   Could further ask if they want to embed the filename in special symbols (e.g., <@ @>, as in <@filename@>
+        #       so that the files can also be easily split
+
 def rtf_converter(window,fileName,inputdirectory,outputdirectory,openOutputFiles):
     textFilename=''
     if len(inputdirectory)>0:
