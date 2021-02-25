@@ -161,6 +161,7 @@ pydict["Annotator - date (NER normalized date, via CoreNLP)"] = ["Stanford_CoreN
 pydict["Annotator - gender (male & female names; via CoreNLP and dictionaries)"] = ["annotator_gender_main.py", 1]
 pydict["Annotator - quote (via CoreNLP)"] = ["Stanford_CoreNLP_main.py", 1]
 pydict["Annotator - dictionary, gender, DBpedia, YAGO"] = ["annotator_main.py", 1]
+pydict["Annotator - hedge/uncertainty"] = ["", 0]
 pydict["CoNLL table analyzer - Search the CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["CoNLL table analyzer - Clause analysis"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["CoNLL table analyzer - Function words analysis"] = ["CoNLL_table_analyzer_main.py", 1]
@@ -179,7 +180,7 @@ pydict["File cleaner (Remove blank lines from txt file(s))"] = ["file_checker_co
 pydict["File classifier (dumb classifier via embedded date) (file name)"] = ["file_filename_checker_main.py", 1]
 pydict["File finder (file name)"] = ["file_manager_main.py", 1]
 pydict["File finder (file content for words/collocations)"] = ["file_finder_byWord_main.py", 1]
-pydict["File-type converter (pdf, docx, rtf --> txt)"] = ["file_checker_converter_cleaner_main.py", 1]
+pydict["File-type converter (csv, docx, pdf, rtf --> txt)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File matcher (file name)"] = ["file_matcher_main.py", 1]
 pydict["File merger (file content)"] = ["file_merger_main.py", 1]
 pydict["File splitter (file content)"] = ["file_splitter_main.py", 1]
@@ -255,7 +256,7 @@ file_handling_menu = tk.OptionMenu(window, data_file_handling_tools_var,
                                    'File checker (file content utf-8 encoding)',
                                    'File checker (file name)',
                                    'File classifier (dumb classifier via embedded date) (file name)',
-                                   'File-type converter (pdf, docx, rtf --> txt)',
+                                   'File-type converter (csv, docx, pdf, rtf --> txt)',
                                    'File matcher (file name)',
                                    'File merger (file content)',
                                    'File splitter (file content)',
@@ -280,7 +281,7 @@ pre_processing_menu = tk.OptionMenu(window, pre_processing_tools_var,
                                     'File cleaner (Remove blank lines from txt file(s))',
                                     'File finder (file name)',
                                     'File finder (file content for words/collocations)',
-                                    'File-type converter (pdf, docx, rtf --> txt)',
+                                    'File-type converter (csv, docx, pdf, rtf --> txt)',
                                     'File merger (file content)',
                                     'File splitter (file content)',
                                     'Annotator - date (NER normalized date, via CoreNLP)',
@@ -379,6 +380,7 @@ corpus_document_tools_menu = tk.OptionMenu(window, corpus_document_tools_var,
                                            'Annotator - gender (male & female names; via CoreNLP and dictionaries)',
                                            'Annotator - quote (via CoreNLP)',
                                            'Annotator - dictionary, gender, DBpedia, YAGO',
+                                           'Annotator - hedge/uncertainty',
                                            'Annotator extractor',
                                            'Narrative analysis',
                                            'Style analysis',

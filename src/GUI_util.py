@@ -20,7 +20,7 @@ import reminders_util
 import TIPS_util
 import GUI_IO_util
 import IO_files_util
-
+import IO_CoNLL_util
 
 y_multiplier_integer = 1
 noLicenceError=False
