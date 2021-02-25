@@ -111,7 +111,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 				if date != 'nan' and date != '':
 					# if dates are present they MUST be converted to Google Earth Pro expected date format yyyy-mm-dd
 					# get format of your date
-					# https://stackoverflow.com/questions/44298131/detecting-date-format-and-converting-them-to-mm-dd-yyyy-using-python3
+					# https://stackoverflow.com/questions/44298131/detecting-date-format-and-converting-them-to-mm-dd-yyyy-using-Python
 					# date options https://i.pinimg.com/736x/25/f7/0d/25f70de25821648c2f268b3d52da6eb8.jpg
 
 					# https://stackoverflow.com/questions/25341945/check-if-string-has-date-any-format
