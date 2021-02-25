@@ -13,10 +13,13 @@
 5. Run "STEP2-install_components" through right-click -> run using Powershell
 
 6. Double click to run setup_auto_update.bat
+    - The auto update feature replies on Git. Please download Git through [this link](https://git-scm.com/downloads).
 
 If you encounter any problems, feel free to [start a new issue](https://github.com/NLP-Suite/NLP-Suite/issues/new/choose). For a list of current issues with the NLP Suite, [click here](https://github.com/NLP-Suite/NLP-Suite/issues).
 
 # Update Instructions
+
+- If you are updating NLP Suite from an pre-Github version, please follow [this tutorial](https://docs.google.com/document/d/1zub18qle0OXV8BeE1X2t9iR8PW7ZnY01Mbb1f0YvBto/edit).
 
 To update the program to the newest version, simply double click update.bat
 
