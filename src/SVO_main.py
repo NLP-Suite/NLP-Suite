@@ -627,7 +627,7 @@ scriptPath = GUI_IO_util.scriptPath
 #one folder UP, the NLP folder
 NLPPath=GUI_IO_util.NLPPath
 #subdirectory of script directory where config files are saved
-libPath = GUI_IO_util.libPath +os.sep+'wordLists'
+# libPath = GUI_IO_util.libPath +os.sep+'wordLists'
 
 # GUI CHANGES add following lines to every special GUI
 # +3 is the number of lines starting at 1 of IO widgets
@@ -661,8 +661,8 @@ subjects_var=tk.IntVar()
 objects_var=tk.IntVar()
 verbs_var=tk.IntVar()
 subjects_dict_var=tk.StringVar()
-objects_dict_var=tk.StringVar()
 verbs_dict_var=tk.StringVar()
+objects_dict_var=tk.StringVar()
 gephi_var=tk.IntVar()
 wordcloud_var=tk.IntVar()
 google_earth_var=tk.IntVar()
@@ -738,9 +738,13 @@ def activateFilters(*args):
 SVO_extractor_var.trace('w',activateFilters)
 
 def getDictFile(checkbox_var,dict_var,checkbox_value,dictFile):
-    filePath=''
+    filePath = ''
     if checkbox_value==1:
-        initialFolder = os.path.dirname(os.path.abspath(__file__))
+        if dictFile == 'Subject' or dictFile == 'Object':
+            filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
+        elif dictFile == 'Verb':
+            filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-action-list.csv'
+        initialFolder = GUI_IO_util.wordLists_libPath
         filePath = tk.filedialog.askopenfilename(title = 'Select INPUT csv ' + dictFile + ' dictionary filter file', initialdir = initialFolder, filetypes = [("csv files", "*.csv")])
         if len(filePath)==0:
             checkbox_var.set(0)
@@ -750,24 +754,36 @@ subjects_var.set(1)
 subjects_checkbox = tk.Checkbutton(window, text='Filter Subject', variable=subjects_var, onvalue=1, offvalue=0,command=lambda:getDictFile(subjects_var,subjects_dict_var,subjects_var.get(),'Subject'))
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,subjects_checkbox,True)
 
+#setup a button to open Windows Explorer on the subjects file
+openInputFile_subjects_button = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, subjects_dict_var.get()))
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+140, y_multiplier_integer,openInputFile_subjects_button,True)
+
 verbs_var.set(1)
 verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=verbs_var, onvalue=1, offvalue=0,command=lambda:getDictFile(verbs_var,verbs_dict_var,verbs_var.get(),'Verb'))
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,verbs_checkbox,True)
 
+#setup a button to open Windows Explorer on the verbs file
+openInputFile_verbs_button = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, verbs_dict_var.get()))
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+520, y_multiplier_integer,openInputFile_verbs_button,True)
+
 objects_var.set(0)
 objects_checkbox = tk.Checkbutton(window, text='Filter Object', variable=objects_var, onvalue=1, offvalue=0,command=lambda:getDictFile(objects_var,objects_dict_var,objects_var.get(),'Object'))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+800,y_multiplier_integer,objects_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+800,y_multiplier_integer,objects_checkbox,True)
 
-subjects_dict_var.set(os.path.join(libPath,'social-actor-list.csv'))
-subjects_dict_entry = tk.Entry(window, width=40,state="disabled",textvariable=subjects_dict_var)
+#setup a button to open Windows Explorer on the objects file
+openInputFile_objects_button = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, objects_dict_var.get()))
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+930, y_multiplier_integer,openInputFile_objects_button)
+
+subjects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath,'social-actor-list.csv'))
+subjects_dict_entry = tk.Entry(window, width=60,state="disabled",textvariable=subjects_dict_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,subjects_dict_entry,True)
 
-verbs_dict_var.set(os.path.join(libPath,'social-action-list.csv'))
-verbs_dict_entry = tk.Entry(window, width=40,state="disabled",textvariable=verbs_dict_var)
+verbs_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath,'social-action-list.csv'))
+verbs_dict_entry = tk.Entry(window, width=60,state="disabled",textvariable=verbs_dict_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,verbs_dict_entry,True)
 
 objects_dict_var.set('')
-objects_dict_entry = tk.Entry(window, width=40,state="disabled",textvariable=objects_dict_var)
+objects_dict_entry = tk.Entry(window, width=60,state="disabled",textvariable=objects_dict_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+800,y_multiplier_integer,objects_dict_entry)
 
 gephi_var.set(1)
@@ -796,10 +812,10 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help","Please, using the dropdown menu, select the type of Stanford coreference you wish to use for coreference Resolution (Deterministic is fastest but less accurate; Neural Network is slowest but most accurate; recommended!\n\nThe co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nWhile CoreNLP can resolve different coreference types (e.g., nominal, pronominal), the SVO script filters only pronominal types. Pronominal coreference refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'.\n\nPlease, select the memory size Stanford CoreNLP will use to resolve coreference. Default = 6. Lower this value if CoreNLP runs out of resources. Increase the value for larger files.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help","Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help","Please, tick the checkbox if you wish to run the Stanford CoreNLP normalized NER date annotator to extract standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\nThis will display time plots of dates, visualizing the WHEN of the 5 Ws of narrative.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","Please, tick the checkbox if you wish to run the Stanford CoreNLP OpenIE to extract SVO triplets.\n\nContrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chuncks of text being currently processed.\n\nIn INPUT OpenIE can process a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT OpenIE will produce a csv file of SVO results and, if the appropriate visualization options are selected, a Gephi gexf network file, png word cloud file, and Google Earth Pro kml file.\n\nWHEN PROCESSING A DIRECTORY, ALL OUTPUT FILES WILL BE SAVED IN A SUBDIRECTORY OF THE SELECTED OUTPUT DIRECTORY WITH THE NAME OF THE INPUT DIRECTORY.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help","Please, tick the checkbox to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file social-actor-list, created via WordNet with keyword person and saved in the lib subdirectory, will be automatically loaded as the default value (Press ESCape to clear selection).\n\nDictionary filter files can be created via WordNet and saved in the 'lib' subfolder. You can edit that list, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help","The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects.\n\nThe filter file social-actor-list, created via WordNet with person as keyword and saved in the 'lib' subfolder, will be automatically set as the default filter for subjects (Press ESCape to clear selection).\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be promted to select a new file.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*10,"Help","Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;;\n\n  2. to visualize SVO relations in a wordcloud;\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Geoogle Earth Pro. ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","Please, tick the checkbox if you wish to run the Stanford CoreNLP OpenIE to extract SVO triplets.\n\nContrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chunks of text being currently processed.\n\nIn INPUT OpenIE can process a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT OpenIE will produce a csv file of SVO results and, if the appropriate visualization options are selected, a Gephi gexf network file, png word cloud file, and Google Earth Pro kml file.\n\nWHEN PROCESSING A DIRECTORY, ALL OUTPUT FILES WILL BE SAVED IN A SUBDIRECTORY OF THE SELECTED OUTPUT DIRECTORY WITH THE NAME OF THE INPUT DIRECTORY.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help","Please, tick the checkbox to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file \'social-actor-list.csv\', created via WordNet with keyword person and saved in the \'lib/wordLists\' subfolder, will be automatically loaded as the DEFAULT dictionary file (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly automatically loaded as the DEFAULT dictionary file for verbs.\n\nDictionary filter files can be created via WordNet and saved in the \'lib/wordLists\' subfolder. You can edit that list, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help","The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that).\n\nThe filter file social-actor-list, created via WordNet with person as keyword and saved in the \'lib/wordLists\' subfolder, will be automatically set as the DEFAULT filter for subjects (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly set as the DEFAULT dictionary file for verbs.\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be prompted to select a new file.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*10,"Help","Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;;\n\n  2. to visualize SVO relations in a wordcloud;\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro. ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*11,"Help",GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())

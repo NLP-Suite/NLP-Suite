@@ -36,6 +36,8 @@ from spacy_langdetect import LanguageDetector
 import langid
 from langid.langid import LanguageIdentifier, model
 import csv
+import subprocess
+import time
 
 import file_cleaner_util
 import Excel_util
@@ -161,7 +163,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createExcelChar
                        message='There are no sub directories under the selected input directory\n\n' + inputDir +'\n\nPlease, uncheck your subdir option if you want to process this directory and try again.')
     df_list = []
     for dir in subdir:
-        dfs = check_for_typo(dir, outputDir, openOutputFiles, createExcelCharts, NERs, similarity_value, by_all_tokens_var)
+        dfs = check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs, similarity_value, by_all_tokens_var)
         df_list.append(dfs)
     if len(df_list) > 0:
         df_complete_list = [df[0] for df in df_list]
@@ -189,15 +191,18 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createExcelChar
 # check whether a single word is considered as typo within a list of words
 # design choice for this algorithm:
 #   if the word is shorter than user-supplied word length (default 4 characters):
-#       1 or more character mistake will be considered as typo
+#       1 or more character mistake will be considered as typo should use 1 only for longer words
 #   else(the word is longer than or equal to user-supplied word length (default 4 characters):
-#       2 or more character mistake will be considered as typo
+#       2 or more character mistake will be considered as typo; DEFAULT
 
-# checklist contains words with more than 1 time of appearence
+# checklist contains words with more than 1 time of appearance
 # similarity_value is the gaging_difference attribute
 def check_edit_dist(input_word, checklist, similarity_value):
     exist_typo = False
     for word in checklist:
+        # TODO see also pyslpellchecker https://pypi.org/project/pyspellchecker/ which is based on
+        #   Peter Norvig’s blog post on setting up a simple spell checking algorithm based on Levenshtein's edit distance
+        # It uses a Levenshtein Distance
         dist = nltk.edit_distance(input_word, word[0])
         if len(input_word) >= similarity_value:
             if 0 < dist <= 2:
@@ -444,9 +449,9 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
 #             spell = Speller(lang='en')
 #         else:
 #             spell = SpellChecker()
-#         all_words = [[token, sentence_number + 1, article_number + 1, sentence, article[1],IO_csv_util.dressFilenameForCSVHyperlink(article[2]) ,''] for article_number, article in
-#                      enumerate(articles)
-#                      for sentence_number, sentence in enumerate(article[0])
+#         all_words = [[token, sentence_number + 1, document_number + 1, sentence, document[1],IO_csv_util.dressFilenameForCSVHyperlink(document[2]) ,''] for document_number, document in
+#                      enumerate(documents)
+#                      for sentence_number, sentence in enumerate(document[0])
 #                      for token in NLP.word_tokenize(sentence)]
 #
 #         list_to_check = all_words
@@ -478,6 +483,13 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
     filesToOpen=[]
     all_word_dict = []
     ner_dict = {}
+
+    # check that the CoreNLPdir as been setup
+    CoreNLPdir = IO_libraries_util.get_external_software_dir('spell_checker_main', 'Stanford CoreNLP')
+
+    if CoreNLPdir == '':
+        return
+
     if by_all_tokens_var:
         pass
     else:
@@ -485,46 +497,56 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
             NERs = ['CITY', 'LOCATION', 'PERSON', 'COUNTRY', 'STATE_OR_PROVINCE', 'ORGANIZATION']
         else:
             pass
-    articles = []
+    documents = []
     folderID=0
     fileID=0
     subfolder=[]
     nFiles = nFolders = 0
 
-    NLP = StanfordCoreNLP('http://localhost', port=9000)
-
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity start', 'Started running Word similarity at', True)
 
+    p = subprocess.Popen(
+        ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
+         'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
+    time.sleep(5)
+
+    # NLP = StanfordCoreNLP('http://localhost', port=9000)
+
     for folder, subs, files in os.walk(inputDir):
+        nFolders=len(subs)+1
         folderID+=1
         print("\nProcessing folder "+str(folderID)+"/"+str(nFolders)+": "+os.path.basename(os.path.normpath(folder)))
+        fileID=0
         for filename in files:
+            fileID+=1
             if not filename.endswith('.txt'):
                 continue
-            print("  Processing file:",filename)
-            fileID=fileID+1
+            print("  Processing file "+str(fileID)+"/"+str(len(files)) + ": " + filename)
             dir_path = os.path.join(folder, filename)
             with open(dir_path, 'r', encoding='utf-8', errors='ignore') as src:
                 text = src.read().replace("\n", " ")
+                NLP = StanfordCoreNLP('http://localhost', port=9000)
             sentences = tokenize.sent_tokenize(text)
-            articles.append([sentences,filename, dir_path])
+            documents.append([sentences,filename, dir_path])
 
     # IO_util.timed_alert(GUI_util.window, 5000, 'Word similarity', 'Finished preparing data...\n\nProcessed '+str(folderID)+' subfolders and '+str(fileID)+' files.\n\nNow running Stanford CoreNLP to get NER values on every file processed... PLEASE, be patient. This may take a while...')
     print('Finished preparing data for folder '+str(folderID)+' subfolders and '+str(fileID)+' files.')
 
     if by_all_tokens_var:
-        all_words = [[token, sentence_number + 1, article_number + 1,sentence, article[1],IO_csv_util.dressFilenameForCSVHyperlink(article[2]), ''] for article_number, article in
-               enumerate(articles)
-               for sentence_number, sentence in enumerate(article[0])
-               for token in NLP.word_tokenize(sentence)]
+        # TODO all_words ends up including filename as well; must only include the words in the documents
+        all_words = [[token, sentence_number + 1, document_number + 1,sentence, document[1],IO_csv_util.dressFilenameForCSVHyperlink(document[2]), ''] for document_number, document in
+                enumerate(documents)
+                for sentence_number, sentence in enumerate(document[0])
+                # TODO should not process the same word twice .drop_duplicates()
+                for token in NLP.word_tokenize(sentence)]
         temp = [elmt[0] for elmt in all_words]
         all_word_dict = [(item, count) for item, count in collections.Counter(temp).items() if count > 1]
         list_to_check = all_words
 
     else:
-        NER = [[ners[0], sentence_number + 1, article_number + 1, sentence, article[1],IO_csv_util.dressFilenameForCSVHyperlink(article[2]), ners[1]] for article_number, article in
-               enumerate(articles)
-               for sentence_number, sentence in enumerate(article[0])
+        NER = [[ners[0], sentence_number + 1, document_number + 1, sentence, document[1],IO_csv_util.dressFilenameForCSVHyperlink(document[2]), ners[1]] for document_number, document in
+               enumerate(documents)
+               for sentence_number, sentence in enumerate(document[0])
                for ners in NLP.ner(sentence) if ners[1] in NERs]
         ner_dict = {}
         for each_ner in NERs:
@@ -541,6 +563,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
     # IO_util.timed_alert(GUI_util.window, 5000, 'Word similarity', 'Finished running Stanford CoreNLP...\n\nProcessed '+str(len(list_to_check))+' words.\n\nNow computing word differences... PLEASE, be patient. This may take a while...')
     # These headers reflect the items returned from the processing above
     # THEIR ORDER CANNOT BE CHANGED, UNLESS ABOVE ORDER OF PROCESSING IS ALSO CHANGED
+    # These headers are then used selectively for the output (see headers2)
     headers1 = ['Words', 'Word frequency in document', 'Sentence ID', 'Document ID',
                 'Sentence', 'Document', 'Document path', 'Named Entity (NER)',
                 'Similar word in directory', 'Similar-word frequency in directory', 'Typo?']
@@ -550,10 +573,22 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
                  'Similar-word frequency in directory', 'Typo?',
                  'Number of documents processed', 'Sentence ID', 'Sentence',
                  'Document ID', 'Document', 'Document path', 'Processed directory']
+        wordID=0
+        # TODO should only check DISTINCT words in list_to_check; no point checking and re-checking the same word
         for word in list_to_check:
+            wordID+=1
             word.insert(1, word_freq_dict.get(word[0]))
             checker_against = all_word_dict
-            value_tuple = check_edit_dist(word[0], checker_against, similarity_value)
+            speller = SpellChecker()
+            # TODO loops twice through same list? Here and in check_edit_dist
+            # TODO should not check punctuation
+            new_word = speller.correction(word[0])
+            value_tuple=[]
+            if new_word!=word[0]:
+                # TODO should check edit distance only if the word is misspelled
+                value_tuple = check_edit_dist(word[0], checker_against, similarity_value)
+            else:
+                value_tuple=[False, '', '']
             if value_tuple[0]:
                 word.append(value_tuple[1])  # returned similar word from check_edit_list
                 word.append(value_tuple[2])  # returned similar word frequency from check_edit_list
@@ -562,7 +597,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
                 word.append('')
                 word.append('')
                 word.append('')
-            print(word)
+            print("      Processing word " + str(wordID) + "/" + str(len(list_to_check)) + ":" + word[0])
     # Processing NER
     else:
         # headers 2 rearranges the headers but must have the same values
@@ -625,17 +660,20 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
             filesToOpen.append(outputFileName_simple)
             filesToOpen.append(outputFileName_complete)
 
+            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity end',
+                                               'Finished running Word similarity at', True)
+
             if createExcelCharts:
                 Excel_outputFileName=createChart(outputFileName_simple, outputDir, [[10, 10]], '')
 
                 if Excel_outputFileName != "":
                     filesToOpen.append(Excel_outputFileName)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity end', 'Finished running Word similarity at', True)
-
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
         filesToOpen=[] # empty the list to avoid opening files twice
+
+    p.kill()
 
     return filesToOpen
 

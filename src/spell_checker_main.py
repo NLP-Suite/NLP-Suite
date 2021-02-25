@@ -116,10 +116,7 @@ def run(inputFilename, inputDir, outputDir,
             mb.showwarning(title='Option not available',
                            message="The 'Spell checker(via Java tool)' is not available yet.\n\nSorry!")
             return
-        # outputFileName_complete = IO_files_util.generate_output_file_name(inputDir, outputDir, '.csv', 'WordSimil',
-        #                                                                   str(similarity_value),'spelling_checker','Full-table')
-        # outputFileName_simple = IO_files_util.generate_output_file_name(inputDir, outputDir, '.csv', 'WordSimil',
-        #                                                                 str(similarity_value),'spelling_checker','Concise-table')
+
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Spelling checker end',
                                            'Finished running Spelling checker at', True)
     else:
@@ -133,16 +130,6 @@ def run(inputFilename, inputDir, outputDir,
                            message='The word similarity script requires a valid NER entry.\n\nPlease, select an NER value and try again.')
             return
 
-        # check that the CoreNLPdir as been setup
-        CoreNLPdir = IO_libraries_util.get_external_software_dir('spell_checker_main', 'Stanford CoreNLP')
-        if CoreNLPdir == '':
-            return
-
-        p = subprocess.Popen(
-            ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
-
-        time.sleep(5)
         if check_withinSubDir and (not spelling_checker_var):
             outputFiles = file_spell_checker_util.check_for_typo_sub_dir(CoreNLPdir, inputDir, outputDir, openOutputFiles,
                                                                     createExcelCharts, NER_list, similarity_value,
@@ -151,7 +138,12 @@ def run(inputFilename, inputDir, outputDir,
             outputFiles = file_spell_checker_util.check_for_typo(CoreNLPdir, inputDir, outputDir, NER_list, similarity_value,
                                                             by_all_tokens_var, spelling_checker_var, openOutputFiles,
                                                             createExcelCharts)
-        p.kill()
+
+        if outputFiles != "":
+            filesToOpen.append(outputFiles)
+
+    if openOutputFiles == True:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_similarity_command = lambda: run(GUI_util.inputFilename.get(),
