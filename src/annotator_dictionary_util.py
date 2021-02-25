@@ -5,7 +5,6 @@
 """
 
 import sys
-
 import IO_libraries_util
 import GUI_util
 
@@ -79,6 +78,8 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csvValue_colo
         i=i+1
         print("Processing file " + str(i) + "/" + str(nFile) + " " + tail)
         text=open(file, 'r', encoding='utf-8',errors='ignore').read()
+        # put filename in bold
+        tail='<b>' + tail + '</b>'
         writeout.append(tail + '<br />\n')  # add the filename and a hard return
         if len(csvValue_color_list) == 0:
             terms = dictionary

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env Python
 # -*- coding: utf-8 -*-
 # The Python 3 routine was written by Jian Chen, 12.12.2018
 # modified by Jian Chen (January 2019)
