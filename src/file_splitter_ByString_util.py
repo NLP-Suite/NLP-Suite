@@ -9,7 +9,7 @@ import io
 import os
 import shutil
 
-#!/usr/bin/env python3
+#!/usr/bin/env Python
 # -*- coding: utf-8 -*-
 """
 Created on Sun Apr 12 21:04:52 2020

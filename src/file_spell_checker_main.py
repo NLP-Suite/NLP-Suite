@@ -10,8 +10,6 @@ if not IO_libraries_util.install_all_packages(GUI_util.window, "spell-checker_ma
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-import subprocess
-import time
 
 import GUI_IO_util
 import IO_files_util
