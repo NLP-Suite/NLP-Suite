@@ -122,8 +122,9 @@ function_to_run=''
 menu_option=''
 
 pydict = {}
-pydict["Document converter (pdf --> txt)"] = ["file_type_converter_util.pdf_converter"]
+pydict["Document converter (csv --> txt)"] = ["file_type_converter_util.csv_converter"]
 pydict["Document converter (docx --> txt)"] = ["file_type_converter_util.docx_converter"]
+pydict["Document converter (pdf --> txt)"] = ["file_type_converter_util.pdf_converter"]
 pydict["Document converter (rtf --> txt)"] = ["file_type_converter_util.rtf_converter"]
 pydict["Check utf-8 encoding compliance"] = ["file_utf8_compliance_util.check_utf8_compliance"]
 pydict["Predict encoding (via chardet)"] = ["file_utf8_compliance_util.predict_encoding"]
@@ -181,8 +182,9 @@ convert_tools_var.set('')
 convert_lb = tk.Label(window, text='Convert Files')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,convert_lb,True)
 convert_menu = tk.OptionMenu(window,convert_tools_var,
-                    'Document converter (pdf --> txt)',
+                    'Document converter (csv --> txt)',
                     'Document converter (docx --> txt)',
+                    'Document converter (pdf --> txt)',
                     'Document converter (rtf --> txt)')
 
 convert_menu.configure(width=70)

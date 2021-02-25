@@ -62,7 +62,7 @@ Please, check the API key and try again.",Yes,Yes
 GIS,Open Google Earth GUI,"You should tick the Open GUI checkbox ONLY if you wish to open the GUI.
 
 The Google Earth Pro GUI will provide a number of options to personalize a Google Earth Pro map. Press Run after selecting the Open GUI option.",Yes,Yes
-Stanford-CoreNLP,CoNLL table analyzer,"The Stanford CoreNLP parseer having produced in output a CoNLL table, it will now open the 'CoNLL table analyzer' where you can
+Stanford-CoreNLP,CoNLL table analyzer,"The Stanford CoreNLP parser having produced in output a CoNLL table, it will now open the 'CoNLL table analyzer' where you can
   1. search the results contained in the CoNLL table by syntactical properties and relations or
   2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words).",Yes,Yes
 shape-of-stories,Stanford CoreNLP Sentiment Analysis system requirements,"The Stanford CoreNLP Sentiment Analysis tool requires two components.

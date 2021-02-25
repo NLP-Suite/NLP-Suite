@@ -144,7 +144,7 @@ def selectFile(window, IsInputFile, checkCoNLL, changeVar, changeVar1, title, fi
 	if len(filePath) < 3:
 		filePath = ""
 	if (checkCoNLL == True) and (IsInputFile == 1) and (extension == ".csv") and (len(filePath) > 3):
-		if IO_CoNLL_util.check_CoNLL(filePath, True) == False:
+		if IO_CoNLL_util.check_CoNLL(filePath, False) == False:
 			filePath = ""
 	changeVar.set(filePath)
 
