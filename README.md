@@ -13,7 +13,7 @@ The NLP Suite was developed by **Roberto Franzosi** at **Emory University** with
 
 To learn more about NLP Suite, its architecture, and screenshots, visit the [NLP Suite Wiki](https://github.com/NLP-Suite/NLP-Suite/wiki)
 
-## Installation
+## Installation - PASSING
 
 To install NLP Suite:
 
