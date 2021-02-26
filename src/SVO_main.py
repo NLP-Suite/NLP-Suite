@@ -93,10 +93,12 @@ def extract_svo(svo_triplets, svo_result, svo_merge_filename, subject_list, verb
             return
         svo_merge_writer = csv.DictWriter(merge_result, fieldnames=field_names)
     for svo in svo_triplets:
+        # RF if len(svo[2]) == 0 or len(svo[3]) == 0:
         if len(svo[2]) == 0 or len(svo[3]) == 0 or len(svo[4]) == 0:
-            continue
+                continue
         # check if the triple needs to be included
         flag = False
+        # RF if len(subject_list) == 0 and len(verb_list) == 0:
         if len(subject_list) == 0 and len(verb_list) == 0 and len(object_list) == 0:
             # no filter
             flag = True
@@ -121,6 +123,7 @@ def extract_svo(svo_triplets, svo_result, svo_merge_filename, subject_list, verb
                     lemmalib[svo[3]] = lemma2
                 if lemma2 in verb_list:
                     flag = True
+            # RF comment these lines out
             else:
                 # filter object
                 if svo[4] in lemmalib:  # object
@@ -404,6 +407,7 @@ def run(inputFilename, inputDir, outputDir, utf8_var, Coref, Coref_Option, memor
             svo_triplets = []
             for line in listOfLines:
                 spl = line.split("|")
+                # RF why 9??? this excludes wife gave glance
                 if len(spl) != 9:
                     continue
                 spl[0] = int(spl[0])
@@ -589,6 +593,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 manual_Coref_var.get(),
                                 date_extractor_var.get(),
                                 SVO_extractor_var.get(),
+                                SV_extractor_var.get(),
                                 subjects_dict_var.get(),
                                 verbs_dict_var.get(),
                                 objects_dict_var.get(),
@@ -657,6 +662,7 @@ memory_var=tk.StringVar()
 manual_Coref_var=tk.IntVar()
 date_extractor_var=tk.IntVar()
 SVO_extractor_var=tk.IntVar()
+SV_extractor_var=tk.IntVar()
 subjects_var=tk.IntVar()
 objects_var=tk.IntVar()
 verbs_var=tk.IntVar()
@@ -712,10 +718,15 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 SVO_extractor_var.set(1)
 SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs (via Stanford CoreNLP OpenIE)', variable=SVO_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SVO_extractor_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SVO_extractor_checkbox,True)
+
+SV_extractor_var.set(0)
+SV_extractor_checkbox = tk.Checkbutton(window, state='disabled', text='Extract SVOs & SVs (via Stanford CoreNLP OpenIE)', variable=SV_extractor_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,SV_extractor_checkbox)
 
 def activateFilters(*args):
     if SVO_extractor_var.get()==1:
+        SV_extractor_checkbox.configure(state='disabled')
         subjects_checkbox.configure(state='normal')
         verbs_checkbox.configure(state='normal')
         objects_checkbox.configure(state='normal')
@@ -726,16 +737,32 @@ def activateFilters(*args):
         wordcloud_checkbox.configure(state='normal')
         google_earth_checkbox.configure(state='normal')
     else:
-        subjects_checkbox.configure(state='disabled')
-        verbs_checkbox.configure(state='disabled')
-        objects_checkbox.configure(state='disabled')
-        gephi_var.set(0)
-        wordcloud_var.set(0)
-        google_earth_var.set(0)
-        gephi_checkbox.configure(state='disabled')
-        wordcloud_checkbox.configure(state='disabled')
-        google_earth_checkbox.configure(state='disabled')
+        SV_extractor_checkbox.configure(state='normal')
+        if SV_extractor_var.get()==True:
+            SVO_extractor_var.set(0)
+            SVO_extractor_checkbox.configure(state='disabled')
+            subjects_checkbox.configure(state='normal')
+            verbs_checkbox.configure(state='normal')
+            objects_checkbox.configure(state='disabled')
+            gephi_var.set(0)
+            wordcloud_var.set(1)
+            google_earth_var.set(1)
+            gephi_checkbox.configure(state='disabled')
+            wordcloud_checkbox.configure(state='normal')
+            google_earth_checkbox.configure(state='normal')
+        else:
+            SVO_extractor_checkbox.configure(state='normal')
+            subjects_checkbox.configure(state='disabled')
+            verbs_checkbox.configure(state='disabled')
+            objects_checkbox.configure(state='disabled')
+            gephi_var.set(0)
+            wordcloud_var.set(0)
+            google_earth_var.set(0)
+            gephi_checkbox.configure(state='disabled')
+            wordcloud_checkbox.configure(state='disabled')
+            google_earth_checkbox.configure(state='disabled')
 SVO_extractor_var.trace('w',activateFilters)
+SV_extractor_var.trace('w',activateFilters)
 
 def getDictFile(checkbox_var,dict_var,checkbox_value,dictFile):
     filePath = ''
@@ -812,7 +839,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help","Please, using the dropdown menu, select the type of Stanford coreference you wish to use for coreference Resolution (Deterministic is fastest but less accurate; Neural Network is slowest but most accurate; recommended!\n\nThe co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nWhile CoreNLP can resolve different coreference types (e.g., nominal, pronominal), the SVO script filters only pronominal types. Pronominal coreference refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'.\n\nPlease, select the memory size Stanford CoreNLP will use to resolve coreference. Default = 6. Lower this value if CoreNLP runs out of resources. Increase the value for larger files.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help","Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help","Please, tick the checkbox if you wish to run the Stanford CoreNLP normalized NER date annotator to extract standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\nThis will display time plots of dates, visualizing the WHEN of the 5 Ws of narrative.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","Please, tick the checkbox if you wish to run the Stanford CoreNLP OpenIE to extract SVO triplets.\n\nContrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chunks of text being currently processed.\n\nIn INPUT OpenIE can process a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT OpenIE will produce a csv file of SVO results and, if the appropriate visualization options are selected, a Gephi gexf network file, png word cloud file, and Google Earth Pro kml file.\n\nWHEN PROCESSING A DIRECTORY, ALL OUTPUT FILES WILL BE SAVED IN A SUBDIRECTORY OF THE SELECTED OUTPUT DIRECTORY WITH THE NAME OF THE INPUT DIRECTORY.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","Please, tick the checkbox if you wish to run the Stanford CoreNLP OpenIE to extract SVO triplets or SVO triplets and SV pairs.\n\nContrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chunks of text being currently processed.\n\nIn INPUT OpenIE can process a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT OpenIE will produce a csv file of SVO results and, if the appropriate visualization options are selected, a Gephi gexf network file, png word cloud file, and Google Earth Pro kml file.\n\nWHEN PROCESSING A DIRECTORY, ALL OUTPUT FILES WILL BE SAVED IN A SUBDIRECTORY OF THE SELECTED OUTPUT DIRECTORY WITH THE NAME OF THE INPUT DIRECTORY.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help","Please, tick the checkbox to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file \'social-actor-list.csv\', created via WordNet with keyword person and saved in the \'lib/wordLists\' subfolder, will be automatically loaded as the DEFAULT dictionary file (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly automatically loaded as the DEFAULT dictionary file for verbs.\n\nDictionary filter files can be created via WordNet and saved in the \'lib/wordLists\' subfolder. You can edit that list, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help","The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that).\n\nThe filter file social-actor-list, created via WordNet with person as keyword and saved in the \'lib/wordLists\' subfolder, will be automatically set as the DEFAULT filter for subjects (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly set as the DEFAULT dictionary file for verbs.\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be prompted to select a new file.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*10,"Help","Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;;\n\n  2. to visualize SVO relations in a wordcloud;\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro. ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.")

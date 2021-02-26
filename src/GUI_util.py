@@ -473,13 +473,16 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, 
     run_button.place(x=GUI_IO_util.get_help_button_x_coordinate()+700, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     def _close_window():
+        configArray = \
+        config_util.setup_IO_configArray(window, config_input_output_options, select_softwareDir_button, softwareDir,
+                                         select_input_file_button, inputFilename, select_input_main_dir_button,
+                                         input_main_dir_path, select_input_secondary_dir_button,
+                                         input_secondary_dir_path,
+                                         select_output_file_button, outputFilename, select_output_dir_button,
+                                         output_dir_path)[0]
+
         GUI_IO_util.exit_window(window, config_filename, configArray)
 
-    configArray=config_util.setup_IO_configArray(window, config_input_output_options, select_softwareDir_button, softwareDir,
-                                     select_input_file_button, inputFilename, select_input_main_dir_button,
-                                     input_main_dir_path, select_input_secondary_dir_button, input_secondary_dir_path,
-                                     select_output_file_button, outputFilename, select_output_dir_button,
-                                     output_dir_path)[0]
     # quit_button = tk.Button(window, text='QUIT', width=10,height=2, command=lambda: GUI_IO_util.exit_window(window,config_filename,configArray))
     quit_button = tk.Button(window, text='QUIT', width=10,height=2, command=lambda: _close_window())
     quit_button.place(x=GUI_IO_util.get_help_button_x_coordinate()+820,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
