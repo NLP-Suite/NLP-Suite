@@ -1,4 +1,5 @@
-cd %~dp0
+cd '%~dp0'
+
 
 conda create -n NLP -y
 conda activate NLP
