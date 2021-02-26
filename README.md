@@ -13,7 +13,7 @@ The NLP Suite was developed by **Roberto Franzosi** at **Emory University** with
 
 To learn more about NLP Suite, its architecture, and screenshots, visit the [NLP Suite Wiki](https://github.com/NLP-Suite/NLP-Suite/wiki)
 
-## Installation
+## Installation - PASSING
 
 To install NLP Suite:
 
@@ -23,6 +23,14 @@ To install NLP Suite:
     - [Windows](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows)
     - [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Mac)
 5. Follow the installation by reading any terminal or console output. 
+
+## External Software
+
+To get the full NLP Suite functionality, you may be required to install external software.
+
+- [Stanford CoreNLP](https://stanfordnlp.github.io/CoreNLP/download.html): requires an installation of [Java version +8](https://www.oracle.com/java/technologies/javase-downloads.html)
+- [WordNet](https://wordnet.princeton.edu/download)
+- [Mallet](http://mallet.cs.umass.edu/download.php)
 
 ## Supported Systems
 
