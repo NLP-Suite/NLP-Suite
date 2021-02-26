@@ -222,10 +222,13 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, differen
         
     if differentPOS_differentColors_checkbox==True:
         # RED for NOUNS, BLUE for VERBS, GREEN for and ADJECTIVES
+        red_code = "(250, 0, 0)"
+        blue_code = "(0, 250, 0)"
+        green_code = "(0, 0, 250)"
         color_to_words = {
-            "(250, 0, 0)":[],#red/nouns
-            "(0, 250, 0)":[],#blue/verbs
-            "(0, 0, 250)":[]#green/adjs
+            red_code:[],#red/nouns
+            blue_code:[],#blue/verbs
+            green_code:[]#green/adjs
         }
         combinedtext = ''
         currenttext = ''
@@ -251,11 +254,11 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, differen
                         # print("pos: ", postags_[i])
                         # RED for NOUNS, BLUE for VERBS, GREEN for and ADJECTIVES
                         if postags_[j][0] == "V":
-                            color_to_words["(0, 250, 0)"].append(forms_[j])
+                            color_to_words[blue_code].append(forms_[j])
                         elif len(postags_[j]) >= 2 and postags_[j][0:2] == "NN":
-                            color_to_words["(250, 0, 0)"].append(forms_[j])
+                            color_to_words[red_code].append(forms_[j])
                         elif len(postags_[j]) >= 2 and postags_[j][0:2] == "JJ":
-                            color_to_words["(0, 0, 250)"].append(forms_[j])
+                            color_to_words[green_code].append(forms_[j])
                     
                 except: 
                       print(doc+ " is not a CoNLL table")
@@ -276,11 +279,11 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, differen
                             # print("postag: ", word.pos)
                             # RED for NOUNS, BLUE for VERBS, GREEN for and ADJECTIVES
                             if word.pos == "NOUN":
-                                color_to_words["(250, 0, 0)"].append(word.text)
+                                color_to_words[red_code].append(word.text)
                             elif word.pos == "VERB":
-                                color_to_words["(0, 250, 0)"].append(word.text)
+                                color_to_words[blue_code].append(word.text)
                             elif word.pos == "ADJ":
-                                color_to_words["(0, 0, 250)"].append(word.text)
+                                color_to_words[green_code].append(word.text)
             if inputDir!='' and doNotListIndividualFiles==True:
                 textToProcess=combinedtext
             else:
