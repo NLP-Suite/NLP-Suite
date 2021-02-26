@@ -48,9 +48,6 @@ nltk~=3.5
 # used by wordcloud script (the new StanfordCoreNLP Python approach)
 stanza
 
-#used by SVO
-#stanfordnlp is the new stanford coreNLP Python version of their software released in 2020
-#stanfordnlp
 
 # VADER (sentimentt analysis)
 twython
