@@ -171,7 +171,7 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
                         tmp.append(str(sentenceID))
                         tmp.append(str(DocumentID))
                         # tmp.append(file)
-                        tmp.append(IO_csv_util.dressFilenameForCSVHyperlink(doc))
+                        tmp.append(IO_csv_util.dressFilenameForCSVHyperlink(file))
                         if dateInclude == 1 and dateStr!='DATE ERROR!!!':
                             tmp.append(dateStr)
                         writer.writerow(tmp)
