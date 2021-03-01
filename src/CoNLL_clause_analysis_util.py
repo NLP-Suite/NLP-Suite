@@ -4,26 +4,19 @@
 # modified by Roberto Franzosi (February 2019-August 2020)
 
 import sys
-
-import GUI_IO_util
-import IO_files_util
 import GUI_util
 import IO_libraries_util
-import IO_csv_util
-import IO_user_interface_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"CoNLL_clausal_analysis.py",['os','csv','tkinter','ntpath','collections','subprocess'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"CoNLL_clause_analysis.py",['os','csv','tkinter','ntpath','collections','subprocess'])==False:
     sys.exit(0)
 
 import os
-import csv
 from collections import Counter
 import tkinter.messagebox as mb
-import tkinter as tk
-import ntpath
-from subprocess import call
-import subprocess
 
+import IO_files_util
+import IO_csv_util
+import IO_user_interface_util
 import IO_CoNLL_util
 import Excel_util
 import statistics_csv_util
@@ -50,7 +43,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Clausal Analysis at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CLAUSE ANALYSES at', True)
     
     #output file names
     #clausal_analysis_file_name contains all the CoNLL table records that have a clausal tag
@@ -70,7 +63,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         IO_csv_util.list_to_csv(GUI_util.window,IO_CoNLL_util.sort_output_list('CLAUSAL TAGS',clausal_list,documentId_position), clausal_analysis_file_name)
         column_stats=statistics_csv_util.compute_stats_CoreNLP_tag(clausal_list,7,"Clausal Tags, Frequency","CLAUSALTAG")
 
-        clausal_analysis_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.xlsx', 'CA', 'Clausal tags', 'stats_pie_chart')
+        clausal_analysis_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clausal tags', 'stats')
         errorFound=IO_csv_util.list_to_csv(GUI_util.window,column_stats,clausal_analysis_stats_file_name)
         if errorFound==True:
              return
@@ -118,11 +111,11 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
                                                       column_xAxis_label_var='Sentence index',
                                                       hover_info_column_list=hover_label,
                                                       count_var=1)
-            if len(Excel_outputFilename)>0:
-                filesToOpen.extend(Excel_outputFilename)
+            if Excel_outputFilename!='':
+                filesToOpen.append(Excel_outputFilename)
 
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Clausal Analysis at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CLAUSE ANALYSES at', True)
     return filesToOpen
 
 #stats_clauses_output contains a list of records 

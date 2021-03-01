@@ -219,12 +219,12 @@ def saveConfig(window, configFilename, configArray, silent=False):
         # check config file content against current values
         if checkSavedConfig(configFilename, configArray) == True:
             return
-    else:  # NO GUI config
-        # check default config
-        if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)) == True:
-            # check config file content against current values
-            if checkSavedConfig(defaultConfigFilename, configArray) == True:
-                return
+    # else:  # NO GUI config
+    #     # check default config
+    #     if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)) == True:
+    #         # check config file content against current values
+    #         if checkSavedConfig(defaultConfigFilename, configArray) == True:
+    #             return
 
     # There IS GUI config ask question to save in GUI config
     #   There is also default config 
@@ -239,44 +239,48 @@ def saveConfig(window, configFilename, configArray, silent=False):
         if saveGUIconfig == True:
             configFileWritten = writeConfigFile(configFilename, configArray)
             # check default config
-            if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)) == True:
-                if silent == True:
-                    saveDefault = False
-                else:
-                    saveDefault = mb.askyesno("Save IO values to default-config.txt",
-                                              "There is also a default-config.txt with IO options different from the currently selected ones.\n\nDo you want to update the default values saving the new IO values?")
-                if saveDefault:
-                    defaultConfigFileWritten = writeConfigFile(defaultConfigFilename, configArray)
+            # temporarily disconnected
+            # if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)) == True:
+            #     if silent == True:
+            #         saveDefault = False
+            #     else:
+            #         saveDefault = mb.askyesno("Save IO values to default-config.txt",
+            #                                   "There is also a default-config.txt with IO options different from the currently selected ones.\n\nDo you want to update the default values saving the new IO values?")
+            #     if saveDefault:
+            #         defaultConfigFileWritten = writeConfigFile(defaultConfigFilename, configArray)
     else:  # no GUI config available
-        if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)) == False:
-            saveDefault = mb.askyesno("Save IO values to default-config.txt",
-                                      "If the input/output options you have selected are likely to be your default options to be used for all NLP Suite tools, would you like to save the options as your preferred IO options?\n\nYou can always change these options at any time and for any tool. Some tools (e.g., Stanford CoreNLP) may need additional IO information (e.g., the directory where you saved Stanford CoreNLP).\n\nSave?")
-            if saveDefault:
-                defaultConfigFileWritten = writeConfigFile(defaultConfigFilename, configArray)
-            else:
-                saveGUIconfig = mb.askyesno("Save IO values to " + configFilename,
-                                            "Do you want to save the selected input/output options in\n\n" + configFilename + "\n\nIF YOU DO SO, THE IO VALUES IN THIS GUI-SPECIFIC CONFIG FILE WILL ALWAYS BE USED, ALTHOUGH, YOU CAN CHANGE THEM AT ANY TIME.\n\nSave?")
-                if saveGUIconfig:
-                    configFileWritten = writeConfigFile(configFilename, configArray)
-        else:
-            saveDefault = mb.askyesno("Save IO values to default-config.txt",
-                                      "The selected input/output options are different from the IO values previously saved in the default config\n\n" + defaultConfigFilename + "\n\nDo you want to replace the previously saved IO values with the current ones?\n\nTHE NEW VALUES WILL THEN BECOME THE DEFAULT IO VALUES TO BE USED IN ALL SCRIPTS.\n\nSave?")
-            if saveDefault:
-                defaultConfigFileWritten = writeConfigFile(defaultConfigFilename, configArray)
-            saveGUIconfig = mb.askyesno("Save IO values to " + configFilename,
-                                        "Do you also want to save the selected input/output options in\n\n" + configFilename + "\n\nIF YOU DO SO, THE IO VALUES IN THIS GUI-SPECIFIC CONFIG FILE WILL ALWAYS BE USED, RATHER THAN THE VALUES IN THE DEFAULT CONFIG. ALL OTHER SCRIPTS WILL NOT BE AFFECTED.\n\nSave?")
-            if saveGUIconfig:
-                configFileWritten = writeConfigFile(configFilename, configArray)
+        # temporarily disconnected
+        # if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)) == False:
+        #     saveDefault = mb.askyesno("Save IO values to default-config.txt",
+        #                               "If the input/output options you have selected are likely to be your default options to be used for all NLP Suite tools, would you like to save the options as your preferred IO options?\n\nYou can always change these options at any time and for any tool. Some tools (e.g., Stanford CoreNLP) may need additional IO information (e.g., the directory where you saved Stanford CoreNLP).\n\nSave?")
+        #     if saveDefault:
+        #         defaultConfigFileWritten = writeConfigFile(defaultConfigFilename, configArray)
+        #     else:
+        #         saveGUIconfig = mb.askyesno("Save IO values to " + configFilename,
+        #                                     "Do you want to save the selected input/output options in\n\n" + configFilename + "\n\nIF YOU DO SO, THE IO VALUES IN THIS GUI-SPECIFIC CONFIG FILE WILL ALWAYS BE USED, ALTHOUGH, YOU CAN CHANGE THEM AT ANY TIME.\n\nSave?")
+        #         if saveGUIconfig:
+        #             configFileWritten = writeConfigFile(configFilename, configArray)
+        # else:
+        #     saveDefault = mb.askyesno("Save IO values to default-config.txt",
+        #                               "The selected input/output options are different from the IO values previously saved in the default config\n\n" + defaultConfigFilename + "\n\nDo you want to replace the previously saved IO values with the current ones?\n\nTHE NEW VALUES WILL THEN BECOME THE DEFAULT IO VALUES TO BE USED IN ALL SCRIPTS.\n\nSave?")
+        #     if saveDefault:
+        #         defaultConfigFileWritten = writeConfigFile(defaultConfigFilename, configArray)
+        #     saveGUIconfig = mb.askyesno("Save IO values to " + configFilename,
+        #                                 "Do you also want to save the selected input/output options in\n\n" + configFilename + "\n\nIF YOU DO SO, THE IO VALUES IN THIS GUI-SPECIFIC CONFIG FILE WILL ALWAYS BE USED, RATHER THAN THE VALUES IN THE DEFAULT CONFIG. ALL OTHER SCRIPTS WILL NOT BE AFFECTED.\n\nSave?")
+        #     if saveGUIconfig:
+        #         configFileWritten = writeConfigFile(configFilename, configArray)
+        # temporarily copied
+            configFileWritten = writeConfigFile(configFilename, configArray)
 
     if configFilename != 'license-config.txt':
         if configFileWritten:
             IO_user_interface_util.timed_alert(window, 3000, 'Warning',
                                                'INPUT and OUTPUT paths configuration have been saved to\n\n' + configFilename,
                                                False)
-        if defaultConfigFileWritten:
-            IO_user_interface_util.timed_alert(window, 3000, 'Warning',
-                                               'INPUT and OUTPUT paths configuration have been saved to\n\n' + defaultConfigFilename,
-                                               False)
+        # if defaultConfigFileWritten:
+        #     IO_user_interface_util.timed_alert(window, 3000, 'Warning',
+        #                                        'INPUT and OUTPUT paths configuration have been saved to\n\n' + defaultConfigFilename,
+        #                                        False)
 
 
 # in some circumstances, some buttons are disabled in the GUI
