@@ -198,8 +198,12 @@ def sort_csvFile_by_columns(inputFilename, outputFilename, headers_tobe_sorted):
 #   when you click on the hyperlink from the csv file, the file will open
 # fileName can be a filename + path
 # fileName can also be a full path with NO filename
+# e.g., =HYPERLINK("C:\Users\Desktop\CORPUS DATA\Sample text\Atlanta Constitution_02-09-1888_2.txt")
+# hyperlinks have a maximum length of 255 characters
 def dressFilenameForCSVHyperlink(fileName):
-    fileName='=hyperlink("'+str(fileName)+'")'
+    tempFileName='=hyperlink("'+str(fileName)+'")'
+    if len(tempFileName)<=255:
+        fileName=tempFileName
     return fileName
 
 def undressFilenameForCSVHyperlink(fileName):

@@ -5,28 +5,22 @@ modified by Jack Hester and Roberto Franzosi, February, June 2019
 """
 
 import sys
-
-import GUI_IO_util
-import IO_files_util
 import GUI_util
 import IO_libraries_util
-import IO_csv_util
-import IO_user_interface_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "Noun Verb Analysis",
+if IO_libraries_util.install_all_packages(GUI_util.window, "Verb Analysis",
 								['csv', 'os', 'collections', 'tkinter']) == False:
 	sys.exit(0)
 
-import csv
-import os
 from collections import Counter
 from tkinter import filedialog
 import tkinter.messagebox as mb
 import tkinter as tk
 
 import IO_CoNLL_util
-import Excel_util
-import statistics_csv_util
+import IO_files_util
+import IO_csv_util
+import IO_user_interface_util
 import Excel_util
 import Stanford_CoreNLP_tags_util
 
@@ -154,7 +148,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 	# print ("\nRun verb voice analysis")
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VERB VOICE analysis at', True)
+	# IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VERB VOICE analysis at', True)
 
 	data_prep = verb_voice_data_preparation(data)
 
@@ -206,7 +200,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 		if len(outputFiles) > 0:
 			filesToOpen.extend(outputFiles)
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VERB VOICE analysis at', True)
+	# IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VERB VOICE analysis at', True)
 
 	return filesToOpen
 
@@ -259,7 +253,7 @@ def verb_modality_stats(inputFilename, outputDir, data, data_divided_sents, open
 	filesToOpen = []  # Store all files that are to be opened once finished
 
 	# print ("\nRun verb modality analysis")
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VERB MODALITY analysis at', True)
+	# IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VERB MODALITY analysis at', True)
 
 	modality_list, modality_stats = verb_modality_compute_categories(data,data_divided_sents)
 
@@ -305,8 +299,8 @@ def verb_modality_stats(inputFilename, outputDir, data, data_divided_sents, open
 		if len(outputFiles) > 0:
 			filesToOpen.extend(outputFiles)
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VERB MODALITY analysis at',
-									   True)  # TODO: if this fails, try putting it in its own function
+	# IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VERB MODALITY analysis at',
+	# 								   True)
 
 	return filesToOpen
 
@@ -379,7 +373,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 	# print ("\nRun verb tense analysis")
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VERB TENSE analysis at', True)
+	# IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VERB TENSE analysis at', True)
 
 	tense_list, tense_stats = verb_tense_compute_frequencies(data, data_divided_sents)
 
@@ -426,6 +420,33 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 		if len(outputFiles) > 0:
 			filesToOpen.extend(outputFiles)
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VERB TENSE analysis at', True)
+	# IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VERB TENSE analysis at', True)
+
+	return filesToOpen
+
+def verb_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
+	filesToOpen = []  # Store all files that are to be opened once finished
+
+
+	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VERB ANALYSES at',
+									   True)
+
+	outputFiles = verb_voice_stats(inputFilename, outputDir, data, data_divided_sents,
+															openOutputFiles, createExcelCharts)
+
+	if outputFiles != None:
+		filesToOpen.extend(outputFiles)
+
+	outputFiles = verb_modality_stats(inputFilename, outputDir, data, data_divided_sents,
+															   openOutputFiles, createExcelCharts)
+	if outputFiles != None:
+		filesToOpen.extend(outputFiles)
+
+	outputFiles = verb_tense_stats(inputFilename, outputDir, data, data_divided_sents,
+															openOutputFiles, createExcelCharts)
+	if outputFiles != None:
+		filesToOpen.extend(outputFiles)
+
+	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VERB ANALYSES at', True)
 
 	return filesToOpen

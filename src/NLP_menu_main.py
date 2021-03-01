@@ -163,10 +163,7 @@ pydict["Annotator - quote (via CoreNLP)"] = ["Stanford_CoreNLP_main.py", 1]
 pydict["Annotator - dictionary, gender, DBpedia, YAGO"] = ["annotator_main.py", 1]
 pydict["Annotator - hedge/uncertainty"] = ["", 0]
 pydict["CoNLL table analyzer - Search the CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
-pydict["CoNLL table analyzer - Clause analysis"] = ["CoNLL_table_analyzer_main.py", 1]
-pydict["CoNLL table analyzer - Function words analysis"] = ["CoNLL_table_analyzer_main.py", 1]
-pydict["CoNLL table analyzer - Noun analysis"] = ["CoNLL_table_analyzer_main.py", 1]
-pydict["CoNLL table analyzer - Verb analysis"] = ["CoNLL_table_analyzer_main.py", 1]
+pydict["CoNLL table analyzer - Clause, noun, verb, function words frequencies"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Statistics (csv & txt files)"] = ["statistics_NLP_main.py", 1]
 pydict["Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)"] = ["Stanford_CoreNLP_main.py", 1]
 pydict["Co-Occurrences viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
@@ -174,7 +171,7 @@ pydict["Data manager (csv files via Pandas)"] = ["data_manager_main.py", 1]
 pydict["File checker (file content)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File checker (file content utf-8 encoding)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File checker (file name)"] = ["file_manager_main.py", 1]
-pydict["File cleaner (Change to utf-8 non utf-8 apostrophes & quotes)"] = ["file_checker_converter_cleaner_main.py", 1]
+pydict["File cleaner (Change to ASCII non-ASCII apostrophes & quotes and % to percent)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File cleaner (Find & Replace string)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File cleaner (Remove blank lines from txt file(s))"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File classifier (dumb classifier via embedded date) (file name)"] = ["file_filename_checker_main.py", 1]
@@ -276,7 +273,7 @@ pre_processing_menu = tk.OptionMenu(window, pre_processing_tools_var,
                                     'File checker (file content)',
                                     'File checker (file content utf-8 encoding)',
                                     'File checker (file name)',
-                                    'File cleaner (Change to utf-8 non utf-8 apostrophes & quotes)',
+                                    'File cleaner (Change to ASCII non-ASCII apostrophes & quotes and % to percent)',
                                     'File cleaner (Find & Replace string)',
                                     'File cleaner (Remove blank lines from txt file(s))',
                                     'File finder (file name)',
@@ -373,9 +370,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 corpus_document_tools_menu = tk.OptionMenu(window, corpus_document_tools_var,
                                            'Stanford CoreNLP',
                                            'CoNLL table analyzer - Search the CoNLL table',
-                                           'CoNLL table analyzer - Clause analysis',
-                                           'CoNLL table analyzer - Noun analysis',
-                                           'CoNLL table analyzer - Verb analysis',
+                                           'CoNLL table analyzer - Clause, noun, verb, function words frequencies',
                                            'Annotator - date (NER normalized date, via CoreNLP)',
                                            'Annotator - gender (male & female names; via CoreNLP and dictionaries)',
                                            'Annotator - quote (via CoreNLP)',

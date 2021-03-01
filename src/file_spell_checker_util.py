@@ -47,6 +47,23 @@ import IO_user_interface_util
 from IO_files_util import make_directory
 import reminders_util
 
+# -------------------Angel-----------------End of fuzzywuzzy
+import fuzzywuzzy
+from fuzzywuzzy import fuzz
+def fuzzywuzzy_check_dist(input_word, checklist, similarity_value): #similarity_value will be on a scale 1-100
+    exist_typo = False
+    for word in checklist:
+        # TODO see also pyslpellchecker https://pypi.org/project/pyspellchecker/ which is based on
+        #   Peter Norvig’s blog post on setting up a simple spell checking algorithm based on Levenshtein's edit distance
+        # It uses a Levenshtein Distance
+        dist = fuzz.ratio(input_word, word[0])
+        if dist>= similarity_value and dist<100:#cannot be 100 as that means matching a typo with another typo
+                exist_typo = True
+                return exist_typo, word[0], word[1]
+    return exist_typo, '', ''
+
+# -------------------Angel-----------------End of fuzzywuzzy
+
 def lemmatizing(word):#edited by Claude Hu 08/2020
     #https://stackoverflow.com/questions/15586721/wordnet-lemmatization-and-pos-tagging-in-python
     pos = ['n', 'v','a', 's', 'r']#list of postags
@@ -197,6 +214,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createExcelChar
 
 # checklist contains words with more than 1 time of appearance
 # similarity_value is the gaging_difference attribute
+
 def check_edit_dist(input_word, checklist, similarity_value):
     exist_typo = False
     for word in checklist:
@@ -208,11 +226,239 @@ def check_edit_dist(input_word, checklist, similarity_value):
             if 0 < dist <= 2:
                 exist_typo = True
                 return exist_typo, word[0], word[1]
+                #word[0] is the token, word[1] is the frequency of the token in the entire corpus
         else:
             if 0 < dist <= 1:
                 exist_typo = True
                 return exist_typo, word[0], word[1]
     return exist_typo, '', ''
+
+# the main checking function, takes input:
+#   CoreNLPDirectory, inputDir, output_file_path
+# now checking for NE list ['CITY', 'LOCATION', 'PERSON']
+# output csv header list: ['NNPs', 'sentenceID', 'DocumentID', 'fileName', 'NamedEntity', 'potential_Typo']
+
+# using Levenshtein distance to check for typos
+def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs, similarity_value, by_all_tokens_var):
+    filesToOpen=[]
+    all_header_rows_dict = []
+    ner_dict = {}
+
+    # check that the CoreNLPdir as been setup
+    CoreNLPdir = IO_libraries_util.get_external_software_dir('spell_checker_main', 'Stanford CoreNLP')
+    print(CoreNLPdir)
+    if CoreNLPdir == '':
+        return
+    if by_all_tokens_var:
+        pass
+    else:
+        if NERs[0] == '*':
+            NERs = ['CITY', 'LOCATION', 'PERSON', 'COUNTRY', 'STATE_OR_PROVINCE', 'ORGANIZATION']
+        else:
+            pass
+    documents = []
+    folderID=0
+    fileID=0
+    #subfolder=[]#angel
+    #nFiles = nFolders = 0#angel
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity start', 'Started running Word similarity at', True)
+    
+    # TODO which annotators is it using? We do not need all annotators! Sentence splitter and tokenizer (and NER)
+    p = subprocess.Popen(
+        ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
+         'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
+    time.sleep(5)
+
+    print('Starting to run Stanford CoreNLP to prepare data for each folder and file.')
+
+    for folder, subs, files in os.walk(inputDir):
+        nFolders=len(subs)+1
+        folderID+=1
+        print("\nProcessing folder "+str(folderID)+"/"+str(nFolders)+": "+os.path.basename(os.path.normpath(folder)))
+        fileID=0
+        for filename in files:
+            fileID+=1
+            if not filename.endswith('.txt'):
+                continue
+            print("  Processing file "+str(fileID)+"/"+str(len(files)) + ": " + filename)
+            dir_path = os.path.join(folder, filename)
+            with open(dir_path, 'r', encoding='utf-8', errors='ignore') as src:
+                text = src.read().replace("\n", " ")
+                text = text.replace("%","percent")
+                NLP = StanfordCoreNLP('http://localhost', port=9000)
+            sentences = tokenize.sent_tokenize(text)
+            documents.append([sentences,filename, dir_path])
+    # IO_util.timed_alert(GUI_util.window, 5000, 'Word similarity', 'Finished preparing data...\n\nProcessed '+str(folderID)+' subfolders and '+str(fileID)+' files.\n\nNow running Stanford CoreNLP to get NER values on every file processed... PLEASE, be patient. This may take a while...')
+    if by_all_tokens_var:
+        # TODO header_rows ends up including filename as well; must only include the words in the documents
+        header_rows = [[token, sentence_number + 1, document_number + 1,sentence, document[1],IO_csv_util.dressFilenameForCSVHyperlink(document[2]), '']
+                for document_number, document in enumerate(documents)
+                for sentence_number, sentence in enumerate(document[0])
+                for token in NLP.word_tokenize(sentence)] #document[1]: filename, document[0]:sentences
+        temp = [elmt[0] for elmt in header_rows]#list of all tokens
+        all_header_rows_dict = [(item, count) for item, count in collections.Counter(temp).items() if count > 1]
+        header_row_list_to_check = header_rows
+
+    else:
+
+        NER = [[ners[0], sentence_number + 1, document_number + 1, sentence, document[1],IO_csv_util.dressFilenameForCSVHyperlink(document[2]), ners[1]]
+               for document_number, document in enumerate(documents)
+               for sentence_number, sentence in enumerate(document[0])
+               for ners in NLP.ner(sentence) if ners[1] in NERs]
+        ner_dict = {}
+        for each_ner in NERs:
+            temp = [elmt[0] for elmt in NER if elmt[-1] == each_ner]#list of all tokens that belong to specified NER categories
+            ner_dict[each_ner] = [(item, count) for item, count in collections.Counter(temp).items() if count > 1]
+        header_row_list_to_check = NER
+
+    # word_list contains all the first element - token - of each row, i.e., a list of all words
+    word_list = [elmt[0] for elmt in header_row_list_to_check]
+    distinct_word_list = set(word_list)
+    word_freq_dict = {i: word_list.count(i) for i in set(word_list)}
+    # convert word_list to set to obtain a list of DISTINCT words
+    # for each element in list_to_check, it is in this format:
+    # word, NamedEntity, sentenceID, documentID, fileName
+
+    print('Finished running Stanford CoreNLP to prepare data for folder '+str(folderID)+' and '+str(fileID)+' files.')
+    print('   Processed '+str(len(header_row_list_to_check))+' words and '+ str(len(distinct_word_list)) +' DISTINCT words. Now computing spelling and word differences for DISTINCT words...')
+    # IO_util.timed_alert(GUI_util.window, 5000, 'Word similarity', 'Finished running Stanford CoreNLP...\n\nProcessed '+str(len(list_to_check))+' words.\n\nNow computing word differences... PLEASE, be patient. This may take a while...')
+    # These headers reflect the items returned from the processing above
+    # THEIR ORDER CANNOT BE CHANGED, UNLESS ABOVE ORDER OF PROCESSING IS ALSO CHANGED
+    # These headers are then used selectively for the output (see headers2)
+    headers1 = ['Words', 'Word frequency in document', 'Sentence ID', 'Document ID',
+                'Sentence', 'Document', 'Document path', 'Named Entity (NER)',
+                'Similar word in directory', 'Similar-word frequency in directory', 'Typo?']
+    # Angel: header_row_list_to_check are list of all rows with token and meta-data information
+    header_row_list_final = []  # Angel: header_row_list_final are list of all rows that appear in final output
+    processed_word_list = []  #keeps track of words processed before
+    if by_all_tokens_var:
+        # headers 2 rearranges the headers but must have the same values
+        headers2=['Words', 'Word frequency in document', 'Similar word in directory',
+                 'Similar-word frequency in directory', 'Typo?',
+                 'Number of documents processed', 'Sentence ID', 'Sentence',
+                 'Document ID', 'Document', 'Document path', 'Processed directory']
+        header_rowID=0
+        processed_wordID=0
+        for header_row in header_row_list_to_check:
+            header_rowID+=1
+            word=header_row[0]
+            header_row.insert(1, word_freq_dict.get(word))
+            checker_against = all_header_rows_dict
+            if (len(word)>3)and (word not in processed_word_list) and (word.isalpha()):
+                processed_wordID=processed_wordID+1
+                speller = SpellChecker()
+                respelled_word = speller.correction(word)
+                # print("      Processing DISTINCT word " + str(processed_wordID) + "/" + str(len(distinct_word_list)) + " Row " + str(header_rowID) + "/" + str(len(header_row_list_to_check)) + ":" + word)
+                print("      Processing DISTINCT word " + str(processed_wordID) + "/" + str(len(distinct_word_list)) + ": " + word)
+            #else:
+            #    respelled_word = word
+                if respelled_word!=word:
+                    # should check edit distance only if the word is misspelled
+                    #value_tuple = check_edit_dist(word, checker_against, similarity_value)
+                    value_tuple = fuzzywuzzy_check_dist(word,checker_against,similarity_value) #Angel
+                #else:
+                #    value_tuple=[False, '', '']
+                    if value_tuple[0]:  # a close match been found
+                        header_row.append(value_tuple[1])  # returned similar word from check_edit_list
+                        header_row.append(value_tuple[2])  # returned similar word frequency from check_edit_list
+                        header_row.append('Typo?')
+                        header_row_list_final.append(header_row)
+                #else:
+                    #header_row.append('')
+                    #header_row.append('')
+                    #header_row.append('')
+            # print("      Processing word " + str(header_rowID) + "/" + str(len(header_row_list_to_check)) + ":" + word)
+            if word not in processed_word_list:
+                processed_word_list.append(word)
+
+    # Processing NER
+    else:
+        # headers 2 rearranges the headers but must have the same values
+        # it includes the NER tag
+        headers2=['Words', 'Named Entity (NER)', 'Word frequency in document',
+                  'Similar word in directory',
+                 'Similar-word frequency in directory', 'Typo?',
+                 'Number of documents processed', 'Sentence ID', 'Sentence',
+                  'Document ID', 'Document', 'Document path', 'Processed directory']
+        for header_row in header_row_list_to_check:
+            word=header_row[0]
+            speller = SpellChecker() #Angel
+            respelled_word = speller.correction(word) #Angel
+            if(word not in processed_word_list and respelled_word!=word): #Angel
+                header_row.insert(1, word_freq_dict.get(word))
+                # [('word', Count:int)]
+                for each_ner in NERs:
+                    if header_row[-1] == each_ner:
+                        checker_against = ner_dict.get(each_ner)
+                        #value_tuple = check_edit_dist(word[0], checker_against, similarity_value)
+                        value_tuple = fuzzywuzzy_check_dist(word[0], checker_against, similarity_value) #Angel
+                        if value_tuple[0]:
+                            header_row.append(value_tuple[1])  # returned similar word from check_edit_list
+                            header_row.append(value_tuple[2])  # returned similar word frequency from check_edit_list
+                            header_row.append('Typo?')
+                            header_row_list_final.append(header_row) #Angel
+                    #else:#Angel
+                    #    header_row.append('')#Angel
+                    #    header_row.append('')#Angel
+                    #    header_row.append('')#Angel
+                processed_word_list.append(word)#Angel
+
+    #df = pd.DataFrame(header_row_list_to_check, columns=headers1)
+    df = pd.DataFrame(header_row_list_final, columns=headers1) 
+    for index, row in df.iterrows():
+        if row['Similar-word frequency in directory'] != None:
+            tmp = df[df['Words'] == row['Similar word in directory']]
+            df.loc[index, 'Number of documents processed'] = tmp.Document.nunique() #count number of distinct elements
+    df['Processed directory'] = IO_csv_util.dressFilenameForCSVHyperlink(inputDir)
+    df = df[headers2]
+
+    # complete includes all repeats
+    df_complete = df[headers2]
+
+    # simple excludes all repeats
+    df_simple = df.drop_duplicates(subset=['Words', 'Document ID'], keep='last')
+
+    if by_all_tokens_var:
+        outputFileName_complete = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
+                                                                          str(similarity_value), 'Edit_dist_algo',
+                                                                          'header_rows', 'Full-table')
+        outputFileName_simple = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
+                                                                        str(similarity_value), 'Edit_dist_algo',
+                                                                        'header_rows', 'Concise-table')
+    else:
+        outputFileName_complete = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
+                                                                          str(similarity_value), 'Edit_dist_algo',
+                                                                          'NERs', 'Full-table')
+        outputFileName_simple = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
+                                                                        str(similarity_value), 'Edit_dist_algo', 'NERs',
+                                                                            'Concise-table')
+    if len(df_simple) > 0 and len(df_complete) > 0:
+            df_simple.to_csv(outputFileName_simple, index=False)
+            df_complete.to_csv(outputFileName_complete, index=False)
+            filesToOpen.append(outputFileName_simple)
+            filesToOpen.append(outputFileName_complete)
+
+            filesToOpen.append(outputFileName_simple)
+            filesToOpen.append(outputFileName_complete)
+
+            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity end',
+                                               'Finished running Word similarity at', True)
+
+            if createExcelCharts:
+                Excel_outputFileName=createChart(outputFileName_simple, outputDir, [[10, 10]], '')
+
+                if Excel_outputFileName != "":
+                    filesToOpen.append(Excel_outputFileName)
+
+    if openOutputFiles == True:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        filesToOpen=[] # empty the list to avoid opening files twice
+
+    p.kill()
+
+    return filesToOpen
+
 
 def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutputFiles):
     mb.showwarning(title='Find & Replace csv file (with \'Original\' and \'Corrected\' headers)',
@@ -252,9 +498,9 @@ def spellchecking_autocorrect(text: str, inputFilename) -> (str, DataFrame):
     for word in nltk.word_tokenize(text):
         if word.isalnum():
             original_str_list.append(word)
-            new_word = speller(word)
-            if new_word != word:
-                new_str_list.append(new_word)
+            respelled_word = speller(word)
+            if respelled_word != word:
+                new_str_list.append(respelled_word)
             else:
                 new_str_list.append('')
     return speller(text), DataFrame({
@@ -313,9 +559,9 @@ def spellchecking_pyspellchecker(text: str, inputFilename) -> (str, DataFrame):
     for word in nltk.word_tokenize(text):
         if word.isalnum():
             original_str_list.append(word)
-            new_word = speller.correction(word)
-            if new_word != word:
-                new_str_list_for_df.append(new_word)
+            respelled_word = speller.correction(word)
+            if respelled_word != word:
+                new_str_list_for_df.append(respelled_word)
             else:
                 new_str_list_for_df.append('')
         new_str_list.append(word)
@@ -336,9 +582,9 @@ def spellchecking_text_blob(text: str, inputFilename) -> (str, DataFrame):
     for word in nltk.word_tokenize(text):
         if word.isalnum():
             original_str_list.append(word)
-            new_word = Word(word).spellcheck()[0][0]
-            if new_word != word:
-                new_str_list_for_df.append(new_word)
+            respelled_word = Word(word).spellcheck()[0][0]
+            if respelled_word != word:
+                new_str_list_for_df.append(respelled_word)
             else:
                 new_str_list_for_df.append('')
         new_str_list.append(word)
@@ -346,6 +592,56 @@ def spellchecking_text_blob(text: str, inputFilename) -> (str, DataFrame):
         'Original': original_str_list,
         'Corrected': new_str_list_for_df
     })
+
+
+# not used
+# def spellchecking_pytesseract(inputDir,outputDir):
+#     misspelled = spell.unknown([word])
+#     if misspelled == set():
+#         return False,''
+#     else:
+#         for misspell in misspelled:
+#             # Get the one `most likely` answer
+#             return True, spell.correction(misspell)
+
+# not used
+# def spell_word_pytesseract(word, spell):
+#     misspelled = spell.unknown([word])
+#     if misspelled == set():
+#         return False,''
+#     else:
+#         for misspell in misspelled:
+#             # Get the one `most likely` answer
+#             return True, spell.correction(misspell)
+#
+#     if spelling_checker_var:
+#         if 'autocorrect' in checker_package:
+#             spell = Speller(lang='en')
+#         else:
+#             spell = SpellChecker()
+#         header_rows = [[token, sentence_number + 1, document_number + 1, sentence, document[1],IO_csv_util.dressFilenameForCSVHyperlink(document[2]) ,''] for document_number, document in
+#                      enumerate(documents)
+#                      for sentence_number, sentence in enumerate(document[0])
+#                      for token in NLP.word_tokenize(sentence)]
+#
+#         list_to_check = header_rows
+#         word_list = [elmt[0] for elmt in list_to_check]
+#         word_freq_dict = {i: word_list.count(i) for i in set(word_list)}
+#         for word in list_to_check:
+#             word.insert(1, word_freq_dict.get(word[0]))
+#             if 'pyspellchecker' in checker_package:
+#                 value_tuple = spell_word_pytesseract(word[0],spell)
+#             else:
+#                 return
+#             if value_tuple[0]:
+#                 word.append(value_tuple[1])  # returned similar word from check_edit_list
+#                 word.append(word_freq_dict.get(value_tuple[1],0))  # returned similar word frequency from check_edit_list
+#                 word.append('Typo?')
+#             else:
+#                 word.append('')
+#                 word.append('')
+#                 word.append('')
+#             print(word)
 
 def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
     folderID = 0
@@ -424,258 +720,6 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
                    message='Spell checker algorithms are not very accurate, perhaps pyspellchecker perfoming better than autocorrect and textblob performing the worse.\n\nThe spell checkers generate in output\n  1. corrected txt file(s) in a subdirectory \'spell_checked\' of the input file and/or input directory;\n  2. csv files (one for each of the 3 available algorithms if run together) with the headers \'Original\' and \'Corrected\' that list all the words that would have been edited for misspellings in the output files.\n\nPLEASE, CAREFULLY INSPECT THE OUTPUT CSV FILE(S), DELETE ANY WRONGLY CORRECTED WORDS FROM EACH CELL UNDER THE \'Corrected\' COLUMN, THEN, RUN THE \'Find & Replace string (Spelling checker cleaner)\' SCRIPT TO EDIT THE ORIGINAL INPUT FILE(S).')
     return autocorrect_df, pyspellchecker_df, textblob_df
 
-# not used
-# def spellchecking_pytesseract(inputDir,outputDir):
-#     misspelled = spell.unknown([word])
-#     if misspelled == set():
-#         return False,''
-#     else:
-#         for misspell in misspelled:
-#             # Get the one `most likely` answer
-#             return True, spell.correction(misspell)
-
-# not used
-# def spell_word_pytesseract(word, spell):
-#     misspelled = spell.unknown([word])
-#     if misspelled == set():
-#         return False,''
-#     else:
-#         for misspell in misspelled:
-#             # Get the one `most likely` answer
-#             return True, spell.correction(misspell)
-#
-#     if spelling_checker_var:
-#         if 'autocorrect' in checker_package:
-#             spell = Speller(lang='en')
-#         else:
-#             spell = SpellChecker()
-#         all_words = [[token, sentence_number + 1, document_number + 1, sentence, document[1],IO_csv_util.dressFilenameForCSVHyperlink(document[2]) ,''] for document_number, document in
-#                      enumerate(documents)
-#                      for sentence_number, sentence in enumerate(document[0])
-#                      for token in NLP.word_tokenize(sentence)]
-#
-#         list_to_check = all_words
-#         word_list = [elmt[0] for elmt in list_to_check]
-#         word_freq_dict = {i: word_list.count(i) for i in set(word_list)}
-#         for word in list_to_check:
-#             word.insert(1, word_freq_dict.get(word[0]))
-#             if 'pyspellchecker' in checker_package:
-#                 value_tuple = spell_word_pytesseract(word[0],spell)
-#             else:
-#                 return
-#             if value_tuple[0]:
-#                 word.append(value_tuple[1])  # returned similar word from check_edit_list
-#                 word.append(word_freq_dict.get(value_tuple[1],0))  # returned similar word frequency from check_edit_list
-#                 word.append('Typo?')
-#             else:
-#                 word.append('')
-#                 word.append('')
-#                 word.append('')
-#             print(word)
-
-# the main checking function, takes input:
-#   CoreNLPDirectory, inputDir, output_file_path
-# now checking for NE list ['CITY', 'LOCATION', 'PERSON']
-# output csv header list: ['NNPs', 'sentenceID', 'DocumentID', 'fileName', 'NamedEntity', 'potential_Typo']
-
-# using Levenshtein distance to check for typos
-def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs, similarity_value, by_all_tokens_var):
-    filesToOpen=[]
-    all_word_dict = []
-    ner_dict = {}
-
-    # check that the CoreNLPdir as been setup
-    CoreNLPdir = IO_libraries_util.get_external_software_dir('spell_checker_main', 'Stanford CoreNLP')
-
-    if CoreNLPdir == '':
-        return
-
-    if by_all_tokens_var:
-        pass
-    else:
-        if NERs[0] == '*':
-            NERs = ['CITY', 'LOCATION', 'PERSON', 'COUNTRY', 'STATE_OR_PROVINCE', 'ORGANIZATION']
-        else:
-            pass
-    documents = []
-    folderID=0
-    fileID=0
-    subfolder=[]
-    nFiles = nFolders = 0
-
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity start', 'Started running Word similarity at', True)
-
-    p = subprocess.Popen(
-        ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-         'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
-    time.sleep(5)
-
-    # NLP = StanfordCoreNLP('http://localhost', port=9000)
-
-    for folder, subs, files in os.walk(inputDir):
-        nFolders=len(subs)+1
-        folderID+=1
-        print("\nProcessing folder "+str(folderID)+"/"+str(nFolders)+": "+os.path.basename(os.path.normpath(folder)))
-        fileID=0
-        for filename in files:
-            fileID+=1
-            if not filename.endswith('.txt'):
-                continue
-            print("  Processing file "+str(fileID)+"/"+str(len(files)) + ": " + filename)
-            dir_path = os.path.join(folder, filename)
-            with open(dir_path, 'r', encoding='utf-8', errors='ignore') as src:
-                text = src.read().replace("\n", " ")
-                NLP = StanfordCoreNLP('http://localhost', port=9000)
-            sentences = tokenize.sent_tokenize(text)
-            documents.append([sentences,filename, dir_path])
-
-    # IO_util.timed_alert(GUI_util.window, 5000, 'Word similarity', 'Finished preparing data...\n\nProcessed '+str(folderID)+' subfolders and '+str(fileID)+' files.\n\nNow running Stanford CoreNLP to get NER values on every file processed... PLEASE, be patient. This may take a while...')
-    print('Finished preparing data for folder '+str(folderID)+' subfolders and '+str(fileID)+' files.')
-
-    if by_all_tokens_var:
-        # TODO all_words ends up including filename as well; must only include the words in the documents
-        all_words = [[token, sentence_number + 1, document_number + 1,sentence, document[1],IO_csv_util.dressFilenameForCSVHyperlink(document[2]), ''] for document_number, document in
-                enumerate(documents)
-                for sentence_number, sentence in enumerate(document[0])
-                # TODO should not process the same word twice .drop_duplicates()
-                for token in NLP.word_tokenize(sentence)]
-        temp = [elmt[0] for elmt in all_words]
-        all_word_dict = [(item, count) for item, count in collections.Counter(temp).items() if count > 1]
-        list_to_check = all_words
-
-    else:
-        NER = [[ners[0], sentence_number + 1, document_number + 1, sentence, document[1],IO_csv_util.dressFilenameForCSVHyperlink(document[2]), ners[1]] for document_number, document in
-               enumerate(documents)
-               for sentence_number, sentence in enumerate(document[0])
-               for ners in NLP.ner(sentence) if ners[1] in NERs]
-        ner_dict = {}
-        for each_ner in NERs:
-            temp = [elmt[0] for elmt in NER if elmt[-1] == each_ner]
-            ner_dict[each_ner] = [(item, count) for item, count in collections.Counter(temp).items() if count > 1]
-        list_to_check = NER
-
-    word_list = [elmt[0] for elmt in list_to_check]
-    word_freq_dict = {i: word_list.count(i) for i in set(word_list)}
-    # for each element in list_to_check, it is in this format:
-    # word, sentenceID, documentID, fileName, NamedEntity
-
-    print('Finished running CoreNLP. Processed '+str(len(list_to_check))+' words. Now computing word differences...')
-    # IO_util.timed_alert(GUI_util.window, 5000, 'Word similarity', 'Finished running Stanford CoreNLP...\n\nProcessed '+str(len(list_to_check))+' words.\n\nNow computing word differences... PLEASE, be patient. This may take a while...')
-    # These headers reflect the items returned from the processing above
-    # THEIR ORDER CANNOT BE CHANGED, UNLESS ABOVE ORDER OF PROCESSING IS ALSO CHANGED
-    # These headers are then used selectively for the output (see headers2)
-    headers1 = ['Words', 'Word frequency in document', 'Sentence ID', 'Document ID',
-                'Sentence', 'Document', 'Document path', 'Named Entity (NER)',
-                'Similar word in directory', 'Similar-word frequency in directory', 'Typo?']
-    if by_all_tokens_var:
-        # headers 2 rearranges the headers but must have the same values
-        headers2=['Words', 'Word frequency in document', 'Similar word in directory',
-                 'Similar-word frequency in directory', 'Typo?',
-                 'Number of documents processed', 'Sentence ID', 'Sentence',
-                 'Document ID', 'Document', 'Document path', 'Processed directory']
-        wordID=0
-        # TODO should only check DISTINCT words in list_to_check; no point checking and re-checking the same word
-        for word in list_to_check:
-            wordID+=1
-            word.insert(1, word_freq_dict.get(word[0]))
-            checker_against = all_word_dict
-            speller = SpellChecker()
-            # TODO loops twice through same list? Here and in check_edit_dist
-            # TODO should not check punctuation
-            new_word = speller.correction(word[0])
-            value_tuple=[]
-            if new_word!=word[0]:
-                # TODO should check edit distance only if the word is misspelled
-                value_tuple = check_edit_dist(word[0], checker_against, similarity_value)
-            else:
-                value_tuple=[False, '', '']
-            if value_tuple[0]:
-                word.append(value_tuple[1])  # returned similar word from check_edit_list
-                word.append(value_tuple[2])  # returned similar word frequency from check_edit_list
-                word.append('Typo?')
-            else:
-                word.append('')
-                word.append('')
-                word.append('')
-            print("      Processing word " + str(wordID) + "/" + str(len(list_to_check)) + ":" + word[0])
-    # Processing NER
-    else:
-        # headers 2 rearranges the headers but must have the same values
-        # it includes the NER tag
-        headers2=['Words', 'Named Entity (NER)', 'Word frequency in document',
-                  'Similar word in directory',
-                 'Similar-word frequency in directory', 'Typo?',
-                 'Number of documents processed', 'Sentence ID', 'Sentence',
-                  'Document ID', 'Document', 'Document path', 'Processed directory']
-        for word in list_to_check:
-            word.insert(1, word_freq_dict.get(word[0]))
-            # [('word', Count:int)]
-            for each_ner in NERs:
-                if word[-1] == each_ner:
-                    checker_against = ner_dict.get(each_ner)
-                    value_tuple = check_edit_dist(word[0], checker_against, similarity_value)
-                    if value_tuple[0]:
-                        word.append(value_tuple[1])  # returned similar word from check_edit_list
-                        word.append(value_tuple[2])  # returned similar word frequency from check_edit_list
-                        word.append('Typo?')
-                    else:
-                        word.append('')
-                        word.append('')
-                        word.append('')
-
-    df = pd.DataFrame(list_to_check, columns=headers1)
-    for index, row in df.iterrows():
-        if row['Similar-word frequency in directory'] != None:
-            tmp = df[df['Words'] == row['Similar word in directory']]
-            df.loc[index, 'Number of documents processed'] = tmp.Document.nunique()
-    df['Processed directory'] = IO_csv_util.dressFilenameForCSVHyperlink(inputDir)
-    df = df[headers2]
-
-    # complete includes all repeats
-    df_complete = df[headers2]
-
-    # simple excludes all repeats
-    df_simple = df.drop_duplicates(subset=['Words', 'Document ID'], keep='last')
-
-    if by_all_tokens_var:
-        outputFileName_complete = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
-                                                                          str(similarity_value), 'Edit_dist_algo',
-                                                                          'all_words', 'Full-table')
-        outputFileName_simple = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
-                                                                        str(similarity_value), 'Edit_dist_algo',
-                                                                        'all_words', 'Concise-table')
-    else:
-        outputFileName_complete = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
-                                                                          str(similarity_value), 'Edit_dist_algo',
-                                                                          'NERs', 'Full-table')
-        outputFileName_simple = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
-                                                                        str(similarity_value), 'Edit_dist_algo', 'NERs',
-                                                                            'Concise-table')
-    if len(df_simple) > 0 and len(df_complete) > 0:
-            df_simple.to_csv(outputFileName_simple, index=False)
-            df_complete.to_csv(outputFileName_complete, index=False)
-            filesToOpen.append(outputFileName_simple)
-            filesToOpen.append(outputFileName_complete)
-
-            filesToOpen.append(outputFileName_simple)
-            filesToOpen.append(outputFileName_complete)
-
-            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity end',
-                                               'Finished running Word similarity at', True)
-
-            if createExcelCharts:
-                Excel_outputFileName=createChart(outputFileName_simple, outputDir, [[10, 10]], '')
-
-                if Excel_outputFileName != "":
-                    filesToOpen.append(Excel_outputFileName)
-
-    if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
-        filesToOpen=[] # empty the list to avoid opening files twice
-
-    p.kill()
-
-    return filesToOpen
 
 # function implements three different approaches to language detection: langdetect, spacy, langid
 # https://towardsdatascience.com/benchmarking-language-detection-for-nlp-8250ea8b67c

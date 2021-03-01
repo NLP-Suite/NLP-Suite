@@ -119,18 +119,18 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     noun_postag_stats, noun_deprel_stats, noun_ner_stats = noun_POSTAG_DEPREL_compute_frequencies(data,
                                                                                                   data_divided_sents)
     # output file names
-    noun_postag_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'NOUN',
+    noun_postag_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
                                                                     'POSTAG_list')
-    noun_deprel_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'NOUN',
+    noun_deprel_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
                                                                     'DEPREL_list')
-    noun_ner_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'NOUN',
+    noun_ner_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
                                                                  'NER_list')
 
-    noun_postag_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'NOUN',
+    noun_postag_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
                                                                      'POSTAG_stats')
-    noun_deprel_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA','NOUN',
+    noun_deprel_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA','Noun',
                                                                      'DEPREL_stats')
-    noun_ner_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA','NOUN',
+    noun_ner_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA','Noun',
                                                                   'NER_stats')
 
     # save csv files -------------------------------------------------------------------------------------------------
