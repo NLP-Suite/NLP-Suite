@@ -167,7 +167,7 @@ def extract_svo(svo_triplets, svo_result, svo_merge_filename, subject_list, verb
                                          })
                 added.add((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
 
-def run(inputFilename, inputDir, outputDir, utf8_var, Coref, Coref_Option, memory_var, Manual_Coref_var, date_extractor_var, SVO_extractor_var, subjects_dict_var, verbs_dict_var, objects_dict_var, gephi_var, wordcloud_var, google_earth_var, openOutputFiles,createExcelCharts):
+def run(inputFilename, inputDir, outputDir, utf8_var, Coref, Coref_Option, memory_var, Manual_Coref_var, date_extractor_var, SV_extractor_var, SVO_extractor_var, subjects_dict_var, verbs_dict_var, objects_dict_var, gephi_var, wordcloud_var, google_earth_var, openOutputFiles,createExcelCharts):
     filesToOpen = []
 
     merge_file_option = None
