@@ -58,64 +58,52 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
 																data,
 																data_divided_sents,
 																openOutputFiles, createExcelCharts)
-		# only open the chart files
-		filesToOpen.append(outputFiles[1])
-		if len(outputFiles)>2:
-			filesToOpen.append(outputFiles[2])
+		if outputFiles!=None:
+			# only open the chart files
+			if len(outputFiles)>0:
+				filesToOpen.append(outputFiles[1])
+			if len(outputFiles)>2:
+				filesToOpen.append(outputFiles[2])
+
 		right_hand_side=True
 
 	if noun_analysis_var==True:
 		import CoNLL_noun_analysis_util
 		outputFiles=CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts)
-		# only open the chart files [3]
-		filesToOpen.append(outputFiles[0])
-		filesToOpen.append(outputFiles[1])
-		filesToOpen.append(outputFiles[2])
-		filesToOpen.append(outputFiles[4])
-		filesToOpen.append(outputFiles[6])
-		filesToOpen.append(outputFiles[8])
+		if outputFiles!=None:
+			# only open the chart files
+			filesToOpen.append(outputFiles[6])
+			filesToOpen.append(outputFiles[7])
+			filesToOpen.append(outputFiles[8])
+
 		right_hand_side=True
 
 	if verb_analysis_var == True:
 		import CoNLL_verb_analysis_util
-		outputFiles=CoNLL_verb_analysis_util.verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts)
-		# only open the chart files [3]
-		# filesToOpen.append(outputFiles[1])
-		if len(outputFiles)>2:
+
+		outputFiles=CoNLL_verb_analysis_util.verb_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts)
+
+		# only open the chart files
+		if outputFiles!=None:
 			filesToOpen.append(outputFiles[2])
-		outputFiles=CoNLL_verb_analysis_util.verb_modality_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts)
-		# filesToOpen.append(outputFiles[1])
-		if len(outputFiles)>2:
-			filesToOpen.append(outputFiles[2])
-		outputFiles=CoNLL_verb_analysis_util.verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts)
-		# filesToOpen.append(outputFiles[1])
-		if len(outputFiles)>2:
-			filesToOpen.append(outputFiles[2])
+			filesToOpen.append(outputFiles[5])
+			filesToOpen.append(outputFiles[7])
+
 		right_hand_side=True
 
+
 	if function_words_analysis_var==True:
-		# only open the chart files [3]
 		import CoNLL_function_words_analysis_util
-		outputFiles=CoNLL_function_words_analysis_util.article_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts)
-		# filesToOpen.append(outputFiles[1])
-		if len(outputFiles)>2:
+
+		outputFiles=CoNLL_function_words_analysis_util.function_words_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts)
+		# only open the chart files
+		if outputFiles!=None:
 			filesToOpen.append(outputFiles[2])
-		outputFiles=CoNLL_function_words_analysis_util.auxiliary_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts)
-		# filesToOpen.append(outputFiles[1])
-		if len(outputFiles)>2:
-			filesToOpen.append(outputFiles[2])
-		outputFiles=CoNLL_function_words_analysis_util.conjunction_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts)
-		# filesToOpen.append(outputFiles[1])
-		if len(outputFiles)>2:
-			filesToOpen.append(outputFiles[2])
-		outputFiles=CoNLL_function_words_analysis_util.preposition_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts)
-		# filesToOpen.append(outputFiles[1])
-		if len(outputFiles)>2:
-			filesToOpen.append(outputFiles[2])
-		outputFiles=CoNLL_function_words_analysis_util.pronoun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts)
-		# filesToOpen.append(outputFiles[1])
-		if len(outputFiles)>2:
-			filesToOpen.append(outputFiles[2])
+			filesToOpen.append(outputFiles[5])
+			filesToOpen.append(outputFiles[8])
+			filesToOpen.append(outputFiles[11])
+			filesToOpen.append(outputFiles[14])
+
 		right_hand_side=True
 
 	if right_hand_side==True:
@@ -446,23 +434,23 @@ y_multiplier_integer_bottom=y_multiplier_integer
 y_multiplier_integer=y_multiplier_integer_top
 
 clausal_analysis_var.set(0)
-clausal_analysis_checkbox = tk.Checkbutton(window, text='CLAUSE analysis', variable=clausal_analysis_var, onvalue=1, offvalue=0)
+clausal_analysis_checkbox = tk.Checkbutton(window, text='CLAUSE analyses', variable=clausal_analysis_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+550,y_multiplier_integer,clausal_analysis_checkbox)
 
 noun_analysis_var.set(0)
-noun_analysis_checkbox = tk.Checkbutton(window, text='NOUN analysis', variable=noun_analysis_var, onvalue=1, offvalue=0)
+noun_analysis_checkbox = tk.Checkbutton(window, text='NOUN analyses', variable=noun_analysis_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+550,y_multiplier_integer,noun_analysis_checkbox)
 
 verb_analysis_var.set(0)
-verb_analysis_checkbox = tk.Checkbutton(window, text='VERB analysis', variable=verb_analysis_var, onvalue=1, offvalue=0)
+verb_analysis_checkbox = tk.Checkbutton(window, text='VERB analyses', variable=verb_analysis_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+550,y_multiplier_integer,verb_analysis_checkbox)
 
 function_words_analysis_var.set(0)
-function_words_analysis_checkbox = tk.Checkbutton(window, text='FUNCTION WORDS analysis', variable=function_words_analysis_var, onvalue=1, offvalue=0)
+function_words_analysis_checkbox = tk.Checkbutton(window, text='FUNCTION WORDS analyses', variable=function_words_analysis_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+550,y_multiplier_integer,function_words_analysis_checkbox)
 
 all_analyses_var.set(0)
-all_analyses_checkbox = tk.Checkbutton(window, text="ALL anayses: clauses, nouns, verbs, function words ('junk/stop' words)", variable=all_analyses_var, onvalue=1, offvalue=0)
+all_analyses_checkbox = tk.Checkbutton(window, text="ALL anayses: Clauses, nouns, verbs, function words ('junk/stop' words)", variable=all_analyses_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+550,y_multiplier_integer,all_analyses_checkbox)
 
 # -------------------------------------------------------------------------------------------------------

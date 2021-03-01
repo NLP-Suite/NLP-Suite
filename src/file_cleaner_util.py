@@ -198,12 +198,18 @@ def newspaper_titles(window,inputFilename,input_dir_path,output_dir_path,openOut
 
 	mb.showwarning(title='Document titles', message=msgString)
 
-
+# non-ASCII apostrophes and quotes (e.g., those coming from Windows Words) will show up in a csv file (not in Excel or Mac) as weird characters
+#	although they do not break any script coode
+# % will break the CoreNLP code
+# The reasons are explained here: https://docs.oracle.com/javase/8/docs/api/java/net/URLDecoder.html
+#   The character "%" is allowed but is interpreted as the start of a special escaped sequence.
+# Needs special handling https://stackoverflow.com/questions/6067673/urldecoder-illegal-hex-characters-in-escape-pattern-for-input-string
+# https://stackoverflow.com/questions/7395789/replacing-a-weird-single-quote-with-blank-string-in-python
 def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
 	inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 	Ndocs=len(inputDocs)
 	index=0
-	result= IO_user_interface_util.input_output_save("Convert quotes")
+	result= IO_user_interface_util.input_output_save("Convert apostrophes/quotes/%")
 	if result ==False:
 		return
 	docError = 0
@@ -221,8 +227,9 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
 			# 	print("u\u201C")
 			# if u"\u201D" in fullText:
 			# 	print("u\u201D")
-			if (u"\u2018" in fullText) or (u"\u2019" in fullText) or (u"\u201C" in fullText) or (u"\u201D" in fullText):
+			if (u"%" in fullText) or (u"\u2018" in fullText) or (u"\u2019" in fullText) or (u"\u201C" in fullText) or (u"\u201D" in fullText):
 				# u0027 apostrophe
+				fullText = str(fullText).replace("%", "percent")  # left single quote
 				fullText = str(fullText).replace(u"\u2018", u"\u0027")  # left single quote
 				fullText = str(fullText).replace(u"\u2019", u"\u0027")  # right single quote
 				fullText = str(fullText).replace(u"\u201C", '"') #left double quote
@@ -234,11 +241,11 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
 
 	if docError>0:
 		if docError==1:
-			mb.showwarning(title='Non utf-8 punctuations converted',message=str(Ndocs) + ' document(s) processed.\n\n' + str(docError)+' document was edited to convert apostrophes and/or quotes.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE.')
+			mb.showwarning(title='Non-ASCII punctuations converted',message=str(Ndocs) + ' document(s) processed.\n\n' + str(docError)+' document was edited to convert non-ASCII apostrophes and/or quotes and % to percent.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILE.')
 		else:
-			mb.showwarning(title='Non utf-8 punctuations converted',message=str(Ndocs) + ' document(s) processed.\n\n' + str(docError)+' documents were edited to convert apostrophes and/or quotes.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILES.')
+			mb.showwarning(title='Non-ASCII punctuations converted',message=str(Ndocs) + ' document(s) processed.\n\n' + str(docError)+' documents were edited to convert non-ASCII apostrophes and/or quotes and % to percent.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILES.')
 	else:
-		mb.showwarning(title='Non utf-8 punctuations converted', message=str(Ndocs) + ' document(s) processed.\n\nNo documents were found with non utf-8 apostrophes or quotes characters.')
+		mb.showwarning(title='Non-ASCII punctuations converted', message=str(Ndocs) + ' document(s) processed.\n\nNo documents were found with non-ASCII apostrophes or quotes and % to percent.')
 
 
 # TODO to be completed w/o opening and closing the txt file for every string processed
