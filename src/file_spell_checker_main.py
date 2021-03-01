@@ -172,7 +172,7 @@ def clear(e):
     NER_value_var.set('')
     selected_NER_list_var.set('')
     NER_list = []
-    similarity_value_var.set(4)
+    similarity_value_var.set(80)
     checker_value_var.set('')
     GUI_util.tips_dropdown_field.set('Open TIPS files')
 
@@ -238,7 +238,7 @@ def activate_NER_list_entry(*args):
 NER_value_var.trace('w', activate_NER_list_entry)
 activate_NER_list_entry()
 
-similarity_value_var.set(4)
+similarity_value_var.set(80)
 similarity_value_lb = tk.Label(window, text='Enter word length for computing similarity')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
                                                similarity_value_lb, True)
@@ -343,7 +343,7 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 6, "Help",
                                   'Please, using the dropdown menu, select the NER (Named Entity Recognition) type you wish to use for computing spelling differences (Levenshtein\'s edit distance).\n\nFor all NER values, select *; for multiple values, but not *, enter the NER values, comma separated, in the next widget.' + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 7, "Help",
-                                  'Please, enter the value of word length (in number of characters) to be used to gage Levenshtein\'s edit distance or word similarity (default value 4).\n\nIf a word is shorter than the selected word lenght (in number of characters):\n   1 or more character difference will be considered as a possible typo;\n\nIf a word is equal or longer than the selected word lenght (in number of characters):\n   2 or more characters difference will be considered as a possible typo.\n\nYou have the option of checking for selected NER values WITHIN each subdirectory only or ACROSS all subdirectories (or an entire directory, for that matter); in this second option, the algorithm will take much longer to process.\n\nThe output list fully processes words with a frequency greater than 1.' + GUI_IO_util.msg_Esc)
+                                  'Please, enter the value of word length (in number of characters) to be used to gage Levenshtein\'s edit distance or word similarity (default value 80). You can enter a number on a scale from 0 to 100, with 100 being completely the same.\n\nIf a word is shorter than the selected word lenght (in number of characters):\n   1 or more character difference will be considered as a possible typo;\n\nIf a word is equal or longer than the selected word lenght (in number of characters):\n   2 or more characters difference will be considered as a possible typo.\n\nYou have the option of checking for selected NER values WITHIN each subdirectory only or ACROSS all subdirectories (or an entire directory, for that matter); in this second option, the algorithm will take much longer to process.\n\nThe output list fully processes words with a frequency greater than 1.' + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 8, "Help",
                                   'Please, tick the checkbox if you wish to run a spelling checker.' + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 9, "Help",

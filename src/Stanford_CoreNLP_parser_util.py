@@ -54,7 +54,7 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
     if CoreNLPdir== '':
         return filesToOpen
 
-    errorFound, error_code, system_output=IO_libraries_util.check_java_installation('SVO extractor')
+    errorFound, error_code, system_output=IO_libraries_util.check_java_installation('CoreNLP parser')
     if errorFound:
         return filesToOpen
 
@@ -79,8 +79,9 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
 
     # run the command java -mx5g -cp "stanford corenlp directory" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -timeout 10000
     # connect to server
+    # -d64 to use 64 bits JAVA, normally set to 32 as default
     p = subprocess.Popen(
-        ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir,'*'), 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
+        ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir,'*'), 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
     # wait for subprocess
     time.sleep(5)
     nlpObject = StanfordCoreNLP('http://localhost:9000')
@@ -119,6 +120,11 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
             f.close()
             nlpObject = StanfordCoreNLP('http://localhost:9000')
             CoreNLP_output = nlpObject.annotate(fullText, nlpProps)
+            # for memory errors and solutions https://stackoverflow.com/questions/40832022/outofmemoryerror-when-running-the-corenlp-tool
+            # You can use Java8. They use metaspace for heap. So, no heap space error will occur.
+            # see also
+            # https://stackoverflow.com/questions/909018/avoiding-initial-memory-heap-size-error
+
             errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, nDocs, filesError)
             if errorFound: continue # process next document
             if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
