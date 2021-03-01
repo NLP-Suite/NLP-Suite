@@ -279,7 +279,7 @@ def CoreNLP_annotate(inputFilename,
         #get file length
         # file_length=len(doc)
         # TODO Claude the code breaks below when using neural networks
-        #   if you look at the parser neural networks produce a slightly differrent output from PCFG
+        #   if you look at the parser neural networks produce a slightly different output from PCFG
         #   so much so that that sent_list_clause is computed ONLY for PCFG otherwise the code
         #   in the next few commented lines taken from parser_util breaks
         #   it that why you get an error with the second doc? I get it right away
@@ -318,7 +318,7 @@ def CoreNLP_annotate(inputFilename,
             #     for sentence in CoreNLP_output['sentences']:
             # # token_num += len(sentence["tokens"])
             #         file_length += len(sentence["tokens"])
-                speed_assessment.append([doc, docID, NN_time_elapsed,file_length, param_string_NN, param_number_NN])
+                speed_assessment.append([docID, IO_csv_util.dressFilenameForCSVHyperlink(doc),  NN_time_elapsed,file_length, param_string_NN, param_number_NN])
                 # print("CoreNLP_output: ", CoreNLP_output)
             errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, nDocs, filesError)
             if errorFound: continue#move to next annotator
@@ -348,9 +348,7 @@ def CoreNLP_annotate(inputFilename,
                             run_output[i].append(j)
                 else:
                     run_output.extend(sub_result)
-            # speed_assessment.append([doc, docID, time.time()-annotator_start_time,annotator_chosen,file_length, param_string, param_number, parse_model])
-            # ['Part','Part ID','Time','Annotator', 'Tokens to Annotate', 'Params', 'Number of ','parse model']
-    #generate output csv files and write output 
+    #generate output csv files and write output
     output_start_time = time.time()
     for run in routine_list:
         annotator_chosen = run[0]
@@ -434,9 +432,6 @@ def CoreNLP_annotate(inputFilename,
         IO_csv_util.list_to_csv(GUI_util.window, filesError, errorFile)
         filesToOpen.append(errorFile)
     #record the time consumption of generating outputfiles and visualization
-    # speed_assessment.append(["Output Production", -1, time.time()-output_start_time,'',None, '', None, ''])
-    #record the time consumption of running the whole analysis 
-    # speed_assessment.append(["Whole Function", -2, time.time()-start_time,'',None, '', None, ''])
     total_time_elapsed = time.time() - start_time
     speed_assessment.append(["Total Operation", -1, total_time_elapsed,'', '', 0])
     speed_csv = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
