@@ -125,7 +125,6 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                                     'DEPREL_list')
     noun_ner_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
                                                                  'NER_list')
-
     noun_postag_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
                                                                      'POSTAG_stats')
     noun_deprel_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA','Noun',
