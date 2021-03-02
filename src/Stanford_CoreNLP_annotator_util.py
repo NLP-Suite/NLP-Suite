@@ -28,7 +28,7 @@ import IO_files_util
 import IO_user_interface_util
 import Excel_util
 import annotator_dictionary_util
-
+# from operator import itemgetter, attrgetter
 # central CoreNLP_annotator function that pulls together our approach to processing many files,
 # splitting them if necessary, and, depending upon annotator (NER date, quote, gender, sentiment)
 # perhaps call different subfunctions, and pulling together the output
@@ -55,7 +55,7 @@ def CoreNLP_annotate(inputFilename,
                      memory_var, **kwargs):
     start_time = time.time()
     speed_assessment = []#storing the information used for speed assessment
-    speed_assessment_format = ['Document ID', 'Document','Time', 'Tokens to Annotate', 'Params', 'Number of Params']#the column titles of the csv output of speed assessment
+    speed_assessment_format = ['File','File ID','Time', 'Tokens to Annotate', 'Params', 'Number of Params']#the column titles of the csv output of speed assessment
     # start_time = time.time()#start time
     filesToOpen = []
     # check that the CoreNLPdir as been setup
@@ -63,7 +63,7 @@ def CoreNLP_annotate(inputFilename,
     if CoreNLPdir== '':
         return filesToOpen
 
-    errorFound, error_code, system_output=IO_libraries_util.check_java_installation('Stanford CoreNLP')
+    errorFound, error_code, system_output=IO_libraries_util.check_java_installation('SVO extractor')
     if errorFound:
         return filesToOpen
 
@@ -146,10 +146,11 @@ def CoreNLP_annotate(inputFilename,
     
     #collecting input txt files
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
-    for file in inputDocs:
-        listOfFiles = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,'Stanford CoreNLP',file)
-        files.extend(listOfFiles)
-        nDocs = len(files)
+    nDocs = len(inputDocs)
+    # for file in inputDocs:
+    #     listOfFiles = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,'Stanford CoreNLP',file)
+    #     files.extend(listOfFiles)
+    #     nDocs = len(files)
     if nDocs==0:
         return filesToOpen
 
@@ -252,103 +253,115 @@ def CoreNLP_annotate(inputFilename,
     #record the time comsumption before annotating text in each file
     # speed_assessment.append(["Pre corpus analysis",0,time.time() - start_time,'',None,'', None,''])
     # ['Part','Part ID','Time','Annotator', 'Tokens to Annotate', 'Params', 'Number of ','parse model']
-    for doc in files:
-        
-        file_length = 0#the number of tokens
-        # doc_start_time = time.time()
-        model_switch = False
+    for docName in inputDocs:
         docID = docID + 1
-        head, tail = os.path.split(doc)
-        print("\nProcessing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
-        text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
-        nlp = StanfordCoreNLP('http://localhost:9000')
-        annotator_start_time = time.time()
-        CoreNLP_output = nlp.annotate(text, properties=params)
-        annotator_time_elapsed = time.time() - annotator_start_time
-        try: 
-            for sentence in CoreNLP_output['sentences']:
-                # token_num += len(sentence["tokens"])
-                file_length += len(sentence["tokens"])
-        except: 
-            print("The annotator of ["+param_string+"] did not process successfully")
-        speed_assessment.append([docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), annotator_time_elapsed,file_length, param_string, param_number])
-        # speed_assessment_format = ['File','File ID','Time', 'Tokens to Annotate', 'Params', 'Number of Params'
-        # file_length = 
-        # errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, nDocs, filesError)
-        # if errorFound: continue  # process next document
-        #get file length
-        # file_length=len(doc)
-        # TODO Claude the code breaks below when using neural networks
-        #   if you look at the parser neural networks produce a slightly different output from PCFG
-        #   so much so that that sent_list_clause is computed ONLY for PCFG otherwise the code
-        #   in the next few commented lines taken from parser_util breaks
-        #   it that why you get an error with the second doc? I get it right away
-        # if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
-        #     sent_list_clause = [Stanford_CoreNLP_clausal_util.clausal_info_extract_from_string(parsed_sent['parse'])
-        #                         for parsed_sent in CoreNLP_output['sentences']]
-
-        # for sentence in CoreNLP_output['sentences']:
-        #     # token_num += len(sentence["tokens"])
-        #     file_length += len(sentence["tokens"])
-        #record the time comsumption before running each route
-        
-        # routine_list contains all annotators
-        for run in routine_list:
-            annotator_start_time = time.time()
-            # params = run[0]
-            annotator_chosen = run[0]
-            routine = run[1]
-            output_format = run[2]
-            parse_model = run[4]
-            if parse_model == "NN" and model_switch == False:
-                model_switch = True
-                params_NN = params
-                params_NN['parse.model'] = 'edu/stanford/nlp/models/parser/nndep/english_UD.gz'
-                params_NN['annotators'] = param_string_NN
-                NN_start_time = time.time()
-                CoreNLP_output = nlp.annotate(text, properties=params_NN)
-                NN_time_elapsed = time.time() - NN_start_time
-                file_length = 0
+        sentenceID = 0
+        split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,'Stanford CoreNLP',docName) #if the file is too long, it needs spliting to be able to processed by the Stanford CoreNLP
+        for doc in split_file:
+            annotated_length = 0#the number of tokens
+            # doc_start_time = time.time()
+            model_switch = False
+            
+            head, tail = os.path.split(doc)
+            print("\nProcessing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+            text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
+            nlp = StanfordCoreNLP('http://localhost:9000')
+            #if there's only one annotator and it uses neural nerwork model, skip annoatiting with PCFG to save time
+            if param_string != '':
+                # text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
+                # nlp = StanfordCoreNLP('http://localhost:9000')
+                annotator_start_time = time.time()
+                CoreNLP_output = nlp.annotate(text, properties=params)
+                annotator_time_elapsed = time.time() - annotator_start_time
                 try: 
                     for sentence in CoreNLP_output['sentences']:
                         # token_num += len(sentence["tokens"])
-                        file_length += len(sentence["tokens"])
+                        annotated_length += len(sentence["tokens"])
                 except: 
-                    print("The annotator of "+param_string_NN+" did not process successfully")
-            #     for sentence in CoreNLP_output['sentences']:
-            # # token_num += len(sentence["tokens"])
-            #         file_length += len(sentence["tokens"])
-                speed_assessment.append([docID, IO_csv_util.dressFilenameForCSVHyperlink(doc),  NN_time_elapsed,file_length, param_string_NN, param_number_NN])
-                # print("CoreNLP_output: ", CoreNLP_output)
-            errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, nDocs, filesError)
-            if errorFound: continue#move to next annotator
-            if isinstance(routine_list[0][2][0], list):
-                run_output = [[], []]
-                POS_WordNet = True
-            else:
-                run_output = run[3] # []
-                POS_WordNet = False
-
-            # run_output = run[3]
-
-            #generating output from json file for specific annotators
-            sub_result = routine(docID, doc, CoreNLP_output, **kwargs)
-            #write html file from txt input
-            if output_format == 'text':
-                outputFilename = IO_files_util.generate_output_file_name(doc, '', outputDir, '.txt', 'CoreNLP_'+annotator_chosen)
-                with open(outputFilename, "w") as text_file:
-                    text_file.write(sub_result)
-                filesToOpen.append(outputFilename)
-            else:
-                # add output to the output storage list in routine_list
-                # for the special case of POS values of a double list [['Verbs'],[Nouns']] you need special handling
-                if POS_WordNet:
-                    for i in range(0, len(run[2])):
-                        for j in sub_result[i]:
-                            run_output[i].append(j)
+                    print("The annotator of ["+param_string+"] did not fun successfully")
+                speed_assessment.append([docName, docID, annotator_time_elapsed,annotated_length, param_string, param_number])
+            else: CoreNLP_output = ""
+            # speed_assessment_format = ['File','File ID','Time', 'Tokens to Annotate', 'Params', 'Number of Params'
+            # annotated_length = 
+            # errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, nDocs, filesError)
+            # if errorFound: continue  # process next document
+            #get file length
+            # annotated_length=len(doc)
+            # TODO Claude the code breaks below when using neural networks
+            #   if you look at the parser neural networks produce a slightly differrent output from PCFG
+            #   so much so that that sent_list_clause is computed ONLY for PCFG otherwise the code
+            #   in the next few commented lines taken from parser_util breaks
+            #   it that why you get an error with the second doc? I get it right away
+            # if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
+            #     sent_list_clause = [Stanford_CoreNLP_clausal_util.clausal_info_extract_from_string(parsed_sent['parse'])
+            #                         for parsed_sent in CoreNLP_output['sentences']]
+    
+            # for sentence in CoreNLP_output['sentences']:
+            #     # token_num += len(sentence["tokens"])
+            #     annotated_length += len(sentence["tokens"])
+            #record the time comsumption before running each route
+            
+            # routine_list contains all annotators
+            for run in routine_list:
+                annotator_start_time = time.time()
+                # params = run[0]
+                annotator_chosen = run[0]
+                routine = run[1]
+                output_format = run[2]
+                parse_model = run[4]
+                if parse_model == "NN" and model_switch == False:
+                    model_switch = True
+                    params_NN = params
+                    params_NN['parse.model'] = 'edu/stanford/nlp/models/parser/nndep/english_UD.gz'
+                    params_NN['annotators'] = param_string_NN
+                    NN_start_time = time.time()
+                    CoreNLP_output = nlp.annotate(text, properties=params_NN)
+                    NN_time_elapsed = time.time() - NN_start_time
+                    annotated_length = 0
+                    try: 
+                        for sentence in CoreNLP_output['sentences']:
+                            # token_num += len(sentence["tokens"])
+                            annotated_length += len(sentence["tokens"])
+                    except: 
+                        print("The annotator of "+param_string_NN+" did not fun successfully")
+                #     for sentence in CoreNLP_output['sentences']:
+                # # token_num += len(sentence["tokens"])
+                #         annotated_length += len(sentence["tokens"])
+                    speed_assessment.append([docName, docID, NN_time_elapsed,annotated_length, param_string_NN, param_number_NN])
+                    # print("CoreNLP_output: ", CoreNLP_output)
+                errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, nDocs, filesError)
+                if errorFound: continue#move to next annotator
+                if isinstance(routine_list[0][2][0], list):
+                    run_output = [[], []]
+                    POS_WordNet = True
                 else:
-                    run_output.extend(sub_result)
-    #generate output csv files and write output
+                    run_output = run[3] # []
+                    POS_WordNet = False
+    
+                # run_output = run[3]
+    
+                #generating output from json file for specific annotators
+                sub_result = routine(docID, docName, sentenceID, CoreNLP_output, **kwargs) #the sentenceID records the start sentence's ID in the whole file just in case that the original file was split
+                # sentenceID = new_sentenceID
+                #write html file from txt input
+                if output_format == 'text':
+                    outputFilename = IO_files_util.generate_output_file_name(doc, '', outputDir, '.txt', 'CoreNLP_'+annotator_chosen)
+                    with open(outputFilename, "w") as text_file:
+                        text_file.write(sub_result)
+                    filesToOpen.append(outputFilename)
+                else:
+                    # add output to the output storage list in routine_list
+                    # for the special case of POS values of a double list [['Verbs'],[Nouns']] you need special handling
+                    if POS_WordNet:
+                        for i in range(0, len(run[2])):
+                            for j in sub_result[i]:
+                                run_output[i].append(j)
+                    else:
+                        run_output.extend(sub_result)
+            sentenceID += len(CoreNLP_output["sentences"])#update the sentenceID of the first sentence of the next split file
+            # speed_assessment.append([doc, docID, time.time()-annotator_start_time,annotator_chosen,file_length, param_string, param_number, parse_model])
+            # ['Part','Part ID','Time','Annotator', 'Tokens to Annotate', 'Params', 'Number of ','parse model']
+    #generate output csv files and write output 
     output_start_time = time.time()
     for run in routine_list:
         annotator_chosen = run[0]
@@ -432,6 +445,9 @@ def CoreNLP_annotate(inputFilename,
         IO_csv_util.list_to_csv(GUI_util.window, filesError, errorFile)
         filesToOpen.append(errorFile)
     #record the time consumption of generating outputfiles and visualization
+    # speed_assessment.append(["Output Production", -1, time.time()-output_start_time,'',None, '', None, ''])
+    #record the time consumption of running the whole analysis 
+    # speed_assessment.append(["Whole Function", -2, time.time()-start_time,'',None, '', None, ''])
     total_time_elapsed = time.time() - start_time
     speed_assessment.append(["Total Operation", -1, total_time_elapsed,'', '', 0])
     speed_csv = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
@@ -446,14 +462,15 @@ def CoreNLP_annotate(inputFilename,
     return filesToOpen
 
 # ["Word", "Normalized date", "tid","tense","information","Sentence ID", "Sentence", "Document ID", "Document"],
-def process_json_normalized_date(documentID, document, json, **kwargs):
+def process_json_normalized_date(documentID, document, sentenceID,json, **kwargs):
     print("   Processing Json output file for NER NORMALIZED DATE annotator")
 
     result = []
     temp = []
     for sentence in json['sentences']:
         complete_sent = ''
-        sentenceID = sentence['index'] + 1
+        # sentenceID = sentence['index'] + 1
+        sentenceID = sentenceID + 1
         words = ''
         norm_date = ''
         tid = ''
@@ -532,9 +549,16 @@ def date_get_tense(norm_date):
     return tense
 
 def date_get_info(norm_date):
-    tense = ''
+    norm_date = norm_date.strip()
+    tense = 'OTHER'
         # print(norm_date)
-    if norm_date.isdigit() or norm_date.replace('/', '').isdigit() or ("XXXX" in norm_date and norm_date.split("XXXX")[1].replace("-", '').isdigit()):#(len(norm_date) > 4 and norm_date[0:4] == 'XXXX' and norm_date[4:].replace("-", '').isdigit()):#specific year,month, day
+    if norm_date.isdigit() or (norm_date[0] == "-" and norm_date.replace('-', '').isdigit()):
+        tense = "YEAR"
+    elif norm_date[-2:] == "XX" and (norm_date[0:-2].isdigit() or (norm_date[0] == "-" and norm_date[0:-2].replace('-', '').isdigit())):
+        tense = "CENTURY"
+    elif len(norm_date) == 7 and norm_date[-2:].isdigit() and norm_date[4] == "-":
+        tense = "MONTH" 
+    elif norm_date.replace('-', '').isdigit() or norm_date.replace('/', '').isdigit() or ("XXXX" in norm_date and norm_date.split("XXXX")[1].replace("-", '').isdigit()):#(len(norm_date) > 4 and norm_date[0:4] == 'XXXX' and norm_date[4:].replace("-", '').isdigit()):#specific year,month, day
         tense = "DATE"
         # print("date")
     elif 'WXX' in norm_date:#weekdays
@@ -543,11 +567,11 @@ def date_get_info(norm_date):
     elif 'SP' in norm_date or 'SU' in norm_date or 'FA' in norm_date or 'WI' in norm_date:
         tense = "SEASON"
         # print("season")
-    else:
-        tense = "OTHER"
+    # else:
+    #     tense = "OTHER"
     return tense
 
-def process_json_ner(documentID, document, json, **kwargs):
+def process_json_ner(documentID, document, sentenceID, json, **kwargs):
     print("   Processing Json output file for NER annotator")
     # establish the kwarg local vars
     extract_date_from_text_var = False
@@ -587,7 +611,8 @@ def process_json_ner(documentID, document, json, **kwargs):
                     complete_sent = complete_sent + token['originalText']
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
-        sentenceID = sentence['index'] + 1
+        # sentenceID = sentence['index'] + 1
+        sentenceID = sentenceID + 1
         for ner in sentence['entitymentions']:
             temp = [ner['text'], ner['ner'], sentenceID, complete_sent,  ner['tokenBegin'],
                     ner['tokenEnd'],documentID,
@@ -655,7 +680,7 @@ def process_json_ner(documentID, document, json, **kwargs):
     return result
 
 
-def process_json_sentiment(documentID, document, json, **kwargs):
+def process_json_sentiment(documentID, document, sentenceID,json, **kwargs):
     print("   Processing Json output file for SENTIMENT annotator")
     sentiment = []
     for sentence in json["sentences"]:
@@ -665,7 +690,7 @@ def process_json_sentiment(documentID, document, json, **kwargs):
     return sentiment
 
 
-def process_json_coref(documentID, document, json, **kwargs):
+def process_json_coref(documentID, document, sentenceID, json, **kwargs):
     print("   Processing Json output file for COREF annotator")
 
     def resolve(corenlp_output):
@@ -702,7 +727,7 @@ def process_json_coref(documentID, document, json, **kwargs):
 
 
 # December.10 Yi: Modify process_json_gender to provide one more column(complete sentence)
-def process_json_gender(documentID, document, json, **kwargs):
+def process_json_gender(documentID, document, start_sentenceID, json, **kwargs):
     # print("CoreNLP output: ")
     # pprint.pprint(json)
     print("   Processing Json output file for GENDER annotator")
@@ -712,6 +737,7 @@ def process_json_gender(documentID, document, json, **kwargs):
     # TODO Claude take a look at the note above
     #  the code breaks in sentence in json['sentences'] below
     for sentence in json['sentences']:
+        # sentenceID = sentenceID + 1
         complete_sent = ''
         for token in sentence['tokens']:
             if token['originalText'] in string.punctuation:
@@ -723,6 +749,8 @@ def process_json_gender(documentID, document, json, **kwargs):
                     complete_sent = complete_sent + ' ' + token['originalText']
         sentenceID = sentence['index'] + 1
         sent_dict[sentenceID] = complete_sent
+    print("Coreference: ")
+    pprint.pprint(json['corefs'])
     for num, res in json['corefs'].items():
         mentions.append(res)
     for mention in mentions:
@@ -732,12 +760,13 @@ def process_json_gender(documentID, document, json, **kwargs):
             else:
                 # get complete sentence
                 complete = sent_dict[elmt['sentNum']]
-                result.append([elmt['text'], elmt['gender'], complete, elmt['sentNum'], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                result.append([elmt['text'], elmt['gender'], complete, elmt['sentNum'] + start_sentenceID, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
 
-    return result
+    # return result
+    return sorted(result, key=lambda x:x[3])#this function did not add each row in order of sentence, so the output needs sorting by sentenceID
 
 
-def process_json_quote(documentID, document, json, **kwargs):
+def process_json_quote(documentID, document, sentenceID, json, **kwargs):
     print("   Processing Json output file for QUOTE annotator")
     result = []
     quoted_sentences = {}
@@ -761,8 +790,9 @@ def process_json_quote(documentID, document, json, **kwargs):
                     complete_sent = complete_sent + token['originalText']
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
-
-        sentenceID = quoted_sent_id
+        
+        # sentenceID = quoted_sent_id
+        sentenceID = sentenceID + quoted_sent_id
         # leave out the filename for now
         # path, file_name = os.path.split(document)
         temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentenceID,
@@ -772,7 +802,7 @@ def process_json_quote(documentID, document, json, **kwargs):
 
 
 # Dec. 21
-def process_json_openIE(documentID, document, json, **kwargs):
+def process_json_openIE(documentID, document, sentenceID, json, **kwargs):
     openIE = []
     for sentence in json['sentences']:
         complete_sent = ''
@@ -784,7 +814,8 @@ def process_json_openIE(documentID, document, json, **kwargs):
                     complete_sent = complete_sent + token['originalText']
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
-        sentenceID = sentence['index'] + 1
+        # sentenceID = sentence['index'] + 1
+        sentenceID = sentenceID + 1
         SVOs = []
         for openie in sentence['openie']:
             # Document ID, Sentence ID, Document, S, V, O/A, Sentence
@@ -811,7 +842,7 @@ def process_json_openIE(documentID, document, json, **kwargs):
     return openIE
 
 
-def process_json_postag(documentID, document, json, **kwargs):
+def process_json_postag(documentID, document, sentenceID, json, **kwargs):
 
     Verbs = []
     Nouns = []
