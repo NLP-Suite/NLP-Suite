@@ -11,7 +11,7 @@ import IO_libraries_util
 # Instead of passing "pyspellchecker" as a listed package to be verified, we need to pass "spellchecker".
 # This is because "spellchecker" is the module installed by the pyspellchecker package (https://pypi.org/project/pyspellchecker/).
 
-if not IO_libraries_util.install_all_packages(GUI_util.window,"spell_checker_util",['nltk','tkinter','os','langdetect','spacy','spacy_langdetect','langid','csv','spellchecker','textblob','autocorrect','stanfordcorenlp','pandas','collections']):
+if not IO_libraries_util.install_all_packages(GUI_util.window,"spell_checker_util",['nltk','tkinter','os','langdetect','spacy','spacy_langdetect','langid','csv','spellchecker','textblob','autocorrect','stanfordcorenlp','pandas','collections','fuzzywuzzy']):
     sys.exit(0)
 
 import os
@@ -38,6 +38,8 @@ from langid.langid import LanguageIdentifier, model
 import csv
 import subprocess
 import time
+import fuzzywuzzy
+from fuzzywuzzy import fuzz
 
 import file_cleaner_util
 import Excel_util
@@ -46,23 +48,6 @@ import IO_files_util
 import IO_user_interface_util
 from IO_files_util import make_directory
 import reminders_util
-
-# -------------------Angel-----------------End of fuzzywuzzy
-import fuzzywuzzy
-from fuzzywuzzy import fuzz
-def fuzzywuzzy_check_dist(input_word, checklist, similarity_value): #similarity_value will be on a scale 1-100
-    exist_typo = False
-    for word in checklist:
-        # TODO see also pyslpellchecker https://pypi.org/project/pyspellchecker/ which is based on
-        #   Peter Norvig’s blog post on setting up a simple spell checking algorithm based on Levenshtein's edit distance
-        # It uses a Levenshtein Distance
-        dist = fuzz.ratio(input_word, word[0])
-        if dist>= similarity_value and dist<100:#cannot be 100 as that means matching a typo with another typo
-                exist_typo = True
-                return exist_typo, word[0], word[1]
-    return exist_typo, '', ''
-
-# -------------------Angel-----------------End of fuzzywuzzy
 
 def lemmatizing(word):#edited by Claude Hu 08/2020
     #https://stackoverflow.com/questions/15586721/wordnet-lemmatization-and-pos-tagging-in-python
@@ -215,6 +200,22 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createExcelChar
 # checklist contains words with more than 1 time of appearance
 # similarity_value is the gaging_difference attribute
 
+# -------------------Angel-----------------End of fuzzywuzzy
+
+def fuzzywuzzy_check_dist(input_word, checklist, similarity_value): #similarity_value will be on a scale 1-100
+    exist_typo = False
+    for word in checklist:
+        # TODO see also pyslpellchecker https://pypi.org/project/pyspellchecker/ which is based on
+        #   Peter Norvig’s blog post on setting up a simple spell checking algorithm based on Levenshtein's edit distance
+        # It uses a Levenshtein Distance
+        dist = fuzz.ratio(input_word, word[0])
+        if dist>= similarity_value and dist<100:#cannot be 100 as that means matching a typo with another typo
+                exist_typo = True
+                return exist_typo, word[0], word[1]
+    return exist_typo, '', ''
+
+# -------------------Angel-----------------End of fuzzywuzzy
+
 def check_edit_dist(input_word, checklist, similarity_value):
     exist_typo = False
     for word in checklist:
@@ -292,10 +293,35 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
     # IO_util.timed_alert(GUI_util.window, 5000, 'Word similarity', 'Finished preparing data...\n\nProcessed '+str(folderID)+' subfolders and '+str(fileID)+' files.\n\nNow running Stanford CoreNLP to get NER values on every file processed... PLEASE, be patient. This may take a while...')
     if by_all_tokens_var:
         # TODO header_rows ends up including filename as well; must only include the words in the documents
+        # processed_word_list = []
+        # header_rowID=0
+        # processed_wordID=0
+        # for document_number, document in enumerate(documents):
+        #     for sentence_number, sentence in enumerate(document[0]):
+        #         for word in NLP.word_tokenize(sentence):
+        #             if (len(word) > 3) and (word not in processed_word_list) and (word.isalpha()):
+        #                 processed_wordID = processed_wordID + 1
+        #                 speller = SpellChecker()
+        #                 respelled_word = speller.correction(word)
+        #                 # print("      Processing DISTINCT word " + str(processed_wordID) + "/" + str(
+        #                 #     len(distinct_word_list)) + ": " + word)
+        #                 if respelled_word != word:
+        #                     header_rows = [[word, respelled_word, sentence_number + 1, document_number + 1, sentence, document[1],
+        #                                     IO_csv_util.dressFilenameForCSVHyperlink(document[2]), '']]
+        #                     # value_tuple = fuzzywuzzy_check_dist(word, checker_against, similarity_value)  # Angel
+        #                     # value_tuple = fuzzywuzzy_check_dist(word, header_rows, similarity_value)  # Angel
+        #                     # if value_tuple[0]:  # a close match been found
+        #                     #     header_row.append(value_tuple[1])  # returned similar word from check_edit_list
+        #                     #     header_row.append(
+        #                     #         value_tuple[2])  # returned similar word frequency from check_edit_list
+        #                     #     header_row.append('Typo?')
+        #                     #     header_row_list_final.append(header_row)
+        #                     distinct_word_list.append(word)
+
         header_rows = [[token, sentence_number + 1, document_number + 1,sentence, document[1],IO_csv_util.dressFilenameForCSVHyperlink(document[2]), '']
-                for document_number, document in enumerate(documents)
-                for sentence_number, sentence in enumerate(document[0])
-                for token in NLP.word_tokenize(sentence)] #document[1]: filename, document[0]:sentences
+        for document_number, document in enumerate(documents)
+        for sentence_number, sentence in enumerate(document[0])
+        for token in NLP.word_tokenize(sentence)] #document[1]: filename, document[0]:sentences
         temp = [elmt[0] for elmt in header_rows]#list of all tokens
         all_header_rows_dict = [(item, count) for item, count in collections.Counter(temp).items() if count > 1]
         header_row_list_to_check = header_rows
