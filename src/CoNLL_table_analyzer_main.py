@@ -17,8 +17,8 @@ import Excel_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
-
 import Stanford_CoreNLP_tags_util
+# more imports (e.g., import CoNLL_clause_analysis_util) are called below under separate if statements
 
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
