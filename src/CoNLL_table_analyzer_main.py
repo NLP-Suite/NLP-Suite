@@ -11,7 +11,7 @@ import tkinter.messagebox as mb
 
 import GUI_IO_util
 import IO_CoNLL_util
-import CoNLL_search_util
+import CoNLL_table_search_util
 import statistics_csv_util
 import Excel_util
 import IO_files_util
@@ -192,7 +192,7 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
 	all_sents = IO_CoNLL_util.sentence_division(data)
 	if len(all_sents)==0:
 		return
-	queried_list=CoNLL_search_util.search_CoNLL_table(all_sents,searchField_kw,searchedCoNLLField, related_token_POSTAG=co_postag,related_token_DEPREL=co_deprel, _tok_postag_=postag,_tok_deprel_=deprel)
+	queried_list=CoNLL_table_search_util.search_CoNLL_table(all_sents,searchField_kw,searchedCoNLLField, related_token_POSTAG=co_postag,related_token_DEPREL=co_deprel, _tok_postag_=postag,_tok_deprel_=deprel)
 
 	if len(queried_list) != 0:
 		if searchField_kw=='*':
@@ -200,7 +200,7 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
 		else:
 			srcField_kw=searchField_kw
 		output_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'QC', srcField_kw, searchedCoNLLField)
-		errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_search_util.output_list(queried_list,searchedCoNLLField,documentId_position), output_file_name)
+		errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_table_search_util.output_list(queried_list,searchedCoNLLField,documentId_position), output_file_name)
 		if errorFound==True:
 			return
 		filesToOpen.append(output_file_name)
