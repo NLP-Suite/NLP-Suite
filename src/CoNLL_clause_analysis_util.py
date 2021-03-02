@@ -47,7 +47,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
     
     #output file names
     #clausal_analysis_file_name contains all the CoNLL table records that have a clausal tag
-    clausal_analysis_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clausal tags', 'list')
+    clausal_analysis_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clause tags', 'list')
     filesToOpen.append(clausal_analysis_file_name)
     #clausal_analysis_stats_file_name will contain a data sheet with the frequency distribution of all available clausal tags and a chart sheet with the pie chart visualization of the data
   
@@ -60,10 +60,10 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
             return
         clausal_list= stats_clauses_output(data,data_divided_sents)
 
-        IO_csv_util.list_to_csv(GUI_util.window,IO_CoNLL_util.sort_output_list('CLAUSAL TAGS',clausal_list,documentId_position), clausal_analysis_file_name)
-        column_stats=statistics_csv_util.compute_stats_CoreNLP_tag(clausal_list,7,"Clausal Tags, Frequency","CLAUSALTAG")
+        IO_csv_util.list_to_csv(GUI_util.window,IO_CoNLL_util.sort_output_list('CLAUSE TAGS',clausal_list,documentId_position), clausal_analysis_file_name)
+        column_stats=statistics_csv_util.compute_stats_CoreNLP_tag(clausal_list,7,"Clause Tags, Frequency","CLAUSALTAG")
 
-        clausal_analysis_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clausal tags', 'stats')
+        clausal_analysis_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clause tags', 'stats')
         errorFound=IO_csv_util.list_to_csv(GUI_util.window,column_stats,clausal_analysis_stats_file_name)
         if errorFound==True:
              return
@@ -76,7 +76,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
                                           scriptType='CoNLL_Clause',
                                           chartTitle="Frequency Distribution of Clause Type",
                                           chart_type_list=["pie"],
-                                          column_xAxis_label="Clausal Values",
+                                          column_xAxis_label="Clause Tags",
                                           column_yAxis_label="Frequency")
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
@@ -89,7 +89,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
                                                                          openOutputFiles,
                                                                          createExcelCharts,
                                                                          [[8,8]],
-                                                                         ['CLAUSAL TAGS'],
+                                                                         ['CLAUSE TAGS'],
                                                                             ['FORM','Sentence'],
                                                                            ['Document ID','Sentence ID'],
                                                                          'CA','line')
@@ -107,7 +107,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
                                                       inputFilename, outputDir,
                                                       outputFileLabel='CoNLL_Clause',
                                                       chart_type_list=["line"],
-                                                      chart_title='Frequency of Clausal Tags',
+                                                      chart_title='Frequency of Clause Tags',
                                                       column_xAxis_label_var='Sentence index',
                                                       hover_info_column_list=hover_label,
                                                       count_var=1)

@@ -253,8 +253,6 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
         if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py')==False:
             return
         corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createExcelCharts,'coref',False,memory_var)
-        # subprocess.call(['java', '-mx'+ str(memory_var) +'g', '-jar', 'Stanford_CoreNLP_coreference_resolution.jar', '-inputFile', inputFilename, '-outputDir', output_dir_path, '-approach', coRefOptions])
-        # corefed_file is a list of only one filename, access with index 0
         files_to_open, error = checkSingleFile(inputFilename, corefed_file[0], manual_Coref, coRefOptions, files_to_open)
 
     else:
@@ -268,14 +266,5 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
 
             files_to_open, error = checkSingleFile(original_file, file, manual_Coref, coRefOptions,
                                                    files_to_open)
-        #subprocess.call(['java', '-mx'+ str(memory_var) +'g', '-jar', 'Stanford_CoreNLP_coreference_resolution.jar', '-inputDir', input_main_dir_path, '-outputDir', output_dir_path, '-approach', coRefOptions])
-        # get all the files in the directory
-        # onlyfiles = os.listdir(output_dir_path)
-        # for corefed_file in onlyfiles:
-        #     file_basename = os.path.basename(corefed_file)[0: -12]
-        #     file_full_path = os.path.join(input_main_dir_path, file_basename + ".txt")
-        #     files_to_open, error_indicator = checkSingleFile(file_full_path, os.path.join(output_dir_path, corefed_file), False, coRefOptions, files_to_open)
-        #     if error_indicator == 1:
-        #         error = 1
 
     return files_to_open, error

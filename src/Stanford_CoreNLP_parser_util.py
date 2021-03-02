@@ -23,7 +23,7 @@ from subprocess import call
 import os
 
 import IO_CoNLL_util
-import Stanford_CoreNLP_clausal_util
+import Stanford_CoreNLP_clause_util
 import file_splitter_ByLength_util
 import IO_csv_util
 import IO_user_interface_util
@@ -79,9 +79,19 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
 
     # run the command java -mx5g -cp "stanford corenlp directory" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -timeout 10000
     # connect to server
-    # -d64 to use 64 bits JAVA, normally set to 32 as default
-    p = subprocess.Popen(
-        ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir,'*'), 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
+    # -d64 to use 64 bits JAVA, normally set to 32 as default; option not recognized in Mac
+
+    if sys.platform == 'darwin':  # Mac OS
+        p = subprocess.Popen(
+            ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
+             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
+    else:
+        p = subprocess.Popen(
+            ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir, '*'),
+             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
+    time.sleep(5)
+
+
     # wait for subprocess
     time.sleep(5)
     nlpObject = StanfordCoreNLP('http://localhost:9000')
@@ -96,10 +106,10 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
     with open(outputCoNLLfilePath, "w",newline = "", encoding='utf-8',errors='ignore') as csvFile:
         writer = csv.writer(csvFile)
         if dateInclude == 0:
-            writer.writerow(["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clausal Tag", "Record ID", "Sentence ID", "Document ID", "Document"])
+            writer.writerow(["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"])
         else:
             writer.writerow(
-                ["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clausal Tag", "Record ID", "Sentence ID",
+                ["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID",
                  "Document ID", "Document", "Date"])
     recordID = 1
     DocumentID = 1
@@ -128,7 +138,7 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
             errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, nDocs, filesError)
             if errorFound: continue # process next document
             if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
-                sent_list_clause = [Stanford_CoreNLP_clausal_util.clausal_info_extract_from_string(parsed_sent['parse'])
+                sent_list_clause = [Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse'])
                         for parsed_sent in CoreNLP_output['sentences']]
             with open(outputCoNLLfilePath, "a",newline = "", encoding='utf-8',errors='ignore') as csvFile:
                 writer = csv.writer(csvFile)
