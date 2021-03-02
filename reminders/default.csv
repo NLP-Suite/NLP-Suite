@@ -9,7 +9,7 @@ SVO,SVO system requirements,The extraction and visualization of SVOs requires se
 GIS,GIS Nominatim geocoder,"If the Nominatim geocoder service exits with the error 'too many requests', you can break up the csv location file and process each subfile for geocoding as normal csv files.",No,Yes
 GIS,Google Earth Pro download,The GIS pipeline requires a copy of the FREEWARE Google Earth Pro installed on your machine.\n\nYou can download and install the FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro,No,Yes
 sentiment-concreteness-analysis,VADER,"VADER heavily relies on a number of NLTK libraries. If VADER fails to run, make sure that in command line you run\n\npython -m nltk.downloader all",Yes,Yes
-WordNet,WordNet system requirements,The scripts in this GUI require the FREWARE WordNet on your machine. You can download WordNet at https://wordnet.princeton.edu/download/current-version.,No,Yes
+WordNet,WordNet system requirements,The scripts in this GUI require the FREEWARE WordNet on your machine. You can download WordNet at https://wordnet.princeton.edu/download/current-version.,No,Yes
 WordNet,WordNet input file button,"The Select INPUT file button is disabled (grayed out) when you open WordNet. Different options require either no file or different file types.\n\nPlease, tick a checkbox to activate the button.",No,Yes
 topic-modeling-mallet,Mallet download and installation,The Mallet topic modelling tool requires a copy of the FREEWARE Mallet installed on your machine. You can download the FREEWARE Mallet at http://mallet.cs.umass.edu/download.php.\n\nMallet in turn requires a copy of the JAVA development kit installed on your machine.\n\nRead carrefully the Mallet and Java installation TIPS.,No,Yes
 sentiment-concreteness-analysis,Stanford CoreNLP Sentiment Analysis system requirements,"The Stanford CoreNLP Sentiment Analysis tool requires two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/",Yes,Yes
@@ -26,7 +26,7 @@ https://www.ssa.gov/oact/babynames/limits.html",Yes,Yes
 sentence-analysis,GUI front end,"The script GUI is a convenient front end that displays all the options available for the GUI
 
 No Input/Output options are displayed in this GUI since any selected option, when RUN, will open a specialized GUI with its own Input/Output requirements.",No,Yes
-Senten,GUI front end,"The script GUI is a convenient front end that displays all the options available for the GUI
+Sentence,GUI front end,"The script GUI is a convenient front end that displays all the options available for the GUI
 
 No Input/Output options are displayed in this GUI since any selected option, when RUN, will open a specialized GUI with its own Input/Output requirements.",No,Yes
 style-analysis,GUI front end,"The script GUI is a convenient front end that displays all the options available for the GUI
@@ -44,7 +44,7 @@ shape-of-stories,Best topic estimation,The function that estimates the best topi
 narrative-analysis,GUI front end,"The script GUI is a convenient front end that displays all the options available for the GUI.
 
 No Input/Output options are displayed in this GUI since any selected option, when RUN, will open a specialized GUI with its own Input/Output requirements.",No,Yes
-n-grams-co-occurrences-viewer,subprocess.call(cmd) error,"subprocess.call(cmd) error If the VIEWER you are running exits with an error code about a file not fond, most likely the cmd command is too long for Windows to handle (the cmd length is 2047). You may need to move your input and output folders so as to have a shorter path (e.g., desktop).",Yes,Yes
+n-grams-co-occurrences-viewer,subprocess.call(cmd) error,"subprocess.call(cmd) error If the VIEWER you are running exits with an error code about a file not found, most likely the cmd command is too long for Windows to handle (the cmd length is 2047). You may need to move your input and output folders so as to have a shorter path (e.g., desktop).",Yes,Yes
 GIS-geocode,GIS Nominatim geocoder,,Yes,Yes
 GIS,GIS GUI options,"The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv. With a txt file, NER extraction via Stanford CoreNLP must be first performed. With a csv file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, ot a file containing a list of locations that need to be geocoded.",No,Yes
 sentiment-concreteness-analysis,VADER Mean/Median,"VADER cannot compute separate mean and median sentence values because VADER computes a single for the entire sentence.
@@ -56,7 +56,7 @@ sentiment-concreteness-analysis,Stanford CoreNLP,"The Stanford CoreNLP Sentiment
 1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.
 
 2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/",Yes,Yes
-GIS,Google Maps API,"If the heatmap is displayed by Google Maps for a split second before saying ""Oops! Someghing went wrong"" you probably entered the Google API key incorrectly.
+GIS,Google Maps API,"If the heatmap is displayed by Google Maps for a split second before saying ""Oops! Something went wrong"" you probably entered the Google API key incorrectly.
 
 Please, check the API key and try again.",Yes,Yes
 GIS,Open Google Earth GUI,"You should tick the Open GUI checkbox ONLY if you wish to open the GUI.
