@@ -14,13 +14,17 @@ import tkinter.messagebox as mb
 import GUI_IO_util
 import IO_files_util
 import IO_user_interface_util
+import file_utf8_compliance_util
+import file_cleaner_util
 # import several splitter util scripts under various if statements under Run
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,input_main_dir_path, output_dir_path, 
+def run(inputFilename,inputDir, outputDir, 
     openOutputFiles,
     createExcelCharts,
+    utf8_var,
+    ASCII_var,
     split_mergedFile,
     split_mergedFile_separator_entry_begin,
     split_mergedFile_separator_entry_end,
@@ -41,42 +45,56 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
     post_num_string_value_var,    
     menu_option):
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', "Started running '" + menu_option + "' at", True)
-  
-    if input_main_dir_path=='' and inputFilename!='':
+    if inputDir=='' and inputFilename!='':
         inputDir=os.path.dirname(inputFilename)
         files=[inputFilename]
-    elif input_main_dir_path!='':
-        inputDir=input_main_dir_path
+    elif inputDir!='':
+        inputDir=inputDir
         files= IO_files_util.getFileList(inputFilename, inputDir, 'txt')
     if len(files) == 0:
         return
 
+    if utf8_var==True:
+        IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
+                            'Started running utf8 compliance test at', True)
+        file_utf8_compliance_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
+
+    if ASCII_var==True:
+        IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
+                            'Started running characters conversion at', True)
+        file_cleaner_util.convert_quotes(GUI_util.window,inputFilename, inputDir)
+
+
+    # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    #                                   "Started running " + menu_option + " at", True)
+    #
     for file in files:
         #print("file",file)
         docname = os.path.split(file)[1]
         title = docname.partition('.')[0]
         keyword_value_var=keyword_value_var.strip()
 
-        if splitByTOC and TOC_filename=='':
-            mb.showwarning(title='Input error', message='The selected option - ' + menu_option + ' - requires a Table of Content file in input.\n\nPlease, select the file and try again.')
-            return
-        elif splitByTOC:
+        # split TOC --------------------------------------------------------------------------------------
+        if splitByTOC:
+            if TOC_filename == '':
+                mb.showwarning(title='Input error',
+                               message='The selected option - ' + menu_option + ' - requires a Table of Content file in input.\n\nPlease, select the file and try again.')
+                return
             import file_splitter_ByTOC_util
-            file_splitter_ByTOC_util.splitDocument_byTOC(GUI_util.window,file,TOC_filename, output_dir_path,openOutputFiles)
+            file_splitter_ByTOC_util.splitDocument_byTOC(GUI_util.window,file,TOC_filename, outputDir,openOutputFiles)
+        # split <@# #@> --------------------------------------------------------------------------------------
         elif split_mergedFile:
-            # <@# #@>
             subDir=''
             nFiles=0
             import file_splitter_merged_util
             subDir, nFiles=file_splitter_merged_util.run(file,
-                                          split_mergedFile_separator_entry_begin, 
+                                          split_mergedFile_separator_entry_begin,
                                           split_mergedFile_separator_entry_end,
-                                          output_dir_path)
+                                          outputDir)
             mb.showwarning(title='Exported files',
                            message=str(nFiles) + ' were created in the subdirectory of the output directory\n\n' + subDir)
             return
-
+        # split file length --------------------------------------------------------------------------------------
         elif splitByFileLength:
             specialOutputPath = inputDir + os.sep +"split_files_"+split_docLength+"_"+title
             # no matter what the input of outputfile is, it will always generate a subfile that includes all output
@@ -87,8 +105,9 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
                 return
             import file_splitter_ByLength_util
             file_splitter_ByLength_util.split_byLength(GUI_util.window,inputDir,file,specialOutputPath,maxLength=int(split_docLength), inSentence=True)
+        # split keyword --------------------------------------------------------------------------------------
         elif splitByKeyword:
-            # The following reserved characters for Windows filenames and dirrectory names:
+            # The following reserved characters for Windows filenames and directory names:
             # < (less than)
             # > (greater than)
             # : (colon)
@@ -99,7 +118,7 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
             # ? (question mark)
             # * (asterisk)
             # if '<' or '>' or ':' or '"' or '/' or '\\' or '|' or '?' or '*' in keyword_value_var:
-            # Strip the keyword_value_var of any character that would leaad to an illegal folder name 
+            # Strip the keyword_value_var of any character that would leaad to an illegal folder name
             title_var = keyword_value_var
             for letter in title_var:
                 if letter == '<' or letter == '>' or letter ==':' or letter =='"' or letter =='/' or letter =='\\' or letter =='|' or letter =='?' or letter =='*':
@@ -120,20 +139,20 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
             target='pp.'
             spot_one=-7
             spot_two=-5
-            file_splitter_ByString_util.splitDocument_byStrings(file, output_dir_path, target, spot_one, spot_two, True)
+            file_splitter_ByString_util.splitDocument_byStrings(file, outputDir, target, spot_one, spot_two, True)
 
         elif extract_sentences_var:
             import sentence_analysis_util
-            sentence_analysis_util.extract_sentences(file, input_main_dir_path, output_dir_path, extract_sentences_search_words_var)
+            sentence_analysis_util.extract_sentences(file, inputDir, outputDir, extract_sentences_search_words_var)
 
         elif blankLine_var:
             import file_splitter_ByString_util
-            file_splitter_ByString_util.split_by_blanks(file, output_dir_path)
+            file_splitter_ByString_util.split_by_blanks(file, outputDir)
         elif number_var:
             import file_splitter_ByNumber_util
-            file_splitter_ByNumber_util.run(file, output_dir_path, post_num_string_value_var)
-            
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end", "Finished running '" + menu_option + "' at", True)
+            file_splitter_ByNumber_util.run(file, outputDir, post_num_string_value_var)
+
+    # IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end", "Finished running '" + menu_option + "' at", True)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -141,6 +160,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_Excel_chart_output_checkbox.get(),
+                            utf8_var.get(),
+                            ASCII_var.get(),
                             split_mergedFile_var.get(),
                             split_mergedFile_separator_entry_begin_var.get(),
                             split_mergedFile_separator_entry_end_var.get(),
@@ -165,7 +186,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1100x630'
+GUI_size='1100x670'
 GUI_label='Graphical User Interface (GUI) for File Splitter'
 config_filename='file-splitter-config.txt'
 # The 6 values of config_option refer to: 
@@ -191,13 +212,15 @@ y_multiplier_integer = GUI_util.y_multiplier_integer + 2
 window = GUI_util.window
 config_input_output_options = GUI_util.config_input_output_options
 config_filename = GUI_util.config_filename
-input_main_dir_path = GUI_util.input_main_dir_path
-output_dir_path = GUI_util.output_dir_path
+inputDir = GUI_util.input_main_dir_path
+outputDir = GUI_util.output_dir_path
 
 GUI_util.GUI_top(config_input_output_options, config_filename)
 
 menu_option = ''
 
+utf8_var = tk.IntVar()
+ASCII_var = tk.IntVar()
 split_mergedFile_var = tk.IntVar()
 split_mergedFile_separator_entry_begin_var = tk.StringVar()
 split_mergedFile_separator_entry_end_var = tk.StringVar()
@@ -226,6 +249,14 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 # setup GUI widgets
+
+utf8_var.set(1)
+utf8_checkbox = tk.Checkbutton(window, text='Check input corpus for utf-8 encoding', variable=utf8_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,utf8_checkbox,True)
+
+ASCII_var.set(1)
+ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,ASCII_checkbox)
 
 split_mergedFile_separator_entry_begin = tk.Entry(window, width=10,
                                                   textvariable=split_mergedFile_separator_entry_begin_var)
@@ -555,24 +586,25 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
                                   GUI_IO_util.msg_outputDirectory)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 3, "Help",
-                                  "Please, tick the checkbox if the file to be split is a merged file with filenames embedded in start/end strings (e.g., <@#The New York Times_11-02-1992_4_1#@>).")
+                                  "Please, tick the checkbox to check your input corpus for utf-8 encoding.\n   Non utf-8 compliant texts are likely to lead to code breakdown.\n\nTick the checkbox to convert non-ASCII apostrophes & quotes and % to percent.\n   ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n   % signs may lead to code breakdon of Stanford CoreNLP.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 4, "Help",
-                                  "Please, tick the checkbox to split a txt file into separate files using a Table of Contents as the criterion for splitting.\n\nIn INPUT the Document splitter script expects two types of txt-type files:\n   1. a main txt file (e.g., The Philosopher’s Stone.txt) with the body of a text and section headings (e.g., chapter titles of the Harry Potter book);\n   2. a TOC (Table of Content) that contains all the section headings of the main document.\n\nIn OUTPUT, the script will split the main file into sub-documents, one document for each of the headings listed in the TOC file.")
+                                  "Please, tick the checkbox if the file to be split is a merged file with filenames embedded in start/end strings (e.g., <@#The New York Times_11-02-1992_4_1#@>).")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 5, "Help",
-                                  "Please, tick the checkbox to split a txt file into separate files using a maximum number of words as the criterion for splitting.\n\nThe number of words in the selected file is displayed in the second widget, Word count in selected file. You will need to enter to desired maximum number of words in each split file in the third widget, Max word count in split files.\n\nIn INPUT, the script can either take a single txt file or a directory.\n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
+                                  "Please, tick the checkbox to split a txt file into separate files using a Table of Contents as the criterion for splitting.\n\nIn INPUT the Document splitter script expects two types of txt-type files:\n   1. a main txt file (e.g., The Philosopher’s Stone.txt) with the body of a text and section headings (e.g., chapter titles of the Harry Potter book);\n   2. a txt TOC file (Table of Content) that contains all the section headings of the main document (one section heading per line).\n\nSECTION HEADINGS IN THE TOC MUST MATCH EXACTLY THE SECTION HEADINGS IN THE MAIN DOCUMENT.\n   CASE WILL BE IGNORED IN MATCHING SECTION TITLE IN TOC AND MAIN DOCUMENT.\n   REMOVE TABLE OF CONTENTS FROM THE MAIN DOCUMENT TO BE SPLIT.\n\nIn OUTPUT, the script will split the main file into sub-documents, one document for each of the headings listed in the TOC file. The output documents will be placed in a new subdirectory where the main input file is stored. ANY TOC HEADINGS NOT FOUND IN THE MAIN DOCUMENT WILL BE LISTED IN A csv ERROR FILE.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 6, "Help",
-                                  "Please, tick the checkbox to split a txt file into separate files using single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line,' as the criterion for splitting.\n\nYou have the option to LEMMATIZE the expression you entered (thus, the expression 'coming out', when the 'Lemmatize' checkbox is ticked, would be checked for 'coming out', 'come out', 'came out', 'comes out').\n\nYou also have the option to split a file by the FIRST OCCURRENCE of the expression entered (which would always result in two txt output files) or of splitting the file at every occurrence of the expression entered (thus leading to multiple output txt files, one for each occurrence of the expression).\n\nIn INPUT, the script can either take a single file or a directory. THE SCRIPT CAN EITHER SEARCH IN A CONLL TABLE OR IN TEXT FILE.\n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
+                                  "Please, tick the checkbox to split a txt file into separate files using a maximum number of words as the criterion for splitting.\n\nThe number of words in the selected file is displayed in the second widget, Word count in selected file. You will need to enter to desired maximum number of words in each split file in the third widget, Max word count in split files.\n\nIn INPUT, the script can either take a single txt file or a directory.\n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 7, "Help",
-                                  "Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words).\n\nThe widget 'Words in sentence' will become available once you select the option. You will need to enter there the words/set of words that a sentence must contain in order to be extracted from input and saved in output. Words/set of words must be entered in quotes (e.g., \"The New York Times\") and comma separated (e.g., \"The New York Times\" , \"The Boston Globe\"). When running the script, the script will ask you if you want to process the search word(s) as case sensitive (thus, if you opt for case sensitive searches, a sentence containing the word 'King' will not be selected in output if in the widget 'Word(s) in sentence' you have entered 'king').\n\nIn INPUT, the script expects a single txt file or a directory.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract.txt and containing, for each input file, all the sentences that have the search word(s);\n2. files ending with _extract_minus.txt and containing, for each input file, the sentences that do NOT have the search word(s)." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 8, "Help",
-                                  "Please, tick the checkbox to split a txt file into separate files using string values as the criterion for splitting.\n\nIn INPUT, the script can either take a single file or a directory. \n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
+                                  "Please, tick the checkbox to split a txt file into separate files using single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line,' as the criterion for splitting.\n\nYou have the option to LEMMATIZE the expression you entered (thus, the expression 'coming out', when the 'Lemmatize' checkbox is ticked, would be checked for 'coming out', 'come out', 'came out', 'comes out').\n\nYou also have the option to split a file by the FIRST OCCURRENCE of the expression entered (which would always result in two txt output files) or of splitting the file at every occurrence of the expression entered (thus leading to multiple output txt files, one for each occurrence of the expression).\n\nIn INPUT, the script can either take a single file or a directory. THE SCRIPT CAN EITHER SEARCH IN A CONLL TABLE OR IN TEXT FILE.\n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 9, "Help",
-                                  "Please, tick the checkbox to split a txt file into separate files using a blank line in the text as the criterion for splitting.\n\nIn INPUT, the script can either take a single file or a directory. \n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
+                                  "Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words).\n\nThe widget 'Words in sentence' will become available once you select the option. You will need to enter there the words/set of words that a sentence must contain in order to be extracted from input and saved in output. Words/set of words must be entered in quotes (e.g., \"The New York Times\") and comma separated (e.g., \"The New York Times\" , \"The Boston Globe\"). When running the script, the script will ask you if you want to process the search word(s) as case sensitive (thus, if you opt for case sensitive searches, a sentence containing the word 'King' will not be selected in output if in the widget 'Word(s) in sentence' you have entered 'king').\n\nIn INPUT, the script expects a single txt file or a directory.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract.txt and containing, for each input file, all the sentences that have the search word(s);\n2. files ending with _extract_minus.txt and containing, for each input file, the sentences that do NOT have the search word(s)." + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 10, "Help",
+                                  "Please, tick the checkbox to split a txt file into separate files using string values as the criterion for splitting.\n\nIn INPUT, the script can either take a single file or a directory. \n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 1, "Help",
+                                  "Please, tick the checkbox to split a txt file into separate files using a blank line in the text as the criterion for splitting.\n\nIn INPUT, the script can either take a single file or a directory. \n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 12, "Help",
                                   "Please, tick the checkbox to split a txt file into separate files using a number at the start of the line (like a bullet point) as the criterion for splitting.\n\nIn INPUT, the script can either take a single file or a directory. \n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 11, "Help",
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 13, "Help",
                                   GUI_IO_util.msg_openOutputFiles)
-
 
 help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
              GUI_IO_util.get_y_step())
