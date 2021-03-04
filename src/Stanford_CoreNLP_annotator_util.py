@@ -665,8 +665,6 @@ def process_json_gender(documentID, document, start_sentenceID, json, **kwargs):
     result = []
     mentions = []
     sent_dict = {}
-    # TODO Claude take a look at the note above
-    #  the code breaks in sentence in json['sentences'] below
     for sentence in json['sentences']:
         # sentenceID = sentenceID + 1
         complete_sent = ''
