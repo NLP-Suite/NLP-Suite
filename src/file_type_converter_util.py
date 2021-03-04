@@ -63,8 +63,8 @@ def pdf_converter(window,fileName, inputDir, outputDir,openOutputFiles):
 
     numberOfDocs=len(inputDocs)
     for docNum, doc in enumerate(inputDocs):
-        # IO_util.timed_alert(window,700,'pdf converter ','Processing file ' + str(docNum+1) + " (out of " + str(numberOfDocs) + ")\n\n" + doc,False)
-        print('Processing file ' + str(docNum+1) + " (out of " + str(numberOfDocs) + ")\n\n" + doc)
+        head, tail = os.path.split(doc)
+        print('Processing file ' + str(docNum+1) + "/" + str(numberOfDocs) + " " + tail)
         with open(doc, 'rb') as fp:
             rsrcmgr = PDFResourceManager()
             retstr = io.StringIO()
@@ -132,9 +132,8 @@ def docx_converter(window,fileName,inputdirectory,outputdirectory,openOutputFile
     numberOfDocs=len(inputDocs)
 
     for docNum, doc in enumerate(inputDocs):
-        docNum=docNum+1
-        # IO_util.timed_alert(window,700,'docx converter','Processing file ' + str(docNum) + " (out of " + str(numberOfDocs) + ")\n\n" + doc,False)
-        print('Processing file ' + str(docNum) + " (out of " + str(numberOfDocs) + ")\n\n" + doc)
+        head, tail = os.path.split(doc)
+        print('Processing file ' + str(docNum+1) + "/" + str(numberOfDocs) + " " + tail)
         fileExtension=doc.split(".")[-1]
         #fileExtension = os.path.splitext(doc)[1]
         if fileExtension =="docx":
@@ -211,9 +210,8 @@ def rtf_converter(window,fileName,inputdirectory,outputdirectory,openOutputFiles
     numberOfDocs=len(inputRTFs)
 
     for docNum, doc in enumerate(inputRTFs):
-        docNum=docNum+1
-        # IO_util.timed_alert(window,700,'rtf converter','Processing file ' + str(docNum) + " (out of " + str(numberOfDocs) + ")\n\n" + doc,False)
-        print('Processing file ' + str(docNum) + " (out of " + str(numberOfDocs) + ")\n\n" + doc)
+        head, tail = os.path.split(doc)
+        print('Processing file ' + str(docNum+1) + "/" + str(numberOfDocs) + " " + tail)
         fileExtension=doc.split(".")[-1]
         #fileExtension = os.path.splitext(doc)[1]
         if fileExtension =="rtf":
