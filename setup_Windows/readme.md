@@ -20,8 +20,8 @@ If you encounter any problems, feel free to [start a new issue](https://github.c
 # Update Instructions
 
 There are two ways of updating to the newest NLP Suite version.
-1. Double click `update.bat` on your local machine every time you want to get the newest files from GitHub.
-2. Double click on `setup_auto_update.bat` and the NLP Suite will be automatomatically updated every time on exit. You only need to click on setup_auto_update.bat once.
+1. Double click `update.bat` on your local machine every time you want to get new/changed files from GitHub.
+2. Double click on `setup_auto_update.bat` and, from then on, when exit the NLP Suite new/changed files will be automatically pulled from from GitHub. You only need to click on setup_auto_update.bat once.
 
 ## Shortcuts
 
