@@ -3,7 +3,7 @@ name: Student Bug report
 about: 'Create a bug report to indicate issues with running the software for in class
   related assignments. '
 title: "[BUG]: Title"
-labels: student-bug
+labels: bug, student-bug
 assignees: ''
 
 ---

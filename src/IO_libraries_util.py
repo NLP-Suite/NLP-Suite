@@ -27,6 +27,7 @@ def install_all_packages(window, calling_script, modules_to_try):
             i = __import__(module, fromlist=[''])
             # __import__(module)
         except ImportError as e:
+            print(e)
             # passing pdfminer.six to this function, would ALWAYS fail the import
             # so we need to pass only pdfminer but then tell the user which pdfminer to install
             if 'pdfminer' in module:
