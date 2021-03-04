@@ -18,7 +18,7 @@ To learn more about NLP Suite, its architecture, and screenshots, visit the [NLP
 To install NLP Suite:
 
 1. Ensure your operating system is supported (listed supported architectures are below)
-2. Download the [lateset release](#) of NLP Suite to your prefered location.
+2. Download the [lateset release](https://github.com/NLP-Suite/NLP-Suite/releases) of NLP Suite to your prefered location.
 3. Open the setup folder for your operating system and run the install scripts by double clicking on them.
     - [Windows](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows)
     - [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Mac)
