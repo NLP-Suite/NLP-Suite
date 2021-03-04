@@ -101,6 +101,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
     if CoreNLP_annotators_var and CoreNLP_annotators_menu_var != '':
 
+        # POS annotator ---------------------------------------------------------------------------------------------------------------------------
+        # DepRel annotator ---------------------------------------------------------------------------------------------------------------------------
+
+        if CoreNLP_annotators_menu_var == 'POS annotator' or CoreNLP_annotators_menu_var == 'DepRel annotator':
+            mb.showinfo("Warning", "The selected option is not available yet.\n\nSorry!")
+
+            # POS annotator
+            # if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+            #     return
+
         # NER annotator ---------------------------------------------------------------------------------------------------------------------------
 
         if CoreNLP_annotators_menu_var == 'NER annotator':
@@ -454,8 +464,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
                                                CoreNLP_annotators_checkbox, True)
 
 CoreNLP_annotators_menu_var.set("")
-CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var, 'Coreference resolution', 'NER annotator',
-                                        'Normalized NER date', 'Gender annotator', 'Quote/dialogue annotator',
+CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var, 'Coreference resolution', 'DepRel annotator', 'POS annotator',
+                                        'NER annotator', 'Normalized NER date', 'Gender annotator', 'Quote/dialogue annotator',
                                         'Sentiment analysis')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 20, y_multiplier_integer,
                                                CoreNLP_annotators_menu)

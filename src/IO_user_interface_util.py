@@ -62,14 +62,16 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
     silent = False
     duration = 1000
     head, tail = os.path.split(inputFilename)
+    error=None
     if isinstance(CoreNLP_output, str):
          logger.warning("[Warning] Stanford CoreNLP is not JSON. Trying to convert output to JSON.. ")
          try:
              CoreNLP_output = json.loads(CoreNLP_output)
              logger.warning("[Info] Successfully converted CoreNLP output to JSON. Proceeding as normal.")
          except Exception as e:
-            logger.error("[Error] Could not convert output to JSON!")
+            logger.error("[Error] Could not convert output to JSON! Error: " + str(e))
             errorFound = True
+            error = str(e)
     # OutOfMemoryError Java heap space
     # this error may occur with Java JDK version > 8. Rge heap memoryy size is set tpo 32 bits by default instead of 64, leading to this error.
     # for memory errors and solutions https://stackoverflow.com/questions/40832022/outofmemoryerror-when-running-the-corenlp-tool
@@ -104,5 +106,5 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
         if not silent:
             timed_alert(window, duration, 'Stanford CoreNLP error', msg)
         print("\n\n" + msgPrint)
-        filesError.append([len(filesError), inputFilename, str(CoreNLP_output)])
+        filesError.append([len(filesError), inputFilename, str(CoreNLP_output) + " " + str(error)])
     return errorFound, filesError, CoreNLP_output
