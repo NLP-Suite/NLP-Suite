@@ -114,6 +114,8 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
         return
 
+
+
 # COMPUTE Ngrams ______________________________________________________________________________
 
     if n_grams_var:
@@ -164,6 +166,11 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
     if (n_grams_viewer_var == False and CoOcc_Viewer_var == False):
         return
 
+    if (n_grams_viewer_var ==True or CoOcc_Viewer_var==True) and (createExcelCharts==False):
+        mb.showwarning(title='Warning',
+                       message='The checkbox to compute Excel charts is unticked. Since the VIEWER produces Excel charts as output, the script will abort.\n\nPlease, tick the checkbox to produce Excel charts and try again.')
+        return
+
     txtCounter = len(glob.glob1(inputDir, "*.txt"))
     if txtCounter == 0:
         mb.showwarning(title='Warning',
@@ -194,7 +201,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
 
     if search_words == '' and (n_grams_viewer_var == True or CoOcc_Viewer_var == True):
         mb.showwarning(title='Warning',
-                       message="You have selected to run a Viewer but you have not enetered any search strings in the Search widget.\n\nPlease, enter search values  and try again.")
+                       message="You have selected to run a Viewer but you have not entered any search strings in the Search widget.\n\nPlease, enter search values  and try again.")
         return
 
     normalize=False
@@ -264,14 +271,14 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
         co_occurrences_outputFile = os.path.join(outputDir, 'Searched_CoOccurrences.csv')
         xlsxFilename = co_occurrences_outputFile
         filesToOpen.append(co_occurrences_outputFile)
-        chartTitle = 'co-occurrences Viewer'
+        chartTitle = 'Co-Occurrences Viewer'
         if date_options == 0:
             xAxis = 'Document'
         else:
             xAxis = temporal_aggregation
-        columns_to_be_plotted = [[1, 1]]
         hover_label = ['More information']
         if xAxis == 'Document':
+            columns_to_be_plotted = [[1, 1]]
             Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                                       'Co-Occ_viewer',
                                                       chart_type_list=["pie"],
@@ -279,6 +286,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                       hover_info_column_list=hover_label,
                                                       count_var=1)
         else:
+            columns_to_be_plotted = [[0, 1]]
             Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                                       'Co-Occ_viewer',
                                                       chart_type_list=["line"],
@@ -293,7 +301,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
         xlsxFilename = n_grams_outputFile
         filesToOpen.append(n_grams_outputFile)
         xAxis = temporal_aggregation
-        chartTitle = 'n-grams Viewer'
+        chartTitle = 'N-Grams Viewer'
         columns_to_be_plotted = []
         for i in range(len(ngram_list) - 1):  # it will iterate through i = 0, 1, 2, …., n-1
             columns_to_be_plotted.append([0, i + 1])
@@ -625,11 +633,10 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_outputDirectory)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", 'Please, tick the \'Compute n-grams\' checkbox if you wish to compute n-grams.\n\nN-grams can be computed for characters, words, POSTAG and DEPREL values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word n-grams between 1 and 4.\n\nWhen n-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help", 'Please, use the dropdown menu to select various options that can be applied to n-grams. You can make multiple selections by clicking on the + button.\n\nThe default number of n-grams computed is 4, unless you select the Hapax legomena option for unigrams (and then select once-occurring words).\n\nN-grams can be normalized, i.e., their frequency values are divided by the number of words or POSTAG-DEPREL values in a document.\n\nPunctuation can be excluded when computing n-grams (Google, for instance, exclude punctuation from its Ngram Viewer (https://books.google.com/ngrams).\n\nN-grams can be computed by sentence index.\n\nFinally, you can run a special type of n-grams that computes the last 2 words in a sentence and the first 2 words of the next sentence, a rhetorical figure of repetition for the analysis of style.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help", 'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer Java script.\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer Java script.\n\nThe NGrams part of the NGrams_CoOccurrences.jar routine requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872).\n\nFor both viewers, results will be visualized in Excel line plots.\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help", 'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer Java script.\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer Java script.\n\nYou can run both Viewers at the same time.\n\nThe NGrams part of the NGrams_CoOccurrences.jar routine requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872).\n\nFor both viewers, results will be visualized in Excel line plots.\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help", 'Please, enter the blank-separated list of words for which you want to know N-Gram statistics (e.g., woman man job). bi-grams, 3-grams, ... must include words inside "", like "child care""). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help", 'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences.\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: year, quarter, month, day.\n\nPlease, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers)  (default 2).')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help", 'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences.\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: year, quarter, month, day.\n\nPlease, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2).')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help", 'Please, use the dropdown menu to select various options that can be applied to the VIEWER. You can make multiple selections by clicking on the + button.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')
-    # GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help", 'Please, tick the checkbox if you wish to display the following five pieces of information regarding N-Grams/Co-Occurrences:\n1.a list of relevant documents in each group;\n2. the number of words in each group, including distinct words;\n3. word length frequencies in each group;\n4. 2-grams, 3-grams, 4-grams, 5-grams and their frequencies in each group;\n5. distinct word frequencies in each group.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help",GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
