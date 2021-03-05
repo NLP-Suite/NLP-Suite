@@ -206,7 +206,6 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
     if 'full information' in str(viewer_list):
         fullInfo = True
 
-    cmd = []
 
     cmd = ['java', '-jar', 'NGrams_CoOccurrences_Viewer.jar', '-inputFolder', inputDir, '-outputFolder',
            outputDir]
@@ -248,8 +247,9 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
     reminders_util.checkReminder(config_filename, ['subprocess.call(cmd) error'],
                                  'subprocess.call(cmd) error\n\nIf the VIEWER you are running exits with an error code about a file not found, most likely your selected INPUT & OUTPUT directory options are too long for Windows to handle.\n\nYou may need to move your input and output folders so as to have a shorter path (e.g., desktop).',
                                  True)
+    print(cmd)
     try:
-        subprocess.call(cmd,shell=True)
+        subprocess.run(cmd, shell=True)
     except:
         mb.showwarning(title='Warning',
                        message="The Java viewer script exited with errors. Please, check your command line for a possible error 'Java' is not recognized as an internal or external command. If that's the case, please install Java JDK. Please, check the TIPS on Java download and installation and try again.")
