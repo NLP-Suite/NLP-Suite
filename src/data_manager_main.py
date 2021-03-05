@@ -858,7 +858,10 @@ def activate_csv_fields_selection(operation, checkButton, comingFrom_Plus, comin
         if checkButton == True:
 
             if select_csv_field_extract_var.get() != '':
-                select_csv_field_extract_menu.configure(state='disabled')
+                if comingFrom_Plus == True:
+                    select_csv_field_extract_menu.configure(state='normal')
+                else:
+                    select_csv_field_extract_menu.configure(state='disabled')
 
                 if where_entry_var.get() != '':
                     and_or_menu.configure(state='normal')

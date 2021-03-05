@@ -281,7 +281,7 @@ The 11 indexed items are created in the function search_CoNLL_table:
 def search_related_words2(desired_form, sentence, __field__='FORM', kw_desired_postag='*', kw_desired_deprel='*'):
     list_indices_related_word = []
     # compare term: form or lemma
-    print(sentence)
+    # print(sentence)
     if __field__ == 'FORM':
         compare_term = 1  # field poistion of FORM in CoNLL
     else:

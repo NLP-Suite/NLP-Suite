@@ -101,6 +101,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
     if CoreNLP_annotators_var and CoreNLP_annotators_menu_var != '':
 
+        # POS annotator ---------------------------------------------------------------------------------------------------------------------------
+        # DepRel annotator ---------------------------------------------------------------------------------------------------------------------------
+
+        if CoreNLP_annotators_menu_var == 'POS annotator' or CoreNLP_annotators_menu_var == 'DepRel annotator':
+            mb.showinfo("Warning", "The selected option is not available yet.\n\nSorry!")
+
+            # POS annotator
+            # if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+            #     return
+
         # NER annotator ---------------------------------------------------------------------------------------------------------------------------
 
         if CoreNLP_annotators_menu_var == 'NER annotator':
@@ -454,8 +464,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
                                                CoreNLP_annotators_checkbox, True)
 
 CoreNLP_annotators_menu_var.set("")
-CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var, 'Coreference resolution', 'NER annotator',
-                                        'Normalized NER date', 'Gender annotator', 'Quote/dialogue annotator',
+CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var, 'Coreference resolution', 'DepRel annotator', 'POS annotator',
+                                        'NER annotator', 'Normalized NER date', 'Gender annotator', 'Quote/dialogue annotator',
                                         'Sentiment analysis')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 20, y_multiplier_integer,
                                                CoreNLP_annotators_menu)
@@ -506,9 +516,9 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 5, "Help",
                                   "Please, tick the checkbox if you wish to use the CoreNLP parser to obtain a CoNLL table.\n\nThe CoNLL table is the basis of many of the NLP analyses: noun & verb analysis, function words, clause analysis, query CoNLL.\n\nYou have a choice between two types of papers:\n   1. the recommended default Probabilistic Context Free Grammar (PCFG) parser;\n   2. a Neural-network dependency parser.\n\nIn output the scripts produce a CoNLL table with the following 8 fields: ID, FORM, LEMMA, POSTAG, NER (23 classes), HEAD, DEPREL, CLAUSAL TAGS (the neural-network parser does not produce clausal tags).\n\nThe following fields will be automatically added to the standard 8 fields of a CoNLL table: RECORD NUMBER, DOCUMENT ID, SENTENCE ID, DOCUMENT (INPUT filename), DATE (if the filename embeds a date).\n\nIf you suspect that CoreNLP may have given faulty results for some sentences, you can test those sentences directly on the Stanford CoreNLP website at https://corenlp.run")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 6, "Help",
-                                  "Please, tick the checkbox if you wish to compute a sentence table with various sentence statistics.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 7, "Help",
                                   "Please, tick the checkbox if your filenames embed a date (e.g., The New York Times_12-23-1992).\n\nWhen the date option is ticked, the script will add a date field to the CoNLL table. The date field will be used by other NLP scripts (e.g., Ngrams).\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the follwing information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 7, "Help",
+                                  "Please, tick the checkbox if you wish to compute a sentence table with various sentence statistics.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 8, "Help",
                                   "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the CoreNLP parser results contained in the CoNLL table.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 9, "Help",

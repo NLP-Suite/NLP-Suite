@@ -25,15 +25,14 @@ import IO_files_util
 
 def splitDocument_byTOC(window,inputDocumentTobeSplit,inputTOCfile,outputPath,openOutputFiles):
 
-    print("nputDocumentTobeSplit",inputDocumentTobeSplit)
+    # print("nputDocumentTobeSplit",inputDocumentTobeSplit)
+    #
 
-    outputHeadingsNotfound=''
-    
     inputDocNoExtension=inputDocumentTobeSplit[:-4]
     inputDocNoPathNoExtension=ntpath.basename(inputDocNoExtension)
-    if outputHeadingsNotfound=='':
-        outputHeadingsNotfound=inputDocNoPathNoExtension+"_HeadingsNotFound.csv"
+    outputHeadingsNotfound=inputDocNoPathNoExtension+"_HeadingsNotFound.csv"
 
+    # check that TOC file exists
     if not IO_files_util.checkFile(inputTOCfile):
         outputHeadingsNotfound=''
         return
@@ -54,22 +53,30 @@ def splitDocument_byTOC(window,inputDocumentTobeSplit,inputTOCfile,outputPath,op
     count = 0
     j = 0
     headingsNotFoundInBook=[]
-    # Fill headings list
-    # utf-8-sig
+
+    # Read TOC file and fill headings list
     with io.open(inputTOCfile, "r", encoding="utf-8", errors='ignore') as file:
+        # loop through each line of the TOC file, expecting one TOC entry per line
         for heading in file:
+            # Remove spaces at the beginning and at the end of the string
             headings.append(heading.strip())
+
+    # Read text file
+    fileContent = io.open(inputDocumentTobeSplit, "r", encoding="utf-8", errors='ignore').read()
+
     # Extract text content for each heading
     for i in range(len(headings)):
+        print('Processing heading ' + str(i) + ': '+headings[i])
         count += 1
-        sectionContent = extractSection(inputDocumentTobeSplit, headings[i], headings[i + 1]) if i < len(headings) - 1 \
-            else extractSection(inputDocumentTobeSplit, headings[i], None)
+        sectionContent = extractSection(fileContent, headings[i], headings[i + 1]) if i < len(headings) - 1 \
+            else extractSection(fileContent, headings[i], None)
         if sectionContent:
             #split file saved in the document_section folder with filename = document name + section name
             sectionFileName=os.path.join(newOutputPath, inputDocNoPathNoExtension + "_" + headings[i] + '.txt')
             newFile = io.open(sectionFileName, "w+", encoding='utf-8', errors='ignore')
             newFile.write(sectionContent.strip())
         else:
+            print('   Heading not found in main document')
             headingsNotFoundInBook.append([headings[i]])
             j = j + 1
     errorFound=IO_csv_util.list_to_csv(window,headingsNotFoundInBook,outputHeadingsNotfound)
@@ -77,16 +84,16 @@ def splitDocument_byTOC(window,inputDocumentTobeSplit,inputTOCfile,outputPath,op
         outputHeadingsNotfound=''
     if j>0:
         mb.showwarning(title='Output split files', message=str(count) + " headings from the TOC file were processed and exported to the directory " + newOutputPath + ".\n\n" + str(j) + " headings were not found in the main document \'" + inputDocumentTobeSplit + "\'\n\nPlease, check the list of headings in the TOC file against the document content.")
+        filesToOpen.append(outputHeadingsNotfound)
+        # open the csv file containing the list of TOC headings not found in the text
+        if openOutputFiles==True:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
     else:
         mb.showwarning(title='Error found', message=str(count) + " headings from the TOC file were all successfully processed and all sections exported to the directory " + newOutputPath)
         outputHeadingsNotfound=''
-    if outputHeadingsNotfound!=None:
-        filesToOpen.append(outputHeadingsNotfound)
-        if openOutputFiles==True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
     return outputHeadingsNotfound
 
-def extractSection(doc, documentHeading, nextheading):
+def extractSection(fileContent, documentHeading, nextheading):
     """
     :param doc: the main input text file
     :param documentHeading: the heading of the document section that is to be extracted
@@ -95,16 +102,19 @@ def extractSection(doc, documentHeading, nextheading):
             return nothing if section heading does not exist in doc
     """
     global pattern
-    file = io.open(doc, "r", encoding="utf-8", errors='ignore')
-    fileContent = file.read()
     if documentHeading is not None and nextheading is not None:
         # pattern = re.compile(r'(?<=' + re.escape(documentHeading) + r')' + r'.+(?=' + re.escape(nextheading) + r')',
         #     flags = re.DOTALL | re.IGNORECASE)
-        pattern = re.compile(r'(' + re.escape(documentHeading)+  r'[\s*\W*]*' +r'\n'+ r'.+)' + r'(?=' + re.escape(nextheading) + r'[\s*\W*]*'+r'\n)',
+        # \s\w+ will match a space and the immediate word \n hard return
+        # DOTALL is a flag related to multiline text. Normally the dot character . matches everything in the input text except a newline character. The flag allows dot to match newlines as well.
+        pattern = re.compile(r'(' + re.escape(documentHeading) + r'[\s*\W*]*' +r'\n'+ r'.+)' + r'(?=' + re.escape(nextheading) + r'[\s*\W*]*'+r'\n)',
                     flags = re.DOTALL | re.IGNORECASE)
     elif documentHeading is not None:
         # pattern = re.compile(re.escape(documentHeading) + r'.+', flags = re.DOTALL | re.IGNORECASE)
         pattern = re.compile(re.escape(documentHeading) + r'[\s*\W*]*' +r'\n'+ r'.+', flags = re.DOTALL | re.IGNORECASE)
+    # findall() module is used to search for “all” occurrences that match a given pattern.
+    # In contrast, search() module will only return the first occurrence that matches the specified pattern.
+    # findall() will iterate over all the lines of the file and will return all non-overlapping matches of pattern in a single step.
     match = re.findall(pattern, fileContent)
     if match:
         return match[0]

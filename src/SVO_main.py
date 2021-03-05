@@ -37,11 +37,10 @@ import wordclouds_util
 import GUI_util
 import file_merger_util
 import file_utf8_compliance_util
+import file_cleaner_util
 import Stanford_CoreNLP_coreference_util as stanford_coref
 import Stanford_CoreNLP_annotator_util
 import IO_csv_util
-import Excel_util
-import statistics_csv_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -167,8 +166,25 @@ def extract_svo(svo_triplets, svo_result, svo_merge_filename, subject_list, verb
                                          })
                 added.add((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
 
-def run(inputFilename, inputDir, outputDir, utf8_var, Coref, Coref_Option, memory_var, Manual_Coref_var, date_extractor_var, SV_extractor_var, SVO_extractor_var, subjects_dict_var, verbs_dict_var, objects_dict_var, gephi_var, wordcloud_var, google_earth_var, openOutputFiles,createExcelCharts):
-    filesToOpen = []
+def run(inputFilename, inputDir, outputDir,
+        utf8_var,
+        ASCII_var,
+        Coref,
+        Coref_Option,
+        memory_var,
+        Manual_Coref_var,
+        date_extractor_var,
+        SVO_extractor_var,
+        SV_extractor_var,
+        subjects_dict_var,
+        verbs_dict_var,
+        objects_dict_var,
+        gephi_var,
+        wordcloud_var,
+        google_earth_var,
+        openOutputFiles,createExcelCharts):
+
+  filesToOpen = []
 
     merge_file_option = None
     save_intermediate_file = False
@@ -225,6 +241,11 @@ def run(inputFilename, inputDir, outputDir, utf8_var, Coref, Coref_Option, memor
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                             'Started running utf8 compliance test at', True)
         file_utf8_compliance_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
+
+    if ASCII_var == True:
+        IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
+                                           'Started running characters conversion at', True)
+        file_cleaner_util.convert_quotes(GUI_util.window, inputFilename, inputDir)
 
     isFile = True
     inputFileBase = ""
@@ -587,6 +608,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
                                 utf8_var.get(),
+                                ASCII_var.get(),
                                 CoRef_var.get(),
                                 CoRef_menu_var.get(),
                                 memory_var.get(),
@@ -656,6 +678,7 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 utf8_var=tk.IntVar()
+ASCII_var=tk.IntVar()
 CoRef_var=tk.IntVar()
 CoRef_menu_var=tk.StringVar()
 memory_var=tk.StringVar()
@@ -675,7 +698,11 @@ google_earth_var=tk.IntVar()
 
 utf8_var.set(1)
 utf8_checkbox = tk.Checkbutton(window, text='Check input corpus for utf-8 encoding ', variable=utf8_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,utf8_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,utf8_checkbox,True)
+
+ASCII_var.set(1)
+ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,ASCII_checkbox)
 
 CoRef_var.set(1)
 CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP)', variable=CoRef_var, onvalue=1, offvalue=0)
@@ -683,16 +710,16 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 CoRef_menu_var.set("Neural Network")
 CoRef_menu = tk.OptionMenu(window,CoRef_menu_var,'Deterministic','Statistical','Neural Network')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+380,y_multiplier_integer,CoRef_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,CoRef_menu,True)
 
 #memory options
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+580,y_multiplier_integer,memory_var_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+600,y_multiplier_integer,memory_var_lb,True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(6)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+270,y_multiplier_integer,memory_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+650,y_multiplier_integer,memory_var)
 
 manual_Coref_var.set(1)
 manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_Coref_var, onvalue=1, offvalue=0)

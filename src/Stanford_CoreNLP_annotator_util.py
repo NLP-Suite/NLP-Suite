@@ -239,7 +239,7 @@ def CoreNLP_annotate(inputFilename,
                 annotator_start_time = time.time()
                 CoreNLP_output = nlp.annotate(text, properties=params)
                 annotator_time_elapsed = time.time() - annotator_start_time
-                annotated_length=len(text)
+                file_length=len(text)
                 speed_assessment.append(
                     [docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), annotator_time_elapsed, file_length,
                      param_string, param_number])
@@ -261,9 +261,9 @@ def CoreNLP_annotate(inputFilename,
                     NN_start_time = time.time()
                     CoreNLP_output = nlp.annotate(text, properties=params_NN)
                     NN_time_elapsed = time.time() - NN_start_time
-                    annotated_length = len(text)
+                    file_length = len(text)
                     speed_assessment.append(
-                        [docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), NN_time_elapsed, annotated_length,
+                        [docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), NN_time_elapsed, file_length,
                          param_string_NN, param_number_NN])
                 errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, nDocs, filesError)
                 if errorFound: continue#move to next annotator
@@ -666,8 +666,6 @@ def process_json_gender(documentID, document, start_sentenceID, json, **kwargs):
     result = []
     mentions = []
     sent_dict = {}
-    # TODO Claude take a look at the note above
-    #  the code breaks in sentence in json['sentences'] below
     for sentence in json['sentences']:
         # sentenceID = sentenceID + 1
         complete_sent = ''

@@ -227,7 +227,6 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
 			errorFound=IO_csv_util.list_to_csv(GUI_util.window,column_stats,output_file_name_xlsx)
 			if errorFound==True:
 				return
-
 			output_file_name_xlsx=Excel_util.create_excel_chart(GUI_util.window,[column_stats],inputFilename, outputDir,"QueryCoNLL_POS","Searched token POStag Values (" + searchField_kw + ")",["pie"])
 			filesToOpen.append(output_file_name_xlsx)
 
@@ -236,7 +235,7 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
 			errorFound=IO_csv_util.list_to_csv(GUI_util.window,column_stats,output_file_name_xlsx)
 			if errorFound==True:
 				return
-			output_file_name_xlsx=Excel_util.create_excel_chart(GUI_util.window,[column_stats],inputFilename, outputDir,"QueryCoNLL_DepRel","Searched token DEPrel Values (" + searchField_kw + ")",["pie"])
+			output_file_name_xlsx=Excel_util.create_excel_chart(GUI_util.window,[column_stats],'', outputDir,"QueryCoNLL_DepRel","Searched token DEPrel Values (" + searchField_kw + ")",["pie"])
 			filesToOpen.append(output_file_name_xlsx)
 
 			output_file_name_xlsx=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC', 'co_kw_postag', 'stats_pie_chart')
@@ -244,7 +243,7 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
 			errorFound=IO_csv_util.list_to_csv(GUI_util.window,column_stats,output_file_name_xlsx)
 			if errorFound==True:
 				return
-			output_file_name_xlsx=Excel_util.create_excel_chart(GUI_util.window,[column_stats],inputFilename, outputDir,"QueryCoNLL_CoOcc_POS","Co-token POStag Values (" + searchField_kw + ")",["pie"])
+			output_file_name_xlsx=Excel_util.create_excel_chart(GUI_util.window,[column_stats],'', outputDir,"QueryCoNLL_CoOcc_POS","Co-token POStag Values (" + searchField_kw + ")",["pie"])
 			filesToOpen.append(output_file_name_xlsx)
 
 			output_file_name_xlsx=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC', 'co_kw_deprel', 'stats_pie_chart')
@@ -253,7 +252,7 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
 			if errorFound==True:
 				return
 
-			output_file_name_xlsx=Excel_util.create_excel_chart(GUI_util.window,[column_stats],inputFilename, outputDir,"QueryCoNLL_CoOcc_DEP","Co-token DEPrel Values (" + searchField_kw + ")",["pie"])
+			output_file_name_xlsx=Excel_util.create_excel_chart(GUI_util.window,[column_stats],'', outputDir,"QueryCoNLL_CoOcc_DEP","Co-token DEPrel Values (" + searchField_kw + ")",["pie"])
 			filesToOpen.append(output_file_name_xlsx)
 			IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CoNLL search at',True)
 
@@ -560,8 +559,8 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help","ON THE LEFT-HAND SIDE, please, select the CoNLL field to be used for the search (FORM or LEMMA).\n\nFor example, if “brother” is entered as the searched token, and “FORM” is entered as search field, the program will first search all occurrences of the FORM “brother”. Note that in this case “brothers” will NOT be considered. Otherwise, if “LEMMA” is entered as search field, the program will search all occurences of the LEMMA “brother”. In this case, tokens with form “brother” and “brothers” will all be considered."+right_msg+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help","ON THE LEFT-HAND SIDE, please, select POSTAG value for searched token (e.g., NN for noun; RETURN for ANY POSTAG value)."+right_msg+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help","ON THE LEFT-HAND SIDE, please, select DEPREL value for searched token (e.g., nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)."+right_msg+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help","ON THE LEFT-HAND SIDE, please, select POSTAG value for co-occurring token (e.g., NN for noun; RETURN for ANY POSTAG value)."+right_msg+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","ON THE LEFT-HAND SIDE, please, select DEPREL value for co-occurring token (e.g., DEPREL nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)."+right_msg+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help","ON THE LEFT-HAND SIDE, please, select POSTAG value for token co-occurring in the same sentence (e.g., NN for noun; RETURN for ANY POSTAG value)."+right_msg+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","ON THE LEFT-HAND SIDE, please, select DEPREL value for token co-occurring in the same sentence (e.g., DEPREL nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)."+right_msg+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help","ON THE LEFT-HAND SIDE, please, tick the checkbox if you wish to extract SVOs from the CoNLL table.\n\nON THE RIGHT-HAND SIDE, tick the 'All analyses: clauses, nouns, verbs, function words (\'junk/stop\' words)' to select and deselect all options, allowing you to select specific options."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help",GUI_IO_util.msg_openOutputFiles)
 
