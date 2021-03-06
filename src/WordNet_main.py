@@ -30,17 +30,14 @@ pd.set_option('display.max_columns', 500)
 
 def run(inputFilename, outputDir,openOutputFiles,createExcelCharts,noun_verb,character_var,wordNet_keyword_list,ancestor_var,extract_nouns_verbs_var,ancestor_bySentenceID_var,dict_WordNet_filename_var,extract_proper_nouns,extract_improper_nouns):
 
-    WordNetDir = IO_libraries_util.get_external_software_dir('whats_in_your_corpus', 'WordNet')
-    if WordNetDir == '':
+    WordNetDir = IO_libraries_util.get_external_software_dir('WordNet_main', 'WordNet')
+    if WordNetDir == None:
         return
 
     global filesToOpen
     filesToOpen = []  # Store all files that are to be opened once finished
 
     # print("noun_verb",noun_verb)
-
-    if IO_libraries_util.inputExternalProgramFileCheck(WordNetDir, 'WordNet')==False:
-        return
 
     if character_var==False and ancestor_var==False and ancestor_bySentenceID_var==False and extract_nouns_verbs_var==False and extract_proper_nouns==False and extract_improper_nouns==False:
         mb.showerror(title='Missing required information', message="No options have been selected.\n\nPlease, tick one of the available options and try again.")

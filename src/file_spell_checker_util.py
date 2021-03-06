@@ -247,8 +247,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
 
     # check that the CoreNLPdir as been setup
     CoreNLPdir = IO_libraries_util.get_external_software_dir('spell_checker_main', 'Stanford CoreNLP')
-    print(CoreNLPdir)
-    if CoreNLPdir == '':
+    if CoreNLPdir == None:
         return
     if by_all_tokens_var:
         pass
@@ -507,12 +506,10 @@ def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutp
     input_original = []
     input_corrected = []
     for i in range(len(original)):
-       if (isinstance(corrected[i], str) and corrected[i] != '') or (not math.isnan(corrected[i])):#the correction is neither empyt string, nor NaN, then both original and corrected will be added to the input lists
+       if (isinstance(corrected[i], str) and corrected[i] != '') or (not math.isnan(corrected[i])):#the correction is neither empty string, nor NaN, then both original and corrected will be added to the input lists
            input_original.append(original[i])
            input_corrected.append(corrected[i])
-    file_cleaner_util.find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFiles,input_original,input_corrected,False)
-        
-
+           file_cleaner_util.find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFiles,input_original,input_corrected,False)
 
 def spellchecking_autocorrect(text: str, inputFilename) -> (str, DataFrame):
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Autocorrect spelling checker start',

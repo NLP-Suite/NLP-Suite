@@ -51,7 +51,7 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
 
     # check that the CoreNLPdir as been setup
     CoreNLPdir=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_parser', 'Stanford CoreNLP')
-    if CoreNLPdir== '':
+    if CoreNLPdir==None:
         return filesToOpen
 
     errorFound, error_code, system_output=IO_libraries_util.check_java_installation('CoreNLP parser')
