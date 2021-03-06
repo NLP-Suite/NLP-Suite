@@ -93,6 +93,8 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csvValue_colo
                     if term1 in dictionary:
                         tagString = tagAnnotations[0] + term1 + tagAnnotations[1]
                         # use regular expression replace to check for distinct words (e.g., he not tagging he in held)
+                        # \b beginning and ending of word
+                        # \w word character including numbers and characters
                         text = re.sub(rf"\b(?=\w){term1}\b(?!\w)", tagString, text)
                         # remove term from dictionary, to avoid double processing in next tagging
                         terms.remove(str(term1))

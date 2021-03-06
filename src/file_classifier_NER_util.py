@@ -171,7 +171,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createExc
     filesToOpen = []
     # check that the CoreNLPdir as been setup
     CoreNLPdir=IO_libraries_util.get_external_software_dir('file_classifier_NER_util', 'Stanford CoreNLP')
-    if CoreNLPdir== '':
+    if CoreNLPdir==None:
         return filesToOpen
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
