@@ -177,55 +177,6 @@ def inputExternalProgramFileCheck(software_dir, programName):
                            message="The selected software directory\n  " + software_dir + "'\nis NOT the expected WordNet directory.\n\nPlease, select the appropriate WordNet directory and try again!\n\nYou can download WordNet at https://wordnet.princeton.edu/download/current-version.\n\nPlease, read the TIPS_NLP_WordNet.pdf.")
             return False
 
-# Not used; not necessarily will users put external software inside the NLP folder
-# def find_external_programs(software_dir=None) -> dict:
-#     """
-#     If you install any of the required external software inside the NLP folder, then you will not be asked for the software
-#
-#     @param software_dir: The directory to be scanned. Defaults to the parent dir of current program.
-#     @return: A dict of software paths. The key is the software name and the value is the absolute path.
-#     Possible keys: 'Stanford CoreNLP', 'Mallet', 'WordNet'
-#     """
-#     program_dict = dict()
-#     if software_dir is None:
-#         # Check the NLP directory by default.
-#         software_dir_path = Path(os.path.dirname(os.path.abspath(__file__))).parent
-#     else:
-#         software_dir_path = Path(software_dir)
-#     dir_under_path: Path
-#     for dir_under_path in software_dir_path.iterdir():
-#         if not dir_under_path.is_dir():
-#             continue
-#
-#         for file in dir_under_path.iterdir():
-#             if 'stanford-corenlp' in file.name:
-#                 program_dict['Stanford CoreNLP'] = dir_under_path.absolute().as_posix()
-#                 break
-#             elif 'class' in file.name and 'mallet' in dir_under_path.name.lower():
-#                 program_dict['Mallet'] = dir_under_path.absolute().as_posix()
-#             elif 'dict' in file.name and 'wordnet' in dir_under_path.name.lower():
-#                 program_dict['WordNet'] = dir_under_path.absolute().as_posix()
-#
-#     return program_dict
-
-
-def merge_software_paths(existing_csv: List[List[str]], found_dict: dict) -> List[List[str]]:
-    for (index, row) in enumerate(existing_csv):
-        name = row[0]
-        if name not in found_dict:
-            continue
-        path = row[1]
-        if len(path) == 0:
-            existing_csv[index][1] = found_dict[name]  # fill it with found path
-    return existing_csv
-
-
-def save_software_config(new_csv):
-    software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
-    with open(software_config, 'w+', newline='') as csv_file:
-        writer = csv.writer(csv_file)
-        writer.writerows(new_csv)
-
 
 def get_existing_software_config():
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
@@ -239,52 +190,54 @@ def get_existing_software_config():
                         ['WordNet', '', 'https://wordnet.princeton.edu/download/current-version']]
     return existing_csv
 
-
-def get_software_path_if_available(name: str):
-    existing_csv = get_existing_software_config()
-    for row in existing_csv:
-        if row[0] == name:
-            if row[1] != '':
-                return row[1]
-            else:
-                get_external_software_dir('Generic')
-                return ''
-    assert False, 'Invalid software name'
-
+def save_software_config(new_csv):
+    software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
+    with open(software_config, 'w+', newline='') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerows(new_csv)
 
 def get_external_software_dir(calling_script, package, warning=True):
+    # get a list of software in software-config.csv
     existing_csv = get_existing_software_config()
     download_software = ''
     missing_software = ''
     software_dir=None
+    software_name = ''
     silent=False
-    # missing_software_csv = []
-    # We should look for existing ones first before asking users to input manually
-    # existing_csv = merge_software_paths(list(existing_csv), find_external_programs())
+    index=0
     for row in existing_csv[1:]: # skip header line
-        if row[1] == '':  # check path field
-            if package.lower() in row[0].lower():
-                print("MISSING SOFTWARE", row[0])
-                missing_software = missing_software + str(row[0]).upper() + ' download at ' + str(row[2] + '\n\n')
-                download_software = row[2]
-            # else:
-            #     software_dir=row[1]
-                # missing_software_csv.append(row)
+        index=index+1
+        software_name=row[0]
+        software_dir=row[1]
+        download_software = row[2]
+        if software_dir == '':  # check path field
+            if package.lower() in software_name.lower():
+                print("MISSING SOFTWARE", software_name)
+                missing_software = missing_software + str(software_name).upper() + ' download at ' + str(download_software + '\n\n')
         else:
             if calling_script != 'NLP_menu':
-                if package.lower() in row[0].lower():
-                    software_dir = row[1]
+                if package.lower() in software_name.lower():
+                    software_dir = software_dir
             # check that the software directory still exists and the package has not been moved
             if os.path.isdir(row[1]) == False:
                 mb.showwarning(title='Directory error',
-                               message='The directory\n  ' + row[
-                                   1] + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-select the ' +
-                                       row[0].upper() + ' directory.')
+                               message='The directory\n  ' + software_dir + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-select the ' +
+                                       software_name.upper() + ' directory.')
                 silent=True
-                row[1] = ''
-                missing_software = missing_software + str(row[0]).upper() + ' download at ' + str(row[2] + '\n\n')
-                # continue
+                software_dir = ''
+                missing_software = missing_software + str(software_name).upper() + ' download at ' + str(download_software + '\n\n')
                 pass
+            # the software directory saved in software-config.csv exists but...
+            #   need to check that the software directory is indeed the right directory
+            else:
+                if inputExternalProgramFileCheck(software_dir, software_name) == False:
+                    software_dir = ''
+                    existing_csv[index][1] = software_dir
+                    silent=True
+                    missing_software = missing_software + str(software_name).upper() + ' download at ' + \
+                                       str(download_software + '\n\n')
+
+    # check all missing software
     if len(missing_software) > 0:
         if calling_script == 'NLP_menu':  # called from NLP_main GUI. We just need to warn the user to download and install options
             message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts.\n\n' + missing_software + 'If you have already downloaded the software, please, select next the directory where you installed it; ESC or CANCEL to exit, if you haven\'t installed it yet.'
@@ -296,21 +249,23 @@ def get_external_software_dir(calling_script, package, warning=True):
             mb.showwarning(title=title, message=message)
 
         for (index, row) in enumerate(existing_csv):
-            if row[1] == '' and (package.lower() in row[0].lower()):
+            software_name = row[0]
+            software_dir = row[1]
+            if software_dir == '' and (package.lower() in software_name.lower()):
                 # get software directory
-                title = row[0].upper() + ' software'
+                title = software_name.upper() + ' software'
                 software_dir=None
                 while software_dir==None:
                     initialFolder = os.path.dirname(os.path.abspath(__file__))
                     software_dir = tk.filedialog.askdirectory(initialdir=initialFolder, title=title + '. Please, select the directory where the software was installed; or press CANCEL or ESC if you have not downloaded the software yet.')
-                    software_name=''
+                    # software_name=''
                     if software_dir != '':
                         # check that it is the correct software directory
-                        if 'corenlp' in row[0].lower():
+                        if 'corenlp' in software_name.lower():
                             software_name='Stanford CoreNLP'
-                        if 'mallet' in row[0].lower():
+                        if 'mallet' in software_name.lower():
                             software_name='Mallet'
-                        if 'wordnet' in row[0].lower():
+                        if 'wordnet' in software_name.lower():
                             software_name='WordNet'
                         if inputExternalProgramFileCheck(software_dir, software_name) == True:
                             existing_csv[index][1] = software_dir

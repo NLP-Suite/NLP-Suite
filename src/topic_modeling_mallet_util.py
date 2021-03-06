@@ -58,7 +58,7 @@ def run(inputDir, outputDir,openOutputFiles,createExcelCharts,OptimizeInterval, 
 
     # check that the MalletDir as been setup
     MalletDir=IO_libraries_util.get_external_software_dir('topic_modeling_mallet', 'Mallet')
-    if MalletDir== '':
+    if MalletDir== None:
         return
 
     MalletPath=''

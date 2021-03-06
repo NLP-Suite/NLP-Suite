@@ -233,7 +233,7 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
 
     # check that the CoreNLPdir as been setup
     CoreNLPdir=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_coreference_util', 'Stanford CoreNLP')
-    if CoreNLPdir== '':
+    if CoreNLPdir==None:
         return files_to_open
 
     errorFound, error_code, system_output=IO_libraries_util.check_java_installation('SVO extractor')
