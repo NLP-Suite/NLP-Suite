@@ -201,6 +201,7 @@ def CoreNLP_annotate(inputFilename,
     # -d64 to use 64 bits JAVA, normally set to 32 as default; option not recognized in Mac
 
     try:
+        print(memory_var)
         p = subprocess.Popen(
             ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
