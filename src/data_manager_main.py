@@ -119,14 +119,18 @@ def run(inputFilename,
         df_extract = df_list[0]
         for index, df_ex in enumerate(df_list):
 
-            if csv_file_field_list[index].split(',')[4] == 'and':
+            if csv_file_field_list[index].split(',')[4] in ['and', "''"]:
                 if index == len(df_list)-1:
                     continue
-                df_extract = df_extract.merge(df_list[index + 1], how='inner')
+                df_extract = df_extract.merge(df_list[index + 1], how='inner',
+                                              right_index=True,
+                                              left_index=True)
             elif csv_file_field_list[index].split(',')[4] == 'or':
                 if index == len(df_list)-1:
                     continue
-                df_extract = df_extract.merge(df_list[index + 1], how='outer')
+                df_extract = df_extract.merge(df_list[index + 1], how='outer',
+                                              right_index=True,
+                                              left_index=True)
             elif csv_file_field_list[index].split(',')[4] == '' and index != len(df_list) - 1:
                     mb.showwarning(title='Missing and/or condition',
                                    message="Please include an and/or condition between each where condition on column you want to extract!")
