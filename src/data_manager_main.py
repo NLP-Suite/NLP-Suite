@@ -109,7 +109,7 @@ def run(inputFilename,
         value: str
         for (sign, value, header, df) in zip(sign_var, value_var, headers, data_files):
             if sign == "''" and value == "''":
-                df_list.append(df.query(header, engine='python'))
+                df_list.append(df[[header]])
             else:
                 if '\'' not in value:
                     value = '\'' + value + '\''
