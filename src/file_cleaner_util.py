@@ -15,6 +15,7 @@ from nltk.tokenize import sent_tokenize
 import pandas as pd
 import string
 import tkinter.messagebox as mb
+import re
 
 import IO_files_util
 import GUI_IO_util
@@ -316,9 +317,14 @@ def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFil
 
 		with open(doc, 'r+',encoding='utf_8',errors='ignore') as file:
 			fullText = file.read()
+			# process the range of words when coming with the values in a csv file
 			for i in range(l):
 				if (str(string_IN[i]) in str(fullText)):
-					fullText = str(fullText).replace(str(string_IN[i]), str(string_OUT[i]))
+					# # use regular expression replace to check for distinct words (e.g., he not in held)
+					# \b beginning and ending of word
+					# \w word character including numbers and characters
+					fullText = re.sub(rf"\b(?=\w){str(string_IN[i])}\b(?!\w)", str(string_OUT[i]), fullText)
+					# fullText = re.sub(rf”(?<=\w) {str(string_IN[i])} (?<=\W)”, str(string_OUT[i]), fullText)
 					if index!=indexSV:
 						docError = docError + 1
 						indexSV = index

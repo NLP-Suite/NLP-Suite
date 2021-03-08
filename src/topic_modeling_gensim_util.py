@@ -479,7 +479,7 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
 
         # check that the MalletDir as been setup
         MalletDir = IO_libraries_util.get_external_software_dir('topic_modeling_gensim', 'Mallet')
-        if MalletDir == '':
+        if MalletDir==None:
             return
 
         MalletDir = os.path.join(MalletDir, "bin/mallet")

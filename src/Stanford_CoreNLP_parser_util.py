@@ -51,7 +51,7 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
 
     # check that the CoreNLPdir as been setup
     CoreNLPdir=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_parser', 'Stanford CoreNLP')
-    if CoreNLPdir== '':
+    if CoreNLPdir==None:
         return filesToOpen
 
     errorFound, error_code, system_output=IO_libraries_util.check_java_installation('CoreNLP parser')
@@ -81,27 +81,23 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
     # connect to server
     # -d64 to use 64 bits JAVA, normally set to 32 as default; option not recognized in Mac
 
-    if sys.platform == 'darwin':  # Mac OS
-        memory_var = 64
-        print(memory_var)
-        # '-mx' + str(memory_var) + "g"
-        p = subprocess.Popen(
-            ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '99999999'])
-    else:
+    try:
         p = subprocess.Popen(
             ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
-    time.sleep(5)
+    except:
+        p = subprocess.Popen(
+            ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
+             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
 
+    time.sleep(5)
 
     # wait for subprocess
     time.sleep(5)
     nlpObject = StanfordCoreNLP('http://localhost:9000')
     # nlpProps = {'annotators': 'tokenize,ssplit,pos,lemma,ner,parse,regexner,NormalizedNamedEntityTagAnnotation','outputFormat': 'json', 'outputDirectory': outputDir, 'replaceExtension': True}
     if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
-        # , parse,regexner,
-        nlpProps = {'annotators': 'tokenize,ssplit,pos,lemma,ner, regexner', 'parse.model': 'edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz','outputFormat': 'json', 'outputDirectory': outputDir, 'replaceExtension': True}
+        nlpProps = {'annotators': 'tokenize,ssplit,pos,lemma,ner, parse,regexner,', 'parse.model': 'edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz','outputFormat': 'json', 'outputDirectory': outputDir, 'replaceExtension': True}
     elif parser_menu_var == 'Neural Network':
         nlpProps = {'annotators': 'tokenize,ssplit,pos,lemma,ner, depparse,regexner,', 'parse.model': 'edu/stanford/nlp/models/parser/nndep/english_UD.gz','outputFormat': 'json', 'outputDirectory': outputDir, 'replaceExtension': True}
     outputCoNLLfilePath = os.path.join(outputDir,
@@ -141,14 +137,14 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
 
             errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window, CoreNLP_output, doc, nDocs, filesError)
             if errorFound: continue # process next document
-            # if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
-                # sent_list_clause = [Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse'])
-                #         for parsed_sent in CoreNLP_output['sentences']]
+            if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
+                sent_list_clause = [Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse'])
+                        for parsed_sent in CoreNLP_output['sentences']]
             with open(outputCoNLLfilePath, "a",newline = "", encoding='utf-8',errors='ignore') as csvFile:
                 writer = csv.writer(csvFile)
                 for i in range(len(CoreNLP_output["sentences"])):
-                    # if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
-                    #     cur_clause = sent_list_clause[i]
+                    if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
+                        cur_clause = sent_list_clause[i]
                     clauseID = 0
                     tokens = CoreNLP_output["sentences"][i]["tokens"]
                     dependencies = CoreNLP_output["sentences"][i]["enhancedDependencies"]
@@ -174,10 +170,10 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
                             tmp.append(depLib[depID][1])
                             tmp.append(depLib[depID][0])
                         depID += 1
-                        # if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
-                        #     tmp.append(cur_clause[clauseID][0])
-                        # else:
-                        tmp.append("")
+                        if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
+                            tmp.append(cur_clause[clauseID][0])
+                        else:
+                            tmp.append("")
                         # tmp.append(" ")
                         clauseID += 1
                         tmp.append(str(recordID))

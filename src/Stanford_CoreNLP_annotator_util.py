@@ -60,10 +60,11 @@ def CoreNLP_annotate(inputFilename,
     filesToOpen = []
     # check that the CoreNLPdir as been setup
     CoreNLPdir=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_annotator', 'Stanford CoreNLP')
-    if CoreNLPdir== '':
+    if CoreNLPdir== None:
         return filesToOpen
 
     errorFound, error_code, system_output=IO_libraries_util.check_java_installation('SVO extractor')
+
     if errorFound:
         return filesToOpen
 
@@ -198,15 +199,17 @@ def CoreNLP_annotate(inputFilename,
         param_string_NN = param_string_NN + ',cleanXML'
 
     # -d64 to use 64 bits JAVA, normally set to 32 as default; option not recognized in Mac
-    if sys.platform == 'darwin':  # Mac OS
+
+    try:
         print(memory_var)
-        p = subprocess.Popen(
-            ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
-    else:
         p = subprocess.Popen(
             ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
+    except:
+        p = subprocess.Popen(
+            ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
+             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
+
     time.sleep(5)
 
     print("Neural Network Annotator: ")
