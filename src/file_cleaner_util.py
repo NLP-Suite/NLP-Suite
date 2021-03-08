@@ -324,7 +324,7 @@ def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFil
 					# \b beginning and ending of word
 					# \w word character including numbers and characters
 					fullText = re.sub(rf"\b(?=\w){str(string_IN[i])}\b(?!\w)", str(string_OUT[i]), fullText)
-					# fullText = re.sub(rf"?<=\w){str(string_IN[i])}?<=\W)", str(string_OUT[i]), fullText)
+					# fullText = re.sub(rf”(?<=\w) {str(string_IN[i])} (?<=\W)”, str(string_OUT[i]), fullText)
 					if index!=indexSV:
 						docError = docError + 1
 						indexSV = index
