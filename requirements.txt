@@ -8,6 +8,8 @@ argparse~=1.4.0
 wordcloud~=1.8.1
 pillow~=8.1.0
 
+striprtf
+
 #used by nominalization
 pywsd~=1.2.4
 
