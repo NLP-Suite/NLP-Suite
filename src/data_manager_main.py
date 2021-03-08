@@ -1,3 +1,4 @@
+import os.path
 import sys
 import IO_files_util
 import GUI_util
@@ -73,13 +74,13 @@ def run(inputFilename,
     data_cols = [file for file in get_cols(data_files, headers)]  # selected cols
 
     if merge_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], output_path, '.csv', 'merge',
+        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv', 'merge',
                                                            'stats', '', '', '', False, True)
         df_merged = reduce(lambda left, right: pd.merge(left, right, on=headers[0], how='inner'), data_files)
         df_merged.to_csv(outputFilename)
         filesToOpen.append(outputFilename)
     if concatenate_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], output_path, '.csv', 'concatenate',
+        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv', 'concatenate',
                                                            'stats', '', '', '', False, True)
         for s in csv_file_field_list:
             if s[-1] == ',':
@@ -93,19 +94,28 @@ def run(inputFilename,
         df_concat.to_csv(outputFilename, header=[listToString(headers, sep)])
         filesToOpen.append(outputFilename)
     if append_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], output_path, '.csv', 'append',
+        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv', 'append',
                                                            'stats', '', '', '', False, True)
         sep = ','
         df_append = pd.concat(data_cols, axis=0)
         df_append.to_csv(outputFilename, header=[listToString(headers, sep)])
         filesToOpen.append(outputFilename)
     if extract_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], output_path, '.csv', 'extract',
+        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv', 'extract',
                                                            'stats', '', '', '', False, True)
         sign_var = [s.split(',')[2] for s in csv_file_field_list]
         value_var = [s.split(',')[3] for s in csv_file_field_list]
-        df_list = [df.query(header + sign + value) for (sign, value, header, df) in
-                   zip(sign_var, value_var, headers, data_files)]
+        df_list = []
+        value: str
+        for (sign, value, header, df) in zip(sign_var, value_var, headers, data_files):
+            if sign == "''" and value == "''":
+                df_list.append(df.query(header, engine='python'))
+            else:
+                if '\'' not in value:
+                    value = '\'' + value + '\''
+                query = header + sign + value
+                result = df.query(query, engine='python')
+                df_list.append(result)
         df_extract = df_list[0]
         for index, df_ex in enumerate(df_list):
 
@@ -560,7 +570,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 # rather than entering the value?
 
 comparator_var = tk.StringVar()
-comparator_menu = tk.OptionMenu(window, comparator_var, '<', '<=', '=', '>=', '>', '<>')
+comparator_menu = tk.OptionMenu(window, comparator_var, '<', '<=', '==', '>=', '>', '<>')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 450, y_multiplier_integer,
                                                comparator_menu, True)
 
