@@ -81,16 +81,16 @@ def run(inputFilename, inputDir, outputDir, parser_menu_var, openOutputFiles, cr
     # connect to server
     # -d64 to use 64 bits JAVA, normally set to 32 as default; option not recognized in Mac
 
-    if sys.platform == 'darwin':  # Mac OS
-        p = subprocess.Popen(
-            ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
-    else:
+    try:
         p = subprocess.Popen(
             ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
-    time.sleep(5)
+    except:
+        p = subprocess.Popen(
+            ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
+             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
 
+    time.sleep(5)
 
     # wait for subprocess
     time.sleep(5)
