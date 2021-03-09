@@ -49,7 +49,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
 
     if CoReference or (CoreNLP_annotators_var == True and CoreNLP_annotators_menu_var == 'Coreference resolution'):
-        if IO_libraries_util.inputProgramFileCheck("Stanford_CoreNLP_coReference_resolution_util.py") == False:
+        if IO_libraries_util.inputProgramFileCheck("Stanford_CoreNLP_coReference_util.py") == False:
             return
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(inputFilename, inputDir,
                                                                            outputDir, openOutputFiles, createExcelCharts, memory_var,
@@ -102,10 +102,30 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
     if CoreNLP_annotators_var and CoreNLP_annotators_menu_var != '':
 
         # POS annotator ---------------------------------------------------------------------------------------------------------------------------
+        if CoreNLP_annotators_menu_var == 'POS annotator':
+            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+                return
+
+            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+                                                                           outputDir,
+                                                                           openOutputFiles, createExcelCharts,
+                                                                           'All POS', False, memory_var)
+            if len(tempOutputFiles)>0:
+                filesToOpen.extend(tempOutputFiles)
         # DepRel annotator ---------------------------------------------------------------------------------------------------------------------------
 
-        if CoreNLP_annotators_menu_var == 'POS annotator' or CoreNLP_annotators_menu_var == 'DepRel annotator':
-            mb.showinfo("Warning", "The selected option is not available yet.\n\nSorry!")
+        # if CoreNLP_annotators_menu_var == 'POS annotator' or CoreNLP_annotators_menu_var == 'DepRel annotator':
+        #     mb.showinfo("Warning", "The selected option is not available yet.\n\nSorry!")
+        if CoreNLP_annotators_menu_var == 'DepRel annotator':
+            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+                return
+
+            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+                                                                           outputDir,
+                                                                           openOutputFiles, createExcelCharts,
+                                                                           'DepRel', False, memory_var)
+            if len(tempOutputFiles)>0:
+                filesToOpen.extend(tempOutputFiles)
 
             # POS annotator
             # if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
@@ -176,7 +196,33 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                                                                            memory_var)
             if len(tempOutputFiles)>0:
                 filesToOpen.extend(tempOutputFiles)
+                
+                
+        # Parser (Probabilistic Context Free Grammar ) ------------------------------
+        if CoreNLP_annotators_menu_var == 'Parser (PCFG)':
+            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+                return
+            
+            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+                                                                           outputDir, openOutputFiles,
+                                                                           createExcelCharts,
+                                                                           'parser (pcfg)', False, memory_var)
 
+            if len(tempOutputFiles)>0:
+                filesToOpen.extend(tempOutputFiles)
+        
+        # Parser (Neural Network) ------------------------------
+        if CoreNLP_annotators_menu_var == 'Parser (NN)':
+            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+                return
+            
+            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+                                                                           outputDir, openOutputFiles,
+                                                                           createExcelCharts,
+                                                                           'parser (nn)', False, memory_var)
+
+            if len(tempOutputFiles)>0:
+                filesToOpen.extend(tempOutputFiles)
         if openOutputFiles:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
@@ -466,7 +512,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 CoreNLP_annotators_menu_var.set("")
 CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var, 'Coreference resolution', 'DepRel annotator', 'POS annotator',
                                         'NER annotator', 'Normalized NER date', 'Gender annotator', 'Quote/dialogue annotator',
-                                        'Sentiment analysis')
+                                        'Sentiment analysis', 'Parser (PCFG)', "Parser (NN)")
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 20, y_multiplier_integer,
                                                CoreNLP_annotators_menu)
 

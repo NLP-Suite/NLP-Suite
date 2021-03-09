@@ -1,23 +1,19 @@
 # Roberto Franzosi September 2020
 
 import sys
-
-import GUI_IO_util
-import IO_files_util
 import GUI_util
 import IO_libraries_util
-import IO_user_interface_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"Stanford_CoreNLP_NER_extractor",['os','pandas','tkinter'])==False:
     sys.exit(0)
 
 import tkinter as tk
 import tkinter.messagebox as mb
-import pandas as pd
 
 import GUI_IO_util
 import Stanford_CoreNLP_annotator_util
-import Excel_util
+import IO_files_util
+import IO_user_interface_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

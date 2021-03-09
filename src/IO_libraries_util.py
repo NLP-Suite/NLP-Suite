@@ -220,7 +220,7 @@ def get_external_software_dir(calling_script, package, warning=True):
                 if package.lower() in software_name.lower():
                     software_dir = software_dir
             # check that the software directory still exists and the package has not been moved
-            if os.path.isdir(row[1]) == False:
+            if os.path.isdir(software_dir) == False:
                 mb.showwarning(title='Directory error',
                                message='The directory\n  ' + software_dir + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-select the ' +
                                        software_name.upper() + ' directory.')
@@ -237,7 +237,8 @@ def get_external_software_dir(calling_script, package, warning=True):
                     silent=True
                     missing_software = missing_software + str(software_name).upper() + ' download at ' + \
                                        str(download_software + '\n\n')
-
+                if package.lower() in software_name.lower():
+                    return software_dir
     # check all missing software
     if len(missing_software) > 0:
         if calling_script == 'NLP_menu':  # called from NLP_main GUI. We just need to warn the user to download and install options
