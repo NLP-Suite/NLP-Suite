@@ -693,7 +693,7 @@ def print_results(window, words, class_word_list, header, inputFilename, outputD
     else:
         stopMsg="(including stopwords)"
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', fileLabel)
-    class_word_list.insert(0, header)
+    class_word_list.insert(0, header,IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))
     IO_error=IO_csv_util.list_to_csv(window, class_word_list, outputFilename)
     if IO_error:
         outputFilename=''
@@ -717,16 +717,22 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 
     Ndocs=str(len(inputDocs))
+    word_list=[]
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         index = index + 1
         print("\nProcessing file " + str(index) + "/" + str(Ndocs) + " " + tail)
         fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
         # words = fullText.translate(string.punctuation).lower().split()
+        fullText = fullText.replace('\n',' ')
         words = fullText.translate(string.punctuation).split()
         if excludeStopWords:
             words = excludeStopWords_list(words)
         if processType != '':
+            hideMessage = False
+        else:
+            hideMessage = True
+        if Ndocs == 1:
             hideMessage = False
         else:
             hideMessage = True
@@ -754,13 +760,18 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
             # if outputFilename!='':
             #     filesToOpen.append(outputFilename)
         if processType == '' or "punctuation" in processType.lower():
-            header = 'Punctuation symbols (?!)'
+            header = ['Word','Punctuation symbols (?!)','Document ID','Document']
             fileLabel = 'punctuation'
-            word_list = [word for word in words if word and word[0] in "?!" and word.isalpha()]
-            filesToOpen = print_results(window, words, word_list, header, inputFilename, outputDir, excludeStopWords,
-                                           fileLabel, hideMessage, filesToOpen)
-            # if outputFilename != '':
-            #     filesToOpen.append(outputFilename)
+            for word in words:
+                if "?" in word or "!" in word:
+                    word_list.extend([[word, word[-1], index, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
+
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', fileLabel)
+    word_list.insert(0, header)
+    IO_error = IO_csv_util.list_to_csv(window, word_list, outputFilename)
+
+    if not IO_error:
+        filesToOpen.append(outputFilename)
     return filesToOpen
 
 # n is n most common words
