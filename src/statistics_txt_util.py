@@ -717,13 +717,14 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 
     Ndocs=str(len(inputDocs))
-    word_list=[[]]
+    word_list=[]
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         index = index + 1
         print("\nProcessing file " + str(index) + "/" + str(Ndocs) + " " + tail)
         fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
         # words = fullText.translate(string.punctuation).lower().split()
+        fullText = fullText.replace('\n',' ')
         words = fullText.translate(string.punctuation).split()
         if excludeStopWords:
             words = excludeStopWords_list(words)
@@ -763,11 +764,11 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
             fileLabel = 'punctuation'
             for word in words:
                 if "?" in word or "!" in word:
-                    word_list.extend([word, word[-1], index, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                    word_list.extend([[word, word[-1], index, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', fileLabel)
     word_list.insert(0, header)
-    IO_error = IO_csv_util.list_to_csv(window, [word_list], outputFilename)
+    IO_error = IO_csv_util.list_to_csv(window, word_list, outputFilename)
 
     if not IO_error:
         filesToOpen.append(outputFilename)
