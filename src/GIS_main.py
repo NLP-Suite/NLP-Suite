@@ -363,6 +363,11 @@ def clear(e):
 	encoding_var.set('utf-8')
 	location_var.set('')
 	GIS_package_var.set('')
+	geocoder_var.set('Nominatim')
+	Google_API_Google_geocode_var.set('')
+	Google_API_geocode_lb.place_forget()  # invisible
+	Google_API_geocode.place_forget()  # invisible
+	save_APIkey_button_Google_geocode.place_forget()  # invisible
 	GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -453,7 +458,7 @@ if menu_values!='':
 	location_field = tk.OptionMenu(window,location_var,*menu_values)
 else:
 	location_field = tk.OptionMenu(window,location_var,menu_values)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,location_field)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,location_field)
 
 y_multiplier_integer_save_one=y_multiplier_integer
 
@@ -470,22 +475,22 @@ def activate_geocoder(*args):
 geocode_locations_var.trace('w',activate_geocoder)
 
 geocoder_lb = tk.Label(window, text='Geocoder service')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+150,y_multiplier_integer,geocoder_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,geocoder_lb,True)
 geocoder_var.set('Nominatim')
 geocoder = tk.OptionMenu(window,geocoder_var,'Nominatim','Google')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,geocoder,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+100, y_multiplier_integer,geocoder,True)
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
 Google_API_geocode_lb = tk.Label(window, text='API key')
-Google_API_geocode = tk.Entry(window, width=60, textvariable=Google_API_Google_geocode_var)
+Google_API_geocode = tk.Entry(window, width=50, textvariable=Google_API_Google_geocode_var)
 
 save_APIkey_button_Google_geocode = tk.Button(window, text='OK', width=2,height=1,command=lambda: config_util.Google_API_geocode_var.get())
 
 def activate_Google_API_geocode(y_multiplier_integer_save_one,Google_API_geocode_lb,Google_API_geocode,*args):
     if geocoder_var.get()=='Google':
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+370,y_multiplier_integer_save_one,Google_API_geocode_lb,True)
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+420,y_multiplier_integer,Google_API_geocode,True)
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+820,y_multiplier_integer,save_APIkey_button_Google_geocode)
+        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+480,y_multiplier_integer_save_one,Google_API_geocode_lb,True)
+        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+530,y_multiplier_integer,Google_API_geocode,True)
+        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+840,y_multiplier_integer,save_APIkey_button_Google_geocode)
         configFilePath=os.path.join(GUI_IO_util.configPath, 'Google-API-config.txt')
         configAPIKey=[]
         if os.path.isfile(configFilePath):
@@ -540,10 +545,10 @@ map_locations_checkbox.config(text="MAP locations")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,map_locations_checkbox,True)
 
 GIS_package_lb = tk.Label(window, text='Select software')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,GIS_package_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,GIS_package_lb,True)
 GIS_package_var.set('')
 GIS_package = tk.OptionMenu(window,GIS_package_var,'Google Earth Pro','Google Maps','QGIS','Tableau','TimeMapper')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+220, y_multiplier_integer,GIS_package,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+100, y_multiplier_integer,GIS_package,True)
 
 y_multiplier_integer_save_two=y_multiplier_integer
 
@@ -554,7 +559,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
 Google_API_Google_maps_lb = tk.Label(window, text='API key')
-Google_API_Google_maps = tk.Entry(window, width=60, textvariable=Google_API_Google_maps_var)
+Google_API_Google_maps = tk.Entry(window, width=50, textvariable=Google_API_Google_maps_var)
 
 save_APIkey_button_Google_maps = tk.Button(window, text='OK', width=2,height=1,command=lambda: config_util.Google_API_Config_Save(Google_API_Google_maps_var.get()))
 
@@ -564,8 +569,8 @@ def activate_Google_API_Google_Maps(y_multiplier_integer_save_two,Google_API_lb,
         # hide the widget
 		# pack and place have their own _forget options
         GIS_package2_checkbox.place_forget()  #invisible
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+520,y_multiplier_integer_save_two,Google_API_Google_maps_lb,True)
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+590,y_multiplier_integer,Google_API_Google_maps,True)
+        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+650,y_multiplier_integer_save_two,Google_API_Google_maps_lb,True)
+        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,Google_API_Google_maps,True)
         y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+980,y_multiplier_integer,save_APIkey_button_Google_maps)
         configFilePath=os.path.join(GUI_IO_util.configPath, 'Google-API-config.txt')
         configAPIKey=[]
@@ -578,7 +583,7 @@ def activate_Google_API_Google_Maps(y_multiplier_integer_save_two,Google_API_lb,
             key = configAPIKey[0]
             Google_API_Google_maps_var.set(key)
             Google_API=key
-    else:
+    else: # nominatim
         y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer_save_two,GIS_package2_checkbox)
         # hide the Google API label and entry widgets until Google is selected
 		# pack and place have their own _forget options

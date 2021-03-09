@@ -186,6 +186,7 @@ pydict["Find non-related documents"] = ["social_science_research_main.py", 1]
 pydict["Excel charts"] = ["Excel_charts_main.py", 1]
 pydict["Network graphs (Gephi)"] = ["", 0]  # not available
 pydict["Geographic maps (geocoding & maps)"] = ["GIS_main.py", 1]
+pydict["Geographic maps: From texts to maps"] = ["GIS_main.py", 1]
 pydict["Geographic distances between locations"] = ["", 0]  # GIS_distance_main.py
 pydict["Gender guesser"] = ["Gender guesser", 0, 0, '']
 pydict["Language detection"] = ["style_analysis_main.py", 1]
@@ -381,6 +382,7 @@ corpus_document_tools_menu = tk.OptionMenu(window, corpus_document_tools_var,
                                            'Style analysis',
                                            'Sentiment analysis',
                                            'Gender guesser',
+                                           'Geographic maps: From texts to maps',
                                            'NER (Named Entity Recognition) extractor',
                                            'N-grams (word & character)',
                                            'Nominalization',
