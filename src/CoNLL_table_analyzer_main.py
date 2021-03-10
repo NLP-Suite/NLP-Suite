@@ -714,14 +714,14 @@ function_words_analysis_var.trace('w',activate_CoNLL_options)
 
 
 def activate_csv_fields_selection(checkButton, comingFrom_Plus, comingFrom_OK):
-    if extract_var.get()==True:
+    if extract_var.get():
         select_csv_field_extract_menu.configure(state='normal')
 
-    if checkButton == False:
+    if not checkButton:
         extract_checkbox.config(state='normal')
     else:
         reset_all_button.config(state='normal')
-    if checkButton == True:
+    if checkButton:
         if select_csv_field_extract_var.get() != '':
             if comingFrom_Plus == True:
                 select_csv_field_extract_menu.configure(state='normal')
