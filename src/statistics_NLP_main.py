@@ -106,7 +106,7 @@ def run(inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelC
         bySentenceIndex_character_var = False
         if 'Hapax' in str(n_grams_list):
             n_grams_size = 1
-        if 'ounctuation' in str(n_grams_list):
+        if 'punctuation' in str(n_grams_list):
             excludePunctuation = True
         if 'sentence index' in str(n_grams_list):
             if n_grams_menu_var == "Word":
@@ -244,7 +244,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 corpus_options_menu_var.set('*')
 corpus_options_menu_lb = tk.Label(window, text='Corpus statistics options')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,corpus_options_menu_lb,True)
-corpus_options_menu = tk.OptionMenu(window, corpus_options_menu_var, '*','Lemmatize words', 'Exclude stopwords', 'Compute lines length')
+corpus_options_menu = tk.OptionMenu(window, corpus_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation', 'Compute lines length')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+560,y_multiplier_integer,corpus_options_menu)
 
 def activate_corpus_options(*args):

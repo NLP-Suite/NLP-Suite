@@ -88,7 +88,6 @@ def get_wordnet_pos(word):#from https://www.machinelearningplus.com/nlp/lemmatiz
 #     lemmatizer = WordNetLemmatizer()
 #     return lemmatizer.lemmatize(word, get_wordnet_pos(word))
 
-
 def lemmatizing(word):#edited by Claude Hu 08/2020
     #https://stackoverflow.com/questions/15586721/wordnet-lemmatization-and-pos-tagging-in-python
     pos = ['n', 'v','a', 's', 'r']#list of postags
@@ -120,6 +119,9 @@ def excludeStopWords_list(words):
     # since stop_words are lowercase exclude initial-capital words (He, I)
     words_excludeStopwords = [word for word in words if not word.lower() in stop_words]
     words = words_excludeStopwords
+    # exclude punctuation
+    words_excludePunctuation = [word for word in words if not word in string.punctuation]
+    words = words_excludePunctuation
     return words
 
 def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts):
@@ -148,7 +150,7 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
         for doc in inputDocs:
             head, tail = os.path.split(doc)
             documentID += 1
-            print("\nProcessing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
+            print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
             with open(doc, encoding='utf-8', errors='ignore') as file:
                 lineID = 0
                 try:
@@ -180,8 +182,9 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
 
     # compute statistics about line length grouped by Document
     list=['Document ID']
-    tempOutputfile=statistics_csv_util.compute_field_statistics_groupBy(window, outputFilenameCSV, outputDir, list, openOutputFiles,
-                                         createExcelCharts,3) # 'Line length (in words)'
+    tempOutputfile=statistics_csv_util.compute_field_statistics_groupBy(window, outputFilenameCSV, outputDir,
+                                        list, openOutputFiles,
+                                        createExcelCharts,3) # 'Line length (in words)'
     if tempOutputfile!=None:
         filesToOpen.extend(tempOutputfile)
 
@@ -245,7 +248,7 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             head, tail = os.path.split(doc)
             index=index+1
             # currentLine.append([index])
-            print("\nProcessing file " + str(index) + "/" + str(Ndocs) + " " + tail)
+            print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
             #currentLine.append([doc])
             fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
 
@@ -263,11 +266,12 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
 
             if excludeStopWords:
                 words = excludeStopWords_list(words)
-            # if lemmatizeWords:
-                # lemmatizer = WordNetLemmatizer()
-                # text_vocab = set(lemmatizer.lemmatize(w.lower()) for w in fullText.split(" ") if w.isalpha())
-                # words = set(lemmatizing(w.lower()) for w in words) # fullText.split(" ") if w.isalpha())
-                # words = lemmatizing(w.lower() for w in words if w.isalpha())
+
+            if lemmatizeWords:
+                lemmatizer = WordNetLemmatizer()
+                text_vocab = set(lemmatizer.lemmatize(w.lower()) for w in fullText.split(" ") if w.isalpha())
+                words = set(lemmatizing(w.lower()) for w in words if w.isalpha()) # fullText.split(" ") if w.isalpha())
+
             word_counts = Counter(words)
             # 20 most frequent words
             #print("\n\nTOP 20 most frequent words  ----------------------------")
@@ -282,16 +286,16 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             writer.writerows(currentLine)
         csvfile.close()
 
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running corpus statistics at', True)
-
         # compute statistics about doc length grouped by Document
         list = ['Document ID']
         tempOutputfile = statistics_csv_util.compute_field_statistics_groupBy(window, outputFilenameCSV, outputDir,
                                                                               list, openOutputFiles,
-                                                                              createExcelCharts)
+                                                                              createExcelCharts, 4)
                                                                               # ,4)  # 'number of words in doc'
         if tempOutputfile != None:
             filesToOpen.extend(tempOutputfile)
+
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running corpus statistics at', True)
 
         if createExcelCharts==True:
             columns_to_be_plotted=[[1,3],[1,4]]
@@ -370,7 +374,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
     for file in files:
         head, tail = os.path.split(file)
         i=i+1
-        print("\nProcessing file " + str(i) + "/" + str(nFile) + ' ' + tail)
+        print("Processing file " + str(i) + "/" + str(nFile) + ' ' + tail)
         ngramsList = get_ngramlist(file, ngramsNumber, wordgram, excludePunctuation, bySentenceID, isdir=True)
         container.append(ngramsList)
 
@@ -661,7 +665,7 @@ def yule(window, inputFilename, inputDir, outputDir, hideMessage=False):
         head, tail = os.path.split(doc)
         d = {}
         index = index + 1
-        print("\nProcessing file " + str(index) + "/" + str(Ndocs) + " " + tail)
+        print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
         fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
         words = filter(lambda w: len(w) > 0,
                   [w.strip("0123456789!:,.?(){}[]") for w in fullText.translate(string.punctuation).lower().split()])
@@ -714,6 +718,11 @@ def print_results(window, words, class_word_list, header, inputFilename, outputD
 def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, createExcelCharts, processType='', excludeStopWords=True,word_length=3):
     filesToOpen=[]
     index = 0
+    multiple_punctuation=0
+    exclamation_punctuation=0
+    question_punctuation=0
+    punctuation_docs=[]
+
     inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 
     Ndocs=str(len(inputDocs))
@@ -721,7 +730,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         index = index + 1
-        print("\nProcessing file " + str(index) + "/" + str(Ndocs) + " " + tail)
+        print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
         fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
         # words = fullText.translate(string.punctuation).lower().split()
         fullText = fullText.replace('\n',' ')
@@ -760,11 +769,31 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
             # if outputFilename!='':
             #     filesToOpen.append(outputFilename)
         if processType == '' or "punctuation" in processType.lower():
-            header = ['Word','Punctuation symbols (?!)','Document ID','Document']
+            header = ['Word','Punctuation symbols of pathos (?!)','Document ID','Document']
             fileLabel = 'punctuation'
             for word in words:
-                if "?" in word or "!" in word:
-                    word_list.extend([[word, word[-1], index, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
+                punctuation =''
+                character_index=0
+                for i in word:
+                    if '!' in i or '?' in i:
+                        punctuation=word[character_index:len(word)]
+                        continue
+                    character_index = character_index + 1
+                if punctuation != '':
+                    if doc not in punctuation_docs:
+                        punctuation_docs.append(doc)
+                    word_list.extend([[word, punctuation, index, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
+                    if '!' in punctuation and '?' in punctuation:
+                        multiple_punctuation=multiple_punctuation+1
+                    elif '!' in punctuation:
+                        exclamation_punctuation=exclamation_punctuation+1
+                    elif '?' in punctuation:
+                        question_punctuation=question_punctuation+1
+
+    mb.showinfo(title='Results', message="Combinations of ! and ? punctuation symbols were used " + str(multiple_punctuation) + \
+                        " times.\n\n! punctuation symbols were used " + str(exclamation_punctuation) + \
+                        " times.\n\n? punctuation symbols were used " + str(question_punctuation) + \
+                        " times.\n\n\nPunctuation symbols of pathos (!?) were used in " + str(len(punctuation_docs)) + " separate documents out of " + str(Ndocs) + " documents.")
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', fileLabel)
     word_list.insert(0, header)

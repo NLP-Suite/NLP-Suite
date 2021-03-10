@@ -185,7 +185,8 @@ pydict["File manager (List, Rename, Copy, Move, Delete, Count)"] = ["file_manage
 pydict["Find non-related documents"] = ["social_science_research_main.py", 1]
 pydict["Excel charts"] = ["Excel_charts_main.py", 1]
 pydict["Network graphs (Gephi)"] = ["", 0]  # not available
-pydict["Geographic maps (geocoding & maps)"] = ["GIS_main.py", 1]
+pydict["Geographic maps: Geocoding & maps"] = ["GIS_main.py", 1]
+pydict["Geographic maps: Google Earth Pro"] = ["GIS_Google_Earth_main.py", 1]
 pydict["Geographic maps: From texts to maps"] = ["GIS_main.py", 1]
 pydict["Geographic distances between locations"] = ["", 0]  # GIS_distance_main.py
 pydict["Gender guesser"] = ["Gender guesser", 0, 0, '']
@@ -319,7 +320,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
                                                visualization_lb, True)
 visualization_menu = tk.OptionMenu(window, visualization_tools_var,
                                    'Excel charts',
-                                   'Geographic maps (geocoding & maps)',
+                                   'Geographic maps: Geocoding & maps',
+                                   'Geographic maps: Google Earth Pro',
                                    'Geographic distances between locations',
                                    'Annotator - dictionary, gender, DBpedia, YAGO',
                                    'Network graphs (Gephi)',
@@ -383,6 +385,7 @@ corpus_document_tools_menu = tk.OptionMenu(window, corpus_document_tools_var,
                                            'Sentiment analysis',
                                            'Gender guesser',
                                            'Geographic maps: From texts to maps',
+                                           'Geographic maps: Google Earth Pro',
                                            'NER (Named Entity Recognition) extractor',
                                            'N-grams (word & character)',
                                            'Nominalization',
