@@ -83,8 +83,8 @@ def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, cente
 help_button_x_coordinate = 50
 labels_x_coordinate = 120  #start point of all labels in the second column (first column after ? HELP)
 labels_x_indented_coordinate = 140
-entry_box_x_coordinate=0
-open_file_directory_coordinate=0
+entry_box_x_coordinate=0 # set below for different platforms
+open_file_directory_coordinate=0 # set below for different platforms
 
 if sys.platform == 'darwin': #Mac OS
     entry_box_x_coordinate = 440 #start point of all labels in the third  column (second column after ? HELP)
@@ -92,9 +92,9 @@ else:
     entry_box_x_coordinate = 400 #start point of all labels in the third  column (second column after ? HELP)
 
 if sys.platform == 'darwin': #Mac OS
-    open_file_directory_coordinate=400
+    open_file_directory_coordinate = 400
 else: #windows and anything else
-    open_file_directory_coordinate=350
+    open_file_directory_coordinate = 350
 
 basic_y_coordinate = 90
 y_step = 40 #the line-by-line increment on the GUI
@@ -155,7 +155,7 @@ ACKNOWLEDGMENT: Acknowledgment of the use of the package in the form of citation
 BUGS: If you find and fix bugs, keeping us informed would also be greatly appreciated.')
 
 def cite_NLP(Window, configFilename=''):
-    mb.showinfo(title='How to cite NLP Suite', message='Franzosi, Roberto. 2020. NLP Suite: A collection of natural language processing tools.\n\n\
+    mb.showinfo(title='How to cite NLP Suite', message='Franzosi, Roberto. 2020. NLP Suite: A collection of natural language processing tools.\n\nGitHub: https://github.com/NLP-Suite/NLP-Suite\n\n\
 The following papers are based on the NLP Suite tools:\n\n\
 Franzosi, Roberto. 2020. "What’s in a Text? Bridging the Gap Between Quality and Quantity in the Digital Era." Quality & Quantity. DOI: https://doi.org/10.1007/s11135-020-01067-6\n\n\
 Unpublished papers:\n\n\
