@@ -723,7 +723,7 @@ def activate_csv_fields_selection(checkButton, comingFrom_Plus, comingFrom_OK):
         reset_all_button.config(state='normal')
     if checkButton:
         if select_csv_field_extract_var.get() != '':
-            if comingFrom_Plus == True:
+            if comingFrom_Plus:
                 select_csv_field_extract_menu.configure(state='normal')
             else:
                 select_csv_field_extract_menu.configure(state='disabled')
@@ -733,7 +733,7 @@ def activate_csv_fields_selection(checkButton, comingFrom_Plus, comingFrom_OK):
             else:
                 and_or_menu.configure(state='disabled')
 
-            if comingFrom_OK == True:
+            if comingFrom_OK:
                 comparator_menu.configure(state="disabled")
                 where_entry.configure(state="disabled")
                 and_or_menu.configure(state='disabled')
