@@ -177,7 +177,7 @@ def get_hover_column_numbers(withHeader_var,headers,hover_info_column_list):
     return hover_column_numbers
 
 
-# split the pairs of gui x y values into two seperate lists of x axis values and y axis value
+# split the pairs of gui x y values into two separate lists of x axis values and y axis value
 def get_xaxis_yaxis_values(columns_to_be_plotted):
     x = [a[0] for a in columns_to_be_plotted] # select all the x axis number and put them in a list
     y = [a[1] for a in columns_to_be_plotted] # select all the y axis number and put them in a list
