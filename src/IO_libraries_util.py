@@ -154,10 +154,9 @@ def inputExternalProgramFileCheck(software_dir, programName):
         for item in fileList:
             if 'stanford-corenlp' in str(item):
                 return True
-        else:
-            mb.showwarning(title='Software error',
-                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected CoreNLP directory.\n\nPlease, select the appropriate CoreNLP directory and try again!\n\nYou can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\nPlease, read the TIPS_NLP_Stanford CoreNLP download install run.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
-            return False
+        mb.showwarning(title='Software error',
+                       message="The selected software directory\n  " + software_dir + "'\nis NOT the expected CoreNLP directory.\n\nPlease, select the appropriate CoreNLP directory and try again!\n\nYou can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\nPlease, read the TIPS_NLP_Stanford CoreNLP download install run.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
+        return False
     if programName == 'Mallet':
         # check that Mallet has no spaces in path
         if ' ' in software_dir:

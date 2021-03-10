@@ -18,6 +18,7 @@ import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
 import Stanford_CoreNLP_tags_util
+from data_manager_main import run
 # more imports (e.g., import CoNLL_clause_analysis_util) are called below under separate if statements
 
 
@@ -67,7 +68,7 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
 
         right_hand_side=True
 
-    if noun_analysis_var==True:
+    if noun_analysis_var:
         import CoNLL_noun_analysis_util
         outputFiles=CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts)
         if outputFiles!=None:
@@ -324,6 +325,7 @@ searchField_co_postag = tk.StringVar()
 co_postag_field = tk.StringVar()
 co_deprel_field = tk.StringVar()
 SVO_var=tk.IntVar()
+csv_file_field_list = []
 
 clausal_analysis_var=tk.IntVar()
 
@@ -491,7 +493,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
                                                select_csv_field_extract_menu, True)
 
 comparator_var = tk.StringVar()
-comparator_menu = tk.OptionMenu(window, comparator_var, '<', '<=', '=', '>=', '>', '<>')
+comparator_menu = tk.OptionMenu(window, comparator_var, '<', '<=', '==', '>=', '>', '<>')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 410, y_multiplier_integer,
                                                comparator_menu, True)
 
@@ -536,11 +538,6 @@ def add_field_to_list(menu_choice, visualizeBuildString=True):
     if select_csv_field_extract_var.get() == '':
         return
 
-    if and_or_var.get() != '':
-        buildString = buildString + "," + and_or_var.get()
-    else:
-        buildString = buildString + "," + "''"
-
     if selected_fields_var.get() != '' and menu_choice not in selected_fields_var.get():
         selected_fields_var.set(selected_fields_var.get() + "," + str(menu_choice))
     else:
@@ -561,6 +558,12 @@ def add_field_to_list(menu_choice, visualizeBuildString=True):
         buildString = buildString + "," + where_entry_var.get()
     else:
         buildString = buildString + "," + "''"
+    if and_or_var.get() != '':
+        buildString = buildString + "," + and_or_var.get()
+    else:
+        buildString = buildString + "," + "''"
+    csv_file_field_list.append(buildString)
+
 
 def show_values():
     mb.showwarning(title='Information',message=buildString)
@@ -572,11 +575,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 reset_all_button = tk.Button(window, width=6, text='Reset', state='normal', command=lambda: reset_all_values())
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+1075, y_multiplier_integer,
                                                reset_all_button)
+
+
 def extractSelection(*args):
-    if extract_var.get()==True:
-        mb.showwarning(title='Warning',
-                       message='The routine to extract fields an field values from the CoNLL table is under construction.')
+    # if extract_var.get():
+    #     mb.showwarning(title='Warning',
+    #                    message='The routine to extract fields an field values from the CoNLL table is under '
+    #                            'construction.')
     activate_csv_fields_selection(extract_var.get(), False, False)
+
 
 extract_var.trace('w', extractSelection)
 
@@ -719,9 +726,19 @@ def activate_csv_fields_selection(checkButton, comingFrom_Plus, comingFrom_OK):
 
     if not checkButton:
         extract_checkbox.config(state='normal')
-    else:
-        reset_all_button.config(state='normal')
+        select_csv_field_extract_var.set('')
+        select_csv_field_extract_menu.config(state='disabled')
+
+        comparator_menu.configure(state="disabled")
+        where_entry.configure(state="disabled")
+        and_or_menu.configure(state="disabled")
+        OK_extract_button.config(state='disabled')
+
+        where_entry_var.set("")
+        comparator_var.set("")
+        and_or_var.set("")
     if checkButton:
+        reset_all_button.config(state='normal')
         if select_csv_field_extract_var.get() != '':
             if comingFrom_Plus:
                 select_csv_field_extract_menu.configure(state='normal')
@@ -746,19 +763,15 @@ def activate_csv_fields_selection(checkButton, comingFrom_Plus, comingFrom_OK):
                 where_entry.configure(state="normal")
         else:
             select_csv_field_extract_menu.configure(state='normal')
-    else:
-        select_csv_field_extract_var.set('')
-        select_csv_field_extract_menu.config(state='disabled')
+            extract_checkbox.config(state='normal')
+            comparator_menu.configure(state="normal")
+            where_entry.configure(state="normal")
+            and_or_menu.configure(state="normal")
+            OK_extract_button.config(state='normal')
 
-        comparator_menu.configure(state="disabled")
-        where_entry.configure(state="disabled")
-        and_or_menu.configure(state="disabled")
-        OK_extract_button.config(state='disabled')
 
-        where_entry_var.set("")
-        comparator_var.set("")
-        and_or_var.set("")
-select_csv_field_extract_var.trace('w',lambda x, y, z: extract_var.get())
+
+select_csv_field_extract_var.trace('w', lambda x, y, z: extract_var.get())
 
 activate_csv_fields_selection(extract_var.get(), False, False)
 
