@@ -494,22 +494,27 @@ def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutp
         return
     df = pd.read_csv(csv_spelling_file)
     try:#make sure the csv have two columns of "original" and "corrected"
-    	original = df['Original']
-    	corrected = df['Corrected']
+        original = df['Original']
+        corrected = df['Corrected']
     except:
-    	mb.showwarning(title='CSV file error',
-					   message='The selected csv file does not have the expected format. The Find & Replace expects 2 column headers \'Original\' and \'Corrected\'.\n\nPlease, make sure that your csv file has those characteristics and try again.')
-    	print(
- 			"The selected csv file does not have the expected format. The Find & Replace expects 2 column headers \'Original\' and \'Corrected\'.\n\nPlease, make sure that your csv file has those characteristics and try again.")
-    	return
+        mb.showwarning(title='CSV file error',
+                       message='The selected csv file does not have the expected format. The Find & Replace expects 2 column headers \'Original\' and \'Corrected\'.\n\nPlease, make sure that your csv file has those characteristics and try again.')
+        print(
+            "The selected csv file does not have the expected format. The Find & Replace expects 2 column headers \'Original\' and \'Corrected\'.\n\nPlease, make sure that your csv file has those characteristics and try again.")
+        return
     #preparting the input to the cleaning function: lists of words to replace
     input_original = []
     input_corrected = []
     for i in range(len(original)):
-       if (isinstance(corrected[i], str) and corrected[i] != '') or (not math.isnan(corrected[i])):#the correction is neither empty string, nor NaN, then both original and corrected will be added to the input lists
-           input_original.append(original[i])
-           input_corrected.append(corrected[i])
-           file_cleaner_util.find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFiles,input_original,input_corrected,False)
+        # the correction can be empty string or NaN,
+        #   then both original and corrected will be added to the input lists
+        # if (isinstance(corrected[i], str) and corrected[i] != '') or (not math.isnan(corrected[i])):
+        if isinstance(corrected[i], str) or (math.isnan(corrected[i])):
+            input_original.append(original[i])
+            if math.isnan(corrected[i]):
+                corrected[i]=''
+            input_corrected.append(corrected[i])
+    file_cleaner_util.find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFiles,input_original,input_corrected,False)
 
 def spellchecking_autocorrect(text: str, inputFilename) -> (str, DataFrame):
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Autocorrect spelling checker start',

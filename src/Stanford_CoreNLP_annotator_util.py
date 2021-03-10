@@ -368,7 +368,7 @@ def CoreNLP_annotate(inputFilename,
             filesToOpen.append(outputFilename)
             if output_format != 'text': # output is csv file
                 # when NER values (notably, locations) are extracted with the date option
-                #   for dinamic GIS maps (as called from GIS_main with date options)
+                #   for dynamic GIS maps (as called from GIS_main with date options)
                 if extract_date_from_text_var or extract_date_from_filename_var:
                     output_format=['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document','Date']
                 # if NER_sentence_var == 1:
