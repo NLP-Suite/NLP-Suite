@@ -157,8 +157,8 @@ def compute_sentence(CoNLL_table, recordID, sentenceID, documentID):
     """
     # Open ConLL
     df = pd.read_csv(io.open(CoNLL_table, 'rb'), sep=',', index_col=False)
-    df = df[df["DocumentID"] == documentID]
-    df = df[df["SentenceID"] == sentenceID]
+    df = df[df["Document ID"] == documentID]
+    df = df[df["Sentence ID"] == sentenceID]
     rows = []  # Store data
     sent_str = ""  # Build string
     index = recordID
