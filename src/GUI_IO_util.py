@@ -238,6 +238,10 @@ def selectDirectory_set_options(window, changeVar,changeVar1,title,config_input_
         if inputMainDir==True:
             inputFilename.set('')
 
+from tkinter import Toplevel
+def Dialog2Display(title: str):
+    Dialog2 = Toplevel(height=1000, width=1000)
+
 # The function places and displays a message for each ? HELP button in the GUIs
 def place_help_button(window,x_coordinate,y_coordinate,text_title,text_msg):
     if text_title=='Help':

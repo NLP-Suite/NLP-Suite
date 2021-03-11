@@ -8,6 +8,8 @@ argparse~=1.4.0
 wordcloud~=1.8.1
 pillow~=8.1.0
 
+striprtf
+
 #used by nominalization
 pywsd~=1.2.4
 
@@ -48,11 +50,6 @@ nltk~=3.5
 # used by wordcloud script (the new StanfordCoreNLP Python approach)
 stanza
 
-#used by SVO
-#stanfordnlp is the new stanford coreNLP Python version of their software released in 2020
-torch===1.6.0
-torchvision===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
-#stanfordnlp
 
 # VADER (sentimentt analysis)
 twython
@@ -86,3 +83,4 @@ scipy~=1.6.0
 chardet~=4.0.0
 tqdm~=4.55.1
 scikit-learn~=0.24.1
+stanfordnlp
