@@ -39,6 +39,7 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 		names.append(data[n][location_num])
 
 	geo_index = 0
+	index = 0
 	index_list = []
 	for row in inputfile:
 		geo_index += 1
@@ -69,8 +70,8 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 	if encodingValue=='':
 		encodingValue = 'utf-8'
 	dt = pd.read_csv(conllFile,encoding = encodingValue)
-	numDocs=dt['DocumentID'].max()
-	numRecords=dt['RecordID'].max()
+	numDocs=dt['Document ID'].max()
+	numRecords=dt['Record ID'].max()
 	currentRecord=0
 	sentence_str=""
 	# 0 & 1 so that the first sentence can be computed, since the first sentence is always 1

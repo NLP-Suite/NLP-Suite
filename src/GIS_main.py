@@ -46,7 +46,7 @@ def run(inputFilename,
 		date_position_var,
 		memory_var,
 		NER_extractor_var,
-		location_var,
+		location_menu_var,
 		geocode_locations_var,
 		GIS_package_var,
 		GIS_package2_var,
@@ -68,8 +68,7 @@ def run(inputFilename,
 			#RF NER_extractor_var.set(1)
 			NER_extractor_var=True
 
-		#RF location_var.set('')
-		location_var=''
+		location_menu_var=''
 		if inputFilename.endswith('.csv'):
 			# If Column A is 'Word', rename to 'Location'
 			temp = pd.read_csv(inputFilename)
@@ -83,15 +82,15 @@ def run(inputFilename,
 			#RF NER_extractor_var.set(0)
 			NER_extractor_var=False
 			if 'Latitude' in headers and 'Longitude' in headers:
-				geocode_locations_var.set(0)
+				geocode_locations_var=0
 				geocode_locations_var=False
-				location_var.set('Latitude')
+				location_menu_var='Latitude'
 				# GIS_package_var.set("Google Earth Pro")
 				# GIS_package_var="Google Earth Pro"
 			elif 'postag' and 'deprel' and 'ner' in str(headers).lower():
-				location_var.set('Ner')
+				location_menu_var='NER'
 			else:
-				geocode_locations_var.set(1)
+				geocode_locations_var=1
 				geocode_locations_var=True
 	else:
 		#RF NER_extractor_var.set(1)
@@ -205,7 +204,7 @@ def run(inputFilename,
 			GUI_util.inputFilename.set(geocodedLocationsoutputFilename)
 
 
-	if inputIsGeocoded==False:
+	if inputIsGeocoded==False and geocoder_var.get()=='':
 		mb.showwarning(title='Warning',message='No geocoding option selected. The GIS script will exit.')
 		return
 
@@ -294,7 +293,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
 							date_position_var.get(),
 							memory_var.get(),
 							NER_extractor_var.get(),
-							location_var.get(),
+							location_menu_var.get(),
 							geocode_locations_var.get(),
 							GIS_package_var.get(),
 							GIS_package2_var.get(),
@@ -345,7 +344,7 @@ date_format = tk.StringVar()
 date_separator_var = tk.StringVar()
 date_position_var = tk.IntVar()
 
-location_var=tk.StringVar()
+location_menu_var=tk.StringVar()
 NER_extractor_var=tk.IntVar()
 geocode_locations_var=tk.IntVar()
 geocoder_var=tk.StringVar()
@@ -361,7 +360,7 @@ Google_API=''
 
 def clear(e):
 	encoding_var.set('utf-8')
-	location_var.set('')
+	location_menu_var.set('')
 	GIS_package_var.set('')
 	geocoder_var.set('Nominatim')
 	Google_API_Google_geocode_var.set('')
@@ -455,9 +454,9 @@ menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 location_field_lb = tk.Label(window, text='Select the column containing location names')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,location_field_lb,True)
 if menu_values!='':
-	location_field = tk.OptionMenu(window,location_var,*menu_values)
+	location_field = tk.OptionMenu(window,location_menu_var,*menu_values)
 else:
-	location_field = tk.OptionMenu(window,location_var,menu_values)
+	location_field = tk.OptionMenu(window,location_menu_var,menu_values)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,location_field)
 
 y_multiplier_integer_save_one=y_multiplier_integer
@@ -597,6 +596,8 @@ activate_Google_API_Google_Maps(y_multiplier_integer_save_two,Google_API_Google_
 def changed_input_filename(*args):
     # display the date widgets
     if inputFilename.get().endswith('.txt') or len(input_main_dir_path.get()) > 0:
+        location_menu_var.set('')
+        location_field.config(state='disabled')
         extract_date_from_text_checkbox.config(state='normal')
         extract_date_from_filename_checkbox.config(state='normal')
     else:
@@ -605,7 +606,7 @@ def changed_input_filename(*args):
 
         NER_extractor_var.set(1)
         NER_extractor_checkbox.configure(state='disabled')
-        location_var.set('')
+        location_menu_var.set('')
         location_field.config(state='disabled')
         country_bias.configure(state='normal')
         # split_locations_prefix_entry.configure(state='normal')
@@ -625,7 +626,7 @@ def changed_input_filename(*args):
         map_locations_checkbox.configure(state='normal')
         if 'postag' in str(headers).lower() and 'deprel' in str(headers).lower() and 'ner' in str(headers).lower():
             # the coNLL table must be geocoded
-            location_var.set('ner')
+            location_menu_var.set('NER')
             location_field.config(state='disabled')
             geocode_locations_var.set(1)
             # geocode_locations_checkbox.configure(state='disabled')
@@ -640,21 +641,21 @@ def changed_input_filename(*args):
             country_bias.configure(state='disabled')
             # split_locations_prefix_entry.configure(state='disabled')
             # split_locations_suffix_entry.configure(state='disabled')
-            location_var.set('Location')
+            location_menu_var.set('Location')
             location_field.config(state='normal')
         elif 'location' in str(headers).lower():
-            location_var.set('Location')
+            location_menu_var.set('Location')
             location_field.config(state='normal')
         else:
             location_field.config(state='normal')
-            location_var.set('')
+            location_menu_var.set('')
         menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get())
 
         # must change all 3 widgets where menus must be updated after changing the filename
         m = location_field["menu"]
         m.delete(0, "end")
         for s in menu_values:
-            m.add_command(label=s, command=lambda value=s: location_var.set(value))
+            m.add_command(label=s, command=lambda value=s: location_menu_var.set(value))
     if GIS_package2_var.get() == False:
         GIS_package_var.set('Google Earth Pro')
 inputFilename.trace('w', changed_input_filename)
@@ -673,8 +674,8 @@ def display_warning(*args):
         return
 GIS_package2_var.trace('w', display_warning)
 
-TIPS_lookup = {"Google Earth Pro":"TIPS_NLP_Google Earth Pro.pdf","Google Earth Pro KML Options":"TIPS_NLP_Google Earth Pro KML options.pdf","HTML":"TIPS_NLP_Google Earth Pro HTML.pdf","Google Earth Pro Icon":"TIPS_NLP_Google Earth Pro Icon.pdf", "Google Earth Pro Description":"TIPS_NLP_Google Earth Pro Description.pdf"}
-TIPS_options='Geocoding', 'Google Earth Pro', 'Google Earth Pro KML Options', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
+TIPS_lookup = {"Geocoding":"TIPS_NLP_Geocoding.pdf","Google Earth Pro":"TIPS_NLP_Google Earth Pro.pdf","Google Earth Pro KML Options":"TIPS_NLP_Google Earth Pro KML options.pdf","HTML":"TIPS_NLP_Google Earth Pro HTML.pdf","Google Earth Pro Icon":"TIPS_NLP_Google Earth Pro Icon.pdf", "Google Earth Pro Description":"TIPS_NLP_Google Earth Pro Description.pdf"}
+TIPS_options='Geocoding', 'Google Earth Pro', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
@@ -688,7 +689,6 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help","Please, tick the checkbox if you wish to EXTRACT locations from a text file using Stanford CoreNLP NER extractor.\n\nThe option is available ONLY when an input txt file is selected.\n\nTick the Open GUI checkbox ONLY if you wish to open the Stanford CoreNLP NER extractor GUI for more options. Do not tick the checkbox if you wish to run the pipeline automatically from text to maps."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help","Please, using the dropdown menu, select the column containing the location names (e.g., New York) to be geocoded and mapped.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. NER IS THE COLUMN AUTOMATICALLY USED WHEN WORKING WITH A CONLL FILE IN INPUT."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","Please, tick the checkbox if you wish to GEOCODE  a list of locations.\n\nThe option is available ONLY when a csv file of locations NOT yet geocoded is selected.\n\nTo obtain more accurate geocoded results, select a country where most locations are expected to be. Thus, if you select United States as your country bias, the geocoder will geocode locations such as Florence, Rome, or Venice in the United States rather than in Italy.\n\nTick the Open GUI checkbox ONLY if you wish to open the geocode GUI for more options. Do not tick the checkbox if you wish to run the pipeline automatically from text to maps."+GUI_IO_util.msg_Esc)
-    # GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help","Please, edit the list of locations with split names for any additional cases, entering separately the first (PREFIX) part (e.g., hong for Hong Kong) and the last part (SUFFIX) (e.g., city for Atlantic City) of a location.\n\nThese values are used to improve geocoding acccuracy, so that Jefferson City, Tennessee, is not geocoded separately as Jefferson, Texas, and City, as the City of London in the United Kingdom."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help","Please, tick the checkbox if you wish to MAP a list of geococed locations.\n\nUsing the dropdown menu, select the GIS (Geographic Information System) package you wish to use to produce maps.\n\nGoogle Maps requires an API key that you obtain from registering.\n\nWhen selecting Google Maps, the API key field will become available.\n\nYou will need to get the API key from the Google console and entering it there. REMEMBER! When applying for an API key you will need to enter billing information; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale.\n https://developers.google.com/maps/documentation/embed/get-api-key.\n\nAfter entering the Google API key, click OK to save it and the key will be read in automatically next time around.\n\nTick the Open GUI checkbox ONLY if you wish to open the Google Earth Pro GUI for more options. Do not tick the checkbox if you wish to run the pipeline automatically from text to maps."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help",GUI_IO_util.msg_openOutputFiles)
 
