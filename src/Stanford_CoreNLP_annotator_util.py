@@ -213,7 +213,6 @@ def CoreNLP_annotate(inputFilename,
         param_string_NN = param_string_NN + ',cleanXML'
 
     # -d64 to use 64 bits JAVA, normally set to 32 as default; option not recognized in Mac
-
     try:
         print(memory_var)
         p = subprocess.Popen(
