@@ -178,9 +178,9 @@ def compute_field_statistics_groupBy(window,inputFilename, outputDir, groupByFie
         headers = IO_csv_util.get_csvfile_headers(inputFilename)
         column_name=headers[columnNumber]
         df_group = df_group[[column_name]]
-        df_list = [pd.concat([df_group[column_name]],keys=[column_name],names=['column header'])]
+        df_list = [pd.concat([df_group[column_name]],keys=[column_name],names=['Column header'])]
     else:
-        df_list = [pd.concat([df_group[index]],keys=[index],names=['column header']) for index in df_group.columns.levels[0]]
+        df_list = [pd.concat([df_group[index]],keys=[index],names=['Column header']) for index in df_group.columns.levels[0]]
     df_group = pd.concat(df_list,axis=0)
     # putting data into the original headers
     headers_stats=['Count','Mean','Mode','Median','Standard deviation','Minimum','Maximum',
