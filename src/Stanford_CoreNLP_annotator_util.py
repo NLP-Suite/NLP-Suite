@@ -221,6 +221,7 @@ def CoreNLP_annotate(inputFilename,
             ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
     else:
+        memory_var = 32
         p = subprocess.Popen(
             ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
