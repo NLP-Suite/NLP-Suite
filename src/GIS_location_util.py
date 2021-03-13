@@ -20,6 +20,10 @@ import IO_CoNLL_util
 import IO_csv_util
 
 def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_name):
+	geo_index = 0
+	index = 0
+	index_list = []
+
 	inputfile = csv.reader(open(InputCodedCsvFile,'r',encoding = encodingValue,errors='ignore'))
 	first_row = next(inputfile) #skip header
 
@@ -28,6 +32,9 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 
 	geo_withHeader_var = IO_csv_util.csvFile_has_header(InputCodedCsvFile) # check if the file has header
 	geo_data, geo_headers = IO_csv_util.get_csv_data(InputCodedCsvFile,geo_withHeader_var) # get the data and header
+
+	if len(geo_data)==0:
+		return index_list
 
 	names = []
 	location_num=0
@@ -38,8 +45,6 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 	for n in range(len(data)):
 		names.append(data[n][location_num])
 
-	geo_index = 0
-	index_list = []
 	for row in inputfile:
 		geo_index += 1
 		geo_name = geo_data[geo_index-1][0]
@@ -69,8 +74,8 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 	if encodingValue=='':
 		encodingValue = 'utf-8'
 	dt = pd.read_csv(conllFile,encoding = encodingValue)
-	numDocs=dt['DocumentID'].max()
-	numRecords=dt['RecordID'].max()
+	numDocs=dt['Document ID'].max()
+	numRecords=dt['Record ID'].max()
 	currentRecord=0
 	sentence_str=""
 	# 0 & 1 so that the first sentence can be computed, since the first sentence is always 1

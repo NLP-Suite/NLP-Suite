@@ -946,7 +946,7 @@ TIPS_lookup = {"Google Earth Pro": "TIPS_NLP_Google Earth Pro.pdf",
 			   "HTML": "TIPS_NLP_Google Earth Pro HTML.pdf",
 			   "Google Earth Pro Icon": "TIPS_NLP_Google Earth Pro Icon.pdf",
 			   "Google Earth Pro Description": "TIPS_NLP_Google Earth Pro Description.pdf"}
-TIPS_options = 'Geocoding', 'Google Earth Pro', 'Google Earth Pro KML Options', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
+TIPS_options = 'Geocoding', 'Google Earth Pro', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
 
 
 # add all the lines lines to the end to every special GUI
