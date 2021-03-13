@@ -36,7 +36,7 @@ import file_utf8_compliance_util as utf
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputDir, outputDir, openOutputFiles, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
+def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
         hierarchical_clustering, SVD, NMF, best_topic_estimation):
 
 # check all IO options ---------------------------------------------------------------------------
@@ -174,6 +174,7 @@ def run(inputDir, outputDir, openOutputFiles, sentimentAnalysis, sentimentAnalys
             tempOutputfile=Stanford_CoreNLP_annotator_util.CoreNLP_annotate('',inputDir,sentiment_scores_folder,openOutputFiles, createExcelCharts,'sentiment',False, memory_var)
             if tempOutputfile==None:
                 return
+            # TODO must process a single merged csv file of sentiment scores by Document ID
         else:
             mb.showwarning(title="Sentiment Analysis Method not available", message=sentimentAnalysisMethod + " is not currently available. The only available option is the \'Stanford CoreNLP neural network\' method. Sorry!")
             return
@@ -287,6 +288,7 @@ def run(inputDir, outputDir, openOutputFiles, sentimentAnalysis, sentimentAnalys
 run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
+                                 GUI_util.create_Excel_chart_output_checkbox.get(),
                                  sentiment_analysis_var.get(),
                                  sentiment_analysis_menu_var.get(),
                                  memory_var.get(),
@@ -305,7 +307,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size = '1100x510'
+GUI_size = '1100x550'
 GUI_label = 'Graphical User Interface (GUI) for "Shape of Stories" Extraction and Visualization'
 config_filename = 'shape-of-stories-config.txt'
 # The 6 values of config_option refer to: 
@@ -321,13 +323,13 @@ config_filename = 'shape-of-stories-config.txt'
 #   input secondary dir
 #   output file
 #   output dir
-config_option = [0, 0, 1, 0, 0, 1]
+config_option = [0, 3, 1, 0, 0, 1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
 # GUI CHANGES add following lines to every special GUI
 # +2 is the number of lines starting at 1 of IO widgets
-y_multiplier_integer=GUI_util.y_multiplier_integer+1
+y_multiplier_integer=GUI_util.y_multiplier_integer+2
 window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
@@ -495,19 +497,20 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     inputDirCSVMsg ='\n\nIn INPUT the algorithms expect a set of csv files of sentiment scores in a directory. Please, use the \'Select INPUT secondary directory\' IO widget to select the directory.'
     outputDirMsg='\n\nIn OUPUT the sentiment analysis scores will be saved in a double subdirectory of the output directory - Shape of Stories/Last part of input directory name/sentiment_analysis_results_last part of input directory name.'
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_corpusData)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_outputDirectory)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", 'Please, tick the checkbox \'Sentiment Analysis\' if you wish to run the Sentiment Analysis algorithm.\n\nIf you do want to run the algorithm, using the dropdown menu, please select the type of Sentiment Analysis algorithm you wish to use (Stanford CoreNLP neural network approach recommended).'+inputDirTXTMsg+outputDirMsg)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help", 'Please, tick the checkbox if you wish to compute & visualize corpus statistics. This will help you identify any document outlier in terms of number of words and, particularly relevant for the analysis of the shape of stories, number of sentences.'+inputDirTXTMsg+outputDirMsg)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help", 'Please, tick the checkbox if you wish to run the Hierarchical Clustering algorithm of data reduction.'+inputDirCSVMsg+outputDirMsg)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help", 'Please, tick the checkbox if you wish to run the SVD (Singular Value Decomposition) algorithm of data reduction.'+inputDirCSVMsg+outputDirMsg)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help", 'Please, tick the checkbox if you wish to run the NMF (Non-Negative Matrix Factorization) algorithm of data reduction.'+inputDirCSVMsg+outputDirMsg)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help", 'Please, tick the checkbox if you wish to estimate the best number of topics providing graphical visualization.\n\nWARNING! This function is very slow and make take an hour or longer. You can follow its progress in command line.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help", GUI_IO_util.msg_openOutputFiles)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_csvFile)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", GUI_IO_util.msg_outputDirectory)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help", 'Please, tick the checkbox \'Sentiment Analysis\' if you wish to run the Sentiment Analysis algorithm.\n\nIf you do want to run the algorithm, using the dropdown menu, please select the type of Sentiment Analysis algorithm you wish to use (Stanford CoreNLP neural network approach recommended).'+inputDirTXTMsg+outputDirMsg)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help", 'Please, tick the checkbox if you wish to compute & visualize corpus statistics. This will help you identify any document outlier in terms of number of words and, particularly relevant for the analysis of the shape of stories, number of sentences.'+inputDirTXTMsg+outputDirMsg)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help", 'Please, tick the checkbox if you wish to run the Hierarchical Clustering algorithm of data reduction.'+inputDirCSVMsg+outputDirMsg)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help", 'Please, tick the checkbox if you wish to run the SVD (Singular Value Decomposition) algorithm of data reduction.'+inputDirCSVMsg+outputDirMsg)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help", 'Please, tick the checkbox if you wish to run the NMF (Non-Negative Matrix Factorization) algorithm of data reduction.'+inputDirCSVMsg+outputDirMsg)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help", 'Please, tick the checkbox if you wish to estimate the best number of topics providing graphical visualization.\n\nWARNING! This function is very slow and make take an hour or longer. You can follow its progress in command line.')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help", GUI_IO_util.msg_openOutputFiles)
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide ways of analyzing the emotional arc of a set of stories and of visualizing common patterns of behavior among the stories.\n\nThe shape of stories algorithms are fundamentally based on sentiment analysis of the input stories and on data reduction of the calculated sentiment scores.\n\n" \
-"In INPUT the algorithms expect either\n  1. a directory containing a set of txt files for which to compute sentiment scores;\n  2. a directory containing a set of csv files of sentiment scores; the default directory of sentiment scores is a nested subfolders ('Shape of Stories' under the output directory-->basename of original txt directory-->sentiment_analysis_scores_(+basename of original txt directory).\nBut you can choose a different directory containing sentiment analysis scores.\n\n" \
+"In INPUT the algorithms expect either\n   1. a directory containing a set of txt files for which to compute sentiment scores;\n   2. a csv file of sentiment scores; the default directory of sentiment scores is a nested subfolders ('Shape of Stories' under the output directory-->basename of original txt directory-->sentiment_analysis_scores_(+basename of original txt directory).\n\n" \
 "In OUTPUT the algorithms will produce sentiment analysis scores (if the option is selected) and a number of visual plots (e.g., sentiment arcs).\n\n" \
 "Four different approaches to SENTIMENT ANALYSIS can be used to measure the emotional arc of stories: ANEW, VADER, hedonometer, Stanford CoreNLP neural network approach (recommended).\n\n" \
 "Three different approaches to DATA REDUCTION are used: Hierarchical clustering (HC), Singular Value Decomposition (SVD), Non-Negative Matrix Factorization (NMF).\n\n" \

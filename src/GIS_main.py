@@ -674,8 +674,8 @@ def display_warning(*args):
         return
 GIS_package2_var.trace('w', display_warning)
 
-TIPS_lookup = {"Geocoding":"TIPS_NLP_Geocoding.pdf","Google Earth Pro":"TIPS_NLP_Google Earth Pro.pdf","Google Earth Pro KML Options":"TIPS_NLP_Google Earth Pro KML options.pdf","HTML":"TIPS_NLP_Google Earth Pro HTML.pdf","Google Earth Pro Icon":"TIPS_NLP_Google Earth Pro Icon.pdf", "Google Earth Pro Description":"TIPS_NLP_Google Earth Pro Description.pdf"}
-TIPS_options='Geocoding', 'Google Earth Pro', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
+TIPS_lookup = {"Geocoding":"TIPS_NLP_Geocoding.pdf","Google Earth Pro":"TIPS_NLP_Google Earth Pro.pdf","Google API Key":"TIPS_NLP_Google API Key.pdf", "Google Earth Pro KML Options":"TIPS_NLP_Google Earth Pro KML options.pdf","HTML":"TIPS_NLP_Google Earth Pro HTML.pdf","Google Earth Pro Icon":"TIPS_NLP_Google Earth Pro Icon.pdf", "Google Earth Pro Description":"TIPS_NLP_Google Earth Pro Description.pdf"}
+TIPS_options='Geocoding', 'Google Earth Pro', 'Google API Key', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
