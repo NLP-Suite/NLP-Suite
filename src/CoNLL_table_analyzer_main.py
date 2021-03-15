@@ -18,7 +18,7 @@ import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
 import Stanford_CoreNLP_tags_util
-# from data_manager_main import run
+from data_manager_main import run
 # more imports (e.g., import CoNLL_clause_analysis_util) are called below under separate if statements
 
 
@@ -142,11 +142,11 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
     else:
             co_deprel = '*'
 
-    POS_tags= ['*','JJ*', 'NN*', 'VB*'] + [k for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()]
-    POS_descriptions= [v for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()]
+    POS_tags = ['*', 'JJ*', 'NN*', 'VB*'] + [k for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()]
+    POS_descriptions = [v for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()]
 
-    DEPREL_tags= [k for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()]
-    DEPREL_descriptions= [v for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()]
+    DEPREL_tags = [k for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()]
+    DEPREL_descriptions = [v for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()]
 
 
     if postag != '*' and postag not in POS_tags:
