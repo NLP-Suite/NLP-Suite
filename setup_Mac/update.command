@@ -10,4 +10,4 @@ fi
 
 git add -A .
 git stash
-git pull -f origin
+git pull -f origin current-stable
