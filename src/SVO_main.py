@@ -184,6 +184,8 @@ def run(inputFilename, inputDir, outputDir,
         google_earth_var,
         openOutputFiles,createExcelCharts):
 
+    memory_var = 64
+
     filesToOpen = []
 
     merge_file_option = None
