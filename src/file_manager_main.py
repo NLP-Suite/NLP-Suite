@@ -22,300 +22,300 @@ import IO_user_interface_util
 
 
 def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
-		list_var,
-		rename_var,
-		copy_var,
-		move_var,
-		delete_var,
-		count_file_manager_var,
-		rename_new_entry,
-		by_file_type_var,
-		file_type_menu_var,
-		by_creation_date_var,
-		by_author_var,
-		before_date_var,
-		after_date_var,
-		by_prefix_var,
-		by_substring_var,
-		string_entry_var,
-		by_foldername_var,
-		folder_character_separator_var,
-		by_embedded_items_var,
-		comparison_var,
-		number_of_items_var,
-		embedded_item_character_value_var,
-		include_exclude_var,
-		character_count_file_manager_var,
-		character_entry_var,
-		include_subdir_var,
-		fileName_embeds_date,
-		date_format,
-		date_separator,
-		date_position):
+        list_var,
+        rename_var,
+        copy_var,
+        move_var,
+        delete_var,
+        count_file_manager_var,
+        rename_new_entry,
+        by_file_type_var,
+        file_type_menu_var,
+        by_creation_date_var,
+        by_author_var,
+        before_date_var,
+        after_date_var,
+        by_prefix_var,
+        by_substring_var,
+        string_entry_var,
+        by_foldername_var,
+        folder_character_separator_var,
+        by_embedded_items_var,
+        comparison_var,
+        number_of_items_var,
+        embedded_item_character_value_var,
+        include_exclude_var,
+        character_count_file_manager_var,
+        character_entry_var,
+        include_subdir_var,
+        fileName_embeds_date,
+        date_format,
+        date_separator,
+        date_position):
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Manager at', True, 'You can follow the script in command line.')
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Manager at', True, 'You can follow the script in command line.')
 
-	if inputDir==outputDir and list_var==0:
-		command = tk.messagebox.askyesno("File manager: Input and Output paths", "You have selected the same directory for both input and output.\n\nTHIS IS NOT A GOOD IDEA, PARTICULARLY IF YOU DO NOT HAVE BACKUPS OF THE FILES IN THE INPUT DIRECTORY!\n\nAre you sure you want to do continue?")
-		if command==False:
-			return
+    if inputDir==outputDir and list_var==0:
+        command = tk.messagebox.askyesno("File manager: Input and Output paths", "You have selected the same directory for both input and output.\n\nTHIS IS NOT A GOOD IDEA, PARTICULARLY IF YOU DO NOT HAVE BACKUPS OF THE FILES IN THE INPUT DIRECTORY!\n\nAre you sure you want to do continue?")
+        if command==False:
+            return
 
-	output_filename=''
-	options=0
-	i=0
-	msg=''
-	operation=''
-	fieldnames = []
-	currentSubfolder=os.path.basename(os.path.normpath(inputDir))
-	hasFullPath = False
+    output_filename=''
+    options=0
+    i=0
+    msg=''
+    operation=''
+    fieldnames = []
+    currentSubfolder=os.path.basename(os.path.normpath(inputDir))
+    hasFullPath = False
 
-	if list_var==1:
-		options=options+1
-		operation = 'listed'
-		output_filename = "List_files_" + currentSubfolder + ".csv"
-	if rename_var==1:
-		options=options+1
-		operation = 'renamed'
-		output_filename = "List_renamed_files_" + currentSubfolder + ".csv"
-	if copy_var==1:
-		options=options+1
-		operation = 'copied'
-		output_filename = "List_copied_files_" + currentSubfolder + ".csv"
-	if move_var==1:
-		options=options+1
-		operation = 'moved'
-		output_filename = "List_moved_files_" + currentSubfolder + ".csv"
-	if delete_var==1:
-		options=options+1
-		operation = 'deleted'
-		output_filename = "List_deleted_files_" + currentSubfolder + ".csv"
-		command = tk.messagebox.askyesno("Deleting files", "You are about to delete files. Make sure you have a backup! Files deleted via a Python command will not be recoverable from the Recycle Bin\n\nAre you sure you want to do continue?")
-		if command==False:
-			return
-	if count_file_manager_var==1:
-		i=1
-		options=options+1
-		operation = 'counted'
-		output_filename = "Count_files_" + currentSubfolder + ".csv"
+    if list_var==1:
+        options=options+1
+        operation = 'listed'
+        output_filename = "List_files_" + currentSubfolder + ".csv"
+    if rename_var==1:
+        options=options+1
+        operation = 'renamed'
+        output_filename = "List_renamed_files_" + currentSubfolder + ".csv"
+    if copy_var==1:
+        options=options+1
+        operation = 'copied'
+        output_filename = "List_copied_files_" + currentSubfolder + ".csv"
+    if move_var==1:
+        options=options+1
+        operation = 'moved'
+        output_filename = "List_moved_files_" + currentSubfolder + ".csv"
+    if delete_var==1:
+        options=options+1
+        operation = 'deleted'
+        output_filename = "List_deleted_files_" + currentSubfolder + ".csv"
+        command = tk.messagebox.askyesno("Deleting files", "You are about to delete files. Make sure you have a backup! Files deleted via a Python command will not be recoverable from the Recycle Bin\n\nAre you sure you want to do continue?")
+        if command==False:
+            return
+    if count_file_manager_var==1:
+        i=1
+        options=options+1
+        operation = 'counted'
+        output_filename = "Count_files_" + currentSubfolder + ".csv"
 
-	if options==0:
-		mb.showwarning(title='File manager', message='No file manager option has been selected.\n\nPlease, select one option (rename, copy, move, delete) and try again.')
-		return
+    if options==0:
+        mb.showwarning(title='File manager', message='No file manager option has been selected.\n\nPlease, select one option (rename, copy, move, delete) and try again.')
+        return
 
-	if options==1:
-		if count_file_manager_var==0:
-			if list_var==0 and by_file_type_var=='' and by_prefix_var==0 and by_substring_var==0:
-				mb.showwarning(title='File manager', message='You have selected a file manager option, but no specific criteria for managing the files: By file type, By prefix value, or By substring value.\n\nPlease, select the file criteria to use and try again.')
-				return
+    if options==1:
+        if count_file_manager_var==0:
+            if list_var==0 and by_file_type_var=='' and by_prefix_var==0 and by_substring_var==0:
+                mb.showwarning(title='File manager', message='You have selected a file manager option, but no specific criteria for managing the files: By file type, By prefix value, or By substring value.\n\nPlease, select the file criteria to use and try again.')
+                return
 
-	if options>1:
-		mb.showwarning(title='File manager', message='Only one option at a time can be selected. You have selected ' + str(options) + ' options.\n\nPlease, deselect some options and try again.')
-		return
+    if options>1:
+        mb.showwarning(title='File manager', message='Only one option at a time can be selected. You have selected ' + str(options) + ' options.\n\nPlease, deselect some options and try again.')
+        return
 
-	fieldnames = ['File_Name', 'Path_To_File', 'File_Name_With_Path']
+    fieldnames = ['File_Name', 'Path_To_File', 'File_Name_With_Path']
 
-	if by_creation_date_var==1:
-		if file_type_menu_var!='' and file_type_menu_var!='doc' and by_file_type_var!='docx':
-			mb.showwarning(title='File manager', message='You have selected the options "By file type" as ' + file_type_menu_var + ' and "By creation date".\n\nThe "By creation date" option only works for "doc" and "docx" type of files.\n\nThe "By creation date" option will be ignored.')
-		else:
-			fieldnames = fieldnames + ['Creation_date', 'Modification_date']
+    if by_creation_date_var==1:
+        if file_type_menu_var!='' and file_type_menu_var!='doc' and by_file_type_var!='docx':
+            mb.showwarning(title='File manager', message='You have selected the options "By file type" as ' + file_type_menu_var + ' and "By creation date".\n\nThe "By creation date" option only works for "doc" and "docx" type of files.\n\nThe "By creation date" option will be ignored.')
+        else:
+            fieldnames = fieldnames + ['Creation_date', 'Modification_date']
 
-	if by_author_var==1:
-		if file_type_menu_var!='' and file_type_menu_var!='doc' and by_file_type_var!='docx':
-			mb.showwarning(title='File manager', message='You have selected the options "By file type" as ' + file_type_menu_var + ' and "By author".\n\nThe "By author" option only works for "doc" and "docx" type of files.\n\nThe "By author" option will be ignored.')
-		else:
-			fieldnames = fieldnames + ['Author']
+    if by_author_var==1:
+        if file_type_menu_var!='' and file_type_menu_var!='doc' and by_file_type_var!='docx':
+            mb.showwarning(title='File manager', message='You have selected the options "By file type" as ' + file_type_menu_var + ' and "By author".\n\nThe "By author" option only works for "doc" and "docx" type of files.\n\nThe "By author" option will be ignored.')
+        else:
+            fieldnames = fieldnames + ['Author']
 
-	if by_embedded_items_var==1:
-		fieldnames = fieldnames + ['Embedded items count ('+embedded_item_character_value_var+')']
+    if by_embedded_items_var==1:
+        fieldnames = fieldnames + ['Embedded items count ('+embedded_item_character_value_var+')']
 
-	if fileName_embeds_date==1:
-		fieldnames = fieldnames + ['Date']
+    if fileName_embeds_date==1:
+        fieldnames = fieldnames + ['Date']
 
-	if character_count_file_manager_var==1:
-		fieldnames = fieldnames + ['Character count ('+character_entry_var+')']
+    if character_count_file_manager_var==1:
+        fieldnames = fieldnames + ['Character count ('+character_entry_var+')']
 
-	if list_var==1:
-		# extract the last subfolder of the path to be displayed as part of the output filename
-		subDir = os.path.basename(os.path.normpath(inputDir))
-		# output_filename = "List__files" + str(subDir) + ".csv"
+    if list_var==1:
+        # extract the last subfolder of the path to be displayed as part of the output filename
+        subDir = os.path.basename(os.path.normpath(inputDir))
+        # output_filename = "List__files" + str(subDir) + ".csv"
 
-	if count_file_manager_var==True:
-		# fieldnames = ['Main_Dir', 'Subdir', 'pdf', 'doc', 'docx', 'txt', 'Matching']
-		#i=len(os.listdir(inputDir))
-		i=file_filename_util.get_count(inputDir, outputDir, output_filename)
-	else:
-		with open(outputDir + os.sep + output_filename, 'w', errors='ignore', newline='') as csvfile:
-			writer = csv.DictWriter(csvfile, fieldnames)
-			writer.writeheader()
+    if count_file_manager_var==True:
+        # fieldnames = ['Main_Dir', 'Subdir', 'pdf', 'doc', 'docx', 'txt', 'Matching']
+        #i=len(os.listdir(inputDir))
+        i=file_filename_util.get_count(inputDir, outputDir, output_filename)
+    else:
+        with open(outputDir + os.sep + output_filename, 'w', errors='ignore', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames)
+            writer.writeheader()
 
-	if rename_var==1:
-		# You can in fact have a blank entry
-		# if rename_new_entry=='' and string_entry_var=='':
-		# 	mb.showwarning(title='File handling', message='You have selected the option "Rename files" but you have not entered the substring values old and new necessary for renaming the filename.\n\nPlease, enter the values in the fields "New substring for renaming" and "Enter value" and try again.')
-		# 	return
-		# if rename_new_entry=='':
-		# 	mb.showwarning(title='File handling', message='You have selected the option "Rename files" but you have not entered the new substring value necessary for renaming the filename.\n\nPlease, enter the value in the field "New substring for renaming" and try again.')
-		# 	return
-		if by_prefix_var==False and by_substring_var==False and by_foldername_var==False and by_embedded_items_var==False:
-			mb.showwarning(title='File manager', message='You have selected the option to Rename files but you have not selected any of the available options for renaming the files.\n\nPlease, make a selection and enter the appropriate values and try again.')
-			return
-		if (by_prefix_var or by_substring_var) and string_entry_var=='':
-			mb.showwarning(title='File manager', message='You have selected the option to Rename files by prefix/sub-string value but you have not entered the values necessary for renaming the filename.\n\nPlease, enter the missing values in the fields \'Enter value\' and/or \'New renaming value\' and try again.')
-			return
-		if by_foldername_var and folder_character_separator_var=='':
-			mb.showwarning(title='File manager', message='You have selected the option to Rename files by Folder name but you have not entered the Separator character(s).\n\nPlease, enter appropriate values in the \'Separator character(s)\' field and try again.')
-			return
+    if rename_var==1:
+        # You can in fact have a blank entry
+        # if rename_new_entry=='' and string_entry_var=='':
+        # 	mb.showwarning(title='File handling', message='You have selected the option "Rename files" but you have not entered the substring values old and new necessary for renaming the filename.\n\nPlease, enter the values in the fields "New substring for renaming" and "Enter value" and try again.')
+        # 	return
+        # if rename_new_entry=='':
+        # 	mb.showwarning(title='File handling', message='You have selected the option "Rename files" but you have not entered the new substring value necessary for renaming the filename.\n\nPlease, enter the value in the field "New substring for renaming" and try again.')
+        # 	return
+        if by_prefix_var==False and by_substring_var==False and by_foldername_var==False and by_embedded_items_var==False:
+            mb.showwarning(title='File manager', message='You have selected the option to Rename files but you have not selected any of the available options for renaming the files.\n\nPlease, make a selection and enter the appropriate values and try again.')
+            return
+        if (by_prefix_var or by_substring_var) and string_entry_var=='':
+            mb.showwarning(title='File manager', message='You have selected the option to Rename files by prefix/sub-string value but you have not entered the values necessary for renaming the filename.\n\nPlease, enter the missing values in the fields \'Enter value\' and/or \'New renaming value\' and try again.')
+            return
+        if by_foldername_var and folder_character_separator_var=='':
+            mb.showwarning(title='File manager', message='You have selected the option to Rename files by Folder name but you have not entered the Separator character(s).\n\nPlease, enter appropriate values in the \'Separator character(s)\' field and try again.')
+            return
 
-	if len(file_type_menu_var)>0:
-		msg='of type "' + file_type_menu_var + '" '
+    if len(file_type_menu_var)>0:
+        msg='of type "' + file_type_menu_var + '" '
 
-	if by_prefix_var==1 and by_substring_var==1:
-		mb.showwarning(title='File manager', message='Only one option at a time, "By prefix value" or "By sub-string value," can be selected.\n\nPlease, deselect one option and try again.')
-		return
+    if by_prefix_var==1 and by_substring_var==1:
+        mb.showwarning(title='File manager', message='Only one option at a time, "By prefix value" or "By sub-string value," can be selected.\n\nPlease, deselect one option and try again.')
+        return
 
-	if by_prefix_var==1:
-		if len(string_entry_var)==0:
-			mb.showwarning(title='File manager', message='You have selected the option "By prefix value" but no string value has been entered.\n\nPlease, enter the prefix value in the "Enter value" field and try again.')
-			return
-		if len(msg)>0:
-			msg = msg + ' and with string prefix "' + string_entry_var + '" '
-		else:
-			msg ='with string prefix "' + string_entry_var + '" '
+    if by_prefix_var==1:
+        if len(string_entry_var)==0:
+            mb.showwarning(title='File manager', message='You have selected the option "By prefix value" but no string value has been entered.\n\nPlease, enter the prefix value in the "Enter value" field and try again.')
+            return
+        if len(msg)>0:
+            msg = msg + ' and with string prefix "' + string_entry_var + '" '
+        else:
+            msg ='with string prefix "' + string_entry_var + '" '
 
-	if by_substring_var==1:
-		if len(string_entry_var)==0:
-			mb.showwarning(title='File manager', message='You have selected the option "By sub-string value" but no string value has been entered.\n\nPlease, enter the sub-string value in the "Enter value" field and try again.')
-			return
-		if len(msg)>0:
-			msg = msg + ' and containing the substring "' + string_entry_var + '" '
-		else:
-			msg='containing the substring "' + string_entry_var + '" '
+    if by_substring_var==1:
+        if len(string_entry_var)==0:
+            mb.showwarning(title='File manager', message='You have selected the option "By sub-string value" but no string value has been entered.\n\nPlease, enter the sub-string value in the "Enter value" field and try again.')
+            return
+        if len(msg)>0:
+            msg = msg + ' and containing the substring "' + string_entry_var + '" '
+        else:
+            msg='containing the substring "' + string_entry_var + '" '
 
-	# For cases where matching files beginning with a dot (.); like files in the current directory or hidden files on Unix based system, use the os.walk
-	# import glob
-	# include_subdir_var
-	# for filename in glob.iglob(inputDir + os.sep+ '*.'+by_file_type_var, recursive=True):
-	#      print(filename)
+    # For cases where matching files beginning with a dot (.); like files in the current directory or hidden files on Unix based system, use the os.walk
+    # import glob
+    # include_subdir_var
+    # for filename in glob.iglob(inputDir + os.sep+ '*.'+by_file_type_var, recursive=True):
+    #      print(filename)
 
-	# root: Current path which is "walked through"
-	# subdirs: Files in root of type directory
-	# files: Files in current root (not in subdirs) of type other than directory
+    # root: Current path which is "walked through"
+    # subdirs: Files in root of type directory
+    # files: Files in current root (not in subdirs) of type other than directory
 
-	# must handle the case in which we use a csv file
-	# _________________________________________________________________________________________________________________________________________________
-	if selectedCsvFile_var != '':
-		if noHeaders==False:
-			selectedCsvFile_colNum=IO_csv_util.get_columnNumber_from_headerValue(headers, selectedCsvFile_colName)
-		else:
-			# No headers, we assume the first column
-			selectedCsvFile_colNum=0
+    # must handle the case in which we use a csv file
+    # _________________________________________________________________________________________________________________________________________________
+    if selectedCsvFile_var != '':
+        if noHeaders==False:
+            selectedCsvFile_colNum=IO_csv_util.get_columnNumber_from_headerValue(headers, selectedCsvFile_colName)
+        else:
+            # No headers, we assume the first column
+            selectedCsvFile_colNum=0
 
-		fileList = []
-		with open(selectedCsvFile_var, 'r', encoding="utf-8", errors='ignore') as read_obj:
-			csv_reader = csv.reader(read_obj)
-			if noHeaders==False:
-				# skip first row since it has headers
-				next(csv_reader)
-			for row in csv_reader:
-				if row[selectedCsvFile_colNum][:10] == "=hyperlink":
-					f = IO_csv_util.undressFilenameForCSVHyperlink(row[selectedCsvFile_colNum])
-					print(f)
-				else:
-					f = row[selectedCsvFile_colNum]
-				head, tail = os.path.split(f)
-				if head != '':
-					hasFullPath = True
-				fileList.append(f)
-	# _________________________________________________________________________________________________________________________________________________
+        fileList = []
+        with open(selectedCsvFile_var, 'r', encoding="utf-8", errors='ignore') as read_obj:
+            csv_reader = csv.reader(read_obj)
+            if noHeaders==False:
+                # skip first row since it has headers
+                next(csv_reader)
+            for row in csv_reader:
+                if row[selectedCsvFile_colNum][:10] == "=hyperlink":
+                    f = IO_csv_util.undressFilenameForCSVHyperlink(row[selectedCsvFile_colNum])
+                    print(f)
+                else:
+                    f = row[selectedCsvFile_colNum]
+                head, tail = os.path.split(f)
+                if head != '':
+                    hasFullPath = True
+                fileList.append(f)
+    # _________________________________________________________________________________________________________________________________________________
 
-	# processFile returns: fileFound, characterCount,creation_date,modification_date,author,date, dateStr
-	if include_subdir_var==1:
-		for inputDir, subdirs, files in os.walk(inputDir):
-			for filename in files:
-				print ("Processing file: {}".format(filename))
-				fileFound, characterCount,creation_date,modification_date,author,date, dateStr = file_filename_util.processFile(inputDir,outputDir,filename,output_filename,fieldnames,selectedCsvFile_var,hasFullPath,list_var,rename_var,copy_var,move_var,delete_var,rename_new_entry,file_type_menu_var,by_creation_date_var,by_author_var,by_prefix_var,by_substring_var,string_entry_var,by_foldername_var,folder_character_separator_var,by_embedded_items_var,comparison_var, number_of_items_var,embedded_item_character_value_var,include_exclude_var,character_count_file_manager_var,character_entry_var,include_subdir_var,fileName_embeds_date,date_format,date_separator,date_position)
-				if fileFound:
-					i=i+1
-	else:
-		if hasFullPath: # This is used when full paths are present in the CSV file, we ignore the input directory
-			print("Full path present, processing regardless of existence in input directory")
-			for filename in fileList:
-				fileFound, characterCount, creation_date, modification_date, author, date, dateStr = file_filename_util.processFile(
-					inputDir, outputDir, filename, output_filename, fieldnames, selectedCsvFile_var, hasFullPath, list_var, rename_var,
-					copy_var, move_var, delete_var, rename_new_entry, file_type_menu_var, by_creation_date_var,
-					by_author_var, by_prefix_var, by_substring_var, string_entry_var, by_foldername_var,
-					folder_character_separator_var, by_embedded_items_var, comparison_var, number_of_items_var, embedded_item_character_value_var,
-					include_exclude_var, character_count_file_manager_var, character_entry_var, include_subdir_var,
-					fileName_embeds_date, date_format, date_separator, date_position)
-				if fileFound:
-					i = i + 1
-		elif count_file_manager_var==False: #list, copy, move, delete
-			for filename in os.listdir(inputDir):
-				if not os.path.isdir(os.path.join(inputDir,filename)):
-					print ("Processing file: {}".format(filename))
-					if selectedCsvFile_var != '':
-						if filename in fileList:
-							processFile = True
-						else:
-							processFile = False
-					else:
-						processFile = True
-					if processFile:
-						fileFound, characterCount,creation_date,modification_date,author,date, dateStr = file_filename_util.processFile(inputDir,outputDir,filename,output_filename,fieldnames,selectedCsvFile_var,hasFullPath,list_var,rename_var,copy_var,move_var,delete_var,rename_new_entry,file_type_menu_var,by_creation_date_var,by_author_var,by_prefix_var,by_substring_var,string_entry_var,by_foldername_var,folder_character_separator_var,by_embedded_items_var,comparison_var, number_of_items_var,embedded_item_character_value_var,include_exclude_var,character_count_file_manager_var,character_entry_var,include_subdir_var,fileName_embeds_date,date_format,date_separator,date_position)
-						if fileFound:
-							i=i+1
+    # processFile returns: fileFound, characterCount,creation_date,modification_date,author,date, dateStr
+    if include_subdir_var==1:
+        for inputDir, subdirs, files in os.walk(inputDir):
+            for filename in files:
+                print ("Processing file: {}".format(filename))
+                fileFound, characterCount,creation_date,modification_date,author,date, dateStr = file_filename_util.processFile(inputDir,outputDir,filename,output_filename,fieldnames,selectedCsvFile_var,hasFullPath,list_var,rename_var,copy_var,move_var,delete_var,rename_new_entry,file_type_menu_var,by_creation_date_var,by_author_var,by_prefix_var,by_substring_var,string_entry_var,by_foldername_var,folder_character_separator_var,by_embedded_items_var,comparison_var, number_of_items_var,embedded_item_character_value_var,include_exclude_var,character_count_file_manager_var,character_entry_var,include_subdir_var,fileName_embeds_date,date_format,date_separator,date_position)
+                if fileFound:
+                    i=i+1
+    else:
+        if hasFullPath: # This is used when full paths are present in the CSV file, we ignore the input directory
+            print("Full path present, processing regardless of existence in input directory")
+            for filename in fileList:
+                fileFound, characterCount, creation_date, modification_date, author, date, dateStr = file_filename_util.processFile(
+                    inputDir, outputDir, filename, output_filename, fieldnames, selectedCsvFile_var, hasFullPath, list_var, rename_var,
+                    copy_var, move_var, delete_var, rename_new_entry, file_type_menu_var, by_creation_date_var,
+                    by_author_var, by_prefix_var, by_substring_var, string_entry_var, by_foldername_var,
+                    folder_character_separator_var, by_embedded_items_var, comparison_var, number_of_items_var, embedded_item_character_value_var,
+                    include_exclude_var, character_count_file_manager_var, character_entry_var, include_subdir_var,
+                    fileName_embeds_date, date_format, date_separator, date_position)
+                if fileFound:
+                    i = i + 1
+        elif count_file_manager_var==False: #list, copy, move, delete
+            for filename in os.listdir(inputDir):
+                if not os.path.isdir(os.path.join(inputDir,filename)):
+                    print ("Processing file: {}".format(filename))
+                    if selectedCsvFile_var != '':
+                        if filename in fileList:
+                            processFile = True
+                        else:
+                            processFile = False
+                    else:
+                        processFile = True
+                    if processFile:
+                        fileFound, characterCount,creation_date,modification_date,author,date, dateStr = file_filename_util.processFile(inputDir,outputDir,filename,output_filename,fieldnames,selectedCsvFile_var,hasFullPath,list_var,rename_var,copy_var,move_var,delete_var,rename_new_entry,file_type_menu_var,by_creation_date_var,by_author_var,by_prefix_var,by_substring_var,string_entry_var,by_foldername_var,folder_character_separator_var,by_embedded_items_var,comparison_var, number_of_items_var,embedded_item_character_value_var,include_exclude_var,character_count_file_manager_var,character_entry_var,include_subdir_var,fileName_embeds_date,date_format,date_separator,date_position)
+                        if fileFound:
+                            i=i+1
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File manager at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File manager at', True)
 
-	if i > 0:
-		if rename_var==1:
-			mb.showwarning(title='File manager', message=str(i) + ' files ' + msg + operation + '.\n\n'+operation + ' files have been renamed in the input directory ' + inputDir + '.')
-		elif copy_var==1:
-			mb.showwarning(title='File manager', message=str(i) + ' files ' + msg + operation + '.\n\n'+operation + ' files have been saved in the output directory ' + outputDir + '.')
-		else:
-			mb.showwarning(title='File manager', message=str(i) + ' files ' + msg + operation + '.')
-			filesToOpen=[]
-			filesToOpen.append(os.path.join(outputDir,output_filename))
-			IO_files_util.OpenOutputFiles(GUI_util.window, True, filesToOpen)
-	else:
-		mb.showwarning(title='File manager', message='No files ' + msg + operation + '.\n\nPlease, check the following information:\n  1. INPUT files directory;\n  2. selected file type (if you ticked the By file type option);\n  3. Include subdirectory option.')
+    if i > 0:
+        if rename_var==1:
+            mb.showwarning(title='File manager', message=str(i) + ' files ' + msg + operation + '.\n\n'+operation + ' files have been renamed in the input directory ' + inputDir + '.')
+        elif copy_var==1:
+            mb.showwarning(title='File manager', message=str(i) + ' files ' + msg + operation + '.\n\n'+operation + ' files have been saved in the output directory ' + outputDir + '.')
+        else:
+            mb.showwarning(title='File manager', message=str(i) + ' files ' + msg + operation + '.')
+            filesToOpen=[]
+            filesToOpen.append(os.path.join(outputDir,output_filename))
+            IO_files_util.OpenOutputFiles(GUI_util.window, True, filesToOpen)
+    else:
+        mb.showwarning(title='File manager', message='No files ' + msg + operation + '.\n\nPlease, check the following information:\n  1. INPUT files directory;\n  2. selected file type (if you ticked the By file type option);\n  3. Include subdirectory option.')
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
-								GUI_util.output_dir_path.get(),
-								selectedCsvFile_var.get(),
-								select_csv_field_var.get(),
-								list_var.get(),
-								rename_var.get(),
-								copy_var.get(),
-								move_var.get(),
-								delete_var.get(),
-								count_file_manager_var.get(),
-								rename_new_entry_var.get(),
-								by_file_type_var.get(),
-								file_type_menu_var.get(),
-								by_creation_date_var.get(),
-								by_author_var.get(),
-								before_date_var.get(),
-								after_date_var.get(),
-								by_prefix_var.get(),
-								by_substring_var.get(),
-								string_entry_var.get(),
-								by_foldername_var.get(),
-								folder_character_separator_var.get(),
-								by_embedded_items_var.get(),
-								comparison_var.get(),
-								number_of_items_var.get(),
-								embedded_item_character_value_var.get(),
-								include_exclude_var.get(),
-								character_count_file_manager_var.get(),
-								character_entry_var.get(),
-								include_subdir_var.get(),
-								fileName_embeds_date.get(),
-								date_format.get(),
-								date_separator_var.get(),
-								date_position_var.get())
+                                GUI_util.output_dir_path.get(),
+                                selectedCsvFile_var.get(),
+                                select_csv_field_var.get(),
+                                list_var.get(),
+                                rename_var.get(),
+                                copy_var.get(),
+                                move_var.get(),
+                                delete_var.get(),
+                                count_file_manager_var.get(),
+                                rename_new_entry_var.get(),
+                                by_file_type_var.get(),
+                                file_type_menu_var.get(),
+                                by_creation_date_var.get(),
+                                by_author_var.get(),
+                                before_date_var.get(),
+                                after_date_var.get(),
+                                by_prefix_var.get(),
+                                by_substring_var.get(),
+                                string_entry_var.get(),
+                                by_foldername_var.get(),
+                                folder_character_separator_var.get(),
+                                by_embedded_items_var.get(),
+                                comparison_var.get(),
+                                number_of_items_var.get(),
+                                embedded_item_character_value_var.get(),
+                                include_exclude_var.get(),
+                                character_count_file_manager_var.get(),
+                                character_entry_var.get(),
+                                include_subdir_var.get(),
+                                fileName_embeds_date.get(),
+                                date_format.get(),
+                                date_separator_var.get(),
+                                date_position_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -392,36 +392,36 @@ date_separator_var = tk.StringVar()
 date_position_var = tk.IntVar()
 
 def clear(e):
-	selectedCsvFile_var.set('')
-	selectedCsvFile.configure(state='disabled')
-	select_csv_field_var.set('')
-	select_csv_field_menu.configure(state='disabled')
-	GUI_util.clear("Escape")
+    selectedCsvFile_var.set('')
+    selectedCsvFile.configure(state='disabled')
+    select_csv_field_var.set('')
+    select_csv_field_menu.configure(state='disabled')
+    GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
 menu_values = " "
 def get_additional_csvFile(window,title,fileType):
-	global headers, noHeaders
-	noHeaders = False
-	menu_values=[]
-	import os
-	initialFolder = os.path.dirname(os.path.abspath(__file__))
-	filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
-	if len(filePath)>0:
-		select_csv_field_menu.configure(state='normal')
-		selectedCsvFile.config(state='normal')
-		selectedCsvFile_var.set(filePath)
-		if IO_csv_util.get_csvfile_headers(filePath,True)=='':
-			noHeaders=True
-			menu_values=range(1, IO_csv_util.get_csvfile_numberofColumns(filePath)+1)
-		else:
-			data, headers = IO_csv_util.get_csv_data(filePath,True)
-			menu_values=headers
-			noHeaders = False
-		m = select_csv_field_menu["menu"]
-		m.delete(0,"end")
-		for s in menu_values:
-			m.add_command(label=s,command=lambda value=s:select_csv_field_var.set(value))
+    global headers, noHeaders
+    noHeaders = False
+    menu_values=[]
+    import os
+    initialFolder = os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
+    if len(filePath)>0:
+        select_csv_field_menu.configure(state='normal')
+        selectedCsvFile.config(state='normal')
+        selectedCsvFile_var.set(filePath)
+        if IO_csv_util.get_csvfile_headers(filePath,True)=='':
+            noHeaders=True
+            menu_values=range(1, IO_csv_util.get_csvfile_numberofColumns(filePath)+1)
+        else:
+            data, headers = IO_csv_util.get_csv_data(filePath,True)
+            menu_values=headers
+            noHeaders = False
+        m = select_csv_field_menu["menu"]
+        m.delete(0,"end")
+        for s in menu_values:
+            m.add_command(label=s,command=lambda value=s:select_csv_field_var.set(value))
 
 # def activate_csvfile_column(*args):
 # 	if selectedCsvFile_var.get()!='':
@@ -448,9 +448,9 @@ select_csv_field_lb = tk.Label(window,text='Select csv field')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+800,y_multiplier_integer,select_csv_field_lb,True)
 
 if menu_values!=' ':
-	select_csv_field_menu = tk.OptionMenu(window, select_csv_field_var, *menu_values)
+    select_csv_field_menu = tk.OptionMenu(window, select_csv_field_var, *menu_values)
 else:
-	select_csv_field_menu = tk.OptionMenu(window, select_csv_field_var, menu_values)
+    select_csv_field_menu = tk.OptionMenu(window, select_csv_field_var, menu_values)
 select_csv_field_menu.configure(state='disabled',width=12)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+900,y_multiplier_integer,select_csv_field_menu)
 
@@ -483,125 +483,125 @@ use_csv_checkbox = tk.Checkbutton(window, text='Use csv for Source & Target fiel
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+560,y_multiplier_integer,use_csv_checkbox)
 
 def activate_list_options(*args):
-	if list_var.get()==1:
-		rename_checkbox.configure(state="disabled")
-		copy_checkbox.configure(state="disabled")
-		move_checkbox.configure(state="disabled")
-		delete_checkbox.configure(state="disabled")
-		count_checkbox.configure(state="disabled")
-		character_count_checkbox.configure(state="normal")
-		fileName_embeds_date_checkbox.config(state='normal')
-		by_creation_date_checkbox.configure(state="normal")
-		by_author_checkbox.configure(state="normal")
-	else:
-		rename_checkbox.configure(state="normal")
-		copy_checkbox.configure(state="normal")
-		move_checkbox.configure(state="normal")
-		delete_checkbox.configure(state="normal")
-		count_checkbox.configure(state="normal")
-		character_count_checkbox.configure(state="disabled")
-		fileName_embeds_date.set(0)
-		fileName_embeds_date_checkbox.config(state='disabled')
-		date_format_menu.config(state="disabled")
-		date_separator.config(state='disabled')
-		date_position_menu.config(state="disabled")
-		by_creation_date_checkbox.configure(state="disabled")
-		by_author_checkbox.configure(state="disabled")
-	# rename_new_entry.configure(state="disabled")
+    if list_var.get()==1:
+        rename_checkbox.configure(state="disabled")
+        copy_checkbox.configure(state="disabled")
+        move_checkbox.configure(state="disabled")
+        delete_checkbox.configure(state="disabled")
+        count_checkbox.configure(state="disabled")
+        character_count_checkbox.configure(state="normal")
+        fileName_embeds_date_checkbox.config(state='normal')
+        by_creation_date_checkbox.configure(state="normal")
+        by_author_checkbox.configure(state="normal")
+    else:
+        rename_checkbox.configure(state="normal")
+        copy_checkbox.configure(state="normal")
+        move_checkbox.configure(state="normal")
+        delete_checkbox.configure(state="normal")
+        count_checkbox.configure(state="normal")
+        character_count_checkbox.configure(state="disabled")
+        fileName_embeds_date.set(0)
+        fileName_embeds_date_checkbox.config(state='disabled')
+        date_format_menu.config(state="disabled")
+        date_separator.config(state='disabled')
+        date_position_menu.config(state="disabled")
+        by_creation_date_checkbox.configure(state="disabled")
+        by_author_checkbox.configure(state="disabled")
+    # rename_new_entry.configure(state="disabled")
 list_var.trace('w',activate_list_options)
 
 def activate_rename_options(*args):
-	if rename_var.get()==1:
-		list_checkbox.configure(state="disabled")
-		copy_checkbox.configure(state="disabled")
-		move_checkbox.configure(state="disabled")
-		delete_checkbox.configure(state="disabled")
-		count_checkbox.configure(state="disabled")
-		rename_new_entry.configure(state="normal")
-		by_foldername_checkbox.config(state="normal")
-	else:
-		list_checkbox.configure(state="normal")
-		copy_checkbox.configure(state="normal")
-		move_checkbox.configure(state="normal")
-		delete_checkbox.configure(state="normal")
-		count_checkbox.configure(state="normal")
-		rename_new_entry.configure(state="disabled")
-		by_foldername_checkbox.config(state="disabled")
-	#activate_prefix_options()
-	character_count_checkbox.configure(state="disabled")
-	by_creation_date_checkbox.configure(state="disabled")
-	by_author_checkbox.configure(state="disabled")
+    if rename_var.get()==1:
+        list_checkbox.configure(state="disabled")
+        copy_checkbox.configure(state="disabled")
+        move_checkbox.configure(state="disabled")
+        delete_checkbox.configure(state="disabled")
+        count_checkbox.configure(state="disabled")
+        rename_new_entry.configure(state="normal")
+        by_foldername_checkbox.config(state="normal")
+    else:
+        list_checkbox.configure(state="normal")
+        copy_checkbox.configure(state="normal")
+        move_checkbox.configure(state="normal")
+        delete_checkbox.configure(state="normal")
+        count_checkbox.configure(state="normal")
+        rename_new_entry.configure(state="disabled")
+        by_foldername_checkbox.config(state="disabled")
+    #activate_prefix_options()
+    character_count_checkbox.configure(state="disabled")
+    by_creation_date_checkbox.configure(state="disabled")
+    by_author_checkbox.configure(state="disabled")
 rename_var.trace('w',activate_rename_options)
 
 def activate_copy_options(*args):
-	if copy_var.get()==1:
-		list_checkbox.configure(state="disabled")
-		rename_checkbox.configure(state="disabled")
-		move_checkbox.configure(state="disabled")
-		delete_checkbox.configure(state="disabled")
-		count_checkbox.configure(state="disabled")
-	else:
-		list_checkbox.configure(state="normal")
-		rename_checkbox.configure(state="normal")
-		move_checkbox.configure(state="normal")
-		delete_checkbox.configure(state="normal")
-		count_checkbox.configure(state="normal")
-	character_count_checkbox.configure(state="disabled")
-	rename_new_entry.configure(state="disabled")
-	by_creation_date_checkbox.configure(state="disabled")
-	by_author_checkbox.configure(state="disabled")
+    if copy_var.get()==1:
+        list_checkbox.configure(state="disabled")
+        rename_checkbox.configure(state="disabled")
+        move_checkbox.configure(state="disabled")
+        delete_checkbox.configure(state="disabled")
+        count_checkbox.configure(state="disabled")
+    else:
+        list_checkbox.configure(state="normal")
+        rename_checkbox.configure(state="normal")
+        move_checkbox.configure(state="normal")
+        delete_checkbox.configure(state="normal")
+        count_checkbox.configure(state="normal")
+    character_count_checkbox.configure(state="disabled")
+    rename_new_entry.configure(state="disabled")
+    by_creation_date_checkbox.configure(state="disabled")
+    by_author_checkbox.configure(state="disabled")
 copy_var.trace('w',activate_copy_options)
 
 def activate_move_options(*args):
-	if move_var.get()==1:
-		list_checkbox.configure(state="disabled")
-		rename_checkbox.configure(state="disabled")
-		copy_checkbox.configure(state="disabled")
-		delete_checkbox.configure(state="disabled")
-		count_checkbox.configure(state="disabled")
-	else:
-		list_checkbox.configure(state="normal")
-		rename_checkbox.configure(state="normal")
-		copy_checkbox.configure(state="normal")
-		delete_checkbox.configure(state="normal")
-		count_checkbox.configure(state="normal")
-	character_count_checkbox.configure(state="disabled")
-	rename_new_entry.configure(state="disabled")
-	by_creation_date_checkbox.configure(state="disabled")
-	by_author_checkbox.configure(state="disabled")
+    if move_var.get()==1:
+        list_checkbox.configure(state="disabled")
+        rename_checkbox.configure(state="disabled")
+        copy_checkbox.configure(state="disabled")
+        delete_checkbox.configure(state="disabled")
+        count_checkbox.configure(state="disabled")
+    else:
+        list_checkbox.configure(state="normal")
+        rename_checkbox.configure(state="normal")
+        copy_checkbox.configure(state="normal")
+        delete_checkbox.configure(state="normal")
+        count_checkbox.configure(state="normal")
+    character_count_checkbox.configure(state="disabled")
+    rename_new_entry.configure(state="disabled")
+    by_creation_date_checkbox.configure(state="disabled")
+    by_author_checkbox.configure(state="disabled")
 move_var.trace('w',activate_move_options)
 
 def activate_delete_options(*args):
-	if delete_var.get()==1:
-		list_checkbox.configure(state="disabled")
-		rename_checkbox.configure(state="disabled")
-		copy_checkbox.configure(state="disabled")
-		move_checkbox.configure(state="disabled")
-	else:
-		list_checkbox.configure(state="normal")
-		rename_checkbox.configure(state="normal")
-		copy_checkbox.configure(state="normal")
-		move_checkbox.configure(state="normal")
-	character_count_checkbox.configure(state="disabled")
-	by_creation_date_checkbox.configure(state="disabled")
-	by_author_checkbox.configure(state="disabled")
+    if delete_var.get()==1:
+        list_checkbox.configure(state="disabled")
+        rename_checkbox.configure(state="disabled")
+        copy_checkbox.configure(state="disabled")
+        move_checkbox.configure(state="disabled")
+    else:
+        list_checkbox.configure(state="normal")
+        rename_checkbox.configure(state="normal")
+        copy_checkbox.configure(state="normal")
+        move_checkbox.configure(state="normal")
+    character_count_checkbox.configure(state="disabled")
+    by_creation_date_checkbox.configure(state="disabled")
+    by_author_checkbox.configure(state="disabled")
 delete_var.trace('w',activate_delete_options)
 
 def activate_count_options(*args):
-	if count_file_manager_var.get()==1:
-		list_checkbox.configure(state="disabled")
-		rename_checkbox.configure(state="disabled")
-		copy_checkbox.configure(state="disabled")
-		move_checkbox.configure(state="disabled")
-		delete_checkbox.configure(state="disabled")
-	else:
-		list_checkbox.configure(state="normal")
-		rename_checkbox.configure(state="normal")
-		copy_checkbox.configure(state="normal")
-		move_checkbox.configure(state="normal")
-		delete_checkbox.configure(state="normal")
-	character_count_checkbox.configure(state="disabled")
-	rename_new_entry.configure(state="disabled")
+    if count_file_manager_var.get()==1:
+        list_checkbox.configure(state="disabled")
+        rename_checkbox.configure(state="disabled")
+        copy_checkbox.configure(state="disabled")
+        move_checkbox.configure(state="disabled")
+        delete_checkbox.configure(state="disabled")
+    else:
+        list_checkbox.configure(state="normal")
+        rename_checkbox.configure(state="normal")
+        copy_checkbox.configure(state="normal")
+        move_checkbox.configure(state="normal")
+        delete_checkbox.configure(state="normal")
+    character_count_checkbox.configure(state="disabled")
+    rename_new_entry.configure(state="disabled")
 count_file_manager_var.trace('w',activate_count_options)
 
 by_file_type_var.set(0)
@@ -616,11 +616,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 
 def activate_file_type_options(*args):
-	file_type_menu_var.set('')
-	if by_file_type_var.get()==1:
-		file_type_menu.configure(state="normal")
-	else:
-		file_type_menu.configure(state="disabled")
+    file_type_menu_var.set('')
+    if by_file_type_var.get()==1:
+        file_type_menu.configure(state="normal")
+    else:
+        file_type_menu.configure(state="disabled")
 by_file_type_var.trace('w',activate_file_type_options)
 
 by_creation_date_checkbox = tk.Checkbutton(window, text='By creation & modification date', variable=by_creation_date_var, onvalue=1, offvalue=0)
@@ -661,30 +661,30 @@ rename_new_entry.place_forget() #invisible
 rename_new_entry.configure(state="disabled")
 
 def activate_prefix_substring_options(*args):
-	by_foldername_var.set(0)
-	by_embedded_items_var.set(0)
-	if by_prefix_var.get()==1 or by_substring_var.get()==1:
-		if by_prefix_var.get()==1:
-			by_substring_checkbox.configure(state="disabled")
-		if by_substring_var.get()==1:
-			by_prefix_checkbox.configure(state="disabled")
-		else:
-			by_prefix_checkbox.configure(state="normal")
-		string_entry.configure(state="normal")
-		if rename_var.get()==False:
-			rename_new_entry_lb.place_forget() #invisible
-			rename_new_entry.place_forget() #invisible
-		else:
-			y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 400,y_multiplier_integer_save,rename_new_entry_lb,True)
-			y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+ 600,y_multiplier_integer_save,rename_new_entry)
-	else:
-		if by_substring_var.get()==0:
-			by_prefix_checkbox.configure(state="normal")
-		by_substring_checkbox.configure(state="normal")
-		string_entry.configure(state="disabled")
-		rename_new_entry_lb.place_forget() #invisible
-		rename_new_entry.place_forget() #invisible
-	string_entry_var.set("")
+    by_foldername_var.set(0)
+    by_embedded_items_var.set(0)
+    if by_prefix_var.get()==1 or by_substring_var.get()==1:
+        if by_prefix_var.get()==1:
+            by_substring_checkbox.configure(state="disabled")
+        if by_substring_var.get()==1:
+            by_prefix_checkbox.configure(state="disabled")
+        else:
+            by_prefix_checkbox.configure(state="normal")
+        string_entry.configure(state="normal")
+        if rename_var.get()==False:
+            rename_new_entry_lb.place_forget() #invisible
+            rename_new_entry.place_forget() #invisible
+        else:
+            y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 400,y_multiplier_integer_save,rename_new_entry_lb,True)
+            y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+ 600,y_multiplier_integer_save,rename_new_entry)
+    else:
+        if by_substring_var.get()==0:
+            by_prefix_checkbox.configure(state="normal")
+        by_substring_checkbox.configure(state="normal")
+        string_entry.configure(state="disabled")
+        rename_new_entry_lb.place_forget() #invisible
+        rename_new_entry.place_forget() #invisible
+    string_entry_var.set("")
 by_prefix_var.trace('w',activate_prefix_substring_options)
 by_substring_var.trace('w',activate_prefix_substring_options)
 
@@ -700,11 +700,11 @@ folder_character_separator.configure(width=2,state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+420,y_multiplier_integer, folder_character_separator)
 
 def activateFolderCharacterSeparator(*args):
-	folder_character_separator_var.set('')
-	if by_foldername_var.get()==1:
-		folder_character_separator.configure(width=2,state="normal")
-	else:
-		folder_character_separator.configure(width=2,state="disabled")
+    folder_character_separator_var.set('')
+    if by_foldername_var.get()==1:
+        folder_character_separator.configure(width=2,state="normal")
+    else:
+        folder_character_separator.configure(width=2,state="disabled")
 by_foldername_var.trace('w',activateFolderCharacterSeparator)
 
 by_embedded_items_var.set(0)
@@ -735,16 +735,16 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 include_exclude_checkbox.config(text='Include first # items only',state="disabled")
 
 def activate_numberEmbeddedItems_options(*args):
-	number_of_items_var.set(0)
-	embedded_item_character_value_var.set('')
-	if by_embedded_items_var.get()==1:
-		embedded_item_character_value.configure(state="normal")
-		number_of_items_value.configure(state="normal")
-		include_exclude_checkbox.config(state="normal")
-	else:
-		embedded_item_character_value.configure(state="disabled")
-		number_of_items_value.configure(state="disabled")
-		include_exclude_checkbox.config(state="disabled")
+    number_of_items_var.set(0)
+    embedded_item_character_value_var.set('')
+    if by_embedded_items_var.get()==1:
+        embedded_item_character_value.configure(state="normal")
+        number_of_items_value.configure(state="normal")
+        include_exclude_checkbox.config(state="normal")
+    else:
+        embedded_item_character_value.configure(state="disabled")
+        number_of_items_value.configure(state="disabled")
+        include_exclude_checkbox.config(state="disabled")
 by_embedded_items_var.trace('w',activate_numberEmbeddedItems_options)
 
 # applies to list files only
@@ -761,11 +761,11 @@ characters_entry.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+ 420,y_multiplier_integer,characters_entry)
 
 def activate_characters_entry_option(*args):
-	character_entry_var.set('')
-	if character_count_file_manager_var.get()==1:
-		characters_entry.configure(state="normal")
-	else:
-		characters_entry.configure(state="disabled")
+    character_entry_var.set('')
+    if character_count_file_manager_var.get()==1:
+        characters_entry.configure(state="normal")
+    else:
+        characters_entry.configure(state="disabled")
 character_count_file_manager_var.trace('w',activate_characters_entry_option)
 
 date_format.set('mm-dd-yyyy')
@@ -795,14 +795,14 @@ date_position_menu.configure(width=2)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+490,y_multiplier_integer, date_position_menu)
 
 def check_CoreNLP_dateFields(*args):
-	if fileName_embeds_date.get() == 1:
-		date_format_menu.config(state="normal")
-		date_separator.config(state='normal')
-		date_position_menu.config(state='normal')
-	else:
-		date_format_menu.config(state="disabled")
-		date_separator.config(state='disabled')
-		date_position_menu.config(state="disabled")
+    if fileName_embeds_date.get() == 1:
+        date_format_menu.config(state="normal")
+        date_separator.config(state='normal')
+        date_position_menu.config(state='normal')
+    else:
+        date_format_menu.config(state="disabled")
+        date_separator.config(state='disabled')
+        date_position_menu.config(state="disabled")
 fileName_embeds_date.trace('w',check_CoreNLP_dateFields)
 
 include_subdir_var.set(0)
