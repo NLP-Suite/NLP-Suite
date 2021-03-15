@@ -94,7 +94,8 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 
 	# index_list = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile, encodingValue, location_var)
 	index_list = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile, encodingValue, location_var)
-
+	if len(index_list)==0:
+		return ''
 	if group_number_var <= 1:
 		numberOfRecords = IO_csv_util.GetNumberOfRecordInCSVFile(inputGeocodedCsvFile, encodingValue)
 		print("Processing geocoded record for kml:", '1' + "/" + str(numberOfRecords) + ' header record skipped')

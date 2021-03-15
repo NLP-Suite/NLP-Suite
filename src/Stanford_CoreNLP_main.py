@@ -18,10 +18,9 @@ import IO_user_interface_util
 import config_util
 import reminders_util
 import IO_internet_util
-import statistics_csv_util
 import Stanford_CoreNLP_annotator_util
-import annotator_dictionary_util
 import Stanford_CoreNLP_coreference_util
+
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 # https://stackoverflow.com/questions/45886128/unable-to-set-up-my-own-stanford-corenlp-server-with-error-could-not-delete-shu
@@ -32,8 +31,8 @@ import Stanford_CoreNLP_coreference_util
 # 1: included 0: not included
 # def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, memory_var, date_extractor, split_files, quote_extractor, CoreNLP_gender_annotator, CoReference, CoRef_Option, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, memory_var, CoReference,
-        CoRef_Option, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, memory_var,
+        manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat,
         compute_sentence, CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var):
     # check internet connection
     filesToOpen = []
@@ -45,10 +44,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
     if errorFound:
         return
 
-    if CoReference == 0 and parser == 0 and CoNLL_table_analyzer_var == 0 and CoreNLP_annotators_var == 0:
+    if parser == 0 and CoNLL_table_analyzer_var == 0 and CoreNLP_annotators_var == 0:
         mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
 
-    if CoReference or (CoreNLP_annotators_var == True and CoreNLP_annotators_menu_var == 'Coreference resolution'):
+    if CoreNLP_annotators_var == True and CoreNLP_annotators_menu_var == 'Coreference PRONOMINAL resolution':
         if IO_libraries_util.inputProgramFileCheck("Stanford_CoreNLP_coReference_util.py") == False:
             return
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(inputFilename, inputDir,
@@ -69,21 +68,34 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
     # parser ---------------------------------------------------------------------------------------------------------------------------
 
     if parser:
-        if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_parser_util.py') == False:
-            return
-        # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Stanford CoreNLP start',
-        #                                    'Started running Stanford CoreNLP parser at', True,
-        #                                    'You can follow CoreNLP in command line.')
 
-        import Stanford_CoreNLP_parser_util
-        outputCoNLLfilePath = Stanford_CoreNLP_parser_util.run(inputFilename, inputDir, outputDir,
-                                                               parser_menu_var, openOutputFiles, createExcelCharts,
-                                                               memory_var, compute_sentence, dateInclude, sep,
-                                                               date_field_position, dateFormat)
-        # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Stanford CoreNLP quote extractor',
-        #                                    'Finished running Stanford CoreNLP parser at', True)
+        # Parser (Probabilistic Context Free Grammar ) ------------------------------
+        if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
+            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+                return
 
-        if CoNLL_table_analyzer_var and len(outputCoNLLfilePath)>0:
+            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+                                                                               outputDir, openOutputFiles,
+                                                                               createExcelCharts,
+                                                                               'parser (pcfg)', False, memory_var)
+
+            if len(tempOutputFiles) > 0:
+                filesToOpen.extend(tempOutputFiles)
+
+        # Parser (Neural Network) ------------------------------
+        if parser_menu_var == 'Neural Network':
+            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+                return
+
+            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+                                                                               outputDir, openOutputFiles,
+                                                                               createExcelCharts,
+                                                                               'parser (nn)', False, memory_var)
+
+            if len(tempOutputFiles) > 0:
+                filesToOpen.extend(tempOutputFiles)
+
+        if CoNLL_table_analyzer_var and len(filesToOpen)>0:
             if IO_libraries_util.inputProgramFileCheck('CoNLL_table_analyzer_main.py') == False:
                 return
             # open the analyzer having saved the new new parser output in config so that it open the right input file
@@ -114,8 +126,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                 filesToOpen.extend(tempOutputFiles)
         # DepRel annotator ---------------------------------------------------------------------------------------------------------------------------
 
-        # if CoreNLP_annotators_menu_var == 'POS annotator' or CoreNLP_annotators_menu_var == 'DepRel annotator':
-        #     mb.showinfo("Warning", "The selected option is not available yet.\n\nSorry!")
         if CoreNLP_annotators_menu_var == 'DepRel annotator':
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
                 return
@@ -197,32 +207,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
             if len(tempOutputFiles)>0:
                 filesToOpen.extend(tempOutputFiles)
                 
-                
-        # Parser (Probabilistic Context Free Grammar ) ------------------------------
-        if CoreNLP_annotators_menu_var == 'Parser (PCFG)':
-            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
-                return
-            
-            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
-                                                                           outputDir, openOutputFiles,
-                                                                           createExcelCharts,
-                                                                           'parser (pcfg)', False, memory_var)
-
-            if len(tempOutputFiles)>0:
-                filesToOpen.extend(tempOutputFiles)
-        
-        # Parser (Neural Network) ------------------------------
-        if CoreNLP_annotators_menu_var == 'Parser (NN)':
-            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
-                return
-            
-            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
-                                                                           outputDir, openOutputFiles,
-                                                                           createExcelCharts,
-                                                                           'parser (nn)', False, memory_var)
-
-            if len(tempOutputFiles)>0:
-                filesToOpen.extend(tempOutputFiles)
         if openOutputFiles:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
@@ -234,12 +218,6 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),
                                  memory_var.get(),
-                                 # date_extractor_var.get(),
-                                 # split_files_var.get(),
-                                 # quote_extractor_var.get(),
-                                 # CoreNLP_gender_annotator_var.get(),
-                                 CoRef_var.get(),
-                                 CoRef_menu_var.get(),
                                  manual_Coref_var.get(),
                                  parser_var.get(),
                                  parser_menu_var.get(),
@@ -256,7 +234,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size = '1100x600'
+GUI_size = '1100x560'
 GUI_label = 'Graphical User Interface (GUI) for Stanford CoreNLP'
 config_filename = 'Stanford-CoreNLP-config.txt'
 # The 6 values of config_option refer to: 
@@ -292,6 +270,7 @@ GUI_util.GUI_top(config_input_output_options, config_filename)
 def clear(e):
     CoreNLP_annotators_var.set(0)
     CoreNLP_annotators_menu_var.set('')
+    manual_Coref_checkbox.place_forget()  # invisible
     GUI_util.clear("Escape")
 
 
@@ -302,8 +281,6 @@ date_extractor_var = tk.IntVar()
 CoreNLP_gender_annotator_var = tk.IntVar()
 split_files_var = tk.IntVar()
 quote_extractor_var = tk.IntVar()
-CoRef_var = tk.IntVar()
-CoRef_menu_var = tk.StringVar()
 manual_Coref_var = tk.IntVar()
 parser_var = tk.IntVar()
 parser_menu_var = tk.StringVar()
@@ -328,35 +305,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(4)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                memory_var)
 
-CoRef_var.set(0)
-CoRef_checkbox = tk.Checkbutton(window, text='CoreNLP co-reference PRONOMINAL resolution', variable=CoRef_var,
-                                onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               CoRef_checkbox, True)
-
-CoRef_menu_var.set("Neural Network")
-CoRef_menu = tk.OptionMenu(window, CoRef_menu_var, 'Deterministic', 'Statistical', 'Neural Network')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 20, y_multiplier_integer,
-                                               CoRef_menu, True)
-
-manual_Coref_var.set(0)
-manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_Coref_var,
-                                       onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 200, y_multiplier_integer,
-                                               manual_Coref_checkbox)
-
-parser_var.set(1)
-parser_checkbox = tk.Checkbutton(window, text='CoreNLP parser', variable=parser_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               parser_checkbox, True)
-
-parser_menu_var.set("Neural Network")
-parser_menu = tk.OptionMenu(window, parser_menu_var, 'Neural Network', 'Probabilistic Context Free Grammar (PCFG)')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 20, y_multiplier_integer,
-                                               parser_menu)
 
 date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm',
                                  'yyyy')
@@ -370,42 +321,42 @@ date_separator_lb = tk.Label()
 
 fileName_embeds_date_checkbox = tk.Checkbutton(window, text='Filename embeds date', variable=fileName_embeds_date,
                                                onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                fileName_embeds_date_checkbox, True)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                fileName_embeds_date_msg, True)
 
+date_format.set('mm-dd-yyyy')
 date_format_lb = tk.Label(window, text='Date format ')
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer, date_format_lb,True)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                date_format_lb, True)
 date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm',
                                  'yyyy')
-date_format_menu.configure(width=10)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 100, y_multiplier_integer,
+date_format_menu.configure()
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 90, y_multiplier_integer,
                                                date_format_menu, True)
 
 date_separator_lb = tk.Label(window, text='Date character separator ')
 # y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer, date_separator_lb,True)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 230, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 230, y_multiplier_integer,
                                                date_separator_lb, True)
+
+date_separator_var.set('_')
 date_separator = tk.Entry(window, textvariable=date_separator_var)
 date_separator.configure(width=2)
 # y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer, date_separator)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 370, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
                                                date_separator, True)
 
-# if fileName_embeds_date.get() == 0:
-#	date_separator.configure(state='disabled')
-
+date_position_var.set(2)
 date_position_menu_lb = tk.Label(window, text='Date position ')
 # y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer, date_position_menu_lb,True)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 420, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 420, y_multiplier_integer,
                                                date_position_menu_lb, True)
 date_position_menu = tk.OptionMenu(window, date_position_var, 1, 2, 3, 4, 5)
 date_position_menu.configure(width=2)
 # y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer, date_position_menu)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 510, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 510, y_multiplier_integer,
                                                date_position_menu)
 
 
@@ -425,16 +376,26 @@ def check_CoreNLP_dateFields(*args):
 fileName_embeds_date.trace('w', check_CoreNLP_dateFields)
 
 
+parser_var.set(1)
+parser_checkbox = tk.Checkbutton(window, text='CoreNLP parser', variable=parser_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               parser_checkbox, True)
+
+parser_menu_var.set("Neural Network")
+parser_menu = tk.OptionMenu(window, parser_menu_var, 'Neural Network', 'Probabilistic Context Free Grammar (PCFG)')
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+                                               parser_menu)
+
 def activate_SentenceTable(*args):
     if parser_var.get() == 0:
         parser_menu_var.set('')
         parser_menu.configure(state='disabled')
-        compute_sentence_var.set(0)
+        # compute_sentence_var.set(0)
         CoNLL_table_analyzer_var.set(0)
     else:
         parser_menu_var.set('Probabilistic Context Free Grammar (PCFG)')
         parser_menu.configure(state='normal')
-        compute_sentence_var.set(1)
+        # compute_sentence_var.set(1)
         CoNLL_table_analyzer_var.set(1)
 
 
@@ -442,15 +403,14 @@ parser_var.trace('w', activate_SentenceTable)
 
 activate_SentenceTable()
 
-# sentence table option
-
+compute_sentence_var.set(0)
 sentence_table_checkbox = tk.Checkbutton(window, text='Compute sentence table', variable=compute_sentence_var,
                                          onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                sentence_table_checkbox, True)
 sentence_table_checkbox_msg = tk.Label()
 sentence_table_checkbox_msg.config(text="Compute sentence table")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                sentence_table_checkbox_msg)
 
 def check_sentence_table(*args):
@@ -469,7 +429,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
                                                CoNLL_table_analyzer_checkbox, True)
 CoNLL_table_analyzer_checkbox_msg = tk.Label()
 CoNLL_table_analyzer_checkbox_msg.config(text="Open the CoNLL table analyzer GUI")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                CoNLL_table_analyzer_checkbox_msg)
 
 def check_CoNLL_table(*args):
@@ -481,52 +441,42 @@ def check_CoNLL_table(*args):
 
 CoNLL_table_analyzer_var.trace('w', check_CoNLL_table)
 
-# date_format.set('mm-dd-yyyy')
-# date_separator_var.set('_')
-# date_position_var.set(2)
-#
-# date_extractor_checkbox = tk.Checkbutton(window, text='CoreNLP normalized NER date extractor', variable=date_extractor_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,date_extractor_checkbox,True)
-#
-# split_files_checkbox = tk.Checkbutton(window, text='Split file by normalized NER dates', state='disabled', variable=split_files_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+20,y_multiplier_integer,split_files_checkbox,True)
-#
-# def activate_splitFile(*args):
-# 	if date_extractor_var.get():
-# 		split_files_checkbox.configure(state='normal')
-# 	else:
-# 		split_files_checkbox.configure(state='disabled')
-# date_extractor_var.trace('w',activate_splitFile)
-#
-# quote_extractor_checkbox = tk.Checkbutton(window, text='CoreNLP quote extractor', variable=quote_extractor_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+270,y_multiplier_integer,quote_extractor_checkbox,True)
-#
-# CoreNLP_gender_annotator_checkbox = tk.Checkbutton(window, text='CoreNLP gender extractor', variable=CoreNLP_gender_annotator_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+470,y_multiplier_integer,CoreNLP_gender_annotator_checkbox)
-
 CoreNLP_annotators_checkbox = tk.Checkbutton(window, text='CoreNLP annotators', variable=CoreNLP_annotators_var,
                                              onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                CoreNLP_annotators_checkbox, True)
 
 CoreNLP_annotators_menu_var.set("")
-CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var, 'Coreference resolution', 'DepRel annotator', 'POS annotator',
-                                        'NER annotator', 'Normalized NER date', 'Gender annotator', 'Quote/dialogue annotator',
-                                        'Sentiment analysis', 'Parser (PCFG)', "Parser (NN)")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 20, y_multiplier_integer,
+CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var,
+        'Coreference PRONOMINAL resolution (Neural Network)', 'Coreference PRONOMINAL resolution (Statistical)','Coreference PRONOMINAL resolution (Deterministic)',
+        'DepRel annotator', 'POS annotator',
+        'NER annotator', 'Normalized NER date', 'Gender annotator (Neural Network)', 'Quote/dialogue annotator (Neural Network)',
+        'Sentiment analysis (Neural Network)')
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                CoreNLP_annotators_menu)
 
+manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ',
+                                       variable=manual_Coref_var,
+                                       onvalue=1, offvalue=0)
 
 def activate_CoreNLP_annotators_menu(*args):
+    global y_multiplier_integer
     if CoreNLP_annotators_var.get() == True:
         CoreNLP_annotators_menu.configure(state='normal')
+        if 'Coreference' in CoreNLP_annotators_menu_var.get():
+            y_multiplier_integer=y_multiplier_integer-1
+            manual_Coref_var.set(0)
+            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 400,
+                                                           y_multiplier_integer,
+                                                           manual_Coref_checkbox)
     else:
+        manual_Coref_checkbox.place_forget()  # invisible
         CoreNLP_annotators_menu.configure(state='disabled')
-
-
 CoreNLP_annotators_var.trace('w', activate_CoreNLP_annotators_menu)
+CoreNLP_annotators_menu_var.trace('w', activate_CoreNLP_annotators_menu)
 
 activate_CoreNLP_annotators_menu()
+
 
 TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download install run.pdf',
                'Stanford CoreNLP parser': 'TIPS_NLP_Stanford CoreNLP parser.pdf',
@@ -558,20 +508,17 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 3, "Help",
                                   "Please, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n\nFor CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 4, "Help",
-                                  "Please, tick the checkbox if you wish to use the CoreNLP PRONOMINAL co-reference resolution, where pronominal coreference refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'.\n\nThe co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nCoreNLP can resolve other cases but the algorithm here is restricted to pronominal resolution.\n\nAfter ticking the checkbox, using the dropdown menu, select the type of Stanford Coreference you wish to use for Coreference Resolution (Deterministic is fastest but less accurate; Neural Network is slowest but most accurate; recommended!\n\nFinally, tick the checkbox Manually edit coreferenced document if you wish to resolve manually cases of unresolved or wrongly resolved coreferences. MANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. 	DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.")
+                                  "Please, tick the checkbox if your filenames embed a date (e.g., The New York Times_12-23-1992).\n\nWhen the date option is ticked, the script will add a date field to the CoNLL table. The date field will be used by other NLP scripts (e.g., Ngrams).\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the follwing information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 5, "Help",
                                   "Please, tick the checkbox if you wish to use the CoreNLP parser to obtain a CoNLL table.\n\nThe CoNLL table is the basis of many of the NLP analyses: noun & verb analysis, function words, clause analysis, query CoNLL.\n\nYou have a choice between two types of papers:\n   1. the recommended default Probabilistic Context Free Grammar (PCFG) parser;\n   2. a Neural-network dependency parser.\n\nIn output the scripts produce a CoNLL table with the following 8 fields: ID, FORM, LEMMA, POSTAG, NER (23 classes), HEAD, DEPREL, CLAUSAL TAGS (the neural-network parser does not produce clausal tags).\n\nThe following fields will be automatically added to the standard 8 fields of a CoNLL table: RECORD NUMBER, DOCUMENT ID, SENTENCE ID, DOCUMENT (INPUT filename), DATE (if the filename embeds a date).\n\nIf you suspect that CoreNLP may have given faulty results for some sentences, you can test those sentences directly on the Stanford CoreNLP website at https://corenlp.run")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 6, "Help",
-                                  "Please, tick the checkbox if your filenames embed a date (e.g., The New York Times_12-23-1992).\n\nWhen the date option is ticked, the script will add a date field to the CoNLL table. The date field will be used by other NLP scripts (e.g., Ngrams).\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the follwing information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 7, "Help",
                                   "Please, tick the checkbox if you wish to compute a sentence table with various sentence statistics.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 8, "Help",
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 7, "Help",
                                   "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the CoreNLP parser results contained in the CoNLL table.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 8, "Help",
+                                  "Please, using the dropdown menu, select one of the many other annotators available through Stanford CoreNLP: Coreference pronominal resolution, DepRel, POS, NER (Named Entity Recognition), NER normalized date. gender, quote, and sentiment analysis.\n\nANNOTATORS MARKED AS NEURAL NETWORK ARE MORE ACCURATE, BUT SLOW AND REQUIRE A GREAT DEAL OF MEMORY.\n\n1.  PRONOMINAL co-reference resolution refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'. CoreNLP can resolve other cases but the algorithm here is restricted to pronominal resolution.\n\nThe co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nDeterministic Coreference Resolution is fastest but less accurate; Neural Network is slowest but most accurate; recommended!\n\nTick the checkbox Manually edit coreferenced document if you wish to resolve manually cases of unresolved or wrongly resolved coreferences. MANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\n2.  The CoreNLP NER annotator recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\n3.  The NER NORMALIZED DATE annotator extracts standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\n4.  The CoreNLP coref GENDER annotator extracts the gender of both first names and personal pronouns (he, him, his, she, her, hers) using a neural network approach. This annotator requires a great deal of memory. So, please, adjust the memory allowing as much memory as you can afford.\n\n5.  The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker.\n\n6.  The SENTIMENT ANALYSIS annotator computes the sentiment values (negative, neutral, positive) of each sentence in a text.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files annd Excel charts. The Gender annotator will also produce an html file with male tags displayed in blue and female tags displayed in red. The Coreference annotator will produce txt-format copies of the same input txt files but co-referenced.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 9, "Help",
-                                  "Please, using the dropdown menu, select one of the many other annotators available through Stanford CoreNLP: NER (Named Entity Recognition), NER normalizaed date. gender annotator, quote annotator, and sentiment analysis.\n\nThe CoreNLP NER annotator recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\nThe NER NORMALIZED DATE annotator extracts standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\nThe CoreNLP coref GENDER annotator extracts the gender of both first names and personal pronouns (he, him, his, she, her, hers) using a neural network approach. This annotator requires a great deal of memory. So, please, adjust the memory allowing as much memory as you can afford.\n\nThe CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker.\n\nThe SENTIMENT ANALYSIS annotator computes the sentiment values (negative, neutral, positive) of each sentence in a text.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 10, "Help",
                                   GUI_IO_util.msg_openOutputFiles)
-
 
 help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
              GUI_IO_util.get_y_step())

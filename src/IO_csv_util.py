@@ -9,6 +9,7 @@ import GUI_util
 import csv
 import tkinter.messagebox as mb
 import pandas as pd
+import os
 
 #if any column header contains just numbers the function will return FALSE
 def csvFile_has_header(file_path):
@@ -26,7 +27,10 @@ def get_csv_data(file_name,withHeader):
     data=[]
     headers=''
     delimiter=','
-    if file_name=='':
+    filename, file_extension = os.path.splitext(file_name)
+    # file_extension will return any extension .xlsx, .csv, …
+    if file_name=='' or file_extension!='.csv':
+        mb.showwarning(title='File type error', message='The file\n\n' + file_name + '\n\nis not an expected csv file. Please, check the file and try again.')
         return data, headers
     #numColumns=get_csvfile_numberofColumns(file_name)
     withHeader=csvFile_has_header(file_name)

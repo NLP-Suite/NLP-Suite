@@ -38,9 +38,11 @@ import GUI_util
 import file_merger_util
 import file_utf8_compliance_util
 import file_cleaner_util
+import IO_csv_util
 import Stanford_CoreNLP_coreference_util as stanford_coref
 import Stanford_CoreNLP_annotator_util
-import IO_csv_util
+import semantic_role_labeling_senna
+
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -174,8 +176,8 @@ def run(inputFilename, inputDir, outputDir,
         memory_var,
         Manual_Coref_var,
         date_extractor_var,
-        SVO_extractor_var,
-        SV_extractor_var,
+        CoreNLP_SVO_extractor_var,
+        SENNA_SVO_extractor_var,
         subjects_dict_var,
         verbs_dict_var,
         objects_dict_var,
@@ -191,6 +193,11 @@ def run(inputFilename, inputDir, outputDir,
     merge_file_option = None
     save_intermediate_file = False
 
+    if (CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False):
+        mb.showerror(title='No SVO option selected',
+                     message="No SVO option selected, Stanford CoreNLP and/or SENNA.\n\nPlease, select an SVO option and try again.")
+        return
+
     if len(inputDir) > 0:
         msgbox_merge_file = mb.askyesno("Merge File Option", "You selected to process a directory of files.\n\n" +
                                     "DO YOU WANT TO MERGE FILES INTO A SINGLE ONE AND PROCESS THE MERGED FILE?\n\n" +
@@ -205,7 +212,7 @@ def run(inputFilename, inputDir, outputDir,
             save_intermediate_file = mb.askyesno("Save Intermediate File Option", "You selected to process a directory of files,\n\nDo you want to save the csv output for each single file?\n\nClick No if you only want to keep a final merged output csv file. The merged file will contain both the name and ID of every document processed, so there is really no need to save intermediate files.\n\nDo you still want to save individual output files?",default='no')
 
     if inputFilename[-4:] == '.txt':
-        if SVO_extractor_var == False and (gephi_var == True or wordcloud_var == True or google_earth_var == True):
+        if (CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False) and (gephi_var == True or wordcloud_var == True or google_earth_var == True):
             mb.showerror(title='Inputfile/option error',
                          message="The data visualization option(s) you have selected require either an _svo.csv file in input or CoreNLP OpenIE selected.\n\nPlease, check your input file and/or algorithm selections and try again.")
             return
@@ -214,7 +221,7 @@ def run(inputFilename, inputDir, outputDir,
             mb.showerror(title='Inputfile error',
                          message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or a txt file) and try again.")
             return
-        if (utf8_var == True or Coref == True or Coref_Option == True or memory_var == True or Manual_Coref_var == True or date_extractor_var == True or SVO_extractor_var == True):
+        if (utf8_var == True or Coref == True or Coref_Option == True or memory_var == True or Manual_Coref_var == True or date_extractor_var == True or CoreNLP_SVO_extractor_var == True):
             mb.showerror(title='Inputfile/option error',
                          message="The data analysis option(s) you have selected require in input a txt file, rather than a csv file.\n\nPlease, check your input file and/or algorithm selections and try again.")
             return
@@ -263,8 +270,10 @@ def run(inputFilename, inputDir, outputDir,
         isFile = False
         inputDirBase = os.path.basename(inputDir)
         outputDir = os.path.join(outputDir, inputDirBase + "_output")
-        if not os.path.exists(os.path.dirname(outputDir)):
-            os.makedirs(os.path.dirname(outputDir))
+        # if not os.path.exists(os.path.dirname(outputDir)):
+        #     os.makedirs(os.path.dirname(outputDir))
+        if not os.path.exists(outputDir):       # Changed by Matthew on Mar.13
+            os.makedirs(outputDir)
 
     # CoRef _____________________________________________________
 
@@ -328,17 +337,22 @@ def run(inputFilename, inputDir, outputDir,
         if openOutputFiles:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
-
-
     # CoreNLP OpenIE _____________________________________________________
-    if SVO_extractor_var==True:
+    if SENNA_SVO_extractor_var==True:
+        semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts)
+
+    if not isFile:
+        outputSVODir = os.path.join(outputDir, "SVO_Result")
+    else:
+        outputSVODir=''
+
+    if CoreNLP_SVO_extractor_var==True:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                             'Started running Stanford CoreNLP OpenIE to extract SVOs at', True,'You can follow CoreNLP in command line.\n\nContrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chuncks of text being currently processed.')
         if isFile:
 
             subprocess.call(['java', '-jar', '-Xmx'+str(memory_var)+"g", 'Stanford_CoreNLP_OpenIE.jar', '-inputFile', feed_to_svo, '-outputDir', outputDir])
         else:
-            outputSVODir = os.path.join(outputDir, "SVO_Result")
             if not os.path.exists(os.path.dirname(outputSVODir)):
                 try:
                     os.makedirs(os.path.dirname(outputSVODir))
@@ -617,8 +631,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 memory_var.get(),
                                 manual_Coref_var.get(),
                                 date_extractor_var.get(),
-                                SVO_extractor_var.get(),
-                                SV_extractor_var.get(),
+                                CoreNLP_SVO_extractor_var.get(),
+                                SENNA_SVO_extractor_var.get(),
                                 subjects_dict_var.get(),
                                 verbs_dict_var.get(),
                                 objects_dict_var.get(),
@@ -687,8 +701,8 @@ CoRef_menu_var=tk.StringVar()
 memory_var=tk.StringVar()
 manual_Coref_var=tk.IntVar()
 date_extractor_var=tk.IntVar()
-SVO_extractor_var=tk.IntVar()
-SV_extractor_var=tk.IntVar()
+CoreNLP_SVO_extractor_var=tk.IntVar()
+SENNA_SVO_extractor_var=tk.IntVar()
 subjects_var=tk.IntVar()
 objects_var=tk.IntVar()
 verbs_var=tk.IntVar()
@@ -699,15 +713,15 @@ gephi_var=tk.IntVar()
 wordcloud_var=tk.IntVar()
 google_earth_var=tk.IntVar()
 
-utf8_var.set(1)
+utf8_var.set(0)
 utf8_checkbox = tk.Checkbutton(window, text='Check input corpus for utf-8 encoding ', variable=utf8_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,utf8_checkbox,True)
 
-ASCII_var.set(1)
+ASCII_var.set(0)
 ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,ASCII_checkbox)
 
-CoRef_var.set(1)
+CoRef_var.set(0)
 CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP)', variable=CoRef_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoRef_checkbox,True)
 
@@ -724,7 +738,7 @@ memory_var.pack()
 memory_var.set(6)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+650,y_multiplier_integer,memory_var)
 
-manual_Coref_var.set(1)
+manual_Coref_var.set(0)
 manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_Coref_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,manual_Coref_checkbox)
 
@@ -734,7 +748,7 @@ def activateCoRefOptions(*args):
         memory_var.configure(state='normal')
         manual_Coref_checkbox.configure(state='normal')
         manual_Coref_var.set(1)
-    else: 
+    else:
         CoRef_menu.configure(state='disabled')
         # memory_var.configure(state='disabled')
         manual_Coref_checkbox.configure(state='disabled')
@@ -746,16 +760,16 @@ activateCoRefOptions()
 date_extractor_checkbox = tk.Checkbutton(window, text='Extract normalized NER dates (via Stanford CoreNLP)', variable=date_extractor_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,date_extractor_checkbox)
 
-SVO_extractor_var.set(1)
-SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs (via Stanford CoreNLP OpenIE)', variable=SVO_extractor_var, onvalue=1, offvalue=0)
+CoreNLP_SVO_extractor_var.set(1)
+SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs (via Stanford CoreNLP OpenIE)', variable=CoreNLP_SVO_extractor_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SVO_extractor_checkbox,True)
 
-SV_extractor_var.set(0)
-SV_extractor_checkbox = tk.Checkbutton(window, state='disabled', text='Extract SVOs & SVs (via Stanford CoreNLP OpenIE)', variable=SV_extractor_var, onvalue=1, offvalue=0)
+SENNA_SVO_extractor_var.set(0)
+SV_extractor_checkbox = tk.Checkbutton(window, state='disabled', text='Extract SVOs & SVs (via SENNA)', variable=SENNA_SVO_extractor_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,SV_extractor_checkbox)
 
 def activateFilters(*args):
-    if SVO_extractor_var.get()==1:
+    if CoreNLP_SVO_extractor_var.get()==1:
         SV_extractor_checkbox.configure(state='disabled')
         subjects_checkbox.configure(state='normal')
         verbs_checkbox.configure(state='normal')
@@ -768,8 +782,8 @@ def activateFilters(*args):
         google_earth_checkbox.configure(state='normal')
     else:
         SV_extractor_checkbox.configure(state='normal')
-        if SV_extractor_var.get()==True:
-            SVO_extractor_var.set(0)
+        if SENNA_SVO_extractor_var.get()==True:
+            CoreNLP_SVO_extractor_var.set(0)
             SVO_extractor_checkbox.configure(state='disabled')
             subjects_checkbox.configure(state='normal')
             verbs_checkbox.configure(state='normal')
@@ -791,8 +805,8 @@ def activateFilters(*args):
             gephi_checkbox.configure(state='disabled')
             wordcloud_checkbox.configure(state='disabled')
             google_earth_checkbox.configure(state='disabled')
-SVO_extractor_var.trace('w',activateFilters)
-SV_extractor_var.trace('w',activateFilters)
+CoreNLP_SVO_extractor_var.trace('w',activateFilters)
+SENNA_SVO_extractor_var.trace('w',activateFilters)
 
 def getDictFile(checkbox_var,dict_var,checkbox_value,dictFile):
     filePath = ''
@@ -860,7 +874,7 @@ TIPS_options='SVO extraction and visualization','utf-8 compliance','Stanford Cor
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
-# any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util. 
+# any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", "Please, select either a txt file to be analyzed and extract SVO triplets from it, or a csv file of previously extracted SVOs if all you want to do is to visualize the previously computed results."+GUI_IO_util.msg_openFile)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_corpusData)
