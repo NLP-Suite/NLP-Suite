@@ -59,9 +59,11 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         df = pd.read_csv(inputFilename)
         data_files = [df]
         print(csv_file_field_list)
-        extracted_files = extract_from_csv(path=[inputFilename], output_path=outputDir, data_files=data_files,
-                                           csv_file_field_list=csv_file_field_list)
-        filesToOpen.append(extracted_files)
+        extracted_files: list = extract_from_csv(path=[inputFilename], output_path=outputDir, data_files=data_files,
+                                                 csv_file_field_list=csv_file_field_list)
+        filesToOpen.extend(extracted_files)
+        if openOutputFiles:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
     if clausal_analysis_var:
         import CoNLL_clause_analysis_util
@@ -130,8 +132,9 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         return
 
     if searchField_kw == 'e.g.: father':
-        mb.showwarning(title='No option selected',
-                       message="No option has been selected.\n\nPlease, select an option and try again.")
+        if not extract_var.get():
+            mb.showwarning(title='No option selected',
+                           message="No option has been selected.\n\nPlease, select an option and try again.")
         return  # breaks loop
 
     if searchedCoNLLField.lower() not in ['lemma', 'form']:
@@ -177,7 +180,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         co_deprel = '*'
 
     if (not os.path.isfile(inputFilename.strip())) and (not inputFilename.strip()[-6:] == '.conll') and (
-    not inputFilename.strip()[-4:] == '.csv'):
+            not inputFilename.strip()[-4:] == '.csv'):
         mb.showwarning(title='INPUT File Path Error',
                        message='Please, check INPUT FILE PATH and try again. The file must be a CoNLL table (extension .conll with Stanford CoreNLP no clausal tags, extension .csv with Stanford CoreNLP with clausal tags)')
         return
@@ -303,7 +306,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                                                                          "Co-token Deprel values (" + searchField_kw + ")",
                                                                          "DEPREL")
             errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
-            if errorFound == True:
+            if errorFound:
                 return
 
             output_file_name_xlsx = Excel_util.create_excel_chart(GUI_util.window, [column_stats], '', outputDir,
@@ -314,7 +317,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                                'Finished running CoNLL search at', True)
 
-        if openOutputFiles == True:
+        if openOutputFiles:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
         # # Gephi network graphs _________________________________________________
@@ -513,6 +516,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 #                                                selected_fields)
 
 def reset_all_values():
+    global buildString
     buildString = ''
     csv_file_field_list.clear()
     selected_fields_var.set('')
@@ -538,7 +542,7 @@ def changed_filename(tracedInputFile):
     menu_values = []
     if tracedInputFile != '':
         numColumns = IO_csv_util.get_csvfile_numberofColumns(tracedInputFile)
-        if numColumns == 0 or numColumns == None:
+        if numColumns == 0 or numColumns is None:
             return False
         if IO_csv_util.csvFile_has_header(tracedInputFile) == False:
             menu_values = range(1, numColumns + 1)
@@ -633,12 +637,7 @@ def add_field_to_list(menu_choice, visualizeBuildString=True):
     if select_csv_field_extract_var.get() == '':
         return
 
-    if selected_fields_var.get() != '' and menu_choice not in selected_fields_var.get():
-        selected_fields_var.set(selected_fields_var.get() + "," + str(menu_choice))
-    else:
-        selected_fields_var.set(menu_choice)
-
-    buildString = buildString + menu_choice
+    new_build_string = '"",' + menu_choice  # the first one is input file name, which is not used.
 
     if comparator_var.get() != '' and where_entry_var.get() == '':
         mb.showwarning(title='Warning',
@@ -646,18 +645,19 @@ def add_field_to_list(menu_choice, visualizeBuildString=True):
         return
     # always enter the value even if empty to ensure a similarly formatted string
     if comparator_var.get() != '':
-        buildString = buildString + "," + comparator_var.get()
+        new_build_string = new_build_string + "," + comparator_var.get()
     else:
-        buildString = buildString + "," + "''"
+        new_build_string = new_build_string + "," + "''"
     if where_entry_var.get() != '':
-        buildString = buildString + "," + where_entry_var.get()
+        new_build_string = new_build_string + "," + where_entry_var.get()
     else:
-        buildString = buildString + "," + "''"
+        new_build_string = new_build_string + "," + "''"
     if and_or_var.get() != '':
-        buildString = buildString + "," + and_or_var.get()
+        new_build_string = new_build_string + "," + and_or_var.get()
     else:
-        buildString = buildString + "," + "''"
-    csv_file_field_list.append(buildString)
+        new_build_string = new_build_string + "," + "''"
+    csv_file_field_list.append(new_build_string)
+    buildString = buildString + new_build_string
 
 
 def show_values():
