@@ -18,7 +18,8 @@ import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
 import Stanford_CoreNLP_tags_util
-from data_manager_main import run
+from data_manager_main import extract_from_csv
+import pandas as pd
 # more imports (e.g., import CoNLL_clause_analysis_util) are called below under separate if statements
 
 
@@ -52,6 +53,13 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
         return
 
     right_hand_side=False
+
+    if extract_var.get():
+        df = pd.read_csv(inputFilename)
+        data_files = [df]
+        extracted_files = extract_from_csv(path=[inputFilename], output_path=outputDir, data_files=data_files,
+                                           csv_file_field_list=csv_file_field_list)
+        filesToOpen.append(extracted_files)
 
     if clausal_analysis_var==True:
         import CoNLL_clause_analysis_util
