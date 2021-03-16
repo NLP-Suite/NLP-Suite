@@ -57,11 +57,12 @@ def run(inputFilename,outputDir,openOutputFiles,createExcelCharts,
     if extract_var.get():
         df = pd.read_csv(inputFilename)
         data_files = [df]
+        print(csv_file_field_list)
         extracted_files = extract_from_csv(path=[inputFilename], output_path=outputDir, data_files=data_files,
                                            csv_file_field_list=csv_file_field_list)
         filesToOpen.append(extracted_files)
 
-    if clausal_analysis_var==True:
+    if clausal_analysis_var:
         import CoNLL_clause_analysis_util
         outputFiles=CoNLL_clause_analysis_util.clause_stats(inputFilename, '', outputDir,
                                                                 data,

@@ -160,139 +160,139 @@ def run(inputFilename,
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 
+if __name__ == '__main__':
+    run_script_command = lambda: run(GUI_util.inputFilename.get(),
+                                     csv_file_field_list,
+                                     merge_var.get(), concatenate_var.get(),
+                                     append_var.get(), extract_var.get(),
+                                     purge_row_var.get(), select_csv_field_purge_var.get(), keep_most_recent_var.get(),
+                                     keep_most_fields_var.get(), select_csv_field2_purge_var.get(),
+                                     GUI_util.open_csv_output_checkbox.get(), GUI_util.output_dir_path.get()
+                                     )
 
-run_script_command = lambda: run(GUI_util.inputFilename.get(),
-                                 csv_file_field_list,
-                                 merge_var.get(), concatenate_var.get(),
-                                 append_var.get(), extract_var.get(),
-                                 purge_row_var.get(), select_csv_field_purge_var.get(), keep_most_recent_var.get(),
-                                 keep_most_fields_var.get(), select_csv_field2_purge_var.get(),
-                                 GUI_util.open_csv_output_checkbox.get(), GUI_util.output_dir_path.get()
-                                 )
+    GUI_util.run_button.configure(command=run_script_command)
 
-GUI_util.run_button.configure(command=run_script_command)
+    # GUI section ______________________________________________________________________________________________________________________________________________________
 
-# GUI section ______________________________________________________________________________________________________________________________________________________
+    GUI_size = '1250x680'
+    GUI_label = 'Graphical User Interface (GUI) for Data Manager'
+    config_filename = 'data-manager-config.txt'
+    # The 6 values of config_option refer to:
+    #   software directory
+    #   input file
+            # 1 for CoNLL file
+            # 2 for TXT file
+            # 3 for csv file
+            # 4 for any type of file
+            # 5 for txt or html
+            # 6 for txt or csv
+    #   input dir
+    #   input secondary dir
+    #   output file
+    #   output dir
+    config_option = [0, 3, 0, 0, 0, 1]
 
-GUI_size = '1250x680'
-GUI_label = 'Graphical User Interface (GUI) for Data Manager'
-config_filename = 'data-manager-config.txt'
-# The 6 values of config_option refer to:
-#   software directory
-#   input file
-        # 1 for CoNLL file
-        # 2 for TXT file
-        # 3 for csv file
-        # 4 for any type of file
-        # 5 for txt or html
-        # 6 for txt or csv
-#   input dir
-#   input secondary dir
-#   output file
-#   output dir
-config_option = [0, 3, 0, 0, 0, 1]
+    GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
+    # in csv_file_field_list, the script returns a list of comma-separated csv filename + csv field
+    # when using the extract option, csv_file_field_list will also list the where and and/or values
+    # repeated csv fields will be skipped
+    # for instance
+    # ['C:/Program Files (x86)/NLP_backup/Output/EnglishANEW.csv,A.SD.F', 'C:/Program Files (x86)/NLP_backup/Output/EnglishANEW.csv,D.Mean.M']
 
-# in csv_file_field_list, the script returns a list of comma-separated csv filename + csv field
-# when using the extract option, csv_file_field_list will also list the where and and/or values
-# repeated csv fields will be skipped
-# for instance
-# ['C:/Program Files (x86)/NLP_backup/Output/EnglishANEW.csv,A.SD.F', 'C:/Program Files (x86)/NLP_backup/Output/EnglishANEW.csv,D.Mean.M']
+    # GUI CHANGES search for GUI CHANGES
 
-# GUI CHANGES search for GUI CHANGES
+    # GUI CHANGES add following lines to every special GUI
+    # +1 is the number of lines starting at 1 of IO widgets
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 1
+    window = GUI_util.window
+    config_input_output_options = GUI_util.config_input_output_options
+    config_filename = GUI_util.config_filename
+    inputFilename = GUI_util.inputFilename
 
-# GUI CHANGES add following lines to every special GUI
-# +1 is the number of lines starting at 1 of IO widgets
-y_multiplier_integer = GUI_util.y_multiplier_integer + 1
-window = GUI_util.window
-config_input_output_options = GUI_util.config_input_output_options
-config_filename = GUI_util.config_filename
-inputFilename = GUI_util.inputFilename
+    GUI_util.GUI_top(config_input_output_options, config_filename)
 
-GUI_util.GUI_top(config_input_output_options, config_filename)
+    # GUI CHANGES cut/paste special GUI widgets from GUI_util
+    csv_file_field_list = []
+    merge_var = tk.IntVar()
+    concatenate_var = tk.IntVar()
+    character_separator_var = tk.StringVar()
+    append_var = tk.IntVar()
+    extract_var = tk.IntVar()
+    purge_row_var = tk.IntVar()
 
-# GUI CHANGES cut/paste special GUI widgets from GUI_util
-csv_file_field_list = []
-merge_var = tk.IntVar()
-concatenate_var = tk.IntVar()
-character_separator_var = tk.StringVar()
-append_var = tk.IntVar()
-extract_var = tk.IntVar()
-purge_row_var = tk.IntVar()
+    keep_most_recent_var = tk.IntVar()
 
-keep_most_recent_var = tk.IntVar()
+    keep_most_fields_var = tk.IntVar()
+    select_csv_field2_purge_var = tk.StringVar()
 
-keep_most_fields_var = tk.IntVar()
-select_csv_field2_purge_var = tk.StringVar()
+    # de-indent all commands
 
-# de-indent all commands
+    current_pair_file_field_var = tk.Label(text="Current matched pair of csv filename and fields",
+                                           font="Helvetica 10 italic")
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+                                                   current_pair_file_field_var)
 
-current_pair_file_field_var = tk.Label(text="Current matched pair of csv filename and fields",
-                                       font="Helvetica 10 italic")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
-                                               current_pair_file_field_var)
-
-avoidLoop = False
-
-
-def clear(e):
-    select_csv_field_merge_var.set('')
-    select_csv_field_concatenate_var.set('')
-    select_csv_field_append_var.set('')
-    select_csv_field_extract_var.set('')
-    character_separator_entry_var.set("")
-    comparator_var.set('')
-    where_entry_var.set('')
-    and_or_var.set('')
-    GUI_util.clear("Escape")
+    avoidLoop = False
 
 
-window.bind("<Escape>", clear)
+    def clear(e):
+        select_csv_field_merge_var.set('')
+        select_csv_field_concatenate_var.set('')
+        select_csv_field_append_var.set('')
+        select_csv_field_extract_var.set('')
+        character_separator_entry_var.set("")
+        comparator_var.set('')
+        where_entry_var.set('')
+        and_or_var.set('')
+        GUI_util.clear("Escape")
 
 
-def reset_all_values():
-    clear("<Escape>")
-    reset_csv_field_values()
-    csv_file_field_list.clear()
-    file_number_var.set(1)
-    selected_fields_var.set('')
-    selectedCsvFile_var.set(GUI_util.inputFilename.get())
-    operation_text_var.set('')
+    window.bind("<Escape>", clear)
 
-    add_file_button.config(state='disabled')
-    merge_checkbox.config(state='normal')
-    concatenate_checkbox.config(state='normal')
-    append_checkbox.config(state='normal')
-    extract_checkbox.config(state='normal')
-    purge_row_var.config(state='normal')
 
-    # a text widget is read only when disabled
-    csv_file_field.configure(state='normal')
-    csv_file_field.delete(0.1, tk.END)
-    csv_file_field.configure(state='disabled')
+    def reset_all_values():
+        clear("<Escape>")
+        reset_csv_field_values()
+        csv_file_field_list.clear()
+        file_number_var.set(1)
+        selected_fields_var.set('')
+        selectedCsvFile_var.set(GUI_util.inputFilename.get())
+        operation_text_var.set('')
 
-    character_separator_entry_var.set("")
+        add_file_button.config(state='disabled')
+        merge_checkbox.config(state='normal')
+        concatenate_checkbox.config(state='normal')
+        append_checkbox.config(state='normal')
+        extract_checkbox.config(state='normal')
+        purge_row_var.config(state='normal')
 
-    comparator_menu.configure(state="disabled")
-    where_entry.configure(state="disabled")
-    and_or_menu.configure(state="disabled")
+        # a text widget is read only when disabled
+        csv_file_field.configure(state='normal')
+        csv_file_field.delete(0.1, tk.END)
+        csv_file_field.configure(state='disabled')
 
-    where_entry_var.set("")
-    comparator_var.set("")
-    and_or_var.set("")
+        character_separator_entry_var.set("")
 
-    select_csv_field_merge_menu.config(state='disabled')
-    select_csv_field_concatenate_menu.config(state='disabled')
-    select_csv_field_append_menu.config(state='disabled')
-    select_csv_field_extract_menu.config(state='disabled')
-    select_csv_field_purge_menu.config(state='disabled')
-    select_csv_field2_purge_menu.config(state='disabled')
+        comparator_menu.configure(state="disabled")
+        where_entry.configure(state="disabled")
+        and_or_menu.configure(state="disabled")
 
-    merge_var.set(0)
-    concatenate_var.set(0)
-    append_var.set(0)
-    extract_var.set(0)
+        where_entry_var.set("")
+        comparator_var.set("")
+        and_or_var.set("")
+
+        select_csv_field_merge_menu.config(state='disabled')
+        select_csv_field_concatenate_menu.config(state='disabled')
+        select_csv_field_append_menu.config(state='disabled')
+        select_csv_field_extract_menu.config(state='disabled')
+        select_csv_field_purge_menu.config(state='disabled')
+        select_csv_field2_purge_menu.config(state='disabled')
+
+        merge_var.set(0)
+        concatenate_var.set(0)
+        append_var.set(0)
+        extract_var.set(0)
 
 
 def reset_csv_field_values():
