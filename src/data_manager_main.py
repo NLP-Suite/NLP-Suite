@@ -61,6 +61,49 @@ def get_cols(dfs: list, headers: list):
 filesToOpen = []  # Store all files that are to be opened once finished
 
 
+def extract_from_csv(path, output_path, data_files, csv_file_field_list):
+    outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv',
+                                                             'extract',
+                                                             'stats', '', '', '', False, True)
+    sign_var = [s.split(',')[2] for s in csv_file_field_list]
+    value_var = [s.split(',')[3] for s in csv_file_field_list]
+    headers = [s.split(',')[1] for s in csv_file_field_list]
+    df_list = []
+    value: str
+    for (sign, value, header, df) in zip(sign_var, value_var, headers, data_files):
+        if sign == "''" and value == "''":
+            df_list.append(df[[header]])
+        else:
+            if '\'' not in value:
+                value = '\'' + value + '\''
+            query = header + sign + value
+            result = df.query(query, engine='python')
+            df_list.append(result)
+    df_extract = df_list[0]
+    for index, df_ex in enumerate(df_list):
+
+        if csv_file_field_list[index].split(',')[4] in ['and', "''"]:
+            if index == len(df_list) - 1:
+                continue
+            df_extract = df_extract.merge(df_list[index + 1], how='inner',
+                                          right_index=True,
+                                          left_index=True)
+        elif csv_file_field_list[index].split(',')[4] == 'or':
+            if index == len(df_list) - 1:
+                continue
+            df_extract = df_extract.merge(df_list[index + 1], how='outer',
+                                          right_index=True,
+                                          left_index=True)
+        elif csv_file_field_list[index].split(',')[4] == '' and index != len(df_list) - 1:
+            mb.showwarning(title='Missing and/or condition',
+                           message="Please include an and/or condition between each where condition on column you want to extract!")
+        else:
+            pass
+    df_extract.to_csv(outputFilename)
+    filesToOpen.append(outputFilename)
+    return filesToOpen
+
+
 def run(inputFilename,
         csv_file_field_list,
         merge_var, concatenate_var,
@@ -90,7 +133,7 @@ def run(inputFilename,
                 if len(temp) >= 3:
                     sep = temp[2]
                     break
-        df_concat = concat(data_cols, sep)
+        df_concat = concat(data_cols, sep)  # TODO: Could sep potentially be null?
         df_concat.to_csv(outputFilename, header=[listToString(headers, sep)])
         filesToOpen.append(outputFilename)
     if append_var:
@@ -101,43 +144,8 @@ def run(inputFilename,
         df_append.to_csv(outputFilename, header=[listToString(headers, sep)])
         filesToOpen.append(outputFilename)
     if extract_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv', 'extract',
-                                                           'stats', '', '', '', False, True)
-        sign_var = [s.split(',')[2] for s in csv_file_field_list]
-        value_var = [s.split(',')[3] for s in csv_file_field_list]
-        df_list = []
-        value: str
-        for (sign, value, header, df) in zip(sign_var, value_var, headers, data_files):
-            if sign == "''" and value == "''":
-                df_list.append(df[[header]])
-            else:
-                if '\'' not in value:
-                    value = '\'' + value + '\''
-                query = header + sign + value
-                result = df.query(query, engine='python')
-                df_list.append(result)
-        df_extract = df_list[0]
-        for index, df_ex in enumerate(df_list):
-
-            if csv_file_field_list[index].split(',')[4] in ['and', "''"]:
-                if index == len(df_list)-1:
-                    continue
-                df_extract = df_extract.merge(df_list[index + 1], how='inner',
-                                              right_index=True,
-                                              left_index=True)
-            elif csv_file_field_list[index].split(',')[4] == 'or':
-                if index == len(df_list)-1:
-                    continue
-                df_extract = df_extract.merge(df_list[index + 1], how='outer',
-                                              right_index=True,
-                                              left_index=True)
-            elif csv_file_field_list[index].split(',')[4] == '' and index != len(df_list) - 1:
-                    mb.showwarning(title='Missing and/or condition',
-                                   message="Please include an and/or condition between each where condition on column you want to extract!")
-            else:
-                pass
-        df_extract.to_csv(outputFilename)
-        filesToOpen.append(outputFilename)
+        extract_from_csv(path=path, output_path=output_path,
+                         data_files=data_files, csv_file_field_list=csv_file_field_list)
     if purge_row_var:
         import file_filename_util
         if keep_most_recent_var:
