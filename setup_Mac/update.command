@@ -8,4 +8,6 @@ then
     brew install git
 fi
 
-git pull -f origin
+git add -A .
+git stash
+git pull -f origin current-stable

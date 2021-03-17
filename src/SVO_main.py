@@ -186,6 +186,8 @@ def run(inputFilename, inputDir, outputDir,
         google_earth_var,
         openOutputFiles,createExcelCharts):
 
+    memory_var = 64
+
     filesToOpen = []
 
     merge_file_option = None
@@ -348,6 +350,7 @@ def run(inputFilename, inputDir, outputDir,
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                             'Started running Stanford CoreNLP OpenIE to extract SVOs at', True,'You can follow CoreNLP in command line.\n\nContrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chuncks of text being currently processed.')
         if isFile:
+
             subprocess.call(['java', '-jar', '-Xmx'+str(memory_var)+"g", 'Stanford_CoreNLP_OpenIE.jar', '-inputFile', feed_to_svo, '-outputDir', outputDir])
         else:
             if not os.path.exists(os.path.dirname(outputSVODir)):
