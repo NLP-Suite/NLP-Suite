@@ -187,6 +187,8 @@ def processFile(inputPath, outputPath, filename, output_filename,
                 fieldnames,
                 selectedCsvFile_var,
                 hasFullPath,
+                utf8_var,
+                ASCII_var,
                 list_var,
                 rename_var,
                 copy_var,
@@ -258,6 +260,16 @@ def processFile(inputPath, outputPath, filename, output_filename,
             fileFound = False
 
     if list_var == 1 and fileFound:
+        # if utf8_var==1:
+        #     import chardet
+        #     the_encoding = chardet.detect(b'filename)['encoding']
+        #
+        #     try:
+        #         filename.encode('utf-8')
+        #     except UnicodeError:
+        #         print('   Filename ' + filename + ' is not utf-8')
+        # ASCII_var,
+
         # old_file=filename
         if by_creation_date_var == 1:
             creation_date, modification_date = get_creation_date(os.path.join(inputPath, filename))

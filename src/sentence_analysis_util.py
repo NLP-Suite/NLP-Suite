@@ -57,7 +57,8 @@ def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,creat
         container = []
         for file in file_list:
             documentID+=1
-            print("Processing file ", str(documentID),"\\",str(nFile),file)
+            head, tail = os.path.split(file)
+            print("Processing file ", str(documentID),"\\",str(nFile),tail)
             text = (open(file, "r", encoding="utf-8",errors='ignore').read())
             #Process each word in txt
             Sentence_ID = 0
@@ -93,7 +94,8 @@ def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,creat
         container = []
         for file in file_list:
             documentID += 1
-            print("Processing file ", str(documentID), "\\", str(nFile), file)
+            head, tail = os.path.split(file)
+            print("Processing file ", str(documentID), "\\", str(nFile), tail)
             text = (open(file, "r", encoding="utf-8", errors='ignore').read())
             # Process each word in txt
             Sentence_ID = 0
@@ -237,7 +239,7 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
         wordFound = False
         fileID = fileID + 1
         head, tail = os.path.split(doc)
-        print("\nProcessing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
+        print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
         with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
             text = inputFile.read().replace("\n", " ")
         with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(outputFilename_extract_minus, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_minus:
@@ -311,7 +313,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
     for doc in inputDocs:
         index += 1
         head, tail = os.path.split(doc)
-        print("\nProcessing file " + str(index) + "/" + str(Ndocs) + ' ' + tail)
+        print("Processing file " + str(index) + "/" + str(Ndocs) + ' ' + tail)
         outputFilename = IO_files_util.generate_output_file_name(doc, inputDir, outputDir, '.csv', 'SentComp', '', '')
 
         # the output filename passed to jar file MUST be a filename without path
@@ -505,7 +507,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 
             documentID = documentID + 1
             head, tail = os.path.split(file)
-            print("\nProcessing file " + str(documentID) + "/" + str(nFile) + ' ' + tail)
+            print("Processing file " + str(documentID) + "/" + str(nFile) + ' ' + tail)
 
             # write text files ____________________________________________
 

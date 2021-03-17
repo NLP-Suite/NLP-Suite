@@ -66,7 +66,8 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     for file in files:
             splittedHtmlFileList = []
             i = i + 1
-            print("Processing file " + str(i) + "/" + str(nFile) + " " + file)
+            head, tail = os.path.split(file)
+            print("Processing file " + str(i) + "/" + str(nFile) + " " + tail)
             listOfFiles=[file]
             subFile = 0
             for doc in listOfFiles:

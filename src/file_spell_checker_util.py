@@ -84,7 +84,8 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
     # IO_util.timed_alert(GUI_util.window,3000,'Analysis start','Started running NLTK unusual words at',True,'You can follow NLTK unusual words in command line.')
     for file in files:
         documentID=documentID+1
-        print("\nProcessing file " + str(documentID) + "/" + str(nFile) + ' ' + file)
+        head, tail = os.path.split(file)
+        print("Processing file " + str(documentID) + "/" + str(nFile) + ' ' + tail)
         text = (open(file, "r", encoding="utf-8", errors="ignore").read())
         #lemmatizer = WordNetLemmatizer()
         # text_vocab = set(lemmatizer.lemmatize(w.lower()) for w in text.split(" ") if w.isalpha())
@@ -798,7 +799,8 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
         filenameSV=''
         for filename in files:
             fileID = fileID + 1
-            print("Processing file " + str(fileID) + "/" + str(len(files)) + ' ' + filename)
+            head, tail = os.path.split(filename)
+            print("Processing file " + str(fileID) + "/" + str(len(files)) + ' ' + tail)
             text = open(filename, 'r', encoding='utf-8', errors='ignore').read()
             if len(text)==0:
                 print("  The file is empty. It will be discarded from processing.")

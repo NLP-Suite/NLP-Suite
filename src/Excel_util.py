@@ -4,7 +4,7 @@
 import sys
 import GUI_util
 import IO_libraries_util
-import IO_user_interface_util
+
 if IO_libraries_util.install_all_packages(GUI_util.window,"Excel_util",['csv','tkinter','os','collections','openpyxl'])==False:
     sys.exit(0)
 
@@ -23,6 +23,7 @@ import csv
 import IO_csv_util
 import GUI_IO_util
 import IO_files_util
+import IO_user_interface_util
 
 # ensure filename extension is correct for hover_over effects (xlxm) and no effects (xlsx)
 def checkExcel_extension(output_file_name,hover_info_column_list):
@@ -62,14 +63,19 @@ def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_
         data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange)
     else:
         try:
-            # data = pd.read_csv(inputFilename, encoding="utf-8", error_bad_lines=False)
-            data = pd.read_csv(inputFilename)
-        except ValueError as err:
-            if 'codec' in str(err):
-                err=str(err) + '\n\nA utf-8 encoding problem was found while reading into pandas the csv file ' + inputFilename + '\n\nPlease, check the data in the txt files that generated the csv file. Run the utf-8 compliance algorithm and, perhaps, run the cleaning algorithm that converts apostrophes.\n\nNO EXCEL CHART PRODUCED.'
-            mb.showwarning(title='Input file read error',
-                   message=str(err))
-            return
+            data = pd.read_csv(inputFilename,encoding='utf-8')
+        except:
+            try:
+                data = pd.read_csv(inputFilename,encoding='ISO-8859-1')
+                IO_user_interface_util.timed_alert(window, 2000, 'Warning',
+                                                   'Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 in reading into pandas the csv file ' + inputFilename)
+                print("Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 encoding in reading into pandas the csv file " + inputFilename)
+            except ValueError as err:
+                if 'codec' in str(err):
+                    err=str(err) + '\n\nExcel-util encountered errors with both utf-8 and ISO-8859-1 encoding in the function \'prepare_data_to_be_plotted\' while reading into pandas the csv file\n\n' + inputFilename + '\n\nPlease, check carefully the data in the csv file; it may contain filenames with non-utf-8/ISO-8859-1 characters; less likely, the data in the txt files that generated the csv file may also contain non-compliant characters. Run the utf-8 compliance algorithm and, perhaps, run the cleaning algorithm that converts apostrophes.\n\nNO EXCEL CHART PRODUCED.'
+                mb.showwarning(title='Input file read error',
+                       message=str(err))
+                return
         data_to_be_plotted = get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,data)
     return data_to_be_plotted
 
@@ -206,7 +212,7 @@ def get_dataRange(columns_to_be_plotted, data):
 
 
 # -----------------------------------------------------------------
-# MUST COMPUTTE HOVER OVER VALUES!!! see below
+# MUST COMPUTE HOVER OVER VALUES!!! see below
 
 # create a list of unique words to be displayed in hover over
 # result = IO_files_util.openCSVFile(outputFilenameCSV1, 'r', 'utf-8')
