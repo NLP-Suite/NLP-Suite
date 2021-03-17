@@ -92,7 +92,8 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
     for file in files:
         splitHtmlFileList=[] 
         i=i+1
-        print("Processing file " + str(i) + "/" + str(nFile) + " " + file)
+        head, tail = os.path.split(file)
+        print("Processing file " + str(i) + "/" + str(nFile) + " " + tail)
         # Windows error: The command line is too long.
         # 32767 characters max https://support.thoughtworks.com/hc/en-us/articles/213248526-Getting-around-maximum-command-line-length-is-32767-characters-on-Windows
         # https://stackoverflow.com/questions/3205027/maximum-length-of-command-line-string

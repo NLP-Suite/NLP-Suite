@@ -51,7 +51,8 @@ def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,creat
         container = []
         for file in file_list:
             documentID+=1
-            print("Processing file ", str(documentID),"\\",str(nFile),file)
+            head, tail = os.path.split(file)
+            print("Processing file ", str(documentID),"\\",str(nFile),tail)
             text = (open(file, "r", encoding="utf-8",errors='ignore').read())
             #Process each word in txt
             Sentence_ID = 0
@@ -87,7 +88,8 @@ def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,creat
         container = []
         for file in file_list:
             documentID += 1
-            print("Processing file ", str(documentID), "\\", str(nFile), file)
+            head, tail = os.path.split(file)
+            print("Processing file ", str(documentID), "\\", str(nFile), tail)
             text = (open(file, "r", encoding="utf-8", errors='ignore').read())
             # Process each word in txt
             Sentence_ID = 0

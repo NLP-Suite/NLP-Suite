@@ -98,7 +98,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
                     datetime.datetime.strptime(date_text, new_date_format)
                 except ValueError:
                     error_file_number = error_file_number + 1
-                    error_filenames.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(folder, filename)))
+                    error_filenames.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(folder, filename+'.txt')))
                     error_flag = True
 
     if error_flag:
@@ -452,15 +452,15 @@ def reset_n_grams_list():
     n_grams_options_menu.configure(state='normal')
 
 def show_n_grams_list():
-	if len(n_grams_list)==0:
-		mb.showwarning(title='Warning', message='There are no currently selected n-grams options.')
-	else:
-		mb.showwarning(title='Warning', message='The currently selected n-grams options are:\n\n' + ','.join(n_grams_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+    if len(n_grams_list)==0:
+        mb.showwarning(title='Warning', message='There are no currently selected n-grams options.')
+    else:
+        mb.showwarning(title='Warning', message='The currently selected n-grams options are:\n\n' + ','.join(n_grams_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
 def activate_n_grams_var():
-	# Disable the + after clicking on it and enable the class menu
-	add_n_grams_button.configure(state='disabled')
-	n_grams_options_menu.configure(state='normal')
+    # Disable the + after clicking on it and enable the class menu
+    add_n_grams_button.configure(state='disabled')
+    n_grams_options_menu.configure(state='normal')
 
 def activate_n_grams_options(*args):
     if n_grams_options_menu_var.get()!='':
@@ -528,18 +528,18 @@ date_position_menu.configure(width=1,state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+550,y_multiplier_integer,date_position_menu)
 
 def check_dateFields(*args):
-	if date_options.get() == 1:
-		date_options_msg.config(text="Date option ON")
-		temporal_aggregation_menu.config(state="normal")
-		date_format_menu.config(state="normal")
-		date_separator.config(state='normal')
-		date_position_menu.config(state='normal')
-	else:
-		date_options_msg.config(text="Date option OFF")
-		temporal_aggregation_menu.config(state="disabled")
-		date_format_menu.config(state="disabled")
-		date_separator.config(state='disabled')
-		date_position_menu.config(state="disabled")
+    if date_options.get() == 1:
+        date_options_msg.config(text="Date option ON")
+        temporal_aggregation_menu.config(state="normal")
+        date_format_menu.config(state="normal")
+        date_separator.config(state='normal')
+        date_position_menu.config(state='normal')
+    else:
+        date_options_msg.config(text="Date option OFF")
+        temporal_aggregation_menu.config(state="disabled")
+        date_format_menu.config(state="disabled")
+        date_separator.config(state='disabled')
+        date_position_menu.config(state="disabled")
 date_options.trace('w',check_dateFields)
 
 add_viewer_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_viewer_var())
@@ -562,15 +562,15 @@ def reset_viewer_list():
     viewer_options_menu.configure(state='normal')
 
 def show_viewer_list():
-	if len(viewer_list)==0:
-		mb.showwarning(title='Warning', message='There are no currently selected VIEWER options.')
-	else:
-		mb.showwarning(title='Warning', message='The currently selected VIEWER options are:\n\n' + ','.join(viewer_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+    if len(viewer_list)==0:
+        mb.showwarning(title='Warning', message='There are no currently selected VIEWER options.')
+    else:
+        mb.showwarning(title='Warning', message='The currently selected VIEWER options are:\n\n' + ','.join(viewer_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
 def activate_viewer_var():
-	# Disable the + after clicking on it and enable the menu
-	add_viewer_button.configure(state='disabled')
-	viewer_options_menu.configure(state='normal')
+    # Disable the + after clicking on it and enable the menu
+    add_viewer_button.configure(state='disabled')
+    viewer_options_menu.configure(state='normal')
 
 def activate_viewer_options(*args):
     if viewer_options_menu_var.get()!='':
