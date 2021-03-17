@@ -217,7 +217,8 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
     docError = 0
     for doc in inputDocs:
         index = index + 1
-        print("\nProcessing file " + str(index) + "/" + str(Ndocs) + " " + doc)
+        head, tail = os.path.split(doc)
+        print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
         with open(doc, 'r+',encoding='utf_8',errors='ignore') as file:
             fullText = file.read()
             # https://www.cl.cam.ac.uk/~mgk25/ucs/quotes.html
@@ -313,7 +314,8 @@ def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFil
     changed_values=[]
     for doc in inputDocs:
         index = index + 1
-        print("\nProcessing file " + str(index) + "/" + str(Ndocs) + " " + doc)
+        head, tail = os.path.split(doc)
+        print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
 
         with open(doc, 'r+',encoding='utf_8',errors='ignore') as file:
             fullText = file.read()

@@ -47,7 +47,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
     if parser == 0 and CoNLL_table_analyzer_var == 0 and CoreNLP_annotators_var == 0:
         mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
 
-    if CoreNLP_annotators_var == True and CoreNLP_annotators_menu_var == 'Coreference PRONOMINAL resolution':
+    if CoreNLP_annotators_var == True and 'Coreference PRONOMINAL resolution' in CoreNLP_annotators_menu_var:
         if IO_libraries_util.inputProgramFileCheck("Stanford_CoreNLP_coReference_util.py") == False:
             return
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(inputFilename, inputDir,
@@ -448,7 +448,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 
 CoreNLP_annotators_menu_var.set("")
 CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var,
-        'Coreference PRONOMINAL resolution (Neural Network)', 'Coreference PRONOMINAL resolution (Statistical)','Coreference PRONOMINAL resolution (Deterministic)',
+        'Coreference PRONOMINAL resolution (Neural Network)',
         'DepRel annotator', 'POS annotator',
         'NER annotator', 'Normalized NER date', 'Gender annotator (Neural Network)', 'Quote/dialogue annotator (Neural Network)',
         'Sentiment analysis (Neural Network)')
