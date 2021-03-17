@@ -18,8 +18,6 @@ If you encounter any problems, feel free to [start a new issue](https://github.c
 
 # Update Instructions
 
-- If you are updating NLP Suite from a pre-Github version, please follow [this tutorial](https://docs.google.com/document/d/1zub18qle0OXV8BeE1X2t9iR8PW7ZnY01Mbb1f0YvBto/edit).
-
 To update the program to the newest version, simply double click update.command. 
 
 The program will also automatically update on exit.
