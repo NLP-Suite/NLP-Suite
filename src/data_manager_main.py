@@ -68,6 +68,8 @@ def extract_from_csv(path, output_path, data_files, csv_file_field_list):
     sign_var = [s.split(',')[2] for s in csv_file_field_list]
     value_var = [s.split(',')[3] for s in csv_file_field_list]
     headers = [s.split(',')[1] for s in csv_file_field_list]
+    if len(data_files) <= 1:
+        data_files = data_files * len(headers)
     df_list = []
     value: str
     for (sign, value, header, df) in zip(sign_var, value_var, headers, data_files):
