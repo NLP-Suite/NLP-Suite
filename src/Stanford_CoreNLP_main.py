@@ -67,6 +67,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
     outputCoNLLfilePath = ''
 
+
     # parser ---------------------------------------------------------------------------------------------------------------------------
 
     if parser:

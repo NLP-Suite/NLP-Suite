@@ -1045,7 +1045,6 @@ def process_json_deprel(documentID, document, sentenceID, recordID,json, **kwarg
             result.append(temp)           
     return result
 
-
 def process_json_parser(documentID, document, sentenceID, recordID, pcfg, json, **kwargs):
     print("   Processing Json output file for Parser")
     extract_date_from_filename_var = False
