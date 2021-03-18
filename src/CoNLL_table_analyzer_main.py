@@ -18,7 +18,7 @@ import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
 import Stanford_CoreNLP_tags_util
-from data_manager_main import run
+
 # more imports (e.g., import CoNLL_clause_analysis_util) are called below under separate if statements
 
 

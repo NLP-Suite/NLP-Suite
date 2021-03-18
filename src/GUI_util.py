@@ -410,7 +410,7 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, 
         y_multiplier_integer=y_multiplier_integer+1
 
     readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
-    readme_button.place(x=GUI_IO_util.get_help_button_x_coordinate(),y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+    readme_button.place(x=GUI_IO_util.read_button_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     video_options=['No videos available']
     videos_dropdown_field.set('Watch videos')
@@ -422,7 +422,7 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, 
         else:
             videos_menu_lb = tk.OptionMenu(window,videos_dropdown_field,*video_options)
             videos_menu_lb.configure(foreground="red")
-    videos_menu_lb.place(x=GUI_IO_util.get_help_button_x_coordinate()+100,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+    videos_menu_lb.place(x=GUI_IO_util.watch_videos_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     tips_dropdown_field.set('Open TIPS files')
     if len(TIPS_lookup)==1:
@@ -434,7 +434,7 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, 
     else:
         tips_menu_lb = tk.OptionMenu(window,tips_dropdown_field,*TIPS_options)
         tips_menu_lb.configure(foreground="red")
-    tips_menu_lb.place(x=GUI_IO_util.get_help_button_x_coordinate()+270,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+    tips_menu_lb.place(x=GUI_IO_util.open_TIPS_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     TIPS_util.trace_open_tips(tips_dropdown_field,tips_menu_lb,TIPS_lookup)
 
@@ -463,14 +463,15 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, 
     else:
         reminders_menu_lb = tk.OptionMenu(window,reminders_dropdown_field,*reminder_options)
         reminders_menu_lb.configure(foreground="red")
-    reminders_menu_lb.place(x=GUI_IO_util.get_help_button_x_coordinate()+470,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+    reminders_menu_lb.place(x=GUI_IO_util.open_reminders_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     def trace_reminders_dropdown(*args):
         if len(reminder_options)>0:
             reminders_util.resetReminder(config_filename,reminders_dropdown_field.get())
     reminders_dropdown_field.trace('w', trace_reminders_dropdown)
 
-    run_button.place(x=GUI_IO_util.get_help_button_x_coordinate()+700, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+    # get_help_button_x_coordinate()+700
+    run_button.place(x=GUI_IO_util.run_button_x_coordinate, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     def _close_window():
         configArray = \
@@ -485,7 +486,8 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, 
 
     # quit_button = tk.Button(window, text='QUIT', width=10,height=2, command=lambda: GUI_IO_util.exit_window(window,config_filename,configArray))
     quit_button = tk.Button(window, text='QUIT', width=10,height=2, command=lambda: _close_window())
-    quit_button.place(x=GUI_IO_util.get_help_button_x_coordinate()+820,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+    # get_help_button_x_coordinate()+820
+    quit_button.place(x=GUI_IO_util.quit_button_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     # Any message should be displayed after the whole GUI has been displayed
     

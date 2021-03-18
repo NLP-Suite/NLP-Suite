@@ -450,8 +450,12 @@ CoreNLP_annotators_menu_var.set("")
 CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var,
         'Coreference PRONOMINAL resolution (Neural Network)',
         'DepRel annotator', 'POS annotator',
-        'NER annotator', 'Normalized NER date', 'Gender annotator (Neural Network)', 'Quote/dialogue annotator (Neural Network)',
-        'Sentiment analysis (Neural Network)')
+        'NER annotator', 'Normalized NER date',
+        'Gender annotator (Neural Network)',
+        'Quote/dialogue annotator (Neural Network)',
+        'Sentiment analysis (Neural Network)',
+        'OpenIE - SVO extraction (Neural Network)')
+
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                CoreNLP_annotators_menu)
 
@@ -469,6 +473,8 @@ def activate_CoreNLP_annotators_menu(*args):
             y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 400,
                                                            y_multiplier_integer,
                                                            manual_Coref_checkbox)
+        else:
+            manual_Coref_checkbox.place_forget()  # invisible
     else:
         manual_Coref_checkbox.place_forget()  # invisible
         CoreNLP_annotators_menu.configure(state='disabled')

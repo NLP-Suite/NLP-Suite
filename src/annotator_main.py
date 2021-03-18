@@ -272,7 +272,7 @@ DBpedia_menu_options=(
 		'MedicalSpecialty',
 		'Medicine',
 		'Name',
-		'PersonFunction',
+		'Person',
 		'Place',
 		'Population',
 		'Protocol',
