@@ -80,13 +80,6 @@ def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, cente
         y_multiplier_integer = y_multiplier_integer+1
     return y_multiplier_integer
 
-# entry_box_x_coordinate=0 # set below for different platforms
-# open_file_directory_coordinate=0 # set below for different platforms
-
-# if sys.platform == 'darwin': #Mac OS
-#     entry_box_x_coordinate = 440 #start point of all labels in the third  column (second column after ? HELP)
-# else:
-#     entry_box_x_coordinate = 400 #start point of all labels in the third  column (second column after ? HELP)
 
 if sys.platform == 'darwin': #Mac OS
     help_button_x_coordinate = 90
