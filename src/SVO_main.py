@@ -339,7 +339,19 @@ def run(inputFilename, inputDir, outputDir,
 
     # CoreNLP OpenIE _____________________________________________________
     if SENNA_SVO_extractor_var==True:
-        semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts)
+
+        files = []
+        if save_intermediate_file:
+            for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
+                files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='', outputDir=outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts)
+        else:
+            files = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts)
+        filesToOpen.extend(files)
+        if openOutputFiles:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+
+        for file in files:
+            svo_result_list.append(file)
 
     if not isFile:
         outputSVODir = os.path.join(outputDir, "SVO_Result")
@@ -562,12 +574,12 @@ def run(inputFilename, inputDir, outputDir,
                     out_file = wordclouds_util.display_wordCloud_sep_color(f, outputDir, currenttext, color_to_words,
                                                                            "")
                     myfile.close()
-                    if "-merge-svo" in f:
+                    if "-merge-svo" in f or "SENNA_SVO" in f:
                         filesToOpen.append(out_file)
                     if not merge_file_option and not save_intermediate_file:
                         png_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if f.endswith('.png')]
                         for f in png_files:
-                            if "-merge-svo" not in f:
+                            if "-merge-svo" not in f and "SENNA_SVO" not in f:
                                 os.remove(f)
         # GIS maps _____________________________________________________
 
@@ -758,15 +770,15 @@ CoRef_var.trace('w',activateCoRefOptions)
 activateCoRefOptions()
 
 date_extractor_checkbox = tk.Checkbutton(window, text='Extract normalized NER dates (via Stanford CoreNLP)', variable=date_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,date_extractor_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate,y_multiplier_integer,date_extractor_checkbox)
 
 CoreNLP_SVO_extractor_var.set(1)
 SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs (via Stanford CoreNLP OpenIE)', variable=CoreNLP_SVO_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SVO_extractor_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SVO_extractor_checkbox,True)
 
 SENNA_SVO_extractor_var.set(0)
 SV_extractor_checkbox = tk.Checkbutton(window, state='disabled', text='Extract SVOs & SVs (via SENNA)', variable=SENNA_SVO_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,SV_extractor_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate+400,y_multiplier_integer,SV_extractor_checkbox)
 
 def activateFilters(*args):
     if CoreNLP_SVO_extractor_var.get()==1:
@@ -788,10 +800,11 @@ def activateFilters(*args):
             subjects_checkbox.configure(state='normal')
             verbs_checkbox.configure(state='normal')
             objects_checkbox.configure(state='disabled')
-            gephi_var.set(0)
+            gephi_var.set(1)
             wordcloud_var.set(1)
             google_earth_var.set(1)
-            gephi_checkbox.configure(state='disabled')
+            gephi_checkbox.configure(state='normal')
+            # gephi_checkbox.configure(state='disabled')
             wordcloud_checkbox.configure(state='normal')
             google_earth_checkbox.configure(state='normal')
         else:
