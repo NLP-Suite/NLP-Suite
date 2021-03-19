@@ -260,14 +260,13 @@ def processFile(inputPath, outputPath, filename, output_filename,
             fileFound = False
 
     if list_var == 1 and fileFound:
-        # if utf8_var==1:
-        #     import chardet
-        #     the_encoding = chardet.detect(b'filename)['encoding']
-        #
-        #     try:
-        #         filename.encode('utf-8')
-        #     except UnicodeError:
-        #         print('   Filename ' + filename + ' is not utf-8')
+        if utf8_var==1:
+            try:
+                # none of these options break the code
+                filename.encode(sys.getfilesystemencoding())
+                print(filename)
+            except UnicodeEncodeError:
+                print('   Filename ' + filename + ' is not utf-8')
         # ASCII_var,
 
         # old_file=filename

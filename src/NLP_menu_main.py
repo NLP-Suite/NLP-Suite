@@ -232,6 +232,8 @@ pydict["Word clouds"] = ["wordclouds_main.py", 1]
 pydict["WordNet"] = ["WordNet_main.py", 1]
 pydict["Word2Vec (via Gensim)"] = ["", 0]
 
+# NLP Suite team & How to cite are in GUI_util
+
 data_file_handling_tools_var = tk.StringVar()
 pre_processing_tools_var = tk.StringVar()
 statistical_tools_var = tk.StringVar()
