@@ -80,21 +80,31 @@ def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, cente
         y_multiplier_integer = y_multiplier_integer+1
     return y_multiplier_integer
 
-help_button_x_coordinate = 50
-labels_x_coordinate = 120  #start point of all labels in the second column (first column after ? HELP)
-labels_x_indented_coordinate = 140
-entry_box_x_coordinate=0 # set below for different platforms
-open_file_directory_coordinate=0 # set below for different platforms
 
 if sys.platform == 'darwin': #Mac OS
-    entry_box_x_coordinate = 440 #start point of all labels in the third  column (second column after ? HELP)
-else:
-    entry_box_x_coordinate = 400 #start point of all labels in the third  column (second column after ? HELP)
-
-if sys.platform == 'darwin': #Mac OS
+    help_button_x_coordinate = 90
+    labels_x_coordinate = 150  # start point of all labels in the second column (first column after ? HELP)
+    labels_x_indented_coordinate = 160
     open_file_directory_coordinate = 400
+    entry_box_x_coordinate = 440 #start point of all labels in the third  column (second column after ? HELP)
+    read_button_x_coordinate = 70
+    watch_videos_x_coordinate = 200
+    open_TIPS_x_coordinate = 370
+    open_reminders_x_coordinate = 570
+    run_button_x_coordinate = 860
+    quit_button_x_coordinate = 980
 else: #windows and anything else
+    help_button_x_coordinate = 50
+    labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
+    labels_x_indented_coordinate = 140
     open_file_directory_coordinate = 350
+    entry_box_x_coordinate = 400 #start point of all labels in the third  column (second column after ? HELP)
+    read_button_x_coordinate = 50
+    watch_videos_x_coordinate = 170
+    open_TIPS_x_coordinate = 350
+    open_reminders_x_coordinate = 550
+    run_button_x_coordinate = 840
+    quit_button_x_coordinate = 960
 
 basic_y_coordinate = 90
 y_step = 40 #the line-by-line increment on the GUI

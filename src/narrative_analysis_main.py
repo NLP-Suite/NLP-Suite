@@ -76,7 +76,7 @@ def run(inputFilename,inputdirname, outdirname,
             return
         call("python WordNet_main.py", shell=True)
 
-    if characters_DBpedia_YAGO_var == True or characters_DBpedia_YAGO_var == True or action_DBpedia_YAGO_var == True:
+    if characters_DBpedia_YAGO_var == True or characters_DBpedia_YAGO_var == True or space_DBpedia_YAGO_var==True or action_DBpedia_YAGO_var == True:
         if IO_libraries_util.inputProgramFileCheck('annotator_main.py') == False:
             return
         call("python annotator_main.py", shell=True)
