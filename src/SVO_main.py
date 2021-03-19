@@ -191,11 +191,6 @@ def run(inputFilename, inputDir, outputDir,
     merge_file_option = None
     save_intermediate_file = False
 
-    if (CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False):
-        mb.showerror(title='No SVO option selected',
-                     message="No SVO option selected, Stanford CoreNLP and/or SENNA.\n\nPlease, select an SVO option and try again.")
-        return
-
     if len(inputDir) > 0:
         msgbox_merge_file = mb.askyesno("Merge File Option", "You selected to process a directory of files.\n\n" +
                                     "DO YOU WANT TO MERGE FILES INTO A SINGLE ONE AND PROCESS THE MERGED FILE?\n\n" +
@@ -329,6 +324,7 @@ def run(inputFilename, inputDir, outputDir,
                                                             'normalized-date', False, memory_var)
         filesToOpen.extend(files)
 
+
         #date_extractor.run(CoreNLPdir, inputFilename, inputDir, outputDir, False, False, True)
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
                             'Finished running Stanford CoreNLP date annotator at', True)
@@ -337,12 +333,25 @@ def run(inputFilename, inputDir, outputDir,
 
     # CoreNLP OpenIE _____________________________________________________
     if SENNA_SVO_extractor_var==True:
-        semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts)
+        files = []
+        if save_intermediate_file:
+            for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
+                files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='', outputDir=outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts)
+        else:
+            files = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts)
+        filesToOpen.extend(files)
+        IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
+                                           'Finished running Senna at', True)
+        if openOutputFiles:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+
+        for file in files:
+            svo_result_list.append(file)
 
     if not isFile:
         outputSVODir = os.path.join(outputDir, "SVO_Result")
     else:
-        outputSVODir=''
+        outputSVODir = ''
 
     if CoreNLP_SVO_extractor_var==True:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
@@ -350,9 +359,9 @@ def run(inputFilename, inputDir, outputDir,
         if isFile:
             subprocess.call(['java', '-jar', '-Xmx'+str(memory_var)+"g", 'Stanford_CoreNLP_OpenIE.jar', '-inputFile', feed_to_svo, '-outputDir', outputDir])
         else:
-            if not os.path.exists(os.path.dirname(outputSVODir)):
+            if not os.path.exists(outputSVODir):
                 try:
-                    os.makedirs(os.path.dirname(outputSVODir))
+                    os.makedirs(outputSVODir)
                 except OSError as exc:
                     if exc.errno != errno.EEXIST:
                         raise
@@ -383,7 +392,6 @@ def run(inputFilename, inputDir, outputDir,
                     original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-CoRefed-svoResult-woFilter", ""))
                 elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-CoRefed" not in tmp):
                     original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
-
 
         if merge_file_option == False:
             # create a single merged file
@@ -527,12 +535,12 @@ def run(inputFilename, inputDir, outputDir,
             else:
                 for f in svo_result_list:
                     gexf_file = Gephi_util.create_gexf(os.path.basename(f)[:-4], outputDir, f)
-                    if "-merge-svo" in f:
+                    if "-merge-svo" in f or "SENNA_SVO" in f:
                         filesToOpen.append(gexf_file)
                     if not save_intermediate_file:
                         gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if f.endswith('.gexf')]
                         for f in gexf_files:
-                            if "-merge-svo" not in f:
+                            if "-merge-svo" not in f and "SENNA_SVO" not in f:
                                 os.remove(f)
 
         # wordcloud  _________________________________________________
@@ -559,12 +567,12 @@ def run(inputFilename, inputDir, outputDir,
                     out_file = wordclouds_util.display_wordCloud_sep_color(f, outputDir, currenttext, color_to_words,
                                                                            "")
                     myfile.close()
-                    if "-merge-svo" in f:
+                    if "-merge-svo" in f or "SENNA_SVO" in f:
                         filesToOpen.append(out_file)
                     if not merge_file_option and not save_intermediate_file:
                         png_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if f.endswith('.png')]
                         for f in png_files:
-                            if "-merge-svo" not in f:
+                            if "-merge-svo" not in f and "SENNA_SVO" not in f:
                                 os.remove(f)
         # GIS maps _____________________________________________________
 
@@ -759,11 +767,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 CoreNLP_SVO_extractor_var.set(1)
 SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs (via Stanford CoreNLP OpenIE)', variable=CoreNLP_SVO_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SVO_extractor_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SVO_extractor_checkbox,True)
 
 SENNA_SVO_extractor_var.set(0)
 SV_extractor_checkbox = tk.Checkbutton(window, state='disabled', text='Extract SVOs & SVs (via SENNA)', variable=SENNA_SVO_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,SV_extractor_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate+400,y_multiplier_integer,SV_extractor_checkbox)
 
 def activateFilters(*args):
     if CoreNLP_SVO_extractor_var.get()==1:
@@ -785,10 +793,10 @@ def activateFilters(*args):
             subjects_checkbox.configure(state='normal')
             verbs_checkbox.configure(state='normal')
             objects_checkbox.configure(state='disabled')
-            gephi_var.set(0)
+            gephi_var.set(1)
             wordcloud_var.set(1)
             google_earth_var.set(1)
-            gephi_checkbox.configure(state='disabled')
+            gephi_checkbox.configure(state='normal')
             wordcloud_checkbox.configure(state='normal')
             google_earth_checkbox.configure(state='normal')
         else:
