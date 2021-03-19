@@ -76,7 +76,7 @@ def extract_from_csv(path, output_path, data_files, csv_file_field_list):
         if sign == "''" and value == "''":
             df_list.append(df[[header]])
         else:
-            if '\'' not in value:
+            if '\'' not in value and not value.isdigit():
                 value = '\'' + value + '\''
             query = header + sign + value
             result = df.query(query, engine='python')
