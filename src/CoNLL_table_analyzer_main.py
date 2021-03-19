@@ -580,7 +580,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
                                                select_csv_field_extract_menu, True)
 
 comparator_var = tk.StringVar()
-comparator_menu = tk.OptionMenu(window, comparator_var, '<', '<=', '==', '>=', '>', '<>')
+comparator_menu = tk.OptionMenu(window, comparator_var, 'not equals', 'equals', 'greater than',
+                                    'greater than or equals', 'less than', 'less than or equals')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 410, y_multiplier_integer,
                                                comparator_menu, True)
 
