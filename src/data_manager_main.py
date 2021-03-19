@@ -72,7 +72,10 @@ def extract_from_csv(path, output_path, data_files, csv_file_field_list):
         data_files = data_files * len(headers)
     df_list = []
     value: str
+    header: str
     for (sign, value, header, df) in zip(sign_var, value_var, headers, data_files):
+        if ' ' in header:
+            header = "`" + header + "`"
         if sign == "''" and value == "''":
             df_list.append(df[[header]])
         else:
