@@ -193,11 +193,11 @@ def GUI_top(config_input_output_options,config_filename):
         display_logo()
 
         if config_filename=='NLP-config.txt':
-            team_button = tk.Button(window, text='NLP Suite team', width=15, height=1, foreground="red",
+            team_button = tk.Button(window, text='NLP Suite team', width=13, height=1, foreground="red",
                                     command=lambda: GUI_IO_util.list_team(window, config_filename))
             y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), 0,
                                                            team_button, True)
-            cite_button = tk.Button(window, text='How to cite', width=15, height=1, foreground="red",
+            cite_button = tk.Button(window, text='How to cite', width=13, height=1, foreground="red",
                                     command=lambda: GUI_IO_util.cite_NLP(window, config_filename))
             y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 150, 0,
                                                            cite_button)

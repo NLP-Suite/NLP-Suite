@@ -88,11 +88,11 @@ if sys.platform == 'darwin': #Mac OS
     open_file_directory_coordinate = 400
     entry_box_x_coordinate = 440 #start point of all labels in the third  column (second column after ? HELP)
     read_button_x_coordinate = 70
-    watch_videos_x_coordinate = 170
-    open_TIPS_x_coordinate = 340
-    open_reminders_x_coordinate = 540
-    run_button_x_coordinate = 920
-    quit_button_x_coordinate = 1040
+    watch_videos_x_coordinate = 200
+    open_TIPS_x_coordinate = 370
+    open_reminders_x_coordinate = 570
+    run_button_x_coordinate = 860
+    quit_button_x_coordinate = 980
 else: #windows and anything else
     help_button_x_coordinate = 50
     labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
@@ -100,11 +100,11 @@ else: #windows and anything else
     open_file_directory_coordinate = 350
     entry_box_x_coordinate = 400 #start point of all labels in the third  column (second column after ? HELP)
     read_button_x_coordinate = 50
-    watch_videos_x_coordinate = 150
-    open_TIPS_x_coordinate = 320
-    open_reminders_x_coordinate = 520
-    run_button_x_coordinate = 900
-    quit_button_x_coordinate = 1020
+    watch_videos_x_coordinate = 170
+    open_TIPS_x_coordinate = 350
+    open_reminders_x_coordinate = 550
+    run_button_x_coordinate = 840
+    quit_button_x_coordinate = 960
 
 basic_y_coordinate = 90
 y_step = 40 #the line-by-line increment on the GUI
