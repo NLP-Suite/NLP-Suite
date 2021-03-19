@@ -35,7 +35,7 @@ def get_comparator(phrase: str) -> str:
     elif phrase == 'greater than or equals':
         return '>='
     elif phrase == 'less than':
-        return '<='
+        return '<'
     elif phrase == 'less than or equals':
         return '<='
     else:
