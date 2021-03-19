@@ -25,6 +25,24 @@ def listToString(s, sep):
     return str1[:-1]
 
 
+def get_comparator(phrase: str) -> str:
+    if phrase == 'not equals':
+        return '!='
+    elif phrase == 'equals':
+        return '=='
+    elif phrase == 'greater than':
+        return '>'
+    elif phrase == 'greater than or equals':
+        return '>='
+    elif phrase == 'less than':
+        return '<'
+    elif phrase == 'less than or equals':
+        return '<='
+    else:
+        return ''
+        # assert False, "Invalid comparator phrase"
+
+
 def select_csv(files):
     for file in files:
         df = pd.read_csv(file)
@@ -72,11 +90,19 @@ def extract_from_csv(path, output_path, data_files, csv_file_field_list):
         data_files = data_files * len(headers)
     df_list = []
     value: str
+    header: str
     for (sign, value, header, df) in zip(sign_var, value_var, headers, data_files):
+        if ' ' in header:
+            header = "`" + header + "`"
         if sign == "''" and value == "''":
             df_list.append(df[[header]])
         else:
-            if '\'' not in value:
+            sign = get_comparator(sign)
+            if sign=='':
+                mb.showwarning(title='Missing sign condition',
+                               message="Please include a sign condition for the \'WHERE\' widget!")
+                return
+            if '\'' not in value and not value.isdigit():
                 value = '\'' + value + '\''
             query = header + sign + value
             result = df.query(query, engine='python')
@@ -98,10 +124,10 @@ def extract_from_csv(path, output_path, data_files, csv_file_field_list):
                                           left_index=True)
         elif csv_file_field_list[index].split(',')[4] == '' and index != len(df_list) - 1:
             mb.showwarning(title='Missing and/or condition',
-                           message="Please include an and/or condition between each where condition on column you want to extract!")
+                           message="Please include an and/or condition between each WHERE condition on the column you want to extract!")
         else:
             pass
-    df_extract.to_csv(outputFilename)
+    df_extract.to_csv(outputFilename,index=False)
     filesToOpen.append(outputFilename)
     return filesToOpen
 
@@ -249,7 +275,6 @@ if __name__ == '__main__':
         and_or_var.set('')
         GUI_util.clear("Escape")
 
-
     window.bind("<Escape>", clear)
 
 
@@ -267,7 +292,7 @@ if __name__ == '__main__':
         concatenate_checkbox.config(state='normal')
         append_checkbox.config(state='normal')
         extract_checkbox.config(state='normal')
-        purge_row_var.config(state='normal')
+        purge_row_checkbox.config(state='normal')
 
         # a text widget is read only when disabled
         csv_file_field.configure(state='normal')
@@ -584,12 +609,13 @@ if __name__ == '__main__':
     # rather than entering the value?
 
     comparator_var = tk.StringVar()
-    comparator_menu = tk.OptionMenu(window, comparator_var, '<', '<=', '==', '>=', '>', '<>')
+    comparator_menu = tk.OptionMenu(window, comparator_var, 'not equals', 'equals', 'greater than',
+                                    'greater than or equals', 'less than', 'less than or equals')
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 450, y_multiplier_integer,
                                                    comparator_menu, True)
 
-    where_lb = tk.Label(window, text='Enter value (WHERE)')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 530, y_multiplier_integer,
+    where_lb = tk.Label(window, text='WHERE')
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 590, y_multiplier_integer,
                                                    where_lb, True)
 
     where_entry_var = tk.StringVar()
