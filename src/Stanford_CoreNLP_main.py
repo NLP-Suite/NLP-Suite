@@ -20,6 +20,7 @@ import reminders_util
 import IO_internet_util
 import Stanford_CoreNLP_annotator_util
 import Stanford_CoreNLP_coreference_util
+import IO_CoNLL_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -33,7 +34,7 @@ import Stanford_CoreNLP_coreference_util
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, memory_var,
         manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat,
-        compute_sentence, CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var):
+        compute_sentence_var, CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var):
     # check internet connection
     filesToOpen = []
 
@@ -81,6 +82,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
             if len(tempOutputFiles) > 0:
                 filesToOpen.extend(tempOutputFiles)
+                if compute_sentence_var:
+                    tempOutputFile = IO_CoNLL_util.compute_sentence_table(tempOutputFiles[0], outputDir)
+                    filesToOpen.append(tempOutputFile)
 
         # Parser (Neural Network) ------------------------------
         if parser_menu_var == 'Neural Network':
@@ -94,6 +98,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
             if len(tempOutputFiles) > 0:
                 filesToOpen.extend(tempOutputFiles)
+                if compute_sentence_var:
+                    tempOutputFile = IO_CoNLL_util.compute_sentence_table(tempOutputFiles[0], outputDir)
+                    filesToOpen.append(tempOutputFile)
 
         if CoNLL_table_analyzer_var and len(filesToOpen)>0:
             if IO_libraries_util.inputProgramFileCheck('CoNLL_table_analyzer_main.py') == False:
@@ -207,8 +214,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
             if len(tempOutputFiles)>0:
                 filesToOpen.extend(tempOutputFiles)
                 
-        if openOutputFiles:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+    if openOutputFiles:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
@@ -408,6 +415,7 @@ sentence_table_checkbox = tk.Checkbutton(window, text='Compute sentence table', 
                                          onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                sentence_table_checkbox, True)
+
 sentence_table_checkbox_msg = tk.Label()
 sentence_table_checkbox_msg.config(text="Compute sentence table")
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
@@ -418,8 +426,6 @@ def check_sentence_table(*args):
         sentence_table_checkbox_msg.config(text="Compute sentence table")
     else:
         sentence_table_checkbox_msg.config(text="Do NOT compute sentence table")
-
-
 compute_sentence_var.trace('w', check_sentence_table)
 
 CoNLL_table_analyzer_var.set(1)
