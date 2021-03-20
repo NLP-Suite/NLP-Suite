@@ -417,7 +417,7 @@ if __name__ == '__main__':
 
     def add_field_to_list(operation, menu_choice, visualizeBuildString=True):
         # skip empty values and csv fields already selected
-        if select_csv_field_merge_var.get == '' and select_csv_field_concatenate_var.get() == '' and select_csv_field_append_var.get() == '' and select_csv_field_extract_var.get() == '':
+        if select_csv_field_merge_var.get() == '' and select_csv_field_concatenate_var.get() == '' and select_csv_field_append_var.get() == '' and select_csv_field_extract_var.get() == '':
             return
 
         buildString = selectedCsvFile_var.get() + "," + menu_choice
@@ -487,10 +487,10 @@ if __name__ == '__main__':
 
     def build_merge_string(comingFrom_Plus, comingFrom_OK):
         add_field_to_list("merge", select_csv_field_merge_var.get(), comingFrom_OK)
-        if comingFrom_Plus == True:
-            mb.showwarning(title='Warning',
-                           message='With the MERGE option you cannot select another csv column/field. You can only add another file and a field from that file to serve as match with the already selected field(s).\n\nYou will be redirected to selecting a new csv file.')
-            get_additional_csvFile(window, 'Select INPUT csv file', [("csv files", "*.csv")])
+        # if comingFrom_Plus == True:
+        #     mb.showwarning(title='Warning',
+        #                    message='With the MERGE option you cannot select another csv column/field. You can only add another file and a field from that file to serve as match with the already selected field(s).\n\nYou will be redirected to selecting a new csv file.')
+        #     get_additional_csvFile(window, 'Select INPUT csv file', [("csv files", "*.csv")])
         activate_csv_fields_selection('merge', merge_var.get(), comingFrom_Plus, comingFrom_OK)
 
 
