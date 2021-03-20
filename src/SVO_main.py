@@ -359,9 +359,9 @@ def run(inputFilename, inputDir, outputDir,
         if isFile:
             subprocess.call(['java', '-jar', '-Xmx'+str(memory_var)+"g", 'Stanford_CoreNLP_OpenIE.jar', '-inputFile', feed_to_svo, '-outputDir', outputDir])
         else:
-            if not os.path.exists(outputSVODir):
+            if not os.path.exists(os.path.dirname(outputSVODir)):       # Is os.path.dirname(outputSVODir) the same as outputSVODir?
                 try:
-                    os.makedirs(outputSVODir)
+                    os.makedirs(os.path.dirname(outputSVODir))
                 except OSError as exc:
                     if exc.errno != errno.EEXIST:
                         raise
