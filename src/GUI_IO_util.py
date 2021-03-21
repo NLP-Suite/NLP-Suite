@@ -98,7 +98,7 @@ else: #windows and anything else
     labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 140
     open_file_directory_coordinate = 350
-    entry_box_x_coordinate = 400 #start point of all labels in the third  column (second column after ? HELP)
+    entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
     read_button_x_coordinate = 50
     watch_videos_x_coordinate = 170
     open_TIPS_x_coordinate = 350
@@ -159,7 +159,7 @@ Several Emory undergraduate students have contributed over the years to the deve
         Angel Xie\n\
         Catherine Xie\n\
         Doris Zhou\n\n\
-JOIN THE TEAM: If you want to contribute to the continued development of the NLP Suite, please write to Roberto Franzosi at rfranzo@emory.edu\n\n\
+JOIN THE TEAM: If you want to contribute to the continued development of the NLP Suite, please write to Roberto Franzosi at rfranzo@emory.edu or join directly via GitHub at https://github.com/NLP-Suite/NLP-Suite\n\n\
 LICENSE: The NLP Suite is freely distributed under a GNU License Agreement.\n\n\
 ACKNOWLEDGMENT: Acknowledgment of the use of the package in the form of citation would be greatly appreciated (click on the button How to cite).\n\n\
 BUGS: If you find and fix bugs, keeping us informed would also be greatly appreciated.')
