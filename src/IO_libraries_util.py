@@ -190,11 +190,13 @@ def get_existing_software_config():
                         ['WordNet', '', 'https://wordnet.princeton.edu/download/current-version']]
     return existing_csv
 
+
 def save_software_config(new_csv):
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
     with open(software_config, 'w+', newline='') as csv_file:
         writer = csv.writer(csv_file)
         writer.writerows(new_csv)
+
 
 def get_external_software_dir(calling_script, package, warning=True):
     # get a list of software in software-config.csv

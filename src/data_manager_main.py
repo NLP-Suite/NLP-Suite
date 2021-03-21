@@ -485,7 +485,7 @@ if __name__ == '__main__':
         add_field_to_list("merge", select_csv_field_merge_var.get(), comingFrom_OK)
         if comingFrom_Plus == True:
             mb.showwarning(title='Warning',
-                           message='With the MERGE option you cannot select another csv column/field. You can only add another file and a field from that file to serve as match with the already selected field(s).\n\nYou will be redirected to selecting a new csv file.')
+                           message="With the MERGE option you cannot select another csv column/field. You can only add another file and a field from that file to serve as match with the already selected field(s).\n\nYou will be redirected to selecting a new csv file.")
             get_additional_csvFile(window, 'Select INPUT csv file', [("csv files", "*.csv")])
         activate_csv_fields_selection('merge', merge_var.get(), comingFrom_Plus, comingFrom_OK)
 
