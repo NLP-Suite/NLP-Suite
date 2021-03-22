@@ -17,8 +17,9 @@ import re
 import IO_files_util
 import IO_user_interface_util
 from csv import reader
+import IO_csv_util
 
-# the fuinction associates specific values of a csv file to a specific color
+# the function associates specific values of a csv file to a specific color
 def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
     dictionary = []
     number_of_items = len(csvValue_color_list)
@@ -56,7 +57,7 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
 # returns list of a list of terms with appropriate annotations for each file
 # annotation allows custom tagging style (via csv, etc.)
 
-def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt'):
+def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt'):
 
     writeout = []
     filesToOpen = []
@@ -67,7 +68,15 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csvValue_colo
         return
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Dictionary annotator at', True, 'You can follow Dictionary annotator in command line.')
     i=0
-    dictionary, color_list = readCsv(0, 1, dict_file, csvValue_color_list)
+    wordColNum=0
+    catColNum = 1
+    if csv_field1_var!='':
+        headers=IO_csv_util.get_csvfile_headers (dict_file)
+        wordColNum=IO_csv_util.get_columnNumber_from_headerValue(headers,csv_field1_var)
+        catColNum = wordColNum
+    # if csv_field2_var!='':
+    #     catColNum = IO_csv_util.get_columnNumber_from_headerValue(headers,csv_field2_var)
+    dictionary, color_list = readCsv(wordColNum, catColNum, dict_file, csvValue_color_list)
     reserved_dictionary = ['bold', 'color', 'font', 'span', 'style', 'weight']
     # check the dictionary list if any of the reserved annotator terms (bold, color, font, span, style, weight) appear in the list
     #   reserved terms must be processed first to avoid replacing terms twice
@@ -86,7 +95,10 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csvValue_colo
             # check reserved_dictionary list FIRST if any of the reserved annotator terms (bold, color, font, span, style, weight) appear in the list
             #   reserved terms must be processed first to avoid replacing terms twice
             # process reserved tag words first to avoid re-tagging already tagged words leading to tagging errors
+            termID=0
             for term in terms:
+                termID=termID+1
+                print("Annotating \'" + csv_field1_var + "'\" field  + str(termID) + "/" + str(len(terms)) + " " + term)
                 if term not in text:
                     continue
                 for term1 in reserved_dictionary:
