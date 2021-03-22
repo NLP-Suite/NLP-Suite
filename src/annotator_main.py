@@ -682,6 +682,9 @@ def get_csv_fieldValues(*args):
 			csv_field_value_menu.configure(state="normal")
 	else:
 		csv_field_value_menu.configure(state="disabled")
+	# if csv_field1_var.get()!='':
+	# 	if color_palette_dict_var.get()=='':
+	# 		color_palette_dict_var.set('red')
 csv_field1_var.trace('w',get_csv_fieldValues)
 csv_field2_var.trace('w',get_csv_fieldValues)
 
