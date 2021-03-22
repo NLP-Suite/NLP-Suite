@@ -30,10 +30,16 @@ time1=[]
 word_bag=[]
 ##global dataframe
 dict={}
-sentID=[]
-phrase=[]
-link=[]
-ont=[]
+
+
+DocumentID = []
+Document = []
+sentID = []
+Sentence = []
+phrase = []
+link = []
+ont = []
+
 
 
 # This is the main function
@@ -63,11 +69,11 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     IO_files_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running YAGO annotator at', True,
                         '\nAnnotating types: ' + str(categories) + " with associated colors: " + str(colorls))
     i=0
+    docID=0
     for file in files:
             splittedHtmlFileList = []
             i = i + 1
-            head, tail = os.path.split(file)
-            print("Processing file " + str(i) + "/" + str(nFile) + " " + tail)
+            print("Processing file " + str(i) + "/" + str(nFile) + " " + file)
             listOfFiles=[file]
             subFile = 0
             for doc in listOfFiles:
@@ -88,9 +94,10 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
                                                    False,'',True)
 
                 if numberOfAnnotations==0: # default annotation, when no annotation was selected by user
-                    html_content=annotate_default(contents,categories,color1,"blue") # TODO should be colorls
+                    html_content=annotate_default(contents,categories,color1,"blue",doc) # TODO should be colorls
                 else:
-                    html_content=annotate_multiple(contents,categories,color1,colorls)
+                    html_content=annotate_multiple(contents,categories,color1,colorls,doc)
+
                 time_diff=time.time()-time1[len(time1)-1]
                 print("Annotation for the current document took: " + str(time_diff//60) + " mins and " + str(time_diff%60) + " secs")
                 with open(subFilename, 'w+', encoding='utf-8', errors='ignore') as f:
@@ -109,14 +116,23 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
                         os.remove(htmlDoc)  # delete temporary split html file from output directory
                 outfile.close()
             filesToOpen.append(outFilename)
+
+
+
             # print(outFilename)
             # TODO Sentence ID must start from1 rather than CS 0
-            df = pd.DataFrame(list(zip(sentID,phrase,link,ont)),columns=['Sentence ID', 'Token','html','Ontology class'])
             # TODO in the output csv file the html url one should be able to click on it and open the website
             #   in IO_csv_util there is a function def dressFilenameForCSVHyperlink(fileName) that does that for a regular file
-            csvname = outFilename.replace(".html","_")+str(annotationTypes).replace("[", "").replace("]", "").replace("'", "").replace(",", "_")
-            df.to_csv((csvname+".csv"),index=False)
-            filesToOpen.append(csvname+".csv")
+            #csvname = outFilename.replace(".html","_")+str(annotationTypes).replace("[", "").replace("]", "").replace("'", "").replace(",", "_")
+            diff = len(Document) - len(DocumentID)
+            if diff>0:DocumentID.extend([docID]*diff)
+            docID = docID + 1
+    df = pd.DataFrame(list(zip(DocumentID, Document,sentID,Sentence,phrase,link,ont)),columns=['Document ID','Document','Sentence ID','Sentence', 'Token','html','Ontology class'])
+    from datetime import datetime
+    from datetime import date
+    csvname= "YAGO_output_"+date.today().strftime("%b_%d_%Y")+"_"+datetime.now().strftime("%H_%M_%S")+".csv"
+    df.to_csv((csvname),index=False)
+    filesToOpen.append(csvname)
     IO_files_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running YAGO annotator at', True)
     return filesToOpen
 
@@ -139,7 +155,7 @@ def estimate_time(parsed_doc,num_cats,word_bag):
     return
 
 # the function processes YAGO in default mode when no combination of ontology class and color have been selected by the user
-def annotate_default(contents,cats,color1,color2):
+def annotate_default(contents,cats,color1,color2,document_name):
     html_str='<html>\n<body>\n<div>\n'
     tA1 = ['<span style=\"color: ' + color1 + '\">', '</span> ']
     tA2 = ['<a style=\"color:' + color2 + '\" href=\"', '\">', '</a> ']
@@ -163,19 +179,19 @@ def annotate_default(contents,cats,color1,color2):
                 prev_tr=prev_tr+word.lemma+" "
                 prev_og=prev_og+word.text+" "
             elif(word.id==1):##update html string with current token
-                html_str=update_html(html_str,str(word.text),str(word.lemma),cats,tA1,tA2,pos,sent_id,color1,color2)
+                html_str=update_html(html_str,str(word.text),str(word.lemma),cats,tA1,tA2,pos,sent_id,color1,color2,document_name,sent.text)
             else:##update html string with prev[:-1] and then curr token
-                html_str = update_html(html_str, prev_og[:-1], prev_tr[:-1],cats, tA1, tA2,pos,sent_id,color1,color2)
-                html_str= update_html(html_str,str(word.text),str(word.lemma),cats,tA1,tA2,pos,sent_id,color1,color2)
+                html_str = update_html(html_str, prev_og[:-1], prev_tr[:-1],cats, tA1, tA2,pos,sent_id,color1,color2,document_name,sent.text)
+                html_str= update_html(html_str,str(word.text),str(word.lemma),cats,tA1,tA2,pos,sent_id,color1,color2,document_name,sent.text)
                 prev_og=""
                 prev_tr=""
         if(((sent.words[len(sent.words)-1]).text[0]).isupper()):##check if last token of a sent is uppercase
-            html_str=update_html(html_str, prev_og[:-1], prev_tr[:-1],cats, tA1, tA2,pos,sent_id,color1,color2) ##update prev[:-1]
+            html_str=update_html(html_str, prev_og[:-1], prev_tr[:-1],cats, tA1, tA2,pos,sent_id,color1,color2,document_name,sent.text) ##update prev[:-1]
     html_str=html_str+'\n</div>\n</body>\n</html>'
     return html_str
 
 # the function processes YAGO when the user has selected multiple combinations of ontology class and color
-def annotate_multiple(contents,cats,color1,colorls):
+def annotate_multiple(contents,cats,color1,colorls,document_name):
     html_str = '<html>\n<body>\n<div>\n'
     tA1 = ['<span style=\"color: ' + color1 + '\">', '</span> ']
     doc = stannlp(contents)
@@ -194,23 +210,25 @@ def annotate_multiple(contents,cats,color1,colorls):
                 prev_tr = prev_tr + word.lemma + " "
                 prev_og = prev_og + word.text + " "
             elif (word.id == 1):  ##update html string with current token
-                html_str = update_html_colorful(html_str, str(word.text), str(word.lemma), cats, tA1, colorls, pos, sent_id,color1)
+                html_str = update_html_colorful(html_str, str(word.text), str(word.lemma), cats, tA1, colorls, pos, sent_id,color1,document_name,sent.text)
             else:  ##update html string with prev[:-1] and then curr token
-                html_str = update_html_colorful(html_str, prev_og[:-1], prev_tr[:-1], cats, tA1, colorls, pos, sent_id,color1)
-                html_str = update_html_colorful(html_str, str(word.text), str(word.lemma), cats, tA1, colorls, pos, sent_id,color1)
+                html_str = update_html_colorful(html_str, prev_og[:-1], prev_tr[:-1], cats, tA1, colorls, pos, sent_id,color1,document_name,sent.text)
+                html_str = update_html_colorful(html_str, str(word.text), str(word.lemma), cats, tA1, colorls, pos, sent_id,color1,document_name,sent.text)
                 prev_og = ""
                 prev_tr = ""
         if (((sent.words[len(sent.words) - 1]).text[0]).isupper()):  ##check if last token of a sent is uppercase
-            html_str = update_html_colorful(html_str, prev_og[:-1], prev_tr[:-1], cats, tA1, colorls,pos,sent_id,color1)  ##update prev[:-1]
+            html_str = update_html_colorful(html_str, prev_og[:-1], prev_tr[:-1], cats, tA1, colorls,pos,sent_id,color1,document_name,sent.text)  ##update prev[:-1]
     html_str = html_str + '\n</div>\n</body>\n</html>'
     return html_str
 
-def search_dict(phrase_tr,phrase_og,sent_id,curr_html,tA1):
+def search_dict(phrase_tr,phrase_og,sent_id,curr_html,tA1,documentname,sentence):
     if (phrase_tr in dict.keys()):
         values = dict[phrase_tr]
         if (values[0] == ""):##searched for, without annotation
             return (curr_html + tA1[0] + phrase_og + tA1[1])
         else:##searched for, without annotation
+            Document.append(documentname)
+            Sentence.append(sentence)
             sentID.append(sent_id)
             phrase.append(phrase_og)
             link.append(values[0])
@@ -221,8 +239,8 @@ def search_dict(phrase_tr,phrase_og,sent_id,curr_html,tA1):
         return ""
 
 
-def update_html(curr_html,phrase_og,phrase_tr,cats,tA1,tA2,pos,sent_id,color1,color2):
-    sr=search_dict(phrase_tr,phrase_og,sent_id,curr_html,tA1)
+def update_html(curr_html,phrase_og,phrase_tr,cats,tA1,tA2,pos,sent_id,color1,color2,documentname,sentence):
+    sr=search_dict(phrase_tr,phrase_og,sent_id,curr_html,tA1,documentname,sentence)
     if(sr!=""):
         return sr
     if(eligible(phrase_tr)and pos):
@@ -234,6 +252,8 @@ def update_html(curr_html,phrase_og,phrase_tr,cats,tA1,tA2,pos,sent_id,color1,co
             if(len(temp)==1 and fuzz.ratio((split("_Q[0-9]+",[str(x).split("/")[-1:][0] for x in temp][0]))[0],phrase_tr)<42):##without annotation
                 updated_html = curr_html + tA1[0] + phrase_og + tA1[1]
             elif(len(temp)==1):##with annotation
+                Document.append(documentname)
+                Sentence.append(sentence)
                 sentID.append(sent_id)
                 phrase.append(phrase_og)
                 link.append(str(temp[0]))
@@ -245,7 +265,9 @@ def update_html(curr_html,phrase_og,phrase_tr,cats,tA1,tA2,pos,sent_id,color1,co
                 if (temp == ""):##without annotation
                     updated_html = curr_html + tA1[0] + phrase_og + tA1[1]
                 else:##with annotation
+                    Document.append(documentname)
                     sentID.append(sent_id)
+                    Sentence.append(sentence)
                     phrase.append(phrase_og)
                     link.append(str(temp))
                     ont.append("schema:Thing")
@@ -259,8 +281,8 @@ def update_html(curr_html,phrase_og,phrase_tr,cats,tA1,tA2,pos,sent_id,color1,co
     return updated_html
 
 
-def update_html_colorful(curr_html,phrase_og,phrase_tr,cats,tA1,color_ls,pos,sent_id,color1):
-    sr=search_dict(phrase_tr,phrase_og,sent_id,curr_html,tA1)
+def update_html_colorful(curr_html,phrase_og,phrase_tr,cats,tA1,color_ls,pos,sent_id,color1,documentname,sentence):
+    sr=search_dict(phrase_tr,phrase_og,sent_id,curr_html,tA1,documentname,sentence)
     if(sr!=""):
         return sr
     if(eligible(phrase_tr)and pos):
@@ -275,6 +297,8 @@ def update_html_colorful(curr_html,phrase_og,phrase_tr,cats,tA1,color_ls,pos,sen
                 if(len(temp)==1 and fuzz.ratio((split("_Q[0-9]+",[str(x).split("/")[-1:][0] for x in temp][0]))[0],phrase_tr)<42):##without annotation
                     updated_html = curr_html + tA1[0] + phrase_og + tA1[1]
                 elif(len(temp)==1):##with annotation
+                    Document.append(documentname)
+                    Sentence.append(sentence)
                     sentID.append(sent_id)
                     phrase.append(phrase_og)
                     link.append(str(temp[0]))
@@ -286,6 +310,8 @@ def update_html_colorful(curr_html,phrase_og,phrase_tr,cats,tA1,color_ls,pos,sen
                     if(temp==""):##without annotation
                         updated_html = curr_html + tA1[0] + phrase_og + tA1[1]
                     else:##with annotation
+                        Document.append(documentname)
+                        Sentence.append(sentence)
                         sentID.append(sent_id)
                         phrase.append(phrase_og)
                         link.append(str(temp))
