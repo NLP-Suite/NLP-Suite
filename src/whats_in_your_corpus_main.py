@@ -271,7 +271,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1000x430'
+GUI_size='1100x430'
 GUI_label='Graphical User Interface (GUI) for a Sweeping View of Your Corpus'
 config_filename='corpus-config.txt'
 # The 6 values of config_option refer to:
