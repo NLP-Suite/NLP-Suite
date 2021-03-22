@@ -77,7 +77,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
     # if csv_field2_var!='':
     #     catColNum = IO_csv_util.get_columnNumber_from_headerValue(headers,csv_field2_var)
     dictionary, color_list = readCsv(wordColNum, catColNum, dict_file, csvValue_color_list)
-    reserved_dictionary = ['bold', 'color', 'font', 'span', 'style', 'weight']
+    reserved_dictionary = ['bold', 'color', 'font', 'span', 'style', 'weight', 'black', 'blue', 'green', 'pink', 'yellow', 'red']
     # check the dictionary list if any of the reserved annotator terms (bold, color, font, span, style, weight) appear in the list
     #   reserved terms must be processed first to avoid replacing terms twice
 
@@ -90,16 +90,17 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
         # put filename in bold
         tail='<b>' + tail + '</b>'
         writeout.append(tail + '<br />\n')  # add the filename and a hard return
+        termID = 0
+        term_intextID = 0
         if len(csvValue_color_list) == 0:
             terms = dictionary
             # check reserved_dictionary list FIRST if any of the reserved annotator terms (bold, color, font, span, style, weight) appear in the list
             #   reserved terms must be processed first to avoid replacing terms twice
             # process reserved tag words first to avoid re-tagging already tagged words leading to tagging errors
-            termID=0
             for term in terms:
                 termID=termID+1
-                print("Annotating \'" + csv_field1_var + "'\" field  + str(termID) + "/" + str(len(terms)) + " " + term)
-                if term not in text:
+                print("Processing dictionary field '" + csv_field1_var + "' " + str(termID) + "/" + str(len(terms)) + " " + term)
+                if re.search(r'\b' + term + r'\b', text)==None:
                     continue
                 for term1 in reserved_dictionary:
                     if term1 in dictionary:
@@ -111,6 +112,8 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
                         # remove term from dictionary, to avoid double processing in next tagging
                         terms.remove(str(term1))
                         continue
+                term_intextID=term_intextID+1
+                print("   Annotating '" + term + "' in text " + str(term_intextID) + "/" + str(len(text)))
                 tagString = tagAnnotations[0] + term + tagAnnotations[1]
                 # use regular expression replace to check for distinct words (e.g., he not tagging he in held)
                 text = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, text)
@@ -123,7 +126,10 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
                 else:
                     tagAnnotations = ['<span style=\"color: ' + color + '\">','</span>']
                 for term in terms:
-                    if term not in text:
+                    termID = termID + 1
+                    print("Processing dictionary field value " + str(termID) + "/" + str(
+                        len(terms)) + " " + term)
+                    if re.search(r'\b' + term + r'\b', text) == None:
                         continue
                     for term1 in reserved_dictionary:
                         if term1 in terms:
@@ -133,6 +139,8 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
                             # remove term from dictionary, to avoid double processing in next tagging
                             terms.remove(str(term1))
                             continue
+                    term_intextID=term_intextID+1
+                    print("   Annotating '" + term + "' in text " + str(term_intextID) + "/" + str(len(text)))
                     tagString = tagAnnotations[0] + term + tagAnnotations[1]
                     # use regular expression replace to check for distinct words (e.g., he not tagging he in held)
                     text = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, text)
