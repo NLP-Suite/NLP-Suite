@@ -337,8 +337,15 @@ def run(inputFilename, inputDir, outputDir,
         if openOutputFiles:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
-    # CoreNLP OpenIE _____________________________________________________
+    # TODO When both OpenIE and SENNA are run, must export 2 csv files
+    #   one file with the frequency of same SVOs, same SVs, different SVOs, different SVs
+    #   a second file with the same SVO listings of document ID, sentence ID, ..., S, V, O, ... but with a first column Package with values OpenIE or SENNA
+
+    # SENNA _____________________________________________________
     if SENNA_SVO_extractor_var==True:
+        # TODO must use the coreferenced input file if the user selected that option
+        # TODO must filter SVO results by social actors if the user selected that option
+        #   both options run correctly for OppenIE
         files = []
         if save_intermediate_file:
             for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
@@ -357,11 +364,11 @@ def run(inputFilename, inputDir, outputDir,
     else:
         outputSVODir=''
 
+    # CoreNLP OpenIE _____________________________________________________
     if CoreNLP_SVO_extractor_var==True:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                             'Started running Stanford CoreNLP OpenIE to extract SVOs at', True,'You can follow CoreNLP in command line.\n\nContrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chuncks of text being currently processed.')
         if isFile:
-
             subprocess.call(['java', '-jar', '-Xmx'+str(memory_var)+"g", 'Stanford_CoreNLP_OpenIE.jar', '-inputFile', feed_to_svo, '-outputDir', outputDir])
         else:
             if not os.path.exists(os.path.dirname(outputSVODir)):
