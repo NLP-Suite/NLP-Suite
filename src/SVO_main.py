@@ -339,7 +339,6 @@ def run(inputFilename, inputDir, outputDir,
 
     # CoreNLP OpenIE _____________________________________________________
     if SENNA_SVO_extractor_var==True:
-
         files = []
         if save_intermediate_file:
             for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
@@ -795,7 +794,7 @@ def activateFilters(*args):
     else:
         SENNA_SVO_extractor_checkbox.configure(state='normal')
         if SENNA_SVO_extractor_var.get()==True:
-            CoreNLP_SVO_extractor_var.set(1)
+            # CoreNLP_SVO_extractor_var.set(1)
             # SVO_extractor_checkbox.configure(state='disabled')
             subjects_checkbox.configure(state='normal')
             verbs_checkbox.configure(state='normal')
