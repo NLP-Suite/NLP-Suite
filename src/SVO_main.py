@@ -829,7 +829,7 @@ def getDictFile(checkbox_var,dict_var,checkbox_value,dictFile):
         elif dictFile == 'Verb':
             filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-action-list.csv'
         initialFolder = GUI_IO_util.wordLists_libPath
-        filePath = tk.filedialog.askopenfilename(title = 'Select INPUT csv ' + dictFile + ' dictionary filter file', initialdir = initialFolder, filetypes = [("csv files", "*.csv")])
+        filePath = tk.filedialog.askopenfilename(title='Select INPUT csv ' + dictFile + ' dictionary filter file', initialdir = initialFolder, filetypes = [("csv files", "*.csv")])
         if len(filePath)==0:
             checkbox_var.set(0)
     dict_var.set(filePath)
