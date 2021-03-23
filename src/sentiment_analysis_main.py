@@ -35,6 +35,7 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,openOutputFiles, createExcel
     flag="" #used by CoreNLP
     filesToOpen = []  # Store all files that are to be opened once finished
 
+
     if SA_algorithm_var=='':
         mb.showwarning('Warning',"No option has been selected.\n\nPlease, select a Sentiment analysis option and try again.")
         return

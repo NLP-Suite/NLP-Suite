@@ -52,7 +52,7 @@ def classifier(input_first_dir, input_sec_dir,output_dir_path,openOutputFiles, d
         nDocs=nDocs+1
         nTargetDocs=0
         print("\nProcessing folder: ",os.path.basename(os.path.normpath(ungrouped)))
-        print("\n   Processing file: " + str(ungrouped))
+        print("Processing file: " + str(ungrouped))
         # IO_util.timed_alert(GUI_util.window, 5000, 'file classifier', 'Processing file: ' + str(ungrouped))
 
         fname, file_ext = os.path.splitext(ungrouped)

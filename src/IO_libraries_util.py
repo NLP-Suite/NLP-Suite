@@ -154,10 +154,9 @@ def inputExternalProgramFileCheck(software_dir, programName):
         for item in fileList:
             if 'stanford-corenlp' in str(item):
                 return True
-        else:
-            mb.showwarning(title='Software error',
-                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected CoreNLP directory.\n\nPlease, select the appropriate CoreNLP directory and try again!\n\nYou can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\nPlease, read the TIPS_NLP_Stanford CoreNLP download install run.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
-            return False
+        mb.showwarning(title='Software error',
+                       message="The selected software directory\n  " + software_dir + "'\nis NOT the expected CoreNLP directory. The directory should contain, among other things, many files with \'stanford-corenlp\' in the filename.\n\nPlease, select the appropriate CoreNLP directory and try again!\n\nYou can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\nPlease, read the TIPS_NLP_Stanford CoreNLP download install run.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
+        return False
     if programName == 'Mallet':
         # check that Mallet has no spaces in path
         if ' ' in software_dir:
@@ -168,14 +167,21 @@ def inputExternalProgramFileCheck(software_dir, programName):
             return True
         else:
             mb.showwarning(title='Software error',
-                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Mallet directory.\n\nPlease, select the appropriate Mallet directory and try again!\n\nYou can download Mallet at http://mallet.cs.umass.edu/download.php.\n\nPlease, read the TIPS_NLP_Topic modeling Mallet installation.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
+                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Mallet directory. The directory should contain, among other things, the directories \'bin\' and \'class\'.\n\nPlease, select the appropriate Mallet directory and try again!\n\nYou can download Mallet at http://mallet.cs.umass.edu/download.php.\n\nPlease, read the TIPS_NLP_Topic modeling Mallet installation.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
+            return False
+    if programName == 'SENNA':
+        if 'senna-osx' in fileList and 'senna-win32.exe' in fileList:
+            return True
+        else:
+            mb.showwarning(title='Software error',
+                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected SENNA directory. The directory should contain, among other things, the files \'senna-osx\' and \'senna-win32.exe\'.\n\nPlease, select the appropriate SENNA directory and try again!\n\nYou can download SENNA at https://ronan.collobert.com/senna/download.html.")
             return False
     if programName == 'WordNet':
         if 'dict' in fileList and 'src' in fileList:
             return True
         else:
             mb.showwarning(title='Software error',
-                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected WordNet directory.\n\nPlease, select the appropriate WordNet directory and try again!\n\nYou can download WordNet at https://wordnet.princeton.edu/download/current-version.\n\nPlease, read the TIPS_NLP_WordNet.pdf.")
+                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected WordNet directory. The directory should contain, among other things, the directories \'dict\' and \'src\'.\n\nPlease, select the appropriate WordNet directory and try again!\n\nYou can download WordNet at https://wordnet.princeton.edu/download/current-version.\n\nPlease, read the TIPS_NLP_WordNet.pdf.")
             return False
 
 
@@ -188,6 +194,7 @@ def get_existing_software_config():
         existing_csv = [['software', 'path', 'download_link'],
                         ['Stanford CoreNLP', '', 'https://nlp.stanford.edu/software/stanford-corenlp-latest.zip'],
                         ['Mallet', '', 'http://mallet.cs.umass.edu/download.php'],
+                        ['SENNA', '', 'https://ronan.collobert.com/senna/download.html'],
                         ['WordNet', '', 'https://wordnet.princeton.edu/download/current-version']]
     return existing_csv
 
@@ -267,6 +274,8 @@ def get_external_software_dir(calling_script, package, warning=True):
                             software_name='Stanford CoreNLP'
                         if 'mallet' in software_name.lower():
                             software_name='Mallet'
+                        if 'senna' in software_name.lower():
+                            software_name='SENNA'
                         if 'wordnet' in software_name.lower():
                             software_name='WordNet'
                         if inputExternalProgramFileCheck(software_dir, software_name) == True:
