@@ -76,12 +76,12 @@ def install_all_packages(window, calling_script, modules_to_try):
                 if 'stanza' in missingModules:
                     mb.showwarning(title='Warning',
                                    message="To install 'stanza' you will need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch===1.6.0 torchvision===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html\n\nMAKE SURE TO INCLUDE THE HTTPS COMPONENT AFTER -f OR YOU WILL GET THE ERROR: -f option requires 1 argument.\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanza' and 'stanza.download('en')'. At your command prompt/terminal or terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanza\n\nWhen done type:\n\nstanza.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
-            # elif sys.platform=='darwin': #Mac
-            # it seems that on Mac torch and torchvision are installed automatically by stanza
-            #     if 'stanfordnlp' in missingModules:
-            #         mb.showwarning(title='Warning', message="To install 'stanfordnlp' or 'stanza' you need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch===1.4.0 torchvision===0.5.0\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanfordnlp' and 'stanford.download('en')'. At your command prompt/terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanfordnlp\n\nWhen done type:\n\nstanfordnlp.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
-            # if 'stanza' in missingModules:
-            #     mb.showwarning(title='Warning', message="To install 'stanza' you need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch===1.4.0 torchvision===0.5.0\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanza' and 'stanza.download('en')'. At your command prompt/terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanza\n\nWhen done type:\n\nstanza.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
+            elif sys.platform=='darwin': #Mac
+                # it seems that on Mac torch and torchvision are installed automatically by stanza
+                if 'stanfordnlp' in missingModules:
+                        mb.showwarning(title='Warning', message="To install 'stanfordnlp' or 'stanza' you need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch===1.4.0 torchvision===0.5.0\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanfordnlp' and 'stanford.download('en')'. At your command prompt/terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanfordnlp\n\nWhen done type:\n\nstanfordnlp.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
+                if 'stanza' in missingModules:
+                    mb.showwarning(title='Warning', message="To install 'stanza' you need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch===1.4.0 torchvision===0.5.0\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanza' and 'stanza.download('en')'. At your command prompt/terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanza\n\nWhen done type:\n\nstanza.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
         return False
         # install(e.name)
     return True
