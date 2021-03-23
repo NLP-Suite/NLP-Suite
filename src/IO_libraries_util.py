@@ -185,8 +185,9 @@ def inputExternalProgramFileCheck(software_dir, programName):
             return False
 
 
-def get_existing_software_config():
+def get_existing_software_config(package):
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
+    # TODO must insert the new package into software-config.csv when the package is missing in the user csv file
     try:
         csv_file = open(software_config, 'r', newline='')
         existing_csv = list(csv.reader(csv_file, delimiter=','))
@@ -206,18 +207,24 @@ def save_software_config(new_csv):
 
 def get_external_software_dir(calling_script, package, warning=True):
     # get a list of software in software-config.csv
-    existing_csv = get_existing_software_config()
+    existing_csv = get_existing_software_config(package)
     download_software = ''
     missing_software = ''
     software_dir=None
     software_name = ''
     silent=False
     index=0
+    package_found=False
+    # get any existing software_config csv file
     for row in existing_csv[1:]: # skip header line
         index=index+1
         software_name=row[0]
         software_dir=row[1]
         download_software = row[2]
+        if package.lower() in software_name.lower():
+            package_found=True
+        # software_dir == '' the software has not been downloaded and installed yet
+        #   it is MISSING
         if software_dir == '':  # check path field
             if package.lower() in software_name.lower():
                 print("MISSING SOFTWARE", software_name)
@@ -246,6 +253,12 @@ def get_external_software_dir(calling_script, package, warning=True):
                                        str(download_software + '\n\n')
                 if package.lower() in software_name.lower():
                     return software_dir
+    # you have looped through existing software rows and the calling_script and package have not been found MISSING
+    if not package_found:
+        # TODO must insert the new package into software-config.csv
+        # if inputExternalProgramFileCheck('', package) == False:
+        print("Missing software ", package)
+        return None
     # check all missing software
     if len(missing_software) > 0:
         if calling_script == 'NLP_menu':  # called from NLP_main GUI. We just need to warn the user to download and install options
