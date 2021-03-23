@@ -35,9 +35,8 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
     filesToOpen = []
     doc_id = 0
 
-    # check that the CoreNLPdir as been setup
     # check that the SENNA dir as been setup
-    SENNAdir = IO_libraries_util.get_external_software_dir('SRL SENNA', 'SENNA')
+    SENNAdir = IO_libraries_util.get_external_software_dir('SVO SENNA', 'SENNA')
     if SENNAdir == None:
         return filesToOpen
 
