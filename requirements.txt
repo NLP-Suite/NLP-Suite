@@ -49,7 +49,10 @@ conllu
 nltk~=3.5
 # used by wordcloud script (the new StanfordCoreNLP Python approach)
 stanza
-
+# stanfordnlp is used by SVO
+stanfordnlp
+# stanza and stanfordnlp requite torch and torchvision
+torch===1.6.0 torchvision===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
 # VADER (sentimentt analysis)
 twython
@@ -83,4 +86,3 @@ scipy~=1.6.0
 chardet~=4.0.0
 tqdm~=4.55.1
 scikit-learn~=0.24.1
-stanfordnlp
