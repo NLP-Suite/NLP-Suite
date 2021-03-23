@@ -23,7 +23,7 @@ from tkinter import *
 import tkinter.messagebox as mb
 import subprocess
 # to install stanfordnlp, first install
-#   pip3 install torch===1.3.1 torchvision===0.4.2 -f https://download.pytorch.org/whl/torch_stable.html
+#   pip3 install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
 #   pip3 install stanfordnlp
 import stanfordnlp
 
@@ -297,7 +297,7 @@ def run(inputFilename, inputDir, outputDir,
                                                   memory_var, Coref_Option,
                                                   Manual_Coref_var)
             if len(file_open) > 0:
-                filesToOpen.append(file_open)
+                filesToOpen.extend(file_open)
 
         if error == 0:
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
@@ -324,18 +324,18 @@ def run(inputFilename, inputDir, outputDir,
     # Date extractor _____________________________________________________
 
     if date_extractor_var:
-        IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
-                            'Started running Stanford CoreNLP date annotator at', True)
+        # IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
+        #                     'Started running Stanford CoreNLP date annotator at', True)
         files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir, outputDir,
                                                                  openOutputFiles, createExcelCharts,
                                                             'normalized-date', False, memory_var)
         filesToOpen.extend(files)
 
         #date_extractor.run(CoreNLPdir, inputFilename, inputDir, outputDir, False, False, True)
-        IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
-                            'Finished running Stanford CoreNLP date annotator at', True)
-        if openOutputFiles:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        # IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
+        #                     'Finished running Stanford CoreNLP date annotator at', True)
+        # if openOutputFiles:
+        #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
     # TODO When both OpenIE and SENNA are run, must export 2 csv files
     #   one file with the frequency of same SVOs, same SVs, different SVOs, different SVs
@@ -352,9 +352,10 @@ def run(inputFilename, inputDir, outputDir,
                 files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='', outputDir=outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts)
         else:
             files = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts)
+        # use extend to add a list to a list:
         filesToOpen.extend(files)
-        if openOutputFiles:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        # if openOutputFiles:
+        #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
         for file in files:
             svo_result_list.append(file)
@@ -628,15 +629,15 @@ def run(inputFilename, inputDir, outputDir,
             if len(kmloutputFilename)>0:
                 filesToOpen.append(kmloutputFilename)
 
-        if openOutputFiles == True and len(filesToOpen) > 0:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
-            # if google_earth_var == True:
-            #     if kmloutputFilename != '':
-            #         IO_files_util.open_kmlFile(kmloutputFilename)
+    if openOutputFiles == True and len(filesToOpen) > 0:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        # if google_earth_var == True:
+        #     if kmloutputFilename != '':
+        #         IO_files_util.open_kmlFile(kmloutputFilename)
 
-        if len(inputDir) > 1: # when processing a directory, the output changes
-            mb.showwarning("Output directory", "All output files have been saved to a subdirectory of the selected output directory at\n\n"+str(outputDir)+"\n\nThe IO widget 'Select OUTPUT files directory' has been updated to reflect the change.")
-            GUI_util.output_dir_path.set(outputDir)
+    if len(inputDir) > 1: # when processing a directory, the output changes
+        mb.showwarning("Output directory", "All output files have been saved to a subdirectory of the selected output directory at\n\n"+str(outputDir)+"\n\nThe IO widget 'Select OUTPUT files directory' has been updated to reflect the change.")
+        GUI_util.output_dir_path.set(outputDir)
 
 #the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
