@@ -10,6 +10,7 @@ import IO_user_interface_util
 import IO_files_util
 import GUI_IO_util
 
+
 # import pip not used
 # def install(package):
 #     pip.main(['install', package])
@@ -75,12 +76,12 @@ def install_all_packages(window, calling_script, modules_to_try):
                 if 'stanza' in missingModules:
                     mb.showwarning(title='Warning',
                                    message="To install 'stanza' you will need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch===1.6.0 torchvision===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html\n\nMAKE SURE TO INCLUDE THE HTTPS COMPONENT AFTER -f OR YOU WILL GET THE ERROR: -f option requires 1 argument.\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanza' and 'stanza.download('en')'. At your command prompt/terminal or terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanza\n\nWhen done type:\n\nstanza.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
-            # elif sys.platform=='darwin': #Mac
-            # it seems that on Mac torch and torchvision are installed automatically by stanza
-            #     if 'stanfordnlp' in missingModules:
-            #         mb.showwarning(title='Warning', message="To install 'stanfordnlp' or 'stanza' you need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch===1.4.0 torchvision===0.5.0\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanfordnlp' and 'stanford.download('en')'. At your command prompt/terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanfordnlp\n\nWhen done type:\n\nstanfordnlp.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
-            # if 'stanza' in missingModules:
-            #     mb.showwarning(title='Warning', message="To install 'stanza' you need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch===1.4.0 torchvision===0.5.0\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanza' and 'stanza.download('en')'. At your command prompt/terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanza\n\nWhen done type:\n\nstanza.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
+            elif sys.platform=='darwin': #Mac
+                # it seems that on Mac torch and torchvision are installed automatically by stanza
+                if 'stanfordnlp' in missingModules:
+                        mb.showwarning(title='Warning', message="To install 'stanfordnlp' or 'stanza' you need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch===1.4.0 torchvision===0.5.0\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanfordnlp' and 'stanford.download('en')'. At your command prompt/terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanfordnlp\n\nWhen done type:\n\nstanfordnlp.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
+                if 'stanza' in missingModules:
+                    mb.showwarning(title='Warning', message="To install 'stanza' you need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch===1.4.0 torchvision===0.5.0\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanza' and 'stanza.download('en')'. At your command prompt/terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanza\n\nWhen done type:\n\nstanza.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
         return False
         # install(e.name)
     return True
@@ -185,18 +186,35 @@ def inputExternalProgramFileCheck(software_dir, programName):
             return False
 
 
-def get_existing_software_config():
+def update_csv_fields(existing_csv: list) -> list:
+    """
+
+    @param existing_csv: current csv file in list format, similar to sample_csv below
+    @return: the new csv files, with software fields up to date.
+    """
+    sample_csv = [['software', 'path', 'download_link'],
+                  ['Stanford CoreNLP', '', 'https://nlp.stanford.edu/software/stanford-corenlp-latest.zip'],
+                  ['Mallet', '', 'http://mallet.cs.umass.edu/download.php'],
+                  ['SENNA', '', 'https://ronan.collobert.com/senna/download.html'],
+                  ['WordNet', '', 'https://wordnet.princeton.edu/download/current-version']]
+    fields = [x[0] for x in existing_csv]
+    for (index, row) in enumerate(sample_csv):
+        if row[0] not in fields:
+            existing_csv.append(sample_csv[index])
+    return existing_csv
+
+
+def get_existing_software_config(package):
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
+    # FIXED: must insert the new package into software-config.csv when the package is missing in the user csv file
     try:
         csv_file = open(software_config, 'r', newline='')
         existing_csv = list(csv.reader(csv_file, delimiter=','))
     except:
-        existing_csv = [['software', 'path', 'download_link'],
-                        ['Stanford CoreNLP', '', 'https://nlp.stanford.edu/software/stanford-corenlp-latest.zip'],
-                        ['Mallet', '', 'http://mallet.cs.umass.edu/download.php'],
-                        ['SENNA', '', 'https://ronan.collobert.com/senna/download.html'],
-                        ['WordNet', '', 'https://wordnet.princeton.edu/download/current-version']]
+        existing_csv = list()
+    update_csv_fields(existing_csv)
     return existing_csv
+
 
 def save_software_config(new_csv):
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
@@ -204,24 +222,32 @@ def save_software_config(new_csv):
         writer = csv.writer(csv_file)
         writer.writerows(new_csv)
 
+
 def get_external_software_dir(calling_script, package, warning=True):
     # get a list of software in software-config.csv
-    existing_csv = get_existing_software_config()
+    existing_csv = get_existing_software_config(package)
     download_software = ''
     missing_software = ''
-    software_dir=None
+    software_dir = None
     software_name = ''
-    silent=False
-    index=0
-    for row in existing_csv[1:]: # skip header line
-        index=index+1
-        software_name=row[0]
-        software_dir=row[1]
+    silent = False
+    index = 0
+    package_found = False
+    # get any existing software_config csv file
+    for row in existing_csv[1:]:  # skip header line
+        index = index + 1
+        software_name = row[0]
+        software_dir = row[1]
         download_software = row[2]
+        if package.lower() in software_name.lower():
+            package_found = True
+        # software_dir == '' the software has not been downloaded and installed yet
+        #   it is MISSING
         if software_dir == '':  # check path field
             if package.lower() in software_name.lower():
                 print("MISSING SOFTWARE", software_name)
-                missing_software = missing_software + str(software_name).upper() + ' download at ' + str(download_software + '\n\n')
+                missing_software = missing_software + str(software_name).upper() + ' download at ' + str(
+                    download_software + '\n\n')
         else:
             if calling_script != 'NLP_menu':
                 if package.lower() in software_name.lower():
@@ -231,9 +257,10 @@ def get_external_software_dir(calling_script, package, warning=True):
                 mb.showwarning(title='Directory error',
                                message='The directory\n  ' + software_dir + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-select the ' +
                                        software_name.upper() + ' directory.')
-                silent=True
+                silent = True
                 software_dir = ''
-                missing_software = missing_software + str(software_name).upper() + ' download at ' + str(download_software + '\n\n')
+                missing_software = missing_software + str(software_name).upper() + ' download at ' + str(
+                    download_software + '\n\n')
                 pass
             # the software directory saved in software-config.csv exists but...
             #   need to check that the software directory is indeed the right directory
@@ -241,11 +268,17 @@ def get_external_software_dir(calling_script, package, warning=True):
                 if inputExternalProgramFileCheck(software_dir, software_name) == False:
                     software_dir = ''
                     existing_csv[index][1] = software_dir
-                    silent=True
+                    silent = True
                     missing_software = missing_software + str(software_name).upper() + ' download at ' + \
                                        str(download_software + '\n\n')
                 if package.lower() in software_name.lower():
                     return software_dir
+    # you have looped through existing software rows and the calling_script and package have not been found MISSING
+    if not package_found:
+        # TODO must insert the new package into software-config.csv
+        # if inputExternalProgramFileCheck('', package) == False:
+        print("Missing software ", package)
+        return None
     # check all missing software
     if len(missing_software) > 0:
         if calling_script == 'NLP_menu':  # called from NLP_main GUI. We just need to warn the user to download and install options
@@ -263,25 +296,26 @@ def get_external_software_dir(calling_script, package, warning=True):
             if software_dir == '' and (package.lower() in software_name.lower()):
                 # get software directory
                 title = software_name.upper() + ' software'
-                software_dir=None
-                while software_dir==None:
+                software_dir = None
+                while software_dir == None:
                     initialFolder = os.path.dirname(os.path.abspath(__file__))
-                    software_dir = tk.filedialog.askdirectory(initialdir=initialFolder, title=title + '. Please, select the directory where the software was installed; or press CANCEL or ESC if you have not downloaded the software yet.')
+                    software_dir = tk.filedialog.askdirectory(initialdir=initialFolder,
+                                                              title=title + '. Please, select the directory where the software was installed; or press CANCEL or ESC if you have not downloaded the software yet.')
                     # software_name=''
                     if software_dir != '':
                         # check that it is the correct software directory
                         if 'corenlp' in software_name.lower():
-                            software_name='Stanford CoreNLP'
+                            software_name = 'Stanford CoreNLP'
                         if 'mallet' in software_name.lower():
-                            software_name='Mallet'
+                            software_name = 'Mallet'
                         if 'senna' in software_name.lower():
-                            software_name='SENNA'
+                            software_name = 'SENNA'
                         if 'wordnet' in software_name.lower():
-                            software_name='WordNet'
+                            software_name = 'WordNet'
                         if inputExternalProgramFileCheck(software_dir, software_name) == True:
                             existing_csv[index][1] = software_dir
                         else:
-                            software_dir=None
+                            software_dir = None
         save_software_config(existing_csv)
         if software_dir == '':
             software_dir = None

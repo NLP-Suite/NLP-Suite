@@ -54,6 +54,10 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
 
     right_hand_side = False
 
+    if compute_sentence_var.get():
+        tempOutputFile = IO_CoNLL_util.compute_sentence_table(inputFilename, outputDir)
+        filesToOpen.append(tempOutputFile)
+
     if extract_var.get():
         df = pd.read_csv(inputFilename)
         data_files = [df]
@@ -62,8 +66,6 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                                                  csv_file_field_list=csv_file_field_list)
         if outputFiles != None:
             filesToOpen.extend(outputFiles)
-        if openOutputFiles:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
     if clausal_analysis_var:
         import CoNLL_clause_analysis_util
@@ -132,208 +134,210 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         return
 
     if searchField_kw == 'e.g.: father':
-        if not extract_var.get():
+        if not compute_sentence_var.get() and not extract_var.get():
             mb.showwarning(title='No option selected',
                            message="No option has been selected.\n\nPlease, select an option and try again.")
-        return  # breaks loop
-
-    if searchedCoNLLField.lower() not in ['lemma', 'form']:
-        searchedCoNLLField = 'FORM'
-    if postag != '*':
-        postag = str(postag).split(' - ')[0]
-        postag = postag.strip()
+            return  # breaks loop
     else:
-        postag = '*'
-    if deprel != '*':
-        deprel = str(deprel).split(' - ')[0]
-        deprel = deprel.strip()
-    else:
-        deprel = '*'
-    if co_postag != '*':
-        co_postag = str(co_postag).split(' - ')[0]
-        co_postag = co_postag.strip()
-    else:
-        co_postag = '*'
-    if co_deprel != '*':
-        co_deprel = str(co_deprel).split(' - ')[0]
-        co_deprel = co_deprel.strip()
-    else:
-        co_deprel = '*'
-
-    POS_tags = ['*', 'JJ*', 'NN*', 'VB*'] + [k for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()]
-    POS_descriptions = [v for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()]
-
-    DEPREL_tags = [k for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()]
-    DEPREL_descriptions = [v for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()]
-
-    if postag != '*' and postag not in POS_tags:
-        postag = '*'
-    if deprel != '*' and deprel not in DEPREL_tags:  # dict_DEPREL:
-        print("The routine cannot recognize your input. The default value\'*\'(i.e. ANY VALUE) will be used.")
-        deprel = '*'
-
-    if co_postag != '*' and co_postag not in POS_tags:  # set_POSTAG: #search_CoNLL_table:
-        co_postag = '*'
-
-    if co_deprel != '*' and co_deprel not in DEPREL_tags:  # set_DEPREL: #dict_DEPREL:
-        print("The routine cannot recognize your input. The default value\'*\'(i.e. ANY VALUE) will be used.")
-        co_deprel = '*'
-
-    if (not os.path.isfile(inputFilename.strip())) and (not inputFilename.strip()[-6:] == '.conll') and (
-            not inputFilename.strip()[-4:] == '.csv'):
-        mb.showwarning(title='INPUT File Path Error',
-                       message='Please, check INPUT FILE PATH and try again. The file must be a CoNLL table (extension .conll with Stanford CoreNLP no clausal tags, extension .csv with Stanford CoreNLP with clausal tags)')
-        return
-    if searchField_kw == 'e.g.: father':
-        msg = "Please, check the \'Searched token\' field and try again.\n\nThe value entered must be different from the default value (e.g.: father)."
-        mb.showwarning(title='Searched Token Input Error', message=msg)
-        return  # breaks loop
-    if len(searchField_kw) == 0:
-        msg = "Please, check the \'Searched token\' field and try again.\n\nThe value entered must be different from blank."
-        mb.showwarning(title='Searched Token Input Error', message=msg)
-        return  # breaks loop
-
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CoNLL search at', True)
-
-    withHeader = True
-    documentId_position = 10
-    data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
-
-    if len(data) <= 1000000:
-        try:
-            data = sorted(data, key=lambda x: int(x[8]))
-        except:
-            mb.showwarning(title="CoNLLL table ill formed",
-                           message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the Stanford CoreNLP parser since many scripts rely on the CoNLL table.")
-            return
-
-    if len(data) == 0:
-        return
-    all_sents = IO_CoNLL_util.sentence_division(data)
-    if len(all_sents) == 0:
-        return
-    queried_list = CoNLL_table_search_util.search_CoNLL_table(all_sents, searchField_kw, searchedCoNLLField,
-                                                              related_token_POSTAG=co_postag,
-                                                              related_token_DEPREL=co_deprel, _tok_postag_=postag,
-                                                              _tok_deprel_=deprel)
-
-    if len(queried_list) != 0:
-        if searchField_kw == '*':
-            srcField_kw = 'astrsk'
+        if searchedCoNLLField.lower() not in ['lemma', 'form']:
+            searchedCoNLLField = 'FORM'
+        if postag != '*':
+            postag = str(postag).split(' - ')[0]
+            postag = postag.strip()
         else:
-            srcField_kw = searchField_kw
-        output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'QC',
-                                                                   srcField_kw, searchedCoNLLField)
-        errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                             CoNLL_table_search_util.output_list(queried_list, searchedCoNLLField,
-                                                                                 documentId_position), output_file_name)
-        if errorFound == True:
+            postag = '*'
+        if deprel != '*':
+            deprel = str(deprel).split(' - ')[0]
+            deprel = deprel.strip()
+        else:
+            deprel = '*'
+        if co_postag != '*':
+            co_postag = str(co_postag).split(' - ')[0]
+            co_postag = co_postag.strip()
+        else:
+            co_postag = '*'
+        if co_deprel != '*':
+            co_deprel = str(co_deprel).split(' - ')[0]
+            co_deprel = co_deprel.strip()
+        else:
+            co_deprel = '*'
+
+        POS_tags = ['*', 'JJ*', 'NN*', 'VB*'] + [k for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()]
+        POS_descriptions = [v for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()]
+
+        DEPREL_tags = [k for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()]
+        DEPREL_descriptions = [v for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()]
+
+        if postag != '*' and postag not in POS_tags:
+            postag = '*'
+        if deprel != '*' and deprel not in DEPREL_tags:  # dict_DEPREL:
+            print("The routine cannot recognize your input. The default value\'*\'(i.e. ANY VALUE) will be used.")
+            deprel = '*'
+
+        if co_postag != '*' and co_postag not in POS_tags:  # set_POSTAG: #search_CoNLL_table:
+            co_postag = '*'
+
+        if co_deprel != '*' and co_deprel not in DEPREL_tags:  # set_DEPREL: #dict_DEPREL:
+            print("The routine cannot recognize your input. The default value\'*\'(i.e. ANY VALUE) will be used.")
+            co_deprel = '*'
+
+        if (not os.path.isfile(inputFilename.strip())) and (not inputFilename.strip()[-6:] == '.conll') and (
+                not inputFilename.strip()[-4:] == '.csv'):
+            mb.showwarning(title='INPUT File Path Error',
+                           message='Please, check INPUT FILE PATH and try again. The file must be a CoNLL table (extension .conll with Stanford CoreNLP no clausal tags, extension .csv with Stanford CoreNLP with clausal tags)')
             return
-        filesToOpen.append(output_file_name)
+        if searchField_kw == 'e.g.: father':
+            msg = "Please, check the \'Searched token\' field and try again.\n\nThe value entered must be different from the default value (e.g.: father)."
+            mb.showwarning(title='Searched Token Input Error', message=msg)
+            return  # breaks loop
+        if len(searchField_kw) == 0:
+            msg = "Please, check the \'Searched token\' field and try again.\n\nThe value entered must be different from blank."
+            mb.showwarning(title='Searched Token Input Error', message=msg)
+            return  # breaks loop
 
-        """
-        The 15 indexed items are created in the function query_the_table:
-            item[0] form/lemma, item[1] postag, item[2] deprel, item[3] is_head, item[4] Document_ID, 
-            item[5] Sentence_ID, item[6] Document, item[7] whole_sent, 
-            item[8] keyword[1]/SEARCHED TOKEN, 
-            item[9] keyword[3]/SEARCHED TOKEN POSTAG, 
-            item[10] keyword[6]/'SEARCHED TOKEN DEPREL'))
-        """
-        if createExcelCharts == True:
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CoNLL search at', True)
 
-            # line plot by sentence index
-            if searchedCoNLLField == 'FORM':
-                tempFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
-                                                                      [[11, 5], [11, 7], [11, 9]],
-                                                                      ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
-                                                                      ['SEARCHED TOKEN (FORM)', 'Sentence'],
-                                                                      ['Document ID', 'Sentence ID', 'Document'],
-                                                                      openOutputFiles, createExcelCharts, 'QC', 'line')
+        withHeader = True
+        documentId_position = 10
+        data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
+
+        if len(data) <= 1000000:
+            try:
+                data = sorted(data, key=lambda x: int(x[8]))
+            except:
+                mb.showwarning(title="CoNLLL table ill formed",
+                               message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the Stanford CoreNLP parser since many scripts rely on the CoNLL table.")
+                return
+
+        if len(data) == 0:
+            return
+        all_sents = IO_CoNLL_util.sentence_division(data)
+        if len(all_sents) == 0:
+            return
+        queried_list = CoNLL_table_search_util.search_CoNLL_table(all_sents, searchField_kw, searchedCoNLLField,
+                                                                  related_token_POSTAG=co_postag,
+                                                                  related_token_DEPREL=co_deprel, _tok_postag_=postag,
+                                                                  _tok_deprel_=deprel)
+
+        if len(queried_list) != 0:
+            if searchField_kw == '*':
+                srcField_kw = 'astrsk'
             else:
-                tempFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
-                                                                      [[11, 5], [11, 7], [11, 9]],
-                                                                      ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
-                                                                      ['SEARCHED TOKEN (LEMMA)', 'Sentence'],
-                                                                      ['Document ID', 'Sentence ID', 'Document'],
-                                                                      openOutputFiles, createExcelCharts, 'QC', 'line')
-            filesToOpen.extend(tempFiles)
-
-            output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
-                                                                            'kw_postag', 'stats_pie_chart')
-            column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 9,
-                                                                         "Searched token Postag Values (" + searchField_kw + ")",
-                                                                         "POSTAG")
-            errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
+                srcField_kw = searchField_kw
+            output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'QC',
+                                                                       srcField_kw, searchedCoNLLField)
+            errorFound = IO_csv_util.list_to_csv(GUI_util.window,
+                                                 CoNLL_table_search_util.output_list(queried_list, searchedCoNLLField,
+                                                                                     documentId_position), output_file_name)
             if errorFound == True:
                 return
-            output_file_name_xlsx = Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename,
-                                                                  outputDir, "QueryCoNLL_POS",
-                                                                  "Searched token POStag Values (" + searchField_kw + ")",
-                                                                  ["pie"])
-            filesToOpen.append(output_file_name_xlsx)
+            filesToOpen.append(output_file_name)
 
-            output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
-                                                                            'kw_deprel', 'stats_pie_chart')
-            column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 10,
-                                                                         "Searched token Deprel values (" + searchField_kw + ")",
-                                                                         "DEPREL")
-            errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
-            if errorFound == True:
-                return
-            output_file_name_xlsx = Excel_util.create_excel_chart(GUI_util.window, [column_stats], '', outputDir,
-                                                                  "QueryCoNLL_DepRel",
-                                                                  "Searched token DEPrel Values (" + searchField_kw + ")",
-                                                                  ["pie"])
-            filesToOpen.append(output_file_name_xlsx)
+            """
+            The 15 indexed items are created in the function query_the_table:
+                item[0] form/lemma, item[1] postag, item[2] deprel, item[3] is_head, item[4] Document_ID, 
+                item[5] Sentence_ID, item[6] Document, item[7] whole_sent, 
+                item[8] keyword[1]/SEARCHED TOKEN, 
+                item[9] keyword[3]/SEARCHED TOKEN POSTAG, 
+                item[10] keyword[6]/'SEARCHED TOKEN DEPREL'))
+            """
+            if createExcelCharts == True:
 
-            output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
-                                                                            'co_kw_postag', 'stats_pie_chart')
-            column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 1,
-                                                                         "Co-token Postag values (" + searchField_kw + ")",
-                                                                         "POSTAG")
-            errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
-            if errorFound == True:
-                return
-            output_file_name_xlsx = Excel_util.create_excel_chart(GUI_util.window, [column_stats], '', outputDir,
-                                                                  "QueryCoNLL_CoOcc_POS",
-                                                                  "Co-token POStag Values (" + searchField_kw + ")",
-                                                                  ["pie"])
-            filesToOpen.append(output_file_name_xlsx)
+                # line plot by sentence index
+                if searchedCoNLLField == 'FORM':
+                    tempFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
+                                                                          [[11, 5], [11, 7], [11, 9]],
+                                                                          ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
+                                                                          ['SEARCHED TOKEN (FORM)', 'Sentence'],
+                                                                          ['Document ID', 'Sentence ID', 'Document'],
+                                                                          openOutputFiles, createExcelCharts, 'QC', 'line')
+                else:
+                    tempFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
+                                                                          [[11, 5], [11, 7], [11, 9]],
+                                                                          ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
+                                                                          ['SEARCHED TOKEN (LEMMA)', 'Sentence'],
+                                                                          ['Document ID', 'Sentence ID', 'Document'],
+                                                                          openOutputFiles, createExcelCharts, 'QC', 'line')
+                filesToOpen.extend(tempFiles)
 
-            output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
-                                                                            'co_kw_deprel', 'stats_pie_chart')
-            column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 2,
-                                                                         "Co-token Deprel values (" + searchField_kw + ")",
-                                                                         "DEPREL")
-            errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
-            if errorFound:
-                return
+                output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
+                                                                                'kw_postag', 'stats_pie_chart')
+                column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 9,
+                                                                             "Searched token Postag Values (" + searchField_kw + ")",
+                                                                             "POSTAG")
+                errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
+                if errorFound == True:
+                    return
+                output_file_name_xlsx = Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename,
+                                                                      outputDir, "QueryCoNLL_POS",
+                                                                      "Searched token POStag Values (" + searchField_kw + ")",
+                                                                      ["pie"])
+                filesToOpen.append(output_file_name_xlsx)
 
-            output_file_name_xlsx = Excel_util.create_excel_chart(GUI_util.window, [column_stats], '', outputDir,
-                                                                  "QueryCoNLL_CoOcc_DEP",
-                                                                  "Co-token DEPrel Values (" + searchField_kw + ")",
-                                                                  ["pie"])
-            filesToOpen.append(output_file_name_xlsx)
-            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-                                               'Finished running CoNLL search at', True)
+                output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
+                                                                                'kw_deprel', 'stats_pie_chart')
+                column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 10,
+                                                                             "Searched token Deprel values (" + searchField_kw + ")",
+                                                                             "DEPREL")
+                errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
+                if errorFound == True:
+                    return
+                output_file_name_xlsx = Excel_util.create_excel_chart(GUI_util.window, [column_stats], '', outputDir,
+                                                                      "QueryCoNLL_DepRel",
+                                                                      "Searched token DEPrel Values (" + searchField_kw + ")",
+                                                                      ["pie"])
+                filesToOpen.append(output_file_name_xlsx)
 
-        if openOutputFiles:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+                output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
+                                                                                'co_kw_postag', 'stats_pie_chart')
+                column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 1,
+                                                                             "Co-token Postag values (" + searchField_kw + ")",
+                                                                             "POSTAG")
+                errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
+                if errorFound == True:
+                    return
+                output_file_name_xlsx = Excel_util.create_excel_chart(GUI_util.window, [column_stats], '', outputDir,
+                                                                      "QueryCoNLL_CoOcc_POS",
+                                                                      "Co-token POStag Values (" + searchField_kw + ")",
+                                                                      ["pie"])
+                filesToOpen.append(output_file_name_xlsx)
 
-        # # Gephi network graphs _________________________________________________
-        # TODO
-        # the CoNLL table search can export a word and related words in a variety of relations to the word (by POS DEPREL etc.)
-        # ideally, these sets of related words can be visualized in a network graph in Gephi
-        # But... Gephi has been hard coded for SVO, since it has only been used for that so far, but any 2 or 3-terms can be visualized as a network
-        # Furthermore, if we cant to create dynamic models that vary ov ertime, wehere we use the sentence index as a proxy for time, we need to pass that variable as well (the saentence index)
-        # create_gexf would need to read in the proper column names, rather than S V OA
-        # outputFileBase = os.path.basename(output_file_name)[0:-4] # without .csv or .txt
-        # gexf_file = Gephi_util.create_gexf(outputFileBase, outputDir, output_file_name)
-        # filesToOpen.append(gexf_file)
+                output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
+                                                                                'co_kw_deprel', 'stats_pie_chart')
+                column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 2,
+                                                                             "Co-token Deprel values (" + searchField_kw + ")",
+                                                                             "DEPREL")
+                errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
+                if errorFound:
+                    return
 
-    else:
-        mb.showwarning(title='Empty query results', message=noResults)
+                output_file_name_xlsx = Excel_util.create_excel_chart(GUI_util.window, [column_stats], '', outputDir,
+                                                                      "QueryCoNLL_CoOcc_DEP",
+                                                                      "Co-token DEPrel Values (" + searchField_kw + ")",
+                                                                      ["pie"])
+                filesToOpen.append(output_file_name_xlsx)
+                IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+                                                   'Finished running CoNLL search at', True)
 
+            # if openOutputFiles:
+            #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+
+            # # Gephi network graphs _________________________________________________
+            # TODO
+            # the CoNLL table search can export a word and related words in a variety of relations to the word (by POS DEPREL etc.)
+            # ideally, these sets of related words can be visualized in a network graph in Gephi
+            # But... Gephi has been hard coded for SVO, since it has only been used for that so far, but any 2 or 3-terms can be visualized as a network
+            # Furthermore, if we cant to create dynamic models that vary ov ertime, wehere we use the sentence index as a proxy for time, we need to pass that variable as well (the saentence index)
+            # create_gexf would need to read in the proper column names, rather than S V OA
+            # outputFileBase = os.path.basename(output_file_name)[0:-4] # without .csv or .txt
+            # gexf_file = Gephi_util.create_gexf(outputFileBase, outputDir, output_file_name)
+            # filesToOpen.append(gexf_file)
+
+        else:
+            mb.showwarning(title='Empty query results', message=noResults)
+
+    if openOutputFiles:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.output_dir_path.get(),
@@ -354,7 +358,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size = '1260x590'
+GUI_size = '1260x630'
 GUI_label = 'Graphical User Interface (GUI) for CoNLL Table Analyzer'
 config_filename = 'conll-table-analyzer-config.txt'  # filename used in Stanford_CoreNLP_main
 # The 6 values of config_option refer to:
@@ -394,9 +398,12 @@ noun_analysis_var = tk.IntVar()
 verb_analysis_var = tk.IntVar()
 function_words_analysis_var = tk.IntVar()
 
+compute_sentence_var = tk.IntVar()
+
 extract_var = tk.IntVar()
 selected_fields_var = tk.StringVar()
 select_csv_field_extract_var = tk.StringVar()
+
 
 all_analyses_var = tk.IntVar()
 
@@ -559,8 +566,14 @@ def changed_filename(tracedInputFile):
         m.add_command(label=s, command=lambda value=s: select_csv_field_extract_var.set(value))
     clear("<Escape>")
 
-
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
+
+
+compute_sentence_var.set(0)
+sentence_table_checkbox = tk.Checkbutton(window, text='Compute sentence table', variable=compute_sentence_var,
+                                         onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               sentence_table_checkbox)
 
 extract_var.set(0)
 extract_checkbox = tk.Checkbutton(window, text='Extract from CoNLL', variable=extract_var, onvalue=1,
@@ -929,10 +942,12 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 7, "Help",
                                   "ON THE LEFT-HAND SIDE, please, select DEPREL value for token co-occurring in the same sentence (e.g., DEPREL nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)." + right_msg + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 8, "Help",
-                                  "The EXTRACT option allows you to select specific fields, even by specific values, from one or more csv files and save the output as a new file.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value in the \'WHERE\' widget (case sensitive!), and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
+                                  "Please, tick the checkbox if you wish to compute a sentence table with various sentence statistics.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 9, "Help",
-                                  "ON THE LEFT-HAND SIDE, please, tick the checkbox if you wish to extract SVOs from the CoNLL table.\n\nON THE RIGHT-HAND SIDE, tick the 'All analyses: clauses, nouns, verbs, function words (\'junk/stop\' words)' to select and deselect all options, allowing you to select specific options." + GUI_IO_util.msg_Esc)
+                                  "The EXTRACT option allows you to select specific fields, even by specific values, from one or more csv files and save the output as a new file.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value in the \'WHERE\' widget (case sensitive!), and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 10, "Help",
+                                  "ON THE LEFT-HAND SIDE, please, tick the checkbox if you wish to extract SVOs from the CoNLL table.\n\nON THE RIGHT-HAND SIDE, tick the 'All analyses: clauses, nouns, verbs, function words (\'junk/stop\' words)' to select and deselect all options, allowing you to select specific options." + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 11, "Help",
                                   GUI_IO_util.msg_openOutputFiles)
 
 

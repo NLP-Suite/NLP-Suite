@@ -331,8 +331,20 @@ def run(inputFilename, inputDir, outputDir,
         if openOutputFiles:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
-    # CoreNLP OpenIE _____________________________________________________
+    if not isFile:
+        outputSVODir = os.path.join(outputDir, "SVO_Result")
+    else:
+        outputSVODir = ''
+
+    # TODO When both OpenIE and SENNA are run, must export 2 csv files
+    #   one file with the frequency of same SVOs, same SVs, different SVOs, different SVs
+    #   a second file with the same SVO listings of document ID, sentence ID, ..., S, V, O, ... but with a first column Package with values OpenIE or SENNA
+
+    # SENNA _____________________________________________________
     if SENNA_SVO_extractor_var==True:
+        # TODO must use the coreferenced input file if the user selected that option
+        # TODO must filter SVO results by social actors if the user selected that option
+        #   both options run correctly for OppenIE
         files = []
         if save_intermediate_file:
             for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
@@ -348,20 +360,16 @@ def run(inputFilename, inputDir, outputDir,
         for file in files:
             svo_result_list.append(file)
 
-    if not isFile:
-        outputSVODir = os.path.join(outputDir, "SVO_Result")
-    else:
-        outputSVODir = ''
-
+    # CoreNLP OpenIE _____________________________________________________
     if CoreNLP_SVO_extractor_var==True:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                             'Started running Stanford CoreNLP OpenIE to extract SVOs at', True,'You can follow CoreNLP in command line.\n\nContrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chuncks of text being currently processed.')
         if isFile:
             subprocess.call(['java', '-jar', '-Xmx'+str(memory_var)+"g", 'Stanford_CoreNLP_OpenIE.jar', '-inputFile', feed_to_svo, '-outputDir', outputDir])
         else:
-            if not os.path.exists(os.path.dirname(outputSVODir)):       # Is os.path.dirname(outputSVODir) the same as outputSVODir?
+            if not os.path.exists(outputSVODir):       # Is os.path.dirname(outputSVODir) the same as outputSVODir?
                 try:
-                    os.makedirs(os.path.dirname(outputSVODir))
+                    os.makedirs(outputSVODir)
                 except OSError as exc:
                     if exc.errno != errno.EEXIST:
                         raise
@@ -736,12 +744,12 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 #memory options
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+600,y_multiplier_integer,memory_var_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,memory_var_lb,True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(6)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+650,y_multiplier_integer,memory_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+770,y_multiplier_integer,memory_var)
 
 manual_Coref_var.set(0)
 manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_Coref_var, onvalue=1, offvalue=0)
@@ -775,7 +783,6 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 def activateFilters(*args):
     if CoreNLP_SVO_extractor_var.get()==1:
-        # SENNA_SVO_extractor_checkbox.configure(state='disabled')
         subjects_checkbox.configure(state='normal')
         verbs_checkbox.configure(state='normal')
         objects_checkbox.configure(state='normal')
@@ -788,8 +795,6 @@ def activateFilters(*args):
     else:
         SENNA_SVO_extractor_checkbox.configure(state='normal')
         if SENNA_SVO_extractor_var.get()==True:
-            CoreNLP_SVO_extractor_var.set(1)
-            # SVO_extractor_checkbox.configure(state='disabled')
             subjects_checkbox.configure(state='normal')
             verbs_checkbox.configure(state='normal')
             objects_checkbox.configure(state='disabled')
@@ -797,7 +802,6 @@ def activateFilters(*args):
             wordcloud_var.set(1)
             google_earth_var.set(1)
             gephi_checkbox.configure(state='normal')
-            # gephi_checkbox.configure(state='disabled')
             wordcloud_checkbox.configure(state='normal')
             google_earth_checkbox.configure(state='normal')
         else:
@@ -822,7 +826,7 @@ def getDictFile(checkbox_var,dict_var,checkbox_value,dictFile):
         elif dictFile == 'Verb':
             filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-action-list.csv'
         initialFolder = GUI_IO_util.wordLists_libPath
-        filePath = tk.filedialog.askopenfilename(title = 'Select INPUT csv ' + dictFile + ' dictionary filter file', initialdir = initialFolder, filetypes = [("csv files", "*.csv")])
+        filePath = tk.filedialog.askopenfilename(title='Select INPUT csv ' + dictFile + ' dictionary filter file', initialdir = initialFolder, filetypes = [("csv files", "*.csv")])
         if len(filePath)==0:
             checkbox_var.set(0)
     dict_var.set(filePath)

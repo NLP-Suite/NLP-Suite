@@ -91,6 +91,10 @@ def extract_from_csv(path, output_path, data_files, csv_file_field_list):
     df_list = []
     value: str
     header: str
+    if len(csv_file_field_list)==0:
+        mb.showwarning(title='Missing field(s)',
+                       message="No field(s) to be extracted have been selected.\n\nPlease, select field(s) and try again.")
+        return
     for (sign, value, header, df) in zip(sign_var, value_var, headers, data_files):
         if ' ' in header:
             header = "`" + header + "`"
@@ -100,7 +104,7 @@ def extract_from_csv(path, output_path, data_files, csv_file_field_list):
             sign = get_comparator(sign)
             if sign=='':
                 mb.showwarning(title='Missing sign condition',
-                               message="Please include a sign condition for the \'WHERE\' widget!")
+                               message="No condition has been entered for the \'WHERE\' value entered.\n\nPlease, include a condition for the \'WHERE\' value and try again.")
                 return
             if '\'' not in value and not value.isdigit():
                 value = '\'' + value + '\''
@@ -342,6 +346,16 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 100, y_multiplier_integer,
                                                    add_file_button, True)
 
+    # setup a button to open Windows Explorer on the selected input directory
+    openInputFile_button = tk.Button(window, width=3, text='',
+                                     command=lambda: IO_files_util.openFile(window,
+                                                                            selectedCsvFile_var.get()))
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+                                                   openInputFile_button,True)
+
+    # openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate,
+    #                            y=y_multiplier_integer,True)
+
     selectedCsvFile_var = tk.StringVar()
     selectedCsvFile = tk.Entry(window, width=100, textvariable=selectedCsvFile_var)
     selectedCsvFile.config(state='disabled')
@@ -417,7 +431,7 @@ if __name__ == '__main__':
 
     def add_field_to_list(operation, menu_choice, visualizeBuildString=True):
         # skip empty values and csv fields already selected
-        if select_csv_field_merge_var.get == '' and select_csv_field_concatenate_var.get() == '' and select_csv_field_append_var.get() == '' and select_csv_field_extract_var.get() == '':
+        if select_csv_field_merge_var.get() == '' and select_csv_field_concatenate_var.get() == '' and select_csv_field_append_var.get() == '' and select_csv_field_extract_var.get() == '':
             return
 
         buildString = selectedCsvFile_var.get() + "," + menu_choice
@@ -487,10 +501,10 @@ if __name__ == '__main__':
 
     def build_merge_string(comingFrom_Plus, comingFrom_OK):
         add_field_to_list("merge", select_csv_field_merge_var.get(), comingFrom_OK)
-        if comingFrom_Plus == True:
-            mb.showwarning(title='Warning',
-                           message='With the MERGE option you cannot select another csv column/field. You can only add another file and a field from that file to serve as match with the already selected field(s).\n\nYou will be redirected to selecting a new csv file.')
-            get_additional_csvFile(window, 'Select INPUT csv file', [("csv files", "*.csv")])
+        # if comingFrom_Plus == True:
+        #     mb.showwarning(title='Warning',
+        #                    message='With the MERGE option you cannot select another csv column/field. You can only add another file and a field from that file to serve as match with the already selected field(s).\n\nYou will be redirected to selecting a new csv file.')
+        #     get_additional_csvFile(window, 'Select INPUT csv file', [("csv files", "*.csv")])
         activate_csv_fields_selection('merge', merge_var.get(), comingFrom_Plus, comingFrom_OK)
 
 

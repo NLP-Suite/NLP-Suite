@@ -273,9 +273,9 @@ def GUI_top(config_input_output_options,config_filename):
     #	6 for txt, csv (used in SVO)
     if config_input_output_options[1]>0:
         # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-        openInputFile_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, inputFilename.get()))
-        openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
-
+        # openInputFile_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, inputFilename.get()))
+        # openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+        #
         if config_input_output_options[1]==1: #single CoNLL file
             # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
             select_input_file_button=tk.Button(window, width=30, text='Select INPUT CoNLL table',command=lambda: GUI_IO_util.selectFile_set_options(window,config_input_output_options,True,True,inputFilename,select_input_main_dir_button,'Select INPUT CoNLL table (csv file)',[('CoNLL csv file','.csv')],".csv",input_main_dir_path))
@@ -297,8 +297,14 @@ def GUI_top(config_input_output_options,config_filename):
 
         inputFilename.trace("w",activateRunButton)
 
+        # place the INPUT file widget
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_file_button)
         tk.Label(window, textvariable=inputFilename).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
+
+        #setup a button to open Windows Explorer on the selected input file
+        current_y_multiplier_integer2=y_multiplier_integer-1
+        openInputFile_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, inputFilename.get()))
+        openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer2)
 
     #primary INPUT directory ______________________________________________
     if config_input_output_options[2]==1: #directory input
@@ -308,6 +314,7 @@ def GUI_top(config_input_output_options,config_filename):
 
         if IO_options[2]=="EMPTY LINE":
             input_main_dir_path.set("")
+
         input_main_dir_path.trace("w",activateRunButton)
 
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_main_dir_button)
@@ -337,7 +344,7 @@ def GUI_top(config_input_output_options,config_filename):
     #OUTPUT options
     #OUTPUT file & directory options
 
-    #OUTPUT file ______________________________________________
+    #OUTPUT file ______________________________________________ NOT USED
     if config_input_output_options[4]==1: #output file
         # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
         select_output_file_button=tk.Button(window, width = 30,text='Select OUTPUT csv file', command=lambda: GUI_IO_util.selectFile_set_options(window,config_input_output_options,False,False,outputFilename,'','Select OUTPUT csv file','csv file','.csv',False,input_main_dir_path))

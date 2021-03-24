@@ -317,6 +317,7 @@ def CoreNLP_annotate(inputFilename,
                                                                                                       CoreNLP_output,
                                                                                                       doc, nDocs,
                                                                                                       filesError)
+                print(CoreNLP_output)
                 if errorFound: continue  # move to next annotator
                 if isinstance(routine_list[0][2][0], list):
                     run_output = [[], []]

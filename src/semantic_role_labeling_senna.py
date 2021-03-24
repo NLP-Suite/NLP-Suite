@@ -35,6 +35,11 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
     filesToOpen = []
     doc_id = 0
 
+    # check that the SENNA dir as been setup
+    SENNAdir = IO_libraries_util.get_external_software_dir('SVO SENNA', 'SENNA')
+    if SENNAdir == None:
+        return filesToOpen
+
     # record the time consumption before annotating text in each file
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
                                        'Started running SENNA to extract SVOs at', True,
@@ -50,14 +55,14 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
             doc_id += 1
             head, tail = os.path.split(file)
             print("Processing file " + str(doc_id) + '/' + str(len(input_docs)) + ' ' + tail)
-            result = senna_single_file(os.path.join(inputDir, file))
+            result = senna_single_file(SENNAdir, os.path.join(inputDir, file))
             formatted_table += [[os.path.join(inputDir, file)] + row for row in result]
             document_lengths.append(len(result) if not document_lengths else len(result) + document_lengths[-1])
     else:
         # If the input is a file
         head, tail = os.path.split(inputFilename)
         print('Processing file 1/1 ' + tail)
-        result = senna_single_file(inputFilename)
+        result = senna_single_file(SENNAdir, inputFilename)
         formatted_table += [[os.path.join(inputDir, inputFilename)] + row for row in result]
         document_lengths.append(len(result))
 
@@ -80,7 +85,7 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
     return filesToOpen
 
 
-def senna_single_file(inputFilename: str) -> list:
+def senna_single_file(SENNAdir, inputFilename: str) -> list:
     """
     Run senna-osx using the input from the inputFilename
     :param inputFilename: the name of a text file
@@ -93,9 +98,6 @@ def senna_single_file(inputFilename: str) -> list:
         input_text = file.read().strip()
         file.close()
     encoded_input = input_text.replace('\n', ' ').encode()
-
-    # check that the SENNA dir as been setup
-    SENNAdir = IO_libraries_util.get_external_software_dir('SRL SENNA', 'SENNA')
 
     if check_system() == 'mac':
         senna_exec = './senna-osx'

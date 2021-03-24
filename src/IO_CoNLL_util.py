@@ -206,7 +206,7 @@ def compute_sentence_table(CoNLL_table, output_path):
             else:
                 sent_str = sent_str + " " + str(row[1])
         else:  # End the sentence, add it to the array and move onto the next one
-            arr = [current_file, doc_id, sent_index, sent_str, len(sent_str.split(" ")),
+            arr = [doc_id, current_file, sent_index, sent_str, len(sent_str.split(" ")),
                    len(list(sent_str))]  # Save the data
             rows.append(arr)
             sent_index = row[9]
@@ -217,7 +217,7 @@ def compute_sentence_table(CoNLL_table, output_path):
             doc_id = row[10]
 
     # Construct and save the table
-    col_names = ['Document', 'Document ID', 'Sentence ID', 'Sentence', 'Sentence length (Number of words/tokens)',
+    col_names = ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Sentence length (Number of words/tokens)',
                  'Sentence length (Number of characters)']
     df2 = pd.DataFrame(columns=col_names, data=rows)
 
