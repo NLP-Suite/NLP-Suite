@@ -33,7 +33,6 @@ def timed_alert(window, timeout, message_title, message_text, time_needed=False,
         print('\n' + message_text + '\n')
     window.focus_force()
 
-
 def input_output_save(script):
     result = mb.askyesno(script,
                          script + " will save changes directly in the input file. Make sure you have backup of the input.\n\nAre you sure you want to continue?")
