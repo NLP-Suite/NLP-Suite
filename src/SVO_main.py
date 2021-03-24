@@ -738,7 +738,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 ASCII_var.set(0)
 ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,ASCII_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,ASCII_checkbox)
 
 CoRef_var.set(0)
 CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP)', variable=CoRef_var, onvalue=1, offvalue=0)
@@ -746,7 +746,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 CoRef_menu_var.set("Neural Network")
 CoRef_menu = tk.OptionMenu(window,CoRef_menu_var,'Deterministic','Statistical','Neural Network')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,CoRef_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,CoRef_menu,True)
 
 #memory options
 memory_var_lb = tk.Label(window, text='Memory ')
@@ -785,7 +785,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate,y_m
 
 SENNA_SVO_extractor_var.set(1)
 SENNA_SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs & SVs (via SENNA)', variable=SENNA_SVO_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate+400,y_multiplier_integer,SENNA_SVO_extractor_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,SENNA_SVO_extractor_checkbox)
 
 def activateFilters(*args):
     if CoreNLP_SVO_extractor_var.get()==1:
@@ -847,7 +847,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 verbs_var.set(1)
 verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=verbs_var, onvalue=1, offvalue=0,command=lambda:getDictFile(verbs_var,verbs_dict_var,verbs_var.get(),'Verb'))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,verbs_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,verbs_checkbox,True)
 
 #setup a button to open Windows Explorer on the verbs file
 openInputFile_verbs_button = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, verbs_dict_var.get()))
@@ -867,7 +867,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 verbs_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath,'social-action-list.csv'))
 verbs_dict_entry = tk.Entry(window, width=60,state="disabled",textvariable=verbs_dict_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,verbs_dict_entry,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,verbs_dict_entry,True)
 
 objects_dict_var.set('')
 objects_dict_entry = tk.Entry(window, width=60,state="disabled",textvariable=objects_dict_var)
@@ -879,7 +879,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 wordcloud_var.set(1)
 wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wordcloud', variable=wordcloud_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,wordcloud_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,wordcloud_checkbox,True)
 
 google_earth_var.set(1)
 google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where in GIS maps (via Google Earth Pro) ', variable=google_earth_var, onvalue=1, offvalue=0)

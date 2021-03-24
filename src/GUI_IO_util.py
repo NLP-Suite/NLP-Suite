@@ -95,6 +95,10 @@ if sys.platform == 'darwin': #Mac OS
     open_reminders_x_coordinate = 570
     run_button_x_coordinate = 850
     quit_button_x_coordinate = 980
+
+    # special internal GUI specific values
+    SVO_2nd_column = 570
+
 else: #windows and anything else
     help_button_x_coordinate = 50
     labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
@@ -109,6 +113,9 @@ else: #windows and anything else
     open_reminders_x_coordinate = 550
     run_button_x_coordinate = 840
     quit_button_x_coordinate = 960
+
+    # special internal GUI specific values
+    SVO_2nd_column = 520
 
 basic_y_coordinate = 90
 y_step = 40 #the line-by-line increment on the GUI
