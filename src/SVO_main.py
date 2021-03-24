@@ -7,7 +7,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"SVO extractor",['unittest','subprocess','os','tkinter','ntpath','stanfordnlp','difflib','csv','random'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"SVO extractor",['unittest','subprocess','os','tkinter','ntpath','difflib','csv','random'])==False:
     sys.exit(0)
 
 from collections import defaultdict
@@ -46,20 +46,6 @@ import semantic_role_labeling_senna
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-# Pipeline needs the en model. To install "en" model:
-# Open your command prompt or terminal, type in following commands one at a time
-# python
-# import stanfordnlp
-# stanfordnlp.download("en")
-# exit()
-# After you are done with these steps, you can comment out the following line
-
-
-try:
-    nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma')
-except:
-    stanfordnlp.download('en')
-    nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma')
 
 lemmalib = {}
 voLib = {}
@@ -368,7 +354,7 @@ def run(inputFilename, inputDir, outputDir,
     # CoreNLP OpenIE _____________________________________________________
     if CoreNLP_SVO_extractor_var==True:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
-                            'Started running Stanford CoreNLP OpenIE to extract SVOs at', True,'You can follow CoreNLP in command line.\n\nContrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chuncks of text being currently processed.')
+                            'Started running Stanford CoreNLP OpenIE to extract SVOs at', True,'Contrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chuncks of text being currently processed.')
         if isFile:
             subprocess.call(['java', '-jar', '-Xmx'+str(memory_var)+"g", 'Stanford_CoreNLP_OpenIE.jar', '-inputFile', feed_to_svo, '-outputDir', outputDir])
         else:
