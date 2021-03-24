@@ -6,7 +6,7 @@ argparse~=1.4.0
 
 #used by wordclouds.py (also uses stanza; see below)
 wordcloud~=1.8.1
-pillow
+Pillow
 
 striprtf
 

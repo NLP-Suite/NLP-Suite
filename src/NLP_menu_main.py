@@ -48,7 +48,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1100x560'
+GUI_size='1150x560'
 GUI_label='Graphical User Interface (GUI) for a suite of tools of Natural Language Processing (NLP) & Data Visualization'
 config_filename='NLP-config.txt'
 # The 6 values of config_option refer to:
