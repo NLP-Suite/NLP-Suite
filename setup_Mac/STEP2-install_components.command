@@ -1,6 +1,8 @@
 cd "$(dirname "$0")"
 cp Mac_run.command ../run.command
 
+source $HOME/anaconda/bin/activate || true
+
 conda create -y -n NLP python=3.9
 conda activate NLP
 
