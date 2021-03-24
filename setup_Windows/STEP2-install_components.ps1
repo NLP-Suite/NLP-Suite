@@ -3,6 +3,8 @@ cd "${PSScriptRoot}\..\"
 conda create -n NLP -y
 conda activate NLP
 
+conda install pytorch torchvision cudatoolkit -c pytorch
+conda install -y -c conda-forge scikit-learn
 python -m pip install -r requirements.txt
 
 conda activate NLP
