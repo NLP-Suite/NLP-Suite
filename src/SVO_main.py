@@ -346,14 +346,18 @@ def run(inputFilename, inputDir, outputDir,
         # TODO must filter SVO results by social actors if the user selected that option
         #   both options run correctly for OppenIE
         files = []
+        if not os.path.exists(outputSVODir):       # Is os.path.dirname(outputSVODir) the same as outputSVODir?
+            os.makedirs(outputSVODir)
+
         if save_intermediate_file:
             for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
                 files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='', outputDir=outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts)
         else:
-            files = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts)
+            files = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, os.path.join(outputDir, outputSVODir), openOutputFiles, createExcelCharts)
         filesToOpen.extend(files)
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
                                            'Finished running Senna at', True)
+
         if openOutputFiles:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 

@@ -105,7 +105,8 @@ def senna_single_file(SENNAdir, inputFilename: str) -> list:
         senna_exec = 'senna-win32.exe'
     elif check_system() == 'linux':
         senna_exec = 'senna-linux64'
-    # senna_exec = os.path.join(SENNAdir, senna_exec)
+
+    origin_path = os.getcwd()
     os.chdir(SENNAdir)
     cmd = subprocess.Popen([senna_exec, '-srl', '-psg'], stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE)  # Input the text to stdin
@@ -117,7 +118,7 @@ def senna_single_file(SENNAdir, inputFilename: str) -> list:
         if e != '':
             senna_table.append(e.strip().strip('\t'))
 
-    os.chdir(GUI_IO_util.NLPPath)
+    os.chdir(origin_path)
 
     result = []
     temp = []
