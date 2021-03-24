@@ -57,11 +57,11 @@ def install_all_packages(window, calling_script, modules_to_try):
         if 'stanfordnlp' or 'stanza' in missingModules:
             # sys.version_info is the Python version
             if (sys.version_info[0] < 3) or (sys.version_info[0] == 3 and sys.version_info[1] < 6):
-                if 'stanfordnlp' in missingModules:
-                    mb.showwarning(title='Python version error',
-                                   message="The module 'stanfordnlp' requires a Python version 3.6 or higher. You are currently running version " +
-                                           sys.version_info[0] + "." + sys.version_info[
-                                               0] + ".\n\nTo install Python with Anaconda, in command prompt/terminal type 'Conda install Python=3.7'.")
+                # if 'stanfordnlp' in missingModules:
+                #     mb.showwarning(title='Python version error',
+                #                    message="The module 'stanfordnlp' requires a Python version 3.6 or higher. You are currently running version " +
+                #                            sys.version_info[0] + "." + sys.version_info[
+                #                                0] + ".\n\nTo install Python with Anaconda, in command prompt/terminal type 'Conda install Python=3.7'.")
                 if 'stanza' in missingModules:
                     mb.showwarning(title='Python version error',
                                    message="The module 'stanza' requires a Python version 3.6 or higher. You are currently running version " +
@@ -71,19 +71,12 @@ def install_all_packages(window, calling_script, modules_to_try):
             # https://stackoverflow.com/questions/56239310/could-not-find-a-version-that-satisfies-the-requirement-torch-1-0-0
             # for more recent torch and torchvision, see https://pytorch.org/get-started/previous-versions/
             # for most recent torch and torchvision, see https://pytorch.org/get-started/locally/
-            if sys.platform == 'win32':  # Windows
-                if 'stanfordnlp' in missingModules:
-                    mb.showwarning(title='Warning',
-                                    message = "To install 'stanfordnlp' you will need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch===1.6.0 torchvision===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanfordnlp' and 'stanford.download('en')'. At your command prompt/terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanfordnlp\n\nWhen done type:\n\nstanfordnlp.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
-                if 'stanza' in missingModules:
-                    mb.showwarning(title='Warning',
-                                   message="To install 'stanza' you will need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch===1.6.0 torchvision===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html\n\nMAKE SURE TO INCLUDE THE HTTPS COMPONENT AFTER -f OR YOU WILL GET THE ERROR: -f option requires 1 argument.\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanza' and 'stanza.download('en')'. At your command prompt/terminal or terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanza\n\nWhen done type:\n\nstanza.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
-            elif sys.platform=='darwin': #Mac
-                # it seems that on Mac torch and torchvision are installed automatically by stanza
-                if 'stanfordnlp' in missingModules:
-                        mb.showwarning(title='Warning', message="To install 'stanfordnlp' or 'stanza' you need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch==1.7.1 torchvision==0.8.2 torchaudio=0.7.2\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanfordnlp' and 'stanford.download('en')'. At your command prompt/terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanfordnlp\n\nWhen done type:\n\nstanfordnlp.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
-                if 'stanza' in missingModules:
-                    mb.showwarning(title='Warning', message="To install 'stanza' you need to FIRST install 'torch' and 'torchvision' by typing:\n\npip install torch==1.7.1 torchvision==0.8.2 torchaudio=0.7.2\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanza' and 'stanza.download('en')'. At your command prompt/terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanza\n\nWhen done type:\n\nstanza.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!")
+            # if 'stanfordnlp' in missingModules:
+            #     mb.showwarning(title='Warning',
+            #                     message = "To install 'stanfordnlp' you will need to FIRST install 'torch' and 'torchvision' by typing:\n\nconda install pytorch torchvision cudatoolkit -c pytorch\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanfordnlp' and 'stanford.download('en')'. At your command prompt/terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanfordnlp\n\nWhen done type:\n\nstanfordnlp.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!\n\nYOU MUST ALSO BE IN THE NLP ENVIRONMENT!")
+            if 'stanza' in missingModules:
+                mb.showwarning(title='Warning',
+                               message="To install 'stanza' you will need to FIRST install 'torch' and 'torchvision' by typing:\n\nconda install pytorch torchvision cudatoolkit -c pytorch\n\nMAKE SURE TO INCLUDE THE HTTPS COMPONENT AFTER -f OR YOU WILL GET THE ERROR: -f option requires 1 argument.\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanza' and 'stanza.download('en')'. At your command prompt/terminal or terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanza\n\nWhen done type:\n\nstanza.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!\n\nYOU MUST ALSO BE IN THE NLP ENVIRONMENT!")
         return False
         # install(e.name)
     return True
