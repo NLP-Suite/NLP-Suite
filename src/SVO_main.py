@@ -785,7 +785,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate,y_m
 
 SENNA_SVO_extractor_var.set(1)
 SENNA_SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs & SVs (via SENNA)', variable=SENNA_SVO_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate+400,y_multiplier_integer,SENNA_SVO_extractor_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,SENNA_SVO_extractor_checkbox)
 
 def activateFilters(*args):
     if CoreNLP_SVO_extractor_var.get()==1:
