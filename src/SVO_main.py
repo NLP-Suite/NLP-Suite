@@ -25,7 +25,7 @@ import subprocess
 # to install stanfordnlp, first install
 #   pip3 install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
 #   pip3 install stanfordnlp
-import stanfordnlp
+# import stanfordnlp
 
 
 import GUI_IO_util
