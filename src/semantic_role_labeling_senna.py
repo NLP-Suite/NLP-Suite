@@ -57,7 +57,7 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
             head, tail = os.path.split(file)
             print("Processing file " + str(doc_id) + '/' + str(len(input_docs)) + ' ' + tail)
 
-            result = senna_single_file(os.path.join(inputDir, file))
+            result = senna_single_file(SENNAdir,file)
             formatted_table += [[os.path.join(inputDir, file)] + row for row in result]
             document_lengths.append(len(result) if not document_lengths else len(result) + document_lengths[-1])
     else:
@@ -109,6 +109,7 @@ def senna_single_file(SENNAdir, inputFilename: str) -> list:
     elif check_system() == 'linux':
         senna_exec = 'senna-linux64'
     # senna_exec = os.path.join(SENNAdir, senna_exec)
+    # w/o changing dir SENNA will not produce an output table
     os.chdir(SENNAdir)
     cmd = subprocess.Popen([senna_exec, '-srl', '-psg'], stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE)  # Input the text to stdin
