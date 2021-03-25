@@ -67,6 +67,7 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
          try:
              CoreNLP_output = json.loads(CoreNLP_output)
              logger.warning("[Info] Successfully converted CoreNLP output to JSON. Proceeding as normal.")
+             # logger.warning(CoreNLP_output)
          except Exception as e:
             logger.error("[Error] Could not convert output to JSON! Error: " + str(e))
             errorFound = True
