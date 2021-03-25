@@ -48,8 +48,8 @@ def make_directory(newDirectory):
 	if os.path.exists(newDirectory):
 		shutil.rmtree(newDirectory)
 	try:
-		os.chmod(Path(newDirectory).parent.absolute(), 0o777)
-		os.mkdir(newDirectory, 0o777)
+		os.chmod(Path(newDirectory).parent.absolute(), 0o755)
+		os.mkdir(newDirectory, 0o755)
 	except Exception as e:
 		print("error: ", e.__doc__)
 		createDir = False

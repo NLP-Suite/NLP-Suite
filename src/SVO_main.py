@@ -42,6 +42,7 @@ import IO_csv_util
 import Stanford_CoreNLP_coreference_util as stanford_coref
 import Stanford_CoreNLP_annotator_util
 import semantic_role_labeling_senna
+from IO_files_util import make_directory
 
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -272,6 +273,7 @@ def run(inputFilename, inputDir, outputDir,
         # field_names[10] = "Corefed Sentence"
         if not isFile:
             outputCorefedDir = os.path.join(outputDir, "CoRefed_Files")
+            make_directory(outputCorefedDir)
             if not os.path.exists(os.path.dirname(outputCorefedDir)):
                 os.makedirs(os.path.dirname(outputCorefedDir))
             file_open, error = stanford_coref.run(inputFilename, inputDir, outputCorefedDir, openOutputFiles, createExcelCharts,

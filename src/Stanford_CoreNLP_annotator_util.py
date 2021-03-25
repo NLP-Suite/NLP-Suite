@@ -334,7 +334,7 @@ def CoreNLP_annotate(inputFilename,
                 #write html file from txt input
                 if output_format == 'text':
                     outputFilename = IO_files_util.generate_output_file_name(doc, '', outputDir, '.txt', 'CoreNLP_'+annotator_chosen)
-                    with open(outputFilename, "w") as text_file:
+                    with open(outputFilename, "w+") as text_file:
                         text_file.write(sub_result)
                     filesToOpen.append(outputFilename)
                 else:
