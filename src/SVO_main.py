@@ -325,7 +325,7 @@ def run(inputFilename, inputDir, outputDir,
         filesToOpen.extend(files)
 
 
-        #date_extractor.run(CoreNLPdir, inputFilename, inputDir, outputDir, False, False, True)
+        # date_extractor.run(CoreNLPdir, inputFilename, inputDir, outputDir, False, False, True)
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
                             'Finished running Stanford CoreNLP date annotator at', True)
         if openOutputFiles:
@@ -344,9 +344,9 @@ def run(inputFilename, inputDir, outputDir,
     if SENNA_SVO_extractor_var==True:
         # TODO must use the coreferenced input file if the user selected that option
         # TODO must filter SVO results by social actors if the user selected that option
-        #   both options run correctly for OppenIE
+        #   both options run correctly for OpenIE
         files = []
-        if not os.path.exists(outputSVODir):       # Is os.path.dirname(outputSVODir) the same as outputSVODir?
+        if not isFile and not os.path.exists(outputSVODir):       # Is os.path.dirname(outputSVODir) the same as outputSVODir?
             os.makedirs(outputSVODir)
 
         if save_intermediate_file:

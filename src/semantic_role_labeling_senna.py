@@ -145,10 +145,11 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
 
     sentence_start_index = []
     df = input_df
-    new_df = pd.DataFrame(
-    columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'Location', 'Time', 'Sentence'])
+    new_df = pd.DataFrame(columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'Location', 'Time', 'Sentence'])
+
     for i in range(0, len(df)):
-        if df.iloc[i, 2] in end_signs:
+        token = df.iloc[i, 2]
+        if token in end_signs or token[-1] == '.':
             while i + 1 < len(df) and df.iloc[i + 1, 2] == '"':
                 i += 1
             sentence_start_index.append(i)
@@ -258,8 +259,8 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
     return output_file_name
 
 
-# if __name__ == '__main__':
-#     dir_name = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/SRL/test'
-#     file_name = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/SRL/test.txt'
-#     output_dir = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/'
-#     run_senna(inputDir=dir_name, outputDir=output_dir, openOutputFiles=True, createExcelCharts=True)
+if __name__ == '__main__':
+    dir_name = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/SRL/test'
+    file_name = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/SRL/test.txt'
+    output_dir = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/'
+    run_senna(inputDir=dir_name, outputDir=output_dir, openOutputFiles=True, createExcelCharts=True)
