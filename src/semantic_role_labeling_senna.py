@@ -41,9 +41,9 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
         return filesToOpen
 
     # record the time consumption before annotating text in each file
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
-                                       'Started running SENNA to extract SVOs at', True,
-                                       'You can follow SENNA in command line.')
+    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+    #                                    'Started running SENNA to extract SVOs at', True,
+    #                                    'You can follow SENNA in command line.')
 
     SENNA_output_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'SENNA_SVO')
@@ -78,10 +78,11 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
             document_index += 1
 
     senna_df = pd.DataFrame(formatted_table, columns=['Col %s' % i for i in range(len(formatted_table[0]))])
+
     convert_to_svo(senna_df, SENNA_output_file_name)
     filesToOpen.append(SENNA_output_file_name)
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-                                       'Finished running SENNA to extract SVOs at', True)
+    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+    #                                    'Finished running SENNA to extract SVOs at', True)
     return filesToOpen
 
 
@@ -107,8 +108,10 @@ def senna_single_file(SENNAdir, inputFilename: str) -> list:
         senna_exec = 'senna-linux64'
 
     origin_path = os.getcwd()
+    # senna_exec = os.path.join(SENNAdir, senna_exec)
+    # w/o changing dir SENNA will not produce an output table
     os.chdir(SENNAdir)
-    cmd = subprocess.Popen([senna_exec, '-srl', '-psg'], stdin=subprocess.PIPE,
+    cmd = subprocess.Popen([senna_exec, '-pos', '-srl', '-psg'], stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE)  # Input the text to stdin
 
     output = cmd.communicate(input=encoded_input)[0].decode()  # Get the output from stdout
@@ -122,8 +125,9 @@ def senna_single_file(SENNAdir, inputFilename: str) -> list:
 
     result = []
     temp = []
+
     for ele in senna_table:
-        if len(ele)==0:
+        if len(ele) == 0:
             continue
         if ele[-1] != ')' and ele[-1] != '*':
             temp.append(ele)
@@ -145,8 +149,9 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
 
     sentence_start_index = []
     df = input_df
-    new_df = pd.DataFrame(columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'Location', 'Time', 'Sentence'])
+    new_df = pd.DataFrame(columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'TIME', 'Sentence'])
 
+    # Identifying sentences
     for i in range(0, len(df)):
         token = df.iloc[i, 2]
         if token in end_signs or token[-1] == '.':
@@ -164,7 +169,9 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
 
         # Iterating each column
         for i in range(4, len(df.iloc[1, :])):
-            SVO = {'S': [], 'V': [], 'O': [], 'Location': [], 'Time': []}
+            SVO = {'S': [], 'V': [], 'O': [], 'LOCATION': [], 'TIME': []}
+            noun_postag = {'PRP', 'NN', 'NNS', 'NNP', 'WP'}
+
             sent_col = df.iloc[sentence_start_index[a]:sentence_start_index[a + 1], i]
             sent_col = sent_col.tolist()
             mapping = {}
@@ -176,9 +183,9 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
                     label = sent_col[j].split('-')[-1]
                     mapping.update({sentence_start_index[a] + j: label})
                 elif sent_col[j][-3:] == 'LOC':
-                    SVO['Location'].append(df.iloc[sentence_start_index[a] + j, 2])
+                    SVO['LOCATION'].append(df.iloc[sentence_start_index[a] + j, 2])
                 elif sent_col[j][-3:] == 'TMP':
-                    SVO['Time'].append(df.iloc[sentence_start_index[a] + j, 2])
+                    SVO['TIME'].append(df.iloc[sentence_start_index[a] + j, 2])
 
             # Converting signs to '--S--', '--V--' and '--O--'
             temp = {}  # {col_index: converted signs} for this sentence
@@ -192,17 +199,21 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
                 clause = list(temp.values())
                 if 'V' in clause and len(clause) > 1:
                     verb_index = [clause.index('V'), clause.index('V') + clause.count('V') - 1]
-
+                    s_cont_noun, s_has_noun = True, False
+                    o_cont_noun, o_has_noun = True, False
                     # S-V or V-S Structures
                     if verb_index[0] == 0 or verb_index[1] == len(clause) - 1:
                         for key in temp.keys():
                             word = df.iloc[key, 2]
-                            if temp[key] != 'V':
-                                # temp.update({key: '--S--'})
-                                SVO['S'].append(word)
-                                SVO.update({'S': SVO['S']})
-                            else:
-                                # temp.update({key: '--V--'})
+                            postag = df.iloc[key, 3]
+                            if temp[key] != 'V':    # S
+                                if postag in noun_postag and (not s_has_noun or s_cont_noun):
+                                    s_has_noun = s_cont_noun = True
+                                    SVO['S'].append(word)
+                                    SVO.update({'S': SVO['S']})
+                                else:
+                                    s_cont_noun = False
+                            else:      # V
                                 SVO['V'].append(word)
                                 SVO.update({'V': SVO['V']})
 
@@ -214,26 +225,39 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
                         # Replacing the labels
                         for key in temp_keys:
                             word = df.iloc[key, 2]
+                            postag = df.iloc[key, 3]
+
                             if temp_keys.index(key) < verb_index[0]:
-                                if before_verb > after_verb:
-                                    # temp.update({key: '--O--'})  # O-V-S Structure
-                                    SVO['O'].append(word)
-                                    SVO.update({'O': SVO['O']})
+                                if postag in noun_postag:
+                                    if before_verb > after_verb:   # O
+                                        print(word)
+                                        if not o_has_noun or o_cont_noun:
+                                            o_has_noun = o_cont_noun = True
+                                            SVO['O'].append(word)
+                                            SVO.update({'O': SVO['O']})
+                                    else:   # S
+                                        if not s_has_noun or s_cont_noun:
+                                            s_has_noun = s_cont_noun = True
+                                            SVO['S'].append(word)
+                                            SVO.update({'S': SVO['S']})
                                 else:
-                                    # temp.update({key: '--S--'})
-                                    SVO['S'].append(word)
-                                    SVO.update({'S': SVO['S']})
+                                    o_cont_noun = s_cont_noun = False
                             elif temp_keys.index(key) > verb_index[1]:
-                                if before_verb > after_verb:
-                                    # temp.update({key: '--S--'})  # S-V-O Structure
-                                    SVO['S'].append(word)
-                                    SVO.update({'S': SVO['S']})
+                                if postag in noun_postag:
+                                    if before_verb > after_verb:
+                                        if not s_has_noun or s_cont_noun:
+                                            s_has_noun = s_cont_noun = True
+                                            SVO['S'].append(word)
+                                            SVO.update({'S': SVO['S']})
+                                    else:
+                                        print(word, o_has_noun, o_cont_noun)
+                                        if not o_has_noun or o_cont_noun:
+                                            o_has_noun = o_cont_noun = True
+                                            SVO['O'].append(word)
+                                            SVO.update({'O': SVO['O']})
                                 else:
-                                    # temp.update({key: '--O--'})
-                                    SVO['O'].append(word)
-                                    SVO.update({'O': SVO['O']})
+                                    s_cont_noun = o_cont_noun = False
                             else:
-                                # temp.update({key: '--V--'})
                                 SVO['V'].append(word)
                                 SVO.update({'V': SVO['V']})
 
@@ -245,14 +269,14 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
                 SVO['S'] = ' '.join(SVO['S'])
                 SVO['V'] = ' '.join(SVO['V'])
                 SVO['O'] = ' '.join(SVO['O'])
-                SVO['Location'] = ' '.join(SVO['Location'])
-                SVO['Time'] = ' '.join(SVO['Time'])
+                SVO['LOCATION'] = ' '.join(SVO['LOCATION'])
+                SVO['TIME'] = ' '.join(SVO['TIME'])
 
                 formatted_input_file_name = IO_csv_util.dressFilenameForCSVHyperlink(df.iloc[a, 1])
                 new_row = pd.DataFrame(
                     [[document_id, a + 1, formatted_input_file_name, SVO['S'], SVO['V'], SVO['O'],
-                      SVO['Location'], SVO['Time'], sentence]],
-                    columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'Location', 'Time', 'Sentence'])
+                      SVO['LOCATION'], SVO['TIME'], sentence]],
+                    columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'TIME', 'Sentence'])
                 new_df = new_df.append(new_row, ignore_index=True)
 
     new_df.to_csv(output_file_name, index=False)

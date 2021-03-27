@@ -33,7 +33,6 @@ def timed_alert(window, timeout, message_title, message_text, time_needed=False,
         print('\n' + message_text + '\n')
     window.focus_force()
 
-
 def input_output_save(script):
     result = mb.askyesno(script,
                          script + " will save changes directly in the input file. Make sure you have backup of the input.\n\nAre you sure you want to continue?")
@@ -68,6 +67,7 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
          try:
              CoreNLP_output = json.loads(CoreNLP_output)
              logger.warning("[Info] Successfully converted CoreNLP output to JSON. Proceeding as normal.")
+             # logger.warning(CoreNLP_output)
          except Exception as e:
             logger.error("[Error] Could not convert output to JSON! Error: " + str(e))
             errorFound = True

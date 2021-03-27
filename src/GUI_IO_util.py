@@ -82,21 +82,29 @@ def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, cente
 
 
 if sys.platform == 'darwin': #Mac OS
-    help_button_x_coordinate = 90
+    help_button_x_coordinate = 70
     labels_x_coordinate = 150  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 160
+    select_file_directory_button_width=23
+    open_file_directory_button_width = 1
     open_file_directory_coordinate = 400
-    entry_box_x_coordinate = 440 #start point of all labels in the third  column (second column after ? HELP)
+    entry_box_x_coordinate = 470 #start point of all labels in the third column (second column after ? HELP); where IO filename, dir, etc. are displayed
     read_button_x_coordinate = 70
     watch_videos_x_coordinate = 200
     open_TIPS_x_coordinate = 370
     open_reminders_x_coordinate = 570
-    run_button_x_coordinate = 860
+    run_button_x_coordinate = 850
     quit_button_x_coordinate = 980
+
+    # special internal GUI specific values
+    SVO_2nd_column = 570
+
 else: #windows and anything else
     help_button_x_coordinate = 50
     labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 140
+    select_file_directory_button_width=30
+    open_file_directory_button_width = 3
     open_file_directory_coordinate = 350
     entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
     read_button_x_coordinate = 50
@@ -105,6 +113,9 @@ else: #windows and anything else
     open_reminders_x_coordinate = 550
     run_button_x_coordinate = 840
     quit_button_x_coordinate = 960
+
+    # special internal GUI specific values
+    SVO_2nd_column = 520
 
 basic_y_coordinate = 90
 y_step = 40 #the line-by-line increment on the GUI

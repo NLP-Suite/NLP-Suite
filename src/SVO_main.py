@@ -7,7 +7,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"SVO extractor",['unittest','subprocess','os','tkinter','ntpath','stanfordnlp','difflib','csv','random'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"SVO extractor",['unittest','subprocess','os','tkinter','ntpath','difflib','csv','random'])==False:
     sys.exit(0)
 
 from collections import defaultdict
@@ -23,9 +23,9 @@ from tkinter import *
 import tkinter.messagebox as mb
 import subprocess
 # to install stanfordnlp, first install
-#   pip3 install torch===1.3.1 torchvision===0.4.2 -f https://download.pytorch.org/whl/torch_stable.html
+#   pip3 install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
 #   pip3 install stanfordnlp
-import stanfordnlp
+# import stanfordnlp
 
 
 import GUI_IO_util
@@ -42,22 +42,10 @@ import IO_csv_util
 import Stanford_CoreNLP_coreference_util as stanford_coref
 import Stanford_CoreNLP_annotator_util
 import semantic_role_labeling_senna
+from IO_files_util import make_directory
+
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-# Pipeline needs the en model. To install "en" model:
-# Open your command prompt or terminal, type in following commands one at a time
-# python
-# import stanfordnlp
-# stanfordnlp.download("en")
-# exit()
-# After you are done with these steps, you can comment out the following line
-
-
-try:
-    nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma')
-except:
-    stanfordnlp.download('en')
-    nlp = stanfordnlp.Pipeline(processors='tokenize,mwt,pos,lemma')
 
 lemmalib = {}
 voLib = {}
@@ -279,6 +267,7 @@ def run(inputFilename, inputDir, outputDir,
         # field_names[10] = "Corefed Sentence"
         if not isFile:
             outputCorefedDir = os.path.join(outputDir, "CoRefed_Files")
+            make_directory(outputCorefedDir)
             if not os.path.exists(os.path.dirname(outputCorefedDir)):
                 os.makedirs(os.path.dirname(outputCorefedDir))
             file_open, error = stanford_coref.run(inputFilename, inputDir, outputCorefedDir, openOutputFiles, createExcelCharts,
@@ -290,7 +279,7 @@ def run(inputFilename, inputDir, outputDir,
                                                   memory_var, Coref_Option,
                                                   Manual_Coref_var)
             if len(file_open) > 0:
-                filesToOpen.append(file_open)
+                filesToOpen.extend(file_open)
 
         if error == 0:
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
@@ -317,19 +306,18 @@ def run(inputFilename, inputDir, outputDir,
     # Date extractor _____________________________________________________
 
     if date_extractor_var:
-        IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
-                            'Started running Stanford CoreNLP date annotator at', True)
+        # IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
+        #                     'Started running Stanford CoreNLP date annotator at', True)
         files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir, outputDir,
                                                                  openOutputFiles, createExcelCharts,
                                                             'normalized-date', False, memory_var)
         filesToOpen.extend(files)
 
-
         # date_extractor.run(CoreNLPdir, inputFilename, inputDir, outputDir, False, False, True)
-        IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
-                            'Finished running Stanford CoreNLP date annotator at', True)
-        if openOutputFiles:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        # IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
+        #                     'Finished running Stanford CoreNLP date annotator at', True)
+        # if openOutputFiles:
+        #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
     if not isFile:
         outputSVODir = os.path.join(outputDir, "SVO_Result")
@@ -355,11 +343,11 @@ def run(inputFilename, inputDir, outputDir,
         else:
             files = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, os.path.join(outputDir, outputSVODir), openOutputFiles, createExcelCharts)
         filesToOpen.extend(files)
-        IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
-                                           'Finished running Senna at', True)
+        # IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
+        #                                    'Finished running Senna at', True)
 
-        if openOutputFiles:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        # if openOutputFiles:
+        #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
         for file in files:
             svo_result_list.append(file)
@@ -367,7 +355,7 @@ def run(inputFilename, inputDir, outputDir,
     # CoreNLP OpenIE _____________________________________________________
     if CoreNLP_SVO_extractor_var==True:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
-                            'Started running Stanford CoreNLP OpenIE to extract SVOs at', True,'You can follow CoreNLP in command line.\n\nContrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chuncks of text being currently processed.')
+                            'Started running Stanford CoreNLP OpenIE to extract SVOs at', True,'Contrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chuncks of text being currently processed.')
         if isFile:
             subprocess.call(['java', '-jar', '-Xmx'+str(memory_var)+"g", 'Stanford_CoreNLP_OpenIE.jar', '-inputFile', feed_to_svo, '-outputDir', outputDir])
         else:
@@ -627,15 +615,15 @@ def run(inputFilename, inputDir, outputDir,
             if len(kmloutputFilename)>0:
                 filesToOpen.append(kmloutputFilename)
 
-        if openOutputFiles == True and len(filesToOpen) > 0:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
-            # if google_earth_var == True:
-            #     if kmloutputFilename != '':
-            #         IO_files_util.open_kmlFile(kmloutputFilename)
+    if openOutputFiles == True and len(filesToOpen) > 0:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        # if google_earth_var == True:
+        #     if kmloutputFilename != '':
+        #         IO_files_util.open_kmlFile(kmloutputFilename)
 
-        if len(inputDir) > 1: # when processing a directory, the output changes
-            mb.showwarning("Output directory", "All output files have been saved to a subdirectory of the selected output directory at\n\n"+str(outputDir)+"\n\nThe IO widget 'Select OUTPUT files directory' has been updated to reflect the change.")
-            GUI_util.output_dir_path.set(outputDir)
+    if len(inputDir) > 1: # when processing a directory, the output changes
+        mb.showwarning("Output directory", "All output files have been saved to a subdirectory of the selected output directory at\n\n"+str(outputDir)+"\n\nThe IO widget 'Select OUTPUT files directory' has been updated to reflect the change.")
+        GUI_util.output_dir_path.set(outputDir)
 
 #the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -736,7 +724,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 ASCII_var.set(0)
 ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,ASCII_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,ASCII_checkbox)
 
 CoRef_var.set(0)
 CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP)', variable=CoRef_var, onvalue=1, offvalue=0)
@@ -744,7 +732,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 CoRef_menu_var.set("Neural Network")
 CoRef_menu = tk.OptionMenu(window,CoRef_menu_var,'Deterministic','Statistical','Neural Network')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,CoRef_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,CoRef_menu,True)
 
 #memory options
 memory_var_lb = tk.Label(window, text='Memory ')
@@ -783,7 +771,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 SENNA_SVO_extractor_var.set(1)
 SENNA_SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs & SVs (via SENNA)', variable=SENNA_SVO_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,SENNA_SVO_extractor_checkbox)
+
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,SENNA_SVO_extractor_checkbox)
 
 def activateFilters(*args):
     if CoreNLP_SVO_extractor_var.get()==1:
@@ -845,7 +834,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 verbs_var.set(1)
 verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=verbs_var, onvalue=1, offvalue=0,command=lambda:getDictFile(verbs_var,verbs_dict_var,verbs_var.get(),'Verb'))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,verbs_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,verbs_checkbox,True)
 
 #setup a button to open Windows Explorer on the verbs file
 openInputFile_verbs_button = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, verbs_dict_var.get()))
@@ -865,7 +854,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 verbs_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath,'social-action-list.csv'))
 verbs_dict_entry = tk.Entry(window, width=60,state="disabled",textvariable=verbs_dict_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,verbs_dict_entry,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,verbs_dict_entry,True)
 
 objects_dict_var.set('')
 objects_dict_entry = tk.Entry(window, width=60,state="disabled",textvariable=objects_dict_var)
@@ -877,7 +866,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 wordcloud_var.set(1)
 wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wordcloud', variable=wordcloud_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,wordcloud_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,wordcloud_checkbox,True)
 
 google_earth_var.set(1)
 google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where in GIS maps (via Google Earth Pro) ', variable=google_earth_var, onvalue=1, offvalue=0)

@@ -6,7 +6,7 @@ argparse~=1.4.0
 
 #used by wordclouds.py (also uses stanza; see below)
 wordcloud~=1.8.1
-pillow
+Pillow
 
 striprtf
 
@@ -49,7 +49,10 @@ conllu
 nltk~=3.5
 # used by wordcloud script (the new StanfordCoreNLP Python approach)
 stanza
-
+# stanfordnlp is used by SVO
+stanfordnlp
+# stanza and stanfordnlp requite torch and torchvision
+# torch===1.6.0 torchvision===0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
 # VADER (sentimentt analysis)
 twython
@@ -61,7 +64,7 @@ openpyxl~=3.0.6
 geopy~=2.1.0
 simplekml~=1.3.5
 googlemaps~=4.4.2
-# tkcolorpicker requires tkinter and pillow to be installed (https://libraries.io/pypi/tkcolorpicker)
+# tkcolorpicker requires tkinter and Pillow to be installed (https://libraries.io/pypi/tkcolorpicker)
 tkcolorpicker~=2.1.3
 
 #used by Gensim, topic modeling script
@@ -83,4 +86,3 @@ scipy~=1.6.0
 chardet~=4.0.0
 tqdm~=4.55.1
 scikit-learn~=0.24.1
-stanfordnlp
