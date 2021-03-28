@@ -537,7 +537,6 @@ def run(inputFilename, inputDir, outputDir,
                 if inputFilename[-4:] == ".csv":
                     gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, inputFilename)
                 else:
-                    print(inputFileBase, outputDir, svo_result_list[0])
                     gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, svo_result_list[0])
                 filesToOpen.append(gexf_file)
             else:
