@@ -210,6 +210,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
 
                     # S-V-O or O-V-S Structures
                     else:
+                        print(clause)
                         before_verb = int(clause[0][-1])  # Phrase before verb
                         after_verb = int(clause[-1][-1])  # Phrase after verb
                         temp_keys = list(temp.keys())

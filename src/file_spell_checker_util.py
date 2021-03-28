@@ -264,7 +264,8 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
     #nFiles = nFolders = 0#angel
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity start', 'Started running Word similarity at', True)
-    
+
+
     # TODO which annotators is it using? We do not need all annotators! Sentence splitter and tokenizer (and NER)
     p = subprocess.Popen(
         ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPdir, '*'),

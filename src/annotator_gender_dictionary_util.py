@@ -53,6 +53,7 @@ def text_generate(inputFilename, inputDir):
 
 def dictionary_annotate(inputFilename, inputDir, outputDir, dictionary_file, personal_pronouns_var):
     fileToOpen=[]
+    CoreNLPdir = IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_coreference_util', 'Stanford CoreNLP')
     p = subprocess.Popen(
         ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
          'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])

@@ -318,8 +318,10 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 
         # the output filename passed to jar file MUST be a filename without path
         temp_outputFilename = os.path.basename(outputFilename)
-
-        subprocess.call(['java', '-jar', 'Sentence_Complexity.Jar', doc, outputDir, temp_outputFilename])
+        if sys.platform == 'darwin':
+            subprocess.call(['java', '-jar', 'Sentence_Complexity.Jar', doc, outputDir, temp_outputFilename])
+        else:
+            subprocess.call(['java', '-jar', 'Sentence_Complexity.Jar', doc, outputDir, temp_outputFilename], shell=True)
         # Need to use the full path when modifying the now created CSV data
         output_csv.append(outputFilename)
         # Add document_ID to the csv file that was just created
