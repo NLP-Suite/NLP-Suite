@@ -173,7 +173,7 @@ def run(inputFilename, inputDir, outputDir,
         google_earth_var,
         openOutputFiles,createExcelCharts):
 
-    memory_var = 64
+    memory_var = 16
 
     filesToOpen = []
 

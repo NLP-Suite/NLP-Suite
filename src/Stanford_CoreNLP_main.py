@@ -36,6 +36,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat,
         compute_sentence_var, CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var):
     # check internet connection
+
     filesToOpen = []
 
     if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
