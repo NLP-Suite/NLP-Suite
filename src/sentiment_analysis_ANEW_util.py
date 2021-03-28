@@ -27,10 +27,6 @@ Parameters:
 # add parameter to exclude duplicates? also mean or median analysis
 
 import sys
-
-import GUI_IO_util
-import IO_files_util
-
 import GUI_util
 import IO_libraries_util
 
@@ -49,6 +45,8 @@ import pandas as pd
 import tkinter.messagebox as mb
 
 import IO_csv_util
+import IO_files_util
+import GUI_IO_util
 
 IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
 # check WordNet

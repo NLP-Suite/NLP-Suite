@@ -7,16 +7,12 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"SVO extractor",['unittest','subprocess','os','tkinter','ntpath','difflib','csv','random'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"SVO extractor",['subprocess','os','tkinter','csv'])==False:
     sys.exit(0)
 
 from collections import defaultdict
 import os
-import nltk
-from nltk.tree import *
-import nltk.draw
 from nltk.stem import WordNetLemmatizer
-from nltk.corpus import wordnet as wn
 import csv
 import tkinter as tk
 from tkinter import *
