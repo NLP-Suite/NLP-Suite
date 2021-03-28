@@ -13,6 +13,8 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"SVO extractor",['subp
 from collections import defaultdict
 import os
 from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet as wn
+import SVO_util
 import csv
 import tkinter as tk
 from tkinter import *
@@ -38,7 +40,7 @@ import IO_csv_util
 import Stanford_CoreNLP_coreference_util as stanford_coref
 import Stanford_CoreNLP_annotator_util
 import semantic_role_labeling_senna
-
+from IO_files_util import make_directory
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -175,11 +177,6 @@ def run(inputFilename, inputDir, outputDir,
     merge_file_option = None
     save_intermediate_file = False
 
-    if (CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False):
-        mb.showerror(title='No SVO option selected',
-                     message="No SVO option selected, Stanford CoreNLP and/or SENNA.\n\nPlease, select an SVO option and try again.")
-        return
-
     if len(inputDir) > 0:
         msgbox_merge_file = mb.askyesno("Merge File Option", "You selected to process a directory of files.\n\n" +
                                     "DO YOU WANT TO MERGE FILES INTO A SINGLE ONE AND PROCESS THE MERGED FILE?\n\n" +
@@ -245,6 +242,8 @@ def run(inputFilename, inputDir, outputDir,
     svo_result_list = []
     document_index = 1
     svo_merge_filename = ""
+    senna_file = ''
+    SVOfilename = ''
 
     if len(inputFilename) > 0:
         inputFileBase = os.path.basename(inputFilename)[0:-4] # without .csv or .txt
@@ -268,6 +267,7 @@ def run(inputFilename, inputDir, outputDir,
         # field_names[10] = "Corefed Sentence"
         if not isFile:
             outputCorefedDir = os.path.join(outputDir, "CoRefed_Files")
+            make_directory(outputCorefedDir)
             if not os.path.exists(os.path.dirname(outputCorefedDir)):
                 os.makedirs(os.path.dirname(outputCorefedDir))
             file_open, error = stanford_coref.run(inputFilename, inputDir, outputCorefedDir, openOutputFiles, createExcelCharts,
@@ -313,50 +313,55 @@ def run(inputFilename, inputDir, outputDir,
                                                             'normalized-date', False, memory_var)
         filesToOpen.extend(files)
 
-        #date_extractor.run(CoreNLPdir, inputFilename, inputDir, outputDir, False, False, True)
+        # date_extractor.run(CoreNLPdir, inputFilename, inputDir, outputDir, False, False, True)
         # IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
         #                     'Finished running Stanford CoreNLP date annotator at', True)
         # if openOutputFiles:
         #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+
+    if not isFile:
+        outputSVODir = os.path.join(outputDir, "SVO_Result")
+    else:
+        outputSVODir = ''
 
     # TODO When both OpenIE and SENNA are run, must export 2 csv files
     #   one file with the frequency of same SVOs, same SVs, different SVOs, different SVs
     #   a second file with the same SVO listings of document ID, sentence ID, ..., S, V, O, ... but with a first column Package with values OpenIE or SENNA
 
     # SENNA _____________________________________________________
-    if SENNA_SVO_extractor_var==True:
+    if SENNA_SVO_extractor_var:
         # TODO must use the coreferenced input file if the user selected that option
         # TODO must filter SVO results by social actors if the user selected that option
-        #   both options run correctly for OppenIE
-        files = []
+        #   both options run correctly for OpenIE
+        if not isFile and not os.path.exists(outputSVODir):       # Is os.path.dirname(outputSVODir) the same as outputSVODir?
+            os.makedirs(outputSVODir)
+        senna_files = []
+        senna_file = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, os.path.join(outputDir, outputSVODir), openOutputFiles, createExcelCharts)
+        senna_file = senna_file[0]
+
         if save_intermediate_file:
             for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
-                files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='', outputDir=outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts)
+                senna_files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='', outputDir=outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts)
         else:
-            files = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts)
-        # use extend to add a list to a list:
-        filesToOpen.extend(files)
+            senna_files = senna_file
+        filesToOpen.extend(senna_files)
+
         # if openOutputFiles:
         #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
-        for file in files:
+        for file in senna_files:
             svo_result_list.append(file)
 
-    if not isFile:
-        outputSVODir = os.path.join(outputDir, "SVO_Result")
-    else:
-        outputSVODir=''
-
     # CoreNLP OpenIE _____________________________________________________
-    if CoreNLP_SVO_extractor_var==True:
+    if CoreNLP_SVO_extractor_var:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                             'Started running Stanford CoreNLP OpenIE to extract SVOs at', True,'Contrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chuncks of text being currently processed.')
         if isFile:
             subprocess.call(['java', '-jar', '-Xmx'+str(memory_var)+"g", 'Stanford_CoreNLP_OpenIE.jar', '-inputFile', feed_to_svo, '-outputDir', outputDir])
         else:
-            if not os.path.exists(os.path.dirname(outputSVODir)):
+            if not os.path.exists(outputSVODir):       # Is os.path.dirname(outputSVODir) the same as outputSVODir?
                 try:
-                    os.makedirs(os.path.dirname(outputSVODir))
+                    os.makedirs(outputSVODir)
                 except OSError as exc:
                     if exc.errno != errno.EEXIST:
                         raise
@@ -387,7 +392,6 @@ def run(inputFilename, inputDir, outputDir,
                     original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-CoRefed-svoResult-woFilter", ""))
                 elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-CoRefed" not in tmp):
                     original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
-
 
         if merge_file_option == False:
             # create a single merged file
@@ -515,6 +519,10 @@ def run(inputFilename, inputDir, outputDir,
                 for f in txt_files:
                     os.remove(f)
 
+    if SENNA_SVO_extractor_var and CoreNLP_SVO_extractor_var:
+        SVO_util.count_frequency_two_svo(svo_merge_filename, senna_file, inputFilename, inputDir, outputDir)
+        SVO_util.combine_two_svo(svo_merge_filename, senna_file, inputFilename, inputDir, outputDir)
+
     # you can visualize data using an svo.csv file in input
     if (inputFilename[-8:] == '-svo.csv') or (len(svo_result_list) > 0):
         # Gephi network graphs _________________________________________________
@@ -531,12 +539,12 @@ def run(inputFilename, inputDir, outputDir,
             else:
                 for f in svo_result_list:
                     gexf_file = Gephi_util.create_gexf(os.path.basename(f)[:-4], outputDir, f)
-                    if "-merge-svo" in f:
+                    if "-merge-svo" in f or "SENNA_SVO" in f:
                         filesToOpen.append(gexf_file)
                     if not save_intermediate_file:
                         gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if f.endswith('.gexf')]
                         for f in gexf_files:
-                            if "-merge-svo" not in f:
+                            if "-merge-svo" not in f and "SENNA_SVO" not in f:
                                 os.remove(f)
 
         # wordcloud  _________________________________________________
@@ -741,7 +749,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 manual_Coref_var.set(0)
 manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_Coref_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,manual_Coref_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,manual_Coref_checkbox)
 
 def activateCoRefOptions(*args):
     if CoRef_var.get()==1:
@@ -759,14 +767,15 @@ CoRef_var.trace('w',activateCoRefOptions)
 activateCoRefOptions()
 
 date_extractor_checkbox = tk.Checkbutton(window, text='Extract normalized NER dates (via Stanford CoreNLP)', variable=date_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate,y_multiplier_integer,date_extractor_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,date_extractor_checkbox)
 
 CoreNLP_SVO_extractor_var.set(1)
 SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs (via Stanford CoreNLP OpenIE)', variable=CoreNLP_SVO_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SVO_extractor_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SVO_extractor_checkbox,True)
 
 SENNA_SVO_extractor_var.set(1)
 SENNA_SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs & SVs (via SENNA)', variable=SENNA_SVO_extractor_var, onvalue=1, offvalue=0)
+
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,SENNA_SVO_extractor_checkbox)
 
 def activateFilters(*args):
@@ -821,7 +830,7 @@ def getDictFile(checkbox_var,dict_var,checkbox_value,dictFile):
 
 subjects_var.set(1)
 subjects_checkbox = tk.Checkbutton(window, text='Filter Subject', variable=subjects_var, onvalue=1, offvalue=0,command=lambda:getDictFile(subjects_var,subjects_dict_var,subjects_var.get(),'Subject'))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,subjects_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,subjects_checkbox,True)
 
 #setup a button to open Windows Explorer on the subjects file
 openInputFile_subjects_button = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, subjects_dict_var.get()))
@@ -845,7 +854,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 subjects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath,'social-actor-list.csv'))
 subjects_dict_entry = tk.Entry(window, width=60,state="disabled",textvariable=subjects_dict_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,subjects_dict_entry,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,subjects_dict_entry,True)
 
 verbs_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath,'social-action-list.csv'))
 verbs_dict_entry = tk.Entry(window, width=60,state="disabled",textvariable=verbs_dict_var)
@@ -888,7 +897,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*10,"Help","Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;;\n\n  2. to visualize SVO relations in a wordcloud;\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro. ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*11,"Help",GUI_IO_util.msg_openOutputFiles)
 
-help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
+help_buttons(window,GUI_IO_util.get_help_button_x_coordinate()-20,GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
 readMe_message="This set of Python 3 and Java scripts extract automatically most of the elements of a story grammar and visualize the results in network graphs and GIS maps. A story grammar – basically, the 5Ws + H of modern journalism: Who, What, When, Where, Why, and How – provides the basic building blocks of narrative.\n\nThe set of scripts assembled here for this purpose ranges from testing for utf-8 compliance of the input text, to resolution for pronominal coreference, extraction of normalized NER dates (WHEN), visualized in various Excel charts, extraction, geocoding, and mapping in Google Earth Pro of NER locations.\n\nAt the heart of the SVO approach are two scripts, a java script - SVO_pipeline.jar - that extracts from the text all the OpenIE relations via Stanford CoreNLP and another script based on SENNA. The Java pipeline iterates through each relation, extracts the enhanced dependencies, checking for valid SVO triplets. For passive sentences, the pipeline swaps S and O to transform the triplet into active voice. Thus, the WHO, WHAT (WHOM) are extracted from a text. Each component of the SVO triplet can be filtered via specific dictionaries (e.g., filtering for social actors and social actions, only). The set of SVO triplets are then visualized in dynamic network graphs (via Gephi).\n\nThe WHY and HOW of narrative are still beyond the reach of the current set of SVO scripts.\n\nIn INPUT the scripts expect a txt file to run utf-8 check, coreference resolution, date extraction, and OpenIE. You can also enter a csv file, the output of a previous run with OpenIE/SENNA (_svo.csv/_SVO_Result) marked file) if all you want to do is to visualize results.\n\nIn OUTPUT, the scripts will produce several csv files, a png image file, and a KML file depending upon the options selected."

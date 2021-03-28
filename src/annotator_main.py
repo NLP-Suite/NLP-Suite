@@ -24,22 +24,22 @@ import annotator_dictionary_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createExcelCharts,
-		annotator_DBpedia_var, 
-		annotator_YAGO_var, 
-		confidence_level, 
+		annotator_DBpedia_var,
+		annotator_YAGO_var,
+		confidence_level,
 		databases_var,
-		sub_class_entry, 
+		sub_class_entry,
 		DBpedia_YAGO_class_list,
 		DBpedia_YAGO_color_list,
 		bold_DBpedia_YAGO_var,
-		annotator_dictionary_var, 
-		annotator_add_dictionary_var, 
+		annotator_dictionary_var,
+		annotator_add_dictionary_var,
 		dictionary_file,
 		csv_field1_var,
 		csv_field2_var,
 		color_palette_dict_var,
 		bold_var,
-		csvValue_color_list, 
+		csvValue_color_list,
 		annotator_extractor,
 		CoreNLP_gender_annotator_var):
 
@@ -95,7 +95,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
 
 		if len(DBpedia_YAGO_color_list) == 0:  # no colors entered; use blue as default
 			DBpedia_YAGO_color_list = ['', '|', 'blue', '|']
-		temp = [a for a in DBpedia_YAGO_color_list if a is not "|"]
+		temp = [a for a in DBpedia_YAGO_color_list if a != "|"]
 		colorls = []
 		for i in range(len(temp)):
 			if (i % 2 == 1):
@@ -115,12 +115,12 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
 		if IO_libraries_util.inputProgramFileCheck('annotator_dictionary_util.py')==False:
 			return
 		filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, output_dir_path, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.html')
-	elif annotator_extractor==True: 
+	elif annotator_extractor==True:
 		if IO_libraries_util.inputProgramFileCheck('annotator_html_extractor_util.py')==False:
 			return
 		import annotator_html_extractor_util
 		annotator_html_extractor_util.buildcsv(inputFilename, input_main_dir_path, output_dir_path,openOutputFiles,createExcelCharts)
-	elif CoreNLP_gender_annotator_var==True: 
+	elif CoreNLP_gender_annotator_var==True:
 		if IO_libraries_util.inputProgramFileCheck('annotator_gender_main.py')==False:
 			return
 		call("python annotator_gender_main.py", shell=True)
@@ -172,12 +172,12 @@ GUI_util.run_button.configure(command=run_script_command)
 GUI_size='1400x600'
 GUI_label='Graphical User Interface (GUI) for annotating documents using DBpedia, YAGO, and/or dictionaries'
 config_filename='annotator-config.txt'
-# The 6 values of config_option refer to: 
+# The 6 values of config_option refer to:
 #   software directory
 #   input file
-        # 1 for CoNLL file 
-        # 2 for TXT file 
-        # 3 for csv file 
+        # 1 for CoNLL file
+        # 2 for TXT file
+        # 3 for csv file
         # 4 for any type of file
         # 5 for txt or html
         # 6 for txt or csv
@@ -226,9 +226,9 @@ bold_DBpedia_YAGO_var= tk.IntVar() # display in bod the selected color selected 
 color_palette_dict_var= tk.StringVar() # the color selected for dictionary annotation
 bold_dict_var= tk.IntVar() # display in bod the selected color selected for dictionary annotation
 annotator_add_dictionary_var=tk.IntVar() # to add new annotations via dictionary to an already annotated document
-annotator_dictionary_file_var=tk.StringVar() # dictionary file used to annotate 
+annotator_dictionary_file_var=tk.StringVar() # dictionary file used to annotate
 annotator_extractor_var=tk.IntVar() # to extract annotations in csv format from an annotated file
-CoreNLP_gender_annotator_var=tk.IntVar() 
+CoreNLP_gender_annotator_var=tk.IntVar()
 
 # http://mappings.dbpedia.org/server/ontology/classes/
 DBpedia_menu_options=(
@@ -639,8 +639,8 @@ def changed_dictionary_filename(*args):
 		for s in menu_values:
 			m1.add_command(label=s,command=lambda value=s:csv_field2_var.set(value))
 
-	# set default value of csv_field1_var to 
-	#	first column of csv file 
+	# set default value of csv_field1_var to
+	#	first column of csv file
 	if len(menu_values)>0:
 		csv_field1_var.set(menu_values[0])
 		if len(menu_values)>1:
@@ -791,7 +791,7 @@ TIPS_lookup = {'Annotator':'TIPS_NLP_Annotator.pdf','Annotator DBpedia':'TIPS_NL
 TIPS_options='Annotator','Annotator DBpedia','DBpedia ontology classes','YAGO (schema.org) ontology classes','YAGO (REDUCED schema.org) ontology classes','W3C, OWL, RDF, SPARQL', 'Annotator dictionary','Annotator extractor','Gender annotator'
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
-# any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util. 
+# any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_txtFile)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_corpusData)
