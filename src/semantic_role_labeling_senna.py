@@ -79,7 +79,7 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
 
     senna_df = pd.DataFrame(formatted_table, columns=['Col %s' % i for i in range(len(formatted_table[0]))])
 
-    convert_to_svo(senna_df, SENNA_output_file_name)
+    convert_to_svo(senna_df, SENNA_output_file_name, createExcelCharts)
     filesToOpen.append(SENNA_output_file_name)
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                        'Finished running SENNA to extract SVOs at', True)
@@ -138,7 +138,7 @@ def senna_single_file(SENNAdir, inputFilename: str) -> list:
     return result
 
 
-def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
+def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCharts: bool) -> str:
     """
     Converts a csv file with SRL results to SVO results
     :param input_df: a df file with SRL results
@@ -282,7 +282,8 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
                     columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'TIME', 'Sentence'])
                 new_df = new_df.append(new_row, ignore_index=True)
 
-    new_df.to_csv(output_file_name, index=False)
+    if createExcelCharts:
+        new_df.to_csv(output_file_name, index=False)
     return output_file_name
 
 

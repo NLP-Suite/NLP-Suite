@@ -336,21 +336,21 @@ def run(inputFilename, inputDir, outputDir,
         # TODO must use the coreferenced input file if the user selected that option
         # TODO must filter SVO results by social actors if the user selected that option
         #   both options run correctly for OpenIE
-        if not isFile and not os.path.exists(outputSVODir):       # Is os.path.dirname(outputSVODir) the same as outputSVODir?
+        if not isFile and not os.path.exists(outputSVODir):
             os.makedirs(outputSVODir)
         senna_files = []
-        senna_file = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, os.path.join(outputDir, outputSVODir), openOutputFiles, createExcelCharts)
+        senna_file = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, os.path.join(outputDir, outputSVODir), openOutputFiles, createExcelCharts=createExcelCharts and not save_intermediate_file)
         senna_file = senna_file[0]
 
         if save_intermediate_file:
             for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
-                senna_files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='', outputDir=outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts)
+                senna_files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='', outputDir=os.path.join(outputDir, outputSVODir), openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts)
         else:
-            senna_files = senna_file
+            senna_files = [senna_file]
         filesToOpen.extend(senna_files)
 
-        # if openOutputFiles:
-        #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        if openOutputFiles:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
         for file in senna_files:
             svo_result_list.append(file)
@@ -537,6 +537,7 @@ def run(inputFilename, inputDir, outputDir,
                 if inputFilename[-4:] == ".csv":
                     gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, inputFilename)
                 else:
+                    print(inputFileBase, outputDir, svo_result_list[0])
                     gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, svo_result_list[0])
                 filesToOpen.append(gexf_file)
             else:
