@@ -6,7 +6,6 @@ import IO_files_util
 def count_frequency_two_svo(open_ie_csv, senna_csv, inputFilename, inputDir, outputDir):
     def generate_key(S, V, O):
         key = ''
-        print(S, V, O)
         if S:
             key += S.strip().lower() + ','
 

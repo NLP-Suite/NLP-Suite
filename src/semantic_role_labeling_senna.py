@@ -133,6 +133,7 @@ def senna_single_file(SENNAdir, inputFilename: str) -> list:
             temp.append(ele)
         else:
             result.append(temp)
+
             temp = []
 
     return result
@@ -226,7 +227,6 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
                             before_verb = int(clause[0][-1])  # Phrase before verb
                             after_verb = int(clause[-1][-1])  # Phrase after verb
                         except ValueError:
-                            print("Invalid literal for int() with base 10: 'V'")
                             continue
                         temp_keys = list(temp.keys())
                         # Replacing the labels
