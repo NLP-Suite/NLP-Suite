@@ -113,7 +113,10 @@ def import_nltk_resource(window, resource_path, resource):
 
 def check_java_installation(script):
     errorFound = False
-    java_output = subprocess.run(['java', '-version'], capture_output=True)
+    if sys.platform == 'darwin':  # Mac
+        java_output = subprocess.run(['java', '-version'], capture_output=True)
+    else:
+        java_output = subprocess.run(['java', '-version'], capture_output=True)
     error_code = java_output.returncode  # Should be 0 if java installed
     system_output = java_output.stderr.decode(
         'utf-8')  # This is what you see when you run "java -version" in your command line
