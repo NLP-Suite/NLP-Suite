@@ -79,7 +79,7 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
 
     senna_df = pd.DataFrame(formatted_table, columns=['Col %s' % i for i in range(len(formatted_table[0]))])
 
-    convert_to_svo(senna_df, SENNA_output_file_name)
+    convert_to_svo(senna_df, SENNA_output_file_name, createExcelCharts)
     filesToOpen.append(SENNA_output_file_name)
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                        'Finished running SENNA to extract SVOs at', True)
@@ -133,12 +133,13 @@ def senna_single_file(SENNAdir, inputFilename: str) -> list:
             temp.append(ele)
         else:
             result.append(temp)
+
             temp = []
 
     return result
 
 
-def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
+def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCharts: bool) -> str:
     """
     Converts a csv file with SRL results to SVO results
     :param input_df: a df file with SRL results
@@ -150,6 +151,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
     sentence_start_index = []
     df = input_df
     new_df = pd.DataFrame(columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'TIME', 'Sentence'])
+    document_id, sent_id = 0, 0
 
     # Identifying sentences
     for i in range(0, len(df)):
@@ -165,6 +167,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
     # Iterating each sentence
     for a in range(len(sentence_start_index) - 1):
         sentence = ' '.join(df.iloc[sentence_start_index[a]:sentence_start_index[a + 1], 2]) + ' '
+        sent_id = 1 if document_id != df.iloc[sentence_start_index[a], 0] else sent_id
         document_id = df.iloc[sentence_start_index[a], 0]
 
         # Iterating each column
@@ -224,7 +227,6 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
                             before_verb = int(clause[0][-1])  # Phrase before verb
                             after_verb = int(clause[-1][-1])  # Phrase after verb
                         except ValueError:
-                            print("Invalid literal for int() with base 10: 'V'")
                             continue
                         temp_keys = list(temp.keys())
                         # Replacing the labels
@@ -277,12 +279,15 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
 
                 formatted_input_file_name = IO_csv_util.dressFilenameForCSVHyperlink(df.iloc[a, 1])
                 new_row = pd.DataFrame(
-                    [[document_id, a + 1, formatted_input_file_name, SVO['S'], SVO['V'], SVO['O'],
+                    [[document_id, sent_id, formatted_input_file_name, SVO['S'], SVO['V'], SVO['O'],
                       SVO['LOCATION'], SVO['TIME'], sentence]],
                     columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'TIME', 'Sentence'])
                 new_df = new_df.append(new_row, ignore_index=True)
 
-    new_df.to_csv(output_file_name, index=False)
+        sent_id += 1
+
+    if createExcelCharts:
+        new_df.to_csv(output_file_name, index=False)
     return output_file_name
 
 
