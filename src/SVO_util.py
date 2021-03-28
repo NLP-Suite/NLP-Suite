@@ -1,7 +1,9 @@
 import pandas as pd
 
+import IO_files_util
 
-def count_frequency_two_svo(open_ie_csv, senna_csv):
+
+def count_frequency_two_svo(open_ie_csv, senna_csv, inputFilename, inputDir, outputDir):
     def generate_key(S, V, O):
         key = ''
         print(S, V, O)
@@ -47,15 +49,14 @@ def count_frequency_two_svo(open_ie_csv, senna_csv):
 
     df = df.append(pd.DataFrame([[len(same_svo), len(same_sv), len(diff_svo), len(diff_sv)]],
                                 columns=['Same SVO', 'Same SV', 'Different SVO', 'Different SV']), ignore_index=True)
-    df.to_csv('Freq.csv', index=False)
+    df.to_csv(IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                      'SENNA_OPENIE_SVO_COMBINE'), index=False)
 
 
-def combine_two_svo(open_ie_svo, senna_svo):
+def combine_two_svo(open_ie_svo, senna_svo, inputFilename, inputDir, outputDir):
     columns = ['Tool', 'Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'TIME', 'Sentence']
     combined_df = pd.DataFrame(
         columns=columns)
-    openIE_df = pd.read_csv(open_ie_svo)
-    senna_df = pd.read_csv(senna_svo)
     dfs = [(pd.read_csv(open_ie_svo), 'Open IE'), (pd.read_csv(senna_svo), 'Senna')]
 
     for df, df_name in dfs:
@@ -66,15 +67,9 @@ def combine_two_svo(open_ie_svo, senna_svo):
                        df.loc[i, 'TIME'], df.loc[i, 'Sentence']]
             combined_df = combined_df.append(pd.DataFrame([new_row], columns=columns), ignore_index=True)
 
-    # for i in range(len(senna_df)):
-    #     new_row = ['Senna', senna_df.loc[i, 'Document ID'], senna_df.loc[i, 'Sentence ID'], senna_df.loc[i, 'Document'],
-    #                senna_df.loc[i, 'S'],
-    #                senna_df.loc[i, 'V'], senna_df.loc[i, 'O/A'], senna_df.loc[i, 'LOCATION'],
-    #                senna_df.loc[i, 'TIME'], senna_df.loc[i, 'Sentence']]
-    #     combined_df = combined_df.append(pd.DataFrame([new_row], columns=columns), ignore_index=True)
-
     combined_df.sort_values(by=['Document ID', 'Sentence ID'], inplace=True)
-    combined_df.to_csv('Combined.csv', index=False)
+    combined_df.to_csv(IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                               'SENNA_OPENIE_SVO_FREQ'), index=False)
 
 
 if __name__ == '__main__':

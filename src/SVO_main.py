@@ -17,6 +17,7 @@ from nltk.tree import *
 import nltk.draw
 from nltk.stem import WordNetLemmatizer
 from nltk.corpus import wordnet as wn
+import SVO_util
 import csv
 import tkinter as tk
 from tkinter import *
@@ -244,6 +245,8 @@ def run(inputFilename, inputDir, outputDir,
     svo_result_list = []
     document_index = 1
     svo_merge_filename = ""
+    senna_file = ''
+    SVOfilename = ''
 
     if len(inputFilename) > 0:
         inputFileBase = os.path.basename(inputFilename)[0:-4] # without .csv or .txt
@@ -329,31 +332,31 @@ def run(inputFilename, inputDir, outputDir,
     #   a second file with the same SVO listings of document ID, sentence ID, ..., S, V, O, ... but with a first column Package with values OpenIE or SENNA
 
     # SENNA _____________________________________________________
-    if SENNA_SVO_extractor_var==True:
+    if SENNA_SVO_extractor_var:
         # TODO must use the coreferenced input file if the user selected that option
         # TODO must filter SVO results by social actors if the user selected that option
         #   both options run correctly for OpenIE
-        files = []
         if not isFile and not os.path.exists(outputSVODir):       # Is os.path.dirname(outputSVODir) the same as outputSVODir?
             os.makedirs(outputSVODir)
+        senna_files = []
+        senna_file = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, os.path.join(outputDir, outputSVODir), openOutputFiles, createExcelCharts)
+        senna_file = senna_file[0]
 
         if save_intermediate_file:
             for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
-                files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='', outputDir=outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts)
+                senna_files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='', outputDir=outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts)
         else:
-            files = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, os.path.join(outputDir, outputSVODir), openOutputFiles, createExcelCharts)
-        filesToOpen.extend(files)
-        # IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
-        #                                    'Finished running Senna at', True)
+            senna_files = senna_file
+        filesToOpen.extend(senna_files)
 
         # if openOutputFiles:
         #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
-        for file in files:
+        for file in senna_files:
             svo_result_list.append(file)
 
     # CoreNLP OpenIE _____________________________________________________
-    if CoreNLP_SVO_extractor_var==True:
+    if CoreNLP_SVO_extractor_var:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                             'Started running Stanford CoreNLP OpenIE to extract SVOs at', True,'Contrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chuncks of text being currently processed.')
         if isFile:
@@ -518,6 +521,10 @@ def run(inputFilename, inputDir, outputDir,
                 txt_files = [os.path.join(svo_result_dir, f) for f in os.listdir(svo_result_dir) if f.endswith('.txt')]
                 for f in txt_files:
                     os.remove(f)
+
+    if SENNA_SVO_extractor_var and CoreNLP_SVO_extractor_var:
+        SVO_util.count_frequency_two_svo(svo_merge_filename, senna_file, inputFilename, inputDir, outputDir)
+        SVO_util.combine_two_svo(svo_merge_filename, senna_file, inputFilename, inputDir, outputDir)
 
     # you can visualize data using an svo.csv file in input
     if (inputFilename[-8:] == '-svo.csv') or (len(svo_result_list) > 0):

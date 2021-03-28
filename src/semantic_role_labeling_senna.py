@@ -41,9 +41,9 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
         return filesToOpen
 
     # record the time consumption before annotating text in each file
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
-    #                                    'Started running SENNA to extract SVOs at', True,
-    #                                    'You can follow SENNA in command line.')
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+                                       'Started running SENNA to extract SVOs at', True,
+                                       'You can follow SENNA in command line.')
 
     SENNA_output_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'SENNA_SVO')
@@ -81,8 +81,8 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
 
     convert_to_svo(senna_df, SENNA_output_file_name)
     filesToOpen.append(SENNA_output_file_name)
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-    #                                    'Finished running SENNA to extract SVOs at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+                                       'Finished running SENNA to extract SVOs at', True)
     return filesToOpen
 
 
@@ -197,6 +197,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
 
             if temp:
                 clause = list(temp.values())
+
                 if 'V' in clause and len(clause) > 1:
                     verb_index = [clause.index('V'), clause.index('V') + clause.count('V') - 1]
                     s_cont_noun, s_has_noun = True, False
@@ -219,8 +220,12 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
 
                     # S-V-O or O-V-S Structures
                     else:
-                        before_verb = int(clause[0][-1])  # Phrase before verb
-                        after_verb = int(clause[-1][-1])  # Phrase after verb
+                        try:
+                            before_verb = int(clause[0][-1])  # Phrase before verb
+                            after_verb = int(clause[-1][-1])  # Phrase after verb
+                        except ValueError:
+                            print("Invalid literal for int() with base 10: 'V'")
+                            continue
                         temp_keys = list(temp.keys())
                         # Replacing the labels
                         for key in temp_keys:
@@ -230,7 +235,6 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
                             if temp_keys.index(key) < verb_index[0]:
                                 if postag in noun_postag:
                                     if before_verb > after_verb:   # O
-                                        print(word)
                                         if not o_has_noun or o_cont_noun:
                                             o_has_noun = o_cont_noun = True
                                             SVO['O'].append(word)
@@ -250,7 +254,6 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
                                             SVO['S'].append(word)
                                             SVO.update({'S': SVO['S']})
                                     else:
-                                        print(word, o_has_noun, o_cont_noun)
                                         if not o_has_noun or o_cont_noun:
                                             o_has_noun = o_cont_noun = True
                                             SVO['O'].append(word)
