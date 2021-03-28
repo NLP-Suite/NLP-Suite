@@ -23,13 +23,10 @@ Parameters:
 # add parameter to exclude duplicates? also mean or median analysis
 
 import sys
-
-import GUI_IO_util
-import IO_files_util
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Sentiment Analysis HEDONOMETER",['nltk','json','os','csv','argparse','pandas','tkinter','numpy','time'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"Sentiment Analysis HEDONOMETER",['nltk','json','os','csv','argparse','tkinter','time'])==False:
     sys.exit(0)
 
 import os
@@ -39,11 +36,11 @@ import statistics
 import time
 import argparse
 import tkinter.messagebox as mb
-
-import IO_csv_util
-
 from nltk import tokenize
 from nltk import word_tokenize
+
+import IO_csv_util
+import GUI_IO_util
 
 IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
 # check WordNet
