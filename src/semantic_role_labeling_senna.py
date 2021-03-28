@@ -150,6 +150,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
     sentence_start_index = []
     df = input_df
     new_df = pd.DataFrame(columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'TIME', 'Sentence'])
+    document_id, sent_id = 0, 0
 
     # Identifying sentences
     for i in range(0, len(df)):
@@ -165,6 +166,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
     # Iterating each sentence
     for a in range(len(sentence_start_index) - 1):
         sentence = ' '.join(df.iloc[sentence_start_index[a]:sentence_start_index[a + 1], 2]) + ' '
+        sent_id = 1 if document_id != df.iloc[sentence_start_index[a], 0] else sent_id
         document_id = df.iloc[sentence_start_index[a], 0]
 
         # Iterating each column
@@ -277,10 +279,12 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
 
                 formatted_input_file_name = IO_csv_util.dressFilenameForCSVHyperlink(df.iloc[a, 1])
                 new_row = pd.DataFrame(
-                    [[document_id, a + 1, formatted_input_file_name, SVO['S'], SVO['V'], SVO['O'],
+                    [[document_id, sent_id, formatted_input_file_name, SVO['S'], SVO['V'], SVO['O'],
                       SVO['LOCATION'], SVO['TIME'], sentence]],
                     columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'TIME', 'Sentence'])
                 new_df = new_df.append(new_row, ignore_index=True)
+
+        sent_id += 1
 
     if createExcelCharts:
         new_df.to_csv(output_file_name, index=False)
