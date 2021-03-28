@@ -23,7 +23,7 @@ import IO_files_util
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"sentiment_analysis_SentiWordNet",['nltk','os','csv','argparse','pandas','tkinter','numpy','time','twython'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"sentiment_analysis_SentiWordNet",['nltk','os','csv','argparse','tkinter','time'])==False:
     sys.exit(0)
 
 import csv
