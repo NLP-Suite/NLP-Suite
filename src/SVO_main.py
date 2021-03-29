@@ -324,9 +324,6 @@ def run(inputFilename, inputDir, outputDir,
     else:
         outputSVODir = ''
 
-    # TODO When both OpenIE and SENNA are run, must export 2 csv files
-    #   one file with the frequency of same SVOs, same SVs, different SVOs, different SVs
-    #   a second file with the same SVO listings of document ID, sentence ID, ..., S, V, O, ... but with a first column Package with values OpenIE or SENNA
 
     # SENNA _____________________________________________________
     if SENNA_SVO_extractor_var:
