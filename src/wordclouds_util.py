@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"wordclouds_util",['wordcloud','matplotlib','ntpath','PIL','csv'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"wordclouds_util",['wordcloud','numpy','matplotlib','ntpath','PIL','csv'])==False:
     sys.exit(0)
 
 # The script uses Andreas Christian Mueller WordCloud package
