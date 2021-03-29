@@ -154,7 +154,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
         # NER annotator ---------------------------------------------------------------------------------------------------------------------------
 
-        if CoreNLP_annotators_menu_var == 'NER annotator':
+        if CoreNLP_annotators_menu_var == 'NER (GUI)':
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_NER_main.py') == False:
                 return
             call("python Stanford_CoreNLP_NER_main.py", shell=True)
@@ -476,7 +476,7 @@ CoreNLP_annotators_menu_var.set("")
 CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var,
         'Coreference PRONOMINAL resolution (Neural Network)',
         'DepRel annotator', 'POS annotator',
-        'NER annotator', 'Normalized NER date',
+        'NER (GUI)', 'Normalized NER date',
         'Gender annotator (Neural Network)',
         'Quote/dialogue annotator (Neural Network)',
         'Sentiment analysis (Neural Network)',

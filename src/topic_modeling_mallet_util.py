@@ -31,13 +31,10 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"Mallet Topic modeling
 	sys.exit(0)
 
 import os
-import tkinter as tk
 import tkinter.messagebox as mb
 import subprocess
-from subprocess import call
 from sys import platform
 
-import GUI_IO_util
 import IO_files_util
 import Excel_util
 import file_type_converter_util

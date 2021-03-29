@@ -84,7 +84,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
     # loop through every txt file and annotate via dictionary
     for file in files:
         head, tail = os.path.split(file)
-        i=i+1
+        i += 1
         print("Processing file " + str(i) + "/" + str(nFile) + " " + tail)
         text=open(file, 'r', encoding='utf-8',errors='ignore').read()
         # put filename in bold
@@ -97,6 +97,8 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
             # check reserved_dictionary list FIRST if any of the reserved annotator terms (bold, color, font, span, style, weight) appear in the list
             #   reserved terms must be processed first to avoid replacing terms twice
             # process reserved tag words first to avoid re-tagging already tagged words leading to tagging errors
+            termID=0
+            term_intextID=0
             for term in terms:
                 termID=termID+1
                 print("Processing dictionary field '" + csv_field1_var + "' " + str(termID) + "/" + str(len(terms)) + " " + term)
@@ -115,6 +117,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
                 term_intextID=term_intextID+1
                 print("   Annotating '" + term + "' in text " + str(term_intextID) + "/" + str(len(text)))
                 tagString = tagAnnotations[0] + term + tagAnnotations[1]
+
                 # use regular expression replace to check for distinct words (e.g., he not tagging he in held)
                 text = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, text)
         else:

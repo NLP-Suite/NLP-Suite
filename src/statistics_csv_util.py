@@ -4,18 +4,19 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Statistics",['csv','tkinter','os','collections','pandas','scipy','itertools'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"Statistics",['csv','tkinter','os','collections','pandas','numpy','scipy','itertools'])==False:
     sys.exit(0)
 
 import tkinter as tk
 import tkinter.messagebox as mb
 from collections import Counter
 import csv
-import IO_files_util
-import IO_csv_util
 import pandas as pd
 import numpy as np
 from scipy import stats
+
+import IO_files_util
+import IO_csv_util
 import Excel_util
 
 #column_to_be_counted is the column number (starting 0 in data_list for which a count is required)
