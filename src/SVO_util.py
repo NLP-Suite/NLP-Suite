@@ -48,8 +48,10 @@ def count_frequency_two_svo(open_ie_csv, senna_csv, inputFilename, inputDir, out
 
     df = df.append(pd.DataFrame([[len(same_svo), len(same_sv), len(diff_svo), len(diff_sv)]],
                                 columns=['Same SVO', 'Same SV', 'Different SVO', 'Different SV']), ignore_index=True)
-    df.to_csv(IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                      'SENNA_OPENIE_SVO_COMBINE'), index=False)
+    output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                          'SENNA_OPENIE_SVO_COMBINE')
+    df.to_csv(output_name, index=False)
+    return output_name
 
 
 def combine_two_svo(open_ie_svo, senna_svo, inputFilename, inputDir, outputDir):
@@ -67,8 +69,10 @@ def combine_two_svo(open_ie_svo, senna_svo, inputFilename, inputDir, outputDir):
             combined_df = combined_df.append(pd.DataFrame([new_row], columns=columns), ignore_index=True)
 
     combined_df.sort_values(by=['Document ID', 'Sentence ID'], inplace=True)
-    combined_df.to_csv(IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                               'SENNA_OPENIE_SVO_FREQ'), index=False)
+    output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                          'SENNA_OPENIE_SVO_FREQ')
+    combined_df.to_csv(output_name, index=False)
+    return output_name
 
 
 if __name__ == '__main__':
