@@ -336,7 +336,7 @@ def run(inputFilename, inputDir, outputDir,
         if not isFile and not os.path.exists(outputSVODir):
             os.makedirs(outputSVODir)
         senna_files = []
-        senna_file = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, os.path.join(outputDir, outputSVODir), openOutputFiles, createExcelCharts=createExcelCharts and not save_intermediate_file)
+        senna_file = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, os.path.join(outputDir, outputSVODir), openOutputFiles, createExcelCharts=True)
         senna_file = senna_file[0]
 
         if save_intermediate_file:
@@ -520,8 +520,10 @@ def run(inputFilename, inputDir, outputDir,
                     os.remove(f)
 
     if SENNA_SVO_extractor_var and CoreNLP_SVO_extractor_var:
-        SVO_util.count_frequency_two_svo(svo_merge_filename, senna_file, inputFilename, inputDir, outputDir)
-        SVO_util.combine_two_svo(svo_merge_filename, senna_file, inputFilename, inputDir, outputDir)
+        open_ie_file = SVOfilename if isFile else svo_merge_filename
+        freq_csv = SVO_util.count_frequency_two_svo(open_ie_file, senna_file, inputFilename, inputDir, outputDir)
+        combined_csv = SVO_util.combine_two_svo(open_ie_file, senna_file, inputFilename, inputDir, outputDir)
+        filesToOpen.extend([freq_csv, combined_csv])
 
     # you can visualize data using an svo.csv file in input
     if (inputFilename[-8:] == '-svo.csv') or (len(svo_result_list) > 0):
