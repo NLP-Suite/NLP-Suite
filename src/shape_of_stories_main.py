@@ -123,7 +123,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
         sentiment_scores_folder=inputDir
         head, tail = os.path.split(inputDir)
         if head!=outputDir:
-            outputDir = head
+            # outputDir = head
             GUI_util.output_dir_path.set(outputDir)
             title_options = ['Output directory']
             message = 'The output directory was changed to:\n\n'+str(outputDir)
@@ -132,9 +132,10 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
                                          message,
                                          True)
 
-        if hierarchical_clustering == True or SVD == True or NMF == True:
-            nSAscoreFiles = IO_files_util.GetNumberOfDocumentsInDirectory(sentiment_scores_folder, 'csv')
-
+        #RF if hierarchical_clustering == True or SVD == True or NMF == True:
+        #     nSAscoreFiles = IO_files_util.GetNumberOfDocumentsInDirectory(sentiment_scores_folder, 'csv')
+        #RF nSAscoreFiles=700
+            nSAscoreFiles=700
             if nSAscoreFiles==0:
                 mb.showwarning(title="Directory error",
                                message="Data reduction algorithms require in input a set of csv files of sentiment scores. The selected input directory\n\n"+sentiment_scores_folder+"\n\ndoes not contain any csv files.\n\nPlease, select a different directory (or tick the checkbox 'Sentiment Analysis' to obtain the required sentiment analysis scores) and try again.")
@@ -185,6 +186,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
     if hierarchical_clustering or SVD or NMF or best_topic_estimation:
 
         # step 2: vectorize
+        # TODO Need to be able to pass a csv file (not directory) of merged sentiment scores
         vectz = vec.Vectorizer(sentiment_scores_folder)
 
         # pop up window
@@ -493,11 +495,13 @@ best_topic_estimation_var.trace('w',display_reminder)
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
+    inputFileMsg ='Please, slect the csv file of merged sentiment scores to be analyzed by the data reduction algorithms to visualize the shape of stories.'
+    inputDirTXTCSVMsg ='In INPUT the algorithms expect either a set of TXT files or CSV files in a directory depending upon the options selected:\n   1. compute sentiment scores (txt files);\n   2. compute data-reduction shape-of-stories visuals (csv files).\n\nPlease, use the \'Select INPUT files directory\' IO widget to select the appropriate directory.'
+    inputDirCSVMsg ='\n\nIn INPUT the algorithms expect a set of csv files of sentiment scores in a directory. Please, use the \'Select INPUT files directory\' IO widget to select the directory.'
     inputDirTXTMsg ='\n\nIn INPUT the algorithms expect a set of txt files in a directory for which to compute sentiment scores. Please, use the \'Select INPUT files directory\' IO widget to select the directory.'
-    inputDirCSVMsg ='\n\nIn INPUT the algorithms expect a set of csv files of sentiment scores in a directory. Please, use the \'Select INPUT secondary directory\' IO widget to select the directory.'
     outputDirMsg='\n\nIn OUPUT the sentiment analysis scores will be saved in a double subdirectory of the output directory - Shape of Stories/Last part of input directory name/sentiment_analysis_results_last part of input directory name.'
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_corpusData)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_csvFile)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", inputFileMsg+GUI_IO_util.msg_openFile)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", inputDirTXTCSVMsg+GUI_IO_util.msg_openExplorer)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", GUI_IO_util.msg_outputDirectory)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help", 'Please, tick the checkbox \'Sentiment Analysis\' if you wish to run the Sentiment Analysis algorithm.\n\nIf you do want to run the algorithm, using the dropdown menu, please select the type of Sentiment Analysis algorithm you wish to use (Stanford CoreNLP neural network approach recommended).'+inputDirTXTMsg+outputDirMsg)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help", 'Please, tick the checkbox if you wish to compute & visualize corpus statistics. This will help you identify any document outlier in terms of number of words and, particularly relevant for the analysis of the shape of stories, number of sentences.'+inputDirTXTMsg+outputDirMsg)
@@ -510,7 +514,8 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide ways of analyzing the emotional arc of a set of stories and of visualizing common patterns of behavior among the stories.\n\nThe shape of stories algorithms are fundamentally based on sentiment analysis of the input stories and on data reduction of the calculated sentiment scores.\n\n" \
-"In INPUT the algorithms expect either\n   1. a directory containing a set of txt files for which to compute sentiment scores;\n   2. a csv file of sentiment scores; the default directory of sentiment scores is a nested subfolders ('Shape of Stories' under the output directory-->basename of original txt directory-->sentiment_analysis_scores_(+basename of original txt directory).\n\n" \
+"In INPUT the algorithms expect either\n   1. a csv file of sentiment scores; the default directory of sentiment scores is a nested subfolders ('Shape of Stories' under the output directory-->basename of original txt directory-->sentiment_analysis_scores_(+basename of original txt directory)\n" \
+"   2. a set of TXT files or CSV files in a directory depending upon the options selected: compute sentiment scores (txt files); compute data-reduction shape-of-stories visuals (csv files).\n\nPlease, use the \'Select INPUT files directory\' IO widget to select the appropriate directory.\n\n" \
 "In OUTPUT the algorithms will produce sentiment analysis scores (if the option is selected) and a number of visual plots (e.g., sentiment arcs).\n\n" \
 "Four different approaches to SENTIMENT ANALYSIS can be used to measure the emotional arc of stories: ANEW, VADER, hedonometer, Stanford CoreNLP neural network approach (recommended).\n\n" \
 "Three different approaches to DATA REDUCTION are used: Hierarchical clustering (HC), Singular Value Decomposition (SVD), Non-Negative Matrix Factorization (NMF).\n\n" \

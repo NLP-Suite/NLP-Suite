@@ -4,6 +4,7 @@ import os
 from tkinter import messagebox
 import numpy as np
 from sklearn.decomposition import PCA
+import pandas as pd#Angel
 
 """
 Name of variables should follow python notation: 
@@ -98,35 +99,43 @@ class Vectorizer:
         sentimentVectors = []
         file_list = []
         for narrativeNum, narrativeFile in enumerate(self.narrative_file_paths):
-            sentimentVector = []
-            with codecs.open(narrativeFile, mode='r', encoding='utf-8', errors='ignore') as csv_file:
-                reader = csv.DictReader(csv_file)
-                readerList = list(reader)
-                addIndex = int(len(readerList) / self.sentiment_vector_size)
-                files_lengths.append(len(readerList))
-                bucket = self.sentiment_vector_size
-                window = [float(row['Sentiment number']) for i, row in enumerate(readerList) if
-                          i < self.window_size]  # take the first [window_size] records and get the sentiment number
-                for i, row in enumerate(readerList):
+            #Angel: the directory should only contain one file with all documents merged together
+            merged_df=pd.read_csv(narrativeFile,encoding='utf-8')
+            df_list=[x for _,x in merged_df.groupby(merged_df['Document ID'])]
+            for df in df_list:
+                if len(df)<self.sentiment_vector_size:
+                    continue
+                df.reset_index(inplace=True)
+                sentimentVector = []
+                addIndex = int(len(df) / self.sentiment_vector_size) #number of rows per bucket
+                files_lengths.append(len(df))
+                bucket = self.sentiment_vector_size # always 10 buckets
+                window = [float(row['Sentiment number']) for i, row in df.iterrows() if
+                            i < self.window_size]  # take the first [window_size] records and get the sentiment number
+                window1=[float(row['Sentence ID']) for i, row in df.iterrows() if
+                            i < self.window_size]
+                for i, row in df.iterrows():
                     if i >= (self.window_size - 1):
                         # if get out of window_size: slide the window to next bucket
-                        if i + 1 < len(readerList):
-                            window.append(float(readerList[i + 1]['Sentiment number']))
+                        if i + 1 < len(df):
+                            window.append(float(df.iloc[i + 1]['Sentiment number']))
                             del window[0]
+                            window1.append(float(df.iloc[i + 1]['Sentence ID']))
+                            del window1[0]
                     try:
                         # Divides left hand operand by right hand operand and returns remainder
-                        mod = i % addIndex
+                        mod = i % addIndex #decides which bucket the row goes into
                     except:
                         pass
                     if mod == 0 and bucket > 0:
-                        bucket -= 1
+                        bucket -= 1 #go to the next bucket
                         sentimentVector.append((sum(window) / len(window)))
                 sentimentVectors.append(sentimentVector)  # hold representative of each file
-                file_list.append(narrativeFile)
-
+                file_list.append(df.iloc[0]['Document']) # append document name
         sentimentVectors = np.array(sentimentVectors)
         # print('Minumum number of sentences in a document: %d' % min(files_lengths))
         # print('shortest doc: %d' % np.argmin(np.array(files_lengths)))
+        print(sentimentVectors)
         return sentimentVectors, file_list
 
     @staticmethod
@@ -145,6 +154,7 @@ class Vectorizer:
             sum += expl_vars[i]
             if sum >= expl_var_thr:
                 return i
+        print(n_features)
         return n_features
 
 
