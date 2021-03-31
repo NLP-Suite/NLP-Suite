@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"CoReference Resolution",['subprocess','os','tkinter','ntpath','pandas','time','stanfordcorenlp','json','re'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"CoReference Resolution",['os','tkinter','re'])==False:
     sys.exit(0)
 
 import os
@@ -14,7 +14,6 @@ import tkinter as tk
 from tkinter import *
 import re
 
-import IO_user_interface_util
 import Stanford_CoreNLP_annotator_util
 
 def createCompareWindow(origin_display, coref_display, coref_method, root, result):
@@ -80,7 +79,7 @@ prefixes = "(Mr|St|Mrs|Ms|Dr)[.]"
 suffixes = "(Inc|Ltd|Jr|Sr|Co)"
 starters = "(Mr|Mrs|Ms|Dr|He\s|She\s|It\s|They\s|Their\s|Our\s|We\s|But\s|However\s|That\s|This\s|Wherever)"
 acronyms = "([A-Z][.][A-Z][.](?:[A-Z][.])?)"
-websites = "[.](com|net|org|io|gov)"
+websites = "[.](com|net|org|io|gov|edu)"
 
 def split_into_sentences(text):
     text = " " + text + "  "
@@ -230,7 +229,7 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
         memory_var,coRefOptions, manual_Coref):
 
     files_to_open = []
-
+    
     # check that the CoreNLPdir as been setup
     CoreNLPdir=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_coreference_util', 'Stanford CoreNLP')
     if CoreNLPdir==None:
@@ -259,12 +258,15 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
         corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, input_main_dir_path,
                                                                    output_dir_path, openOutputFiles, createExcelCharts,'coref', False,
                                                                    memory_var)
-        for file in corefed_file:
-            head, tail = os.path.split(file)
-            # get the orginal file path from coref processed file path
-            original_file = input_main_dir_path + '/' + tail[15:]
 
-            files_to_open, error = checkSingleFile(original_file, file, manual_Coref, coRefOptions,
-                                                   files_to_open)
+        if len(input_main_dir_path) == 0 and len(inputFilename) > 0:
+            input_main_dir_path = os.path.split(inputFilename)[0]
+        for file in corefed_file:
+            if file[-4:] == ".txt":
+                head, tail = os.path.split(file)
+                # get the original file path from coref processed file path
+                original_file = input_main_dir_path + '/' + tail[18:]
+                files_to_open, error = checkSingleFile(original_file, file, manual_Coref, coRefOptions,
+                                                       files_to_open)
 
     return files_to_open, error
