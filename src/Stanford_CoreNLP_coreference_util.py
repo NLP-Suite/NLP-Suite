@@ -228,12 +228,12 @@ def checkSingleFile(inputFilename, corefed_file, manual_Coref, coRefOptions, fil
 def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts,
         memory_var,coRefOptions, manual_Coref):
 
-    files_to_open = []
+    filesToOpen = []
 
     # check that the CoreNLPdir as been setup
     CoreNLPdir=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_coreference_util', 'Stanford CoreNLP')
     if CoreNLPdir==None:
-        return files_to_open
+        return filesToOpen
 
     errorFound, error_code, system_output=IO_libraries_util.check_java_installation('SVO extractor')
     if errorFound:
@@ -243,7 +243,6 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
     #                     'Started running Stanford CoreNLP ' + coRefOptions + ' Co-Reference Resolution at', True,
     #                     'PLEASE, BE PATIENT... Depending upon the size of the document/number of documents processed this may take from a few minutes to a few hours.')
 
-    error = 0
     # with only one input file
     if len(inputFilename)>0:
         base = os.path.basename(inputFilename)
@@ -252,19 +251,21 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
         if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py')==False:
             return
         corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createExcelCharts,'coref',False,memory_var)
-        files_to_open, error = checkSingleFile(inputFilename, corefed_file[0], manual_Coref, coRefOptions, files_to_open)
+        # files_to_open, error = checkSingleFile(inputFilename, corefed_file[0], manual_Coref, coRefOptions, files_to_open)
 
     else:
         corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, input_main_dir_path,
                                                                    output_dir_path, openOutputFiles, createExcelCharts,'coref', False,
                                                                    memory_var)
+    filesToOpen=corefed_file
 
     for file in corefed_file:
         if file[-4:] == ".txt":
             head, tail = os.path.split(file)
             # get the original file path from coref processed file path
             original_file = input_main_dir_path + '/' + tail[18:]
+            # check if the coreference was successful
             files_to_open, error = checkSingleFile(original_file, file, manual_Coref, coRefOptions,
                                                    files_to_open)
 
-    return files_to_open, error
+    return filesToOpen
