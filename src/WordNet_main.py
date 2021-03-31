@@ -6,24 +6,22 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"WordNet",['os','tkinter','subprocess','nltk','pandas'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"WordNet",['os','tkinter','pandas'])==False:
     sys.exit(0)
 
+import os
 import tkinter as tk
 import tkinter.messagebox as mb
+import pandas as pd
 
 import GUI_IO_util
 import IO_files_util
-import IO_user_interface_util
 import IO_CoNLL_util
 import WordNet_util
 import sentence_analysis_util
 import Stanford_CoreNLP_annotator_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
-
-import pandas as pd
-import os
 
 pd.set_option('display.max_columns', 500)
 # DocumentID    DocumentName    SenetenceID     (FullSentence)
@@ -537,7 +535,7 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
                                   GUI_IO_util.msg_outputDirectory)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 3, "Help",
-                                  "Please, tick the checkbox if you wish to classify your document(s) by the main NOUN & VERB WordNet synsets.")
+                                  "Please, tick the checkbox if you wish to classify your document(s) by the main NOUN & VERB WordNet synsets.\n\nThe function uses the Stanford CoreNLP POS (Part of Speech) annotator to extract Nouns and Verbs to be then classified via WordNet.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 4, "Help",
                                   "Please, using the dropdown menu, select the synset type (NOUN or VERB) that you want to use for your WordNet searches.\n\nLists of NOUNS and VERBS can be exported from a CoNLL table computed via the Stanford_CoreNLP.py script. Nouns would have POSTAG values NN* (* for any NN value) and verbs VB*. Tick the checkbox 'Extract nouns & verbs from CoNLL' to extract the lists." + webSearch)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 5, "Help",

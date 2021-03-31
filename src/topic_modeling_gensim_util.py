@@ -3,14 +3,14 @@
 """
 Created on Fri Oct  9 18:16:43 2020
 
-@author: claude
+@author: claude; completed by Wei Dai Spring 2021
 """
 
 import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"topic_modeling_gensim_main.py",['nltk','os','tkinter','numpy','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"topic_modeling_gensim_main.py",['nltk','os','tkinter','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython'])==False:
     sys.exit(0)
 
 import os
