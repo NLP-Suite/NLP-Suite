@@ -307,7 +307,8 @@ def get_external_software_dir(calling_script, package, warning=True):
                         if not inputExternalProgramFileCheck(software_dir, software_name):
                             software_dir = ''
                     # update the array existing_csv with the value of software_dir
-                    existing_csv[index][1] = software_dir
+                    # David: Has to have a +1 here, otherwise it updates the row above.
+                    existing_csv[index+1][1] = software_dir
                     # exit when you are considering a specific software (package)
                     # exit loop: while software_dir == None
                     if package.lower()!='':
