@@ -188,7 +188,7 @@ def manualCoref(original_file, corefed_file, outputFile, coRefOptions):
 # check if the coreference ends successfully
 # return files_to_open, error indicator
 # 0: no error; 1: error and no manual coref;
-def checkSingleFile(inputFilename, corefed_file, manual_Coref, coRefOptions, files_to_open):
+def manual_coreference(inputFilename, corefed_file, manual_Coref, coRefOptions, filesToOpen):
     # check if corefed_file is empty:
     f = open(corefed_file, "r", encoding='utf-8', errors='ignore')
     corefed_text = f.read()
@@ -203,25 +203,25 @@ def checkSingleFile(inputFilename, corefed_file, manual_Coref, coRefOptions, fil
                 if manualCoref(inputFilename, inputFilename, corefed_file, coRefOptions) == 0:  # use the orginal file as coref
                     # manual coref success!
                     files_to_open.append(corefed_file)
-                    return files_to_open, 0
+                    return filesToOpen, 0
                 else:
                     # manual coref error!
-                    return files_to_open, 1
+                    return filesToOpen, 1
             else:
                 # user don't want to use the original file to continue manual coref
-                return files_to_open, 1
+                return filesToOpen, 1
         else:
             mb.showinfo("Co-Reference Resolution Error",
                         "Something went wrong for Co-Reference Resolution; the Co-Referenced output file is empty.\n\nPlease, check the command line, most likely for 'GC overhead limit exceeded' when processing large files.\n\n")
 
-            return files_to_open, 1
+            return filesToOpen, 1
     # coreference success!
     else:
         if manual_Coref:
             manualCoref(inputFilename, corefed_file, corefed_file, coRefOptions)
-        files_to_open.append(corefed_file)
+        filesToOpen.append(corefed_file)
 
-    return files_to_open, 0
+    return filesToOpen, 0
 
 
 # return file_to_open
@@ -251,21 +251,23 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
         if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py')==False:
             return
         corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createExcelCharts,'coref',False,memory_var)
-        # files_to_open, error = checkSingleFile(inputFilename, corefed_file[0], manual_Coref, coRefOptions, files_to_open)
+        # files_to_open, error = manual_coreference(inputFilename, corefed_file[0], manual_Coref, coRefOptions, files_to_open)
 
     else:
         corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, input_main_dir_path,
                                                                    output_dir_path, openOutputFiles, createExcelCharts,'coref', False,
                                                                    memory_var)
+
     filesToOpen=corefed_file
 
-    for file in corefed_file:
-        if file[-4:] == ".txt":
-            head, tail = os.path.split(file)
-            # get the original file path from coref processed file path
-            original_file = input_main_dir_path + '/' + tail[18:]
-            # check if the coreference was successful
-            files_to_open, error = checkSingleFile(original_file, file, manual_Coref, coRefOptions,
-                                                   files_to_open)
+    # if len(input_main_dir_path) == 0 and len(inputFilename) > 0:
+    #     input_main_dir_path = os.path.split(inputFilename)[0]
+    # for file in corefed_file:
+    #     if file[-4:] == ".txt":
+    #         head, tail = os.path.split(file)
+    #         # get the original file path from coref processed file path
+    #         original_file = input_main_dir_path + '/' + tail[18:]
+    #         filesToOpen, error = manual_coreference(original_file, file, manual_Coref, coRefOptions,
+    #                                                filesToOpen)
 
     return filesToOpen

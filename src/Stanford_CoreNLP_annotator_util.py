@@ -409,26 +409,27 @@ def CoreNLP_annotate(inputFilename,
     #generate visualization output
     for j in range(len(filesToVisualize)):
         #02/27/2021; eliminate the value error when there's no information from certain annotators
-        file_df = pd.read_csv(filesToVisualize[j])
-        if not file_df.empty:
-            if 'gender' in str(filesToVisualize[j]):
-                filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j], filesToOpen)
-
-                filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
-                                                    [[1, 1]], 'bar',
-                                                    'Frequency Distribution of Gender Types', 1, [],
-                                                    'gender_bar','Gender')
-            elif 'date' in str(filesToVisualize[j]):
-                # TODO put values hover-over values to pass to Excel chart as a list []
-                filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
-                                      'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Date type')
-                filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
-                                      'Frequency Distribution of Tenses of Normalized Dates', 1, [], 'NER_tense_bar','Date type')
-                filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[4, 4]], 'bar',
-                                                  'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type')
-            elif 'NER'  in str(filesToVisualize[j]):
-                filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
-                                      'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
+        if filesToVisualize[j][-4:] == ".csv":
+            file_df = pd.read_csv(filesToVisualize[j])
+            if not file_df.empty:
+                if 'gender' in str(filesToVisualize[j]):
+                    filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j], filesToOpen)
+    
+                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
+                                                        [[1, 1]], 'bar',
+                                                        'Frequency Distribution of Gender Types', 1, [],
+                                                        'gender_bar','Gender')
+                elif 'date' in str(filesToVisualize[j]):
+                    # TODO put values hover-over values to pass to Excel chart as a list []
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
+                                          'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Date type')
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
+                                          'Frequency Distribution of Tenses of Normalized Dates', 1, [], 'NER_tense_bar','Date type')
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[4, 4]], 'bar',
+                                                      'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type')
+                elif 'NER'  in str(filesToVisualize[j]):
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
+                                          'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
 
     p.kill()
     if len(filesError)>0:
