@@ -252,6 +252,7 @@ if __name__ == '__main__':
     append_var = tk.IntVar()
     extract_var = tk.IntVar()
     purge_row_var = tk.IntVar()
+    target_field_merge_entry_var = tk.StringVar()
 
     keep_most_recent_var = tk.IntVar()
 
@@ -310,6 +311,7 @@ if __name__ == '__main__':
         and_or_menu.configure(state="disabled")
 
         where_entry_var.set("")
+        select_csv_field_merge_var.set("")
         comparator_var.set("")
         and_or_var.set("")
 
@@ -488,7 +490,7 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    merge_checkbox, True)
 
-    select_csv_field_lb = tk.Label(window, text='Select field')
+    select_csv_field_lb = tk.Label(window, text='Index')
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
                                                    select_csv_field_lb, True)
 
@@ -500,11 +502,7 @@ if __name__ == '__main__':
 
 
     def build_merge_string(comingFrom_Plus, comingFrom_OK):
-        add_field_to_list("merge", select_csv_field_merge_var.get(), comingFrom_OK)
-        # if comingFrom_Plus == True:
-        #     mb.showwarning(title='Warning',
-        #                    message='With the MERGE option you cannot select another csv column/field. You can only add another file and a field from that file to serve as match with the already selected field(s).\n\nYou will be redirected to selecting a new csv file.')
-        #     get_additional_csvFile(window, 'Select INPUT csv file', [("csv files", "*.csv")])
+
         activate_csv_fields_selection('merge', merge_var.get(), comingFrom_Plus, comingFrom_OK)
 
 
@@ -805,21 +803,21 @@ if __name__ == '__main__':
             reset_all_button.config(state='normal')
 
         if operation == "merge":
-            if checkButton == True:
+            if checkButton:
                 select_csv_field_merge_menu.config(state='normal')
                 concatenate_checkbox.config(state='disabled')
                 append_checkbox.config(state='disabled')
                 extract_checkbox.config(state='disabled')
                 if select_csv_field_merge_var.get() != '':
-                    select_csv_field_merge_menu.config(state='disabled')
+                    # select_csv_field_merge_menu.config(state='disabled')
                     # you cannot add another field from the same file in merge;
                     # should always be disabled, but having it enabled allows to display a warning
                     add_file_button.config(state='normal')
                     add_merge_options.config(state='normal')
                     OK_merge_button.config(state='normal')
-                    if comingFrom_Plus == True:
+                    if comingFrom_Plus:
                         select_csv_field_merge_menu.configure(state='normal')
-                    if comingFrom_OK == True:
+                    if comingFrom_OK:
                         select_csv_field_merge_menu.configure(state='disabled')
                         add_file_button.config(state='disabled')
                         add_merge_options.config(state='disabled')

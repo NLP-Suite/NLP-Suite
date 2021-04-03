@@ -1,1 +1,1 @@
-cd %~dp0\..\ || git add -A . || git stash || git pull -f origin
+cd %~dp0..\ && git add -A . && git stash && git pull -f origin
