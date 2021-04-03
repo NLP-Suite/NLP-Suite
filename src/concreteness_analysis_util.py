@@ -90,7 +90,7 @@ def analyzefile(input_file, output_dir, output_file, mode, documentID, documentN
 	if len(fulltext) < 1:
 		mb.showerror(title='File empty',
 					 message='The file ' + input_file + ' is empty.\n\nPlease, use anoter file and try again.')
-		print('Empty file ' + input_file)
+		print('Empty file ', input_file)
 		return
 
 	# otherwise, split into sentences
