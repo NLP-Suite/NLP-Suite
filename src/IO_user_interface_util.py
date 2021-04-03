@@ -7,6 +7,7 @@ import logging
 
 logger = logging.getLogger()
 
+
 def timed_alert(window, timeout, message_title, message_text, time_needed=False, extraLine='', printInCommandLine=True):
     if time_needed == True:
         time_report = time.localtime()
@@ -33,6 +34,7 @@ def timed_alert(window, timeout, message_title, message_text, time_needed=False,
         print('\n' + message_text + '\n')
     window.focus_force()
 
+
 def input_output_save(script):
     result = mb.askyesno(script,
                          script + " will save changes directly in the input file. Make sure you have backup of the input.\n\nAre you sure you want to continue?")
@@ -56,22 +58,30 @@ def subdirectory_file_output_save(inputDir, inputSubdir, IO, script):
 
 # inputFilename has complete path
 # filesError is []
-def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesError):
+def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesError, text):
     errorFound = False
     silent = False
     duration = 1000
     head, tail = os.path.split(inputFilename)
-    error=None
+    error = None
     if isinstance(CoreNLP_output, str):
-         logger.warning("[Warning] Stanford CoreNLP is not JSON. Trying to convert output to JSON.. ")
-         try:
-             CoreNLP_output = json.loads(CoreNLP_output)
-             logger.warning("[Info] Successfully converted CoreNLP output to JSON. Proceeding as normal.")
-             # logger.warning(CoreNLP_output)
-         except Exception as e:
-            logger.error("[Error] Could not convert output to JSON! Error: " + str(e))
+        logger.warning("[Warning] Stanford CoreNLP is not JSON. Trying to convert output to JSON.. ")
+
+        if text and not CoreNLP_output:
+            error = 'Bad Response from Stanford Core NLP Server. This might be due to various reasons. The server might' \
+                    'be busy, and please try later. If you are running it with a proxy, please try turning it off ' \
+                    'before running it again.'
+            logger.error('[Error] ' + error)
             errorFound = True
-            error = str(e)
+        else:
+            try:
+                CoreNLP_output = json.loads(CoreNLP_output)
+                logger.warning("[Info] Successfully converted CoreNLP output to JSON. Proceeding as normal.")
+                # logger.warning(CoreNLP_output)
+            except Exception as e:
+                logger.error("[Error] Could not convert output to JSON! Error: " + str(e))
+                errorFound = True
+                error = str(e)
     # OutOfMemoryError Java heap space
     # this error may occur with Java JDK version > 8. Rge heap memoryy size is set tpo 32 bits by default instead of 64, leading to this error.
     # for memory errors and solutions https://stackoverflow.com/questions/40832022/outofmemoryerror-when-running-the-corenlp-tool
@@ -95,8 +105,9 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
         elif len(filesError) == 0:
             filesError.append(['Document ID', 'Document', 'Error'])
             duration = 3000
-        msg = 'Stanford CoreNLP failed to process your document\n\n' + tail + '\n\nexiting with the following error:\n\n   ' + str(
-            CoreNLP_output) + '\n\nPlease, CHECK CAREFULLY THE REASONS FOR FAILURE REPORTED BY STANFORD CORENLP. If necessary, then edit the file leading to errors if necessary.'
+        msg = 'Stanford CoreNLP failed to process your document\n\n' + tail + '\n\nexiting with the following error:\n\n   ' + (
+            str(
+                CoreNLP_output) if CoreNLP_output else error) + '\n\nPlease, CHECK CAREFULLY THE REASONS FOR FAILURE REPORTED BY STANFORD CORENLP. If necessary, then edit the file leading to errors if necessary.'
         msgPrint = "Stanford CoreNLP failed to process your document " + tail
         # + '\nexiting with the following error:\n\n' + CoreNLP_output + '\n\nTHE ERROR MAY HAPPEN WHEN CoreNLP HANGS. REBOOT YOUR MACHINE AND TRY AGAIN.\n\nTHE ERROR IS ALSO LIKELY TO HAPPEN WHEN THE STANFORD CORENLP HAS BEEN STORED TO A CLOUD SERVICE (e.g., OneDrive) OR INSIDE THE /NLP/src DIRECTORY. TRY TO MOVE THE STANFORD CORENLP FOLDER TO A DIFFERENT LOCATION.
         if nDocs > 1:
