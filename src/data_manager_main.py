@@ -4,16 +4,19 @@ import IO_files_util
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"data_manager.py", ['os', 'tkinter', 'pandas', 'functools'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window, "data_manager.py",
+                                          ['os', 'tkinter', 'pandas', 'functools']) == False:
     sys.exit(0)
 
 import tkinter as tk
 import pandas as pd
+from pandas import DataFrame
 from functools import reduce
 import tkinter.messagebox as mb
 
 import GUI_IO_util
 import IO_csv_util
+
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -91,7 +94,7 @@ def extract_from_csv(path, output_path, data_files, csv_file_field_list):
     df_list = []
     value: str
     header: str
-    if len(csv_file_field_list)==0:
+    if len(csv_file_field_list) == 0:
         mb.showwarning(title='Missing field(s)',
                        message="No field(s) to be extracted have been selected.\n\nPlease, select field(s) and try again.")
         return
@@ -102,7 +105,7 @@ def extract_from_csv(path, output_path, data_files, csv_file_field_list):
             df_list.append(df[[header]])
         else:
             sign = get_comparator(sign)
-            if sign=='':
+            if sign == '':
                 mb.showwarning(title='Missing sign condition',
                                message="No condition has been entered for the \'WHERE\' value entered.\n\nPlease, include a condition for the \'WHERE\' value and try again.")
                 return
@@ -131,7 +134,7 @@ def extract_from_csv(path, output_path, data_files, csv_file_field_list):
                            message="Please include an and/or condition between each WHERE condition on the column you want to extract!")
         else:
             pass
-    df_extract.to_csv(outputFilename,index=False)
+    df_extract.to_csv(outputFilename, index=False)
     filesToOpen.append(outputFilename)
     return filesToOpen
 
@@ -140,23 +143,39 @@ def run(inputFilename,
         csv_file_field_list,
         merge_var, concatenate_var,
         append_var, extract_var,
-        purge_row_var, select_csv_field_purge_var, keep_most_recent_var, keep_most_fields_var, select_csv_field2_purge_var,
+        purge_row_var, select_csv_field_purge_var, keep_most_recent_var, keep_most_fields_var,
+        select_csv_field2_purge_var,
         openOutputFiles, output_path):
-
     path = [s.split(',')[0] for s in csv_file_field_list]  # file path
     data_files = [file for file in select_csv(path)]  # dataframes
     headers = [s.split(',')[1] for s in csv_file_field_list]  # headers
     data_cols = [file for file in get_cols(data_files, headers)]  # selected cols
 
     if merge_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv', 'merge',
-                                                           'stats', '', '', '', False, True)
-        df_merged = reduce(lambda left, right: pd.merge(left, right, on=headers[0], how='inner'), data_files)
+        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv',
+                                                                 'merge',
+                                                                 'stats', '', '', '', False, True)
+        # csv_file_field_list: [(field1, field2..., dataframe1), (field1', field2'..., dataframe2)]
+        indexes = csv_file_field_list[:-1]
+        data_files_for_merge = [csv_file_field_list[0][-1]]
+        for row in csv_file_field_list[1:]:
+            # rename different field names to the field name on the first document.
+            # They will be merged anyway so this doesn't change much.
+            column_mapping = dict()
+            for index_int, field in enumerate(indexes):
+                # {original_index1: new_index1, original_index2: new_index2...}
+                column_mapping[row[index_int]] = field
+            df: DataFrame = row[-1]
+            df.rename(columns=column_mapping)
+            data_files_for_merge.append(df)
+
+        df_merged = reduce(lambda left, right: pd.merge(left, right, on=indexes, how='inner'), data_files_for_merge)
         df_merged.to_csv(outputFilename)
         filesToOpen.append(outputFilename)
     if concatenate_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv', 'concatenate',
-                                                           'stats', '', '', '', False, True)
+        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv',
+                                                                 'concatenate',
+                                                                 'stats', '', '', '', False, True)
         for s in csv_file_field_list:
             if s[-1] == ',':
                 sep = ','
@@ -169,8 +188,9 @@ def run(inputFilename,
         df_concat.to_csv(outputFilename, header=[listToString(headers, sep)])
         filesToOpen.append(outputFilename)
     if append_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv', 'append',
-                                                           'stats', '', '', '', False, True)
+        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv',
+                                                                 'append',
+                                                                 'stats', '', '', '', False, True)
         sep = ','
         df_append = pd.concat(data_cols, axis=0)
         df_append.to_csv(outputFilename, header=[listToString(headers, sep)])
@@ -181,10 +201,11 @@ def run(inputFilename,
     if purge_row_var:
         import file_filename_util
         if keep_most_recent_var:
-            file_filename_util.purge_duplicate_rows_byFilename(GUI_util.window,inputFilename, output_path, openOutputFiles, select_csv_field_purge_var)
+            file_filename_util.purge_duplicate_rows_byFilename(GUI_util.window, inputFilename, output_path,
+                                                               openOutputFiles, select_csv_field_purge_var)
         if keep_most_fields_var:
-            file_filename_util.purge_partial_matches(GUI_util.window,inputFilename, output_path, openOutputFiles, select_csv_field_purge_var, select_csv_field2_purge_var)
-
+            file_filename_util.purge_partial_matches(GUI_util.window, inputFilename, output_path, openOutputFiles,
+                                                     select_csv_field_purge_var, select_csv_field2_purge_var)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -212,12 +233,12 @@ if __name__ == '__main__':
     # The 6 values of config_option refer to:
     #   software directory
     #   input file
-            # 1 for CoNLL file
-            # 2 for TXT file
-            # 3 for csv file
-            # 4 for any type of file
-            # 5 for txt or html
-            # 6 for txt or csv
+    # 1 for CoNLL file
+    # 2 for TXT file
+    # 3 for csv file
+    # 4 for any type of file
+    # 5 for txt or html
+    # 6 for txt or csv
     #   input dir
     #   input secondary dir
     #   output file
@@ -279,6 +300,7 @@ if __name__ == '__main__':
         where_entry_var.set('')
         and_or_var.set('')
         GUI_util.clear("Escape")
+
 
     window.bind("<Escape>", clear)
 
@@ -353,7 +375,7 @@ if __name__ == '__main__':
                                      command=lambda: IO_files_util.openFile(window,
                                                                             selectedCsvFile_var.get()))
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
-                                                   openInputFile_button,True)
+                                                   openInputFile_button, True)
 
     # openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate,
     #                            y=y_multiplier_integer,True)
@@ -416,7 +438,8 @@ if __name__ == '__main__':
 
     # a text widget is read only when disabled
     csv_file_field = tk.Text(window, width=100, height=3, state="disabled")
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, csv_file_field,
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+                                                   csv_file_field,
                                                    True)
 
     operation_text_var = tk.StringVar()
@@ -483,7 +506,6 @@ if __name__ == '__main__':
     y_multiplier_integer = y_multiplier_integer + 2
 
     # _____________________________________________________________________________
-
 
     merge_var.set(0)
     merge_checkbox = tk.Checkbutton(window, text='Merge files (Join)', variable=merge_var, onvalue=1, offvalue=0)
@@ -598,7 +620,6 @@ if __name__ == '__main__':
 
     # _____________________________________________________________________________
 
-
     extract_var.set(0)
     extract_checkbox = tk.Checkbutton(window, text='Extract field(s) from csv file', variable=extract_var, onvalue=1,
                                       offvalue=0)
@@ -666,7 +687,8 @@ if __name__ == '__main__':
     # _____________________________________________________________________________
 
     purge_row_var.set(0)
-    purge_row_checkbox = tk.Checkbutton(window, text='Purge duplicate rows', variable=purge_row_var, onvalue=1, offvalue=0)
+    purge_row_checkbox = tk.Checkbutton(window, text='Purge duplicate rows', variable=purge_row_var, onvalue=1,
+                                        offvalue=0)
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    purge_row_checkbox, True)
 
@@ -682,7 +704,8 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 300, y_multiplier_integer,
                                                    select_csv_field_purge_menu, True)
 
-    keep_most_recent_checkbox = tk.Checkbutton(window, text='Keep row with most recent file', variable=keep_most_recent_var,
+    keep_most_recent_checkbox = tk.Checkbutton(window, text='Keep row with most recent file',
+                                               variable=keep_most_recent_var,
                                                onvalue=1, offvalue=0)
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 450, y_multiplier_integer,
                                                    keep_most_recent_checkbox, True)
@@ -735,7 +758,6 @@ if __name__ == '__main__':
 
 
     # _____________________________________________________________________________
-
 
     def changed_filename(tracedInputFile):
         menu_values = []
@@ -1067,7 +1089,8 @@ if __name__ == '__main__':
         plusButton = "\n\nPress the + buttons, when available, to add either a new field from the same csv file (the + button at the end of this line) or a new csv file (the + button next to File at the top of this GUI). Multiple csv files can be used with any of the operations."
         OKButton = "\n\nPress the OK button, when available, to accept the selections made, then press the RUN button to process the query."
 
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help", GUI_IO_util.msg_csvFile)
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_csvFile)
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
                                       GUI_IO_util.msg_outputDirectory)
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
