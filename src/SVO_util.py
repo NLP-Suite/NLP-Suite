@@ -2,7 +2,8 @@ import pandas as pd
 
 import IO_files_util
 
-
+# open_ie_csv, senna_csv are the output files created by CoreNLP OpenIE and SENNA respectively
+# inputFilename is the original txt file
 def count_frequency_two_svo(open_ie_csv, senna_csv, inputFilename, inputDir, outputDir):
     def generate_key(S, V, O):
         key = ''

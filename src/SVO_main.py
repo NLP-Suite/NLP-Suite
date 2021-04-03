@@ -246,7 +246,7 @@ def run(inputFilename, inputDir, outputDir,
     document_index = 1
     svo_merge_filename = ""
     senna_file = ''
-    SVOfilename = ''
+    CoreNLPSVOfilename = ''
 
     if len(inputFilename) > 0:
         isFile = True
@@ -262,34 +262,40 @@ def run(inputFilename, inputDir, outputDir,
         # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING IN SVO
         # THE SUBSCRIPT _coref_ IS CHECKED BELOW
         if isFile:
-            # processing a single file
-            file_open = stanford_coref.run(inputFilename, inputDir, outputDir,
-                                                  openOutputFiles, createExcelCharts,
-                                                  memory_var, Coref_Option,
-                                                  Manual_Coref_var)
-
+            inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
+            outputCorefedDir = os.path.join(outputDir, "coref_" + inputFileBase) # + "_CoRefed_files")
             # change input for all scripts - OpenIE, SENNA, Gephi, wordclouds, Google Earth
-            # inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .csv or .txt
+            inputDir = ''
+        else:
+            # processing a directory
+            inputFilename = ''
+            inputDirBase = os.path.basename(inputDir)
+            outputCorefedDir = os.path.join(outputDir, inputDirBase + "_CoRefed_files")
+            inputDir = outputCorefedDir
+
+        # outputDir=outputCorefedDir
+
+        if not os.path.exists(outputCorefedDir):
+            os.makedirs(outputCorefedDir)
+
+        file_open = stanford_coref.run(inputFilename, inputDir, outputCorefedDir,
+                                        openOutputFiles, createExcelCharts,
+                                        memory_var, Coref_Option,
+                                        Manual_Coref_var)
+
+        if isFile:
             inputFilename = file_open[0] #os.path.join(outputDir, inputFileBase + "-CoRefed.txt")
             inputDir = ''
         else:
             # processing a directory
-            inputDirBase = os.path.basename(inputDir)
-            outputCorefedDir = os.path.join(outputDir, inputDirBase + "_CoRefed_files")
-            if not os.path.exists(outputCorefedDir):
-                os.makedirs(outputCorefedDir)
-
-            file_open = stanford_coref.run(inputFilename, inputDir, outputCorefedDir,
-                                            openOutputFiles, createExcelCharts,
-                                            memory_var, Coref_Option,
-                                            Manual_Coref_var)
-
-            # # change input for all scripts - OpenIE, SENNA, Gephi, wordclouds, Google Earth
             inputFilename = ''
             inputDir = outputCorefedDir
 
+        # file_open[0] contains the coreferenced txt file
+        # file_open[1] contains the csv file of running time
+
         if len(file_open) > 0:
-            filesToOpen.extend(file_open)
+            filesToOpen.extend(file_open[0])
 
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
                                 'Finished running Stanford CoreNLP Co-Reference Resolution using the ' + Coref_Option + ' approach at',
@@ -307,11 +313,17 @@ def run(inputFilename, inputDir, outputDir,
 
 
     if SENNA_SVO_extractor_var or CoreNLP_SVO_extractor_var:
-        inputDirBase = os.path.basename(inputDir)
-        outputSVODir = os.path.join(outputDir, inputDirBase + "_SVO_output")
+        if isFile:
+            inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
+            inputFileBase = inputFileBase.replace("NLP_CoreNLP_", "")
+            outputSVODir = os.path.join(outputDir, "SVO_output_" + inputFileBase)
+        else:
+            inputDirBase = os.path.basename(inputDir)
+            outputSVODir = os.path.join(outputDir, "SVO_output_" + inputDirBase)
+
+        outputDir = outputSVODir
         if not os.path.exists(outputSVODir):
             os.makedirs(outputSVODir)
-        outputDir=outputSVODir
 
     # SENNA _____________________________________________________
     if SENNA_SVO_extractor_var:
@@ -349,7 +361,8 @@ def run(inputFilename, inputDir, outputDir,
         toProcess_list = []
         field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'PERSON', 'TIME', 'TIME_STAMP', 'Sentence']
         if isFile & Coref:
-            toProcess_list.append(os.path.join(outputDir, inputFileBase + "-CoRefed-svoResult-woFilter.txt"))
+            # NLP_CoreNLP_coref_The Three Little Pigs - Copy-svoResult-woFilter.txt
+            toProcess_list.append(os.path.join(outputDir, "NLP_CoreNLP_" + inputFileBase + "-svoResult-woFilter.txt"))
         elif isFile:
             toProcess_list.append(os.path.join(outputDir, inputFileBase + "-svoResult-woFilter.txt"))
         else:
@@ -388,8 +401,8 @@ def run(inputFilename, inputDir, outputDir,
         SVOerror=0
         for proc_file in toProcess_list:
             # check if svo file is empty
-            if isFile:
-                outputSVODir = outputDir
+            # if isFile:
+            #     outputSVODir = outputDir
             if not os.path.exists(os.path.join(outputSVODir, proc_file)):
                 error_msg = "Stanford OpenIE throws an error while processing your document: " + original_toProcess[proc_file] + \
                             "\n\nPlease refer to command line prompt (or terminal) for more details. Most likely, your laptop runs out of memory."
@@ -442,10 +455,10 @@ def run(inputFilename, inputDir, outputDir,
             baseName = baseName[0:last_index]
             second_last_index = baseName.rindex("-")
             baseName = baseName[0:second_last_index]
-            SVOfilename = os.path.join(outputSVODir, baseName + "-svo.csv")
+            CoreNLPSVOfilename = os.path.join(outputSVODir, baseName + "-svo.csv")
 
-            extract_svo(svo_triplets, SVOfilename, svo_merge_filename, subject_list, verb_list, object_list, field_names, document_index, original_toProcess[proc_file])
-            result = IO_files_util.openCSVFile(SVOfilename, 'a')
+            extract_svo(svo_triplets, CoreNLPSVOfilename, svo_merge_filename, subject_list, verb_list, object_list, field_names, document_index, original_toProcess[proc_file])
+            result = IO_files_util.openCSVFile(CoreNLPSVOfilename, 'a')
             if merge_file_option == False:
                 result_merge = IO_files_util.openCSVFile(svo_merge_filename, 'a')
                 svo_merge_writer = csv.DictWriter(result_merge, fieldnames=field_names)
@@ -479,13 +492,13 @@ def run(inputFilename, inputDir, outputDir,
             if merge_file_option == False:
                 if not save_intermediate_file:
                     # delete svofilename
-                    os.remove(SVOfilename)
+                    os.remove(CoreNLPSVOfilename)
                 else:
-                    svo_result_list.append(SVOfilename)
+                    svo_result_list.append(CoreNLPSVOfilename)
                 continue
-            svo_result_list.append(SVOfilename)
-            filesToOpen.append(SVOfilename)
-            inputFilename = SVOfilename
+            svo_result_list.append(CoreNLPSVOfilename)
+            filesToOpen.append(CoreNLPSVOfilename)
+            inputFilename = CoreNLPSVOfilename
 
         if SVOerror>0:
             print("\n\nErrors were encountered in extracting SVOs from " + str(SVOerror) + " files out of "+str(len(toProcess_list)) +" files processed.")
@@ -499,11 +512,13 @@ def run(inputFilename, inputDir, outputDir,
                 for f in txt_files:
                     os.remove(f)
 
+    # next lines create summaries of comparative results from CoreNLP and SENNA
     if SENNA_SVO_extractor_var and CoreNLP_SVO_extractor_var:
-        open_ie_file = SVOfilename if isFile else svo_merge_filename
-        freq_csv = SVO_util.count_frequency_two_svo(open_ie_file, senna_file, inputFilename, inputDir, outputDir)
-        combined_csv = SVO_util.combine_two_svo(open_ie_file, senna_file, inputFilename, inputDir, outputDir)
-        filesToOpen.extend([freq_csv, combined_csv])
+        if CoreNLPSVOfilename!='' and senna_file!='':
+            open_ie_file = CoreNLPSVOfilename if isFile else svo_merge_filename
+            freq_csv = SVO_util.count_frequency_two_svo(open_ie_file, senna_file, inputFileBase, inputDir, outputDir)
+            combined_csv = SVO_util.combine_two_svo(open_ie_file, senna_file, inputFileBase, inputDir, outputDir)
+            filesToOpen.extend([freq_csv, combined_csv])
 
 
     # you can visualize data using an svo.csv file in input --------------------------------------------------

@@ -310,7 +310,7 @@ GUI_util.run_button.configure(command=run_script_command)
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
 GUI_size = '1100x550'
-GUI_label = 'Graphical User Interface (GUI) for "Shape of Stories" Extraction and Visualization'
+GUI_label = 'Graphical User Interface (GUI) for "Shape of Stories" Extraction and Visualization Pipeline'
 config_filename = 'shape-of-stories-config.txt'
 # The 6 values of config_option refer to: 
 #   software directory

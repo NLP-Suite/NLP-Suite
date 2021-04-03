@@ -75,8 +75,8 @@ def analyzefile(input_file, output_dir, output_file, mode, Document_ID, Document
         fulltext = myfile.read()
     # end method if file is empty
     if len(fulltext) < 1:
-        mb.showerror(title='File empty', message='The file ' + myfile + ' is empty.\n\nPlease, use another file and try again.')
-        print('Empty file '+ myfile )
+        mb.showerror(title='File empty', message='The file ' + input_file + ' is empty.\n\nPlease, use another file and try again.')
+        print('Empty file ', input_file)
         return
 
     # otherwise, split into sentences
