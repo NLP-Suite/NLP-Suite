@@ -24,6 +24,7 @@ import shape_of_stories_visualization_util as viz
 
 import GUI_IO_util
 import IO_files_util
+import IO_csv_util
 import reminders_util
 
 import Stanford_CoreNLP_annotator_util
@@ -36,7 +37,7 @@ import file_utf8_compliance_util as utf
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
         hierarchical_clustering, SVD, NMF, best_topic_estimation):
 
 # check all IO options ---------------------------------------------------------------------------
@@ -46,7 +47,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
                        message='No options have been selected.\n\nPlease, select an option and try again.')
         return
 
-    if inputDir=='':
+    if inputDir=='' or inputFilename!='':
         if sentimentAnalysis == True:
             mb.showwarning(title='Input folder error',
                            message='The selected option requires in input a set of txt files for which to compute sentiment scores.\n\nPlease, use the IO widget \'Select INPUT files directory\' to select the appropriate directory and try again.')
@@ -56,8 +57,17 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
                            message='The selected option requires in input a set of txt files for which to compute corpus statistics.\n\nPlease, use the IO widget \'Select INPUT files directory\' to select the appropriate directory and try again.')
             return
 
+    if inputFilename!='':
+        # get headers so as to check that it is a sentiment score file
+        str1=' '
+        str2=str1.join(IO_csv_util.get_csvfile_headers(inputFilename))
+        if not('Document' in str2 and 'Sentence' in str2 and 'Sentiment' in str2):
+            mb.showwarning(title='Input file error',
+                           message='The selected file is not a file of sentiment scores.\n\nPlease, use the IO widget \'Select INPUT csv file\' to select the appropriate csv file containing sentiment scores and try again.')
+            return
 
     computeSAScores = False
+
     if sentimentAnalysis == True or corpus_analysis == True:
         # # check that the CoreNLPdir really is the Stanford CoreNLP directory
         # if IO_libraries_util.inputExternalProgramFileCheck(CoreNLPdir, 'Stanford CoreNLP') == False:
@@ -287,7 +297,8 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
 
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
-run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
+run_script_command = lambda: run(GUI_util.inputFilename.get(),
+                                 GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),

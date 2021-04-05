@@ -268,6 +268,7 @@ def main(input_file, input_dir, output_dir, output_file, mode):
             else:
                 print('Input directory "' + input_dir + '" is invalid.')
                 sys.exit(1)
+    csvfile.close()
     return fileNamesToPass #LINE ADDED
 
 

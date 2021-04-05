@@ -128,8 +128,8 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
                 # CoreNLP only computes mean values
                 columns_to_be_plotted = [[2,4]]
                 hover_label=['Sentence']
-                inputFilename=outputFilename
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                # inputFilename = outputFilename
+                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                           outputFileLabel='CoreNLP_sent',
                                                           chart_type_list=["line"],
                                                           chart_title='Stanford CoreNLP - Sentiment Scores by Sentence Index',
@@ -140,14 +140,10 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
                 if Excel_outputFilename != "":
                     filesToOpen.append(Excel_outputFilename)
 
-                # outputFilenameXlsm = Excel_util.run_all(columns_to_be_plotted,inputFilename, outputDir, outputQuotefilePath,
-                # chart_type_list = ["line"], chart_title= "Stanford CoreNLP - Sentiment Scores by Sentence Index",
-                # column_xAxis_label_var = 'Sentence index',column_yAxis_label_var = 'Frequency of sentiment score',outputExtension = '.xlsm',label1='SC',label2='Sentiment CoreNLP',label3='line',label4='chart',label5='', useTime=False,disable_suffix=True,  count_var=0, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
-
                 columns_to_be_plotted = [[5,5]]
                 hover_label=[]
-                inputFilename=inputFilename
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                # inputFilename = inputFilename
+                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                           outputFileLabel='CoreNLP_SA',
                                                           chart_type_list=["bar"],
                                                           chart_title='Stanford CoreNLP - Sentiment Scores',
@@ -200,8 +196,8 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             else:
                 columns_to_be_plotted = [[2,4]]
                 hover_label=['Sentence']
-            inputFilename=outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            # inputFilename = outputFilename
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='Hedo_sent',
                                                       chart_type_list=["line"],
                                                       chart_title='Hedonometer - Sentiment Scores by Sentence Index',
@@ -212,14 +208,10 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
-            # outputFilenameXlsm = Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputFilename, chart_type_list = ["line"],
-            # chart_title= "Hedonometer - Sentiment Scores by Sentence Index", column_xAxis_label_var = 'Sentence index',
-            # column_yAxis_label_var = 'Frequency of sentiment scores',outputExtension = '.xlsm',label1='SC',label2='Hedonometer',label3='line',label4='chart',label5='', useTime=False,disable_suffix=True,  count_var=0, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
-
             columns_to_be_plotted = [[5,5]]
             hover_label=[]
-            inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            # inputFilename = outputFilename
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='Hedo_sent',
                                                       chart_type_list=["bar"],
                                                       chart_title='Hedonometer - Sentiment Scores',
@@ -227,8 +219,7 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
                                                       hover_info_column_list=hover_label,
                                                       count_var=1,
                                                       column_yAxis_label_var='Scores')
-        # Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted,
-        # inputFilename,outputDir, outputFilename, chart_type_list = ["bar"], chart_title= "Hedonometer (Sentiment Values)", column_xAxis_label_var = 'Sentiment values',column_yAxis_label_var = 'Frequency of sentiment values',outputExtension = '.xlsm',label1='SC',label2='Hedonometer',label3='bar',label4='chart',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
+
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
@@ -253,8 +244,8 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             columns_to_be_plotted = [[2,4]]
             hover_label=['Sentence']
 
-            inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            # inputFilename = outputFilename
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='SentiWordNet_sent',
                                                       chart_type_list=["line"],
                                                       chart_title='SentiWordNet - Sentiment Scores by Sentence Index',
@@ -265,12 +256,9 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
-            # outputFilenameXlsm = Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir,
-            # outputFilename, chart_type_list = ["line"], chart_title= "SentiWordNet - Sentiment Scores by Sentence Index", column_xAxis_label_var = 'Sentence index',column_yAxis_label_var = 'Frequency of sentiment score',outputExtension = '.xlsm',label1='SC',label2='SentiWordNet',label3='line',label4='chart',label5='', useTime=False,disable_suffix=True,  count_var=0, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
-
             columns_to_be_plotted = [[5,5]]
             hover_label=[]
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='SentiWordNet_sent',
                                                       chart_type_list=["bar"],
                                                       chart_title='SentiWordNet - Sentiment Scores',
@@ -279,7 +267,6 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
                                                       count_var=1,
                                                       column_yAxis_label_var='Scores')
 
-            # outputFilenameXlsm1 = Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputFilename, chart_type_list = ["bar"], chart_title= "SentiWordNet - Sentiment Values", column_xAxis_label_var = 'Sentiment value',column_yAxis_label_var = 'Frequency of sentiment value',outputExtension = '.xlsm',label1='SC',label2='SentiWordNet',label3='bar',label4='chart',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
@@ -304,10 +291,9 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             # VADER does not compute separate mean and median values
             columns_to_be_plotted = [[2,4]]
             hover_label=['Sentence']
-            inputFilename=outputFilename
+            # inputFilename = outputFilename
 
-            inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='VADER_sent',
                                                       chart_type_list=["line"],
                                                       chart_title='VADER - Sentiment Scores by Sentence Index',
@@ -318,13 +304,10 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
-            #outputFilenameXlsm = Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputFilename, chart_type_list = ["line"],
-            # chart_title= "VADER - Sentiment Scores by Sentence Index", column_xAxis_label_var = 'Sentence index',column_yAxis_label_var = 'Frequency of sentiment score',outputExtension = '.xlsm',label1='SC',label2='VADER',label3='line',label4='chart',label5='', useTime=False,disable_suffix=True,  count_var=0, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
-
             columns_to_be_plotted = [[5,5]]
             hover_label=[]
-            inputFilename=outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            # inputFilename = outputFilename
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='VADER_sent',
                                                       chart_type_list=["bar"],
                                                       chart_title='VADER - Sentiment Scores',
@@ -333,8 +316,6 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
                                                       count_var=1,
                                                       column_yAxis_label_var='Scores')
 
-            # outputFilenameXlsm1 = Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputFilename, chart_type_list = ["bar"], chart_title= "VADER - Sentiment Values", column_xAxis_label_var = 'Sentiment value',column_yAxis_label_var = 'Frequency of sentiment value',outputExtension = '.xlsm',label1='SC',
-            # label2='VADER',label3='bar',label4='chart',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VADER Sentiment Analysis at', True)
@@ -358,8 +339,8 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[2,4],[2,6],[2,8]]
                 hover_label=['Sentence','Sentence','Sentence']
 
-            inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            # inputFilename = outputFilename
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_sent',
                                                       chart_type_list=["line"],
                                                       chart_title='ANEW - Sentiment Scores by Sentence Index',
@@ -370,17 +351,14 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
-            # outputFilenameXlsm = Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir,
-            # outputFilename, chart_type_list = ["line"], chart_title= "ANEW - Scores by Sentence Index", column_xAxis_label_var = 'Sentence index',column_yAxis_label_var = 'Frequency of sentiment score',outputExtension = '.xlsm',label1='SC',label2='ANEW',label3='line',label4='chart',label5='', useTime=False,disable_suffix=True,  count_var=0, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
-
             # sentiment bar chart
             if mode == "both":
                 columns_to_be_plotted = [[5,5],[7,7]]
             else:
                 columns_to_be_plotted = [[5,5]]
             hover_label=[]
-            inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            # inputFilename = outputFilename
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_sent',
                                                       chart_type_list=["bar"],
                                                       chart_title='ANEW - Sentiment Scores',
@@ -389,8 +367,6 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
                                                       count_var=1,
                                                       column_yAxis_label_var='Scores')
 
-            # outputFilenameXlsm1 = Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputFilename, chart_type_list = ["bar"],
-            # chart_title= "ANEW - Sentiment Values", column_xAxis_label_var = 'Sentiment value',column_yAxis_label_var = 'Frequency of sentiment value',outputExtension = '.xlsm',label1='SC',label2='ANEW_Sentiment',label3='bar',label4='chart',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
@@ -400,8 +376,8 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             else:
                 columns_to_be_plotted = [[7,7]]
             hover_label=[]
-            inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            # inputFilename = outputFilename
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_arous',
                                                       chart_type_list=["bar"],
                                                       chart_title='ANEW - Arousal Scores',
@@ -410,8 +386,6 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
                                                       count_var=1,
                                                       column_yAxis_label_var='Scores')
 
-            # outputFilenameXlsm2 = Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputFilename,
-            # chart_type_list = ["bar"], chart_title= "ANEW - Arousal Values", column_xAxis_label_var = 'Arousal value',column_yAxis_label_var = 'Frequency of arousal value',outputExtension = '.xlsm',label1='SC',label2='ANEW_Arousal',label3='bar',label4='chart',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
@@ -421,8 +395,8 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             else:
                 columns_to_be_plotted = [[9,9]]
             hover_label=[]
-            inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            # inputFilename = outputFilename
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_dom',
                                                       chart_type_list=["bar"],
                                                       chart_title='ANEW - Dominance Scores',
@@ -431,8 +405,6 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
                                                       count_var=1,
                                                       column_yAxis_label_var='Scores')
 
-            # outputFilenameXlsm3 = Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir,
-            # outputFilename, chart_type_list = ["bar"], chart_title= "ANEW - Dominance Values", column_xAxis_label_var = 'Dominance value',column_yAxis_label_var = 'Frequency of dominance value',outputExtension = '.xlsm',label1='SC',label2='ANEW_Dominance',label3='bar',label4='chart',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
