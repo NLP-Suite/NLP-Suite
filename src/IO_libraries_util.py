@@ -107,9 +107,9 @@ def import_nltk_resource(window, resource_path, resource):
         nltk.data.find(resource_path)
     except LookupError:
         IO_user_interface_util.timed_alert(window, 2000, 'Downloading nltk resource',
-                                           'Downloading nltk ' + resource + '...\n\nPlease, be patient...', False)
+                                           'Downloading nltk ' + resource + '...\n\nIf downloading fails, in command line please type python -m nltk.downloader all\n\n Please, be patient...', False)
+        print('Downloading nltk ' + resource + '   If downloading fails, in command line please type: python -m nltk.downloader all')
         nltk.download(resource)
-
 
 def check_java_installation(script):
     errorFound = False
