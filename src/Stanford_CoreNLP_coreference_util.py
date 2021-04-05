@@ -260,14 +260,15 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
 
     filesToOpen=corefed_file
 
-    # if len(input_main_dir_path) == 0 and len(inputFilename) > 0:
-    #     input_main_dir_path = os.path.split(inputFilename)[0]
-    # for file in corefed_file:
-    #     if file[-4:] == ".txt":
-    #         head, tail = os.path.split(file)
-    #         # get the original file path from coref processed file path
-    #         original_file = input_main_dir_path + '/' + tail[18:]
-    #         filesToOpen, error = manual_coreference(original_file, file, manual_Coref, coRefOptions,
-    #                                                filesToOpen)
+    if len(input_main_dir_path) == 0 and len(inputFilename) > 0:
+        input_main_dir_path = os.path.split(inputFilename)[0]
+    for file in corefed_file:
+        if file[-4:] == ".txt":
+            manual_Coref=1
+            head, tail = os.path.split(file)
+            # get the original NOT coreferenced txt file path
+            original_file = input_main_dir_path + '/' + tail[18:]
+            filesToOpen, error = manual_coreference(original_file, file, manual_Coref, coRefOptions,
+                                                   filesToOpen)
 
     return filesToOpen
