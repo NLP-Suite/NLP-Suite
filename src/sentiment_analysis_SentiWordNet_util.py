@@ -88,7 +88,7 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
     # end method if file is empty
     if len(fulltext) < 1:
         mb.showerror(title='File empty', message='The file ' + inputFilename + ' is empty.\n\nPlease, use another file and try again.')
-        print('Empty file '+ inputFilename)
+        print('Empty file ', inputFilename)
         return
 
     sentences = tokenize.sent_tokenize(fulltext)  # split text into sentences

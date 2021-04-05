@@ -237,12 +237,8 @@ def get_external_software_dir(calling_script, package, warning=True):
         software_name = row[0]
         software_dir = row[1]
         download_software = row[2]
-        # software_dir == '' the software has not been downloaded and installed yet
-        #   it is MISSING
-        if software_dir == '':  # check path field
+        if software_dir == '':  # check path field; software_dir == '' the software has not been downloaded and installed yet
             print("MISSING SOFTWARE", str(software_name).upper() + ' download at ' + str(download_software))
-            # missing_software = missing_software + str(software_name).upper() + ' download at ' + str(
-            #     download_software + '\n\n')
             errorFound=True
         else:
             # the software directory is stored in config file but...
@@ -266,7 +262,7 @@ def get_external_software_dir(calling_script, package, warning=True):
             # if you are checking for a specific package and the directory is NOT found
             #   return None; no point continuing
             if (package.lower()!='') and (package.lower() in software_name.lower()):
-                return None
+                break
             errorFound = False
 
     # check for missing software
@@ -281,10 +277,10 @@ def get_external_software_dir(calling_script, package, warning=True):
         if not silent:
             mb.showwarning(title=title, message=message)
         for (index, row) in enumerate(existing_csv[1:]): # skip header row
+            index = index + 1
             software_name = row[0]
             software_dir = row[1]
-            # if software_dir == '' and package.lower() in software_name.lower():
-            if software_dir == '':
+            if software_dir == '' and package.lower() in software_name.lower():
                 # get software directory
                 title = software_name.upper() + ' software'
                 software_dir = None
@@ -310,13 +306,13 @@ def get_external_software_dir(calling_script, package, warning=True):
                     # David: Has to have a +1 here, otherwise it updates the row above.
                     existing_csv[index+1][1] = software_dir
                     # exit when you are considering a specific software (package)
-                    # exit loop: while software_dir == None
                     if package.lower()!='':
                         if package.lower() in software_name.lower():
+                            # exit loop: while software_dir == None
                             break
-                # exit loop: for (index, row) in enumerate(existing_csv)
                 if package.lower() != '':
                     if package.lower() in software_name.lower():
+                        # exit loop: for (index, row) in enumerate(existing_csv)
                         break
         save_software_config(existing_csv)
     if software_dir == '':

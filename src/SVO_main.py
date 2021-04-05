@@ -170,7 +170,10 @@ def run(inputFilename, inputDir, outputDir,
         google_earth_var,
         openOutputFiles,createExcelCharts):
 
-    memory_var = 16
+    # pull the widget names from the GUI since the scripts change the IO values
+    inputFilename=GUI_util.inputFilename.get()
+    inputDir=GUI_util.input_main_dir_path.get()
+    outputDir=GUI_util.output_dir_path.get()
 
     filesToOpen = []
 
@@ -243,65 +246,60 @@ def run(inputFilename, inputDir, outputDir,
     document_index = 1
     svo_merge_filename = ""
     senna_file = ''
-    SVOfilename = ''
+    CoreNLPSVOfilename = ''
 
     if len(inputFilename) > 0:
-        inputFileBase = os.path.basename(inputFilename)[0:-4] # without .csv or .txt
+        isFile = True
     else:
         isFile = False
-        inputDirBase = os.path.basename(inputDir)
-        outputDir = os.path.join(outputDir, inputDirBase + "_output")
-        # if not os.path.exists(os.path.dirname(outputDir)):
-        #     os.makedirs(os.path.dirname(outputDir))
-        if not os.path.exists(outputDir):       # Changed by Matthew on Mar.13
-            os.makedirs(outputDir)
 
     # CoRef _____________________________________________________
 
     # field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'PERSON', 'TIME', 'TIME_STAMP', 'Sentence']
-    if isFile:
-        feed_to_svo = inputFilename
-    else:
-        feed_to_svo = inputDir
+
     if Coref:
         # field_names[10] = "Corefed Sentence"
-        if not isFile:
-            outputCorefedDir = os.path.join(outputDir, "CoRefed_Files")
-            make_directory(outputCorefedDir)
-            if not os.path.exists(os.path.dirname(outputCorefedDir)):
-                os.makedirs(os.path.dirname(outputCorefedDir))
-            file_open, error = stanford_coref.run(inputFilename, inputDir, outputCorefedDir, openOutputFiles, createExcelCharts,
-                                                  memory_var, Coref_Option,
-                                              Manual_Coref_var)
+        # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING IN SVO
+        # THE SUBSCRIPT _coref_ IS CHECKED BELOW
+        if isFile:
+            inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
+            outputCorefedDir = os.path.join(outputDir, "coref_" + inputFileBase) # + "_CoRefed_files")
+            # change input for all scripts - OpenIE, SENNA, Gephi, wordclouds, Google Earth
+            inputDir = ''
         else:
-            file_open, error = stanford_coref.run(inputFilename, inputDir, outputDir,
-                                                  openOutputFiles, createExcelCharts,
-                                                  memory_var, Coref_Option,
-                                                  Manual_Coref_var)
-            if len(file_open) > 0:
-                filesToOpen.extend(file_open)
+            # processing a directory
+            inputFilename = ''
+            inputDirBase = os.path.basename(inputDir)
+            outputCorefedDir = os.path.join(outputDir, inputDirBase + "_CoRefed_files")
+            inputDir = outputCorefedDir
 
-        if error == 0:
+        # outputDir=outputCorefedDir
+
+        if not os.path.exists(outputCorefedDir):
+            os.makedirs(outputCorefedDir)
+
+        file_open = stanford_coref.run(inputFilename, inputDir, outputCorefedDir,
+                                        openOutputFiles, createExcelCharts,
+                                        memory_var, Coref_Option,
+                                        Manual_Coref_var)
+
+        if isFile:
+            inputFilename = file_open[0] #os.path.join(outputDir, inputFileBase + "-CoRefed.txt")
+            inputDir = ''
+        else:
+            # processing a directory
+            inputFilename = ''
+            inputDir = outputCorefedDir
+
+        # file_open[0] contains the coreferenced txt file
+        # file_open[1] contains the csv file of running time
+
+        if len(file_open) > 0:
+            filesToOpen.extend(file_open[0])
+
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
                                 'Finished running Stanford CoreNLP Co-Reference Resolution using the ' + Coref_Option + ' approach at',
                                                True)
-            if isFile:
-                feed_to_svo = os.path.join(outputDir, inputFileBase + "-CoRefed.txt")
-            else:
-                feed_to_svo = outputCorefedDir
-        else:
-            msgbox_exit = tk.messagebox.askyesno("Co-Reference Resolution Error",
-                                                 "Stanford CoreNLP Co-Reference Resolution throws error, " +
-                                                 "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well.\n\n " +
-                                                 "Do you want to use the original file to continue SVO process? If not, the process ends now.")
-            if msgbox_exit:
-                if isFile:
-                    feed_to_svo = inputFilename
-                else:
-                    feed_to_svo = inputDir
-            else:
-                sys.exit()
-
 
     # Date extractor _____________________________________________________
 
@@ -313,27 +311,27 @@ def run(inputFilename, inputDir, outputDir,
                                                             'normalized-date', False, memory_var)
         filesToOpen.extend(files)
 
-        # date_extractor.run(CoreNLPdir, inputFilename, inputDir, outputDir, False, False, True)
-        # IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
-        #                     'Finished running Stanford CoreNLP date annotator at', True)
-        # if openOutputFiles:
-        #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
-    if not isFile:
-        outputSVODir = os.path.join(outputDir, "SVO_Result")
-    else:
-        outputSVODir = ''
+    if SENNA_SVO_extractor_var or CoreNLP_SVO_extractor_var:
+        if isFile:
+            inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
+            inputFileBase = inputFileBase.replace("NLP_CoreNLP_", "")
+            outputSVODir = os.path.join(outputDir, "SVO_output_" + inputFileBase)
+        else:
+            inputDirBase = os.path.basename(inputDir)
+            outputSVODir = os.path.join(outputDir, "SVO_output_" + inputDirBase)
 
+        outputDir = outputSVODir
+        if not os.path.exists(outputSVODir):
+            os.makedirs(outputSVODir)
 
     # SENNA _____________________________________________________
     if SENNA_SVO_extractor_var:
-        # TODO must use the coreferenced input file if the user selected that option
         # TODO must filter SVO results by social actors if the user selected that option
         #   both options run correctly for OpenIE
-        if not isFile and not os.path.exists(outputSVODir):
-            os.makedirs(outputSVODir)
         senna_files = []
-        senna_file = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, os.path.join(outputDir, outputSVODir), openOutputFiles, createExcelCharts=True)
+        senna_file = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts=True)
+
         senna_file = senna_file[0]
 
         if save_intermediate_file:
@@ -343,9 +341,6 @@ def run(inputFilename, inputDir, outputDir,
             senna_files = [senna_file]
         filesToOpen.extend(senna_files)
 
-        if openOutputFiles:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
-
         for file in senna_files:
             svo_result_list.append(file)
 
@@ -354,47 +349,41 @@ def run(inputFilename, inputDir, outputDir,
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                             'Started running Stanford CoreNLP OpenIE to extract SVOs at', True,'Contrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chuncks of text being currently processed.')
         if isFile:
-            if sys.platform == 'darwin':
-                subprocess.call(
-                    ['java', '-jar', '-Xmx' + str(memory_var) + "g", 'Stanford_CoreNLP_OpenIE.jar', '-inputFile',
-                     feed_to_svo, '-outputDir', outputDir])
-            else:
-                subprocess.call(
-                    ['java', '-jar', '-Xmx' + str(memory_var) + "g", 'Stanford_CoreNLP_OpenIE.jar', '-inputFile',
-                     feed_to_svo, '-outputDir', outputDir])
+            subprocess.call(['java', '-jar', '-Xmx'+str(memory_var)+"g", 'Stanford_CoreNLP_OpenIE.jar', '-inputFile', inputFilename, '-outputDir', outputDir])
         else:
-            if not os.path.exists(outputSVODir):       # Is os.path.dirname(outputSVODir) the same as outputSVODir?
-                try:
-                    os.makedirs(outputSVODir)
-                except OSError as exc:
-                    if exc.errno != errno.EEXIST:
-                        raise
             subprocess.call(
                 ['java', '-jar', '-Xmx' + str(memory_var) + "g", 'Stanford_CoreNLP_OpenIE.jar', '-inputDir',
-                 feed_to_svo, '-outputDir', outputSVODir])
+                 inputDir, '-outputDir', outputDir])
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis end',
                             'Finished running Stanford CoreNLP OpenIE to extract SVOs at', True)
-        toProcess_list = []
 
+        # process the txt files created by the OpenIE Java script to create a csv output file
+        toProcess_list = []
         field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'PERSON', 'TIME', 'TIME_STAMP', 'Sentence']
         if isFile & Coref:
-            toProcess_list.append(os.path.join(outputDir, inputFileBase + "-CoRefed-svoResult-woFilter.txt"))
+            # NLP_CoreNLP_coref_The Three Little Pigs - Copy-svoResult-woFilter.txt
+            toProcess_list.append(os.path.join(outputDir, "NLP_CoreNLP_" + inputFileBase + "-svoResult-woFilter.txt"))
         elif isFile:
             toProcess_list.append(os.path.join(outputDir, inputFileBase + "-svoResult-woFilter.txt"))
         else:
             for tmp in os.listdir(outputSVODir):
-                if Coref and "-CoRefed-svoResult-woFilter.txt" in tmp:
+                # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
+                # THE SUBSCRIPT _coref_ IS CHECKED BELOW
+                if Coref and "-svoResult-woFilter.txt" in tmp:
                     toProcess_list.append(tmp)
-                elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-CoRefed" not in tmp):
+                elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-coref" not in tmp):
                     toProcess_list.append(tmp)
+
         original_toProcess = {}
         if isFile: # input is a file (including merged directory)
             original_toProcess[toProcess_list[0]] = inputFilename
         else: # input is a directory
             for tmp in os.listdir(outputSVODir):
-                if Coref and "-CoRefed-svoResult-woFilter.txt" in tmp:
-                    original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-CoRefed-svoResult-woFilter", ""))
-                elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-CoRefed" not in tmp):
+                # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
+                # THE SUBSCRIPT _coref_ IS CHECKED BELOW
+                if Coref and "-svoResult-woFilter.txt" in tmp:
+                    original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
+                elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-coref" not in tmp):
                     original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
 
         if merge_file_option == False:
@@ -412,8 +401,8 @@ def run(inputFilename, inputDir, outputDir,
         SVOerror=0
         for proc_file in toProcess_list:
             # check if svo file is empty
-            if isFile:
-                outputSVODir = outputDir
+            # if isFile:
+            #     outputSVODir = outputDir
             if not os.path.exists(os.path.join(outputSVODir, proc_file)):
                 error_msg = "Stanford OpenIE throws an error while processing your document: " + original_toProcess[proc_file] + \
                             "\n\nPlease refer to command line prompt (or terminal) for more details. Most likely, your laptop runs out of memory."
@@ -466,11 +455,10 @@ def run(inputFilename, inputDir, outputDir,
             baseName = baseName[0:last_index]
             second_last_index = baseName.rindex("-")
             baseName = baseName[0:second_last_index]
-            SVOfilename = os.path.join(outputSVODir, baseName + "-svo.csv")
+            CoreNLPSVOfilename = os.path.join(outputSVODir, baseName + "-svo.csv")
 
-
-            extract_svo(svo_triplets, SVOfilename, svo_merge_filename, subject_list, verb_list, object_list, field_names, document_index, original_toProcess[proc_file])
-            result = IO_files_util.openCSVFile(SVOfilename, 'a')
+            extract_svo(svo_triplets, CoreNLPSVOfilename, svo_merge_filename, subject_list, verb_list, object_list, field_names, document_index, original_toProcess[proc_file])
+            result = IO_files_util.openCSVFile(CoreNLPSVOfilename, 'a')
             if merge_file_option == False:
                 result_merge = IO_files_util.openCSVFile(svo_merge_filename, 'a')
                 svo_merge_writer = csv.DictWriter(result_merge, fieldnames=field_names)
@@ -504,12 +492,13 @@ def run(inputFilename, inputDir, outputDir,
             if merge_file_option == False:
                 if not save_intermediate_file:
                     # delete svofilename
-                    os.remove(SVOfilename)
+                    os.remove(CoreNLPSVOfilename)
                 else:
-                    svo_result_list.append(SVOfilename)
+                    svo_result_list.append(CoreNLPSVOfilename)
                 continue
-            svo_result_list.append(SVOfilename)
-            filesToOpen.append(SVOfilename)
+            svo_result_list.append(CoreNLPSVOfilename)
+            filesToOpen.append(CoreNLPSVOfilename)
+            inputFilename = CoreNLPSVOfilename
 
         if SVOerror>0:
             print("\n\nErrors were encountered in extracting SVOs from " + str(SVOerror) + " files out of "+str(len(toProcess_list)) +" files processed.")
@@ -523,13 +512,19 @@ def run(inputFilename, inputDir, outputDir,
                 for f in txt_files:
                     os.remove(f)
 
+    # next lines create summaries of comparative results from CoreNLP and SENNA
     if SENNA_SVO_extractor_var and CoreNLP_SVO_extractor_var:
-        open_ie_file = SVOfilename if isFile else svo_merge_filename
-        freq_csv = SVO_util.count_frequency_two_svo(open_ie_file, senna_file, inputFilename, inputDir, outputDir)
-        combined_csv = SVO_util.combine_two_svo(open_ie_file, senna_file, inputFilename, inputDir, outputDir)
-        filesToOpen.extend([freq_csv, combined_csv])
+        if CoreNLPSVOfilename!='' and senna_file!='':
+            open_ie_file = CoreNLPSVOfilename if isFile else svo_merge_filename
+            freq_csv = SVO_util.count_frequency_two_svo(open_ie_file, senna_file, inputFileBase, inputDir, outputDir)
+            combined_csv = SVO_util.combine_two_svo(open_ie_file, senna_file, inputFileBase, inputDir, outputDir)
+            filesToOpen.extend([freq_csv, combined_csv])
 
-    # you can visualize data using an svo.csv file in input
+
+    # you can visualize data using an svo.csv file in input --------------------------------------------------
+
+    # the SVO script can take in input a csv SVO file previously computed: inputFilename
+    # results currently produced are in svo_result_list
     if (inputFilename[-8:] == '-svo.csv') or (len(svo_result_list) > 0):
         # Gephi network graphs _________________________________________________
         if gephi_var == True:
@@ -538,54 +533,61 @@ def run(inputFilename, inputDir, outputDir,
 
             if isFile:
                 if inputFilename[-4:] == ".csv":
-                    gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, inputFilename)
+                    if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1:  # including headers; file is empty
+                        gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, inputFilename)
+                        filesToOpen.append(gexf_file)
                 else:
-                    gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, svo_result_list[0])
-                filesToOpen.append(gexf_file)
+                    if IO_csv_util.GetNumberOfRecordInCSVFile(svo_result_list[0]) > 1:  # including headers; file is empty
+                        gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, svo_result_list[0])
+                        filesToOpen.append(gexf_file)
             else:
                 for f in svo_result_list:
-                    gexf_file = Gephi_util.create_gexf(os.path.basename(f)[:-4], outputDir, f)
-                    if "-merge-svo" in f or "SENNA_SVO" in f:
-                        filesToOpen.append(gexf_file)
-                    if not save_intermediate_file:
-                        gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if f.endswith('.gexf')]
-                        for f in gexf_files:
-                            if "-merge-svo" not in f and "SENNA_SVO" not in f:
-                                os.remove(f)
+                    if IO_csv_util.GetNumberOfRecordInCSVFile(f) > 1:  # including headers; file is empty
+                        gexf_file = Gephi_util.create_gexf(os.path.basename(f)[:-4], outputDir, f)
+                        if "-merge-svo" in f or "SENNA_SVO" in f:
+                            filesToOpen.append(gexf_file)
+                        if not save_intermediate_file:
+                            gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if f.endswith('.gexf')]
+                            for f in gexf_files:
+                                if "-merge-svo" not in f and "SENNA_SVO" not in f:
+                                    os.remove(f)
 
         # wordcloud  _________________________________________________
         if wordcloud_var == True:
             IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                                 'Started running Wordclouds at', True)
             if inputFilename[-4:] == ".csv":
-                myfile = IO_files_util.openCSVFile(inputFilename, 'r')
-                currenttext, color_to_words = wordclouds_util.processColorList("", defaultdict(list),
-                                                                               ['S', '(255, 0, 0)', '|', 'V',
-                                                                                '(0, 0, 255)', '|', 'O/A',
-                                                                                '(0, 128, 0)', '|'], myfile)
-                out_file = wordclouds_util.display_wordCloud_sep_color(inputFilename, outputDir, currenttext,
-                                                                       color_to_words, "")
-                myfile.close()
-                filesToOpen.append(out_file)
-            else:
-                for f in svo_result_list:
-                    myfile = IO_files_util.openCSVFile(f, "r")
+                if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1:  # including headers; file is empty
+                    myfile = IO_files_util.openCSVFile(inputFilename, 'r')
                     currenttext, color_to_words = wordclouds_util.processColorList("", defaultdict(list),
                                                                                    ['S', '(255, 0, 0)', '|', 'V',
                                                                                     '(0, 0, 255)', '|', 'O/A',
                                                                                     '(0, 128, 0)', '|'], myfile)
-                    out_file = wordclouds_util.display_wordCloud_sep_color(f, outputDir, currenttext, color_to_words,
-                                                                           "")
+                    out_file = wordclouds_util.display_wordCloud_sep_color(inputFilename, outputDir, currenttext,
+                                                                           color_to_words, "")
                     myfile.close()
-                    if "-merge-svo" in f or "SENNA_SVO" in f:
-                        filesToOpen.append(out_file)
-                    if not merge_file_option and not save_intermediate_file:
-                        png_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if f.endswith('.png')]
-                        for f in png_files:
-                            if "-merge-svo" not in f and "SENNA_SVO" not in f:
-                                os.remove(f)
+                    filesToOpen.append(out_file)
+            else:
+                for f in svo_result_list:
+                    if IO_csv_util.GetNumberOfRecordInCSVFile(f)>1: # including headers; file is empty
+                        myfile = IO_files_util.openCSVFile(f, "r")
+                        currenttext, color_to_words = wordclouds_util.processColorList("", defaultdict(list),
+                                                                                       ['S', '(255, 0, 0)', '|', 'V',
+                                                                                        '(0, 0, 255)', '|', 'O/A',
+                                                                                        '(0, 128, 0)', '|'], myfile)
+                        out_file = wordclouds_util.display_wordCloud_sep_color(f, outputDir, currenttext, color_to_words,
+                                                                               "")
+                        myfile.close()
+                        if "-merge-svo" in f or "SENNA_SVO" in f:
+                            filesToOpen.append(out_file)
+                        if not merge_file_option and not save_intermediate_file:
+                            png_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if f.endswith('.png')]
+                            for f in png_files:
+                                if "-merge-svo" not in f and "SENNA_SVO" not in f:
+                                    os.remove(f)
         # GIS maps _____________________________________________________
 
+        # SENNA locations are not really geocodable locations
         if google_earth_var == True:
             out_file = ''
             kmloutputFilename = ''
@@ -598,32 +600,33 @@ def run(inputFilename, inputDir, outputDir,
                                                    'Started running Geocoding at', True)
 
             for f in svo_result_list:
-                # out_file is a list []
-                #   containing several csv files of geocoded locations and non geocoded locations
-                # kmloutputFilename is a string; empty when the kml file fails to be created
+                if (not 'SENNA' in f) and IO_csv_util.GetNumberOfRecordInCSVFile(f) > 1:  # including headers; file is empty
+                    # out_file is a list []
+                    #   containing several csv files of geocoded locations and non geocoded locations
+                    # kmloutputFilename is a string; empty when the kml file fails to be created
 
-                out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window, f,
-                                                                                outputDir,
-                                                                                'Nominatim', 'Google Earth Pro',
-                                                                                True, False,
-                                                                                "south, north, west, east, los, new, san, las, la, hong",
-                                                                                "city, island",
-                                                                                False, False,
-                                                                                0, 6,
-                                                                                "LOCATION",
-                                                                                'utf-8',
-                                                                                1, 1, 1, [1], [1],
-                                                                                'LOCATION',
-                                                                                0, [''], [''],
-                                                                                ['Pushpins'], ['red'],
-                                                                                [0], ['1'], [0], [''],
-                                                                                [1], ['Sentence'])
+                    out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window, f,
+                                                                                    outputDir,
+                                                                                    'Nominatim', 'Google Earth Pro',
+                                                                                    True, False,
+                                                                                    "south, north, west, east, los, new, san, las, la, hong",
+                                                                                    "city, island",
+                                                                                    False, False,
+                                                                                    0, 6,
+                                                                                    "LOCATION",
+                                                                                    'utf-8',
+                                                                                    1, 1, 1, [1], [1],
+                                                                                    'LOCATION',
+                                                                                    0, [''], [''],
+                                                                                    ['Pushpins'], ['red'],
+                                                                                    [0], ['1'], [0], [''],
+                                                                                    [1], ['Sentence'])
 
-            if len(out_file) > 0:
-                # since out_file produced by KML is a list cannot use append
-                filesToOpen=filesToOpen+out_file
-            if len(kmloutputFilename)>0:
-                filesToOpen.append(kmloutputFilename)
+                    if len(out_file) > 0:
+                        # since out_file produced by KML is a list cannot use append
+                        filesToOpen=filesToOpen+out_file
+                    if len(kmloutputFilename)>0:
+                        filesToOpen.append(kmloutputFilename)
 
     if openOutputFiles == True and len(filesToOpen) > 0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -631,9 +634,12 @@ def run(inputFilename, inputDir, outputDir,
         #     if kmloutputFilename != '':
         #         IO_files_util.open_kmlFile(kmloutputFilename)
 
-    if len(inputDir) > 1: # when processing a directory, the output changes
-        mb.showwarning("Output directory", "All output files have been saved to a subdirectory of the selected output directory at\n\n"+str(outputDir)+"\n\nThe IO widget 'Select OUTPUT files directory' has been updated to reflect the change.")
-        GUI_util.output_dir_path.set(outputDir)
+    if len(inputDir) > 1 and len(filesToOpen) > 0: # when processing a directory, the output changes
+        # not a good idea to change the IO widget output because if you run the script again without first closing the GUI
+        #   the new output dir becomes the new output in an infinite loop
+        # mb.showwarning("Output directory", "All output files have been saved to a subdirectory of the selected output directory at\n\n"+str(outputDir)+"\n\nThe IO widget 'Select OUTPUT files directory' has been updated to reflect the change.")
+        # GUI_util.output_dir_path.set(outputDir)
+        mb.showwarning("Output directory", "All output files have been saved to a subdirectory of the selected output directory at\n\n"+str(outputSVODir))
 
 #the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -662,7 +668,7 @@ GUI_util.run_button.configure(command=run_script_command)
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
 GUI_size='1300x630'
-GUI_label='Graphical User Interface (GUI) for Subject-Verb-Object (SVO) Extraction & Visualization'
+GUI_label='Graphical User Interface (GUI) for Subject-Verb-Object (SVO) Extraction & Visualization Pipeline'
 config_filename='SVO-config.txt'
 # The 6 values of config_option refer to:
 #   software directory
@@ -754,15 +760,17 @@ memory_var.set(6)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+770,y_multiplier_integer,memory_var)
 
 manual_Coref_var.set(0)
-manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_Coref_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,manual_Coref_checkbox)
+manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', state='disabled', variable=manual_Coref_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,manual_Coref_checkbox)
 
 def activateCoRefOptions(*args):
     if CoRef_var.get()==1:
         CoRef_menu.configure(state='normal')
         memory_var.configure(state='normal')
-        manual_Coref_checkbox.configure(state='normal')
-        manual_Coref_var.set(1)
+        # manual_Coref_checkbox.configure(state='normal')
+        manual_Coref_checkbox.configure(state='disabled')
+        # manual_Coref_var.set(1)
+        manual_Coref_var.set(0)
     else:
         CoRef_menu.configure(state='disabled')
         # memory_var.configure(state='disabled')
@@ -897,7 +905,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help","Please, using the dropdown menu, select the type of Stanford coreference you wish to use for coreference Resolution (Deterministic is fastest but less accurate; Neural Network is slowest but most accurate; recommended!\n\nThe co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nWhile CoreNLP can resolve different coreference types (e.g., nominal, pronominal), the SVO script filters only pronominal types. Pronominal coreference refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'.\n\nPlease, select the memory size Stanford CoreNLP will use to resolve coreference. Default = 6. Lower this value if CoreNLP runs out of resources. Increase the value for larger files.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help","Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help","Please, tick the checkbox if you wish to run the Stanford CoreNLP normalized NER date annotator to extract standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\nThis will display time plots of dates, visualizing the WHEN of the 5 Ws of narrative.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","Please, tick the checkboxes if you wish to run the Stanford CoreNLP OpenIE and/or SENNA to extract SVO triplets or SVO triplets and SV pairs.\n\nSENNA can be downloaded at https://ronan.collobert.com/senna/download.html\n\nContrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chunks of text being currently processed.\n\nIn INPUT OpenIE and/or SENNA can process a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT OpenIE and/or SENNA will produce a csv file of SVO results and, if the appropriate visualization options are selected, a Gephi gexf network file, png word cloud file, and Google Earth Pro kml file.\n\nWHEN PROCESSING A DIRECTORY, ALL OUTPUT FILES WILL BE SAVED IN A SUBDIRECTORY OF THE SELECTED OUTPUT DIRECTORY WITH THE NAME OF THE INPUT DIRECTORY.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","Please, tick the checkboxes if you wish to run the Stanford CoreNLP OpenIE and/or SENNA to extract SVO triplets or SVO triplets and SV pairs.\n\nSENNA can be downloaded at https://ronan.collobert.com/senna/download.html\n\nContrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chunks of text being currently processed.\n\nIn INPUT OpenIE and/or SENNA can process a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT OpenIE and/or SENNA will produce a csv file of SVO results and, if the appropriate visualization options are selected, a Gephi gexf network file, png word cloud file, and Google Earth Pro kml file (GIS maps are not produced when running SVO with SENNA; SENNA, by and large, does not produce geocodable locations.\n\nWHEN PROCESSING A DIRECTORY, ALL OUTPUT FILES WILL BE SAVED IN A SUBDIRECTORY OF THE SELECTED OUTPUT DIRECTORY WITH THE NAME OF THE INPUT DIRECTORY.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help","Please, tick the checkbox to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file \'social-actor-list.csv\', created via WordNet with keyword person and saved in the \'lib/wordLists\' subfolder, will be automatically loaded as the DEFAULT dictionary file (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly automatically loaded as the DEFAULT dictionary file for verbs.\n\nDictionary filter files can be created via WordNet and saved in the \'lib/wordLists\' subfolder. You can edit that list, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help","The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that).\n\nThe filter file social-actor-list, created via WordNet with person as keyword and saved in the \'lib/wordLists\' subfolder, will be automatically set as the DEFAULT filter for subjects (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly set as the DEFAULT dictionary file for verbs.\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be prompted to select a new file.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*10,"Help","Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;;\n\n  2. to visualize SVO relations in a wordcloud;\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro. ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.")
