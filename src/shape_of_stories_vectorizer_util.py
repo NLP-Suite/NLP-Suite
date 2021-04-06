@@ -86,6 +86,7 @@ class Vectorizer:
         return min(doclengths), max(doclengths), np.mean(np.array(doclengths)), len(doclengths)
 
     def parse_input_data(self):
+
         if os.path.isfile(self.data_folder):
             narrative_fps = [self.data_folder]
         else:
@@ -98,30 +99,46 @@ class Vectorizer:
         narratives = []
         sentimentVectors = []
         file_list = []
-        for narrativeNum, narrativeFile in enumerate(self.narrative_file_paths):
-            #Angel: the directory should only contain one file with all documents merged together
-            merged_df=pd.read_csv(narrativeFile,encoding='utf-8')
+
+        #===========================ANGEL====================================================
+        scoresFile_list = {}
+        #Create a list of input dataframes to standardize inputDir and inputFile
+        with codecs.open(self.narrative_file_paths[0], mode='r', encoding='utf-8', errors='ignore') as nF1:
+            merged_df = pd.read_csv(nF1,encoding='utf-8')
+        #Add sentimentscores Filenames as a column
+        merged_df["scoresFilename"] = [self.narrative_file_paths[0]]*merged_df.shape[0]
+        if 'Document' not in merged_df.columns:#ANGEL sometimes "Document" sometimes "Document Name"
+            merged_df["Document"]=merged_df["Document Name"]
+        if(len(self.narrative_file_paths)==1):
             df_list=[x for _,x in merged_df.groupby(merged_df['Document ID'])]
-            for df in df_list:
+        else:
+            df_list=[merged_df]
+            for narrativeNum, narrativeFile in enumerate(self.narrative_file_paths, start=1):
+                if narrativeNum>1:
+                    with codecs.open(narrativeFile, mode='r', encoding='utf-8', errors='ignore') as narrativeFile1:
+                        dfff=pd.read_csv(narrativeFile1,encoding='utf-8')
+                        dfff["scoresFilename"] =[narrativeFile]*dfff.shape[0]
+                        if 'Document' not in dfff.columns:  # ANGEL sometimes "Document" sometimes "Document Name"
+                            dfff["Document"] = dfff["Document Name"]
+                        df_list.append(dfff)
+
+        for df in df_list:
                 if len(df)<self.sentiment_vector_size:
                     continue
                 df.reset_index(inplace=True)
+                # =================================ANGEL===============================================
                 sentimentVector = []
                 addIndex = int(len(df) / self.sentiment_vector_size) #number of rows per bucket
                 files_lengths.append(len(df))
                 bucket = self.sentiment_vector_size # always 10 buckets
                 window = [float(row['Sentiment number']) for i, row in df.iterrows() if
                             i < self.window_size]  # take the first [window_size] records and get the sentiment number
-                window1=[float(row['Sentence ID']) for i, row in df.iterrows() if
-                            i < self.window_size]
                 for i, row in df.iterrows():
                     if i >= (self.window_size - 1):
                         # if get out of window_size: slide the window to next bucket
                         if i + 1 < len(df):
                             window.append(float(df.iloc[i + 1]['Sentiment number']))
                             del window[0]
-                            window1.append(float(df.iloc[i + 1]['Sentence ID']))
-                            del window1[0]
                     try:
                         # Divides left hand operand by right hand operand and returns remainder
                         mod = i % addIndex #decides which bucket the row goes into
@@ -132,11 +149,13 @@ class Vectorizer:
                         sentimentVector.append((sum(window) / len(window)))
                 sentimentVectors.append(sentimentVector)  # hold representative of each file
                 file_list.append(df.iloc[0]['Document']) # append document name
+                scoresFile_list.update({str(df.iloc[0]['Document']):str(df.iloc[0]['scoresFilename'])})#ANGEL
         sentimentVectors = np.array(sentimentVectors)
         # print('Minumum number of sentences in a document: %d' % min(files_lengths))
         # print('shortest doc: %d' % np.argmin(np.array(files_lengths)))
         print(sentimentVectors)
-        return sentimentVectors, file_list
+        return sentimentVectors, file_list,scoresFile_list
+
 
     @staticmethod
     def compute_suggested_n_clusters(sentiment_vectors, expl_var_thr=0.9):

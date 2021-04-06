@@ -132,7 +132,10 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
                     termID = termID + 1
                     print("Processing dictionary field value " + str(termID) + "/" + str(
                         len(terms)) + " " + term)
-                    if re.search(r'\b' + term + r'\b', text) == None:
+                    try:
+                        if re.search(r'\b' + term + r'\b', text) == None:
+                            continue
+                    except:
                         continue
                     for term1 in reserved_dictionary:
                         if term1 in terms:
@@ -146,7 +149,10 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
                     print("   Annotating '" + term + "' in text " + str(term_intextID) + "/" + str(len(text)))
                     tagString = tagAnnotations[0] + term + tagAnnotations[1]
                     # use regular expression replace to check for distinct words (e.g., he not tagging he in held)
-                    text = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, text)
+                    try:
+                        text = re.sub(rf"\b(?=\w){term}\b(?!\w)", tagString, text)
+                    except:
+                        continue
         writeout.append(text)
         writeout.append("<br />\n<br />\n") # add 2 hard returns
 

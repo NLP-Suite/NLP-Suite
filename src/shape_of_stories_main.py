@@ -47,7 +47,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                        message='No options have been selected.\n\nPlease, select an option and try again.')
         return
 
-    if inputDir=='' or inputFilename!='':
+    if inputDir=='' and inputFilename!='':
         if sentimentAnalysis == True:
             mb.showwarning(title='Input folder error',
                            message='The selected option requires in input a set of txt files for which to compute sentiment scores.\n\nPlease, use the IO widget \'Select INPUT files directory\' to select the appropriate directory and try again.')
@@ -130,8 +130,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
             os.mkdir(sentiment_scores_folder)
             computeSAScores = True
     else:
-        sentiment_scores_folder=inputDir
-        head, tail = os.path.split(inputDir)
+        #==============ANGEL=========
+        if(inputDir!=''):
+            sentiment_scores_folder=inputDir #INPUT
+        else:
+            sentiment_scores_folder=inputFilename #INPUT
+        #==============ANGEL=========
+        head, tail = os.path.split(sentiment_scores_folder)
         if head!=outputDir:
             # outputDir = head
             GUI_util.output_dir_path.set(outputDir)
@@ -197,7 +202,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
         # step 2: vectorize
         # TODO Need to be able to pass a csv file (not directory) of merged sentiment scores
-        vectz = vec.Vectorizer(sentiment_scores_folder)
+        vectz = vec.Vectorizer(sentiment_scores_folder)#INPUT
 
         # pop up window
         # window size
@@ -214,7 +219,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
         vectz.sentiment_vector_size = val
 
-        sentiment_vectors, file_list = vectz.vectorize()
+        sentiment_vectors, file_list, scoresFile_list = vectz.vectorize()#ANGEl
 
         rec_n_clusters = vectz.compute_suggested_n_clusters(sentiment_vectors)
         if rec_n_clusters==None:
@@ -237,7 +242,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         DendogramFilename, grouped_vectors, clusters_indices, vectors = hier.cluster(sentiment_vectors, outputDir)
         filesToOpen.append(DendogramFilename)
         sentiment_vectors = vectors
-        clusters_file = cl.processCluster(clusters_indices, file_list, sentiment_vectors, rec_n_clusters, os.path.join(outputDir, "Hierarchical Clustering Documents.csv"), inputDir)
+        clusters_file = cl.processCluster(clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters, os.path.join(outputDir, "Hierarchical Clustering Documents.csv"), inputDir)
         vis = viz.Visualizer(outputDir)
         vis.visualize_clusters(grouped_vectors, "Hierarchical Clustering (HC)", "HC", clusters_file)
         for i in range(rec_n_clusters):
@@ -250,12 +255,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         svd = cl.SVDClustering(rec_n_clusters)
         pos_vector_clusters, pos_clusters_indices, pos_modes, neg_vector_clusters, neg_clusters_indices, neg_modes = \
             svd.cluster(sentiment_vectors)
-        clusters_file = cl.processCluster(pos_clusters_indices, file_list, sentiment_vectors, rec_n_clusters,
+        clusters_file = cl.processCluster(pos_clusters_indices,scoresFile_list, file_list, sentiment_vectors, rec_n_clusters,
                        os.path.join(outputDir, "SVD Positive Documents.csv"), inputDir)
         vis = viz.Visualizer(outputDir)
         vis.visualize_clusters(pos_vector_clusters, "Singular Value Decomposition Positive (SVD Positive)", "SVDPositive",
                                clusters_file, modes=pos_modes)
-        clusters_file = cl.processCluster(neg_clusters_indices, file_list, sentiment_vectors, rec_n_clusters,
+        clusters_file = cl.processCluster(neg_clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters,
                        os.path.join(outputDir, "SVD Negative Documents.csv"), inputDir)
         vis = viz.Visualizer(outputDir)
         vis.visualize_clusters(neg_vector_clusters, "Singular Value Decomposition Negative (SVD Negative)", "SVDNegative",
@@ -272,7 +277,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         nmf = cl.NMFClustering(rec_n_clusters)
         grouped_vectors, clusters_indices, vectors = nmf.cluster(sentiment_vectors)
         sentiment_vectors = vectors
-        clusters_file = cl.processCluster(clusters_indices, file_list, sentiment_vectors, rec_n_clusters,
+        clusters_file = cl.processCluster(clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters,
                        os.path.join(outputDir, "NMF Documents.csv"), inputDir)
         vis = viz.Visualizer(outputDir)
         vis.visualize_clusters(grouped_vectors, "Non-negative Matrix Factorization (NMF)", "NMF", clusters_file)
