@@ -85,6 +85,7 @@ def detect_decoding_errors_line(l, _s=_surrogates.finditer):
 #   https://pypi.python.org/pypi/Unidecode
 def check_utf8_compliance(window,inputFilename,inputDir,outputDir,openOutputFiles,silent=False):
     if len(inputDir)>0:
+        silent=True
         inputDocs = [os.path.join(inputDir,f) for f in os.listdir(inputDir) if f[:2]!='~$' and f[-4:]=='.txt']
         outFile= IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'NLP', 'non_utf8')
     elif len(inputFilename)>0:

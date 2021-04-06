@@ -65,10 +65,6 @@ GISLocations_libPath = os.path.join(NLPPath,'lib'+os.sep+'GIS')
 TIPSPath = os.path.join(NLPPath,'TIPS')
 remindersPath = os.path.join(NLPPath, 'reminders')
 
-#The argument GUI is the title of the GUI displayed (e.g., Narrative Analysis) 
-def GUI_under_construction(GUI):
-    mb.showwarning(title='GUI under construction', message='The ' + GUI + ' GUI is under construction. Sorry!\n\nPlease, revisit this option soon.')
-
 def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, centerX=False, basic_y_coordinate=90):
     #basic_y_coordinate = 90
     y_step = 40 #the line-by-line increment on the GUI
