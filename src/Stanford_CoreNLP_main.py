@@ -20,6 +20,7 @@ import reminders_util
 import IO_internet_util
 import Stanford_CoreNLP_annotator_util
 import Stanford_CoreNLP_coreference_util
+import IO_CoNLL_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -33,7 +34,7 @@ import Stanford_CoreNLP_coreference_util
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, memory_var,
         manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat,
-        compute_sentence, CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var):
+        compute_sentence_var, CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var):
     # check internet connection
     filesToOpen = []
 
@@ -67,44 +68,38 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
     outputCoNLLfilePath = ''
 
-
     # parser ---------------------------------------------------------------------------------------------------------------------------
 
     if parser:
 
-        # Parser (Probabilistic Context Free Grammar ) ------------------------------
-        if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
+        # Parser  ------------------------------
+        if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)' or parser_menu_var == 'Neural Network':
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
                 return
-
-            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
-                                                                               outputDir, openOutputFiles,
-                                                                               createExcelCharts,
-                                                                               'parser (pcfg)', False, memory_var,
-                																extract_date_from_filename_var=dateInclude,
-                																date_format=dateFormat,
-                																date_separator_var=sep,
-                																date_position_var=date_field_position)
-
+            if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
+                tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+                                                                outputDir, openOutputFiles,
+                                                                createExcelCharts,
+                                                                'parser (pcfg)', False, memory_var,
+                                                                extract_date_from_filename_var = dateInclude,
+                                                                date_format = dateFormat,
+                                                                date_separator_var = sep,
+                                                                date_position_var = date_field_position)
+            else:
+                # Parser (Neural Network) ------------------------------
+                tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+                                                               outputDir, openOutputFiles,
+                                                               createExcelCharts,
+                                                               'parser (nn)', False, memory_var,
+                                                               extract_date_from_filename_var=dateInclude,
+                                                               date_format=dateFormat,
+                                                               date_separator_var=sep,
+                                                               date_position_var=date_field_position)
             if len(tempOutputFiles) > 0:
                 filesToOpen.extend(tempOutputFiles)
-
-        # Parser (Neural Network) ------------------------------
-        if parser_menu_var == 'Neural Network':
-            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
-                return
-
-            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
-                                                                               outputDir, openOutputFiles,
-                                                                               createExcelCharts,
-                                                                               'parser (nn)', False, memory_var,
-                																extract_date_from_filename_var=dateInclude,
-                																date_format=dateFormat,
-                																date_separator_var=sep,
-                																date_position_var=date_field_position)
-
-            if len(tempOutputFiles) > 0:
-                filesToOpen.extend(tempOutputFiles)
+                if compute_sentence_var:
+                    tempOutputFile = IO_CoNLL_util.compute_sentence_table(tempOutputFiles[0], outputDir)
+                    filesToOpen.append(tempOutputFile)
 
         if CoNLL_table_analyzer_var and len(filesToOpen)>0:
             if IO_libraries_util.inputProgramFileCheck('CoNLL_table_analyzer_main.py') == False:
@@ -133,12 +128,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                                                                            outputDir,
                                                                            openOutputFiles, createExcelCharts,
                                                                            'All POS', False, memory_var,
-            																extract_date_from_filename_var=dateInclude,
-            																date_format=dateFormat,
-            																date_separator_var=sep,
-            																date_position_var=date_field_position)
+                                                                           extract_date_from_filename_var=dateInclude,
+                                                                           date_format=dateFormat,
+                                                                           date_separator_var=sep,
+                                                                           date_position_var=date_field_position)
             if len(tempOutputFiles)>0:
                 filesToOpen.extend(tempOutputFiles)
+
         # DepRel annotator ---------------------------------------------------------------------------------------------------------------------------
 
         if CoreNLP_annotators_menu_var == 'DepRel annotator':
@@ -149,20 +145,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                                                                            outputDir,
                                                                            openOutputFiles, createExcelCharts,
                                                                            'DepRel', False, memory_var,
-            																extract_date_from_filename_var=dateInclude,
-            																date_format=dateFormat,
-            																date_separator_var=sep,
-            																date_position_var=date_field_position)
+                                                                           extract_date_from_filename_var=dateInclude,
+                                                                           date_format=dateFormat,
+                                                                           date_separator_var=sep,
+                                                                           date_position_var=date_field_position)
             if len(tempOutputFiles)>0:
                 filesToOpen.extend(tempOutputFiles)
 
-            # POS annotator
-            # if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
-            #     return
-
         # NER annotator ---------------------------------------------------------------------------------------------------------------------------
 
-        if CoreNLP_annotators_menu_var == 'NER annotator':
+        if CoreNLP_annotators_menu_var == 'NER (GUI)':
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_NER_main.py') == False:
                 return
             call("python Stanford_CoreNLP_NER_main.py", shell=True)
@@ -178,10 +170,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                                                                            outputDir,
                                                                            openOutputFiles, createExcelCharts,
                                                                            'normalized-date', False, memory_var,
-            																extract_date_from_filename_var=dateInclude,
-            																date_format=dateFormat,
-            																date_separator_var=sep,
-            																date_position_var=date_field_position)
+                                                                           extract_date_from_filename_var=dateInclude,
+                                                                           date_format=dateFormat,
+                                                                           date_separator_var=sep,
+                                                                           date_position_var=date_field_position)
             if len(tempOutputFiles)>0:
                 filesToOpen.extend(tempOutputFiles)
 
@@ -197,10 +189,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                                                                            createExcelCharts,
                                                                            'quote', False,
                                                                            memory_var,
-            																extract_date_from_filename_var=dateInclude,
-            																date_format=dateFormat,
-            																date_separator_var=sep,
-            																date_position_var=date_field_position)
+                                                                           extract_date_from_filename_var=dateInclude,
+                                                                           date_format=dateFormat,
+                                                                           date_separator_var=sep,
+                                                                           date_position_var=date_field_position)
 
             if len(tempOutputFiles)>0:
                 filesToOpen.extend(tempOutputFiles)
@@ -215,10 +207,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
                                                                            'gender', False, memory_var,
-            																extract_date_from_filename_var=dateInclude,
-            																date_format=dateFormat,
-            																date_separator_var=sep,
-            																date_position_var=date_field_position)
+                                                                           extract_date_from_filename_var=dateInclude,
+                                                                           date_format=dateFormat,
+                                                                           date_separator_var=sep,
+                                                                           date_position_var=date_field_position)
 
             if len(tempOutputFiles)>0:
                 filesToOpen.extend(tempOutputFiles)
@@ -235,15 +227,34 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                                                                            createExcelCharts,
                                                                            'sentiment', False,
                                                                            memory_var,
-            																extract_date_from_filename_var=dateInclude,
-            																date_format=dateFormat,
-            																date_separator_var=sep,
-            																date_position_var=date_field_position)
+                                                                           extract_date_from_filename_var=dateInclude,
+                                                                           date_format=dateFormat,
+                                                                           date_separator_var=sep,
+                                                                           date_position_var=date_field_position)
+            if len(tempOutputFiles)>0:
+                filesToOpen.extend(tempOutputFiles)
+        # openIE annotator ---------------------------------------------------------------------------------------------------------------------------
+
+        if CoreNLP_annotators_menu_var == 'OpenIE - SVO extraction (Neural Network)':
+            # if sentiment_analysis:
+            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+                return
+
+            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+                                                                           outputDir, openOutputFiles,
+                                                                           createExcelCharts,
+                                                                           'openIE', False,
+                                                                           memory_var,
+                                                                           extract_date_from_filename_var=dateInclude,
+                                                                           date_format=dateFormat,
+                                                                           date_separator_var=sep,
+                                                                           date_position_var=date_field_position)
             if len(tempOutputFiles)>0:
                 filesToOpen.extend(tempOutputFiles)
                 
-        if openOutputFiles:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+    if openOutputFiles:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
@@ -443,6 +454,7 @@ sentence_table_checkbox = tk.Checkbutton(window, text='Compute sentence table', 
                                          onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                sentence_table_checkbox, True)
+
 sentence_table_checkbox_msg = tk.Label()
 sentence_table_checkbox_msg.config(text="Compute sentence table")
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
@@ -453,8 +465,6 @@ def check_sentence_table(*args):
         sentence_table_checkbox_msg.config(text="Compute sentence table")
     else:
         sentence_table_checkbox_msg.config(text="Do NOT compute sentence table")
-
-
 compute_sentence_var.trace('w', check_sentence_table)
 
 CoNLL_table_analyzer_var.set(1)
@@ -485,8 +495,12 @@ CoreNLP_annotators_menu_var.set("")
 CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var,
         'Coreference PRONOMINAL resolution (Neural Network)',
         'DepRel annotator', 'POS annotator',
-        'NER annotator', 'Normalized NER date', 'Gender annotator (Neural Network)', 'Quote/dialogue annotator (Neural Network)',
-        'Sentiment analysis (Neural Network)')
+        'NER (GUI)', 'Normalized NER date',
+        'Gender annotator (Neural Network)',
+        'Quote/dialogue annotator (Neural Network)',
+        'Sentiment analysis (Neural Network)',
+        'OpenIE - SVO extraction (Neural Network)')
+
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                CoreNLP_annotators_menu)
 
@@ -504,6 +518,8 @@ def activate_CoreNLP_annotators_menu(*args):
             y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 400,
                                                            y_multiplier_integer,
                                                            manual_Coref_checkbox)
+        else:
+            manual_Coref_checkbox.place_forget()  # invisible
     else:
         manual_Coref_checkbox.place_forget()  # invisible
         CoreNLP_annotators_menu.configure(state='disabled')

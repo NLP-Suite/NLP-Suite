@@ -64,7 +64,7 @@ def CoreNLP_annotate(inputFilename,
     if CoreNLPdir== None:
         return filesToOpen
 
-    
+
     errorFound, error_code, system_output=IO_libraries_util.check_java_installation('SVO extractor')
 
     if errorFound:
@@ -151,7 +151,8 @@ def CoreNLP_annotate(inputFilename,
         'normalized-date':["Word", "Normalized date", "tid","Tense","Information","Sentence ID", "Sentence", "Document ID", "Document"],
         #  Document ID, Sentence ID, Document, S, V, O/A, Sentence
         # Dec. 21
-        'openIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'Sentence'],
+        'openIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', "LOCATION",'PERSON','TIME','TIME_STAMP','Sentence'],
+        # 'openIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A','Sentence'],
         'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
         'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
     }
@@ -159,7 +160,7 @@ def CoreNLP_annotate(inputFilename,
     param_number_NN = 0
     files = []#storing names of txt files
     nDocs = 0#number of input documents
-    
+
     #collecting input txt files
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     nDocs = len(inputDocs)
@@ -214,7 +215,7 @@ def CoreNLP_annotate(inputFilename,
                     else:
                         param_string = param_string + ", " + param
             routine_list.insert(0, [annotator, routine,output_format,[],parse_model])
-        
+
     # the third item in routine_list is typ[ically a single lit [], but for POS it becomes a double list ['Verbs'],[Nouns]]
     # the case needs special handling
     POS_WordNet=False
@@ -263,7 +264,7 @@ def CoreNLP_annotate(inputFilename,
             annotated_length = 0#the number of tokens
             # doc_start_time = time.time()
             model_switch = False
-            
+
             head, tail = os.path.split(doc)
             print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
             text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
@@ -275,9 +276,11 @@ def CoreNLP_annotate(inputFilename,
                 annotator_start_time = time.time()
                 CoreNLP_output = nlp.annotate(text, properties=params)
                 errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window,
-                                                      CoreNLP_output,
-                                                      doc, nDocs,
-                                                      filesError)
+                                                    CoreNLP_output,
+                                                    doc,
+                                                    nDocs,
+                                                    filesError,
+                                                    text)
                 if errorFound: continue  # move to next document
                 annotator_time_elapsed = time.time() - annotator_start_time
                 file_length=len(text)
@@ -303,7 +306,7 @@ def CoreNLP_annotate(inputFilename,
                     NN_start_time = time.time()
                     CoreNLP_output = nlp.annotate(text, properties=params_NN)
                     errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(
-                        GUI_util.window, CoreNLP_output, doc, nDocs, filesError)
+                        GUI_util.window, CoreNLP_output, doc, nDocs, filesError, text)
                     if errorFound: continue  # move to next document
                     NN_time_elapsed = time.time() - NN_start_time
                     file_length = len(text)
@@ -317,9 +320,9 @@ def CoreNLP_annotate(inputFilename,
                 else:
                     run_output = run[3] # []
                     POS_WordNet = False
-    
+
                 # run_output = run[3]
-    
+
                 #generating output from json file for specific annotators
                 if "parser" in annotator_chosen:
                     if "pcfg" in annotator_chosen:
@@ -334,7 +337,7 @@ def CoreNLP_annotate(inputFilename,
                 #write html file from txt input
                 if output_format == 'text':
                     outputFilename = IO_files_util.generate_output_file_name(doc, '', outputDir, '.txt', 'CoreNLP_'+annotator_chosen)
-                    with open(outputFilename, "w") as text_file:
+                    with open(outputFilename, "w+") as text_file:
                         text_file.write(sub_result)
                     filesToOpen.append(outputFilename)
                 else:
@@ -356,6 +359,9 @@ def CoreNLP_annotate(inputFilename,
         output_format = run[2]
         if POS_WordNet == False:
             run_output = run[3]
+        # skip coreferenced file
+        if output_format == "text":
+            continue
         if isinstance(output_format[0],list): # multiple outputs
             for index, sub_output in enumerate(output_format):
                 if POS_WordNet:
@@ -385,7 +391,7 @@ def CoreNLP_annotate(inputFilename,
                                                                                  'CoreNLP_NER_'+outputFilename_tag)
             elif "parser" in annotator_chosen:#CoNLL
                 outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'CoreNLP', 'CoNLL')
-                
+
             elif output_format != 'text':
                 outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
                                                                              'CoreNLP_'+annotator_chosen)
@@ -406,26 +412,27 @@ def CoreNLP_annotate(inputFilename,
     #generate visualization output
     for j in range(len(filesToVisualize)):
         #02/27/2021; eliminate the value error when there's no information from certain annotators
-        file_df = pd.read_csv(filesToVisualize[j])
-        if not file_df.empty: 
-            if 'gender' in str(filesToVisualize[j]):
-                filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j], filesToOpen)
+        if filesToVisualize[j][-4:] == ".csv":
+            file_df = pd.read_csv(filesToVisualize[j])
+            if not file_df.empty:
+                if 'gender' in str(filesToVisualize[j]):
+                    filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j], filesToOpen)
     
-                filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
-                                                    [[1, 1]], 'bar',
-                                                    'Frequency Distribution of Gender Types', 1, [],
-                                                    'gender_bar','Gender')
-            elif 'date' in str(filesToVisualize[j]):
-                # TODO put values hover-over values to pass to Excel chart as a list []
-                filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
-                                      'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Date type')
-                filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
-                                      'Frequency Distribution of Tenses of Normalized Dates', 1, [], 'NER_tense_bar','Date type')
-                filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[4, 4]], 'bar',
-                                                  'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type')
-            elif 'NER'  in str(filesToVisualize[j]):
-                filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
-                                      'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
+                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
+                                                        [[1, 1]], 'bar',
+                                                        'Frequency Distribution of Gender Types', 1, [],
+                                                        'gender_bar','Gender')
+                elif 'date' in str(filesToVisualize[j]):
+                    # TODO put values hover-over values to pass to Excel chart as a list []
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
+                                          'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Date type')
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
+                                          'Frequency Distribution of Tenses of Normalized Dates', 1, [], 'NER_tense_bar','Date type')
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[4, 4]], 'bar',
+                                                      'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type')
+                elif 'NER'  in str(filesToVisualize[j]):
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
+                                          'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
 
     p.kill()
     if len(filesError)>0:
@@ -442,12 +449,12 @@ def CoreNLP_annotate(inputFilename,
     speed_assessment.append([-1, "Total Operation", total_time_elapsed,total_length, ", ".join(annotator_params), len(annotator_params)])
     speed_csv = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
                                                                            'CoreNLP_speed_assessment')
-    df = pd.DataFrame(speed_assessment, columns=speed_assessment_format)  
+    df = pd.DataFrame(speed_assessment, columns=speed_assessment_format)
     df.to_csv(speed_csv, index=False)
     filesToOpen.append(speed_csv)
     if len(inputDir) != 0:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Output warning', 'The output filename generated by Stanford CoreNLP is the name of the directory processed in input, rather than any individual file in the directory. The output file(s) include all ' + str(nDocs) + ' files in the input directory processed by CoreNLP.\n\nThe different files are listed in the output csv file under the headers \'Document ID\' and \'Document\'.')
-        
+
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True)
     return filesToOpen
 
@@ -472,7 +479,7 @@ def date_in_filename(document, **kwargs):
         date, date_str = IO_files_util.getDateFromFileName(document, date_separator_var, date_position_var,
                                                            date_format)
     return date_str
-    
+
 # ["Word", "Normalized date", "tid","tense","information","Sentence ID", "Sentence", "Document ID", "Document"],
 def process_json_normalized_date(documentID, document, sentenceID,json, **kwargs):
     print("   Processing Json output file for NER NORMALIZED DATE annotator")
@@ -545,7 +552,7 @@ def process_json_normalized_date(documentID, document, sentenceID,json, **kwargs
                     if extract_date_from_filename_var:
                         temp = [words, norm_date, tid, tense, info, sentenceID, complete_sent, documentID,
                                          IO_csv_util.dressFilenameForCSVHyperlink(document), date_str]
-                        
+
                     else:
                         temp = [words, norm_date, tid, tense, info, sentenceID, complete_sent, documentID,
                                          IO_csv_util.dressFilenameForCSVHyperlink(document)]
@@ -585,7 +592,7 @@ def date_get_info(norm_date):
     elif norm_date[-2:] == "XX" and (norm_date[0:-2].isdigit() or (norm_date[0] == "-" and norm_date[0:-2].replace('-', '').isdigit())):
         tense = "CENTURY"
     elif len(norm_date) == 7 and norm_date[-2:].isdigit() and norm_date[4] == "-":
-        tense = "MONTH" 
+        tense = "MONTH"
     elif norm_date.replace('-', '').isdigit() or norm_date.replace('/', '').isdigit() or ("XXXX" in norm_date and norm_date.split("XXXX")[1].replace("-", '').isdigit()):#(len(norm_date) > 4 and norm_date[0:4] == 'XXXX' and norm_date[4:].replace("-", '').isdigit()):#specific year,month, day
         tense = "DATE"
         # print("date")
@@ -623,12 +630,13 @@ def process_json_ner(documentID, document, sentenceID, json, **kwargs):
         #     date_separator_var = value
         # if key == 'date_position_var':
         #     date_position_var = value
-    print("With date embed in titles: ", extract_date_from_filename_var)
-    print("With date embed in text contents: ", extract_date_from_text_var)
+    # print("With date embed in titles: ", extract_date_from_filename_var)
+    # print("With date embed in text contents: ", extract_date_from_text_var)
     NER = []
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
-    print("Date in this file: ", date_str)
+    if date_str!='':
+        print("Date in this file: ", date_str)
     # if extract_date_from_filename_var:
     #     date, date_str = IO_files_util.getDateFromFileName(document, date_separator_var, date_position_var,
     #                                                        date_format)
@@ -780,7 +788,7 @@ def process_json_coref(documentID, document, sentenceID, json, **kwargs):
 
 # December.10 Yi: Modify process_json_gender to provide one more column(complete sentence)
 def process_json_gender(documentID, document, start_sentenceID, json, **kwargs):
-    
+
     # print("CoreNLP output: ")
     # pprint.pprint(json)
     print("   Processing Json output file for GENDER annotator")
@@ -858,7 +866,7 @@ def process_json_quote(documentID, document, sentenceID, json, **kwargs):
                     complete_sent = complete_sent + token['originalText']
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
-        
+
         # sentenceID = quoted_sent_id
         sentenceID = sentenceID + quoted_sent_id
         # leave out the filename for now
@@ -874,9 +882,148 @@ def process_json_quote(documentID, document, sentenceID, json, **kwargs):
         result.append(temp)
     return result
 
+def openIE_sent_data_reorg(sentence):
+    result = {}
+    tokens = sentence['tokens']
+    dependencies = sentence["enhancedDependencies"]
+    openie = sentence['openie']
+    for token in tokens:
+        idx = token["index"]
+        result[idx] = {}
+        result[idx]["word"] = token["word"]
+        result[idx]["pos"] = token["pos"]
+        result[idx]["ner"] = token["ner"]
+        if result[idx]["ner"] == 'TIME' or result[idx]["ner"] == 'DATE':
+            result[idx]['normalizedNER'] = token['normalizedNER']
+        dep_rel, dep_govern = dep_dict(idx, dependencies)
+        result[idx]["deprel"] = dep_rel
+        result[idx]["govern_dict"] = dep_govern
+    return result
 
+def dep_dict(idx, dependencies):
+    dep_rel = ""
+    dep_govern = {}
+    for dep in dependencies:
+        if dep['dependent'] == idx:
+            dep_rel = dep['dep']
+        if dep['governor'] == idx:
+            if dep['dep'] in dep_govern.keys():
+                if isinstance(dep_govern[dep['dep']], list):
+                    dep_govern[dep['dep']].append(dep['dependent'])
+                else: 
+                    nodes_ = [dep_govern[dep['dep']]]
+                    nodes_.append(dep['dependent'])
+                    dep_govern[dep['dep']] = nodes_
+            else:
+                dep_govern[dep['dep']] = dep['dependent']
+    return dep_rel, dep_govern
+
+
+def s_o_formation (subjectives, sent_data):
+    if isinstance(subjectives, list):
+        return conj_string(subjectives, sent_data)
+    else:
+        return sent_data[subjectives]['word']
+
+def conj_string(subjectives, sent_data): 
+    subj = subjectives[0]
+    result = sent_data[subj]['word']
+    subj_gov = sent_data[subj]["govern_dict"]
+    for key in subj_gov.keys():
+        if "conj" in key:
+            conj = key[5:]
+            if isinstance(subj_gov[key], list):
+                if subj_gov[key] == subjectives[1:]:
+                    for i in range(1, len(subjectives) - 1):
+                        result = result +  ", " + sent_data[subjectives[i]]['word']
+                    result = result + ", " + conj + " " + sent_data[subjectives[-1]]['word']
+            else:
+                if len(subjectives) == 2 and subjectives[-1] == subj_gov[key]:
+                    result = result +  " " + conj + " " + subjectives[-1]
+                    break
+    return result
+                
+    
+def SVO_extraction (sent_data):
+    SVO = []
+    L = []
+    T = []
+    T_S = []
+    P = []
+    prep = ["in", "of", "for", "to", "with", "on", "at"]
+    for key in sent_data.keys():
+        s = 'Someone?'
+        v = ''
+        o = ''
+        token = sent_data[key]
+        print(token["word"])
+        if token["ner"] == "TIME" or token["ner"] == "DATE":
+            T.append(token["word"])
+            T_S.append(token['normalizedNER'])
+        if token["ner"] == "PERSON": 
+            P.append(token["word"])
+        # if token["deprel"] == "ROOT":
+        if token["ner"] == "CITY" or  token["ner"] == 'STATE_OR_PROVINCE' or token["ner"] == 'COUNTRY': 
+            L.append(token["word"])
+            
+        gov_dict = token["govern_dict"]
+        if "VB" in token["pos"]:
+            if 'compound:prt' in gov_dict.keys() and not isinstance(gov_dict['compound:prt'], list):
+                v = v + " "  +sent_data[gov_dict['compound:prt']]['word']
+            if "advmod" in gov_dict.keys() and not isinstance(gov_dict["advmod"], list):
+                v = sent_data[gov_dict["advmod"]]['word'] + " " + v 
+            if "nsubj" in gov_dict.keys():
+                s = s_o_formation(gov_dict["nsubj"], sent_data)
+                
+            if 'nsubj:pass' in gov_dict.keys():
+                o = s_o_formation(gov_dict['nsubj:pass'], sent_data)#sent_data[gov_dict['nsubj:pass']]['word']
+            elif "iobj" in gov_dict.keys():
+                o = s_o_formation(gov_dict["iobj"], sent_data)
+            elif "obj" in gov_dict.keys():
+                o = s_o_formation(gov_dict["obj"], sent_data)
+            else:
+                for gov_key in gov_dict.keys():
+                    if "obl" in gov_key :
+                        if gov_key[4:] != "tmod":
+                            o = gov_key[4:] + " " + s_o_formation(gov_dict[gov_key], sent_data)#sent_data[gov_dict["obj"]]['word']#gov_dict[gov_key]['word']
+                        else:
+                            o = s_o_formation(gov_dict[gov_key], sent_data)
+            v = token["word"]
+        elif (token["deprel"] == "ROOT" or token["deprel"] == "parataxis") and "NN" in token["pos"]:
+            if "nsubj" in gov_dict.keys():
+                s = s_o_formation(gov_dict["nsubj"], sent_data)
+            if "cop" in gov_dict.keys():
+                v = sent_data[gov_dict["cop"]]['word']
+            o = token["word"]
+            if "case" in gov_dict.keys():
+                o = sent_data[gov_dict["case"]]['word'] + " " + o
+            if "advmod" in gov_dict.keys():
+                o =  o + " " + sent_data[gov_dict["advmod"]]['word'] 
+                
+        elif token["deprel"] == "ROOT" and token["pos"] == "POS":
+            if "nsubj" in gov_dict.keys():
+                s = s_o_formation(gov_dict["nsubj"], sent_data)
+            if "obl" in gov_key:
+                o = gov_key[4:] + " " + s_o_formation(gov_dict[gov_key], sent_data)
+            v = token["word"]
+            
+            
+        if v != "" and ( s != "Someone?" or o != ''):
+            if [s, v, o] not in SVO:
+                SVO.append([s, v, o])
+
+    return SVO, L, T, T_S, P
+            
+                        
 # Dec. 21
 def process_json_openIE(documentID, document, sentenceID, json, **kwargs):
+    noteOutputPath = "/Users/claude/Desktop/ClaudeCase/Emory/Trabajo/SVO/txt_output_notes"
+    filename = os.path.split(document)[1]
+    print("filename: ",filename)
+    notefilename = noteOutputPath + '/openIE_json_'+filename
+    with open(notefilename, 'wt') as out:
+        pprint.pprint(json, stream = out)
+    out.close()
     extract_date_from_filename_var = False
     for key, value in kwargs.items():
         if key == 'extract_date_from_filename_var' and value == True:
@@ -886,6 +1033,12 @@ def process_json_openIE(documentID, document, sentenceID, json, **kwargs):
     date_str = date_in_filename(document, **kwargs)
     openIE = []
     for sentence in json['sentences']:
+        sent_data = openIE_sent_data_reorg(sentence)
+        reorg_data_filename = noteOutputPath + '/output_reorg_'+filename
+        with open(reorg_data_filename, 'a+') as reorg_out:
+            reorg_out.write(str(sentenceID + 1))
+            pprint.pprint(sent_data, stream = reorg_out)
+        reorg_out.close()
         complete_sent = ''
         for token in sentence['tokens']:
             if token['originalText'] in string.punctuation:
@@ -897,38 +1050,46 @@ def process_json_openIE(documentID, document, sentenceID, json, **kwargs):
                     complete_sent = complete_sent + ' ' + token['originalText']
         # sentenceID = sentence['index'] + 1
         sentenceID = sentenceID + 1
-        SVOs = []
-        for openie in sentence['openie']:
-            # Document ID, Sentence ID, Document, S, V, O/A, Sentence
-            SVOs.append([openie['subject'],openie['relation'],openie['object']])
-        container = []
-        for SVO_value in SVOs:
-            redundant_flag = False
-            remainder = [elmt for elmt in SVOs if elmt != SVO_value]
-            for SVO_base in remainder:
-                SVO_value_str = SVO_value[0] + ' ' + SVO_value[1] + ' ' + SVO_value[2]
-                SVO_base_str = SVO_base[0] + ' ' + SVO_base[1] + ' ' + SVO_base[2]
-                if SVO_value[0] == SVO_base[0] and similar_string_floor_filter(SVO_value_str,SVO_base_str):
-                    redundant_flag = True
-                    break
-                else:
-                    continue
-            if not redundant_flag:
-               container.append(SVO_value)
-        if len(container) > 0:
-            for row in container:
-                if extract_date_from_filename_var:
+        SVO, L, T, T_S, P = SVO_extraction (sent_data)
+        # for l in L: 
+        # SVOs = []
+        for row in SVO: 
+            if extract_date_from_filename_var:
                 # temp.append(date_str)
-                    openIE.append([documentID, sentenceID, document, row[0], row[1], row[2], complete_sent, date_str])
-                else:
-                    openIE.append([documentID, sentenceID, document, row[0], row[1], row[2], complete_sent])
+                openIE.append([documentID, sentenceID, document, row[0], row[1], row[2], " ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent, date_str])
+            else:
+                openIE.append([documentID, sentenceID, document, row[0], row[1], row[2], " ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent])
+        # for openie in sentence['openie']:
+        #     # Document ID, Sentence ID, Document, S, V, O/A, Sentence
+        #     SVOs.append([openie['subject'],openie['relation'],openie['object']])
+        # container = []
+        # for SVO_value in SVOs:
+        #     redundant_flag = False
+        #     remainder = [elmt for elmt in SVOs if elmt != SVO_value]
+        #     for SVO_base in remainder:
+        #         SVO_value_str = SVO_value[0] + ' ' + SVO_value[1] + ' ' + SVO_value[2]
+        #         SVO_base_str = SVO_base[0] + ' ' + SVO_base[1] + ' ' + SVO_base[2]
+        #         if SVO_value[0] == SVO_base[0] and similar_string_floor_filter(SVO_value_str,SVO_base_str):
+        #             redundant_flag = True
+        #             break
+        #         else:
+        #             continue
+        #     if not redundant_flag:
+        #        container.append(SVO_value)
+        # if len(container) > 0:
+        #     for row in container:
+        #         if extract_date_from_filename_var:
+        #         # temp.append(date_str)
+        #             openIE.append([documentID, sentenceID, document, row[0], row[1], row[2], complete_sent, date_str])
+        #         else:
+        #             openIE.append([documentID, sentenceID, document, row[0], row[1], row[2], complete_sent])
     # print(openIE)
 
     return openIE
 
 
 def process_json_postag(documentID, document, sentenceID, json, **kwargs):
-    
+
     Verbs = []
     Nouns = []
     for sentence in json['sentences']:
@@ -952,7 +1113,7 @@ def process_json_all_postag(documentID, document, sentenceID, recordID,json, **k
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
     result = []
-    
+
     for i in range(len(json["sentences"])):
         # print("*************")
         # print("The ", i, "th Sentence in ", document)
@@ -960,10 +1121,10 @@ def process_json_all_postag(documentID, document, sentenceID, recordID,json, **k
         sentenceID += 1
         # print("OutputSentenceID: ", sentenceID)
         #result = []
-        
+
         clauseID = 0
         tokens = json["sentences"][i]["tokens"]
-    
+
         for row in tokens:
             recordID += 1
             # if row["ner"]=="DATE":
@@ -987,10 +1148,10 @@ def process_json_all_postag(documentID, document, sentenceID, recordID,json, **k
             # print(temp)
             # if dateInclude == 1 and dateStr!='DATE ERROR!!!':
             #     temp.append(dateStr)
-            
+
         # print("The result after adding the ", sentenceID, "th sentence: ")
         # pprint.pprint(result)
-            
+
     return result
 
 def process_json_deprel(documentID, document, sentenceID, recordID,json, **kwargs):
@@ -1042,7 +1203,7 @@ def process_json_deprel(documentID, document, sentenceID, recordID,json, **kwarg
             temp.append(IO_csv_util.dressFilenameForCSVHyperlink(document))
             if extract_date_from_filename_var:
                 temp.append(date_str)
-            result.append(temp)           
+            result.append(temp)
     return result
 
 def process_json_parser(documentID, document, sentenceID, recordID, pcfg, json, **kwargs):
@@ -1111,10 +1272,10 @@ def process_json_parser(documentID, document, sentenceID, recordID, pcfg, json, 
             # print(temp)
             # if dateInclude == 1 and dateStr!='DATE ERROR!!!':
             #     temp.append(dateStr)
-            
+
         # print("The result after adding the ", sentenceID, "th sentence: ")
         # pprint.pprint(result)
-            
+
     return result
 def similar_string_floor_filter(str1, str2):
     dist = nltk.edit_distance(str1, str2)
@@ -1129,8 +1290,9 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesT
     csvValue_color_list = ['Gender', '|', 'FEMALE', 'red', '|', 'MALE', 'blue', '|']
     bold_var = True
     tagAnnotations = ['<span style="color: blue; font-weight: bold">', '</span>']
+
     tempFilename = annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
-                                                             dictFilename,
+                                                             dictFilename,'',
                                                              csvValue_color_list, bold_var, tagAnnotations,
                                                              fileType='.txt')
     # the annotator returns a list rather than a string
@@ -1138,7 +1300,6 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesT
         filesToOpen.append(tempFilename[0])
 
     return filesToOpen
-
 
 def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen, columns_to_be_plotted, chartType, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label):
     if createExcelCharts == True:
@@ -1172,4 +1333,4 @@ def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen,
 
 
 # def visualize_date_distribution(inputFileName):
-        
+
