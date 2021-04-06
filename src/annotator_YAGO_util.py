@@ -69,7 +69,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     IO_files_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running YAGO annotator at', True,
                         '\nAnnotating types: ' + str(categories) + " with associated colors: " + str(colorls))
     i=0
-    docID=0
+    docID=1
     for file in files:
             splittedHtmlFileList = []
             i = i + 1
@@ -131,6 +131,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     from datetime import datetime
     from datetime import date
     csvname= "YAGO_output_"+date.today().strftime("%b_%d_%Y")+"_"+datetime.now().strftime("%H_%M_%S")+".csv"
+    csvname = os.path.join(outputDir,csvname)
     df.to_csv((csvname),index=False)
     filesToOpen.append(csvname)
     IO_files_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running YAGO annotator at', True)
