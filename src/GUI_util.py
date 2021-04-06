@@ -78,6 +78,8 @@ output_dir_path=tk.StringVar()
 output_dir_path.set('')
 output_dir_path.set('')
 
+release_version_var=tk.StringVar()
+
 open_csv_output_checkbox = tk.IntVar()
 create_Excel_chart_output_checkbox = tk.IntVar()
 
@@ -193,6 +195,20 @@ def GUI_top(config_input_output_options,config_filename):
         display_logo()
 
         if config_filename=='NLP-config.txt':
+
+            release_version_lb = tk.Label(window, text='Release version',foreground="red")
+            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate(),
+                                                           y_multiplier_integer, release_version_lb, True)
+            # first digit for major upgrades
+            # second digit for new features
+            # third digit for bug fixes and minor changes to current version
+
+            release_version_var.set("1.3.5")
+            release_version = tk.Entry(window, state='disabled', width=6, foreground="red", textvariable=release_version_var)
+            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate() + 100,
+                                                           y_multiplier_integer, release_version,True)
+
+
             team_button = tk.Button(window, text='NLP Suite team', width=13, height=1, foreground="red",
                                     command=lambda: GUI_IO_util.list_team(window, config_filename))
             y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), 0,
