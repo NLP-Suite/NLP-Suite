@@ -1,4 +1,5 @@
 # NLP Suite
+# Current release 1.3.5
 
 ![logo](https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/lib/images/logo.png)
 
