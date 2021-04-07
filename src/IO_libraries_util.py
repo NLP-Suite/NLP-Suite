@@ -107,9 +107,9 @@ def import_nltk_resource(window, resource_path, resource):
         nltk.data.find(resource_path)
     except LookupError:
         IO_user_interface_util.timed_alert(window, 2000, 'Downloading nltk resource',
-                                           'Downloading nltk ' + resource + '...\n\nPlease, be patient...', False)
+                                           'Downloading nltk ' + resource + '...\n\nIf downloading fails, in command line please type python -m nltk.downloader all\n\n Please, be patient...', False)
+        print('Downloading nltk ' + resource + '   If downloading fails, in command line please type: python -m nltk.downloader all')
         nltk.download(resource)
-
 
 def check_java_installation(script):
     errorFound = False
@@ -257,8 +257,7 @@ def get_external_software_dir(calling_script, package, warning=True):
         if errorFound:
             software_dir = ''
             existing_csv[index][1] = software_dir
-            missing_software = missing_software + str(software_name).upper() + ' download at ' + str(
-                download_software + '\n\n')
+            missing_software = missing_software + str(software_name).upper() + ' download at ' + str(download_software + '\n\n')
             # if you are checking for a specific package and the directory is NOT found
             #   return None; no point continuing
             if (package.lower()!='') and (package.lower() in software_name.lower()):
@@ -269,11 +268,11 @@ def get_external_software_dir(calling_script, package, warning=True):
     if len(missing_software) > 0:
         if calling_script == 'NLP_menu':  # called from NLP_main GUI. We just need to warn the user to download and install options
             title = 'NLP Suite external software'
-            message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts.\n\n' + missing_software + 'If you have already downloaded the software, please, select next the directory where you installed it; ESC or CANCEL to exit, if you haven\'t installed it yet.'
+            message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\n' + missing_software + 'If you have already downloaded the software, please, select next the directory where you installed it; ESC or CANCEL to exit, if you haven\'t installed it yet.'
         else:
             title = package.upper() + ' software'
             message = 'WARNING!\n\nThe script ' + calling_script.upper() + ' requires the external software ' + package.upper() + \
-                      ' to run.\n\nIf you have not downloaded and installed ' + package + ' yet, you can do that at ' + download_software + '\n\nIf you have already downloaded ' + package + ', please, select next the directory where you installed it; ESC or CANCEL to exit, if you haven\'t installed it yet.'
+                      ' to run.\n\nIf you have not downloaded and installed ' + package + ' yet, you can do that at ' + download_software + '\n\nIf you have already downloaded ' + package + ', please, select next the directory where you installed it; ESC or CANCEL to exit, if you haven\'t installed it yet.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.'
         if not silent:
             mb.showwarning(title=title, message=message)
         for (index, row) in enumerate(existing_csv[1:]): # skip header row

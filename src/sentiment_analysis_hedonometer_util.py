@@ -237,7 +237,8 @@ def main(input_file, input_dir, output_dir, output_file, mode):
                         print("Finished HEDONOMETER sentiment analysis of " + filename + " in " + str((time.time() - start_time)) + " seconds")
             else:
                 print('Input directory "' + input_dir + '" is invalid.')
-                sys.exit(0)
+                sys.exit(1)
+    csvfile.close()
     return fileNamesToPass #LINE ADDED
 
 

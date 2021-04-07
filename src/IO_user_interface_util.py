@@ -7,6 +7,12 @@ import logging
 
 logger = logging.getLogger()
 
+#The argument GUI is the title of the GUI displayed (e.g., Narrative Analysis)
+def GUI_under_construction(GUI):
+    mb.showwarning(title='GUI under construction', message='The ' + GUI + ' GUI is under construction. Sorry!\n\nPlease, revisit this option soon.')
+
+def script_under_development(script):
+    mb.showwarning(title='Script under development', message='The ' + script + ' script is still under development. Take the results with a grain of salt and revisit this option soon.')
 
 def timed_alert(window, timeout, message_title, message_text, time_needed=False, extraLine='', printInCommandLine=True):
     if time_needed == True:

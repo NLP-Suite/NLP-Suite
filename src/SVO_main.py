@@ -278,6 +278,7 @@ def run(inputFilename, inputDir, outputDir,
         if not os.path.exists(outputCorefedDir):
             os.makedirs(outputCorefedDir)
 
+        # inputFilename and inputDir are the original txt files to be coreferenced
         file_open = stanford_coref.run(inputFilename, inputDir, outputCorefedDir,
                                         openOutputFiles, createExcelCharts,
                                         memory_var, Coref_Option,

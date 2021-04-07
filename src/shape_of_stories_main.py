@@ -24,6 +24,7 @@ import shape_of_stories_visualization_util as viz
 
 import GUI_IO_util
 import IO_files_util
+import IO_csv_util
 import reminders_util
 
 import Stanford_CoreNLP_annotator_util
@@ -36,7 +37,7 @@ import file_utf8_compliance_util as utf
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
         hierarchical_clustering, SVD, NMF, best_topic_estimation):
 
 # check all IO options ---------------------------------------------------------------------------
@@ -46,7 +47,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
                        message='No options have been selected.\n\nPlease, select an option and try again.')
         return
 
-    if inputDir=='':
+    if inputDir=='' and inputFilename!='':
         if sentimentAnalysis == True:
             mb.showwarning(title='Input folder error',
                            message='The selected option requires in input a set of txt files for which to compute sentiment scores.\n\nPlease, use the IO widget \'Select INPUT files directory\' to select the appropriate directory and try again.')
@@ -56,8 +57,17 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
                            message='The selected option requires in input a set of txt files for which to compute corpus statistics.\n\nPlease, use the IO widget \'Select INPUT files directory\' to select the appropriate directory and try again.')
             return
 
+    if inputFilename!='':
+        # get headers so as to check that it is a sentiment score file
+        str1=' '
+        str2=str1.join(IO_csv_util.get_csvfile_headers(inputFilename))
+        if not('Document' in str2 and 'Sentence' in str2 and 'Sentiment' in str2):
+            mb.showwarning(title='Input file error',
+                           message='The selected file is not a file of sentiment scores.\n\nPlease, use the IO widget \'Select INPUT csv file\' to select the appropriate csv file containing sentiment scores and try again.')
+            return
 
     computeSAScores = False
+
     if sentimentAnalysis == True or corpus_analysis == True:
         # # check that the CoreNLPdir really is the Stanford CoreNLP directory
         # if IO_libraries_util.inputExternalProgramFileCheck(CoreNLPdir, 'Stanford CoreNLP') == False:
@@ -120,8 +130,13 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
             os.mkdir(sentiment_scores_folder)
             computeSAScores = True
     else:
-        sentiment_scores_folder=inputDir
-        head, tail = os.path.split(inputDir)
+        #==============ANGEL=========
+        if(inputDir!=''):
+            sentiment_scores_folder=inputDir #INPUT
+        else:
+            sentiment_scores_folder=inputFilename #INPUT
+        #==============ANGEL=========
+        head, tail = os.path.split(sentiment_scores_folder)
         if head!=outputDir:
             # outputDir = head
             GUI_util.output_dir_path.set(outputDir)
@@ -187,7 +202,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
 
         # step 2: vectorize
         # TODO Need to be able to pass a csv file (not directory) of merged sentiment scores
-        vectz = vec.Vectorizer(sentiment_scores_folder)
+        vectz = vec.Vectorizer(sentiment_scores_folder)#INPUT
 
         # pop up window
         # window size
@@ -204,7 +219,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
 
         vectz.sentiment_vector_size = val
 
-        sentiment_vectors, file_list = vectz.vectorize()
+        sentiment_vectors, file_list, scoresFile_list = vectz.vectorize()#ANGEl
 
         rec_n_clusters = vectz.compute_suggested_n_clusters(sentiment_vectors)
         if rec_n_clusters==None:
@@ -227,7 +242,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
         DendogramFilename, grouped_vectors, clusters_indices, vectors = hier.cluster(sentiment_vectors, outputDir)
         filesToOpen.append(DendogramFilename)
         sentiment_vectors = vectors
-        clusters_file = cl.processCluster(clusters_indices, file_list, sentiment_vectors, rec_n_clusters, os.path.join(outputDir, "Hierarchical Clustering Documents.csv"), inputDir)
+        clusters_file = cl.processCluster(clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters, os.path.join(outputDir, "Hierarchical Clustering Documents.csv"), inputDir)
         vis = viz.Visualizer(outputDir)
         vis.visualize_clusters(grouped_vectors, "Hierarchical Clustering (HC)", "HC", clusters_file)
         for i in range(rec_n_clusters):
@@ -240,12 +255,12 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
         svd = cl.SVDClustering(rec_n_clusters)
         pos_vector_clusters, pos_clusters_indices, pos_modes, neg_vector_clusters, neg_clusters_indices, neg_modes = \
             svd.cluster(sentiment_vectors)
-        clusters_file = cl.processCluster(pos_clusters_indices, file_list, sentiment_vectors, rec_n_clusters,
+        clusters_file = cl.processCluster(pos_clusters_indices,scoresFile_list, file_list, sentiment_vectors, rec_n_clusters,
                        os.path.join(outputDir, "SVD Positive Documents.csv"), inputDir)
         vis = viz.Visualizer(outputDir)
         vis.visualize_clusters(pos_vector_clusters, "Singular Value Decomposition Positive (SVD Positive)", "SVDPositive",
                                clusters_file, modes=pos_modes)
-        clusters_file = cl.processCluster(neg_clusters_indices, file_list, sentiment_vectors, rec_n_clusters,
+        clusters_file = cl.processCluster(neg_clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters,
                        os.path.join(outputDir, "SVD Negative Documents.csv"), inputDir)
         vis = viz.Visualizer(outputDir)
         vis.visualize_clusters(neg_vector_clusters, "Singular Value Decomposition Negative (SVD Negative)", "SVDNegative",
@@ -262,7 +277,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
         nmf = cl.NMFClustering(rec_n_clusters)
         grouped_vectors, clusters_indices, vectors = nmf.cluster(sentiment_vectors)
         sentiment_vectors = vectors
-        clusters_file = cl.processCluster(clusters_indices, file_list, sentiment_vectors, rec_n_clusters,
+        clusters_file = cl.processCluster(clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters,
                        os.path.join(outputDir, "NMF Documents.csv"), inputDir)
         vis = viz.Visualizer(outputDir)
         vis.visualize_clusters(grouped_vectors, "Non-negative Matrix Factorization (NMF)", "NMF", clusters_file)
@@ -287,7 +302,8 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalys
 
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
-run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
+run_script_command = lambda: run(GUI_util.inputFilename.get(),
+                                 GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),
