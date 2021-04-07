@@ -155,7 +155,16 @@ def run(inputFilename,
         outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv',
                                                                  'merge',
                                                                  'stats', '', '', '', False, True)
-        # csv_file_field_list: [(field1, field2..., dataframe1), (field1', field2'..., dataframe2)]
+        # processed_params: [(field1, field2..., dataframe1), (field1', field2'..., dataframe2)]
+        processed_params = []
+        param_str: str
+        for param_str in csv_file_field_list:
+            params = list(param_str.split(','))
+            csv_path = param_str[0]
+            df = pd.read_csv(csv_path)
+            params.pop(0)
+            params.append(df)
+            processed_params.append(params)
         indexes = csv_file_field_list[:-1]
         data_files_for_merge = [csv_file_field_list[0][-1]]
         for row in csv_file_field_list[1:]:
