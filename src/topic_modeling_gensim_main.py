@@ -28,15 +28,16 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-import os
+if IO_libraries_util.install_all_packages(GUI_util.window,"topic_modeling_gensim_main.py",['nltk','os','tkinter','multiprocessing','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython'])==False:
+    sys.exit(0)
+
 import tkinter as tk
+# necessary to avoid opening the GUI repeatedly
+from multiprocessing import current_process
 
 import GUI_IO_util
 import topic_modeling_gensim_util
 import IO_internet_util
-
-# necessary to avoid opening the GUI repeatedly
-from multiprocessing import current_process
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
