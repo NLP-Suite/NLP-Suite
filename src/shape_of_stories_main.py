@@ -503,7 +503,7 @@ def display_reminder(*args):
     if best_topic_estimation_var.get():
         reminders_util.checkReminder(config_filename,
                                      ['Best topic estimation'],
-                                     'The function that estimates the best topics is VERY slow and make take an hour or longer. You can follow its progress in command line.',
+                                     'The function that estimates the best topics is VERY slow and may take an hour or longer. You can follow its progress in command line.',
                                      True)
 best_topic_estimation_var.trace('w',display_reminder)
 
