@@ -152,6 +152,50 @@ def display_logo():
         logo.image = img
         logo.place(x=GUI_IO_util.get_help_button_x_coordinate(), y=10)
 
+def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_main_dir_path,title,fileType,extension):
+    currentFilename=inputFilename.get()
+    if len(inputFilename.get())>0:
+        initialFolder=os.path.dirname(inputFilename.get())
+    else:
+        initialFolder=''
+    #get the file
+    if IsInputFile==True:
+        filename = IO_files_util.selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, None, initialFolder)
+    else:
+        filename = IO_files_util.selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outputFilename, None, initialFolder)
+    if len(filename)==0:
+        filename=currentFilename
+    inputFilename.set(filename)
+    input_main_dir_path.set('')
+
+#changeVar is the name of the IO FIELD (.get()) that needs to be displayed (e.g., softwareDir)
+#changeVar1 is the name of the IO BUTTON that needs to be disabled in the case of mutuallyexclusive options
+#title is the name that will appear when selecting the directory, e.g., "Select Stanford CoreNLP directory"
+def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,title,inputMainDir=False):
+    initialFolder = ''
+    if 'INPUT' in title:
+        if len(input_main_dir_path.get())>0:
+            initialFolder=os.path.dirname(input_main_dir_path.get())
+    else:
+        if len(output_dir_path.get()) > 0:
+            initialFolder = os.path.dirname(output_dir_path.get())
+    #get the directory
+    directoryName=IO_files_util.selectDirectory(title, initialFolder)
+    if directoryName=='':
+        directoryName=currentDirectory
+    if 'INPUT' in title:
+        if inputMainDir==True:
+            # if there is no filename it would give an error
+            try:
+                inputFilename.set('') # inputFilename
+            except:
+                pass
+            input_main_dir_path.set(directoryName)
+        else:
+            input_secondary_dir_path.set(directoryName)
+    else:
+        output_dir_path.set(directoryName)
+
 #__________________________________________________________________________________________________________________
 #GUI top widgets ALL IO widgets 
 #	softwareDir, input filename, input dir, secondary input dir, output filename, output dir
@@ -251,36 +295,6 @@ def GUI_top(config_input_output_options,config_filename):
                 lineValue=""
             IO_options.append(lineValue)
 
-    # software widgets no longer used
-    # softwareDir option ______________________________________________
-    #softwareDir option 1 for CoreNLP 2 for WordNet 3 for Mallet
-    if config_input_output_options[0]==1 or config_input_output_options[0]==2 or config_input_output_options[0]==3:
-        if config_input_output_options[0]==1: #directory for Stanford CoreNLP
-            #Lambda prevents the command to be executed when you first open the GUI
-            # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-            # CoreNLP
-            select_softwareDir_button = tk.Button(window,width=GUI_IO_util.select_file_directory_button_width, text='Select Stanford CoreNLP directory', command=lambda: GUI_IO_util.selectDirectory_set_options(window,softwareDir,'',"Select Stanford CoreNLP directory",config_input_output_options,''))
-
-        #config_input_output_options[0] 1 for CoreNLP 2 for WordNet 3 for Mallet
-        elif config_input_output_options[0]==2: #directory for WordNet
-            #Lambda prevents the command to be executed when you first open the GUI
-            # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-            #WordNet
-            select_softwareDir_button = tk.Button(window,width=GUI_IO_util.select_file_directory_button_width, text='Select WordNet directory', command=lambda: GUI_IO_util.selectDirectory_set_options(window,softwareDir,'',"Select WordNet directory",config_input_output_options,''))
-
-        #config_input_output_options[0] 1 for CoreNLP 2 for WordNet 3 for Mallet
-        # Mallet
-        elif config_input_output_options[0]==3: #directory for Mallet
-            #Lambda prevents the command to be executed when you first open the GUI
-            # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-            select_softwareDir_button = tk.Button(window,width=GUI_IO_util.select_file_directory_button_width, text='Select Mallet directory', command=lambda: GUI_IO_util.selectDirectory_set_options(window,softwareDir,'',"Select WordNet directory",config_input_output_options,''))
-
-        softwareDir.trace("w",activateRunButton)
-
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_softwareDir_button)
-        tk.Label(window, textvariable=softwareDir).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
-
-
     #file input file option ______________________________________________
     #	1 for CoNLL file,
     #	2 for txt file,
@@ -289,28 +303,28 @@ def GUI_top(config_input_output_options,config_filename):
     #	5 for txt, html (used in annotator)
     #	6 for txt, csv (used in SVO)
     if config_input_output_options[1]>0:
-        # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
+        # buttons are set to normal or disabled in selectFile_set_options
         # openInputFile_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, inputFilename.get()))
         # openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
         #
         if config_input_output_options[1]==1: #single CoNLL file
-            # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CoNLL table', command=lambda: GUI_IO_util.selectFile_set_options(window,config_input_output_options,True,True,inputFilename,select_input_main_dir_button,'Select INPUT CoNLL table (csv file)',[('CoNLL csv file','.csv')],".csv",input_main_dir_path))
+            # buttons are set to normal or disabled in selectFile_set_options
+            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CoNLL table', command=lambda: selectFile_set_options(window,True,True,inputFilename,input_main_dir_path,'Select INPUT CoNLL table (csv file)',[('CoNLL csv file','.csv')],".csv"))
         elif config_input_output_options[1]==2: #single txt file:
-            # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT TXT file', command=lambda: GUI_IO_util.selectFile_set_options(window,config_input_output_options,True,False,inputFilename,select_input_main_dir_button,'Select INPUT TXT file',[('text file','.txt')],".txt",input_main_dir_path))
+            # buttons are set to normal or disabled in selectFile_set_options
+            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT TXT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT TXT file',[('text file','.txt')],".txt"))
         elif config_input_output_options[1]==3: #single csv file:
-            # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT csv file', command=lambda: GUI_IO_util.selectFile_set_options(window,config_input_output_options,True,False,inputFilename,select_input_main_dir_button,'Select INPUT csv file',[('csv file','.csv')],".csv",input_main_dir_path))
+            # buttons are set to normal or disabled in selectFile_set_options
+            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT csv file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT csv file',[('csv file','.csv')],".csv"))
         if config_input_output_options[1]==4: #any type file (used in NLP.py)
-            # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: GUI_IO_util.selectFile_set_options(window,config_input_output_options,True,False,inputFilename,select_input_main_dir_button,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("html file","*.html"),("CoNLL table","*.conll")], "*.*",input_main_dir_path))
+            # buttons are set to normal or disabled in selectFile_set_options
+            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("html file","*.html"),("CoNLL table","*.conll")], "*.*"))
         if config_input_output_options[1]==5: #txt/html
-            # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: GUI_IO_util.selectFile_set_options(window,config_input_output_options,True,False,inputFilename,select_input_main_dir_button,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*",input_main_dir_path))
+            # buttons are set to normal or disabled in selectFile_set_options
+            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*"))
         if config_input_output_options[1]==6: #txt/csv
-            # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: GUI_IO_util.selectFile_set_options(window,config_input_output_options,True,False,inputFilename,select_input_main_dir_button,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*",input_main_dir_path))
+            # buttons are set to normal or disabled in selectFile_set_options
+            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
 
         inputFilename.trace("w",activateRunButton)
 
@@ -325,8 +339,8 @@ def GUI_top(config_input_output_options,config_filename):
 
     #primary INPUT directory ______________________________________________
     if config_input_output_options[2]==1: #directory input
-        # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-        select_input_main_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT files directory',  command=lambda: GUI_IO_util.selectDirectory_set_options(window,input_main_dir_path,select_input_file_button,"Select INPUT files directory",config_input_output_options,inputFilename,True))
+        # buttons are set to normal or disabled in selectFile_set_options
+        select_input_main_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT files directory',  command = lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select INPUT files directory",True))
         # select_input_main_dir_button.config(state="normal")
 
         if IO_options[2]=="EMPTY LINE":
@@ -344,8 +358,8 @@ def GUI_top(config_input_output_options,config_filename):
 
     #secondary INPUT directory ______________________________________________
     if config_input_output_options[3]==1: #secondary directory input
-        # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-        select_input_secondary_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT secondary directory',  command=lambda: GUI_IO_util.selectDirectory_set_options(window,input_secondary_dir_path,'',"Select INPUT secondary TXT directory",config_input_output_options,''))
+        # buttons are set to normal or disabled in selectFile_set_options
+        select_input_secondary_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT secondary directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path, input_secondary_dir_path,"Select INPUT secondary TXT directory"))
 
         input_secondary_dir_path.trace("w",activateRunButton)
 
@@ -363,8 +377,8 @@ def GUI_top(config_input_output_options,config_filename):
 
     #OUTPUT file ______________________________________________ NOT USED
     if config_input_output_options[4]==1: #output file
-        # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-        select_output_file_button=tk.Button(window, width = GUI_IO_util.select_file_directory_button_width,text='Select OUTPUT csv file',  command=lambda: GUI_IO_util.selectFile_set_options(window,config_input_output_options,False,False,outputFilename,'','Select OUTPUT csv file','csv file','.csv',False,input_main_dir_path))
+        # buttons are set to normal or disabled in selectFile_set_options
+        select_output_file_button=tk.Button(window, width = GUI_IO_util.select_file_directory_button_width,text='Select OUTPUT csv file',  command=lambda: selectFile_set_options(window,config_input_output_options,False,False,outputFilename,'','Select OUTPUT csv file','csv file','.csv',False,input_main_dir_path))
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_output_file_button)
         tk.Label(window, textvariable=outputFilename).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
 
@@ -372,8 +386,8 @@ def GUI_top(config_input_output_options,config_filename):
 
     #OUTPUT directory ______________________________________________
     if config_input_output_options[5]==1: #output directory
-        # buttons are set to normal or disabled in GUI_IO_util.selectFile_set_options
-        select_output_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select OUTPUT files directory',  command=lambda: GUI_IO_util.selectDirectory_set_options(window,output_dir_path,select_output_file_button,"Select OUTPUT files directory",config_input_output_options,output_dir_path))
+        # buttons are set to normal or disabled in selectFile_set_options
+        select_output_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select OUTPUT files directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select OUTPUT files directory"))
 
         output_dir_path.trace("w",activateRunButton)
 
