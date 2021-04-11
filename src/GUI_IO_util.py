@@ -222,38 +222,53 @@ def check_missingIO(window,missingIO,config_filename,silent=False):
 # set input/output file name based on IO_util selectFile
 #changeVar is the name of the IO FIELD (.get()) that needs to be displayed (e.g., filename) 
 #changeVar1 is the name of the IO BUTTON that needs to be disabled in the case of mutuallyexclusive options
-def selectFile_set_options(window, config_input_output_options,IsInputFile,checkCoNLL,changeVar,changeVar1,title,fileType,extension,input_main_dir_path):
-    currentFilename=changeVar.get()
-    if len(changeVar.get())>0:
-        initialFolder=os.path.dirname(changeVar.get())
-    else:
-        initialFolder=''
-    #get the file
-    if IsInputFile==True:
-        filename= IO_files_util.selectFile(window, IsInputFile, checkCoNLL, changeVar, changeVar1, title, fileType, extension, None, initialFolder)
-    else:
-        filename= IO_files_util.selectFile(window, IsInputFile, checkCoNLL, changeVar, changeVar1, title, fileType, extension, outputFilename, None, initialFolder)
-    if len(filename)==0:
-        changeVar.set(currentFilename)
-    else:
-        input_main_dir_path.set('')
+# def selectFile_set_options(window, config_input_output_options,IsInputFile,checkCoNLL,changeVar,changeVar1,title,fileType,extension,input_main_dir_path):
+#     currentFilename=changeVar.get()
+#     if len(changeVar.get())>0:
+#         initialFolder=os.path.dirname(changeVar.get())
+#     else:
+#         initialFolder=''
+#     #get the file
+#     if IsInputFile==True:
+#         filename= IO_files_util.selectFile(window, IsInputFile, checkCoNLL, changeVar, changeVar1, title, fileType, extension, None, initialFolder)
+#     else:
+#         filename= IO_files_util.selectFile(window, IsInputFile, checkCoNLL, changeVar, changeVar1, title, fileType, extension, outputFilename, None, initialFolder)
+#     if len(filename)==0:
+#         changeVar.set(currentFilename)
+#     else:
+#         input_main_dir_path.set('')
 
-#changeVar is the name of the IO FIELD (.get()) that needs to be displayed (e.g., softwareDir)
-#changeVar1 is the name of the IO BUTTON that needs to be disabled in the case of mutuallyexclusive options
-#title is the name that will appear when selecting the directory, e.g., "Select Stanford CoreNLP directory"
-def selectDirectory_set_options(window, changeVar,changeVar1,title,config_input_output_options,inputFilename,inputMainDir=False):
-    currentDirectory=changeVar.get()
-    if len(changeVar.get())>0:
-        initialFolder=os.path.dirname(changeVar.get())
-    else:
-        initialFolder=''
-    #get the directory
-    directoryName=IO_files_util.selectDirectory(window, changeVar, changeVar1, title, initialFolder)
-    if directoryName=='':
-        changeVar.set(currentDirectory)
-    else:
-        if inputMainDir==True:
-            inputFilename.set('')
+# #changeVar is the name of the IO FIELD (.get()) that needs to be displayed (e.g., softwareDir)
+# #changeVar1 is the name of the IO BUTTON that needs to be disabled in the case of mutuallyexclusive options
+# #title is the name that will appear when selecting the directory, e.g., "Select Stanford CoreNLP directory"
+# def selectDirectory_set_options(window, changeVar,changeVar1,title,config_input_output_options,inputFilename,inputMainDir=False):
+#     currentDirectory=changeVar.get()
+#     if len(changeVar.get())>0:
+#         initialFolder=os.path.dirname(changeVar.get())
+#     else:
+#         initialFolder=''
+#     #get the directory
+#     directoryName=IO_files_util.selectDirectory(window, changeVar, changeVar1, title, initialFolder)
+#     # try:  # if the inputFilename button is not present this would throw an error
+#     # 	changeVar1.config(state="normal")
+#     # except:
+#     # 	pass
+#     if directoryName=='':
+#         changeVar.set(currentDirectory)
+#         print(changeVar.get())
+#     else:
+#         if inputMainDir==True:
+#             try:
+#                 changeVar1.set('') # inputFilename
+#             except:
+#                 pass
+#             print('changeVar1',changeVar1.get())
+#             try:
+#                 changeVar.set('testa di cazzo') # input_main_dir_path
+#             except:
+#                 pass
+#             print('changeVar',changeVar.get())
+#     return directoryName
 
 from tkinter import Toplevel
 def Dialog2Display(title: str):

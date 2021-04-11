@@ -334,7 +334,7 @@ def CoreNLP_annotate(inputFilename,
                 # sentenceID = new_sentenceID
                 #write html file from txt input
                 if output_format == 'text':
-                    outputFilename = IO_files_util.generate_output_file_name(docName, '', outputDir, '.txt', 'CoreNLP_'+annotator_chosen)
+                    outputFilename = IO_files_util.generate_output_file_name(docName, inputDir, outputDir, '.txt', 'CoreNLP_'+annotator_chosen)
                     with open(outputFilename, "a+") as text_file:
                         text_file.write(sub_result)
                     filesToOpen.append(outputFilename)
@@ -363,10 +363,10 @@ def CoreNLP_annotate(inputFilename,
         if isinstance(output_format[0],list): # multiple outputs
             for index, sub_output in enumerate(output_format):
                 if POS_WordNet:
-                    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
+                    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                              'CoreNLP_'+annotator_chosen+'_lemma_'+output_format[index][0])
                 else:
-                    outputFilename = IO_files_util.generate_output_file_name(str(doc), '', outputDir,'.csv',
+                    outputFilename = IO_files_util.generate_output_file_name(str(doc), inputDir, outputDir,'.csv',
                                                                               'CoreNLP_'+annotator_chosen+'_lemma'+output_format[index][0])
                 filesToOpen.append(outputFilename)
                 df = pd.DataFrame(run_output[index], columns=output_format[index])
@@ -385,13 +385,15 @@ def CoreNLP_annotate(inputFilename,
                 elif len(ner)>10: # if all NER tags have been selected the filename would become way too long!
                     outputFilename_tag='tags'
 
-                outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
+                outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                                  'CoreNLP_NER_'+outputFilename_tag)
             elif "parser" in annotator_chosen:#CoNLL
-                outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'CoreNLP', 'CoNLL')
+                outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CoreNLP', 'CoNLL')
 
             elif output_format != 'text':
-                outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
+                # TODO any changes in the way the CoreNLP_annotator generates output filenames for sentiment analysis
+                #    will affect the shape of stories algorithms (search TODO there)
+                outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                              'CoreNLP_'+annotator_chosen)
             filesToOpen.append(outputFilename)
             if output_format != 'text' and not isinstance(output_format[0],list): # output is csv file
@@ -443,7 +445,7 @@ def CoreNLP_annotate(inputFilename,
     total_time_elapsed = time.time() - start_time
     # speed_assessment.append(["Total Operation", -1, total_time_elapsed,'', '', 0])
     speed_assessment.append([-1, "Total Operation", total_time_elapsed,total_length, ", ".join(annotator_params), len(annotator_params)])
-    speed_csv = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
+    speed_csv = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                            'CoreNLP_speed_assessment')
     df = pd.DataFrame(speed_assessment, columns=speed_assessment_format)
     df.to_csv(speed_csv, index=False)
