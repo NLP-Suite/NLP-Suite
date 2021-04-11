@@ -121,7 +121,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
     if CoreNLP_annotators_var and CoreNLP_annotators_menu_var != '':
 
         # POS annotator ---------------------------------------------------------------------------------------------------------------------------
-        if 'POS annotator' in CoreNLP_annotators_menu_var or '*' in CoreNLP_annotators_menu_var:
+        if 'POS annotator' in CoreNLP_annotators_menu_var or CoreNLP_annotators_menu_var == '*':
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
                 return
 
@@ -138,7 +138,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
         # DepRel annotator ---------------------------------------------------------------------------------------------------------------------------
 
-        if 'DepRel annotator' in CoreNLP_annotators_menu_var or '*' in CoreNLP_annotators_menu_var:
+        if 'DepRel annotator' in CoreNLP_annotators_menu_var or CoreNLP_annotators_menu_var == '*':
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
                 return
 
@@ -162,7 +162,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
         # NER normalized date annotator ---------------------------------------------------------------------------------------------------------------------------
 
-        if 'Normalized' in CoreNLP_annotators_menu_var or '*' in CoreNLP_annotators_menu_var:
+        if 'Normalized' in CoreNLP_annotators_menu_var or '**' in CoreNLP_annotators_menu_var:
             # date_extractor
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
                 return
@@ -180,7 +180,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
         # quote annotator ---------------------------------------------------------------------------------------------------------------------------
 
-        if 'Quote' in CoreNLP_annotators_menu_var or '*' in CoreNLP_annotators_menu_var:
+        if 'Quote' in CoreNLP_annotators_menu_var or '**' in CoreNLP_annotators_menu_var:
             # if quote_extractor:
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
                 return
@@ -200,7 +200,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
         # gender annotator ---------------------------------------------------------------------------------------------------------------------------
 
-        if 'Gender' in CoreNLP_annotators_menu_var or '*' in CoreNLP_annotators_menu_var:
+        if 'Gender' in CoreNLP_annotators_menu_var or '**' in CoreNLP_annotators_menu_var:
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
                 return
 
@@ -469,7 +469,7 @@ def check_sentence_table(*args):
         sentence_table_checkbox_msg.config(text="Do NOT compute sentence table")
 compute_sentence_var.trace('w', check_sentence_table)
 
-CoNLL_table_analyzer_var.set(1)
+CoNLL_table_analyzer_var.set(0)
 CoNLL_table_analyzer_checkbox = tk.Checkbutton(window, text='CoNLL table analyzer', variable=CoNLL_table_analyzer_var,
                                                onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
@@ -502,6 +502,7 @@ CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var,
         '*',
         'POS annotator',
         'DepRel annotator',
+        '**',
         'Normalized NER date',
         'Gender annotator (Neural Network)',
         'Quote/dialogue annotator (Neural Network)')

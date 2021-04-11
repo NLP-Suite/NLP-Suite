@@ -177,21 +177,27 @@ def run(inputFilename, inputDir, outputDir,
 
     filesToOpen = []
 
-    merge_file_option = None
+    merge_file_option = False
     save_intermediate_file = False
 
-    if len(inputDir) > 0:
-        msgbox_merge_file = mb.askyesno("Merge File Option", "You selected to process a directory of files.\n\n" +
-                                    "DO YOU WANT TO MERGE FILES INTO A SINGLE ONE AND PROCESS THE MERGED FILE?\n\n" +
-                                    "WARNING! Merging files leads to faster processing time but... " +
-                                    "your laptop may run out of memory; if that's the case, allocate as much memory as possible using the memory slidebar and try again.\n\nAlternatively, do not use the merge option.\n\nDo you still want to merge files?",default='no')
-        if msgbox_merge_file:
-            merge_file_option = True
-        else:
-            merge_file_option = False
+    if utf8_var==False and ASCII_var==False and Coref == False and date_extractor_var==False and CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False:
+        mb.showwarning(title='No option selected',
+                       message="No option has been selected.\n\nPlease, select an option and try again.")
+        return
 
-        if not msgbox_merge_file:
-            save_intermediate_file = mb.askyesno("Save Intermediate File Option", "You selected to process a directory of files,\n\nDo you want to save the csv output for each single file?\n\nClick No if you only want to keep a final merged output csv file. The merged file will contain both the name and ID of every document processed, so there is really no need to save intermediate files.\n\nDo you still want to save individual output files?",default='no')
+    # if len(inputDir) > 0:
+    #     msgbox_merge_file = mb.askyesno("Merge File Option", "You selected to process a directory of files.\n\n" +
+    #                                 "DO YOU WANT TO MERGE FILES INTO A SINGLE ONE AND PROCESS THE MERGED FILE?\n\n" +
+    #                                 "WARNING! Merging files leads to faster processing time but... " +
+    #                                 "your laptop may run out of memory; if that's the case, allocate as much memory as possible using the memory slidebar and try again.\n\nAlternatively, do not use the merge option.\n\nDo you still want to merge files?",default='no')
+    #     if msgbox_merge_file:
+    #         merge_file_option = True
+    #     else:
+    #         merge_file_option = False
+    #
+    #     # no reason to save intermediate files
+    #     # if not msgbox_merge_file:
+    #     #     save_intermediate_file = mb.askyesno("Save Intermediate File Option", "You selected to process a directory of files,\n\nDo you want to save the csv output for each single file?\n\nClick No if you only want to keep a final merged output csv file. The merged file will contain both the name and ID of every document processed, so there is really no need to save intermediate files.\n\nDo you still want to save individual output files?",default='no')
 
     if inputFilename[-4:] == '.txt':
         if (CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False) and (gephi_var == True or wordcloud_var == True or google_earth_var == True):
@@ -199,7 +205,7 @@ def run(inputFilename, inputDir, outputDir,
                          message="The data visualization option(s) you have selected require either an _svo.csv/_SVO_Result file in input or CoreNLP OpenIE and/or SENNA selected.\n\nPlease, check your input file and/or algorithm selections and try again.")
             return
     elif inputFilename[-4:] == '.csv':
-        if inputFilename[-8:] != '-svo.csv':
+        if not 'SVO_' in inputFilename:
             mb.showerror(title='Inputfile error',
                          message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or a txt file) and try again.")
             return
@@ -208,16 +214,11 @@ def run(inputFilename, inputDir, outputDir,
                          message="The data analysis option(s) you have selected require in input a txt file, rather than a csv file.\n\nPlease, check your input file and/or algorithm selections and try again.")
             return
 
-    if 'svo.csv' in inputFilename:
-        fileExtension=".csv"
-    else:
-        fileExtension="-svo.csv"
-
-    if merge_file_option:
-        file_merger_util.file_merger(GUI_util.window, inputDir, outputDir, False, processSubdir=False,saveFilenameInOutput=False, embedSubdir=False, writeRootDirectory=False)
-        rootDir = os.path.basename(os.path.normpath(inputDir))
-        inputFilename = os.path.join(outputDir,'merged_Dir_'+rootDir +'.txt')
-        inputDir = ""
+    # if merge_file_option:
+    #     file_merger_util.file_merger(GUI_util.window, inputDir, outputDir, False, processSubdir=False,saveFilenameInOutput=False, embedSubdir=False, writeRootDirectory=False)
+    #     rootDir = os.path.basename(os.path.normpath(inputDir))
+    #     inputFilename = os.path.join(outputDir,'merged_Dir_'+rootDir +'.txt')
+    #     inputDir = ""
 
 
     # if IO_libraries_util.inputProgramFileCheck('annotator_colorfulYAGO_util')==False or IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_OpenIE.jar')==False:
@@ -270,13 +271,10 @@ def run(inputFilename, inputDir, outputDir,
             # processing a directory
             inputFilename = ''
             inputDirBase = os.path.basename(inputDir)
-            outputCorefedDir = os.path.join(outputDir, inputDirBase + "_CoRefed_files")
-            inputDir = outputCorefedDir
+            outputCorefedDir = os.path.join(outputDir, "coref_Dir_" + inputDirBase)
 
-        # outputDir=outputCorefedDir
-
-        if not os.path.exists(outputCorefedDir):
-            os.makedirs(outputCorefedDir)
+        if not IO_files_util.make_directory(outputCorefedDir):
+            return
 
         # inputFilename and inputDir are the original txt files to be coreferenced
         file_open = stanford_coref.run(inputFilename, inputDir, outputCorefedDir,
@@ -316,15 +314,39 @@ def run(inputFilename, inputDir, outputDir,
     if SENNA_SVO_extractor_var or CoreNLP_SVO_extractor_var:
         if isFile:
             inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
+            # remove NLP_CoreNLP_ from filename (could have been added to filename in case of coref)
             inputFileBase = inputFileBase.replace("NLP_CoreNLP_", "")
-            outputSVODir = os.path.join(outputDir, "SVO_output_" + inputFileBase)
+            outputSVODir = os.path.join(outputDir, "SVO_" + inputFileBase)
         else:
             inputDirBase = os.path.basename(inputDir)
-            outputSVODir = os.path.join(outputDir, "SVO_output_" + inputDirBase)
+            outputSVODir = os.path.join(outputDir, "SVO_Dir_" + inputDirBase)
 
         outputDir = outputSVODir
-        if not os.path.exists(outputSVODir):
-            os.makedirs(outputSVODir)
+        if not IO_files_util.make_directory(outputSVODir):
+            return
+
+        # no reason for merge
+        # msgbox_merge_file = mb.askyesno("Merge File Option",
+        #                                 "You selected to process a directory of files.\n\n" +
+        #                                 "DO YOU WANT TO MERGE FILES INTO A SINGLE ONE AND PROCESS THE MERGED FILE?\n\n" +
+        #                                 "WARNING! Merging files leads to faster processing time but... " +
+        #                                 "your laptop may run out of memory; if that's the case, allocate as much memory as possible using the memory slidebar and try again.\n\nAlternatively, do not use the merge option.\n\nDo you still want to merge files?",
+        #                                 default='no')
+        # if msgbox_merge_file:
+        #     merge_file_option = True
+        # else:
+        #     merge_file_option = False
+
+        # no reason to save intermediate files
+        # if not msgbox_merge_file:
+        #     save_intermediate_file = mb.askyesno("Save Intermediate File Option", "You selected to process a directory of files,\n\nDo you want to save the csv output for each single file?\n\nClick No if you only want to keep a final merged output csv file. The merged file will contain both the name and ID of every document processed, so there is really no need to save intermediate files.\n\nDo you still want to save individual output files?",default='no')
+        # no reason for merge
+        # if merge_file_option:
+        #     file_merger_util.file_merger(GUI_util.window, inputDir, outputDir, False, processSubdir=False,
+        #                                  saveFilenameInOutput=False, embedSubdir=False, writeRootDirectory=False)
+        #     rootDir = os.path.basename(os.path.normpath(inputDir))
+        #     inputFilename = os.path.join(outputDir, 'merged_Dir_' + rootDir + '.txt')
+
 
     # SENNA _____________________________________________________
     if SENNA_SVO_extractor_var:
@@ -362,14 +384,21 @@ def run(inputFilename, inputDir, outputDir,
         toProcess_list = []
         field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'PERSON', 'TIME', 'TIME_STAMP', 'Sentence']
         if isFile & Coref:
-            # NLP_CoreNLP_coref_The Three Little Pigs - Copy-svoResult-woFilter.txt
-            toProcess_list.append(os.path.join(outputDir, "NLP_CoreNLP_" + inputFileBase + "-svoResult-woFilter.txt"))
+            # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
+            # NLP_CoreNLP_coref_The Three Little Pigs-svoResult-woFilter.txt
+            # inputFileBase contains _coref
+            # fName is the filename returned by Java SVO -svoResult-woFilter.txt files will be removed below
+            fName=os.path.join(outputDir, "NLP_CoreNLP_" + inputFileBase + "-svoResult-woFilter.txt")
+            toProcess_list.append(fName)
         elif isFile:
-            toProcess_list.append(os.path.join(outputDir, inputFileBase + "-svoResult-woFilter.txt"))
+            # fName is the filename returned by Java SVO The Three Little Pigs SHORT-svoResult-woFilter.txt
+            fName=os.path.join(outputDir, inputFileBase + "-svoResult-woFilter.txt")
+            toProcess_list.append(fName)
         else:
             for tmp in os.listdir(outputSVODir):
                 # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
                 # THE SUBSCRIPT _coref_ IS CHECKED BELOW
+
                 if Coref and "-svoResult-woFilter.txt" in tmp:
                     toProcess_list.append(tmp)
                 elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-coref" not in tmp):
@@ -378,18 +407,20 @@ def run(inputFilename, inputDir, outputDir,
         original_toProcess = {}
         if isFile: # input is a file (including merged directory)
             original_toProcess[toProcess_list[0]] = inputFilename
+            svo_merge_filename = os.path.join(outputSVODir, "NLP_OpenIE_SVO_" + inputFileBase + ".csv")
         else: # input is a directory
             for tmp in os.listdir(outputSVODir):
                 # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
                 # THE SUBSCRIPT _coref_ IS CHECKED BELOW
+                # "-svoResult-woFilter.txt"  is the filename produced by JAVA
+                # original_toProcess is the txt files in the original inputDir
                 if Coref and "-svoResult-woFilter.txt" in tmp:
-                    original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
+                        original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
                 elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-coref" not in tmp):
                     original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
+            svo_merge_filename = os.path.join(outputSVODir, "NLP_OpenIE_SVO_Dir_" + inputDirBase + ".csv")
 
         if merge_file_option == False:
-            # create a single merged file
-            svo_merge_filename = os.path.join(outputSVODir, inputDirBase + "-merge-svo.csv")
             result = IO_files_util.openCSVFile(svo_merge_filename, 'w')
             if result == '':
                 return
@@ -402,10 +433,9 @@ def run(inputFilename, inputDir, outputDir,
         SVOerror=0
         for proc_file in toProcess_list:
             # check if svo file is empty
-            # if isFile:
-            #     outputSVODir = outputDir
+            # proc_file does not have path when processing an inputDir
             if not os.path.exists(os.path.join(outputSVODir, proc_file)):
-                error_msg = "Stanford OpenIE throws an error while processing your document: " + original_toProcess[proc_file] + \
+                error_msg = "Stanford CoreNLP OpenIE has failed to process your document: " + original_toProcess[proc_file] + \
                             "\n\nPlease refer to command line prompt (or terminal) for more details. Most likely, your laptop runs out of memory."
                 if merge_file_option:
                     error_msg += "\n\nYou have chosen merge file option to process the directory. You can try not using merge file option."
@@ -456,7 +486,9 @@ def run(inputFilename, inputDir, outputDir,
             baseName = baseName[0:last_index]
             second_last_index = baseName.rindex("-")
             baseName = baseName[0:second_last_index]
-            CoreNLPSVOfilename = os.path.join(outputSVODir, baseName + "-svo.csv")
+            # remove NLP_CoreNLP_ from filename, added to filename in case of coref
+            baseName = baseName.replace("NLP_CoreNLP_", "")
+            CoreNLPSVOfilename = os.path.join(outputSVODir, "NLP_OpenIE_SVO_" + baseName + ".csv")
 
             extract_svo(svo_triplets, CoreNLPSVOfilename, svo_merge_filename, subject_list, verb_list, object_list, field_names, document_index, original_toProcess[proc_file])
             result = IO_files_util.openCSVFile(CoreNLPSVOfilename, 'a')
@@ -491,11 +523,12 @@ def run(inputFilename, inputDir, outputDir,
 
             document_index += 1
             if merge_file_option == False:
-                if not save_intermediate_file:
-                    # delete svofilename
-                    os.remove(CoreNLPSVOfilename)
-                else:
-                    svo_result_list.append(CoreNLPSVOfilename)
+                # RF
+                # if not save_intermediate_file:
+                #     # delete svofilename
+                #     os.remove(CoreNLPSVOfilename)
+                # else:
+                #     svo_result_list.append(CoreNLPSVOfilename)
                 continue
             svo_result_list.append(CoreNLPSVOfilename)
             filesToOpen.append(CoreNLPSVOfilename)
@@ -505,11 +538,10 @@ def run(inputFilename, inputDir, outputDir,
             print("\n\nErrors were encountered in extracting SVOs from " + str(SVOerror) + " files out of "+str(len(toProcess_list)) +" files processed.")
             mb.showwarning("SVO extraction error", "Errors were encountered in extracting SVOs from " + str(SVOerror) + " files out of " +str(len(toProcess_list))+" files processed.\n\nPlease, check the command line to see the files.")
 
-        # delete intermediate txt svo files produced by java
+        # delete intermediate -svoResult-woFilter.txt files produced by java
         if not merge_file_option:
-            svo_result_dir = os.path.join(outputDir, "SVO_Result")
-            if os.path.exists(svo_result_dir):
-                txt_files = [os.path.join(svo_result_dir, f) for f in os.listdir(svo_result_dir) if f.endswith('.txt')]
+            if os.path.exists(outputSVODir):
+                txt_files = [os.path.join(outputSVODir, f) for f in os.listdir(outputSVODir) if f.endswith('-svoResult-woFilter.txt')]
                 for f in txt_files:
                     os.remove(f)
 
@@ -526,17 +558,17 @@ def run(inputFilename, inputDir, outputDir,
 
     # the SVO script can take in input a csv SVO file previously computed: inputFilename
     # results currently produced are in svo_result_list
-    if (inputFilename[-8:] == '-svo.csv') or (len(svo_result_list) > 0):
+    if ('SVO_' in inputFilename) or (len(svo_result_list) > 0):
+
         # Gephi network graphs _________________________________________________
         if gephi_var == True:
             IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                                 'Started running Gephi network graphs at', True)
 
-            if isFile:
-                if inputFilename[-4:] == ".csv":
-                    if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, inputFilename)
-                        filesToOpen.append(gexf_file)
+            if inputFilename[-4:] == ".csv":
+                if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1:  # including headers; file is empty
+                    gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, inputFilename)
+                    filesToOpen.append(gexf_file)
                 else:
                     if IO_csv_util.GetNumberOfRecordInCSVFile(svo_result_list[0]) > 1:  # including headers; file is empty
                         gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, svo_result_list[0])
@@ -545,12 +577,12 @@ def run(inputFilename, inputDir, outputDir,
                 for f in svo_result_list:
                     if IO_csv_util.GetNumberOfRecordInCSVFile(f) > 1:  # including headers; file is empty
                         gexf_file = Gephi_util.create_gexf(os.path.basename(f)[:-4], outputDir, f)
-                        if "-merge-svo" in f or "SENNA_SVO" in f:
+                        if "OpenIE_SVO" in f or "SENNA_SVO" in f:
                             filesToOpen.append(gexf_file)
                         if not save_intermediate_file:
                             gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if f.endswith('.gexf')]
                             for f in gexf_files:
-                                if "-merge-svo" not in f and "SENNA_SVO" not in f:
+                                if "OpenIE_SVO" not in f and "SENNA_SVO" not in f:
                                     os.remove(f)
 
         # wordcloud  _________________________________________________
@@ -579,12 +611,12 @@ def run(inputFilename, inputDir, outputDir,
                         out_file = wordclouds_util.display_wordCloud_sep_color(f, outputDir, currenttext, color_to_words,
                                                                                "")
                         myfile.close()
-                        if "-merge-svo" in f or "SENNA_SVO" in f:
+                        if "OpenIE_SVO" in f or "SENNA_SVO" in f:
                             filesToOpen.append(out_file)
                         if not merge_file_option and not save_intermediate_file:
                             png_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if f.endswith('.png')]
                             for f in png_files:
-                                if "-merge-svo" not in f and "SENNA_SVO" not in f:
+                                if "OpenIE_SVO" not in f and "SENNA_SVO" not in f:
                                     os.remove(f)
         # GIS maps _____________________________________________________
 
@@ -785,48 +817,53 @@ date_extractor_checkbox = tk.Checkbutton(window, text='Extract normalized NER da
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,date_extractor_checkbox)
 
 CoreNLP_SVO_extractor_var.set(1)
-SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs (via Stanford CoreNLP OpenIE)', variable=CoreNLP_SVO_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SVO_extractor_checkbox,True)
+CoreNLP_SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs (via Stanford CoreNLP OpenIE)', variable=CoreNLP_SVO_extractor_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoreNLP_SVO_extractor_checkbox,True)
 
 SENNA_SVO_extractor_var.set(1)
 SENNA_SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs & SVs (via SENNA)', variable=SENNA_SVO_extractor_var, onvalue=1, offvalue=0)
-
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column,y_multiplier_integer,SENNA_SVO_extractor_checkbox)
 
 def activateFilters(*args):
-    if CoreNLP_SVO_extractor_var.get()==1:
+    gephi_var.set(1)
+    wordcloud_var.set(1)
+    google_earth_var.set(1)
+    gephi_checkbox.configure(state='normal')
+    wordcloud_checkbox.configure(state='normal')
+    google_earth_checkbox.configure(state='normal')
+    if CoreNLP_SVO_extractor_var.get()==True or SENNA_SVO_extractor_var.get()==True:
+        # SVO_extractor_checkbox.configure(state='normal')
+        # SENNA_SVO_extractor_checkbox.configure(state='normal')
         subjects_checkbox.configure(state='normal')
         verbs_checkbox.configure(state='normal')
         objects_checkbox.configure(state='normal')
-        gephi_var.set(1)
-        wordcloud_var.set(1)
-        google_earth_var.set(1)
-        gephi_checkbox.configure(state='normal')
-        wordcloud_checkbox.configure(state='normal')
-        google_earth_checkbox.configure(state='normal')
-    else:
+    if CoreNLP_SVO_extractor_var.get()==True and SENNA_SVO_extractor_var.get()==False:
+        # CoreNLP_SVO_extractor_checkbox.configure(state='normal')
+        # SENNA_SVO_extractor_checkbox.configure(state='disabled')
+        subjects_checkbox.configure(state='normal')
+        verbs_checkbox.configure(state='normal')
+        objects_checkbox.configure(state='normal')
+    if CoreNLP_SVO_extractor_var.get() == False and SENNA_SVO_extractor_var.get() == True:
+        # CoreNLP_SVO_extractor_checkbox.configure(state='disabled')
+        # SENNA_SVO_extractor_checkbox.configure(state='normal')
+        subjects_checkbox.configure(state='normal')
+        verbs_checkbox.configure(state='normal')
+        objects_checkbox.configure(state='normal')
+    if CoreNLP_SVO_extractor_var.get() == False and SENNA_SVO_extractor_var.get() == False:
+        CoreNLP_SVO_extractor_checkbox.configure(state='normal')
         SENNA_SVO_extractor_checkbox.configure(state='normal')
-        if SENNA_SVO_extractor_var.get()==True:
-            subjects_checkbox.configure(state='normal')
-            verbs_checkbox.configure(state='normal')
-            objects_checkbox.configure(state='disabled')
-            gephi_var.set(1)
-            wordcloud_var.set(1)
-            google_earth_var.set(1)
-            gephi_checkbox.configure(state='normal')
-            wordcloud_checkbox.configure(state='normal')
-            google_earth_checkbox.configure(state='normal')
-        else:
-            SVO_extractor_checkbox.configure(state='normal')
-            subjects_checkbox.configure(state='disabled')
-            verbs_checkbox.configure(state='disabled')
-            objects_checkbox.configure(state='disabled')
-            gephi_var.set(0)
-            wordcloud_var.set(0)
-            google_earth_var.set(0)
-            gephi_checkbox.configure(state='disabled')
-            wordcloud_checkbox.configure(state='disabled')
-            google_earth_checkbox.configure(state='disabled')
+        subjects_var.set(0)
+        verbs_var.set(0)
+        objects_var.set(0)
+        subjects_checkbox.configure(state='disabled')
+        verbs_checkbox.configure(state='disabled')
+        objects_checkbox.configure(state='disabled')
+        gephi_var.set(0)
+        wordcloud_var.set(0)
+        google_earth_var.set(0)
+        gephi_checkbox.configure(state='disabled')
+        wordcloud_checkbox.configure(state='disabled')
+        google_earth_checkbox.configure(state='disabled')
 CoreNLP_SVO_extractor_var.trace('w',activateFilters)
 SENNA_SVO_extractor_var.trace('w',activateFilters)
 

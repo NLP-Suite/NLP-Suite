@@ -195,12 +195,11 @@ def update_csv_fields(existing_csv: list) -> list:
                   ['Mallet', '', 'http://mallet.cs.umass.edu/download.php'],
                   ['SENNA', '', 'https://ronan.collobert.com/senna/download.html'],
                   ['WordNet', '', 'https://wordnet.princeton.edu/download/current-version']]
-    fields = [x[0] for x in existing_csv]
+    fields = [x[0].lower() for x in existing_csv]
     for (index, row) in enumerate(sample_csv):
-        if row[0] not in fields:
+        if row[0].lower() not in fields:
             existing_csv.append(sample_csv[index])
     return existing_csv
-
 
 def get_existing_software_config(package):
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'

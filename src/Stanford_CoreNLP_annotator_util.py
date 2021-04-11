@@ -148,7 +148,7 @@ def CoreNLP_annotate(inputFilename,
         'quote': ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of Quotes'],
         'coref': 'text',
         'gender':['Word', 'Gender', 'Sentence','Sentence ID', 'Document ID', 'Document'],
-        'normalized-date':["Word", "Normalized date", "tid","Tense","Information","Sentence ID", "Sentence", "Document ID", "Document"],
+        'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
         #  Document ID, Sentence ID, Document, S, V, O/A, Sentence
         # Dec. 21
         'openIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'Sentence'],
@@ -263,7 +263,6 @@ def CoreNLP_annotate(inputFilename,
             annotated_length = 0#the number of tokens
             # doc_start_time = time.time()
             model_switch = False
-
             head, tail = os.path.split(doc)
             print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
             text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
@@ -335,8 +334,8 @@ def CoreNLP_annotate(inputFilename,
                 # sentenceID = new_sentenceID
                 #write html file from txt input
                 if output_format == 'text':
-                    outputFilename = IO_files_util.generate_output_file_name(doc, '', outputDir, '.txt', 'CoreNLP_'+annotator_chosen)
-                    with open(outputFilename, "w+") as text_file:
+                    outputFilename = IO_files_util.generate_output_file_name(docName, '', outputDir, '.txt', 'CoreNLP_'+annotator_chosen)
+                    with open(outputFilename, "a+") as text_file:
                         text_file.write(sub_result)
                     filesToOpen.append(outputFilename)
                 else:
@@ -426,8 +425,6 @@ def CoreNLP_annotate(inputFilename,
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
                                           'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Date type')
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
-                                          'Frequency Distribution of Tenses of Normalized Dates', 1, [], 'NER_tense_bar','Date type')
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[4, 4]], 'bar',
                                                       'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type')
                 elif 'NER'  in str(filesToVisualize[j]):
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
@@ -499,7 +496,7 @@ def process_json_normalized_date(documentID, document, sentenceID,json, **kwargs
         words = ''
         norm_date = ''
         tid = ''
-        tense = ''
+        #tense = ''
         info = ''
         for token in sentence['tokens']:
             if token['originalText'] in string.punctuation:
@@ -518,16 +515,18 @@ def process_json_normalized_date(documentID, document, sentenceID,json, **kwargs
                     except:
                         print('   tid error')
                         tid=''
-                    tense = date_get_tense(norm_date)
+                    #tense = date_get_tense(norm_date)
                     info = date_get_info(norm_date)
+                    if info == "OTHER":
+                        info = date_get_tense(norm_date)
                     words = word + words
                 elif token['normalizedNER'] != norm_date:
                     # writer.writerow([words,norm_date, sentence_id, sent_str, documentID,file])
                     if extract_date_from_filename_var:
-                        temp = [words, norm_date, tid, tense, info, sentenceID, complete_sent, documentID,
+                        temp = [words, norm_date, tid,  info, sentenceID, complete_sent, documentID,
                                              IO_csv_util.dressFilenameForCSVHyperlink(document), date_str]
                     else:
-                        temp = [words, norm_date, tid, tense, info, sentenceID, complete_sent, documentID,
+                        temp = [words, norm_date, tid, info, sentenceID, complete_sent, documentID,
                                          IO_csv_util.dressFilenameForCSVHyperlink(document)]
                     result.append(temp)
                     words = word
@@ -537,8 +536,9 @@ def process_json_normalized_date(documentID, document, sentenceID,json, **kwargs
                     except:
                         print('   tid error')
                         tid=''
-                    tense = date_get_tense(norm_date)
                     info = date_get_info(norm_date)
+                    if info == "OTHER":
+                        info = date_get_tense(norm_date)
                     words = word + words
                 else:
                     if word in string.punctuation:
@@ -549,17 +549,17 @@ def process_json_normalized_date(documentID, document, sentenceID,json, **kwargs
                 if words != '' or norm_date != '':
                     # writer.writerow([words,norm_date, sentence_id, sent_str, documentID, file])
                     if extract_date_from_filename_var:
-                        temp = [words, norm_date, tid, tense, info, sentenceID, complete_sent, documentID,
+                        temp = [words, norm_date, tid, info, sentenceID, complete_sent, documentID,
                                          IO_csv_util.dressFilenameForCSVHyperlink(document), date_str]
 
                     else:
-                        temp = [words, norm_date, tid, tense, info, sentenceID, complete_sent, documentID,
+                        temp = [words, norm_date, tid, info, sentenceID, complete_sent, documentID,
                                          IO_csv_util.dressFilenameForCSVHyperlink(document)]
                     result.append(temp)
                     words = ''
                     norm_date = ''
                     tid = ''
-                    tense = ''
+                    #tense = ''
                     info = ''
 
     return result
@@ -595,7 +595,7 @@ def date_get_info(norm_date):
     elif norm_date.replace('-', '').isdigit() or norm_date.replace('/', '').isdigit() or ("XXXX" in norm_date and norm_date.split("XXXX")[1].replace("-", '').isdigit()):#(len(norm_date) > 4 and norm_date[0:4] == 'XXXX' and norm_date[4:].replace("-", '').isdigit()):#specific year,month, day
         tense = "DATE"
         # print("date")
-    elif 'WXX' in norm_date:#weekdays
+    elif 'WXX' in norm_date or "WE" in norm_date:#weekdays
         tense = "DAY"
         # print("day")
     elif 'SP' in norm_date or 'SU' in norm_date or 'FA' in norm_date or 'WI' in norm_date:
