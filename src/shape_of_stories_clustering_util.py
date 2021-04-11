@@ -231,7 +231,7 @@ def processCluster(cluster_indices,scoresFile_list, file_list, sentiment_vectors
                     orgFile=each[0]
                 scFile=scoresFile_list[str(each[0])]
                 #==============ANGEL===============
-                writer.writerow({'Cluster ID': "Cluster " + str(i + 1), "Sentiment Score File Name": scFile, "Original File Name": orgFile})
+                writer.writerow({'Cluster ID': "Cluster " + str(i + 1), "Sentiment Score File Name": IO_csv_util.dressFilenameForCSVHyperlink(scFile), "Original File Name": IO_csv_util.dressFilenameForCSVHyperlink(orgFile)})
     return cluster_file
 
 def update_Ct_St(sample, H, C_t, S_t):

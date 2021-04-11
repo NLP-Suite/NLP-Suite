@@ -347,7 +347,6 @@ def run(inputFilename, inputDir, outputDir,
         #     rootDir = os.path.basename(os.path.normpath(inputDir))
         #     inputFilename = os.path.join(outputDir, 'merged_Dir_' + rootDir + '.txt')
 
-
     # SENNA _____________________________________________________
     if SENNA_SVO_extractor_var:
         # TODO must filter SVO results by social actors if the user selected that option
@@ -467,7 +466,6 @@ def run(inputFilename, inputDir, outputDir,
                 f = open(objects_dict_var, 'r', encoding='utf-8-sig', errors='ignore')
                 object_list = f.read().split('\n')
 
-
             fileHandler = open(os.path.join(outputSVODir, proc_file),encoding='utf-8',errors='ignore')
             listOfLines = fileHandler.readlines()
             fileHandler.close()
@@ -551,8 +549,8 @@ def run(inputFilename, inputDir, outputDir,
             open_ie_file = CoreNLPSVOfilename if isFile else svo_merge_filename
             freq_csv = SVO_util.count_frequency_two_svo(open_ie_file, senna_file, inputFileBase, inputDir, outputDir)
             combined_csv = SVO_util.combine_two_svo(open_ie_file, senna_file, inputFileBase, inputDir, outputDir)
-            filesToOpen.extend([freq_csv, combined_csv])
-
+            filesToOpen.extend(freq_csv)
+            filesToOpen.append(combined_csv)
 
     # you can visualize data using an svo.csv file in input --------------------------------------------------
 

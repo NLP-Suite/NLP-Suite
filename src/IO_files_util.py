@@ -118,9 +118,7 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False):
 	return files
 
 
-# changeVar is the name of the IO that needs to be displayed (e.g., filename)
-# changeVar1 is the name of the IO button that needs to be disabled in the case of mutuallyexclusive options
-def selectFile(window, IsInputFile, checkCoNLL, changeVar, changeVar1, title, fileType, extension, outputFileVar=None,
+def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outputFileVar=None,
 			   initialFolder=''):
 	filePath = ""
 	if initialFolder == '':
@@ -146,23 +144,13 @@ def selectFile(window, IsInputFile, checkCoNLL, changeVar, changeVar1, title, fi
 	if (checkCoNLL == True) and (IsInputFile == 1) and (extension == ".csv") and (len(filePath) > 3):
 		if IO_CoNLL_util.check_CoNLL(filePath, False) == False:
 			filePath = ""
-	changeVar.set(filePath)
-
 	return filePath
 
 
-def selectDirectory(window, changeVar, changeVar1, title, initialFolder=''):
+def selectDirectory(title, initialFolder=''):
 	if initialFolder == '':
 		initialFolder = os.path.dirname(os.path.abspath(__file__))
 	path = tk.filedialog.askdirectory(initialdir=initialFolder, title=title)
-	# when the directory string is blank, the file option should always also be available
-	if len(path) < 3:
-		path = ""
-	try:  # if the button is not present this would throw an error
-		changeVar1.config(state="normal")
-	except:
-		pass
-	changeVar.set(path)
 	return path
 
 
