@@ -32,12 +32,12 @@ To install NLP Suite:
 
 To get the full NLP Suite functionality, you may be required to install external software.
 
-- [Stanford CoreNLP](https://stanfordnlp.github.io/CoreNLP/download.html): requires an installation of [Java version +8](https://www.oracle.com/java/technologies/javase-downloads.html)
-- [WordNet](https://wordnet.princeton.edu/download)
-- [Mallet](http://mallet.cs.umass.edu/download.php)
-- [SENNA](https://ronan.collobert.com/senna/)
-- [Google Earth Pro](https://www.google.com/earth/download/gep/agree.html?hl=en-GB)
-- [Gephi](https://gephi.org/users/download/)
+- [Stanford CoreNLP](https://stanfordnlp.github.io/CoreNLP/download.html) NLP software (CoreNLP requires [Java version +8](https://www.oracle.com/java/technologies/javase-downloads.html)
+- [WordNet](https://wordnet.princeton.edu/download) Lexical database 
+- [Mallet](http://mallet.cs.umass.edu/download.php) Topic Modeling software
+- [SENNA](https://ronan.collobert.com/senna/) NLP software
+- [Google Earth Pro](https://www.google.com/earth/download/gep/agree.html?hl=en-GB) Geographic Information System (GIS) software
+- [Gephi](https://gephi.org/users/download/) Network software
 ## Supported Systems
 
 The following systems have been tested on:
