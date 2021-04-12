@@ -218,8 +218,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
         # Sentiment analysis annotator ---------------------------------------------------------------------------------------------------------------------------
 
-        if CoreNLP_annotators_menu_var == 'Sentiment analysis':
-            # if sentiment_analysis:
+        if 'Sentiment analysis' in CoreNLP_annotators_menu_var:
             if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
                 return
 

@@ -122,6 +122,22 @@ def get_csvfile_numberofColumns (csvFile):
             f.seek(0)
     return countColumns
 
+
+# inputFile has path
+def GetNumberOfDocumentsInCSVfile(inputFilename,algorithm,columnHeader='Document ID',encodingValue='utf-8'):
+    with open(inputFilename,encoding=encodingValue,errors='ignore') as f:
+        reader = csv.reader(f)
+        next(reader) # skip header row
+        headers=get_csvfile_headers(inputFilename)
+        if not columnHeader in str(headers):
+            mb.showwarning(title='csv file error',
+                           message="The selected cvf file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + "\n\nThe '" + algorithm + "' algorithm requires in input a csv file with a \'Document ID\' column.\n\nPlease, select a different csv file in input and try again!")
+            return None
+        columnNumber=get_columnNumber_from_headerValue(headers,columnHeader)
+        maxnum = max(int(column[columnNumber].replace(',', '')) for column in reader)
+        f.close()
+    return maxnum
+
 def GetNumberOfRecordInCSVFile(inputFilename,encodingValue='utf-8'):
     with open(inputFilename,'r',encoding=encodingValue,errors='ignore') as f:
         return sum(1 for line in f)
