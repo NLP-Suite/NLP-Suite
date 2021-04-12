@@ -28,7 +28,7 @@ To install NLP Suite:
     - [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Mac)
 5. Follow the installation by reading any terminal or console output. 
 
-## External Software
+## External Freeware Software
 
 To get the NLP Suite full functionality, you may need to install external **freeware** software.
 
