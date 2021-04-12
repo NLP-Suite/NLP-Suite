@@ -10,6 +10,8 @@ In an age of BIG DATA, the purpose of the suite is rather to provide humanists a
 
 Furthermore, the NLP suite is designed for non-specialists, for scholars with **no knowledge or little knowledge of Natural Language Processing.**
 
+Many of the core algorithms of the current release of **the NLP Suite only work for the English Language** (e.g., Stanford CoreNLP, WordNet).
+
 The NLP Suite was developed by **Roberto Franzosi** at **Emory University** with the help of many current and past **Emory undergraduate students**: Matthew Chau, Jian Chen, Wei Dai, Wenqin Dong, Yilin Dong, Yuhang Feng, Jack Hester, Ziyang Hu, Hang Jiang, Josh Karol, Brett Landau, Rafael Piloto, Ishan Saran, Gabriel Wang, Yi Wang, Angel Xie, Catherine Xie, Doris Zhou.
 
 
@@ -33,7 +35,9 @@ To get the full NLP Suite functionality, you may be required to install external
 - [Stanford CoreNLP](https://stanfordnlp.github.io/CoreNLP/download.html): requires an installation of [Java version +8](https://www.oracle.com/java/technologies/javase-downloads.html)
 - [WordNet](https://wordnet.princeton.edu/download)
 - [Mallet](http://mallet.cs.umass.edu/download.php)
-
+- [SENNA] (https://ronan.collobert.com/senna/)
+- [Google Earth Pro] (https://www.google.com/earth/download/gep/agree.html?hl=en-GB)
+- [Gephi] (https://gephi.org/users/download/)
 ## Supported Systems
 
 The following systems have been tested on:
