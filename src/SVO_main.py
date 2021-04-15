@@ -446,7 +446,7 @@ def run(inputFilename, inputDir, outputDir,
             f.close()
             if svo_wofilter == "":
                 SVOerror=SVOerror+1
-                print("\nSVO error while extracting SVOs from " +str(proc_file))
+                print("\nOpenIE SVO error (empty SVO output file) while extracting SVOs from " +str(proc_file))
 
             # Filter SVO _____________________________________________________
 

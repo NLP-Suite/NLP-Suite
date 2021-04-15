@@ -1,28 +1,22 @@
-#!/usr/bin/env Python
-# -*- coding: utf-8 -*-
 # The Python 3 routine was written by Jian Chen, 12.12.2018
 # modified by Jian Chen (January 2019)
 # modified by Jack Hester (February 2019) and Roberto Franzosi (June and December 2019)
-# The routine expects the following 9 arguments. 
-#  sys.argv[1]  input directory
-#    sys.argv[2]  output file name (default output filename directory = input directory). If this is not a directory, then a title will be auto-generated if run from the COMMAND LINE (e.g. 'y' in stead of path /users/../x.csv)
-#    sys.argv[3]  keyword to be searched
-#    sys.argv[4]  CoNLLfield where keyword will be searched: FORM (default) or LEMMA
-#    sys.argv[5]  POSTAG value of keyword * for any value
-#    sys.argv[6]  DEPREL value of keyword * for any value
-#    sys.argv[7]  POSTAG value of co-occurring token * for any value
-#    sys.argv[8]  DEPREL value of co-occurring token * for any value
-#    sys.argv[9]  Y or N (default) for opening the output file automatically
-# If arguments are entered corrrectly at the command prompt, no GUI is invoked, otherwise a GUI will be opened where a user can eneter the required arguments.
-# ALL SEARCHES OCCURR WITHIN SENTENCES.
-# cd C:\Program Files (x86)\PC-ACE\NLP\Miscellaneous
-# Python Conll_search_GUI_v3.py
+# ALL SEARCHES OCCUR WITHIN SENTENCES.
+
 import sys
+import GUI_util
+import IO_libraries_util
+
+if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL table_search_util", ['os', 'tkinter','enum','typing']) == False:
+    sys.exit(0)
+
+from enum import Enum
+from typing import List
+import tkinter as tk
+import tkinter.messagebox as mb
 
 import Stanford_CoreNLP_tags_util
 import IO_CoNLL_util
-from enum import Enum
-from typing import List
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
@@ -56,7 +50,8 @@ def search_head(token_id_in_sentence, sentence, searchedCoNLLField):
     except:
         mb.showwarning(title='CoNLL table error',
                        message="The records in the CoNLL table appear to be out of sequence, leading to computing errors. Please, make sure that you haven't tinkered with the file sorting the data by any columns other than RecordID.\n\nSort the data by RecordID (col. 9) and try again.")
-        sys.exit(0)
+        #sys.exit(0)
+        return "NO_HEAD", "NO_HEAD"
     head_num = int(token[5])
     if head_num != token[0] and head_num != 0:
         if searchedCoNLLField == "FORM":
@@ -417,6 +412,7 @@ def search_CoNLL_table(list_sentences, form_of_token, _field_='FORM', related_to
                        related_token_DEPREL="*",
                        Sentence_ID="*", _tok_postag_='*', _tok_deprel_='*'):
     list_queried = []
+    deprel_list_queried = []
     for sent in list_sentences:
         try:
             list_word_indices = search_related_words2(form_of_token, sent, _field_, _tok_postag_, _tok_deprel_)
@@ -426,7 +422,8 @@ def search_CoNLL_table(list_sentences, form_of_token, _field_='FORM', related_to
                                    "errors. Please, make sure that you haven't tinkered with the file sorting the data "
                                    "by any columns other than RecordID.\n\nSort the data by RecordID (col. 9) and try "
                                    "again.")
-            sys.exit(0)
+            # sys.exit(0)
+            return deprel_list_queried
         # obtain the full sentence
         whole_sent = ""
         for token in sent:

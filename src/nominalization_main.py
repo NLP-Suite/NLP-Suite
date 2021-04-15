@@ -1,23 +1,15 @@
 #written by Catherine Xiao, Apr 2018
 #edited by Elaine Dong, Dec 04 2019
 #edited by Roberto Franzosi, Nov 2019, October 2020
-#input: 1. file name
-#       2. output location
 
 import sys
-
-import GUI_IO_util
-import IO_files_util
 import GUI_util
 import IO_libraries_util
-import IO_csv_util
-import IO_user_interface_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"Nominalization",['tkinter','nltk','pywsd','csv','re','os','collections'])==False:
     sys.exit(0)
 
 import os
-
 import tkinter as tk
 import tkinter.messagebox as mb
 import nltk
@@ -36,6 +28,10 @@ from nltk.corpus import wordnet as wn
 import re
 from collections import Counter
 
+
+import IO_files_util
+import IO_csv_util
+import IO_user_interface_util
 import Excel_util
 import GUI_IO_util
 
@@ -193,7 +189,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
 
         #add all into a sum
         result_dir = []
-        result_dir.append(["word","is nominalized", "file name"])
+        result_dir.append(["Word","Is nominalized", "Document"])
         docID=0
         result2 = []
         result_dir2=[]
@@ -335,13 +331,13 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
 
             if createExcelCharts == True:
                 # pie chart of nominalized verbs
-                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], output_filename_nominalized_frequencies,outputDir,'NOM_verb'
+                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], output_filename_dir_nominalized_frequencies,outputDir,'NOM_verb'
                                               "Nominalized verbs", ["pie"])
                 if len(Excel_outputFilename) > 0:
                     filesToOpen.append(Excel_outputFilename)
 
                 # pie chart of nouns
-                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_noun_list], output_filename_noun_frequencies, outputDir,'NOM_noun',
+                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_noun_list], output_filename_dir_noun_frequencies, outputDir,'NOM_noun',
                                               "Nouns", ["pie"])
                 if len(Excel_outputFilename) > 0:
                     filesToOpen.append(Excel_outputFilename)
