@@ -1,25 +1,22 @@
 import sys
-
-import GUI_IO_util
-import IO_files_util
 import GUI_util
 import IO_libraries_util
-import IO_user_interface_util
-import dateutil
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "GIS_KML_util",
-								['os', 'tkinter', 'csv', 'simplekml', 'datetime']) == False:
+								['tkinter', 'csv', 'simplekml', 'datetime']) == False:
 	sys.exit(0)
 
-import os
 import tkinter.messagebox as mb
-import simplekml  # pip install simplekml
+import simplekml
 import csv
 from datetime import datetime
+import dateutil
 
 import GIS_location_util
 import GIS_Google_pin_util
 import IO_csv_util
+import IO_files_util
+import IO_user_interface_util
 
 
 # generates .kml file based on CSV of geocoded locations with row format filename,loc type,name,lat,lng

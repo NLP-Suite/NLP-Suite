@@ -755,6 +755,9 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
 # TODO print all languages and their probabilities in a csv file, with Language, Probability, Document ID, Document (with hyperlink)
 def language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts):
 
+    IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Analysis start',
+                                       'Started running Language Detection at', True)
+
     folderID = 0
     fileID = 0
     filesToOpen=[]
@@ -819,6 +822,12 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             value=str(value[0]).split(':')
             language=value[0]
             probability=value[1]
+            # https://pypi.org/project/langdetect/
+            # langdetect supports 55 languages out of the box (ISO 639-1 codes)
+            # af, ar, bg, bn, ca, cs, cy, da, de, el, en, es, et, fa, fi, fr, gu, he,
+            # hi, hr, hu, id, it, ja, kn, ko, lt, lv, mk, ml, mr, ne, nl, no, pa, pl,
+            # pt, ro, ru, sk, sl, so, sq, sv, sw, ta, te, th, tl, tr, uk, ur, vi, zh-cn, zh-tw
+            # ISO codes https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
             print('   LANGDETECT', language, probability)
             # print('   LANGDETECT',value[0],value[1])  # [cs:0.7142840957132709, pl:0.14285810606233737, sk:0.14285779665739756]
             currentLine = ['LANGDETECT', language, probability]
@@ -836,6 +845,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             value = doc._.language
             language=value['language']
             probability=value['score']
+            #
             print('   SPACY', language, probability)  # {'language': 'en', 'score': 0.9999978351575265}
             currentLine.extend(['SPACY', language, probability])
 
@@ -850,6 +860,19 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 continue
             language=value[0]
             probability=value[1]
+            # LANGID ``langid.py`` comes pre-trained on 97 languages (ISO 639-1 codes given)
+            # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes for ISO codes
+            # https://pypi.org/project/langid/1.1.5/
+            # af, am, an, ar, as, az, be, bg, bn, br,
+            # bs, ca, cs, cy, da, de, dz, el, en, eo,
+            # es, et, eu, fa, fi, fo, fr, ga, gl, gu,
+            # he, hi, hr, ht, hu, hy, id, is, it, ja,
+            # jv, ka, kk, km, kn, ko, ku, ky, la, lb,
+            # lo, lt, lv, mg, mk, ml, mn, mr, ms, mt,
+            # nb, ne, nl, nn, no, oc, or, pa, pl, ps,
+            # pt, qu, ro, ru, rw, se, si, sk, sl, sq,
+            # sr, sv, sw, ta, te, th, tl, tr, ug, uk,
+            # ur, vi, vo, wa, xh, zh, zu
             print('   LANGID', language, probability)  # ('en', 0.999999999999998)
             print()
             currentLine.extend(['LANGID',  language, probability])
@@ -874,6 +897,9 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
         mb.showwarning(title='File read errors',
                 message=msg+ '\n\nFaulty files are listed in command line/terminal. Please, search for \'File read error\' and inspect each file carefully.')
     filesToOpen.append(outputFilenameCSV)
+    IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Analysis end',
+                                       'Finished running Language Detection at', True,'Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.')
+    print('Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.')
     if createExcelCharts:
         columns_to_be_plotted = [[1, 1],[4,4],[7,7]]
         chart_title='Frequency of Languages Detected by 3 Algorithms'
