@@ -1,5 +1,4 @@
 import sys
-import IO_files_util
 import GUI_util
 import IO_libraries_util
 
@@ -10,7 +9,6 @@ import os
 import simplekml
 import tkinter.messagebox as mb
 
-import IO_files_util
 import IO_csv_util
 
 # icon_type are the different types of icon, like pushpin, paddle teardrop, paddle square....
@@ -598,7 +596,7 @@ def pin_customizer(inputFilename, pnt, geo_index, index_list, location_var_name,
 				mb.showwarning(title='No Group Labels Specified for Group No.'+str(j+1), message='There is no group label specified for Group No.'+str(j+1)+'.\n\nThe program will automatically set a group label for this group as "Group '+str(j+1)+'".')
 				new_label = "Group " + str(j+1)
 				group_labels[j] = new_label
-		pnt = pin_description(pnt, data, headers, geo_index, index_list, location_var_name, group_var, group_values, group_labels, j, name_var_list[j], description_csv_field_var_list[j], italic_var_list[j], bold_var_list[j])
+		pnt = pin_description(inputFilename,pnt, data, headers, geo_index, index_list, location_var_name, group_var, group_values, group_labels, j, name_var_list[j], description_csv_field_var_list[j], italic_var_list[j], bold_var_list[j])
 	# Assign name
 	if name_var_list[j] == 1:
 		pnt = pin_name(pnt, data, headers, geo_index, location_var_name, scale_var_list[j], color_var_list[j], color_style_var_list[j])
@@ -608,16 +606,29 @@ def pin_customizer(inputFilename, pnt, geo_index, index_list, location_var_name,
 # data is all the data from the inputfile
 # 	Expected format: [[Atlanta, A, A, Georgia, ...], [Boston, B, B, Massachuttes, ...], [Charlotte, C, C, Notrh Carolina, ....]]
 # headers is the inputfile's headers
-#	Expected format: [City, latitute, longitude, State, .....]
+#	Expected format: [City, latitude, longitude, State, .....]
 # Index is the number of the city we are currently plotting the point
 #	For example, from the example above, Atlanta will be 1, Boston will be 2....
-# Column_name is the decription_var (passed from GUI, the drop down menu, which column we want to put as description)
+# Column_name is the description_var (passed from GUI, the drop down menu, which column we want to put as description)
 #	Expected format: column_name ==  "State"
-def pin_description(pnt, data, headers, geo_index, index_list, location_var_name, group_var, group_values, group_labels, j, name_var, description_csv_field_var, italic_var, bold_var):
+def pin_description(inputFilename,pnt, data, headers, geo_index, index_list, location_var_name, group_var, group_values, group_labels, j, name_var, description_csv_field_var, italic_var, bold_var):
+
+	# TODO if the inputFilename contains more than one document then the document name should be listed in descriptions
+	if 'Document ID' in headers:
+		nDocs=IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename, 'GIS_Google_pin', 'Document ID')
+
+	documents = []
+	document_num = 0
+	for m in range(len(headers)):
+		if 'Document' == headers[m]:
+			document_num = m
+			break
+
 	description = []
 	for a in range(len(headers)):
-		if description_csv_field_var == headers[a]:
+		if description_csv_field_var == headers[a]: # description_csv_field_var is typically set to sentence
 			column_num = a
+
 	for b in range(len(data)):
 		try:
 			description.append(data[b][column_num])
@@ -625,11 +636,18 @@ def pin_description(pnt, data, headers, geo_index, index_list, location_var_name
 			description.append("Empty value for this field")
 			continue			
 
+		# if nDocs>1:
+		docName = IO_csv_util.undressFilenameForCSVHyperlink((data)[b][document_num])
+		head, tail = os.path.split(docName)
+		documents.append(tail)
+
 	location_num=0
 	names = []
+
 	for m in range(len(headers)):
 		if location_var_name == headers[m]:
 			location_num = m
+			break
 
 	for n in range(len(data)):
 		names.append(data[n][location_num])
@@ -651,13 +669,21 @@ def pin_description(pnt, data, headers, geo_index, index_list, location_var_name
 					pnt.description = "Location: " + names[index-1] + "<br/><br/>" + "Group Label: " + group_label + "<br/><br/>" + "Group Value: " + group_value
 			else:
 				if italic_var == 1 and bold_var == 1:
-					pnt.description = "<i><b>Location</b></i>: " + names[index-1] + "<br/><br/><i><b>Group Label</b></i>: " + group_label +  "<br/><br/><i><b>Group Value</b></i>: " + group_value + "<br/><br/><i><b>" + description_csv_field_var + "</b></i>" + ": "  + description[index-1]
+					pnt.description = "<i><b>Location</b></i>: " + names[index-1] + "<br/><br/><i><b>Group Label</b></i>: " + group_label +  "<br/><br/><i><b>Group Value</b></i>: " + group_value + "<br/><br/><i><b>" + \
+									  description_csv_field_var + "</b></i>" + ": " + description[index-1] + "<br/><br/>" + \
+										'<i><b>Document' + "</b></i>" + ": " + documents[index-1]
 				elif bold_var == 1:
-					pnt.description = "<b>Location</b>: " + names[index-1] + "<br/><br/><b>Group Label</b>: " + group_label + "<br/><br/><b>Group Value</b>: " + group_value + "<br/><br/><b>" + description_csv_field_var + "</b>" + ": "  + description[index-1]
+					pnt.description = "<b>Location</b>: " + names[index-1] + "<br/><br/><b>Group Label</b>: " + group_label + "<br/><br/><b>Group Value</b>: " + group_value + "<br/><br/><b>" + \
+									  description_csv_field_var + "</b>" + ": " + description[index-1] + "<br/><br/>" + \
+									  '<b>Document' + "</b>" + ": " + documents[index - 1]
 				elif italic_var == 1:
-					pnt.description = "<i>Location</i>: " + names[index-1] + "<br/><br/><i>Group Label</i>: " + group_label + "<br/><br/><i>Group Value</i>: " + group_value + "<br/><br/><i>" + description_csv_field_var + "</i>" + ": "  + description[index-1]
+					pnt.description = "<i>Location</i>: " + names[index-1] + "<br/><br/><i>Group Label</i>: " + group_label + "<br/><br/><i>Group Value</i>: " + group_value + "<br/><br/><i>" + \
+									  description_csv_field_var + "</i>" + ": " + description[index-1] + "<br/><br/>" + \
+									  '<i>Document' + "</i>" + ": " + documents[index - 1]
 				else:
-					pnt.description = "Location: " + names[index-1] + "<br/><br/>" + "Group Label: " + group_label + "<br/><br/>" + "Group Value: " + group_value + "<br/><br/>" + description_csv_field_var + ": "  + description[index-1]
+					pnt.description = "Location: " + names[index-1] + "<br/><br/>" + "Group Label: " + group_label + "<br/><br/>" + "Group Value: " + group_value + "<br/><br/>" + \
+									  description_csv_field_var + ": " + description[index-1] + "<br/><br/>" + \
+									  'Document' + ": " + documents[index - 1]
 		else:
 			if location_var_name == description_csv_field_var:
 				if italic_var == 1 and bold_var == 1:
@@ -670,13 +696,22 @@ def pin_description(pnt, data, headers, geo_index, index_list, location_var_name
 					pnt.description = "Group Label: " + group_label + "<br/><br/>" + "Group Value: " + group_value
 			else:
 				if italic_var == 1 and bold_var == 1:
-					pnt.description = "<i><b>Group Label</b></i>: " + group_label + "<br/><br/><i><b>Group Value</b></i>: " + group_value + "<br/><br/><i><b>" + description_csv_field_var + "</b></i>" + ": "  + description[index-1]
+					pnt.description = "<i><b>Group Label</b></i>: " + group_label + "<br/><br/><i><b>Group Value</b></i>: " + group_value + "<br/><br/><i><b>" + \
+									  description_csv_field_var + "</b></i>" + ": " + description[index-1] + "<br/><br/>" + \
+									  '<i><b>Document' + "</b></i>" + ": " + documents[index - 1]
 				elif bold_var == 1:
-					pnt.description = "<b>Group Label</b>: " + group_label + "<br/><br/><b>Group Value</b>: " + group_value +  "<br/><br/><b>" + description_csv_field_var + "</b>" + ": "  + description[index-1]
+					pnt.description = "<b>Group Label</b>: " + group_label + "<br/><br/><b>Group Value</b>: " + group_value +  "<br/><br/><b>" + \
+									  description_csv_field_var + "</b>" + ": " + description[index-1] + "<br/><br/>" + \
+									  '<b>Document' + "</b>" + ": " + documents[index - 1]
 				elif italic_var == 1:
-					pnt.description = "<i>Group Label</i>: " + group_label + "<br/><br/><i>Group Value</i>: " + group_value +  "<br/><br/><i>" + description_csv_field_var + "</i>" + ": "  + description[index-1]			
+					pnt.description = "<i>Group Label</i>: " + group_label + "<br/><br/><i>Group Value</i>: " + group_value +  "<br/><br/><i>" + \
+									  	description_csv_field_var + "</i>" + ": " + description[index-1] + "<br/><br/>" + \
+										'<i>Document' + "</i>" + ": " + documents[index - 1]
 				else:
-					pnt.description = "Group Label: " + group_label + "<br/><br/>" + "Group Value: " + group_value + "<br/><br/>" +description_csv_field_var + ": "  + description[index-1]
+					pnt.description = "Group Label: " + group_label + "<br/><br/>" + "Group Value: " + group_value + "<br/><br/>" +\
+									  description_csv_field_var + ": " + description[index-1] + "<br/><br/>" + \
+									  'Document' + ": " + documents[index - 1]
+
 	elif group_var == 0:
 		if name_var == 0:
 			if location_var_name == description_csv_field_var:
@@ -690,23 +725,42 @@ def pin_description(pnt, data, headers, geo_index, index_list, location_var_name
 					pnt.description = "Location: " + names[index-1]
 			else:
 				if italic_var == 1 and bold_var == 1:
-					pnt.description = "<i><b>Location</b></i>: " + names[index-1] +  "<br/><br/><i><b>" + description_csv_field_var + "</b></i>" + ": "  + description[index-1]
+					pnt.description = "<i><b>Location</b></i>: " + names[index-1] +  "<br/><br/><i><b>" + \
+									  description_csv_field_var + "</b></i>" + ": " + description[index-1] + "<br/><br/>" + \
+									  '<i><b>Document' + "</b></i>" + ": " + documents[index - 1]
 				elif bold_var == 1:
-					pnt.description = "<b>Location</b>: " + names[index-1] + "<br/><br/><b>" + description_csv_field_var + "</b>" + ": "  + description[index-1]
+					pnt.description = "<b>Location</b>: " + names[index-1] + "<br/><br/><b>" + \
+									  description_csv_field_var + "</b>" + ": " + description[index-1] + "<br/><br/>" + \
+									  '<b>Document' + "</b>" + ": " + documents[index - 1]
+
 				elif italic_var == 1:
-					pnt.description = "<i>Location</i>: " + names[index-1] + "<br/><br/><i>" + description_csv_field_var + "</i>" + ": "  + description[index-1]
+					pnt.description = "<i>Location</i>: " + names[index-1] + "<br/><br/><i>" + \
+									  description_csv_field_var + "</i>" + ": " + description[index-1] + "<br/><br/>" + \
+									  '<i>Document' + "</i>" + ": " + documents[index - 1]
 				else:
-					pnt.description = "Location: " + names[index-1] + "<br/><br/>" + description_csv_field_var + ": "  + description[index-1]
+					pnt.description = "Location: " + names[index-1] + "<br/><br/>" + \
+									  description_csv_field_var + ": " + description[index-1] + "<br/><br/>" + \
+									  'Document' + ": " + documents[index - 1]
 		else:
 			if italic_var == 1 and bold_var == 1:
-				pnt.description = "<i><b>" + description_csv_field_var + "</b></i>" + ": "  + description[index-1]
+				pnt.description = "<i><b>" + \
+								  description_csv_field_var + "</b></i>" + ": " + description[index-1] + \
+								  '<i><b>Document' + "</b></i>" + ": " + documents[index - 1]
+
 			elif bold_var == 1:
-				pnt.description = "<b>" + description_csv_field_var + "</b>" + ": "  + description[index-1]
+				pnt.description = "<b>" + \
+								  description_csv_field_var + "</b>" + ": " + description[index-1] + \
+								  '<b>Document' + "</b>" + ": " + documents[index - 1]
+
 			elif italic_var == 1:
-				pnt.description = "<i>" + description_csv_field_var + "</i>" + ": "  + description[index-1]			
+				pnt.description = "<i>" + \
+								  description_csv_field_var + "</i>" + ": " + description[index-1] + \
+								  '<i>Document' + "</i>" + ": " + documents[index - 1]
+
 			else:
-				pnt.description = description_csv_field_var + ": "  + description[index-1]
-	
+				pnt.description = description_csv_field_var + ": " + description[index-1] + \
+								  'Document' + ": " + documents[index - 1]
+
 	return pnt
 
 # Add description to each point

@@ -793,11 +793,46 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     mb.showinfo(title='Results', message="Combinations of ! and ? punctuation symbols were used " + str(multiple_punctuation) + \
                         " times.\n\n! punctuation symbols were used " + str(exclamation_punctuation) + \
                         " times.\n\n? punctuation symbols were used " + str(question_punctuation) + \
-                        " times.\n\n\nPunctuation symbols of pathos (!?) were used in " + str(len(punctuation_docs)) + " separate documents out of " + str(Ndocs) + " documents.")
+                        " times.\n\n\nPunctuation symbols of pathos (!?) were used in " + str(len(punctuation_docs)) + " separate documents out of " + str(Ndocs) + " documents.\n\nCHECK COMMAND LINE FOR A COPY OF THESE RESULTS.")
+
+    print("\nCombinations of ! and ? punctuation symbols were used " + str(multiple_punctuation) + \
+                        " times.\n\n! punctuation symbols were used " + str(exclamation_punctuation) + \
+                        " times.\n\n? punctuation symbols were used " + str(question_punctuation) + \
+                        " times.\n\nPunctuation symbols of pathos (!?) were used in " + str(len(punctuation_docs)) + " separate documents out of " + str(Ndocs) + " documents.")
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', fileLabel)
     word_list.insert(0, header)
     IO_error = IO_csv_util.list_to_csv(window, word_list, outputFilename)
+
+    if createExcelCharts == True:
+        columns_to_be_plotted = [[1, 1]]
+        hover_label = []
+        inputFilename = outputFilename
+        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                  outputFileLabel='punct_stats',
+                                                  chart_type_list=["bar"],
+                                                  # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
+                                                  chart_title='Frequency of Punctuation Symbols of Pathos (?!)',
+                                                  column_xAxis_label_var='Punctuation symbols of pathos (?!)',
+                                                  hover_info_column_list=hover_label,
+                                                  count_var=True)
+        if Excel_outputFilename != "":
+            filesToOpen.append(Excel_outputFilename)
+
+        # should also provide a bar chart of the frequency of distinct documents by punctuation symbol
+        columns_to_be_plotted = [[2,2]]
+        hover_label = []
+        inputFilename = outputFilename
+        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                  outputFileLabel='punct_doc_stats',
+                                                  chart_type_list=["bar"],
+                                                  # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
+                                                  chart_title='Frequency of ' + str(Ndocs) + ' Documents with Punctuation Symbols of Pathos (?!)',
+                                                  column_xAxis_label_var='Punctuation symbols of pathos (?!)',
+                                                  hover_info_column_list=hover_label,
+                                                  count_var=True)
+        if Excel_outputFilename != "":
+            filesToOpen.append(Excel_outputFilename)
 
     if not IO_error:
         filesToOpen.append(outputFilename)
@@ -818,4 +853,46 @@ def n_most_common_words(n,text):
         common_words.append([key, value])
         #print(key, value)
     return(common_words)
+
+def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,excludeStopWords=True,lemmatizeWords=True):
+    filesToOpen=[]
+    outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'corpus', 'lemma_stw')
+    filesToOpen.append(outputFilename)
+
+    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+
+    Ndocs=str(len(inputDocs))
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running txt conversion (lemmatization & stopwords) at', True)
+
+    with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as outfile:
+        #print("Number of corpus text documents: ",Ndocs)
+        #currentLine.append([Ndocs])
+        index=0
+        for doc in inputDocs:
+            head, tail = os.path.split(doc)
+            index=index+1
+            # currentLine.append([index])
+            print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
+            fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
+
+            Nsentences=str(textstat.sentence_count(fullText))
+            #print('TOTAL number of sentences: ',Nsentences)
+
+            Nwords=str(textstat.lexicon_count(fullText, removepunct=True))
+            #print('TOTAL number of words: ',Nwords)
+
+            Nsyllables =textstat.syllable_count(fullText, lang='en_US')
+            #print('TOTAL number of Syllables: ',Nsyllables)
+
+            # words = fullText.split()
+            words = nltk.word_tokenize(fullText)
+
+            if excludeStopWords:
+                words = excludeStopWords_list(words)
+
+            if lemmatizeWords:
+                lemmatizer = WordNetLemmatizer()
+                text_vocab = set(lemmatizer.lemmatize(w.lower()) for w in fullText.split(" ") if w.isalpha())
+                words = set(lemmatizing(w.lower()) for w in words if w.isalpha()) # fullText.split(" ") if w.isalpha())
 

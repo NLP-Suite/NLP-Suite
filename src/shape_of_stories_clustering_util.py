@@ -64,7 +64,6 @@ class SVDClustering:
         neg_vector_clusters = self.reweigh_vecs(normalized_vecs, neg_clusters_indices, w)
         return pos_vector_clusters, pos_clusters_indices, pos_modes, neg_vector_clusters, neg_clusters_indices, neg_modes
 
-
 class NMFClustering:
     def __init__(self, n_clusters, max_iter_nmf=1000):
         self.max_iter_nmf = max_iter_nmf
@@ -230,7 +229,6 @@ def processCluster(cluster_indices,scoresFile_list, file_list, sentiment_vectors
                 else:
                     orgFile=each[0]
                 scFile=scoresFile_list[str(each[0])]
-                #==============ANGEL===============
                 writer.writerow({'Cluster ID': "Cluster " + str(i + 1), "Sentiment Score File Name": IO_csv_util.dressFilenameForCSVHyperlink(scFile), "Original File Name": IO_csv_util.dressFilenameForCSVHyperlink(orgFile)})
     return cluster_file
 

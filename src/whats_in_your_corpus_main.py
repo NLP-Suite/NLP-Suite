@@ -172,7 +172,7 @@ def run(inputFilename,inputDir, outputDir,
         if nouns_var or verbs_var:
 
             if nouns_var or verbs_var or what_else_menu_var == '*':
-                WordNetDir = IO_libraries_util.get_external_software_dir('wats_in_your_corpus', 'WordNet')
+                WordNetDir = IO_libraries_util.get_external_software_dir('whats_in_your_corpus', 'WordNet')
                 if WordNetDir == None:
                     return
 

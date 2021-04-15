@@ -368,7 +368,10 @@ def generate_output_file_name(inputfilePath, inputDir, outputDir, outputExtensio
 		else:
 			default_outputFilename_str = 'NLP_' + str(label1) + "_" + inputfile  # adding to front of file name
 	else:
-		default_outputFilename_str=inputfile
+		if label1=='':
+			default_outputFilename_str=inputfile
+		else:
+			default_outputFilename_str = inputfile.replace("NLP_", "NLP_" + label1 + "_")
 	if len(str(label2)) > 0:
 		default_outputFilename_str = default_outputFilename_str + "_" + str(label2)
 	if len(str(label3)) > 0:

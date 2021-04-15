@@ -3,7 +3,7 @@
 import sys
 import GUI_util
 import IO_libraries_util
-
+import IO_user_interface_util
 if IO_libraries_util.install_all_packages(GUI_util.window,"CoReference Resolution",['os','tkinter','re'])==False:
     sys.exit(0)
 
@@ -202,7 +202,7 @@ def manual_coreference(inputFilename, corefed_file, manual_Coref, coRefOptions, 
             if msgbox_exit:
                 if manualCoref(inputFilename, inputFilename, corefed_file, coRefOptions) == 0:  # use the orginal file as coref
                     # manual coref success!
-                    files_to_open.append(corefed_file)
+                    filesToOpen.append(corefed_file)
                     return filesToOpen, 0
                 else:
                     # manual coref error!
@@ -219,7 +219,8 @@ def manual_coreference(inputFilename, corefed_file, manual_Coref, coRefOptions, 
     else:
         if manual_Coref:
             manualCoref(inputFilename, corefed_file, corefed_file, coRefOptions)
-        filesToOpen.append(corefed_file)
+        if corefed_file not in filesToOpen: 
+            filesToOpen.append(corefed_file)
 
     return filesToOpen, 0
 
@@ -250,27 +251,30 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
 
         if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py')==False:
             return
-        corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createExcelCharts,'coref',False,memory_var)
+        corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename,input_main_dir_path,
+                                                                        output_dir_path, openOutputFiles, createExcelCharts,'coref',False,
+                                                                        memory_var)
         # files_to_open, error = manual_coreference(inputFilename, corefed_file[0], manual_Coref, coRefOptions, files_to_open)
 
     else:
         corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, input_main_dir_path,
                                                                    output_dir_path, openOutputFiles, createExcelCharts,'coref', False,
                                                                    memory_var)
-
+    
     filesToOpen=corefed_file
-
     # TODO Claude take the comment out in the next line to test
     # manual_Coref=1
     if manual_Coref:
         if len(input_main_dir_path) == 0 and len(inputFilename) > 0:
-            input_main_dir_path = os.path.split(inputFilename)[0]
-        for file in corefed_file:
-            if file[-4:] == ".txt":
-                head, tail = os.path.split(file)
-                # get the original NOT coreferenced txt file path
-                original_file = input_main_dir_path + '/' + tail[18:]
-                filesToOpen, error = manual_coreference(original_file, file, manual_Coref, coRefOptions,
-                                                       filesToOpen)
-
-    return filesToOpen
+            for file in corefed_file:
+                if file[-4:] == ".txt":
+                    error = manualCoref(inputFilename, file, file, coRefOptions)
+                    # filesToOpen, error = manual_coreference(inputFilename, file, manual_Coref, coRefOptions,
+                    #                                    filesToOpen)
+                     # print("List of files to Open: ", filesToOpen)
+                    return filesToOpen, error
+            # return filesToOpen, error
+        else:
+            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Feature Not Available', 'Manual Coreference is only available when processing single file, not input directory.')
+            # input_main_dir_path = os.path.split(inputFilename)[0]
+    return filesToOpen, 0
