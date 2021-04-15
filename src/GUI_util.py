@@ -154,7 +154,7 @@ def display_logo():
 
 def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_main_dir_path,title,fileType,extension):
     currentFilename=inputFilename.get()
-    if len(inputFilename.get())>0:
+    if len(currentFilename)>0:
         initialFolder=os.path.dirname(inputFilename.get())
     else:
         initialFolder=''
@@ -164,9 +164,11 @@ def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_ma
     else:
         filename = IO_files_util.selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outputFilename, None, initialFolder)
     if len(filename)==0:
-        filename=currentFilename
-    inputFilename.set(filename)
-    input_main_dir_path.set('')
+        return
+        # filename=currentFilename
+    else:
+        inputFilename.set(filename)
+        input_main_dir_path.set('')
 
 #changeVar is the name of the IO FIELD (.get()) that needs to be displayed (e.g., softwareDir)
 #changeVar1 is the name of the IO BUTTON that needs to be disabled in the case of mutuallyexclusive options
@@ -174,15 +176,19 @@ def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_ma
 def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,title,inputMainDir=False):
     initialFolder = ''
     if 'INPUT' in title:
-        if len(input_main_dir_path.get())>0:
-            initialFolder=os.path.dirname(input_main_dir_path.get())
+        if inputMainDir:
+            if len(input_main_dir_path.get())>0:
+                initialFolder=input_main_dir_path.get()
+        else:
+            if len(input_secondary_dir_path.get()) > 0:
+                initialFolder = input_secondary_dir_path.get()
     else:
         if len(output_dir_path.get()) > 0:
-            initialFolder = os.path.dirname(output_dir_path.get())
+            initialFolder = output_dir_path.get()
     #get the directory
     directoryName=IO_files_util.selectDirectory(title, initialFolder)
     if directoryName=='':
-        directoryName=currentDirectory
+        directoryName=initialFolder
     if 'INPUT' in title:
         if inputMainDir==True:
             # if there is no filename it would give an error
@@ -237,6 +243,23 @@ def GUI_top(config_input_output_options,config_filename):
         intro.pack()
 
         display_logo()
+
+        if config_filename!='NLP-config.txt':
+
+            y_multiplier_integer=-.7
+
+            # release_version_lb = tk.Label(window, text='Release', foreground="red")
+            # y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate(),
+            #                                                y_multiplier_integer, release_version_lb, True)
+            # first digit for major upgrades
+            # second digit for new features
+            # third digit for bug fixes and minor changes to current version
+            # must also change the Release version in readMe on GitHub
+            release_version_var.set("1.3.7")
+            release_version = tk.Entry(window, state='disabled', width=6, foreground="red",
+                                       textvariable=release_version_var)
+            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate(),
+                                                           y_multiplier_integer, release_version)
 
         if config_filename=='NLP-config.txt':
 

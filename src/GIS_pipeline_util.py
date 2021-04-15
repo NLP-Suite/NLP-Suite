@@ -1,8 +1,7 @@
 # Cynthia Dong May 2020
 # Roberto Franzosi September 2020
-import GUI_IO_util
+
 import IO_files_util
-import GUI_util
 import GIS_location_util
 import GIS_geocode_util
 import GIS_KML_util

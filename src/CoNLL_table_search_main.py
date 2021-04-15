@@ -6,8 +6,8 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL table_search",
     sys.exit(0)
 
 import tkinter as tk
-import tkinter.ttk as ttk
 import tkinter.messagebox as mb
+import tkinter.ttk as ttk
 from typing import List
 
 import GUI_IO_util
