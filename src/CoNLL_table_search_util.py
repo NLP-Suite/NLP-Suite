@@ -23,6 +23,7 @@ import Stanford_CoreNLP_tags_util
 import IO_CoNLL_util
 from enum import Enum
 from typing import List
+import tkinter.messagebox as mb
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
