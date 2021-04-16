@@ -23,8 +23,8 @@ IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNe
 
 from nltk import tokenize
 from pywsd import disambiguate
-import string
 from nltk.corpus import wordnet as wn
+import string
 import re
 from collections import Counter
 

@@ -244,18 +244,15 @@ def GUI_top(config_input_output_options,config_filename):
 
         display_logo()
 
+        # first digit for major upgrades
+        # second digit for new features
+        # third digit for bug fixes and minor changes to current version
+        # must also change the Release version in readMe on GitHub
+        release_version_var.set("1.3.7")
         if config_filename!='NLP-config.txt':
 
             y_multiplier_integer=-.7
 
-            # release_version_lb = tk.Label(window, text='Release', foreground="red")
-            # y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate(),
-            #                                                y_multiplier_integer, release_version_lb, True)
-            # first digit for major upgrades
-            # second digit for new features
-            # third digit for bug fixes and minor changes to current version
-            # must also change the Release version in readMe on GitHub
-            release_version_var.set("1.3.7")
             release_version = tk.Entry(window, state='disabled', width=6, foreground="red",
                                        textvariable=release_version_var)
             y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate(),
@@ -270,7 +267,6 @@ def GUI_top(config_input_output_options,config_filename):
             # second digit for new features
             # third digit for bug fixes and minor changes to current version
             # must also change the Release version in readMe on GitHub
-            release_version_var.set("1.3.6")
             release_version = tk.Entry(window, state='disabled', width=6, foreground="red", textvariable=release_version_var)
             y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate() + 100,
                                                            y_multiplier_integer, release_version,True)
