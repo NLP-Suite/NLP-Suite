@@ -139,19 +139,27 @@ def analyzefile(input_file, output_dir, output_file, mode, Document_ID, Document
             if mode == 'mean' or mode == 'both':
                 sentiment_mean = statistics.mean(v_list)
                 sentiment=sentiment_mean
-                if sentiment > 6 :
+                if sentiment > 7.5 :
+                    label_mean = 'very positive'
+                elif sentiment > 6:
                     label_mean = 'positive'
-                elif sentiment < 4:
+                elif sentiment < 4.5:
                     label_mean = 'negative'
+                elif sentiment < 2.5:
+                    label_mean = 'very negative'
                 else:
                     label_mean = "neutral"
             if mode == 'median' or mode == 'both':
                 sentiment_median = statistics.median(v_list)
                 sentiment=sentiment_median
-                if sentiment > 6 :
+                if sentiment > 7.5 :
+                    label_median = 'very positive'
+                elif sentiment > 6:
                     label_median = 'positive'
-                elif sentiment < 4:
+                elif sentiment < 4.5:
                     label_median = 'negative'
+                elif sentiment < 2.5:
+                    label_median = 'very negative'
                 else:
                     label_median = "neutral"
 

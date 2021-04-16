@@ -142,7 +142,7 @@ def CoreNLP_annotate(inputFilename,
         'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document'],
         # TODO NER with date for dynamic GIS; modified below
         # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
-        'sentiment': ['Document ID', 'Document','Sentence ID', 'Sentence', 'Sentiment number', 'Sentiment label'],
+        'sentiment': ['Document ID', 'Document','Sentence ID', 'Sentence', 'Sentiment score', 'Sentiment label'],
         'All POS':["ID", "Form", "Lemma", "POStag", "Record ID", "Sentence ID", "Document ID", "Document"],
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
         'quote': ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of Quotes'],
@@ -347,7 +347,7 @@ def CoreNLP_annotate(inputFilename,
                             for j in sub_result[i]:
                                 run_output[i].append(j)
                     else:
-                        run_output.extend(sub_result)
+                        run[3].extend(sub_result)
             # print("Corenlp Output: ", CoreNLP_output)
             sentenceID += len(CoreNLP_output["sentences"])#update the sentenceID of the first sentence of the next split file
     #generate output csv files and write output
