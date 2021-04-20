@@ -4,6 +4,8 @@
 
 ![logo](https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/lib/images/logo.png)
 
+![image](https://user-images.githubusercontent.com/79026295/115375273-a37fda00-a19b-11eb-86ae-ee7c8d185b8f.png)
+
 ## What is NLP Suite
 
 In an age of BIG DATA, the purpose of the suite is rather to provide humanists and social scientists a wide range of **computational tools for the analysis and visualization of smaller datasets,** the more typical datasets humanists and social scientists use (e.g., the works of one Nobel Prize winner, a handful of in-depth interviews, a few thousand newspaper articles).
