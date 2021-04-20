@@ -22,6 +22,7 @@ IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
 
 from nltk import tokenize
+# MUST use this  version or code wll break pywsd~=1.2.4 pip install pywsd~=1.2.4
 from pywsd import disambiguate
 from nltk.corpus import wordnet as wn
 import string
@@ -189,7 +190,6 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
 
         #add all into a sum
         result_dir = []
-        result_dir.append(["Word","Is nominalized", "Document"])
         docID=0
         result2 = []
         result_dir2=[]
@@ -204,7 +204,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
             print("Processing document", doc, "\n")
             #open the doc and create the list of result (words, T/F)
             fin = open(doc, 'r',encoding='utf-8',errors='ignore')
-            # result1 contains the sentence and nominalized values fora a specific document
+            # result1 contains the sentence and nominalized values for a specific document
             result, result1 = nominalized_verb_detection(docID,doc,fin.read())
             # result2 contains the sentence and nominalized values for all documents
             result2.extend(result1)
@@ -212,7 +212,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
 
             # list all verbs as TRUE/FALSE if nominalized
             for word, boolean in result:
-                result_dir.append([word, boolean, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                result_dir.append([word, boolean, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
             result_dir2.extend(result_dir)
 
@@ -314,6 +314,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
             list_to_csv(output_filename_bySentenceIndex, result2)
 
             # list all verbs as TRUE/FALSE if nominalized
+            result_dir2.insert(0, ["Word", "Is nominalized", "Document ID", "Document"])
             list_to_csv(output_filename_TRUE_FALSE_dir, result_dir2)
 
 
@@ -331,14 +332,16 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
 
             if createExcelCharts == True:
                 # pie chart of nominalized verbs
-                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], output_filename_dir_nominalized_frequencies,outputDir,'NOM_verb'
-                                              "Nominalized verbs", ["pie"])
+                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], output_filename_dir_nominalized_frequencies,
+                                            outputDir,'NOM_verb',
+                                            "Nominalized verbs", ["pie"])
                 if len(Excel_outputFilename) > 0:
                     filesToOpen.append(Excel_outputFilename)
 
                 # pie chart of nouns
-                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_noun_list], output_filename_dir_noun_frequencies, outputDir,'NOM_noun',
-                                              "Nouns", ["pie"])
+                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_noun_list], output_filename_dir_noun_frequencies,
+                                            outputDir,'NOM_noun',
+                                            "Nouns", ["pie"])
                 if len(Excel_outputFilename) > 0:
                     filesToOpen.append(Excel_outputFilename)
 
