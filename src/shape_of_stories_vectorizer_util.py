@@ -4,7 +4,8 @@ import os
 from tkinter import messagebox
 import numpy as np
 from sklearn.decomposition import PCA
-import pandas as pd#Angel
+import pandas as pd #Angel
+import IO_csv_util #Angel
 
 """
 Name of variables should follow python notation: 
@@ -35,40 +36,76 @@ class Vectorizer:
         doclengths = []
         doNotRepeat=False
         filesToDelete = []
+        addedFiles = []
+
         for narrativeNum, narrativeFile in enumerate(self.narrative_file_paths):
             with codecs.open(narrativeFile, mode='r', encoding='utf-8', errors='ignore') as csv_file:
                 reader = csv.DictReader(csv_file)
                 readerList = list(reader)
-                if len(readerList) == 0:
+                df = pd.read_csv(narrativeFile, encoding='utf-8') #ANGEL
+                if len(readerList) == 0 or "Sentiment score" not in df.columns:
                     messagebox.showwarning(title='Sentiment Analysis Score Error',
                                    message= "The file " + narrativeFile + " doesn't have any sentiment score.\n\n"
                                    + "The file will be dropped from the analyses.")
                     filesToDelete.append(narrativeFile)
                     continue
-                elif len(readerList) == 1:
+                #==============A================= added additional checks for merged file
+                elif 'Document' in df.columns or 'Document Name' in df.columns: # a merged file
+                    print(len(self.narrative_file_paths))
+                    if 'Document Name' in df.columns:  # sometimes "Document" sometimes "Document Name"
+                        df["Document"] = df["Document Name"]
+                    doc_ls = [y for y,x in df.groupby(df["Document"])]
+                    splitted = [x for _, x in df.groupby(df["Document"])]
+                    for index,sub_df in enumerate(splitted):
+                        if len(sub_df) == 1:
+                            messagebox.showwarning(title='Sentiment Analysis Score Error',
+                                               message="Document:" + doc_ls[index] + " only contains one sentiment score.\n\n"
+                                                       + "This document will be dropped from the analyses.")
+                            doNotRepeat = messagebox.askyesno("Python","Please, do NOT show this message again for any similar subsequent warning?")
+                            splitted.pop(index)
+                            continue #won't add to doclengths list
+                        elif len(sub_df) < 10:
+                            if doNotRepeat == False:
+                                # TODO should export csv file with culprit files
+                                result = messagebox.askyesno("Sentiment Analysis Score Error",
+                                                             "Document " + doc_ls[index] +
+                                                             " contains less than 10 sentiment scores.\n\n" +
+                                                             "The document is too short compared to others in the corpus. It might influence the analysis of shape of stories.\n\n" +
+                                                             "Would you like to drop this document from the analyses?")
+                                doNotRepeat = messagebox.askyesno("Python","Please, do NOT show this message again for any similar subsequent warning?")
+                            if result:
+                                splitted.pop(index)
+                                continue
+                        doclengths.append(len(sub_df))
+                    re_merged=pd.concat(splitted, ignore_index=True)
+                    addedFiles.append((str(IO_csv_util.undressFilenameForCSVHyperlink(narrativeFile))[:-4]+".csv",re_merged))#save to regenerate later
+                    filesToDelete.append(narrativeFile) #delete original merged file
+                #==============end of A===============
+                else: #not a merged file
+                    if len(readerList) == 1:
                     # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Sentiment Analysis Score Error',
                     #                                    message="The file " + narrativeFile + " only contains one sentiment score.\n\n"
                     #                                            + "The file will be dropped from the analyses.")
-                    if doNotRepeat==False:
+                        if doNotRepeat==False:
                         # TODO should export csv file with culprit files
-                        messagebox.showwarning(title='Sentiment Analysis Score Error',
+                            messagebox.showwarning(title='Sentiment Analysis Score Error',
                                        message="The file " + narrativeFile + " only contains one sentiment score.\n\n"
                                                + "The file will be dropped from the analyses.")
-                        doNotRepeat = messagebox.askyesno("Python","Please, do NOT show this message again for any similar subsequent warning?")
-                    filesToDelete.append(narrativeFile)
-                    continue
-                elif len(readerList) < 10:
-                    if doNotRepeat==False:
-                        # TODO should export csv file with culprit files
-                        result = messagebox.askyesno("Sentiment Analysis Score Error", "The file " + narrativeFile +
+                            doNotRepeat = messagebox.askyesno("Python","Please, do NOT show this message again for any similar subsequent warning?")
+                        filesToDelete.append(narrativeFile)
+                        continue
+                    elif len(readerList) < 10:
+                        if doNotRepeat==False:
+                            # TODO should export csv file with culprit files
+                            result = messagebox.askyesno("Sentiment Analysis Score Error", "The file " + narrativeFile +
                                                      " contains less than 10 sentiment scores.\n\n" +
                                                      "The file is too short compared to others in the corpus. It might influence the analysis of shape of stories.\n\n" +
                                                      "Would you like to drop this file from the analyses?")
-                        doNotRepeat = messagebox.askyesno("Python",
+                            doNotRepeat = messagebox.askyesno("Python",
                                                       "Please, do NOT show this message again for any similar subsequent warning?")
-                    if result:
-                        filesToDelete.append(narrativeFile)
-                        continue
+                        if result:
+                            filesToDelete.append(narrativeFile)
+                            continue
                 # elif len(readerList) > 75:
                 #     result = messagebox.askyesno("Sentiment Analysis Score Error", "The file " + narrativeFile +
                 #                                  " contains more than 75 sentiment scores.\n" +
@@ -78,11 +115,14 @@ class Vectorizer:
                 #     if result:
                 #         self.narrative_file_paths.remove(narrativeFile)
                 #         continue
-                doclengths.append(len(readerList))
+                    doclengths.append(len(readerList))
 
         # Remove the files that did not match specified criteria
         for f in filesToDelete:
             self.narrative_file_paths.remove(f)
+        for a in addedFiles:#A
+            a[1].to_csv(a[0],index=False)#A
+            self.narrative_file_paths.append(a[0])#A
         return min(doclengths), max(doclengths), np.mean(np.array(doclengths)), len(doclengths)
 
     def parse_input_data(self):
@@ -100,16 +140,16 @@ class Vectorizer:
         sentimentVectors = []
         file_list = []
 
-        #===========================ANGEL====================================================
+        #===========================A====================================================
         scoresFile_list = {}
         #Create a list of input dataframes to standardize inputDir and inputFile
         with codecs.open(self.narrative_file_paths[0], mode='r', encoding='utf-8', errors='ignore') as nF1:
             merged_df = pd.read_csv(nF1,encoding='utf-8')
         #Add sentimentscores Filenames as a column
         merged_df["scoresFilename"] = [self.narrative_file_paths[0]]*merged_df.shape[0]
-        if 'Document' not in merged_df.columns:#ANGEL sometimes "Document" sometimes "Document Name"
+        if 'Document' not in merged_df.columns and 'Document Name' in merged_df.columns:# sometimes "Document" sometimes "Document Name"
             merged_df["Document"]=merged_df["Document Name"]
-        if(len(self.narrative_file_paths)==1):
+        if("Document" in merged_df): #a merged file
             df_list=[x for _,x in merged_df.groupby(merged_df['Document ID'])]
         else:
             df_list=[merged_df]
@@ -118,7 +158,7 @@ class Vectorizer:
                     with codecs.open(narrativeFile, mode='r', encoding='utf-8', errors='ignore') as narrativeFile1:
                         dfff=pd.read_csv(narrativeFile1,encoding='utf-8')
                         dfff["scoresFilename"] =[narrativeFile]*dfff.shape[0]
-                        if 'Document' not in dfff.columns:  # ANGEL sometimes "Document" sometimes "Document Name"
+                        if 'Document' not in dfff.columns:  #sometimes "Document" sometimes "Document Name"
                             dfff["Document"] = dfff["Document Name"]
                         df_list.append(dfff)
 
@@ -126,18 +166,18 @@ class Vectorizer:
                 if len(df)<self.sentiment_vector_size:
                     continue
                 df.reset_index(inplace=True)
-                # =================================ANGEL===============================================
+                # =================================End of A===============================================
                 sentimentVector = []
                 addIndex = int(len(df) / self.sentiment_vector_size) #number of rows per bucket
                 files_lengths.append(len(df))
                 bucket = self.sentiment_vector_size # always 10 buckets
-                window = [float(row['Sentiment number']) for i, row in df.iterrows() if
-                            i < self.window_size]  # take the first [window_size] records and get the sentiment number
+                window = [float(row["Sentiment score"]) for i, row in df.iterrows() if
+                            i < self.window_size]  # take the first [window_size] records and get the sentiment score
                 for i, row in df.iterrows():
                     if i >= (self.window_size - 1):
                         # if get out of window_size: slide the window to next bucket
                         if i + 1 < len(df):
-                            window.append(float(df.iloc[i + 1]['Sentiment number']))
+                            window.append(float(df.iloc[i + 1]['Sentiment score']))
                             del window[0]
                     try:
                         # Divides left hand operand by right hand operand and returns remainder
@@ -178,7 +218,9 @@ class Vectorizer:
 
 
 def test():
-    sentiment_scores_folder = './data/Sentiment_Health'
+    sentiment_scores_folder = 'C:\\Users\\angel\\NLP\\New_SAscores_folder'
+
+
     vectz = Vectorizer(sentiment_scores_folder)
     sentiment_vectors = vectz.vectorize()
     rec_n_clusters = vectz.compute_suggested_n_clusters(sentiment_vectors, )

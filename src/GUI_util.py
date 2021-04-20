@@ -248,7 +248,7 @@ def GUI_top(config_input_output_options,config_filename):
         # second digit for new features
         # third digit for bug fixes and minor changes to current version
         # must also change the Release version in readMe on GitHub
-        release_version_var.set("1.3.7")
+        release_version_var.set("1.3.8")
         if config_filename!='NLP-config.txt':
 
             y_multiplier_integer=-.7

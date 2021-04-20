@@ -188,7 +188,8 @@ def manualCoref(original_file, corefed_file, outputFile, coRefOptions):
 # check if the coreference ends successfully
 # return files_to_open, error indicator
 # 0: no error; 1: error and no manual coref;
-def manual_coreference(inputFilename, corefed_file, manual_Coref, coRefOptions, filesToOpen):
+def manual_coreference(inputFilename, corefed_file, manual_Coref, coRefOptions):
+    filesToOpen=[]
     # check if corefed_file is empty:
     f = open(corefed_file, "r", encoding='utf-8', errors='ignore')
     corefed_text = f.read()
@@ -203,18 +204,18 @@ def manual_coreference(inputFilename, corefed_file, manual_Coref, coRefOptions, 
                 if manualCoref(inputFilename, inputFilename, corefed_file, coRefOptions) == 0:  # use the orginal file as coref
                     # manual coref success!
                     filesToOpen.append(corefed_file)
-                    return filesToOpen, 0
+                    return filesToOpen
                 else:
                     # manual coref error!
-                    return filesToOpen, 1
+                    return None
             else:
                 # user don't want to use the original file to continue manual coref
-                return filesToOpen, 1
+                return None
         else:
             mb.showinfo("Co-Reference Resolution Error",
                         "Something went wrong for Co-Reference Resolution; the Co-Referenced output file is empty.\n\nPlease, check the command line, most likely for 'GC overhead limit exceeded' when processing large files.\n\n")
 
-            return filesToOpen, 1
+            return None
     # coreference success!
     else:
         if manual_Coref:
@@ -222,14 +223,14 @@ def manual_coreference(inputFilename, corefed_file, manual_Coref, coRefOptions, 
         if corefed_file not in filesToOpen: 
             filesToOpen.append(corefed_file)
 
-    return filesToOpen, 0
+    return filesToOpen
 
 
 # return file_to_open
 def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts,
         memory_var,coRefOptions, manual_Coref):
 
-    filesToOpen = []
+    corefed_file = []
 
     # check that the CoreNLPdir as been setup
     CoreNLPdir=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_coreference_util', 'Stanford CoreNLP')
@@ -254,27 +255,18 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
         corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename,input_main_dir_path,
                                                                         output_dir_path, openOutputFiles, createExcelCharts,'coref',False,
                                                                         memory_var)
-        # files_to_open, error = manual_coreference(inputFilename, corefed_file[0], manual_Coref, coRefOptions, files_to_open)
-
-    else:
+    else: # dir input
         corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, input_main_dir_path,
                                                                    output_dir_path, openOutputFiles, createExcelCharts,'coref', False,
                                                                    memory_var)
     
-    filesToOpen=corefed_file
-    # TODO Claude take the comment out in the next line to test
-    # manual_Coref=1
     if manual_Coref:
         if len(input_main_dir_path) == 0 and len(inputFilename) > 0:
             for file in corefed_file:
                 if file[-4:] == ".txt":
                     error = manualCoref(inputFilename, file, file, coRefOptions)
-                    # filesToOpen, error = manual_coreference(inputFilename, file, manual_Coref, coRefOptions,
-                    #                                    filesToOpen)
-                     # print("List of files to Open: ", filesToOpen)
-                    return filesToOpen, error
-            # return filesToOpen, error
+                    # return corefed_file
         else:
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Feature Not Available', 'Manual Coreference is only available when processing single file, not input directory.')
             # input_main_dir_path = os.path.split(inputFilename)[0]
-    return filesToOpen, 0
+    return corefed_file

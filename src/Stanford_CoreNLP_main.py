@@ -101,21 +101,20 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                     tempOutputFile = IO_CoNLL_util.compute_sentence_table(tempOutputFiles[0], outputDir)
                     filesToOpen.append(tempOutputFile)
 
-        if CoNLL_table_analyzer_var and len(filesToOpen)>0:
-            if IO_libraries_util.inputProgramFileCheck('CoNLL_table_analyzer_main.py') == False:
-                return
-            # open the analyzer having saved the new new parser output in config so that it open the right input file
-            if parser:
-                config_filename_temp = 'conll-table-analyzer-config.txt'
-                config_array = ['EMPTY LINE', outputCoNLLfilePath, 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
-                config_util.saveConfig(GUI_util.window, config_filename_temp, config_array, True)
+    if CoNLL_table_analyzer_var:
+        if IO_libraries_util.inputProgramFileCheck('CoNLL_table_analyzer_main.py') == False:
+            return
+        # open the analyzer having saved the new new parser output in config so that it open the right input file
+        config_filename_temp = 'conll-table-analyzer-config.txt'
+        config_array = ['EMPTY LINE', outputCoNLLfilePath, 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
+        config_util.saveConfig(GUI_util.window, config_filename_temp, config_array, True)
 
-                reminders_util.checkReminder(config_filename,
-                                             ['CoNLL table analyzer'],
-                                             "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' where you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words).",
-                                             True)
+        reminders_util.checkReminder(config_filename,
+                                     ['CoNLL table analyzer'],
+                                     "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' where you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words).",
+                                     True)
 
-                call("python CoNLL_table_analyzer_main.py", shell=True)
+        call("python CoNLL_table_analyzer_main.py", shell=True)
 
     if CoreNLP_annotators_var and CoreNLP_annotators_menu_var != '':
 

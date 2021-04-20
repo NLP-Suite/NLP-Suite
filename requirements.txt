@@ -10,8 +10,8 @@ Pillow
 
 striprtf
 
-#used by nominalization
-pywsd~=1.2.4
+#used by nominalization; MUST USE THIS VERSION OR CODE WILL BREAK
+pywsd==1.2.4
 
 #used by stats_visuals_util.text_readability
 textstat~=0.7.0
