@@ -4,7 +4,7 @@
 
 ![logo](https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/lib/images/logo.png)
 
-![image](https://user-images.githubusercontent.com/79026295/115375273-a37fda00-a19b-11eb-86ae-ee7c8d185b8f.png)
+![image](https://user-images.githubusercontent.com/79026295/115375525-e0e46780-a19b-11eb-8394-7c9ad97cfbf1.png)
 
 ## What is NLP Suite
 
