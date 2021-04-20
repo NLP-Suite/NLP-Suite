@@ -131,7 +131,7 @@ def GetNumberOfDocumentsInCSVfile(inputFilename,algorithm,columnHeader='Document
         headers=get_csvfile_headers(inputFilename)
         if not columnHeader in str(headers):
             mb.showwarning(title='csv file error',
-                           message="The selected cvf file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + "\n\nThe '" + algorithm + "' algorithm requires in input a csv file with a \'Document ID\' column.\n\nPlease, select a different csv file in input and try again!")
+                           message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + "\n\nThe '" + algorithm + "' algorithm requires in input a csv file with a \'Document ID\' column.\n\nPlease, select a different csv file in input and try again!")
             return None
         columnNumber=get_columnNumber_from_headerValue(headers,columnHeader)
         maxnum = max(int(column[columnNumber].replace(',', '')) for column in reader)

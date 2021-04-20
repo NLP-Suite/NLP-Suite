@@ -40,12 +40,49 @@ import file_utf8_compliance_util as utf
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
         hierarchical_clustering, SVD, NMF, best_topic_estimation):
 
-# check all IO options ---------------------------------------------------------------------------
+    # check all IO options ---------------------------------------------------------------------------
+    # check that the default directory of sentiment scores exists under the new default outputDir
+    # sentiment_scores_folder = os.path.join(outputDir, "sentiment_analysis_scores_" + os.path.basename(inputDir))
+
+    # computeSAScores = False
+    # if os.path.exists(sentiment_scores_input):
+    #     if sentimentAnalysis == True:
+    #         if nSAscoreFiles>0:
+    #             computeSAScores=mb.askyesno("Sentiment Analysis","You have selected to run sentiment analysis on your corpus of stories. But there already exists a set of sentiment scores for this corpus saved in the default output directory:\n\n"+sentiment_scores_input+"\n\nAre you sure you want to recompute the scores?")
+    #             if computeSAScores ==True:
+    #                 # remove current sentiment scores directory and recreate it
+    #                 shutil.rmtree(sentiment_scores_input)
+    #                 os.mkdir(sentiment_scores_input)
+    #             else:
+    #                 if hierarchical_clustering == False and SVD == False and NMF == False:
+    #                     mb.showwarning(title='Option selection error',
+    #                                    message='No data reduction options have been selected.\n\nPlease, select an option and try again.')
+    #                     return
+    #                 else:
+    #                     answer = mb.askyesno("Sentiment Analysis",
+    #                                                   "The 'Shape of Stories' algorithms will not compute sentiment scores and will continue running the data reduction algorithms using the already available scores.\n\nAre you sure you want to continue?")
+    #                     if answer == False:
+    #                         return
+    #         else:
+    #             computeSAScores=True
+    #     else:
+    #         if nSAscoreFiles==0:
+    #             mb.showwarning(title="Folder error",
+    #                            message="There are no csv files of sentiment analysis scores in the directory\n\n" +str(sentiment_scores_input) + \
+    #                                     "\n\nYou will need to run the sentiment analysis algorithm. Please, tick the checkbox to run Sentiment Analysis and try again.")
+    #             return
+    # else:
+    #     os.mkdir(sentiment_scores_input)
+    #     computeSAScores = True
 
     if sentimentAnalysis==False and corpus_analysis==False and hierarchical_clustering==False and SVD==False and NMF==False and best_topic_estimation==False:
         mb.showwarning(title='Option selection error',
                        message='No options have been selected.\n\nPlease, select an option and try again.')
         return
+
+    if check_IO_requirements():
+        return
+
 
     # check if "Shape of Stories" default output directory exists
     sosDir = os.path.join(outputDir, "Shape of Stories")
@@ -75,94 +112,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                                      title_options,
                                      message,
                                      True)
-
-    if inputDir=='' and inputFilename!='':
-        if sentimentAnalysis == True:
-            mb.showwarning(title='Input folder error',
-                           message='The selected option requires in input a set of txt files for which to compute sentiment scores.\n\nPlease, use the IO widget \'Select INPUT files directory\' to select the appropriate directory and try again.')
-            return
-        if corpus_analysis == True:
-            mb.showwarning(title='Input folder error',
-                           message='The selected option requires in input a set of txt files for which to compute corpus statistics.\n\nPlease, use the IO widget \'Select INPUT files directory\' to select the appropriate directory and try again.')
-            return
-
-    if inputFilename!='':
-        # get headers so as to check that it is a sentiment score file
-        str1=' '
-        str2=str1.join(IO_csv_util.get_csvfile_headers(inputFilename))
-        if not('Document' in str2 and 'Sentence' in str2 and 'Sentiment' in str2):
-            mb.showwarning(title='Input file error',
-                           message='The selected file is not a file of sentiment scores.\n\nPlease, use the IO widget \'Select INPUT csv file\' to select the appropriate csv file containing sentiment scores and try again.')
-            return
-
-        computeSAScores = False
-
-        nSAscoreFiles = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename,'Shape of Stories')
-        if nSAscoreFiles == None:
-            return
-        if nSAscoreFiles < 50:
-            answer = mb.askyesno("Data warning: Data reduction algorithms",
-                                 message="Data reduction algorithms (Hierarchical Clustering, Singular Value Decomposition, Non-Negative Matrix Factorization) require in input a csv file of sentiment analysis scores for a large number of documents (at least 50). The selected input file\n\n" + inputFilename + "\n\ncontains only " + str(
-                                     nSAscoreFiles) + " files. TOO FEW!\n\nYou REALLY should select a different csv file and try again.\n\nAre you sure you want to continue?")
-            if answer == False:
-                return
-    else: # inputDir
-        if sentimentAnalysis == True or corpus_analysis == True:
-            nSAscoreFiles=IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
-            if nSAscoreFiles == 0:
-                mb.showwarning(title="Directory error",
-                               message="Sentiment Analysis and Corpus Statistics algorithms require in input a LARGE set of txt files for which to compute sentiment scores and/or comppute corpus statistics. The selected input directory\n\n" + inputDir + "\n\ndoes not contain any txt files.\n\nPlease, select a different directory (or untick the checkboxes 'Sentiment Analysis' and/or 'Compute & visualize corpus statistics') and try again.")
-                return
-            if nSAscoreFiles < 50 and sentimentAnalysis == True:
-                answer = mb.askyesno("Directory error",
-                                     message="Data reduction algorithms (Hierarchical Clustering, Singular Value Decomposition, Non-Negative Matrix Factorization) require in input a LARGE set of txt files. The selected input directory\n\n" + inputDir + "\n\ncontains only " + str(
-                                         nSAscoreFiles) + " txt files from which to compute sentiment scores. TOO FEW!\n\nYou REALLY should select a different directory (or untick the checkboxes 'Sentiment Analysis') and try again.\n\nAre you sure you want to continue?")
-        if not(sentimentAnalysis) and (hierarchical_clustering or SVD or NMF or best_topic_estimation):
-            nSAscoreFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'csv')
-            if nSAscoreFiles==0:
-                mb.showwarning(title="Directory error",
-                               message="Data reduction algorithms (Hierarchical Clustering, Singular Value Decomposition, Non-Negative Matrix Factorization) require in input a LARGE set of csv files. The selected input directory\n\n" + inputDir + "\n\ndoes not contain any csv files.\n\nPlease, select a different directory (or untick the checkboxes 'Hierarchical Clustering' 'Singular Value Decomposition' 'Non-Negative Matrix Factorization' and try again.")
-                return
-            elif nSAscoreFiles < 50 and sentimentAnalysis == True:
-                answer = mb.askyesno("Data reduction algorithms",
-                                     message="Data reduction algorithms (Hierarchical Clustering, Singular Value Decomposition, Non-Negative Matrix Factorization) require in input a LARGE set of txt files. The selected input directory\n\n" + inputDir + "\n\ncontains only " + str(
-                                         nSAscoreFiles) + " txt files from which to compute sentiment scores. TOO FEW!\n\nYou REALLY should select a different directory (or untick the checkboxes 'Sentiment Analysis') and try again.\n\nAre you sure you want to continue?")
-            if answer == False:
-                return
-
-        # check that the default directory of sentiment scores exists under the new default outputDir
-        # sentiment_scores_folder = os.path.join(outputDir, "sentiment_analysis_scores_" + os.path.basename(inputDir))
-
-        # computeSAScores = False
-        # if os.path.exists(sentiment_scores_input):
-        #     if sentimentAnalysis == True:
-        #         if nSAscoreFiles>0:
-        #             computeSAScores=mb.askyesno("Sentiment Analysis","You have selected to run sentiment analysis on your corpus of stories. But there already exists a set of sentiment scores for this corpus saved in the default output directory:\n\n"+sentiment_scores_input+"\n\nAre you sure you want to recompute the scores?")
-        #             if computeSAScores ==True:
-        #                 # remove current sentiment scores directory and recreate it
-        #                 shutil.rmtree(sentiment_scores_input)
-        #                 os.mkdir(sentiment_scores_input)
-        #             else:
-        #                 if hierarchical_clustering == False and SVD == False and NMF == False:
-        #                     mb.showwarning(title='Option selection error',
-        #                                    message='No data reduction options have been selected.\n\nPlease, select an option and try again.')
-        #                     return
-        #                 else:
-        #                     answer = mb.askyesno("Sentiment Analysis",
-        #                                                   "The 'Shape of Stories' algorithms will not compute sentiment scores and will continue running the data reduction algorithms using the already available scores.\n\nAre you sure you want to continue?")
-        #                     if answer == False:
-        #                         return
-        #         else:
-        #             computeSAScores=True
-        #     else:
-        #         if nSAscoreFiles==0:
-        #             mb.showwarning(title="Folder error",
-        #                            message="There are no csv files of sentiment analysis scores in the directory\n\n" +str(sentiment_scores_input) + \
-        #                                     "\n\nYou will need to run the sentiment analysis algorithm. Please, tick the checkbox to run Sentiment Analysis and try again.")
-        #             return
-        # else:
-        #     os.mkdir(sentiment_scores_input)
-        #     computeSAScores = True
 
 # RUN SCRIPTS ---------------------------------------------------------------------------
 
@@ -249,7 +198,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         sentiment_vectors = vectors
         clusters_file = cl.processCluster(clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters, os.path.join(outputDir, "Hierarchical Clustering Documents.csv"), inputDir)
         vis = viz.Visualizer(outputDir)
-        vis.visualize_clusters(grouped_vectors, "Hierarchical Clustering (HC)", "HC", clusters_file)
+        vis.visualize_clusters(nSAscoreFiles, grouped_vectors, "Hierarchical Clustering (HC)", "HC", clusters_file)
         for i in range(rec_n_clusters):
             filesToOpen.append(os.path.join(outputDir, "HC_Cluster_" + str(i + 1) + ".png"))
             filesToOpen.append(os.path.join(outputDir, "HC_Cluster_" + str(i + 1) + "_subplot.png"))
@@ -263,12 +212,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         clusters_file = cl.processCluster(pos_clusters_indices,scoresFile_list, file_list, sentiment_vectors, rec_n_clusters,
                        os.path.join(outputDir, "SVD Positive Documents.csv"), inputDir)
         vis = viz.Visualizer(outputDir)
-        vis.visualize_clusters(pos_vector_clusters, "Singular Value Decomposition Positive (SVD Positive)", "SVDPositive",
+        vis.visualize_clusters(nSAscoreFiles, pos_vector_clusters, "Singular Value Decomposition Positive (SVD Positive)", "SVDPositive",
                                clusters_file, modes=pos_modes)
         clusters_file = cl.processCluster(neg_clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters,
                        os.path.join(outputDir, "SVD Negative Documents.csv"), inputDir)
         vis = viz.Visualizer(outputDir)
-        vis.visualize_clusters(neg_vector_clusters, "Singular Value Decomposition Negative (SVD Negative)", "SVDNegative",
+        vis.visualize_clusters(nSAscoreFiles, neg_vector_clusters, "Singular Value Decomposition Negative (SVD Negative)", "SVDNegative",
                                clusters_file, modes=neg_modes)
         for i in range(rec_n_clusters):
             filesToOpen.append(os.path.join(outputDir, "SVD_Positive_Cluster_" + str(i + 1) + ".png"))
@@ -285,7 +234,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         clusters_file = cl.processCluster(clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters,
                        os.path.join(outputDir, "NMF Documents.csv"), inputDir)
         vis = viz.Visualizer(outputDir)
-        vis.visualize_clusters(grouped_vectors, "Non-negative Matrix Factorization (NMF)", "NMF", clusters_file)
+        vis.visualize_clusters(nSAscoreFiles, grouped_vectors, "Non-negative Matrix Factorization (NMF)", "NMF", clusters_file)
         for i in range(rec_n_clusters):
             filesToOpen.append(os.path.join(outputDir, "NMF_Cluster_" + str(i + 1) + ".png"))
             filesToOpen.append(os.path.join(outputDir, "NMF_Cluster_" + str(i + 1) + "_subplot.png"))
@@ -501,9 +450,10 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide ways of analyzing the emotional arc of a set of stories and of visualizing common patterns of behavior among the stories.\n\nThe shape of stories algorithms are fundamentally based on sentiment analysis of the input stories and on data reduction of the calculated sentiment scores.\n\n" \
-"In INPUT the algorithms expect either\n   1. a csv file of sentiment scores; the default directory of sentiment scores is a nested subfolders ('Shape of Stories' under the output directory-->basename of original txt directory-->sentiment_analysis_scores_(+basename of original txt directory)\n" \
+"In INPUT the algorithms expect either\n   1. a csv file of sentiment scores or an directory of csv files of sentiment scores\n" \
 "   2. a set of TXT files or CSV files in a directory depending upon the options selected: compute sentiment scores (txt files); compute data-reduction shape-of-stories visuals (csv files).\n\nPlease, use the \'Select INPUT files directory\' IO widget to select the appropriate directory.\n\n" \
-"In OUTPUT the algorithms will produce sentiment analysis scores (if the option is selected) and a number of visual plots (e.g., sentiment arcs).\n\n" \
+"In OUTPUT the algorithms will produce sentiment analysis scores (if the option is selected) and a number of visual plots (e.g., sentiment arcs). " \
+"Output files will be saved in a sub-directory called \'Shape of Stories\' itself a subdirectory of the current default output directory; inside this \'Shape of Stories\' subdirecory all files will be saved inside a further subdirectory with the name of the final part of the input directory.\n\n" \
 "Four different approaches to SENTIMENT ANALYSIS can be used to measure the emotional arc of stories: ANEW, VADER, hedonometer, Stanford CoreNLP neural network approach (recommended).\n\n" \
 "Three different approaches to DATA REDUCTION are used: Hierarchical clustering (HC), Singular Value Decomposition (SVD), Non-Negative Matrix Factorization (NMF).\n\n" \
 "During execution, the algorithm will ask the user to confirm three different PARAMETERS used by the data reduction algorithms: Window size, Sentiment Vector Size, Cluster (modes) size.\n\n" \
@@ -516,20 +466,110 @@ GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_comm
 # check_requirements()
 
 
-def check_requirements(*args):
+def check_IO_requirements(*args):
     inputDir=GUI_util.input_main_dir_path.get()
     inputFilename=GUI_util.inputFilename.get()
     sentimentAnalysis=sentiment_analysis_var.get()
+    corpus_analysis=corpus_analysis_var.get()
+    hierarchical_clustering=hierarchical_clustering_var.get()
+    SVD=SVD_var.get()
+    NMF=NMF_var.get()
+    best_topic_estimation=best_topic_estimation_var.get()
+
+    nSAscoreFiles = None
+    if inputFilename!='':
+        nSAscoreFiles = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename,'Shape of Stories')
+
+    DirErr_txt = "The selected options \'Sentiment analysis\' and/or \'Compute & visualize corpus statistcs\' require in input a LARGE set of txt files for which to compute sentiment scores and/or compute corpus statistics. The selected input directory\n\n" + inputDir + "\n\ndoes not contain any txt files.\n\nPlease, use the IO widget \'Select INPUT files directory\' to select a different directory (or untick the checkboxes 'Sentiment Analysis' and/or 'Compute & visualize corpus statistics') and try again."
+    DirErr_txt_file = "The selected options \'Sentiment analysis\' and/or \'Compute & visualize corpus statistcs\' require in input a LARGE set of txt files for which to compute sentiment scores and/or compute corpus statistics.\n\nPlease, use the IO widget \'Select INPUT files directory\' to select the appropriate directory containg txt files (or untick the checkboxes 'Sentiment Analysis' and/or 'Compute & visualize corpus statistics') and try again."
+    csv_fileWarning = "The data reduction options selected (Hierarchical Clustering and/or Singular Value Decomposition and/or Non-Negative Matrix Factorization) require in input a LARGE set of txt files. The selected input directory\n\n" + inputDir + "\n\ncontains only " + str(
+         nSAscoreFiles) + " txt files from which to compute sentiment scores. TOO FEW!\n\nYou REALLY should select a different directory (or untick the checkbox 'Sentiment Analysis') and try again.\n\nAre you sure you want to continue?"
+    DirErr_fileErr = "The data reduction options selected (Hierarchical Clustering and/or Singular Value Decomposition and/or Non-Negative Matrix Factorization) require in input a LARGE set of csv files in a directory (or a csv file containing sentiment analysis scores). The selected input directory\n\n" + inputDir + "\n\ndoes not contain any csv files.\n\nPlease, select a different directory (or untick the checkboxes 'Hierarchical Clustering' and/or 'Singular Value Decomposition' and/or 'Non-Negative Matrix Factorization' or select an input csv file of sentiment scores) and try again."
+    csv_fileErr='The selected file\n\n' + inputFilename + '\n\nis not a csv file containing sentiment scores.\n\nPlease, use the IO widget \'Select INPUT csv file\' to select the appropriate csv file containing sentiment scores and try again.'
+
+    Error = False
+
+    if inputDir=='' and inputFilename!='':
+        if sentimentAnalysis == True:
+            mb.showwarning(title='Input directory error',
+                           message=DirErr_txt_file)
+            return
+        if corpus_analysis == True:
+            mb.showwarning(title='Input directory error',
+                           message=DirErr_txt)
+            return
+
+    if inputFilename!='':
+        # get headers so as to check that it is a sentiment score file
+        str1=' '
+        str2=str1.join(IO_csv_util.get_csvfile_headers(inputFilename))
+        if not('Document' in str2 and 'Sentence' in str2 and 'Sentiment' in str2):
+            mb.showwarning(title='csv file error',
+                           message=csv_fileErr)
+            return
+
+        computeSAScores = False
+
+        nSAscoreFiles = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename,'Shape of Stories')
+        if nSAscoreFiles == None:
+            return
+        if nSAscoreFiles < 50:
+            answer = mb.askyesno("Data warning: Data reduction algorithms",
+                                 message=csv_fileWarning)
+            if answer == False:
+                return
+    else: # inputDir
+        if inputDir!='':
+            if sentimentAnalysis == True or corpus_analysis == True:
+                nSAscoreFiles=IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
+                if nSAscoreFiles == 0:
+                    mb.showwarning(title="Directory error",
+                                   message=DirErr_txt)
+                    return
+                if nSAscoreFiles < 50 and sentimentAnalysis == True:
+                    answer = mb.askyesno("Directory error",
+                                         message=Dir_Err_txt)
+
+            if (not sentimentAnalysis) and (hierarchical_clustering or SVD or NMF or best_topic_estimation):
+                nSAscoreFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'csv')
+                if nSAscoreFiles==0:
+                    mb.showwarning(title="Directory error",
+                                   message=DirErr_fileErr)
+                    return
+                elif nSAscoreFiles < 50 and sentimentAnalysis == True:
+                    answer = mb.askyesno("Data reduction algorithms",
+                                         message=csv_fileWarning)
+                if answer == False:
+                    return
+
+    # check input file that must be a csv file containing sentiment analysis score of any data reduction options are ticked
+    if inputFilename!='' and sentiment_analysis_var.get() == False and corpus_analysis_var.get() == False and (
+            hierarchical_clustering_var.get() == True or SVD_var.get() == True or NMF_var.get() == True):
+        nSAscoreFiles = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename,'Shape of Stories')
+        if nSAscoreFiles == None:
+            Error = True
+            return Error
+        # nSAscoreFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'csv')
+        if nSAscoreFiles < 50:
+            mb.showwarning(title="Data warning: Data reduction algorithms",
+                                 message=csv_fileWarning)
+            Error = True
+            return Error
+    # check that there is inputDir value if sentiment analysis and/or corpus are checked
     if inputDir=='' and sentimentAnalysis == True or corpus_analysis_var.get() == True:
         mb.showwarning(title='Input folder error',
-                       message='The \'Sentiment analysis\' and \'Compute & visualize corpus statistcs\' options require in input a set of txt files for which to compute sentiment scores and/or corpus statistics.\n\nPlease, use the IO widget \'Select INPUT files directory\' to select the appropriate directory and try again.')
-        return
+                       message=DirErr_txt)
+        Error = True
+        return Error
+
+    # check inputDir files that must be txt if sentiment analysis and/or corpus are checked
     if inputDir!='' and sentiment_analysis_var.get() == True or corpus_analysis_var.get() == True:
         nSAscoreFiles=IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
         if nSAscoreFiles==0:
             mb.showwarning(title="Directory error",
-                           message="Sentiment Analysis and Corpus Statistics algorithms require in input a set of txt files for which to compute sentiment scores and/or create statistics. The selected input directory\n\n"+inputDir+"\n\ndoes not contain any txt files.\n\nPlease, select a different directory (or untick the checkboxes 'Sentiment Analysis' and/or 'Compute & visualize corpus statistics') and try again.")
-            return
+                           message=DirErr_txt)
+            Error = True
+            return Error
         if sentiment_analysis_var.get() == True:
             title_options = ['Stanford CoreNLP Sentiment Analysis system requirements']
             message = 'The Stanford CoreNLP Sentiment Analysis tool requires two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/'
@@ -537,32 +577,31 @@ def check_requirements(*args):
                                          title_options,
                                          message,
                                          True)
-            return
+            Error = True
+            return Error
+
+    # check data reduction and IO input values
     if inputFilename=='' and sentiment_analysis_var.get() == False and corpus_analysis_var.get() == False and (
             hierarchical_clustering_var.get() == True or SVD_var.get() == True or NMF_var.get() == True):
-        mb.showwarning(title="Data warning: Data reduction algorithms",
-                       message="Data reduction algorithms (Hierarchical Clustering, Singular Value Decomposition, Non-Negative Matrix Factorization) require in input a csv file of sentiment analysis scores.\n\nPlease, use the IO widget \'Select INPUT csv file\' and try again.")
-    if inputFilename!='' and sentiment_analysis_var.get() == False and corpus_analysis_var.get() == False and (
-            hierarchical_clustering_var.get() == True or SVD_var.get() == True or NMF_var.get() == True):
-        nSAscoreFiles = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename,'Shape of Stories')
-        if nSAscoreFiles == None:
-            return
-        # nSAscoreFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'csv')
-        if nSAscoreFiles < 50:
+        nSAscoreFiles=IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'csv')
+        if nSAscoreFiles==0:
             mb.showwarning(title="Data warning: Data reduction algorithms",
-                                 message="Data reduction algorithms (Hierarchical Clustering, Singular Value Decomposition, Non-Negative Matrix Factorization) require in input a csv file of sentiment analysis scores for a large number of documents (at least 50). The selected input file\n\n" + inputFilename + "\n\ncontains only " + str(
-                                     nSAscoreFiles) + " files. TOO FEW!\n\nYou REALLY should select a different csv file and try again.")
+                           message=csv_fileWarning)
+        Error = True
+        return Error
 
-sentiment_analysis_var.trace('w',check_requirements)
-corpus_analysis_var.trace('w',check_requirements)
-hierarchical_clustering_var.trace('w',check_requirements)
-SVD_var.trace('w',check_requirements)
-NMF_var.trace('w',check_requirements)
+    return Error
 
-check_requirements()
+sentiment_analysis_var.trace('w',check_IO_requirements)
+corpus_analysis_var.trace('w',check_IO_requirements)
+hierarchical_clustering_var.trace('w',check_IO_requirements)
+SVD_var.trace('w',check_IO_requirements)
+NMF_var.trace('w',check_IO_requirements)
+
+check_IO_requirements()
 
 def change_input(*args):
-    check_requirements()
+    check_IO_requirements()
 GUI_util.inputFilename.trace('w',change_input)
 GUI_util.input_main_dir_path.trace('w',change_input)
 

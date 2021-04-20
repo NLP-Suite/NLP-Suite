@@ -22,11 +22,11 @@ class Visualizer:
     method: "Single Vector Decomposition Positive (SVDPositive)"
     method_short: "SVDPositive"
     """
-    def visualize_clusters(self, grouped_vectors, method, method_short, cluster_file, modes=None):
+    def visualize_clusters(self, numberOfSentimenFiles, grouped_vectors, method, method_short, cluster_file, modes=None):
         titles = []
         file_names = []
         for i in range(len(grouped_vectors)):
-            titles.append(method + "\n" + "Cluster " + str(i + 1) + " (N = " + str(len(cluster_file[i])) + ")")
+            titles.append(method + "\n" + "Cluster " + str(i + 1) + " (N = " + str(len(cluster_file[i])) + "/" + str(numberOfSentimenFiles) + ")")
             file_names.append(method_short + "_cluster_" + str(i + 1))
         for i in range(len(grouped_vectors)):
             cluster_arr = grouped_vectors[i]

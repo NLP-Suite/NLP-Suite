@@ -324,15 +324,16 @@ def CoreNLP_annotate(inputFilename,
                 #generating output from json file for specific annotators
                 if "parser" in annotator_chosen:
                     if "pcfg" in annotator_chosen:
-                        sub_result = routine(docID, docName, sentenceID, recordID, True,CoreNLP_output, **kwargs)
+                        sub_result, recordID = routine(docID, docName, sentenceID, recordID, True,CoreNLP_output, **kwargs)
                     else:
-                        sub_result = routine(docID, docName, sentenceID, recordID, False,CoreNLP_output, **kwargs)
+                        sub_result, recordID = routine(docID, docName, sentenceID, recordID, False,CoreNLP_output, **kwargs)
                 elif "DepRel" in annotator_chosen or "All POS" in annotator_chosen:
-                     sub_result = routine(docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
+                     sub_result, recordID = routine(docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
                 else:
-                    sub_result = routine(docID, docName, sentenceID, CoreNLP_output, **kwargs) #the sentenceID records the start sentence's ID in the whole file just in case that the original file was split
+                    sub_result, recordID = routine(docID, docName, sentenceID, CoreNLP_output, **kwargs)
                 # sentenceID = new_sentenceID
                 #write html file from txt input
+
                 if output_format == 'text':
                     outputFilename = IO_files_util.generate_output_file_name(docName, inputDir, outputDir, '.txt', 'CoreNLP_'+annotator_chosen)
                     with open(outputFilename, "a+") as text_file:
@@ -1003,7 +1004,7 @@ def process_json_all_postag(documentID, document, sentenceID, recordID,json, **k
         # print("The result after adding the ", sentenceID, "th sentence: ")
         # pprint.pprint(result)
 
-    return result
+    return result, recordID
 
 def process_json_deprel(documentID, document, sentenceID, recordID,json, **kwargs):
     print("   Processing Json output file for DepRel")
@@ -1055,7 +1056,7 @@ def process_json_deprel(documentID, document, sentenceID, recordID,json, **kwarg
             if extract_date_from_filename_var:
                 temp.append(date_str)
             result.append(temp)
-    return result
+    return result, recordID
 
 def process_json_parser(documentID, document, sentenceID, recordID, pcfg, json, **kwargs):
     print("   Processing Json output file for Parser")
@@ -1127,7 +1128,9 @@ def process_json_parser(documentID, document, sentenceID, recordID, pcfg, json, 
         # print("The result after adding the ", sentenceID, "th sentence: ")
         # pprint.pprint(result)
 
-    return result
+    return result, recordID
+
+
 def similar_string_floor_filter(str1, str2):
     dist = nltk.edit_distance(str1, str2)
     if dist <= 5:
