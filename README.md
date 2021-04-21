@@ -1,5 +1,7 @@
 # NLP Suite
 
+After downloading, installing, and running the NLP_welcome_main.py this is what the NLP Graphical User Interface (GUI) will look like:
+
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/NLP-Suite/NLP-Suite?color=Green&label=Latest%20Version)
 
 ![image](https://user-images.githubusercontent.com/79026295/115375823-26a13000-a19c-11eb-98cc-6726e3eaf7b8.png)
