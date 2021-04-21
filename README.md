@@ -30,17 +30,6 @@ To install NLP Suite:
     - [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Mac)
 5. Follow the installation by reading any terminal or console output. 
 
-## External Freeware Software
-
-To get the NLP Suite full functionality, you may need to install external **freeware** software.
-
-- [Stanford CoreNLP](https://stanfordnlp.github.io/CoreNLP/download.html) NLP software (CoreNLP requires [Java version +8](https://www.oracle.com/java/technologies/javase-downloads.html))
-- [SENNA](https://ronan.collobert.com/senna/) NLP software
-- [WordNet](https://wordnet.princeton.edu/download) Lexical database 
-- [Mallet](http://mallet.cs.umass.edu/download.php) Topic Modeling software
-- [Google Earth Pro](https://www.google.com/earth/download/gep/agree.html?hl=en-GB) Geographic Information System (GIS) software
-- [Gephi](https://gephi.org/users/download/) Network visualization software
-
 ## Supported Systems
 
 The following systems have been tested on:
