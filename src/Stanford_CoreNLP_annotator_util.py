@@ -330,7 +330,7 @@ def CoreNLP_annotate(inputFilename,
                 elif "DepRel" in annotator_chosen or "All POS" in annotator_chosen:
                      sub_result, recordID = routine(docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
                 else:
-                    sub_result, recordID = routine(docID, docName, sentenceID, CoreNLP_output, **kwargs)
+                    sub_result, recordID = routine(docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
                 # sentenceID = new_sentenceID
                 #write html file from txt input
 
