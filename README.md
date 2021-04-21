@@ -2,8 +2,6 @@
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/NLP-Suite/NLP-Suite?color=Green&label=Latest%20Version)
 
-![logo](https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/lib/images/logo.png)
-
 ![image](https://user-images.githubusercontent.com/79026295/115375823-26a13000-a19c-11eb-98cc-6726e3eaf7b8.png)
 
 ## What is NLP Suite
