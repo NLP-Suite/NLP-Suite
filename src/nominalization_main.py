@@ -32,7 +32,8 @@ IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNe
 from nltk import tokenize
 from pywsd import disambiguate
 import string
-from nltk.corpus import wordnet as wn
+M# from nltk.corpus import wordnet as wn
+from nltk.corpus import wordnet
 import re
 from collections import Counter
 
@@ -99,8 +100,8 @@ def nominalized_verb_detection(docID,doc,sent):
                     false_word.append(word)
                     noun_cnt[word] += 1
                     continue
-                if wn.lemmas(word):
-                    for lemma in wn.lemmas(word): 
+                if wordnet.lemmas(word):
+                    for lemma in wordnet.lemmas(word):
                         derive = lemma.derivationally_related_forms()
                         if derive not in derivationals and derive:
                             derivationals.append(derive)

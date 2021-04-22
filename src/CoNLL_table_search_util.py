@@ -17,6 +17,7 @@
 # ALL SEARCHES OCCURR WITHIN SENTENCES.
 # cd C:\Program Files (x86)\PC-ACE\NLP\Miscellaneous
 # Python Conll_search_GUI_v3.py
+import logging
 import sys
 
 import Stanford_CoreNLP_tags_util
@@ -419,15 +420,16 @@ def search_CoNLL_table(list_sentences, form_of_token, _field_='FORM', related_to
                        Sentence_ID="*", _tok_postag_='*', _tok_deprel_='*'):
     list_queried = []
     for sent in list_sentences:
-        try:
-            list_word_indices = search_related_words2(form_of_token, sent, _field_, _tok_postag_, _tok_deprel_)
-        except:
-            mb.showwarning(title='CoNLL table error',
-                           message="The records in the CoNLL table appear to be out of sequence, leading to computing "
-                                   "errors. Please, make sure that you haven't tinkered with the file sorting the data "
-                                   "by any columns other than RecordID.\n\nSort the data by RecordID (col. 9) and try "
-                                   "again.")
-            sys.exit(0)
+        # try:
+        list_word_indices = search_related_words2(form_of_token, sent, _field_, _tok_postag_, _tok_deprel_)
+        # except Exception as e:
+        #     logging.error(e)
+        #     mb.showwarning(title='CoNLL table error',
+        #                    message="The records in the CoNLL table appear to be out of sequence, leading to computing "
+        #                            "errors. Please, make sure that you haven't tinkered with the file sorting the data "
+        #                            "by any columns other than RecordID.\n\nSort the data by RecordID (col. 9) and try "
+        #                            "again.")
+        #     sys.exit(0)
         # obtain the full sentence
         whole_sent = ""
         for token in sent:
