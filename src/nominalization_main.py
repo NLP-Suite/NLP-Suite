@@ -1,23 +1,15 @@
 #written by Catherine Xiao, Apr 2018
 #edited by Elaine Dong, Dec 04 2019
 #edited by Roberto Franzosi, Nov 2019, October 2020
-#input: 1. file name
-#       2. output location
 
 import sys
-
-import GUI_IO_util
-import IO_files_util
 import GUI_util
 import IO_libraries_util
-import IO_csv_util
-import IO_user_interface_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"Nominalization",['tkinter','nltk','pywsd','csv','re','os','collections'])==False:
     sys.exit(0)
 
 import os
-
 import tkinter as tk
 import tkinter.messagebox as mb
 import nltk
@@ -30,13 +22,17 @@ IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
 
 from nltk import tokenize
+# MUST use this  version or code wll break pywsd~=1.2.4 pip install pywsd~=1.2.4
 from pywsd import disambiguate
+from nltk.corpus import wordnet as wn
 import string
-M# from nltk.corpus import wordnet as wn
-from nltk.corpus import wordnet
 import re
 from collections import Counter
 
+
+import IO_files_util
+import IO_csv_util
+import IO_user_interface_util
 import Excel_util
 import GUI_IO_util
 
@@ -100,8 +96,8 @@ def nominalized_verb_detection(docID,doc,sent):
                     false_word.append(word)
                     noun_cnt[word] += 1
                     continue
-                if wordnet.lemmas(word):
-                    for lemma in wordnet.lemmas(word):
+                if wn.lemmas(word):
+                    for lemma in wn.lemmas(word): 
                         derive = lemma.derivationally_related_forms()
                         if derive not in derivationals and derive:
                             derivationals.append(derive)
@@ -194,7 +190,6 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
 
         #add all into a sum
         result_dir = []
-        result_dir.append(["word","is nominalized", "file name"])
         docID=0
         result2 = []
         result_dir2=[]
@@ -209,7 +204,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
             print("Processing document", doc, "\n")
             #open the doc and create the list of result (words, T/F)
             fin = open(doc, 'r',encoding='utf-8',errors='ignore')
-            # result1 contains the sentence and nominalized values fora a specific document
+            # result1 contains the sentence and nominalized values for a specific document
             result, result1 = nominalized_verb_detection(docID,doc,fin.read())
             # result2 contains the sentence and nominalized values for all documents
             result2.extend(result1)
@@ -217,7 +212,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
 
             # list all verbs as TRUE/FALSE if nominalized
             for word, boolean in result:
-                result_dir.append([word, boolean, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                result_dir.append([word, boolean, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
             result_dir2.extend(result_dir)
 
@@ -319,6 +314,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
             list_to_csv(output_filename_bySentenceIndex, result2)
 
             # list all verbs as TRUE/FALSE if nominalized
+            result_dir2.insert(0, ["Word", "Is nominalized", "Document ID", "Document"])
             list_to_csv(output_filename_TRUE_FALSE_dir, result_dir2)
 
 
@@ -336,14 +332,16 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
 
             if createExcelCharts == True:
                 # pie chart of nominalized verbs
-                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], output_filename_nominalized_frequencies,outputDir,'NOM_verb'
-                                              "Nominalized verbs", ["pie"])
+                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], output_filename_dir_nominalized_frequencies,
+                                            outputDir,'NOM_verb',
+                                            "Nominalized verbs", ["pie"])
                 if len(Excel_outputFilename) > 0:
                     filesToOpen.append(Excel_outputFilename)
 
                 # pie chart of nouns
-                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_noun_list], output_filename_noun_frequencies, outputDir,'NOM_noun',
-                                              "Nouns", ["pie"])
+                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_noun_list], output_filename_dir_noun_frequencies,
+                                            outputDir,'NOM_noun',
+                                            "Nouns", ["pie"])
                 if len(Excel_outputFilename) > 0:
                     filesToOpen.append(Excel_outputFilename)
 

@@ -104,8 +104,9 @@ def run(inputFilename,
 
 # START PROCESSING ---------------------------------------------------------------------------------------------------
 
-	# save original filename since it will be changed by the pipeline but the original filename is used by the kml script
+	# save original filename/Dir since it will be changed by the pipeline but the original filename is used by the kml script
 	inputFilenameSv = inputFilename
+	inputDirSv = inputDir
 
 	# checking for txt: NER=='LOCATION', provide a csv output with column: [Locations]
 	if NER_extractor_var==True:
@@ -161,6 +162,8 @@ def run(inputFilename,
 		location_num=0
 		filenamePositionInCoNLLTable=0
 		GUI_util.inputFilename.set(outputFilename)
+		if GUI_util.input_main_dir_path.get()!='':
+			GUI_util.input_main_dir_path.set('')
 		locationColumn='Location'
 
 	geocoder = 'Nominatim'
@@ -192,6 +195,11 @@ def run(inputFilename,
 																				Google_API,
 																				country_bias,
 																				encoding_var)
+			if geocodedLocationsoutputFilename=='':
+				GUI_util.inputFilename.set(inputFilenameSv)
+				GUI_util.input_main_dir_path.set(inputDirSv)
+				return
+
 			# Add in date info here if it exists
 			if datePresent:
 				temp_geocoded_csv = pd.read_csv(geocodedLocationsoutputFilename)
@@ -202,6 +210,8 @@ def run(inputFilename,
 			# when using the locations file the inputFilenameSv leads to errors in extract_index in GIS_locations_util; it does not happen with SVO
 			inputFilenameSv=inputFilename
 			GUI_util.inputFilename.set(geocodedLocationsoutputFilename)
+			if GUI_util.input_main_dir_path.get()!='':
+				GUI_util.input_main_dir_path.set('')
 
 
 	if inputIsGeocoded==False and geocoder_var.get()=='':

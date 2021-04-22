@@ -1,8 +1,10 @@
 # NLP Suite
 
+After downloading, installing, and running the NLP_welcome_main.py this is what the NLP Graphical User Interface (GUI) will look like:
+
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/NLP-Suite/NLP-Suite?color=Green&label=Latest%20Version)
 
-![logo](https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/lib/images/logo.png)
+![image](https://user-images.githubusercontent.com/79026295/115375823-26a13000-a19c-11eb-98cc-6726e3eaf7b8.png)
 
 ## What is NLP Suite
 
@@ -27,17 +29,6 @@ To install NLP Suite:
     - [Windows](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows)
     - [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Mac)
 5. Follow the installation by reading any terminal or console output. 
-
-## External Freeware Software
-
-To get the NLP Suite full functionality, you may need to install external **freeware** software.
-
-- [Stanford CoreNLP](https://stanfordnlp.github.io/CoreNLP/download.html) NLP software (CoreNLP requires [Java version +8](https://www.oracle.com/java/technologies/javase-downloads.html))
-- [SENNA](https://ronan.collobert.com/senna/) NLP software
-- [WordNet](https://wordnet.princeton.edu/download) Lexical database 
-- [Mallet](http://mallet.cs.umass.edu/download.php) Topic Modeling software
-- [Google Earth Pro](https://www.google.com/earth/download/gep/agree.html?hl=en-GB) Geographic Information System (GIS) software
-- [Gephi](https://gephi.org/users/download/) Network visualization software
 
 ## Supported Systems
 

@@ -40,7 +40,8 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
 
     # check that the SENNA dir as been setup
     SENNAdir = IO_libraries_util.get_external_software_dir('SVO SENNA', 'SENNA')
-    if SENNAdir == None:
+
+    if SENNAdir is None:
         return filesToOpen
 
     # record the time consumption before annotating text in each file
@@ -73,7 +74,11 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
         formatted_table += [[os.path.join(inputDir, inputFilename)] + row for row in result]
         document_lengths.append(len(result))
 
-    max_length = max([len(row) for row in formatted_table])
+    try:
+        max_length = max([len(row) for row in formatted_table])
+    except ValueError:
+        print('Error occurred when trying to read the input file. Please select "check utf-8 encoding" and try again')
+        return []
 
     document_index = 0
 
@@ -103,9 +108,16 @@ def senna_single_file(SENNAdir, inputFilename: str) -> list:
     senna_table = []
 
     # Read the input file
-    with open(inputFilename, 'r') as file:
-        input_text = file.read().strip()
-        file.close()
+    try:
+        with open(inputFilename, 'r', encoding='utf-8') as file:
+            input_text = file.read().strip()
+            file.close()
+    except UnicodeDecodeError:
+        print(
+            'We have skipped input file %s because it contains non-utf8 characters and is unable to decode. '
+            'Please select \"Check corpus for utf-8 encoding before running\"' % inputFilename)
+        return []
+
     encoded_input = input_text.replace('\n', ' ').encode()
 
     if check_system() == 'mac':
@@ -161,7 +173,8 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
     sentence_start_index = []
     df = input_df
     new_df = pd.DataFrame(
-        columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'S(NP)', 'O(NP)', 'LOCATION', 'TIME', 'Sentence'])
+        columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'S(NP)', 'O(NP)', 'LOCATION', 'TIME',
+                 'Sentence'])
     document_id, sent_id = 0, 0
     filter_s, filter_v, filter_o = filter_svo
 
@@ -313,9 +326,11 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
 
                 formatted_input_file_name = IO_csv_util.dressFilenameForCSVHyperlink(df.iloc[a, 1])
                 new_row = pd.DataFrame(
-                    [[document_id, sent_id, formatted_input_file_name, SVO['S'], SVO['V'], SVO['O'], SVO['S(NP)'], SVO['O(NP)'],
+                    [[document_id, sent_id, formatted_input_file_name, SVO['S'], SVO['V'], SVO['O'], SVO['S(NP)'],
+                      SVO['O(NP)'],
                       SVO['LOCATION'], SVO['TIME'], sentence]],
-                    columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'S(NP)', 'O(NP)','LOCATION', 'TIME', 'Sentence'])
+                    columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'S(NP)', 'O(NP)', 'LOCATION',
+                             'TIME', 'Sentence'])
                 new_df = new_df.append(new_row, ignore_index=True)
 
         sent_id += 1

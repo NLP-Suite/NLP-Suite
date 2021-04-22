@@ -340,15 +340,15 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
     # Combine all CSV files when processing an input dir
     # https://github.com/ekapope/Combine-CSV-files-in-the-folder/blob/master/Combine_CSVs.py
     if inputDir != '':
-        combined_csv_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SentComp',
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SentComp',
                                                                         'dir', '')
         combined_data = pd.concat([pd.read_csv(f) for f in output_csv])
-        combined_data.to_csv(combined_csv_filename, index=False, encoding='utf-8')
+        combined_data.to_csv(outputFilename, index=False, encoding='utf-8')
         # Delete the individual CSV files
         for f in output_csv:
             os.unlink(f)
         # # Add to files to open
-        filesToOpen.append(combined_csv_filename)
+        filesToOpen.append(outputFilename)
         mb.showwarning(title='Warning',
                        message='The sentence complexity algorithm will NOT produce the 3 expected Excel line charts of sentence complexity scores by sentence index for the ' + str(
                            Ndocs) + ' files processed since this would produce too many files in output.')
@@ -361,7 +361,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
         # sentence length
         columns_to_be_plotted = [[2, 4]]
 
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                   outputFileLabel='SentComp',
                                                   chart_type_list=["line"],
                                                   chart_title='Sentence Length (in Number of Words) by Sentence Index',
@@ -392,7 +392,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
         # Yngve and Frazier scores
         columns_to_be_plotted = [[2, 5], [2, 7]]
 
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                   outputFileLabel='SentComp',
                                                   chart_type_list=["line"],
                                                   chart_title='"Sentence Complexity (Yngve and Frazier Scores by Sentence Index)',
@@ -421,7 +421,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
         # Yngve and Frazier sums
         columns_to_be_plotted = [[2, 6], [2, 8]]
 
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                   outputFileLabel='SentComp',
                                                   chart_type_list=["line"],
                                                   chart_title='"Sentence Complexity (Yngve and Frazier Sums by Sentence Index)',
@@ -698,7 +698,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                 columns_to_be_plotted = [[2, 5], [2, 6], [2, 7], [2, 9], [2, 10], [2, 11]]
                 hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
 
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
                                                           outputFileLabel='READ',
                                                           chart_type_list=["line"],
                                                           chart_title='Text Readability',
@@ -726,7 +726,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 
                 columns_to_be_plotted = [[2, 13]]
                 hover_label = ['Sentence']
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
                                                           outputFileLabel='READ',
                                                           chart_type_list=["line"],
                                                           chart_title='Text Readability',
@@ -757,7 +757,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
             columns_to_be_plotted = [[0, 12]]
             hover_label = []
 
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
                                                       outputFileLabel='READ',
                                                       chart_type_list=["bar"],
                                                       chart_title='Frequency of Sentences by Readability Consensus of Grade Level',

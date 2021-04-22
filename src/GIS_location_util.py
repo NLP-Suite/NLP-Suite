@@ -1,16 +1,10 @@
 import sys
-
-import GUI_IO_util
-import IO_files_util
-
 import GUI_util
 import IO_libraries_util
-import IO_user_interface_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"GIS_location_util",['os','re','tkinter','csv','pandas'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"GIS_location_util",['re','tkinter','csv','pandas'])==False:
 	sys.exit(0)
 
-import os
 import tkinter.messagebox as mb
 import re
 import pandas as pd
@@ -18,6 +12,7 @@ import csv
 
 import IO_CoNLL_util
 import IO_csv_util
+import IO_user_interface_util
 
 def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_name):
 	geo_index = 0
@@ -167,6 +162,7 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 				locList.append(row[locationColumnNumber])
 	if len(locList)==0:
 		mb.showwarning(title='Locations', message="There are no locations in your input file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.\n\nNo map via Google Earth Pro can be done.")
+		return
 	else:
 		IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Finished extracting locations from csv file at", True)
 		print("csv file location extraction finished.")

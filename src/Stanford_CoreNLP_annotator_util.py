@@ -142,7 +142,7 @@ def CoreNLP_annotate(inputFilename,
         'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document'],
         # TODO NER with date for dynamic GIS; modified below
         # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
-        'sentiment': ['Document ID', 'Document','Sentence ID', 'Sentence', 'Sentiment number', 'Sentiment label'],
+        'sentiment': ['Document ID', 'Document','Sentence ID', 'Sentence', 'Sentiment score', 'Sentiment label'],
         'All POS':["ID", "Form", "Lemma", "POStag", "Record ID", "Sentence ID", "Document ID", "Document"],
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
         'quote': ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of Quotes'],
@@ -312,32 +312,34 @@ def CoreNLP_annotate(inputFilename,
                     speed_assessment.append(
                         [docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), NN_time_elapsed, file_length,
                          param_string_NN, param_number_NN])
-                if isinstance(routine_list[0][2][0], list):
-                    run_output = [[], []]
-                    POS_WordNet = True
-                else:
-                    run_output = run[3] # []
-                    POS_WordNet = False
+                # if isinstance(routine_list[0][2][0], list):
+                #     run_output = [[], []]
+                #     POS_WordNet = True
+                # else:
+                #     run_output = run[3] # []
+                #     POS_WordNet = False
 
                 # run_output = run[3]
 
                 #generating output from json file for specific annotators
                 if "parser" in annotator_chosen:
                     if "pcfg" in annotator_chosen:
-                        sub_result = routine(docID, docName, sentenceID, recordID, True,CoreNLP_output, **kwargs)
+                        sub_result, recordID = routine(docID, docName, sentenceID, recordID, True,CoreNLP_output, **kwargs)
                     else:
-                        sub_result = routine(docID, docName, sentenceID, recordID, False,CoreNLP_output, **kwargs)
+                        sub_result, recordID = routine(docID, docName, sentenceID, recordID, False,CoreNLP_output, **kwargs)
                 elif "DepRel" in annotator_chosen or "All POS" in annotator_chosen:
-                     sub_result = routine(docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
+                     sub_result, recordID = routine(docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
                 else:
-                    sub_result = routine(docID, docName, sentenceID, CoreNLP_output, **kwargs) #the sentenceID records the start sentence's ID in the whole file just in case that the original file was split
+                    sub_result, recordID = routine(docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
                 # sentenceID = new_sentenceID
                 #write html file from txt input
+
                 if output_format == 'text':
                     outputFilename = IO_files_util.generate_output_file_name(docName, inputDir, outputDir, '.txt', 'CoreNLP_'+annotator_chosen)
                     with open(outputFilename, "a+") as text_file:
                         text_file.write(sub_result)
-                    filesToOpen.append(outputFilename)
+                    if outputFilename not in filesToOpen: 
+                        filesToOpen.append(outputFilename)
                 else:
                     # add output to the output storage list in routine_list
                     # for the special case of POS values of a double list [['Verbs'],[Nouns']] you need special handling
@@ -346,11 +348,12 @@ def CoreNLP_annotate(inputFilename,
                             for j in sub_result[i]:
                                 run_output[i].append(j)
                     else:
-                        run_output.extend(sub_result)
+                        run[3].extend(sub_result)
             # print("Corenlp Output: ", CoreNLP_output)
             sentenceID += len(CoreNLP_output["sentences"])#update the sentenceID of the first sentence of the next split file
     #generate output csv files and write output
     output_start_time = time.time()
+    # print("Length of Files to Open after generating output: ", len(filesToOpen))
     for run in routine_list:
         annotator_chosen = run[0]
         routine = run[1]
@@ -406,7 +409,7 @@ def CoreNLP_annotate(inputFilename,
                 #     df = Excel_util.add_missing_IDs(df)
                 df = pd.DataFrame(run_output, columns=output_format)
                 df.to_csv(outputFilename, index=False)
-
+    # print("Length of Files to Open after generating files: ", len(filesToOpen))
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
     #generate visualization output
@@ -433,6 +436,7 @@ def CoreNLP_annotate(inputFilename,
                                           'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
 
     p.kill()
+    # print("Length of Files to Open after visualization: ", len(filesToOpen))
     if len(filesError)>0:
         mb.showwarning("Stanford CoreNLP Error", 'Stanford CoreNLP ' +annotator_chosen+ ' annotator has found '+str(len(filesError)-1)+' files that could not be processed by Stanford CoreNLP.\n\nPlease, read the error output file carefully to see the errors generated by CoreNLP.')
         errorFile = os.path.join(outputDir,
@@ -1000,7 +1004,7 @@ def process_json_all_postag(documentID, document, sentenceID, recordID,json, **k
         # print("The result after adding the ", sentenceID, "th sentence: ")
         # pprint.pprint(result)
 
-    return result
+    return result, recordID
 
 def process_json_deprel(documentID, document, sentenceID, recordID,json, **kwargs):
     print("   Processing Json output file for DepRel")
@@ -1052,7 +1056,7 @@ def process_json_deprel(documentID, document, sentenceID, recordID,json, **kwarg
             if extract_date_from_filename_var:
                 temp.append(date_str)
             result.append(temp)
-    return result
+    return result, recordID
 
 def process_json_parser(documentID, document, sentenceID, recordID, pcfg, json, **kwargs):
     print("   Processing Json output file for Parser")
@@ -1124,7 +1128,9 @@ def process_json_parser(documentID, document, sentenceID, recordID, pcfg, json, 
         # print("The result after adding the ", sentenceID, "th sentence: ")
         # pprint.pprint(result)
 
-    return result
+    return result, recordID
+
+
 def similar_string_floor_filter(str1, str2):
     dist = nltk.edit_distance(str1, str2)
     if dist <= 5:
