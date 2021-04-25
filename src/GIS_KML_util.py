@@ -42,8 +42,8 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 				 icon_var_list, specific_icon_var_list,
 				 name_var_list, scale_var_list, color_var_list, color_style_var_list,
 				 description_var_list, description_csv_field_var_list, colorize=True):
-	IO_user_interface_util.timed_alert(window, 3000, 'GIS kml generator', 'Started generating KML file at', True,
-						'You can follow the klm generator in command line.')
+	# IO_user_interface_util.timed_alert(window, 3000, 'GIS kml generator', 'Started generating KML file at', True,
+	#					'You can follow the klm generator in command line.')
 
 	colorList = ['93730E', '503DD3', '3C2D66', '3B817B', 'ED6651', '1F4825', '786A53', 'E90167', '7A2FCA', 'AA711C',
 				 '22C7BE', 'D263DC', '7C67DC', 'E57143', 'BFE20F', 'F31BBD', '98F0BD', 'D393A7', '09C7A1', 'B50971',
@@ -249,7 +249,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 																 description_var_list, description_csv_field_var_list,
 																 italic_var_list, bold_var_list, group_number_var, j=0)
 				index = index + 1
-	IO_user_interface_util.timed_alert(window, 3000, 'GIS kml generator', 'Finished generating KML file at', True)
+	# IO_user_interface_util.timed_alert(window, 3000, 'GIS kml generator', 'Finished generating KML file at', True)
 	try:
 		kml.save(kmloutputFilename)
 	except:
