@@ -8,11 +8,12 @@ import sys
 import IO_libraries_util
 import GUI_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_dictionary_util",['os','re','csv'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_dictionary_util",['os','re','csv','tkinter'])==False:
     sys.exit(0)
 
 import os
 import re
+import tkinter.messagebox as mb
 
 import IO_files_util
 import IO_user_interface_util
@@ -73,6 +74,9 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
     if csv_field1_var!='':
         headers=IO_csv_util.get_csvfile_headers (dict_file)
         wordColNum=IO_csv_util.get_columnNumber_from_headerValue(headers,csv_field1_var)
+        if wordColNum==None:
+            mb.showerror(title='Input file error', message="The selected dictionary file\n\n" + dict_file + "\n\ndoes not contain the expected header \'" + csv_field1_var + "\'\n\nPlease, select a different dictionary file and try again.")
+            return
         catColNum = wordColNum
     # if csv_field2_var!='':
     #     catColNum = IO_csv_util.get_columnNumber_from_headerValue(headers,csv_field2_var)

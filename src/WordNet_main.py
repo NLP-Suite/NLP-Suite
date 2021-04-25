@@ -18,6 +18,7 @@ import GUI_IO_util
 import IO_files_util
 import IO_CoNLL_util
 import WordNet_util
+import annotator_dictionary_util
 import sentence_analysis_util
 import Stanford_CoreNLP_annotator_util
 
@@ -27,7 +28,20 @@ pd.set_option('display.max_columns', 500)
 # DocumentID    DocumentName    SenetenceID     (FullSentence)
 # written by Yi Wang April 2020
 
-def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,classify_var,noun_verb,character_var,wordNet_keyword_list,ancestor_var,extract_nouns_verbs_var,ancestor_bySentenceID_var,dict_WordNet_filename_var,extract_proper_nouns,extract_improper_nouns):
+def run(inputFilename, inputDir, outputDir,openOutputFiles,
+        createExcelCharts,
+        classify_var,
+        noun_verb,
+        character_var,
+        wordNet_keyword_list,
+        ancestor_var,
+        extract_nouns_verbs_var,
+        ancestor_bySentenceID_var,
+        dict_WordNet_filename_var, 
+        annotator_dictionary_var,
+        annotator_dictionary_file,
+        extract_proper_nouns,
+        extract_improper_nouns):
 
     WordNetDir = IO_libraries_util.get_external_software_dir('WordNet_main', 'WordNet')
     if WordNetDir == None:
@@ -38,7 +52,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,cla
 
     # print("noun_verb",noun_verb)
 
-    if classify_var==False and character_var==False and ancestor_var==False and ancestor_bySentenceID_var==False and extract_nouns_verbs_var==False and extract_proper_nouns==False and extract_improper_nouns==False:
+    if classify_var==False and character_var==False and ancestor_var==False and annotator_dictionary_var==False and ancestor_bySentenceID_var==False and extract_nouns_verbs_var==False and extract_proper_nouns==False and extract_improper_nouns==False:
         mb.showerror(title='Missing required information', message="No options have been selected.\n\nPlease, tick one of the available options and try again.")
         return False
 
@@ -105,6 +119,19 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,cla
         filesToOpen.append(verb_form_csv)
         filesToOpen.append(verb_lemma_csv)
 
+    if annotator_dictionary_var:
+        if IO_libraries_util.inputProgramFileCheck('annotator_dictionary_util.py') == False:
+            return
+        csvValue_color_list = []
+        bold_var=True
+        color_palette_dict_var = 'red'  # default color, if forgotten
+
+        tagAnnotations = ['<span style=\"color: ' + color_palette_dict_var + '; font-weight: bold\">', '</span>']
+
+        filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
+                                                                    annotator_dictionary_file, 'Term', csvValue_color_list,
+                                                                    bold_var, tagAnnotations, '.txt')
+
     if extract_proper_nouns==1 or extract_improper_nouns==1:
         if noun_verb!='NOUN':
             mb.showerror(title='Option not available', message="You have selected to run the option 'Extract PROPER/IMPROPER nouns' with VERB.\n\nPlease, select NOUN and try again.")
@@ -132,6 +159,10 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             extract_nouns_verbs_var.get(),
                             ancestor_bySentenceID_var.get(),
                             dict_WordNet_filename_var.get(),
+                            annotator_dictionary_var.get(),
+                            annotator_dictionary_file_var.get(),
+                            aggregate_dictionary_var.get(),
+                            aggregate_dictionary_file_var.get(),
                             extract_proper_nouns_var.get(),
                             extract_improper_nouns_var.get())
 
@@ -139,7 +170,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1300x590'
+GUI_size='1300x630'
 GUI_label='Graphical User Interface (GUI) for WordNet tools'
 config_filename='WordNet-config.txt'
 # The 6 values of config_option refer to: 
@@ -155,7 +186,7 @@ config_filename='WordNet-config.txt'
 #   input secondary dir
 #   output file
 #   output dir
-config_option=[0,6,1,0,0,1]
+config_option=[0,2,1,0,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
@@ -187,12 +218,10 @@ ancestor_bySentenceID_var = tk.IntVar()
 dict_WordNet_filename_var = tk.StringVar()
 extract_proper_nouns_var = tk.IntVar()
 extract_improper_nouns_var = tk.IntVar()
-
-classify_var.set(0)
-classify_checkbox = tk.Checkbutton(window, text='Classify/aggregate input text document(s) by main NOUN & VERB WordNet synsets', variable=classify_var,
-                                    onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               classify_checkbox)
+annotator_dictionary_var = tk.IntVar()
+annotator_dictionary_file_var = tk.StringVar()
+aggregate_dictionary_var = tk.IntVar()
+aggregate_dictionary_file_var= tk.StringVar()
 
 WordNet_category_lb = tk.Label(window, text='WordNet category (synset)')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
@@ -326,6 +355,37 @@ def getDictFile():
             ancestor_bySentenceID_var.set(0)
             # GUI_util.select_input_file_button.configure(state='disabled')
 
+def get_dictionary_file(window,title,fileType,annotate):
+    #annotator_dictionary_var.set('')
+    initialFolder = os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
+    if len(filePath)>0:
+        if annotate:
+            annotator_dictionary_file.config(state='normal')
+            annotator_dictionary_file_var.set(filePath)
+        else:
+            aggregate_dictionary_file.config(state='normal')
+            aggregate_dictionary_file_var.set(filePath)
+
+
+annotator_dictionary_var.set(0)
+annotator_dictionary_checkbox = tk.Checkbutton(window, text='Annotate corpus (using WordNet dictionary from Zoom IN/DOWN)', variable=annotator_dictionary_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,annotator_dictionary_checkbox,True)
+
+#setup a button to open Windows Explorer on the selected input directory
+current_y_multiplier_integer2=y_multiplier_integer-1
+# openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, annotator_dictionary_file_var.get()))
+openInputFile_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, annotator_dictionary_file_var.get()))
+openInputFile_button.place(x=GUI_IO_util.get_labels_x_coordinate()+420, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+
+annotator_dictionary_button=tk.Button(window, width=20, text='Select dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT csv dictionary file', [("dictionary files", "*.csv")],True))
+# annotator_dictionary_button.config(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+460, y_multiplier_integer,annotator_dictionary_button,True)
+
+annotator_dictionary_file=tk.Entry(window, width=80,textvariable=annotator_dictionary_file_var)
+annotator_dictionary_file.config(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+640, y_multiplier_integer,annotator_dictionary_file)
+
 extract_proper_nouns_var.set(0)
 extract_proper_nouns_checkbox = tk.Checkbutton(window, text='Extract WordNet PROPER nouns',
                                                variable=extract_proper_nouns_var, onvalue=1, offvalue=0)
@@ -341,16 +401,40 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coord
 extract_improper_nouns_checkbox.config(text="Extract IMPROPER nouns")
 
 ancestor_var.set(0)
-ancestor_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (classify/aggregate lemmatized words in input csv dictionary file)', variable=ancestor_var,
+ancestor_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (classify/aggregate lemmatized words in csv file)', variable=ancestor_var,
                                    onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               ancestor_checkbox)
+                                               ancestor_checkbox, True)
+
+# aggregate_dictionary_var.set(0)
+# aggregate_dictionary_checkbox = tk.Checkbutton(window, text='CHE E?', variable=aggregate_dictionary_var, onvalue=1, offvalue=0)
+# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,aggregate_dictionary_checkbox,True)
+
+#setup a button to open Windows Explorer on the selected input directory
+current_y_multiplier_integer2=y_multiplier_integer-1
+# openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, annotator_dictionary_file_var.get()))
+openInputFile_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, aggregate_dictionary_file_var.get()))
+openInputFile_button.place(x=GUI_IO_util.get_labels_x_coordinate()+420, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+
+aggregate_dictionary_button=tk.Button(window, width=20, text='Select dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT csv dictionary file', [("dictionary files", "*.csv")],False))
+# annotator_dictionary_button.config(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+460, y_multiplier_integer,aggregate_dictionary_button,True)
+
+aggregate_dictionary_file=tk.Entry(window, width=80,textvariable=aggregate_dictionary_file_var)
+aggregate_dictionary_file.config(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+640, y_multiplier_integer,aggregate_dictionary_file)
 
 extract_nouns_verbs_var.set(0)
 extract_nouns_verbs_checkbox = tk.Checkbutton(window, text='Extract nouns & verbs from CoNLL table (for Zoom OUT/UP)',
                                               variable=extract_nouns_verbs_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                extract_nouns_verbs_checkbox)
+
+classify_var.set(0)
+classify_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (classify/aggregate input text document(s) by CoreNLP NOUN & VERB POS tags and WordNet NOUN & VERB synsets)', variable=classify_var,
+                                    onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               classify_checkbox)
 
 ancestor_bySentenceID_var.set(0)
 ancestor_bySentenceID_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP by Sentence Index',
@@ -367,7 +451,6 @@ dict_WordNet_filename = tk.Entry(window, width=80, textvariable=dict_WordNet_fil
 dict_WordNet_filename.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 400, y_multiplier_integer,
                                                dict_WordNet_filename)
-
 
 def activate_IOButton():
     if extract_proper_nouns_var.get():
@@ -420,7 +503,7 @@ def activate_allOptions(noun_verb, fromAncestor=False):
                            message="This is a reminder that you are searching WordNet for " + noun_verb_menu_var.get() + ".\n\nPlease, use the IO widget 'Select INPUT file' at the top of the GUI to select the csv file containing LEMMATIZED " + noun_verb_menu_var.get() + " values to be aggregated.\n\nThis file MUST contain LEMMATIZED " + noun_verb_menu_var.get() + " values, since WordNet only contains lemmatized values. If this is not the case, select a different NOUN/VERB option, and/or a different input file option.")
         if GUI_util.inputFilename.get() == '':
             mb.showwarning(title='Warning',
-                           message='The Zoom OUT/UP option requires in input a csv file with the LEMMATIZED words (noun or verb, since WordNet only contains lemmatized values) for which you need to find their aggregate (e.g., the verb walk as motion).\n\nRemember to select the INPUT csv file in the IO widgets above.')
+                           message='The Zoom OUT/UP option requires in input a csv file with the LEMMATIZED words (noun or verb, since WordNet only contains lemmatized values) for which you need to find their aggregate (e.g., the verb walk as motion).\n\nPlease, select next the INPUT csv file to be used.')
         GUI_util.select_input_file_button.configure(state="normal")
         character_checkbox.configure(state='disabled')
         ancestor_bySentenceID_checkbox.configure(state='disabled')
@@ -494,8 +577,6 @@ extract_proper_nouns_var.trace('w', activate_WordNet)
 extract_improper_nouns_var.trace('w', activate_WordNet)
 
 activate_allOptions(noun_verb_menu_var.get())
-
-
 # set menu values
 def setNounVerbMenu(*args):
     global noun_verb_menu_options
@@ -535,11 +616,11 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
                                   GUI_IO_util.msg_outputDirectory)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 3, "Help",
-                                  "Please, tick the checkbox if you wish to classify your document(s) by the main NOUN & VERB WordNet synsets.\n\nThe function uses the Stanford CoreNLP POS (Part of Speech) annotator to extract Nouns and Verbs to be then classified via WordNet.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 4, "Help",
                                   "Please, using the dropdown menu, select the synset type (NOUN or VERB) that you want to use for your WordNet searches.\n\nLists of NOUNS and VERBS can be exported from a CoNLL table computed via the Stanford_CoreNLP.py script. Nouns would have POSTAG values NN* (* for any NN value) and verbs VB*. Tick the checkbox 'Extract nouns & verbs from CoNLL' to extract the lists." + webSearch)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 5, "Help",
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 4, "Help",
                                   "Please, tick the checkbox if you wish to run the Python 3 script 'Zoom IN/DOWN'. The script uses the WordNet lexicon database to provide a list of terms associated to a starting keyword (synset) in a lexical hierarchy.\n\nThe IN/DOWN Java algorithm uses the MIT JWI (Java Wordnet Interface) (https://projects.csail.mit.edu/jwi/) to interface with WordNet.\n\nIt uses both hyponymy and meronymy to go DOWN the hierarchy.\n\nHyponym is the specific term used to designate a member of a class. X is a hyponym of Y if X is a (kind of) Y.\n\nMeronymy is the name of a constituent part of, the substance of, or a member of something. X is a meronym of Y if X is a part of Y.\n\nThus, you can construct a list of social actors (i.e., human characters, groups, or organizations) by selecting 'person' as starting point.\n\nPlease, using the dropdown menu, select the starting keyword(s) (synsets) that the script will use to traverse the database in order to provide the list.\n\nNOUNS have 25 top-level synsets and VERB have 15.\n\nMultiple starting words are allowed. If your research deals with fairy tales, animals may also be characters (e.g., a talking fox), so the starting keyword can be 'animal', with both 'person' and 'animal' as your combined keywords.\n\nPress the + button for multiple selections.\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.\n\nYou can also enter one or more, comma separated, terms into the 'YOUR keyword(s)'field, ignoring the pre-selected keywords. This option is particularly helpful if you want to restrict your search at a lower level, e.g. 'ethnic group' instead of 'person' to obtain a much shorter list of terms.\n\nPress OK when finished entering YOUR own values.\n\nIn INPUT all is required is the starting keywords that you will have selected or entered.\n\nIn OUTPUT the script will create 2 csv files, a one-column file with a list of all the terms found in the synset, and a five-columns file marked as verbose: a list of terms found (column 1), the selected WordNet category (column 2), definitions of the category (column 3), frequency of senses of lemma that are ranked according to their frequency of occurrence in semantic concordance texts (column 4), examples of use (column 5)." + webSearch)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 5, "Help",
+                                  "Please, tick the checkbox if you wish to annotate your input document(s) using a dictionary csv file generated by the \'Zoom IN\DOWN\' algorithm. Thus, you can extract all \'PERSON\' items from WordNet and annotate your corpus by those values." + webSearch)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 6, "Help",
                                   "Please, tick the checkbox if you wish to extract proper or improper nouns from a NOUN ZOOM IN/DOWN list. Nouns are classified as proper or improper depending on whether the first character is upper or lower case.\n\nIn INPUT the function expects a csv file of NOUNs generated by the ZOOM IN/DOWN function (whether simple or verbose).\n\nIn OUTPUT, the function saves a csv file with only either proper or improper nouns, as identified by a first letter upper/lower case.\n\nThe first column of the dictionary file, whether simple or verbose, will always be used for extracting values.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 7, "Help",
@@ -547,8 +628,11 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 8, "Help",
                                   "Please, tick the checkbox if you wish to run a Python 3 script to extract all LEMMATIZED nouns and verbs from a CoNLL table (LEMMATIZED, since WordNet only contains lemmatized values) - nouns and verbs to be used by the 'Zoom OUT/UP' algorithm to aggregate nouns and verbs into WorNet categories.\n\nFor convenience, the script will also export the original words for nouns and verbs as found in FORM.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 9, "Help",
+                                  "Please, tick the checkbox if you wish to classify your document(s) by the main NOUN & VERB WordNet synsets.\n\nThe function uses the Stanford CoreNLP POS (Part of Speech) annotator to extract Nouns and Verbs to be then classified via WordNet.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*10,"Help", 'The widgets become available only when a csv dictionary file has been selected (via the widget above \'Select dictionary file\').\n\nSelect csv field 1 is the column that contains the values used to annotate the input txt file(s). The FIRST COLUMN of the dictionary file is taken as the default column. YOU CAN SELECT A DIFFERENT COLUMN FROM THE DROPDOWN MENU Select csv field 1.\n\nIf the dictionary file contains more columns, you can select a SECOND COLUMN using the dropdown menu in Select csv field 2 to be used if you wish to use different colors for different items listed in this column. YOU CAN SELECT A DIFFERENT COLUMN FROM THE DROPDOWN MENU Select csv field 2. For example, column 1 contains words to be annotated in different colors by specific categories of field 2 (e.g., \'he\' to be annotated by a \'Gender\' column with the value \'Male\').\n\nThe specific values will have to be selected together with the specific color to be used. YOU CAN ACHIEVE THE SAME RESULT BY ANNOTATING THE SAME HTML FILE MULTIPLE TIMES USING A DIFFERENT DICTIONARY FILE ASSOCIATED EACH TIME TO A DIFFERENT COLOR.\n\n\nPress + for multiple selections.\nPress RESET (or ESCape) to delete all values entered and start fresh.\nPress Show to display all selected values.')
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 11, "Help",
                                   "Please, tick the checkbox if you wish to run the Python 3 script 'Zoom OUT/UP by Sentence Index' to provide a csv file and an Excel line plot of the aggregate WordNet categories by sentence index for more in-grained linguistic analyses.\n\nIn INPUT, the script expects 2 csv files:\n  1. a csv CoNLL file; you select this file in the IO widgets at the top of the GUI (the 'Select INPUT file' IO widget will become available after selecting the dictionary file);\n  2. a csv dictionary file containing the WordNet classification of LEMMATIZED words into higher-level aggregates (LEMMATIZED, since WordNet only contains lemmatized values). This file is generated by the 'Zoom OUT/UP' widget. You will be prompted to select the dictionary csv file when you tick the checkbox.\n\nIn OUTPUT, the script produces a csv file and an Excel line plot of the aggregate WordNet categories by sentence index.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 10, "Help",
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 12, "Help",
                                   GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
