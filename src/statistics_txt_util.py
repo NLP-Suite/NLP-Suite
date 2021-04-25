@@ -450,6 +450,16 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
             else:
                 columns_to_be_plotted=[[0,2]] # 0,1
                 hover_label=[str(index+1)+'-grams'] # change to sentence
+
+                # def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
+                #             chart_type_list, chart_title, column_xAxis_label_var,
+                #             hover_info_column_list=[],
+                #             count_var=0,
+                #             column_yAxis_label_var='Frequencies',
+                #             column_yAxis_field_list=[],
+                #             reverse_column_position_for_series_label=False,
+                #             series_label_list=[], second_y_var=0, second_yAxis_label=''):
+
                 Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                           outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
                                                           chart_type_list=["bar"],

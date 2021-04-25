@@ -176,18 +176,6 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
         columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'S(NP)', 'O(NP)', 'LOCATION', 'TIME',
                  'Sentence'])
     document_id, sent_id = 0, 0
-    filter_s, filter_v, filter_o = filter_svo
-
-    # Generating filter dicts
-    if filter_s:
-        s_dict = open(filter_s, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')
-        s_dict = set(s_dict)
-    if filter_v:
-        v_dict = open(filter_v, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')
-        v_dict = set(v_dict)
-    if filter_o:
-        o_dict = open(filter_o, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')
-        o_dict = set(o_dict)
 
     # Identifying sentences
     for i in range(0, len(df)):
@@ -317,13 +305,6 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
                 SVO['S(NP)'] = ' '.join(SVO['S(NP)'])
                 SVO['O(NP)'] = ' '.join(SVO['O(NP)'])
 
-                if filter_s and SVO['S'] not in s_dict:
-                    break
-                if filter_v and SVO['V'] not in v_dict:
-                    break
-                if filter_o and SVO['O'] not in o_dict:
-                    break
-
                 formatted_input_file_name = IO_csv_util.dressFilenameForCSVHyperlink(df.iloc[a, 1])
                 new_row = pd.DataFrame(
                     [[document_id, sent_id, formatted_input_file_name, SVO['S'], SVO['V'], SVO['O'], SVO['S(NP)'],
@@ -337,6 +318,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
 
     if createExcelCharts:
         new_df.to_csv(output_file_name, index=False)
+
     return output_file_name
 
 
