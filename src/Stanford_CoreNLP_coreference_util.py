@@ -185,47 +185,6 @@ def manualCoref(original_file, corefed_file, outputFile, coRefOptions):
     print("=======Finished Displaying Manual Editing=========")
     return 0
 
-# check if the coreference ends successfully
-# return files_to_open, error indicator
-# 0: no error; 1: error and no manual coref;
-def manual_coreference(inputFilename, corefed_file, manual_Coref, coRefOptions):
-    filesToOpen=[]
-    # check if corefed_file is empty:
-    f = open(corefed_file, "r", encoding='utf-8', errors='ignore')
-    corefed_text = f.read()
-    f.close()
-    # if the file is empty
-    if corefed_text == "":
-        if manual_Coref:
-            msgbox_exit = mb.askyesno("Co-Reference Resolution Error",
-                                      "Something went wrong for Co-Reference Resolution; the Co-Referenced output file is empty.\n\nPlease, check the command line, most likely for 'GC overhead limit exceeded' when processing large files.\n\n" +
-                                      "Do you want to use the original file to continue manual Co-Reference process? If not, please click 'No' to end the process of Coreference Resolution")
-            if msgbox_exit:
-                if manualCoref(inputFilename, inputFilename, corefed_file, coRefOptions) == 0:  # use the orginal file as coref
-                    # manual coref success!
-                    filesToOpen.append(corefed_file)
-                    return filesToOpen
-                else:
-                    # manual coref error!
-                    return None
-            else:
-                # user don't want to use the original file to continue manual coref
-                return None
-        else:
-            mb.showinfo("Co-Reference Resolution Error",
-                        "Something went wrong for Co-Reference Resolution; the Co-Referenced output file is empty.\n\nPlease, check the command line, most likely for 'GC overhead limit exceeded' when processing large files.\n\n")
-
-            return None
-    # coreference success!
-    else:
-        if manual_Coref:
-            manualCoref(inputFilename, corefed_file, corefed_file, coRefOptions)
-        if corefed_file not in filesToOpen: 
-            filesToOpen.append(corefed_file)
-
-    return filesToOpen
-
-
 # return file_to_open
 def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts,
         memory_var,coRefOptions, manual_Coref):
@@ -265,7 +224,7 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
             for file in corefed_file:
                 if file[-4:] == ".txt":
                     error = manualCoref(inputFilename, file, file, coRefOptions)
-                    # return corefed_file
+                    # return the corefed_file
         else:
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Feature Not Available', 'Manual Coreference is only available when processing single file, not input directory.')
             # input_main_dir_path = os.path.split(inputFilename)[0]

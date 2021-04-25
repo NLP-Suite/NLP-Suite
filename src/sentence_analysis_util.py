@@ -314,7 +314,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
         index += 1
         head, tail = os.path.split(doc)
         print("Processing file " + str(index) + "/" + str(Ndocs) + ' ' + tail)
-        outputFilename = IO_files_util.generate_output_file_name(doc, inputDir, outputDir, '.csv', 'SentComp', '', '')
+        outputFilename = IO_files_util.generate_output_file_name(doc, '', outputDir, '.csv', 'SentComp', '', '')
 
         # the output filename passed to jar file MUST be a filename without path
         temp_outputFilename = os.path.basename(outputFilename)

@@ -177,6 +177,9 @@ def run(inputFilename, inputDir, outputDir,
     inputDir=GUI_util.input_main_dir_path.get()
     outputDir=GUI_util.output_dir_path.get()
 
+    outputCorefedDir = ''
+    outputSVODir = ''
+
     filesToOpen = []
 
     # the merge option refers to merging the txt files into one
@@ -665,7 +668,11 @@ def run(inputFilename, inputDir, outputDir,
         #   the new output dir becomes the new output in an infinite loop
         # mb.showwarning("Output directory", "All output files have been saved to a subdirectory of the selected output directory at\n\n"+str(outputDir)+"\n\nThe IO widget 'Select OUTPUT files directory' has been updated to reflect the change.")
         # GUI_util.output_dir_path.set(outputDir)
-        mb.showwarning("Output directory", "All output files have been saved to a subdirectory of the selected output directory at\n\n"+str(outputSVODir))
+        if outputSVODir!='':
+            outputFileDir=outputSVODir
+        elif outputCorefedDir!='':
+            outputFileDir = outputCorefedDir
+        mb.showwarning("Output directory", "All output files have been saved to a subdirectory of the selected output directory at\n\n"+str(outputFileDir))
 
 #the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -950,9 +957,9 @@ GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_comm
 
 def warnUser(*args):
     if GUI_util.input_main_dir_path.get()!='':
-        mb.showwarning(title='Warning', message='You have selected to work with a set of txt files in a directory (your corpus).\n\nBeware that SVO extraction is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.\n\nThe option of manual coref editing has been disabled.')
-        manual_Coref_var.set(0)
-        manual_Coref_checkbox.configure(state='disabled')
+        mb.showwarning(title='Warning', message='You have selected to work with a set of txt files in a directory (your corpus).\n\nBeware that SVO extraction is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.\n\nDepending upon corpus size, manual coreference editing may also not be possible, due to memory requirements..')
+        # manual_Coref_var.set(0)
+        # manual_Coref_checkbox.configure(state='disabled')
 GUI_util.input_main_dir_path.trace('w',warnUser)
 
 warnUser()
