@@ -64,84 +64,75 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
         if len(data_divided_sents) == 0:
             return
 
-        if 'Clauses' in CoNLL_table_analysis_menu_var:
-            tempfilesToOpen = CoNLL_clause_analysis_util.clause_stats(inputFilename, outputDir, data,
+        if 'Clauses' in CoNLL_table_analysis_menu_var or '*' in CoNLL_table_analysis_menu_var:
+            tempfilesToOpen = CoNLL_clause_analysis_util.clause_stats(inputFilename, inputDir, outputDir, data,
                                                                       data_divided_sents, openOutputFiles,
                                                                       createExcelCharts)
             # only open the chart files
+            # add line plots eventually
             filesToOpen.append(tempfilesToOpen[1])
-            filesToOpen.append(tempfilesToOpen[3])
+            filesToOpen.append(tempfilesToOpen[2])
 
-        elif 'Nouns' in CoNLL_table_analysis_menu_var:
+        if 'Nouns' in CoNLL_table_analysis_menu_var or '*' in CoNLL_table_analysis_menu_var:
             tempfilesToOpen = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                   openOutputFiles, createExcelCharts)
             # only open the chart files
-            filesToOpen.append(tempfilesToOpen[0])
-            filesToOpen.append(tempfilesToOpen[1])
-            filesToOpen.append(tempfilesToOpen[2])
-            filesToOpen.append(tempfilesToOpen[4])
+            # add line plots eventually
             filesToOpen.append(tempfilesToOpen[6])
+            filesToOpen.append(tempfilesToOpen[7])
             filesToOpen.append(tempfilesToOpen[8])
 
-        elif 'Verbs' in CoNLL_table_analysis_menu_var:
+        if 'Verbs' in CoNLL_table_analysis_menu_var or '*' in CoNLL_table_analysis_menu_var:
             tempfilesToOpen = CoNLL_verb_analysis_util.verb_voice_stats(inputFilename, outputDir, data,
                                                                         data_divided_sents, openOutputFiles,
                                                                         createExcelCharts)
             # only open the chart files
-            filesToOpen.append(tempfilesToOpen[1])
-            filesToOpen.append(tempfilesToOpen[3])
+            # add line plots eventually
+            filesToOpen.append(tempfilesToOpen[2])
             tempfilesToOpen = CoNLL_verb_analysis_util.verb_modality_stats(inputFilename, outputDir, data,
                                                                            data_divided_sents, openOutputFiles,
                                                                            createExcelCharts)
-            filesToOpen.append(tempfilesToOpen[1])
-            filesToOpen.append(tempfilesToOpen[3])
+            filesToOpen.append(tempfilesToOpen[2])
             tempfilesToOpen = CoNLL_verb_analysis_util.verb_tense_stats(inputFilename, outputDir, data,
                                                                         data_divided_sents, openOutputFiles,
                                                                         createExcelCharts)
             filesToOpen.append(tempfilesToOpen[1])
-            filesToOpen.append(tempfilesToOpen[3])
 
-        elif 'Function' in CoNLL_table_analysis_menu_var:
+        if 'Function' in CoNLL_table_analysis_menu_var or '*' in CoNLL_table_analysis_menu_var:
             # only open the chart files
+            # add line plots eventually
             import CoNLL_function_words_analysis_util
             tempfilesToOpen = CoNLL_function_words_analysis_util.article_stats(inputFilename, outputDir, data,
                                                                                data_divided_sents, openOutputFiles,
                                                                                createExcelCharts)
-            filesToOpen.append(tempfilesToOpen[1])
-            filesToOpen.append(tempfilesToOpen[3])
+            filesToOpen.append(tempfilesToOpen[2])
             tempfilesToOpen = CoNLL_function_words_analysis_util.auxiliary_stats(inputFilename, outputDir, data,
                                                                                  data_divided_sents, openOutputFiles,
                                                                                  createExcelCharts)
-            filesToOpen.append(tempfilesToOpen[1])
-            filesToOpen.append(tempfilesToOpen[3])
+            filesToOpen.append(tempfilesToOpen[2])
             tempfilesToOpen = CoNLL_function_words_analysis_util.conjunction_stats(inputFilename, outputDir, data,
                                                                                    data_divided_sents, openOutputFiles,
                                                                                    createExcelCharts)
-            filesToOpen.append(tempfilesToOpen[1])
-            filesToOpen.append(tempfilesToOpen[3])
+            filesToOpen.append(tempfilesToOpen[2])
             tempfilesToOpen = CoNLL_function_words_analysis_util.preposition_stats(inputFilename, outputDir, data,
                                                                                    data_divided_sents, openOutputFiles,
                                                                                    createExcelCharts)
-            filesToOpen.append(tempfilesToOpen[1])
-            filesToOpen.append(tempfilesToOpen[3])
+            filesToOpen.append(tempfilesToOpen[2])
             tempfilesToOpen = CoNLL_function_words_analysis_util.pronoun_stats(inputFilename, outputDir, data,
                                                                                data_divided_sents, openOutputFiles,
                                                                                createExcelCharts)
-            filesToOpen.append(tempfilesToOpen[1])
-            filesToOpen.append(tempfilesToOpen[3])
+            filesToOpen.append(tempfilesToOpen[2])
 
-        elif 'POSTAG' in CoNLL_table_analysis_menu_var:
+        if 'POSTAG' in CoNLL_table_analysis_menu_var or 'DEPREL' in CoNLL_table_analysis_menu_var or 'NER' in CoNLL_table_analysis_menu_var:
             mb.showwarning('Warning','The selected option is not available yet.\n\nSorry!')
             return
-        elif 'DEPREL' in CoNLL_table_analysis_menu_var:
-            mb.showwarning('Warning','The selected option is not available yet.\n\nSorry!')
-            return
-        elif 'NER' in CoNLL_table_analysis_menu_var:
-            mb.showwarning('Warning','The selected option is not available yet.\n\nSorry!')
-            return
-        else:
+
+        if CoNLL_table_analysis_menu_var=='':
             mb.showwarning('Warning', 'No option has been selected for CoNLL table analysis.\n\nPlease, select an option and try again.')
             return
+
+        mb.showwarning(title='Output files',
+                       message="The analysis of the CoNLL table for clauses, nouns, verbs, and function words opens only the Excel chart files. But the script produces in output many more csv files.\n\nPlease, check your output directory for more file output.")
 
     if complexity_readability_analysis_var == True:
         if 'Sentence' in complexity_readability_analysis_menu_var:
