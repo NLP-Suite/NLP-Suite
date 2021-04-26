@@ -40,6 +40,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         dict_WordNet_filename_var, 
         annotator_dictionary_var,
         annotator_dictionary_file,
+        aggregate_dictionary_file,
         extract_proper_nouns,
         extract_improper_nouns):
 
@@ -161,10 +162,10 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             dict_WordNet_filename_var.get(),
                             annotator_dictionary_var.get(),
                             annotator_dictionary_file_var.get(),
-                            aggregate_dictionary_var.get(),
                             aggregate_dictionary_file_var.get(),
                             extract_proper_nouns_var.get(),
                             extract_improper_nouns_var.get())
+
 
 GUI_util.run_button.configure(command=run_script_command)
 
