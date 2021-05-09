@@ -54,8 +54,10 @@ class SVDClustering:
         pos_modes = VT[:self.n_modes]
         neg_modes = -VT[:self.n_modes]
 
-        # here I group the normalized vectors since I plot them with the modes which are computed on them,
+        # here I (Andrew Reagan) group the normalized vectors since I plot them with the modes which are computed on them,
         # see Appendix E of reference paper. In particular, the legend of fig. S8.
+        # Andrew J. Reagan et al. "The emotional arcs of stories are dominated by six basic shapes"
+        #
         pos_clusters_indices = np.argmax(w_normalized, axis=-1)
         neg_clusters_indices = np.argmax(-w_normalized, axis=-1)
 
