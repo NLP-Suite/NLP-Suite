@@ -41,3 +41,5 @@ The following systems have been tested on:
 The following systems are not officially supported, but have been proven to work:
 
 - OS X (Apple Silicon - using Rosetta)
+
+## Acknowledgements
