@@ -583,7 +583,10 @@ def check_IO_requirements(*args):
     # check data reduction and IO input values
     if inputFilename=='' and sentiment_analysis_var.get() == False and corpus_analysis_var.get() == False and (
             hierarchical_clustering_var.get() == True or SVD_var.get() == True or NMF_var.get() == True):
-        nSAscoreFiles=IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'csv')
+        try:
+            nSAscoreFiles=IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'csv')
+        except:
+            nSAscoreFiles=0
         if nSAscoreFiles==0:
             mb.showwarning(title="Data warning: Data reduction algorithms",
                            message=csv_fileWarning)

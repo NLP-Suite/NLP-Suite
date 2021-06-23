@@ -155,17 +155,18 @@ def run(inputFilename,
                                                                  'stats', '', '', '', False, True)
         # processed_params: [(field1, field2..., dataframe1), (field1', field2'..., dataframe2)]
         processed_params = []
+        csv_file_field_list = list(dict.fromkeys(csv_file_field_list))
         param_str: str
         for param_str in csv_file_field_list:
             params = list(param_str.split(','))
-            csv_path = param_str[0]
+            csv_path = params[0]
             df = pd.read_csv(csv_path)
             params.pop(0)
             params.append(df)
             processed_params.append(params)
-        indexes = csv_file_field_list[:-1]
-        data_files_for_merge = [csv_file_field_list[0][-1]]
-        for row in csv_file_field_list[1:]:
+        indexes = processed_params[0][:-1]
+        data_files_for_merge = [processed_params[0][-1]]
+        for row in processed_params[1:]:
             # rename different field names to the field name on the first document.
             # They will be merged anyway so this doesn't change much.
             column_mapping = dict()
@@ -176,7 +177,9 @@ def run(inputFilename,
             df.rename(columns=column_mapping)
             data_files_for_merge.append(df)
 
-        df_merged = reduce(lambda left, right: pd.merge(left, right, on=indexes, how='inner'), data_files_for_merge)
+        df_merged: DataFrame = data_files_for_merge[0]
+        for df in data_files_for_merge[1:]:
+            df_merged = pd.concat([df_merged, df], join='inner', ignore_index=True)
         df_merged.to_csv(outputFilename)
         filesToOpen.append(outputFilename)
 
