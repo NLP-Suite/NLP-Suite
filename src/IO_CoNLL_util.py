@@ -51,7 +51,7 @@ def check_CoNLL(filename,skipWarning=False):
     if (('ID' and 'Form' and 'Lemma') not in headers) and ((numColumns!=12) and (numColumns!=13)):
         wrongFile=True
     if wrongFile==True and skipWarning==False:
-        mb.showwarning(title='Input file error', message='The script expects in input a CoNLL table with either 13 or 12 columns (with/without date field).\n\nPlease, select a CoNLL file and try again.')
+        mb.showwarning(title='Input file error', message='The script expects in input a CoNLL table with the headers ID, Form, and Lemma and either 13 or 12 columns (with/without date field).\n\nThe selected file does not have these expected characteristics (number of columns = ' + str(numColumns) + ').\n\nPlease, select a CoNLL file and try again.')
     if wrongFile==True:
         return False
     else:

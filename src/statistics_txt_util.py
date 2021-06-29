@@ -199,7 +199,7 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
 # see also https://people.duke.edu/~ccc14/sta-663/TextProcessingSolutions.html
 def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutputFiles,createExcelCharts,excludeStopWords=True,lemmatizeWords=True):
     filesToOpen=[]
-    outputFilenameCSV=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus', 'stats')
+    outputFilenameCSV=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus_stats', '')
     filesToOpen.append(outputFilenameCSV)
     inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 
@@ -302,7 +302,7 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             hover_label=['Document','Document']
             inputFilename=outputFilenameCSV
             Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                      outputFileLabel='corpus_stats',
+                                                      outputFileLabel='',
                                                       chart_type_list=["bar"],
                                                       # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
                                                       chart_title='Corpus Statistics: Frequency of Sentences & Words by Document',

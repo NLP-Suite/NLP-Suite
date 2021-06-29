@@ -28,6 +28,7 @@ import IO_files_util
 import IO_user_interface_util
 import Excel_util
 import annotator_dictionary_util
+import GUI_IO_util
 # from operator import itemgetter, attrgetter
 # central CoreNLP_annotator function that pulls together our approach to processing many files,
 # splitting them if necessary, and, depending upon annotator (NER date, quote, gender, sentiment)
@@ -117,7 +118,7 @@ def CoreNLP_annotate(inputFilename,
         'gender': {'annotators': ['coref']},
         'sentiment': {'annotators':['sentiment']},
         'normalized-date': {'annotators': ['tokenize','ssplit','ner']},
-        'openIE':{"annotators": ['tokenize','ssplit','pos','depparse','natlog','openie', 'ner']},
+        'openIE':{"annotators": ['tokenize','ssplit','pos','depparse','natlog','lemma','openie', 'ner']},
         'parser (pcfg)':{"annotators": ['tokenize','ssplit','pos','lemma','ner', 'parse','regexner']},
         'parser (nn)' :{"annotators": ['tokenize','ssplit','pos','lemma','ner','depparse','regexner']}
     }
@@ -905,9 +906,13 @@ def openIE_sent_data_reorg(sentence):
         result[idx] = {}
         result[idx]["word"] = token["word"]
         result[idx]["pos"] = token["pos"]
+        result[idx]["lemma"] = token["lemma"]
         result[idx]["ner"] = token["ner"]
         if result[idx]["ner"] == 'TIME' or result[idx]["ner"] == 'DATE':
-            result[idx]['normalizedNER'] = token['normalizedNER']
+            try:
+                result[idx]['normalizedNER'] = token['normalizedNER']
+            except:
+                 result[idx]['normalizedNER'] = "N/A"
         dep_rel, dep_govern = dep_dict(idx, dependencies)
         result[idx]["deprel"] = dep_rel
         result[idx]["govern_dict"] = dep_govern
@@ -967,40 +972,235 @@ def token_connect(keys, sent_data):
         return sent_data[keys]['word']
 
 # def 
+
+def verb_index_conj(key, token, gov_dict, sent_data):
+    verb_list = []
+    conj_word = ""
+    verb_list.append(key)
+    dep = ""
+    if 'conj:or' in gov_dict.keys():
+        dep = "conj:or"
+        conj_word = "or"
+    elif 'conj:and' in gov_dict.keys():
+        dep = "conj:and"
+        conj_word = "and"
+    elif 'conj:nor' in gov_dict.keys():
+        dep = "conj:nor"
+        conj_word = "nor"
+    if dep != "" and isinstance(gov_dict[dep], list):
+        for i in gov_dict[dep]:
+            verb_list.append(i)
+    if dep != "" and not isinstance(gov_dict[dep], list):
+        verb_list.append(gov_dict[dep])
+    return verb_list, conj_word
     
-def verb_root(token, gov_dict, sent_data):
-    s = 'Someone?'
-    v = ''
-    o = ''
-    v = token["word"]
-    if 'aux' in gov_dict.keys():
-        v = token_connect(gov_dict["aux"], sent_data) + " " +v 
-    # if 'compound:prt' in gov_dict.keys() and not isinstance(gov_dict['compound:prt'], list):
-    if 'compound:prt' in gov_dict.keys():
-        v = v + " "  +sent_data[gov_dict['compound:prt']]['word']
-    # if "advmod" in gov_dict.keys() and not isinstance(gov_dict["advmod"], list):
-    # if "advmod" in gov_dict.keys():
-    #     v = sent_data[gov_dict["advmod"]]['word'] + " " + v 
-    if "nsubj" in gov_dict.keys():
-        s = s_o_formation(gov_dict["nsubj"], sent_data)
+
+
+def verb_obj_obl(token, sent_data, v_obj_obl_json):
+    gov_dict = token["govern_dict"]
+    verb_lemma = token["lemma"]
+    if verb_lemma not in v_obj_obl_json.keys():
+        return "", "", ""
+    obj = s_o_formation(gov_dict["obj"], sent_data)
+    for conb in v_obj_obl_json[verb_lemma]:
+        if conb["obj"] == obj.lower():
+            obl_prep = "obl:" + conb["obl"]
+            if obl_prep in gov_dict.keys():
+                new_v = token["word"] + " " + obj + " " + conb["obl"]
+                new_o = s_o_formation(gov_dict[obl_prep], sent_data)
+                return new_v, new_o, obl_prep
+    return "", "", ""
+
+def advcl_building(token, sent_data, ner, p_s, p_o, v_obj_obl_json, v_prep_json):
+    result = []
+    negation_result = []
+    gov_dict = token["govern_dict"]
+    advcl = gov_dict[ner]
+    if not isinstance(advcl, list):
+        advcl = [advcl]
+    for idx in advcl:
+        advcl_token = sent_data[idx]
+        if "VB" not in advcl_token["pos"]:
+            continue
+        s, v, o, negation = verb_root_svo_building(idx, sent_data, v_obj_obl_json, v_prep_json)
+        if advcl_token["pos"] == "VBN" and o == "":
+            o = p_s
+        else:
+            if s == "Someone?":
+                s = p_s
+            # if o == "":
+            #     print("new objective: ", p_o)
+            #     o = p_o
+        result.append([s, v, o])
+        negation_result.append(negation)
+    return result, negation_result
         
-    if 'nsubj:pass' in gov_dict.keys():
-        o = s_o_formation(gov_dict['nsubj:pass'], sent_data)#sent_data[gov_dict['nsubj:pass']]['word']
-        if 'obl:agent' in gov_dict.keys():
-            s = s_o_formation(gov_dict['obl:agent'], sent_data)
-    elif "iobj" in gov_dict.keys():
-        o = s_o_formation(gov_dict["iobj"], sent_data)
-    elif "obj" in gov_dict.keys():
-        o = s_o_formation(gov_dict["obj"], sent_data)
-    else:
-        for gov_key in gov_dict.keys():
+
+def advcl_extraction(token, sent_data, p_s, p_o, v_obj_obl_json, v_prep_json):
+    result = []
+    negation_result = []
+    gov_dict = token["govern_dict"]
+    for dep in gov_dict.keys():
+        
+        if "advcl" in dep:
+            # print("dep: ", dep)
+            advcl_svo, advcl_negation = advcl_building(token, sent_data, dep, p_s, p_o, v_obj_obl_json, v_prep_json)
+            result.extend(advcl_svo)
+            negation_result.extend(advcl_negation)
+            
+    return result, negation_result
+        
+def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):
+    s = 'Someone?'
+    # v = ''
+    o = ''
+    verb_token = sent_data[verb]
+    v_string = verb_token["word"]
+    v_lemma = verb_token["lemma"]
+    vgd = verb_token["govern_dict"]
+
+    
+
+    negation = negation_detect(verb_token, sent_data)
+        
+    
+    if 'compound:prt' in vgd.keys():
+        v_string = v_string + " "  +sent_data[vgd['compound:prt']]['word']
+
+    s_ner = ''
+    if "nsubj" in vgd.keys():
+        s = s_o_formation(vgd["nsubj"], sent_data)
+        s_ner = "nsubj"
+        
+
+        
+    elif 'obl:agent' in vgd.keys():
+        s = s_o_formation(vgd['obl:agent'], sent_data)
+        s_ner = 'obl:agent'
+        
+    if s_ner != '':
+        if isinstance(vgd[s_ner], list):
+            s_list = vgd[s_ner]
+        else:
+            s_list = [vgd[s_ner]]
+        for s_id in s_list: 
+            negation = negation or negation_detect(sent_data[s_id], sent_data)
+        
+    o_ner = ''
+    if 'nsubj:pass' in vgd.keys():
+        o_ner = 'nsubj:pass'
+        o = s_o_formation(vgd['nsubj:pass'], sent_data)#sent_data[gov_dict['nsubj:pass']]['word']
+    
+        
+    elif "iobj" in vgd.keys():
+        o_ner = "iobj"
+        o = s_o_formation(vgd["iobj"], sent_data)
+    elif "obj" in vgd.keys():
+        new_v, new_o, new_o_ner = verb_obj_obl(verb_token, sent_data, v_obj_obl_json)
+        if new_v != '':
+            v_string = new_v
+            o = new_o
+            o_ner = new_o_ner
+        else:
+            o_ner = "obj"
+            o = s_o_formation(vgd["obj"], sent_data)
+  
+    else:     
+        # obl_ct = 0
+        obl_preps = []
+        for gov_key in vgd.keys():
             if "obl" in gov_key :
                 if gov_key[4:] != "tmod" and gov_key[4:] != "agent":
-                    v = v + " " + gov_key[4:]
-                o = s_o_formation(gov_dict[gov_key], sent_data)#sent_data[gov_dict["obj"]]['word']#gov_dict[gov_key]['word']
-                # else:
-                    # o = s_o_formation(gov_dict[gov_key], sent_data)
-    return s, v, o
+                    obl_preps.append(gov_key)
+                    
+                    
+        if len(obl_preps) == 1:
+            o_ner = obl_preps[0]
+            o  = s_o_formation(vgd[obl_preps[0]], sent_data)
+            v_string = v_string + " " + obl_preps[0][4:]
+        elif len(obl_preps) > 1:
+            for oblp in obl_preps:
+                prep = oblp[4:]
+                if prep in v_prep_json.keys():
+                    if v_lemma.lower() in v_prep_json[prep]:
+                        o_ner = oblp
+                        o = s_o_formation(vgd[oblp], sent_data)#sent_data[gov_dict["obj"]]['word']#gov_dict[gov_key]['word']
+                        v_string = v_string + " " + prep
+                        break
+        
+    if o == '':
+        if 'obl:tmod' in vgd.keys():
+            # print("Detect obl:tmod")
+            # pprint.pprint(verb_token)
+            tmod_idx = vgd["obl:tmod"]
+            if tmod_idx in sent_data.keys():
+                tmod_token = sent_data[tmod_idx]
+                tmod_gd = tmod_token["govern_dict"]
+                if "nmod:poss" in tmod_gd.keys():
+                    o = s_o_formation(tmod_gd["nmod:poss"], sent_data)
+    
+                    if isinstance(tmod_gd["nmod:poss"], list):
+                        o_list = tmod_gd["nmod:poss"]
+                    else:
+                        o_list = [tmod_gd["nmod:poss"]]
+                    for o_id in o_list: 
+                        negation = negation or negation_detect(sent_data[o_id], sent_data)
+                            
+    if o_ner != '':
+        if isinstance(vgd[o_ner], list):
+            o_list = vgd[o_ner]
+        else:
+            o_list = [vgd[o_ner]]
+        for o_id in o_list: 
+            negation = negation or negation_detect(sent_data[o_id], sent_data)
+    return s, v_string, o, negation
+       
+def verb_root(verb_list, token, sent_data):
+    v_prep_text = GUI_IO_util.OpenIE_libPath + os.sep + "verb_prep_json.txt"
+    v_obj_obl_text = GUI_IO_util.OpenIE_libPath + os.sep + "v_obj_obl_json.txt"
+    with open(v_prep_text) as v_prep_doc:
+        v_prep_json = json.load(v_prep_doc)
+    with open(v_obj_obl_text) as v_obj_obl_doc:
+        v_obj_obl_json = json.load(v_obj_obl_doc)
+
+    
+    gov_dict = token["govern_dict"]
+    s_list = []
+    verb_strings_list = []
+    o_list = []
+    svo = []
+    negation_list = []
+    s_set = False
+    o_set = False
+    s_share = 'Someone?'
+    o_share = ""
+    for verb in verb_list:
+        s, v, o, negation = verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json)
+        if True in negation_list:
+            negation = True
+            
+            
+        
+        if s_set == False and s != 'Someone?':
+            s_set = True
+            s_share = s
+        if o_set == False and o != '':
+            o_set = True
+            o_share = o
+        if s == 'Someone?':
+            s = s_share
+        if o == '': 
+            o = o_share  
+        # if s != 'Someone?' or o != '':
+        negation_list.append(negation)
+        svo.append([s, v, o])
+            
+        verb_token = sent_data[verb]
+        advcl_svo, advcl_negation = advcl_extraction(verb_token, sent_data, s, o, v_obj_obl_json, v_prep_json)
+        svo.extend(advcl_svo)
+        negation_list.extend(advcl_negation)
+        
+    return svo, negation_list
 
 
 def pred_root(token, gov_dict, sent_data):
@@ -1009,9 +1209,8 @@ def pred_root(token, gov_dict, sent_data):
     o = ''
     if "nsubj" in gov_dict.keys():
         s = s_o_formation(gov_dict["nsubj"], sent_data)
-    # if "aux" in gov_dict.keys():
-         # v = token_connect(gov_dict["aux", sent_data]) + " " +v 
-    #     v = sent_data[gov_dict["cop"]]['word'] + v
+
+    
     if "cop" in gov_dict.keys():
         # v = sent_data[gov_dict["cop"]]['word']
         v = token_connect(gov_dict["cop"], sent_data) + " " +v 
@@ -1020,9 +1219,10 @@ def pred_root(token, gov_dict, sent_data):
     o = token["word"]
     if "case" in gov_dict.keys():
         v = v + " " + sent_data[gov_dict["case"]]['word'] 
-    # if "advmod" in gov_dict.keys() and not isinstance(gov_dict["advmod"], list):
-    #     o =  o + " " + sent_data[gov_dict["advmod"]]['word'] 
+
+    
     return s, v, o
+
 
 def be_pos(token, gov_dict, sent_data):
     s = 'Someone?'
@@ -1034,9 +1234,8 @@ def be_pos(token, gov_dict, sent_data):
         if "obl" in gov_key :
             if gov_key[4:] != "tmod":
                 v = v + " " + gov_key[4:]
-                # o = gov_key[4:] + " " + s_o_formation(gov_dict[gov_key], sent_data)#sent_data[gov_dict["obj"]]['word']#gov_dict[gov_key]['word']
-            # else:
-            # o = s_o_formation(gov_dict[gov_key], sent_data)
+           
+                
             o = s_o_formation(gov_dict[gov_key], sent_data)
     v = token["word"]
     
@@ -1048,7 +1247,7 @@ def acl_svo(token, gov_dict, sent_data):
     o = ""
     for gov_key in gov_dict.keys():
         if gov_key == "acl":
-            print(token["word"])
+            # print(token["word"])
             if isinstance(gov_dict["acl"], list):
                 for k in gov_dict["acl"]:
                     s, v, o = verb_root(sent_data[k], sent_data[k]["govern_dict"], sent_data)
@@ -1061,35 +1260,40 @@ def acl_svo(token, gov_dict, sent_data):
     return s, v, o
 
 
+# def key_negation():
 
-def negation_detect(token, gov_dict, sent_data):
+def negation_detect(token, sent_data):
+    gov_dict = token["govern_dict"]
     result = False
-    negation_tokens = ["no", "not", "n't", "seldom", "never", "hardly"]
-    if "advmod" not in gov_dict.keys():
-        return result
-    else:
-        if isinstance(gov_dict["advmod"], list):
-            
-            for idx in gov_dict["advmod"]:
+    ner_list = ["advmod", "det", 'cc:preconj', 'cc']
+    negation_tokens = ["no", "not", "n't", "seldom", "never", "hardly", "neither", "nor"]
+    for ner in ner_list:
+        if ner in gov_dict.keys():
+            if isinstance(gov_dict[ner], list):
+                
+                for idx in gov_dict[ner]:
+                    word = sent_data[idx]["word"]
+                    for ntk in negation_tokens:
+                        if ntk in word.lower():
+                            return True
+                        
+                        result = result or negation_detect(sent_data[idx], sent_data)
+            else:
+                idx = gov_dict[ner]
                 word = sent_data[idx]["word"]
                 for ntk in negation_tokens:
                     if ntk in word.lower():
                         return True
-                    
-                    result = result or negation_detect(sent_data[idx], sent_data[idx]['govern_dict'], sent_data)
-        else:
-            idx = gov_dict["advmod"]
-            word = sent_data[idx]["word"]
-            for ntk in negation_tokens:
-                if ntk in word.lower():
-                    return True
-                result = result or negation_detect(sent_data[idx], sent_data[idx]['govern_dict'], sent_data)
+                    result = result or negation_detect(sent_data[idx],  sent_data)
+
+        # x
     return result
                     
         
         
         
 def SVO_extraction (sent_data):
+    CollectedVs = []
     SVO = []
     L = []
     T = []
@@ -1107,7 +1311,9 @@ def SVO_extraction (sent_data):
         # print(token["word"])
         if token["ner"] == "TIME" or token["ner"] == "DATE":
             T.append(token["word"])
+            
             T_S.append(token['normalizedNER'])
+
         if token["ner"] == "PERSON": 
             P.append(token["word"])
         # if token["deprel"] == "ROOT":
@@ -1115,33 +1321,57 @@ def SVO_extraction (sent_data):
             L.append(token["word"])
             
         gov_dict = token["govern_dict"]
-        if "VB" in token["pos"] or "JJ" in token["pos"]:# Subject -> Verb -> object
-            s, v, o = verb_root(token, gov_dict, sent_data)
-            negation = negation_detect(token, gov_dict, sent_data)
+        # if "VB" in token["pos"] or "JJ" in token["pos"]:# Subject -> Verb -> object
+        if ("VB" in token["pos"]) and ("advcl" not in token['deprel']) and (token['deprel'] != "acl"):# Subject -> Verb -> object
+            # pprint.pprint(token)
+            if key not in CollectedVs:
+                verb_list, conj_word = verb_index_conj(key, token, gov_dict, sent_data)
+                CollectedVs.extend(verb_list)
+                svo_verb, negation_verb = verb_root(verb_list, token, sent_data)
+                for i in range(len(svo_verb)):
+                    s = svo_verb[i][0]
+                    v = svo_verb[i][1]
+                    o = svo_verb[i][2]
+                    n = negation_verb[i]
+                    if s != 'Someone?' or o != '':
+                        SVO.append([s, v, o])
+                        N.append(n)
+                # N.extend(negation_verb)
+                # SVO.extend(svo_verb)
         elif (token["deprel"] == "ROOT" or token["deprel"] == "parataxis") and "NN" in token["pos"]:#Subject -> Verb(be) -> predicative expression
             s, v, o = pred_root(token, gov_dict, sent_data)
-            negation = negation_detect(token, gov_dict, sent_data)
+            negation = negation_detect(token, sent_data)
         # elif token["deprel"] == "ROOT" and token["pos"] == "POS":
         #     s, v, o = be_pos(token, gov_dict, sent_data)
-        elif "acl" in gov_dict.keys():
-            if isinstance(gov_dict["acl"], list):
-                for idx in gov_dict["acl"]:
-                    s, v, o = verb_root(sent_data[idx], sent_data[idx]["govern_dict"], sent_data)
-                    negation = negation_detect(sent_data[idx], sent_data[idx]["govern_dict"], sent_data)
-                    s = token["word"]
-                    if [s, v, o] not in SVO:
-                        SVO.append([s, v, o])
-                        N.append(negation)
+            if v != "" and ( s != "Someone?" or o != ''):
+                if [s, v, o] not in SVO:
+                    SVO.append([s, v, o])
+                    N.append(negation)
+
+        acl_key = ""
+        if "acl" in gov_dict.keys():
+            acl_key = "acl"
+        elif "acl:relcl" in gov_dict.keys():
+             acl_key = "acl:relcl"
+        if acl_key != "":
+            
+            if isinstance(gov_dict[acl_key], list):
+                id_list = gov_dict[acl_key]
+                
             else:
-                idx = gov_dict["acl"]
-                s, v, o = verb_root(sent_data[idx], sent_data[idx]["govern_dict"], sent_data)
-                s = token["word"]
-            # s, v, o = acl_svo(token, gov_dict, sent_data)
-        
-        if v != "" and ( s != "Someone?" or o != ''):
-            if [s, v, o] not in SVO:
-                SVO.append([s, v, o])
-                N.append(negation)
+                id_list = [gov_dict[acl_key]]
+            for v_id in id_list:
+                v_token = sent_data[v_id]
+                if "VB" in v_token["pos"]:
+                    CollectedVs.append(v_id)
+                    svo_acl, negation_acl = verb_root([v_id], v_token, sent_data)
+                    if len(svo_acl) != 0:
+                        if svo_acl[0][0] == "Someone?":
+                            svo_acl[0][0] = token["word"]
+                    SVO.extend(svo_acl)
+                    N.extend(negation_acl)
+ 
+                
 
     return SVO, L, T, T_S, P, N
             
@@ -1149,15 +1379,15 @@ def SVO_extraction (sent_data):
 # Dec. 21
 def process_json_openIE(documentID, document, sentenceID, json, **kwargs):
     # TODO these are temporary fixes to bypass the hardcoded noteOutputPath
-    head, tail = os.path.split(document)
-    noteOutputPath = head
-    filename = tail
+    # head, tail = os.path.split(document)
+    # noteOutputPath = head
+    # filename = tail
     # noteOutputPath = "/Users/claude/Desktop/ClaudeCase/Emory/Trabajo/SVO/txt_output_notes"
-    # filename = os.path.split(document)[1]
-    notefilename = noteOutputPath + '/openIE_json_'+filename
-    with open(notefilename, 'wt') as out:
-        pprint.pprint(json, stream = out)
-    out.close()
+    #filename = os.path.split(document)[1]
+    # notefilename = noteOutputPath + '/openIE_json_'+filename
+    # with open(notefilename, 'wt') as out:
+    #     pprint.pprint(json, stream = out)
+    # out.close()
     extract_date_from_filename_var = False
     for key, value in kwargs.items():
         if key == 'extract_date_from_filename_var' and value == True:
@@ -1168,11 +1398,11 @@ def process_json_openIE(documentID, document, sentenceID, json, **kwargs):
     openIE = []
     for sentence in json['sentences']:
         sent_data = openIE_sent_data_reorg(sentence)#reorganize the dependency into the order of tokens in sentence
-        reorg_data_filename = noteOutputPath + '/output_reorg_'+filename
-        with open(reorg_data_filename, 'a+') as reorg_out:
-            reorg_out.write(str(sentenceID + 1))
-            pprint.pprint(sent_data, stream = reorg_out)
-        reorg_out.close()
+        # reorg_data_filename = noteOutputPath + '/output_reorg_'+filename
+        # with open(reorg_data_filename, 'a+') as reorg_out:
+            # reorg_out.write(str(sentenceID + 1))
+            # pprint.pprint(sent_data, stream = reorg_out)
+        # reorg_out.close()
         complete_sent = ''
         for token in sentence['tokens']:
             if token['originalText'] in string.punctuation:
@@ -1188,7 +1418,9 @@ def process_json_openIE(documentID, document, sentenceID, json, **kwargs):
         # for l in L: 
         # SVOs = []
         nidx = 0
+        # print("SVO: ", SVO)
         for row in SVO: 
+            # print("row: ", row)
             if extract_date_from_filename_var:
                 # temp.append(date_str)
                 openIE.append([documentID, sentenceID, document, row[0], row[1], row[2], N[nidx]," ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent, date_str])

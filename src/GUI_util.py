@@ -9,10 +9,11 @@ import GUI_util
 
 import tkinter as tk
 window = tk.Tk()
+from sys import platform
 
 import os
 import tkinter.messagebox as mb
-
+import inspect
 from subprocess import call
 
 import config_util
@@ -56,6 +57,11 @@ window.bind("<Escape>", clear)
 
 
 #IO widgets
+
+IO_setup_menu_var = tk.StringVar()
+IO_setup_menu = tk.OptionMenu(window, IO_setup_menu_var, 'Default I/O configuration', 'Alternative I/O configuration')
+IO_setup_var = tk.StringVar()
+# IO_setup_brief_display_area = tk.Text()
 
 select_softwareDir_button=tk.Button()
 select_input_file_button=tk.Button()
@@ -150,7 +156,30 @@ def display_logo():
         img = ImageTk.PhotoImage(Image.open(x).resize((85,50), Image.ANTIALIAS))
         logo = tk.Label(window, width=85, height=50, anchor='nw', image=img)
         logo.image = img
-        logo.place(x=GUI_IO_util.get_help_button_x_coordinate(), y=10)
+        # the logo has some white spaces to its left; better cutting this so that it can be aligned with HELP? buttons
+        # -12 works for Windows; must be checked for Mac
+        if platform == "win32":
+            offset=12
+        else:
+            offset=12
+        logo.place(x=GUI_IO_util.get_help_button_x_coordinate()-offset, y=10)
+
+def display_release():
+    # first digit for major upgrades
+    # second digit for new features
+    # third digit for bug fixes and minor changes to current version
+    # must also change the Release version in readMe on GitHub
+    release_version_var.set("1.4.1")
+
+    y_multiplier_integer=-.7
+
+    release_version_lb = tk.Label(window, text='Release ',foreground="red")
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate(),
+                                                   y_multiplier_integer, release_version_lb, True)
+    release_version = tk.Entry(window, state='disabled', width=6, foreground="red", textvariable=release_version_var)
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
+                                                   y_multiplier_integer, release_version,True)
+
 
 def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_main_dir_path,title,fileType,extension):
     currentFilename=inputFilename.get()
@@ -202,108 +231,16 @@ def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,titl
     else:
         output_dir_path.set(directoryName)
 
-#__________________________________________________________________________________________________________________
-#GUI top widgets ALL IO widgets 
-#	softwareDir, input filename, input dir, secondary input dir, output filename, output dir
-#__________________________________________________________________________________________________________________
-
-def GUI_top(config_input_output_options,config_filename):
-    import IO_libraries_util
-    from PIL import Image, ImageTk
-    def activateRunButton(*args):
-        configArray, missingIO=config_util.setup_IO_configArray(window,config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path)
-        # last parameter True: do not continue to warn the user about missing options when enetering all IOs
-        run_button_state=GUI_IO_util.check_missingIO(window,missingIO,config_filename,True)
-        run_button.configure(state=run_button_state)
-
-    # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
-    global select_softwareDir_button, select_input_file_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_file_button, select_output_dir_button
-
-    current_y_multiplier_integer1=0 #used for input file
-    current_y_multiplier_integer2=0 #used for main input directory
-    current_y_multiplier_integer3=0 #used for secondary input directory
-    current_y_multiplier_integer4=0 #used for output directory
-
-    # No top help lines displayed when opening the license agreement GUI
-    if config_filename!='license-config.txt':
-        y_multiplier_integer = 0
-
-        # team_button = tk.Button(window, text='The NLP Suite Team', width=20, height=1, foreground="red",
-        #                         command=lambda: GUI_IO_util.list_team(window, config_filename))
-        # y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate(),0,team_button)
-
-        # team_button.pack()
-
-        # canvas = Canvas(window, width=300, height=300)
-        # canvas.pack()
-        # img = ImageTk.PhotoImage(Image.open("ball.png"))
-        # canvas.create_image(20, 20, anchor=NW, image=img)
-
-        intro = tk.Label(window, text=GUI_IO_util.introduction_main)
-        intro.pack()
-
-        display_logo()
-
-        # first digit for major upgrades
-        # second digit for new features
-        # third digit for bug fixes and minor changes to current version
-        # must also change the Release version in readMe on GitHub
-        release_version_var.set("1.4.1")
-        if config_filename!='NLP-config.txt':
-
-            y_multiplier_integer=-.7
-
-            release_version = tk.Entry(window, state='disabled', width=6, foreground="red",
-                                       textvariable=release_version_var)
-            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate(),
-                                                           y_multiplier_integer, release_version)
-
-        if config_filename=='NLP-config.txt':
-
-            release_version_lb = tk.Label(window, text='Release version',foreground="red")
-            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate(),
-                                                           y_multiplier_integer, release_version_lb, True)
-            # first digit for major upgrades
-            # second digit for new features
-            # third digit for bug fixes and minor changes to current version
-            # must also change the Release version in readMe on GitHub
-            release_version = tk.Entry(window, state='disabled', width=6, foreground="red", textvariable=release_version_var)
-            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate() + 100,
-                                                           y_multiplier_integer, release_version,True)
-
-
-            team_button = tk.Button(window, text='NLP Suite team', width=13, height=1, foreground="red",
-                                    command=lambda: GUI_IO_util.list_team(window, config_filename))
-            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), 0,
-                                                           team_button, True)
-            cite_button = tk.Button(window, text='How to cite', width=13, height=1, foreground="red",
-                                    command=lambda: GUI_IO_util.cite_NLP(window, config_filename))
-            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 150, 0,
-                                                           cite_button)
-
-    y_multiplier_integer=0
-
-    global IO_options
-    missingIO=""
-
-
-    #__________________________________________________________________________________________________________________
-    # INPUT options widgets
-    # IO_options contains the .get() value for each IO widget
-    #	e.g.,  ['C:/Program Files (x86)/NLP_backup/WordNet-3.0', '', '', '', '', 'C:/Program Files (x86)/NLP_backup/Output']
-    # IO_options will contain the specific user SAVED values for the script
-    
-    # there should only be one case of 
-    #   config_input_output_options = [0,0,0,0,0,0]
-    #   in NLP_GUI (NLP-config.txt) since no IO lines are displayed 
+def get_IO_options(config_filename,config_input_output_options):
     if config_input_output_options!=[0,0,0,0,0,0]:
+        # use default config at first
         IO_options=config_util.readConfig(config_filename,config_input_output_options)
     else:
         IO_options=None
 
-    # the following check and lines are necessary 
-    #   to avoid code break in 
-    #   if IO_options[] in later tests 
+    # the following check and lines are necessary
+    #   to avoid code break in
+    #   if IO_options[] in later tests
     #   when there is no config folder
     if IO_options==None or IO_options==[]:
         IO_options=[]
@@ -313,14 +250,122 @@ def GUI_top(config_input_output_options,config_filename):
             else:
                 lineValue=""
             IO_options.append(lineValue)
+    return IO_options
 
-    #file input file option ______________________________________________
-    #	1 for CoNLL file,
-    #	2 for txt file,
-    #	3 for csv file,
-    #	4 for any type file
-    #	5 for txt, html (used in annotator)
-    #	6 for txt, csv (used in SVO)
+# configuration_type is the value displayed on the GUI: Default I/O configuration, Alternative I/O configuration
+def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,*args):
+    y_multiplier_integer=1
+    if 'Default' in IO_setup_menu_var.get():
+        IO_options=get_IO_options('default-config-txt', config_input_output_options)
+    else:
+        IO_options=get_IO_options(config_filename,config_input_output_options)
+
+
+    # IO_options=get_IO_optionsdefault_config_filename,config_input_output_options
+    #
+    # if config_input_output_options!=[0,0,0,0,0,0]:
+    #     # use default config at first
+    #     IO_options=config_util.readConfig(default_config_filename,config_input_output_options)
+    # else:
+    #     IO_options=None
+    #
+    # # the following check and lines are necessary
+    # #   to avoid code break in
+    # #   if IO_options[] in later tests
+    # #   when there is no config folder
+    # if IO_options==None or IO_options==[]:
+    #     IO_options=[]
+    #     for i in range(len(config_input_output_options)):
+    #         if config_input_output_options[i]>0:
+    #             lineValue="EMPTY LINE"
+    #         else:
+    #             lineValue=""
+    #         IO_options.append(lineValue)
+
+    # the full options must always be displayed, even when the brief option is seleted;
+    #   the reason is that the IO widgets filename, inputDir, and outputDir are used to check missing options and activate the RUN button
+    if IO_options[0]=='' or IO_options[0]=="EMPTY LINE" : # INPUT software directory
+        softwareDir.set('')
+    else:
+        softwareDir.set(config_util.checkConfigDirExists(config_filename,IO_options[0],'INPUT'))
+
+    if IO_options[1]=='' or IO_options[1]=="EMPTY LINE": # INPUT filename
+        inputFilename.set('')
+    else:
+        inputFilename.set(config_util.checkConfigFileExists(config_filename,IO_options[1],'INPUT'))
+        IO_setup_display_string='INPUT: ' + inputFilename.get()
+
+    if IO_options[2]=='' or IO_options[2]=="EMPTY LINE": # INPUT main directory
+        input_main_dir_path.set('')
+    else:
+        input_main_dir_path.set(config_util.checkConfigDirExists(config_filename,IO_options[2],'INPUT'))
+        IO_setup_display_string='INPUT: DIR ' + input_main_dir_path.get()
+
+    if IO_options[3]=='' or IO_options[3]=="EMPTY LINE": # INPUT secondary directory
+        input_secondary_dir_path.set('')
+    else:
+        input_secondary_dir_path.set(config_util.checkConfigDirExists(config_filename,IO_options[3],'INPUT'))
+
+    if IO_options[4]=='' or IO_options[4]=="EMPTY LINE": # OUTPUT file name
+        outputFilename.set('')
+    else:
+        outputFilename.set(config_util.checkConfigFileExists(config_filename,IO_options[4],'OUTPUT'))
+
+    if IO_options[5]=='' or IO_options[5]=="EMPTY LINE": # OUTPUT directory
+        output_dir_path.set('')
+    else:
+        output_dir_path.set(config_util.checkConfigDirExists(config_filename,IO_options[5],'OUTPUT'))
+    # else: #display I/O info briefly
+    if IO_setup_display_brief == True and config_input_output_options!=[0,0,0,0,0,0]:
+        IO_setup_display_string = ''
+        if str(IO_options[1])!='':
+            #head is path, tail is filename
+            head, tail = os.path.split(IO_options[1])
+            IO_setup_display_string = "INPUT FILE: " + str(tail)
+        else:
+            # dirName = os.path.basename(os.path.normpath(IO_options[2]))
+            dirName = IO_options[2]
+            IO_setup_display_string = "INPUT DIR: " + str(dirName)
+        # dirName = os.path.basename(os.path.normpath(IO_options[5]))
+        dirName = IO_options[5]
+        IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(dirName)
+        # window.IO_setup_brief_display_area.delete(0.1, tk.END)
+        # window.IO_setup_var.set(IO_setup_display_string)
+        # window.IO_setup_brief_display_area.insert("end", IO_setup_display_string)
+        # window.IO_setup_brief_display_area.pack()
+        IO_setup_brief_display_area = tk.Text(width=60, height=2)
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+250,
+                                                       0, IO_setup_brief_display_area)
+        IO_setup_brief_display_area.delete(0.1, tk.END)
+        IO_setup_var.set(IO_setup_display_string)
+        IO_setup_brief_display_area.insert("end", IO_setup_display_string)
+        # IO_setup_brief_display_area.pack(side=tk.LEFT)
+        IO_setup_brief_display_area.configure(state='disabled')
+    activateRunButton()
+
+def activateRunButton(*args):
+    # global config_filename, config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path
+    configArray, missingIO=config_util.setup_IO_configArray(window,config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path)
+    # last parameter True: do not continue to warn the user about missing options when entering all IOs
+    run_button_state=GUI_IO_util.check_missingIO(window,missingIO,config_filename,True)
+    run_button.configure(state=run_button_state)
+
+#__________________________________________________________________________________________________________________
+#GUI top widgets ALL IO widgets 
+#	softwareDir, input filename, input dir, secondary input dir, output filename, output dir
+#__________________________________________________________________________________________________________________
+
+def IO_config_setup_full (window, y_multiplier_integer):
+
+    if 'Default' in IO_setup_menu_var.get():
+        IO_options=get_IO_options('default-config-txt', config_input_output_options)
+    else:
+        IO_options=get_IO_options(config_filename,config_input_output_options)
+
+    activateRunButton()
+
+    # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
+    global select_softwareDir_button, select_input_file_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_file_button, select_output_dir_button
     if config_input_output_options[1]>0:
         # buttons are set to normal or disabled in selectFile_set_options
         # openInputFile_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, inputFilename.get()))
@@ -418,6 +463,103 @@ def GUI_top(config_input_output_options,config_filename):
         openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
         openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer4)
 
+def setup_IO_configuration_options(IO_setup_display_brief):
+    if 'Default' in GUI_util.IO_setup_menu_var.get():
+        temp_config_filename = 'default-config.txt'
+    else:
+        temp_config_filename=config_filename
+    call("python IO_setup_main.py --config_option " + str(config_input_output_options).replace('[', '"').replace(']', '"') + " --config_filename " + temp_config_filename, shell=True)
+    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options)
+
+def IO_config_setup_brief(window, y_multiplier_integer):
+    IO_setup_button = tk.Button(window, text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True))
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
+                                                   y_multiplier_integer,
+                                                   IO_setup_button, True)
+
+    IO_setup_menu_var.set("Default I/O configuration")
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(),
+                                                   y_multiplier_integer,
+                                                   IO_setup_menu)
+
+def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief):
+    import IO_libraries_util
+    from PIL import Image, ImageTk
+
+    # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
+    global select_softwareDir_button, select_input_file_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_file_button, select_output_dir_button
+
+    # No top help lines displayed when opening the license agreement GUI
+    if config_filename!='license-config.txt':
+
+        intro = tk.Label(window, text=GUI_IO_util.introduction_main)
+        intro.pack()
+
+        display_logo()
+
+        display_release()
+
+        if config_filename == 'NLP-config.txt':
+
+            team_button = tk.Button(window, text='NLP Suite team', width=13, height=1, foreground="red",
+                                    command=lambda: GUI_IO_util.list_team(window, config_filename))
+            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), 0,
+                                                           team_button, True)
+            cite_button = tk.Button(window, text='How to cite', width=13, height=1, foreground="red",
+                                    command=lambda: GUI_IO_util.cite_NLP(window, config_filename))
+            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 150, 0,
+                                                           cite_button)
+
+    y_multiplier_integer=0
+
+    global IO_options
+    missingIO=""
+
+    #__________________________________________________________________________________________________________________
+    # INPUT options widgets
+    # IO_options contains the .get() value for each IO widget
+    #	e.g.,  ['C:/Program Files (x86)/NLP_backup/WordNet-3.0', '', '', '', '', 'C:/Program Files (x86)/NLP_backup/Output']
+    # IO_options will contain the specific user SAVED values for the script
+
+    # there should only be one case of
+    #   config_input_output_options = [0,0,0,0,0,0]
+    #   in NLP_GUI (NLP-config.txt) since no IO lines are displayed
+    # default_config_filename = 'default-config-txt'
+    # if config_input_output_options!=[0,0,0,0,0,0]:
+    #     # use default config at first
+    #     IO_options=config_util.readConfig(default_config_filename,config_input_output_options)
+    # else:
+    #     IO_options=None
+    #
+    # # the following check and lines are necessary
+    # #   to avoid code break in
+    # #   if IO_options[] in later tests
+    # #   when there is no config folder
+    # if IO_options==None or IO_options==[]:
+    #     IO_options=[]
+    #     for i in range(len(config_input_output_options)):
+    #         if config_input_output_options[i]>0:
+    #             lineValue="EMPTY LINE"
+    #         else:
+    #             lineValue=""
+    #         IO_options.append(lineValue)
+
+    #file input file option ______________________________________________
+    #	1 for CoNLL file,
+    #	2 for txt file,
+    #	3 for csv file,
+    #	4 for any type file
+    #	5 for txt, html (used in annotator)
+    #	6 for txt, csv (used in SVO)
+
+    if config_filename != 'NLP-config.txt':
+        if not IO_setup_display_brief:
+            IO_config_setup_full(window, y_multiplier_integer)
+        else:
+            IO_config_setup_brief(window, y_multiplier_integer)
+    else:
+        activateRunButton()
+
     old_license_file=os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-1.0.txt')
     if os.path.isfile(old_license_file):
         # rename the file to the new standard
@@ -432,14 +574,15 @@ def GUI_top(config_input_output_options,config_filename):
         noLicenceError=True
 
 #__________________________________________________________________________________________________________________
-#GUI bottom buttons widgets (ReadMe, TIPS, RUN, QUIT)
+#GUI bottom buttons widgets (ReadMe, TIPS, RUN, CLOSE)
 #__________________________________________________________________________________________________________________
 
-def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options):
+def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
+               TIPS_lookup,TIPS_options, IO_setup_display_brief):
     """
     :type TIPS_options: object
     """
-    # No bottom lines (README, TIPS, RUN, QUIT) displayed when opening the license agreement GUI
+    # No bottom lines (README, TIPS, RUN, CLOSE) displayed when opening the license agreement GUI
     if config_filename=='license-config.txt':
         return
     # IO_options=[]
@@ -451,7 +594,12 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, 
     #   display options for opening more specialized GUIs
     #   do NOT display the next two sets of widgets
     #   since there is no output to display
-    if  config_input_output_options!=[0, 0, 0, 0, 0, 0]:
+    # if config_input_output_options!=[0, 0, 0, 0, 0, 0] and config_filename!='default-config.txt':
+
+    # inspect.stack() will return the stack information
+    ScriptName = inspect.stack()[1]
+    # "IO_setup_main.py" has no Excel display
+    if config_filename != 'default-config.txt' and not "IO_setup_main.py" in ScriptName:
         #open out csv files widget defined above since it is used earlier
         open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Automatically open output csv file(s)", "Do NOT automatically open output csv file(s)"))
         open_csv_output_label.configure(text="Automatically open output csv file(s)")
@@ -464,8 +612,7 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, 
         create_Excel_chart_output_label.place(x=GUI_IO_util.get_labels_x_coordinate()+380, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
         create_Excel_chart_output_checkbox.set(1)
 
-        y_multiplier_integer=y_multiplier_integer+1
-
+    y_multiplier_integer=y_multiplier_integer+1
     readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
     readme_button.place(x=GUI_IO_util.read_button_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
@@ -527,8 +674,12 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, 
             reminders_util.resetReminder(config_filename,reminders_dropdown_field.get())
     reminders_dropdown_field.trace('w', trace_reminders_dropdown)
 
-    # get_help_button_x_coordinate()+700
-    run_button.place(x=GUI_IO_util.run_button_x_coordinate, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+    # if config_filename != 'default-config.txt':
+    # inspect.stack() will return the stack information
+    ScriptName=inspect.stack()[1]
+    # there is no RUN button when setting up IO information
+    if not "IO_setup_main.py" in ScriptName:
+        run_button.place(x=GUI_IO_util.run_button_x_coordinate, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     def _close_window():
         configArray = \
@@ -541,47 +692,20 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, 
 
         GUI_IO_util.exit_window(window, config_filename, configArray)
 
-    # quit_button = tk.Button(window, text='QUIT', width=10,height=2, command=lambda: GUI_IO_util.exit_window(window,config_filename,configArray))
-    quit_button = tk.Button(window, text='QUIT', width=10,height=2, command=lambda: _close_window())
+    close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
     # get_help_button_x_coordinate()+820
-    quit_button.place(x=GUI_IO_util.quit_button_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+    close_button.place(x=GUI_IO_util.close_button_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     # Any message should be displayed after the whole GUI has been displayed
     
     if noLicenceError==True:
         mb.showwarning(title='Fatal error', message="The licence agreement file 'LICENSE-NLP-1.0.txt' could not be found in the 'lib' subdirectory of your main NLP Suite directory\n" + GUI_IO_util.NLPPath + "\n\nPlease, make sure to copy this file in the 'lib' subdirectory.\n\nThe NLP Suite will now exit.")
         sys.exit()
-    
-    if IO_options[0]=="EMPTY LINE": # INPUT software directory
-        softwareDir.set('')
-    else:
-        softwareDir.set(config_util.checkConfigDirExists(config_filename,IO_options[0],'INPUT'))
 
-    if IO_options[1]=="EMPTY LINE": # INPUT filename
-        inputFilename.set('')
-    else:
-        inputFilename.set(config_util.checkConfigFileExists(config_filename,IO_options[1],'INPUT'))
+    IO_setup_menu_var.trace("w",lambda x,y,z: display_IO_setup(window, IO_setup_display_brief,config_filename,config_input_output_options))
 
-    if IO_options[2]=="EMPTY LINE": # INPUT main directory
-        input_main_dir_path.set('')
-    else:
-        input_main_dir_path.set(config_util.checkConfigDirExists(config_filename,IO_options[2],'INPUT'))
+    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options)
 
-    if IO_options[3]=="EMPTY LINE": # INPUT secondary directory
-        input_secondary_dir_path.set('')
-    else:
-        input_secondary_dir_path.set(config_util.checkConfigDirExists(config_filename,IO_options[3],'INPUT'))
-
-    if IO_options[4]=="EMPTY LINE": # OUTPUT file name
-        outputFilename.set('')
-    else:
-        outputFilename.set(config_util.checkConfigFileExists(config_filename,IO_options[4],'OUTPUT'))
-
-    if IO_options[5]=="EMPTY LINE": # OUTPUT directory
-        output_dir_path.set('')
-    else:
-        output_dir_path.set(config_util.checkConfigDirExists(config_filename,IO_options[5],'OUTPUT'))
-    
     # set the state (enabled/disabled) of the RUN button
     #   depending upon IO widgets; no IO info, RUN disabled
     configArray, missingIO=config_util.setup_IO_configArray(window,config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path)

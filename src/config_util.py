@@ -120,6 +120,8 @@ def readConfig(configFile, config_array):
                 input_output_options.append('')
             else:
                 input_output_options.append(configList[i])
+    # else:
+    #     mb.showwarning(title='File error', message="There is no Input/Output configuration file\n\n" + configFile + "\n\nPlease, click on the Setup INPUT/OUTPUT button to set it up.")
     return input_output_options
 
 
@@ -185,7 +187,13 @@ def checkSavedConfig(configFilename, configArray):
 def saveConfig(window, configFilename, configArray, silent=False):
     # for GUIs with no I/O widgets configArray 
     #   is empty lines
-    if configArray == ['EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE']:
+    if (configArray[0] == 'EMPTY LINE' or configArray[0] == '') and \
+        (configArray[1] == 'EMPTY LINE' or configArray[0] == '') and \
+        (configArray[2] == 'EMPTY LINE' or configArray[0] == '') and \
+        (configArray[3] == 'EMPTY LINE' or configArray[0] == '') and \
+        (configArray[4] == 'EMPTY LINE' or configArray[0] == '') and \
+        (configArray[5] == 'EMPTY LINE' or configArray[0] == '') and \
+        (configArray[6] == 'EMPTY LINE' or configArray[0] == ''):
         return
     currentStringArray = ''
     configFileWritten = False

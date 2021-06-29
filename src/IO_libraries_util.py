@@ -210,12 +210,14 @@ def get_existing_software_config(package):
     return existing_csv
 
 
-def save_software_config(new_csv):
+def save_software_config(new_csv,package):
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
     with open(software_config, 'w+', newline='') as csv_file:
         writer = csv.writer(csv_file)
         writer.writerows(new_csv)
 
+    mb.showwarning(title=package + ' saved',
+                               message="The installation location of " + package + " was successfully saved to " + software_config)
 
 def get_external_software_dir(calling_script, package, warning=True):
     # get a list of software in software-config.csv
@@ -308,7 +310,8 @@ def get_external_software_dir(calling_script, package, warning=True):
                     if package.lower() in software_name.lower():
                         # exit loop: for (index, row) in enumerate(existing_csv)
                         break
-        save_software_config(existing_csv)
+        save_software_config(existing_csv,package)
+
     if software_dir == '':
         software_dir = None
     return software_dir

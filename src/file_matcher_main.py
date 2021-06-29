@@ -17,58 +17,76 @@ import GUI_IO_util
 
 def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, create_Excel_chart_output, find_var, source_extension_var, target_extension_var, matching_var, copy_var, move_var, character_value, number_of_items):
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Matcher at', True, 'You can follow the script in command line.')
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Matcher at', True, 'You can follow the script in command line.')
 
-	file_matcher_util.run_default(GUI_util.window, [inputPath], outputPath, selectedCsvFile_var, openOutputFiles, matching_var, source_extension_var, target_extension_var, copy_var, move_var, character_value, number_of_items)
+    file_matcher_util.run_default(GUI_util.window, [inputPath], outputPath, selectedCsvFile_var, openOutputFiles, matching_var, source_extension_var, target_extension_var, copy_var, move_var, character_value, number_of_items)
 
-	# output_filename=''
-	# i=0
-	# fieldnames = []
-	# currentSubfolder=os.path.basename(os.path.normpath(inputPath))
+    # output_filename=''
+    # i=0
+    # fieldnames = []
+    # currentSubfolder=os.path.basename(os.path.normpath(inputPath))
 
-	# For cases where matching files beginning with a dot (.); like files in the current directory or hidden files on Unix based system, use the os.walk
-	# import glob
-	# include_subdir_var
-	# for filename in glob.iglob(inputPath + os.sep+ '*.'+by_file_type_var, recursive=True):
-	#      print(filename)
-	
-	# root: Current path which is "walked through"
-	# subdirs: Files in root of type directory
-	# files: Files in current root (not in subdirs) of type other than directory
+    # For cases where matching files beginning with a dot (.); like files in the current directory or hidden files on Unix based system, use the os.walk
+    # import glob
+    # include_subdir_var
+    # for filename in glob.iglob(inputPath + os.sep+ '*.'+by_file_type_var, recursive=True):
+    #      print(filename)
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File matcher at', True)
+    # root: Current path which is "walked through"
+    # subdirs: Files in root of type directory
+    # files: Files in current root (not in subdirs) of type other than directory
 
-	# if i > 0:
-	# 	mb.showwarning(title='File matcher', message=str(i) + ' files have been matched.')
-	# 	filesToOpen=[]
-	# 	filesToOpen.append(os.path.join(outputPath,output_filename))
-	# 	IO_util.OpenOutputFiles(GUI_util.window,True,filesToOpen)
-	# else:
-	# 	mb.showwarning(title='File matcher', message='No files have been matched.')
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File matcher at', True)
+
+    # if i > 0:
+    # 	mb.showwarning(title='File matcher', message=str(i) + ' files have been matched.')
+    # 	filesToOpen=[]
+    # 	filesToOpen.append(os.path.join(outputPath,output_filename))
+    # 	IO_util.OpenOutputFiles(GUI_util.window,True,filesToOpen)
+    # else:
+    # 	mb.showwarning(title='File matcher', message='No files have been matched.')
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 # noi = file_filename_matcher_GUI.number_of_items_value.get()
 # print("Number of items: ", noi)
 # print("Type: ", type(file_filename_matcher_GUI.number_of_items_var.get()))
 run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
-							   GUI_util.output_dir_path.get(),
-							   selectedCsvFile_var.get(),
-							   GUI_util.open_csv_output_checkbox.get(),
-							   GUI_util.create_Excel_chart_output_checkbox.get(),
-							   find_var.get(),
-							   source_file_type_menu_var.get(),
-							   target_file_type_menu_var.get(),
-							   matching_var.get(),
-							   copy_var.get(),
-							   move_var.get(),
-							   character_value_var.get(),
-							   number_of_items_var.get())
+                               GUI_util.output_dir_path.get(),
+                               selectedCsvFile_var.get(),
+                               GUI_util.open_csv_output_checkbox.get(),
+                               GUI_util.create_Excel_chart_output_checkbox.get(),
+                               find_var.get(),
+                               source_file_type_menu_var.get(),
+                               target_file_type_menu_var.get(),
+                               matching_var.get(),
+                               copy_var.get(),
+                               move_var.get(),
+                               character_value_var.get(),
+                               number_of_items_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1200x430'
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief=True
+GUI_width=1200
+GUI_height=430 # height of GUI with full I/O display
+
+if IO_setup_display_brief:
+    GUI_height = GUI_height - 40
+    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+    increment=0 # used in the display of HELP messages
+else: # full display
+    # GUI CHANGES add following lines to every special GUI
+    # +3 is the number of lines starting at 1 of IO widgets
+    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 1  # IO FULL display
+    increment=1
+
+GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
 GUI_label='Graphical User Interface (GUI) for File Matcher'
 config_filename='file-matcher-config.txt'
 # The 6 values of config_option refer to: 
@@ -88,14 +106,12 @@ config_option=[0,0,1,0,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-# GUI CHANGES add following lines to every special GUI
-y_multiplier_integer=GUI_util.y_multiplier_integer+1
 window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 
-GUI_util.GUI_top(config_input_output_options,config_filename)
+GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
 
 selectedCsvFile_var=tk.StringVar()
 find_var=tk.IntVar()
@@ -111,18 +127,18 @@ move_var=tk.IntVar()
 
 
 def clear(e):
-	source_file_type_menu_var.set('')
-	target_file_type_menu_var.set('')
-	GUI_util.tips_dropdown_field.set('Open TIPS files')
+    source_file_type_menu_var.set('')
+    target_file_type_menu_var.set('')
+    GUI_util.tips_dropdown_field.set('Open TIPS files')
 window.bind("<Escape>", clear)
 
 def get_additional_csvFile(window,title,fileType):
-	import os
-	initialFolder = os.path.dirname(os.path.abspath(__file__))
-	filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
-	if len(filePath)>0:
-		selectedCsvFile.config(state='normal')
-		selectedCsvFile_var.set(filePath)
+    import os
+    initialFolder = os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
+    if len(filePath)>0:
+        selectedCsvFile.config(state='normal')
+        selectedCsvFile_var.set(filePath)
 
 # add_file_button = tk.Button(window, text='csv file', width=2,height=1,state='disabled',command=lambda: get_additional_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
 add_file_button = tk.Button(window, text='csv file', command=lambda: get_additional_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
@@ -181,54 +197,54 @@ move_checkbox.config(state='disabled',text="MOVE processed files")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+200,y_multiplier_integer,move_checkbox)
 
 def activate_options(*args):
-	copy_checkbox.config(state='normal')
-	move_checkbox.config(state='normal')
-	if copy_var.get()==True:
-		move_checkbox.config(state='disabled')
-		move_var.set(0)
-	if move_var.get()==True:
-		copy_checkbox.config(state='disabled')
-		copy_var.set(0)
-		# TODO need to set move_var.set(0)
-		#	but the question gets repeated twice
-		# command = mb.askyesno("MOVE files", "You have selected to MOVE any mathed files from the INPUT directory to the OUTPUT directory?\n\nAre you sure you want to do that? Matched files will be removed from their original locations.",default='no')
-		# if command==False:
-		# 	move_var.set(0)
-		# 	copy_checkbox.config(state='normal')
+    copy_checkbox.config(state='normal')
+    move_checkbox.config(state='normal')
+    if copy_var.get()==True:
+        move_checkbox.config(state='disabled')
+        move_var.set(0)
+    if move_var.get()==True:
+        copy_checkbox.config(state='disabled')
+        copy_var.set(0)
+        # TODO need to set move_var.set(0)
+        #	but the question gets repeated twice
+        # command = mb.askyesno("MOVE files", "You have selected to MOVE any mathed files from the INPUT directory to the OUTPUT directory?\n\nAre you sure you want to do that? Matched files will be removed from their original locations.",default='no')
+        # if command==False:
+        # 	move_var.set(0)
+        # 	copy_checkbox.config(state='normal')
 copy_var.trace('w',activate_options)
 move_var.trace('w',activate_options)
 
 def activate_find_options(*args):
-	source_file_type_menu_var.set('*')
-	target_file_type_menu_var.set('*')
-	if find_var.get()==True:
-		source_file_type_menu.configure(state="normal")
-		target_file_type_menu.configure(state="normal")
-		# currently the matcher only works with exact match
-		# need to use a csv file for partial matches
-		# matching_checkbox.config(text="Exact match",state='normal')
-		matching_checkbox.config(text="Exact match",state='normal')
-		matching_var.set(1)
-	else:
-		source_file_type_menu.configure(state="disabled")
-		target_file_type_menu.configure(state="disabled")
-		matching_var.set(1)
-		matching_checkbox.config(text="Exact match",state='disabled')
+    source_file_type_menu_var.set('*')
+    target_file_type_menu_var.set('*')
+    if find_var.get()==True:
+        source_file_type_menu.configure(state="normal")
+        target_file_type_menu.configure(state="normal")
+        # currently the matcher only works with exact match
+        # need to use a csv file for partial matches
+        # matching_checkbox.config(text="Exact match",state='normal')
+        matching_checkbox.config(text="Exact match",state='normal')
+        matching_var.set(1)
+    else:
+        source_file_type_menu.configure(state="disabled")
+        target_file_type_menu.configure(state="disabled")
+        matching_var.set(1)
+        matching_checkbox.config(text="Exact match",state='disabled')
 find_var.trace('w',activate_find_options)
 
 activate_find_options()
 
 def activate_numberEmbeddedItems_options(*args):
-	character_value_var.set('_')
-	number_of_items_var.set(0)
-	if matching_var.get()==1:
-		character_value.configure(state="disabled")
-		number_of_items_value.configure(state="disabled")
-		include_exclude_checkbox.config(state="disabled")
-	else:
-		character_value.configure(state="normal")
-		number_of_items_value.configure(state="normal")
-		include_exclude_checkbox.config(state="normal")
+    character_value_var.set('_')
+    number_of_items_var.set(0)
+    if matching_var.get()==1:
+        character_value.configure(state="disabled")
+        number_of_items_value.configure(state="disabled")
+        include_exclude_checkbox.config(state="disabled")
+    else:
+        character_value.configure(state="normal")
+        number_of_items_value.configure(state="normal")
+        include_exclude_checkbox.config(state="normal")
 matching_var.trace('w',activate_numberEmbeddedItems_options)
 activate_numberEmbeddedItems_options()
 
@@ -239,20 +255,25 @@ TIPS_options= 'Filename matcher','File handling in NLP Suite','File manager', 'F
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_csvFile)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_outputDirectory)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", "Please, click to select a csv file containing a list of filenames to be used for finding matches.\n\nTHIS IS PARTICULARLY USEFUL IF YOU WANT TO PROCESS PARTIAL MATCHES, since currently the partial match option is not available. TO GENERATE A LIST OF FILES FOR PARTIAL MATCH USE THE FILE_MANAGER_MAIN.PY, WITH THE LIST OPTION AND THE FILTER 'By number of embedded items'.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help", "Please, tick the checkbox to use the script 'Match files'.\n\nThe script identifies files having the same filename and different extensions (e.g., The Atlanta Journal_3-12-1956_4_2.pdf and The Atlanta Journal_3-12-1956_8_2.txt). All subdirectories of a selected directory will be searched for a selected pair of source and target extensions (e.g., pdf and docx).\n\nThe script is very useful, for instance, for identifying pdf files that have been manually transcribed (or automatically converted) to doc/docx or txt format. But it can be used more generally to identify files with the same filename and different extensions.\n\nUsing * * for both source and target will identify any file with the same exact filename and different extensions of any type.\n\nYou can select to match files with an exact match with the baseline filename (e.g., The Atlanta Journal_3-12-1956_8_2), or with a partial match (e.g., only the first two items in the filenames, The Atlanta Journal_3-12-1956).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help", "Please, tick the checkbox to find files with an exact match with the SOURCE filename (e.g., The Atlanta Journal_3-12-1956_8_2), or with a partial match (e.g., only the first two items in the filenames, The Atlanta Journal_3-12-1956).\n\nFor a partial match you will need to enter the character separating items (e.g., _) and the number of items (e.g., 2) and whether you want to include only the first # items.\n\nTHE OPTION IS CURRENTLY DISABLED AND ONLY THE EXACT MATCH WORKS.\n\nIF YOU WANT TO PROCESS PARTIAL MATCHES, YOU NEED TO USE AN INPUT CSV FILE WITH A LIST OF FILES FOR PARTIAL MATCH. TO GENERATE THE CSV FILE, USE THE FILE_MANAGER_MAIN.PY, WITH THE LIST OPTION AND THE FILTER 'By number of embedded items'.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help", "Please, tick one or the other checkboxes to COPY or MOVE the matched files from the INPUT directory to the OUTPUT directory.\n\nIn the OUTPUT directory, will create a new sub-directory 'file_matcher_OUTPUT' (any previous 'file_matcher_OUTPUT' subdirectory will be overwritten). Inside this sub-directory, three sub-directories will be created: matched, unmatched, duplicates where matched, unmatched, and duplicate files will be copied/moved.\n\nLeave the checkboxes unticked if you just want to get a list of files.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help", GUI_IO_util.msg_openOutputFiles)
+    if not IO_setup_display_brief:
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_csvFile)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_outputDirectory)
+    else:
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_IO_setup)
+
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 1),"Help", "Please, click to select a csv file containing a list of filenames to be used for finding matches.\n\nTHIS IS PARTICULARLY USEFUL IF YOU WANT TO PROCESS PARTIAL MATCHES, since currently the partial match option is not available. TO GENERATE A LIST OF FILES FOR PARTIAL MATCH USE THE FILE_MANAGER_MAIN.PY, WITH THE LIST OPTION AND THE FILTER 'By number of embedded items'.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 2),"Help", "Please, tick the checkbox to use the script 'Match files'.\n\nThe script identifies files having the same filename and different extensions (e.g., The Atlanta Journal_3-12-1956_4_2.pdf and The Atlanta Journal_3-12-1956_8_2.txt). All subdirectories of a selected directory will be searched for a selected pair of source and target extensions (e.g., pdf and docx).\n\nThe script is very useful, for instance, for identifying pdf files that have been manually transcribed (or automatically converted) to doc/docx or txt format. But it can be used more generally to identify files with the same filename and different extensions.\n\nUsing * * for both source and target will identify any file with the same exact filename and different extensions of any type.\n\nYou can select to match files with an exact match with the baseline filename (e.g., The Atlanta Journal_3-12-1956_8_2), or with a partial match (e.g., only the first two items in the filenames, The Atlanta Journal_3-12-1956).")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 3),"Help", "Please, tick the checkbox to find files with an exact match with the SOURCE filename (e.g., The Atlanta Journal_3-12-1956_8_2), or with a partial match (e.g., only the first two items in the filenames, The Atlanta Journal_3-12-1956).\n\nFor a partial match you will need to enter the character separating items (e.g., _) and the number of items (e.g., 2) and whether you want to include only the first # items.\n\nTHE OPTION IS CURRENTLY DISABLED AND ONLY THE EXACT MATCH WORKS.\n\nIF YOU WANT TO PROCESS PARTIAL MATCHES, YOU NEED TO USE AN INPUT CSV FILE WITH A LIST OF FILES FOR PARTIAL MATCH. TO GENERATE THE CSV FILE, USE THE FILE_MANAGER_MAIN.PY, WITH THE LIST OPTION AND THE FILTER 'By number of embedded items'.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 4),"Help", "Please, tick one or the other checkboxes to COPY or MOVE the matched files from the INPUT directory to the OUTPUT directory.\n\nIn the OUTPUT directory, will create a new sub-directory 'file_matcher_OUTPUT' (any previous 'file_matcher_OUTPUT' subdirectory will be overwritten). Inside this sub-directory, three sub-directories will be created: matched, unmatched, duplicates where matched, unmatched, and duplicate files will be copied/moved.\n\nLeave the checkboxes unticked if you just want to get a list of files.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 5),"Help", GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
 readMe_message="The Python 3 script allows you to find matches between any SOURCE file of a selected type (e.g., pdf) and TARGET files with the same filename but same/different type (e.g., docx).\n\nThe script is very useful, for instance, for identifying pdf files that have been manually transcribed (or automatically converted) to doc/docx or txt format. But it can be used more generally to identify files with the same filename and different extensions."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
+GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()
 

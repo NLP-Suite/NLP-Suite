@@ -19,72 +19,90 @@ import IO_user_interface_util
 
 # def run(CoreNLPdir,inputFilename,inputDir,outputDir,openOutputFiles,createExcelCharts,encoding_var,memory_var,extract_date_from_text_var,extract_date_from_filename_var,date_format,date_separator_var,date_position_var,NER_list,NER_split_prefix_values_entry_var,NER_split_suffix_values_entry_var,NER_sentence_var):
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, encoding_var,
-			memory_var, extract_date_from_text_var, extract_date_from_filename_var, date_format, date_separator_var,
-			date_position_var, NER_list, NER_sentence_var):
+            memory_var, extract_date_from_text_var, extract_date_from_filename_var, date_format, date_separator_var,
+            date_position_var, NER_list, NER_sentence_var):
 
-	filesToOpen = []  # Store all files that are to be opened once finished
+    filesToOpen = []  # Store all files that are to be opened once finished
 
-	if len(NER_list)==0:
-		mb.showwarning(title='No NER tag selected', message='No NER tag has been selected.\n\nPlease, select an NER tag and try again.')
-		return
+    if len(NER_list)==0:
+        mb.showwarning(title='No NER tag selected', message='No NER tag has been selected.\n\nPlease, select an NER tag and try again.')
+        return
 
-	tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir, outputDir,
-														openOutputFiles, createExcelCharts,
-														'NER',
-														NERs=NER_list,
-														DoCleanXML=False,
-														memory_var=memory_var,
-														dateExtractedFromFileContent=extract_date_from_text_var,
-														filename_embeds_date_var=extract_date_from_filename_var,
-														date_format=date_format,
-														date_separator_var=date_separator_var,
-														date_position_var=date_position_var)
+    tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir, outputDir,
+                                                        openOutputFiles, createExcelCharts,
+                                                        'NER',
+                                                        NERs=NER_list,
+                                                        DoCleanXML=False,
+                                                        memory_var=memory_var,
+                                                        dateExtractedFromFileContent=extract_date_from_text_var,
+                                                        filename_embeds_date_var=extract_date_from_filename_var,
+                                                        date_format=date_format,
+                                                        date_separator_var=date_separator_var,
+                                                        date_position_var=date_position_var)
 
-	if len(tempOutputFiles)>0:
-		filesToOpen.extend(tempOutputFiles)
+    if len(tempOutputFiles)>0:
+        filesToOpen.extend(tempOutputFiles)
 
-	# # TODO date
-	# if extract_date_from_text_var or extract_date_from_filename_var:
-	# 	df = pd.DataFrame(data, columns=['Word', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date'])
-	# else:
-	# 	df = pd.DataFrame(data, columns=['Word', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
-	# if NER_sentence_var == 1:
-	# 	df = Excel_util.add_missing_IDs(df)
+    # # TODO date
+    # if extract_date_from_text_var or extract_date_from_filename_var:
+    # 	df = pd.DataFrame(data, columns=['Word', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date'])
+    # else:
+    # 	df = pd.DataFrame(data, columns=['Word', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+    # if NER_sentence_var == 1:
+    # 	df = Excel_util.add_missing_IDs(df)
 
-	# if inputDir!='':
-	# 	output_filename = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'NER_extractor_dir')
-	# else:
-	# 	output_filename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NER_extractor')
-	# df.to_csv(output_filename,index=False)
-	# filesToOpen.append(output_filename)
+    # if inputDir!='':
+    # 	output_filename = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'NER_extractor_dir')
+    # else:
+    # 	output_filename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NER_extractor')
+    # df.to_csv(output_filename,index=False)
+    # filesToOpen.append(output_filename)
 
-	if openOutputFiles==True:
-		IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+    if openOutputFiles==True:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running NER extraction at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running NER extraction at', True)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(
-							GUI_util.inputFilename.get(),
-							GUI_util.input_main_dir_path.get(),
-							GUI_util.output_dir_path.get(),
-							GUI_util.open_csv_output_checkbox.get(),
-							GUI_util.create_Excel_chart_output_checkbox.get(),
-							encoding_var.get(),
-							memory_var.get(),
-							extract_date_from_text_var.get(),
-							extract_date_from_filename_var.get(),
-						   	date_format.get(),
-						   	date_separator_var.get(),
-							date_position_var.get(),
-							NER_list,
-							NER_sentence_var.get())
+                            GUI_util.inputFilename.get(),
+                            GUI_util.input_main_dir_path.get(),
+                            GUI_util.output_dir_path.get(),
+                            GUI_util.open_csv_output_checkbox.get(),
+                            GUI_util.create_Excel_chart_output_checkbox.get(),
+                            encoding_var.get(),
+                            memory_var.get(),
+                            extract_date_from_text_var.get(),
+                            extract_date_from_filename_var.get(),
+                            date_format.get(),
+                            date_separator_var.get(),
+                            date_position_var.get(),
+                            NER_list,
+                            NER_sentence_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1200x510'
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief=True
+GUI_width=1200
+GUI_height=510 # height of GUI with full I/O display
+
+if IO_setup_display_brief:
+    GUI_height = GUI_height - 80
+    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+    increment=0 # used in the display of HELP messages
+else: # full display
+    # GUI CHANGES add following lines to every special GUI
+    # +3 is the number of lines starting at 1 of IO widgets
+    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 2  # IO FULL display
+    increment=2
+
+GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
 GUI_label='Graphical User Interface (GUI) for NER (Named Entity Recognition) Extraction'
 config_filename='NER_config.txt'
 # The 6 values of config_option refer to:
@@ -98,9 +116,6 @@ config_option=[0,4,1,0,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-# GUI CHANGES add following lines to every special GUI
-# +1 is the number of lines starting at 1 of IO widgets
-y_multiplier_integer=GUI_util.y_multiplier_integer+2
 window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
@@ -109,7 +124,7 @@ inputFilename=GUI_util.inputFilename
 inputFilename=GUI_util.inputFilename
 input_main_dir_path=GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_options,config_filename)
+GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
 
 NER_list=[]
 
@@ -355,24 +370,29 @@ TIPS_options='NER (Named Entity Recognition)','CoNLL Table','POSTAG (Part of Spe
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",GUI_IO_util.msg_txtFile)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_corpusData)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding.\n\nTick the 'Filename embeds date' checkbox if the filename embeds a date (e.g., The New York Times_12-05-1885). The date will then be used to construct dynamic GIS models."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help","Please, using the scale widget, adjust the memory size you wish to use. The default size of 4 should be quite sufficient for the Stanford CoreNLP NER annotator."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help","Please, using the dropdown menu, select the 23 NER tags that you would like to extract.\n\nFor English, the Stanford CoreNLP, by default through the NERClassifierCombiner annotator, recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\nClick on the + button to add more NER tags.\nClick on the Reset button (or ESCape) to cancel all selected options and start over."+GUI_IO_util.msg_Esc)
+    if not IO_setup_display_brief:
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",GUI_IO_util.msg_txtFile)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_corpusData)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory)
+    else:
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_IO_setup)
+
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding.\n\nTick the 'Filename embeds date' checkbox if the filename embeds a date (e.g., The New York Times_12-05-1885). The date will then be used to construct dynamic GIS models."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","Please, using the scale widget, adjust the memory size you wish to use. The default size of 4 should be quite sufficient for the Stanford CoreNLP NER annotator."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help","Please, using the dropdown menu, select the 23 NER tags that you would like to extract.\n\nFor English, the Stanford CoreNLP, by default through the NERClassifierCombiner annotator, recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\nClick on the + button to add more NER tags.\nClick on the Reset button (or ESCape) to cancel all selected options and start over."+GUI_IO_util.msg_Esc)
     # GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help","Please, edit the list of split names, entering only the FIRST part - prefix - of the name.\n\nYOU HAVE 2 OPTIONS:\n  1. You can click on the little button to the left of the label 'NER split values (Prefix)' to open a csv file where you can enter any prefix (and suffix) values of your choice (these are the values used to populate the \'NER split values\' widgets);\n  2. You can enter comma separated values directly in the \'NER split values\' (this, however, will only be a temporary solution).\n\nEntering prefix and suffix values is particularly useful for geographic locations (e.g., hong for Hong Kong), but could be used to group together peoples' names (e.g. Mary for Mary Ann, de for de Witt)."+GUI_IO_util.msg_Esc)
     # GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help","Please, edit the list of split names, entering only the LAST part - suffix - of the name.\n\nYOU HAVE 2 OPTIONS:\n  1. You can click on the little button to the left of the label 'NER split values (Prefix)' to open a csv file where you can enter any suffix (or prefix) values of your choice (these are the values used to populate the \'NER split values\' widgets);\n  2. You can enter comma separated values directly in the \'NER split values\' (this, however, will only be a temporary solution).\n\nEntering prefix and suffix values is particularly useful for geographic locations (e.g., city for Atlantic City), but could be used to group together peoples' names (e.g. Ann for Mary Ann or Jo Ann)."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","Please, tick the checkbox if you wish to plot the extracted NER tags by sentence index."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help",GUI_IO_util.msg_openOutputFiles)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help","Please, tick the checkbox if you wish to plot the extracted NER tags by sentence index."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help",GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script will extract NER tags from either a CoNLL table obtained from the Stanford CoreNLP parser or from a text file."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
+GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options,IO_setup_display_brief)
 
 GUI_util.window.mainloop()
 
