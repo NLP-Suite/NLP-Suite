@@ -1,26 +1,23 @@
 import sys
-
-import GUI_IO_util
-import IO_files_util
 import GUI_util
 import IO_libraries_util
-import IO_user_interface_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"GIS_geocode_util",['os','tkinter','csv','geopy'])==False:
 	sys.exit(0)
 
-import os
+import IO_files_util
+import IO_user_interface_util
 import csv
 import tkinter.messagebox as mb
 
 from geopy import Nominatim 
 from geopy.geocoders import GoogleV3
-import geopy.exc
 from geopy.exc import GeocoderTimedOut
 
 import GIS_location_util
 import GIS_file_check_util
 import IO_internet_util
+import reminders_util
 
 filesToOpen = []
 
@@ -118,6 +115,9 @@ def geocode(window,locations, inputFilename, outputDir,
 	# if geocoder=='Nominatim':
 	# 	config_filename='GIS-geocode-config.txt'
 	# 	reminders_util.checkReminder(config_filename,["GIS Nominatim geocoder"],'',True)
+
+	config_filename='GIS-geocode-config.txt'
+	reminders_util.checkReminder(config_filename,reminders_util.title_options_geocoder,reminders_util.message_geocoder,True)
 
 	geoName = 'geo-' + str(geocoder[:3])
 	geocodedLocationsoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',

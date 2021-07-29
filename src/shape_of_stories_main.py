@@ -107,11 +107,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
     if GUI_util.output_dir_path.get()!=outputDir:
         # outputDir = head
         GUI_util.output_dir_path.set(outputDir)
-        title_options = ['Output directory']
-        message = 'The output directory was changed to:\n\n'+str(outputDir)
+        title_options_shape_of_stories = ['Output directory']
+        message_shape_of_stories = 'The output directory was changed to:\n\n'+str(outputDir)
         reminders_util.checkReminder(config_filename,
-                                     title_options,
-                                     message,
+                                     title_options_shape_of_stories,
+                                     message_shape_of_stories,
                                      True)
 
 # RUN SCRIPTS ---------------------------------------------------------------------------
@@ -130,11 +130,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
     if sentimentAnalysis == 1:
         # run appropriate sentiment analysis method as indicated by sentimentAnalysisMethod
         if sentimentAnalysisMethod == "Stanford CoreNLP Neural Network":
-            title_options = ['Stanford CoreNLP Neural Network']
-            message = 'The Stanford CoreNLP Neural Network approach to Sentiment analysis, like all neural network algorithms, is VERY slow. On a few hundred stories it may take hours to run.\n\nAlso, neural network algorithms are memory hogs. MAKE SURE TO ALLOCATE AS MUCH MEMORY AS YOU CAN AFFORD ON YOUR MACHINE.'
             reminders_util.checkReminder(config_filename,
-                                         title_options,
-                                         message,
+                                         reminders_util.title_options_shape_of_stories_CoreNLP,
+                                         reminders_util.message_shape_of_stories_CoreNLP,
                                          True)
 
             # TODO any changes in the way the CoreNLP_annotator generates output filenames will need to be edited here
@@ -543,11 +541,9 @@ def check_IO_requirements(inputFilename, inputDir):
             Error = True
             return Error
         if sentiment_analysis_var.get() == True:
-            title_options = ['Stanford CoreNLP Sentiment Analysis system requirements']
-            message = 'The Stanford CoreNLP Sentiment Analysis tool requires two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/'
             reminders_util.checkReminder(config_filename,
-                                         title_options,
-                                         message,
+                                         reminders_util.title_options_SA_CoreNLP_system_requirements,
+                                         reminders_util.message_SA_CoreNLP_system_requirements,
                                          True)
             # Error = True
             # return Error
@@ -579,8 +575,8 @@ TIPS_options='Shape of stories','Sentiment analysis','Data reduction algorithms:
 def display_reminder(*args):
     if best_topic_estimation_var.get():
         reminders_util.checkReminder(config_filename,
-                                     ['Best topic estimation'],
-                                     'The function that estimates the best topics is VERY slow and may take an hour or longer. You can follow its progress in command line.',
+                                     reminders_util.title_options_shape_of_stories_best_topic,
+                                     reminders_util.message_shape_of_stories_best_topic,
                                      True)
 best_topic_estimation_var.trace('w',display_reminder)
 

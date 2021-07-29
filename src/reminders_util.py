@@ -8,7 +8,6 @@ import sys
 #     sys.exit(0)
 
 import os
-import tkinter as tk
 import tkinter.messagebox as mb
 import pandas as pd
 import csv
@@ -20,6 +19,65 @@ from csv import writer
 #   but can also be called from main or util scripts
 #       e.g., file_splitter_util
 #       e.g., GIS_geocoder_util
+
+# below is a lit of most reminders called from various scripts with their title_options and message
+
+title_options_shape_of_stories_CoreNLP = ['Stanford CoreNLP Neural Network']
+message_shape_of_stories_CoreNLP = 'The Stanford CoreNLP Neural Network approach to Sentiment analysis, like all neural network algorithms, is VERY slow. On a few hundred stories it may take hours to run.\n\nAlso, neural network algorithms are memory hogs. MAKE SURE TO ALLOCATE AS MUCH MEMORY AS YOU CAN AFFORD ON YOUR MACHINE.'
+
+title_options_shape_of_stories_best_topic = ['Best topic estimation']
+message_shape_of_stories_best_topic = 'The function that estimates the best topics is VERY slow and may take an hour or longer. You can follow its progress in command line.'
+
+title_options_language_detection = ['Language detection']
+message_language_detection = 'Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.\n\nPlease, arm yourself with patience, depennding upon the number and size of documents processed.'
+
+title_options_CoNLL_analyzer = ['CoNLL table analyzer']
+message_CoNLL_analyzer = "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' where you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words)."
+
+title_options_SSdata = ['Time to download new US SS data']
+message_SSdata = 'It has been more than two years since the US Social Security gender data have been downloaded to your machine.\n\nCheck on the US Social Security website whether more current data are available at US Social Security website\n\nhttps://www.ssa.gov/oact/babynames/limits.html'
+
+reminder_options_GUIfrontend = ['GUI front end']
+message_GUIfrontend = 'The current GUI is a convenient front end that displays all the options available for the GUI.\n\nNo Input/Output options are displayed in this GUI since any selected option, when RUN, will open a specialized GUI with its own Input/Output requirements.'
+
+title_options_Mac_tkinter_bug = ['tkinter MacOS bug']
+message_Mac_tkinter_bug = 'MacOS bug in tkinter (https://www.python.org/download/mac/tcltk/).\n\nPython\'s integrated development environment, IDLE, and the tkinter GUI toolkit it uses, depend on the Tk GUI toolkit which is not part of Python itself. For best results, it is important that the proper release of Tcl/Tk is installed on your machine. For recent Python installers for macOS downloadable from this website, here is a summary of current recommendations followed by more detailed information.'
+
+title_options_DBpedia_YAGO = ['DBpedia/YAGO options']
+message_DBpedia_YAGO = "Please, using the dropdown menu, select an ontology class or enter a sub-class in the \'Sub-class\' widget (for sub-classes, consult the TIPS files on ontology classes). If you select an ontology class from the dropdown menu, the \'Select color\' widget will become available. You MUST select a color to be associated to the selected ontology class. After selecting a color, the + button will become available for multiple selections of class/color.\n\nYou can select the same color for different classes."
+
+title_options_SA_CoreNLP_system_requirements = ['Stanford CoreNLP Sentiment Analysis system requirements']
+message_SA_CoreNLP_system_requirements = 'The Stanford CoreNLP Sentiment Analysis tool requires two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/'
+
+title_options_SA_VADER = ['VADER Sentiment Analysis system requirements']
+message_SA_VADER = 'VADER heavily relies on a number of NLTK libraries. If VADER fails to run, make sure that in command line you run\n\npython -m nltk.downloader all'
+
+title_options_VADER_MeanMedian = ['VADER Mean/Median']
+message_VADER_MeanMedian = 'VADER cannot compute sentence mean and median values because VADER computes a single compound value for the entire sentence.\n\nUse the hedonometer to compute separate values and word list of words found.'
+
+title_options_SA_SentiWordNet = ['SentiWordNet']
+message_SA_SentiWordNet = 'SentiWordNet does not compute sentence mean and median values nor does it display a list of the individual words found.'
+
+title_options_NGrams = ['subprocess.call(cmd) error']
+message_NGrams = 'subprocess.call(cmd) error\n\nIf the VIEWER you are running exits with an error code about a file not found, most likely your selected INPUT & OUTPUT directory options are too long for Windows to handle.\n\nYou may need to move your input and output folders so as to have a shorter path (e.g., desktop).'
+
+title_options_GIS_GUI = ['GIS GUI options']
+message_GIS_GUI = 'The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv.\n\nWith a TXT file, NER extraction via Stanford CoreNLP must be first performed.\n\nWith a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.'
+
+title_options_Google_Earth=['Open Google Earth GUI']
+message_Google_Earth = 'You should tick the Open GUI checkbox ONLY if you wish to open the GUI.\n\nThe Google Earth Pro GUI will provide a number of options to personalize a Google Earth Pro map. Press Run after selecting the Open GUI option.'
+
+title_options_Google_API=['Google Maps API']
+message_Google_API = 'If the heatmap produced by Google Maps is displayed correctly for a split second and then displays "Oops! Something went wrong" you probably:\n  1. pasted incorrectly into the API key widget the Google API key;\n  2. you may not have entered billing information when applying for an API key; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale;\n  3. you may not have enabled the Maps JavaScript API (and if you use Google for geocoding, you also need to enable the Geocoding API.\n\nPlease, check the API key, your billing information, and tthe API enabled and try again.'
+
+title_options_Excel = ['Excel Charts']
+message_Excel = 'The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).\n\nFirst, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).\n\nSecond, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.'
+
+title_options_gensim = ['What is in your corpus - Gensim']
+message_gensim = 'The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.\n\nFor a more in-depth analysis of topics, use the topic modeling scripts for Gensim and Mallet.'
+
+title_options_geocoder = ["GIS Nominatim geocoder"]
+message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, addng Georgia as the state, e.g., Rome, Georgia.'
 
 def generate_reminder_list(path: str) -> None:
     """
@@ -38,6 +96,9 @@ def generate_reminder_list(path: str) -> None:
 #
 # config_filename is the first column in reminders.csv
 #   it refers to the general Python script that calls the reminder
+#   The routine field contains the name used by the reminder script to visualize the correct reminder; it is the name of the config filename trimmed of -config.txt (e.g., GIS for GIS-config.txt, GIS-Google-Earth for GIS-Google-Earth-config.txt).
+#   When the Routine field contains a * the reminder will be displayed in ALL GUIs
+
 # title is the second column in reminders.csv
 #   it refers to the specific Python option that calls the reminder
 # message is typically stored in the reminders.csv files

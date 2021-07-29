@@ -94,7 +94,7 @@ if sys.platform == 'darwin': #Mac OS
     open_TIPS_x_coordinate = 370
     open_reminders_x_coordinate = 570
     run_button_x_coordinate = 850
-    quit_button_x_coordinate = 980
+    close_button_x_coordinate = 980
 
     # special internal GUI specific values
     SVO_2nd_column = 570

@@ -282,8 +282,8 @@ def checkUSSSUpdate():
         if yearDiff >= 2:
             reminders_util.checkReminder(
                     config_filename,
-                    ['Time to download new US SS data'],
-                    'It has been more than two years since the US Social Security gender data have been downloaded to your machine.\n\nCheck on the US Social Security website whether more current data are available at US Social Security website\n\nhttps://www.ssa.gov/oact/babynames/limits.html',
+                    reminders_util.title_options_SSdata,
+                    reminders_util.message_SSdata,
                     True)
 
 def activate_all_options(*args):

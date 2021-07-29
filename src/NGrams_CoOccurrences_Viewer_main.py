@@ -255,8 +255,9 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
                         'Started running N-Grams Word Co-Occurrences Viewer at', True,
                         'Please, be patient. Depending upon the number of documents processed this may take a few minutes.\n\nYou can follow the script in command line.')
 
-    reminders_util.checkReminder(config_filename, ['subprocess.call(cmd) error'],
-                                 'subprocess.call(cmd) error\n\nIf the VIEWER you are running exits with an error code about a file not found, most likely your selected INPUT & OUTPUT directory options are too long for Windows to handle.\n\nYou may need to move your input and output folders so as to have a shorter path (e.g., desktop).',
+    reminders_util.checkReminder(config_filename,
+                                 reminders_util.title_options_NGrams,
+                                 reminders_util.message_NGrams,
                                  True)
     print(cmd)
     try:

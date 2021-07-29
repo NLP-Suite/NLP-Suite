@@ -118,7 +118,7 @@ def CoreNLP_annotate(inputFilename,
         'gender': {'annotators': ['coref']},
         'sentiment': {'annotators':['sentiment']},
         'normalized-date': {'annotators': ['tokenize','ssplit','ner']},
-        'openIE':{"annotators": ['tokenize','ssplit','pos','depparse','natlog','lemma','openie', 'ner']},
+        'OpenIE':{"annotators": ['tokenize','ssplit','pos','depparse','natlog','lemma','openie', 'ner']},
         'parser (pcfg)':{"annotators": ['tokenize','ssplit','pos','lemma','ner', 'parse','regexner']},
         'parser (nn)' :{"annotators": ['tokenize','ssplit','pos','lemma','ner','depparse','regexner']}
     }
@@ -133,7 +133,7 @@ def CoreNLP_annotate(inputFilename,
         'gender': process_json_gender,
         'normalized-date':process_json_normalized_date,
         # Dec. 21
-        'openIE':process_json_openIE,
+        'OpenIE':process_json_OpenIE,
         'parser (pcfg)': process_json_parser,
         'parser (nn)': process_json_parser
     }
@@ -152,7 +152,7 @@ def CoreNLP_annotate(inputFilename,
         'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
         #  Document ID, Sentence ID, Document, S, V, O/A, Sentence
         # Dec. 21
-        'openIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', "NEGATION","LOCATION",'PERSON','TIME','TIME_STAMP','Sentence'],
+        'OpenIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', "NEGATION","LOCATION",'PERSON','TIME','TIME_STAMP','Sentence'],
         'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
         'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
     }
@@ -896,7 +896,7 @@ def process_json_quote(documentID, document, sentenceID, json, **kwargs):
 
 
 # Dec. 21
-def openIE_sent_data_reorg(sentence):
+def OpenIE_sent_data_reorg(sentence):
     result = {}
     tokens = sentence['tokens']
     dependencies = sentence["enhancedDependencies"]
@@ -1377,7 +1377,7 @@ def SVO_extraction (sent_data):
             
                         
 # Dec. 21
-def process_json_openIE(documentID, document, sentenceID, json, **kwargs):
+def process_json_OpenIE(documentID, document, sentenceID, json, **kwargs):
     # TODO these are temporary fixes to bypass the hardcoded noteOutputPath
     # head, tail = os.path.split(document)
     # noteOutputPath = head
@@ -1395,9 +1395,9 @@ def process_json_openIE(documentID, document, sentenceID, json, **kwargs):
 
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
-    openIE = []
+    OpenIE = []
     for sentence in json['sentences']:
-        sent_data = openIE_sent_data_reorg(sentence)#reorganize the dependency into the order of tokens in sentence
+        sent_data = OpenIE_sent_data_reorg(sentence)#reorganize the dependency into the order of tokens in sentence
         # reorg_data_filename = noteOutputPath + '/output_reorg_'+filename
         # with open(reorg_data_filename, 'a+') as reorg_out:
             # reorg_out.write(str(sentenceID + 1))
@@ -1423,11 +1423,11 @@ def process_json_openIE(documentID, document, sentenceID, json, **kwargs):
             # print("row: ", row)
             if extract_date_from_filename_var:
                 # temp.append(date_str)
-                openIE.append([documentID, sentenceID, document, row[0], row[1], row[2], N[nidx]," ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent, date_str])
+                OpenIE.append([documentID, sentenceID, document, row[0], row[1], row[2], N[nidx]," ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent, date_str])
             else:
-                openIE.append([documentID, sentenceID, document, row[0], row[1], row[2], N[nidx], " ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent])
+                OpenIE.append([documentID, sentenceID, document, row[0], row[1], row[2], N[nidx], " ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent])
             nidx += 1
-    return openIE
+    return OpenIE
 
 
 def process_json_postag(documentID, document, sentenceID, json, **kwargs):

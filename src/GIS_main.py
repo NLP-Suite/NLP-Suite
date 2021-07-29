@@ -692,8 +692,8 @@ def display_warning(*args):
     if GIS_package2_var.get():
         # routine_options = reminders_util.getReminder_list(config_filename)
         reminders_util.checkReminder(config_filename,
-                                     ['Open Google Earth GUI'],
-                                     'You should tick the Open GUI checkbox ONLY if you wish to open the GUI.\n\nThe Google Earth Pro GUI will provide a number of options to personalize a Google Earth Pro map. Press Run after selecting the Open GUI option.',
+                                     reminders_util.title_options_Google_Earth,
+                                     reminders_util.message_Google_Earth,
                                      True)
         routine_options = reminders_util.getReminder_list(config_filename)
         return
@@ -731,8 +731,8 @@ GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_comm
 
 # routine_options = reminders_util.getReminder_list(config_filename)
 result = reminders_util.checkReminder(config_filename,
-                             ['GIS GUI options'],
-                             'The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv.\n\nWith a TXT file, NER extraction via Stanford CoreNLP must be first performed.\n\nWith a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.')
+                              reminders_util.title_options_GIS_GUI,
+                              reminders_util.message_GIS_GUI)
 if result!=None:
     routine_options = reminders_util.getReminder_list(config_filename)
 

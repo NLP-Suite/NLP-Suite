@@ -262,7 +262,11 @@ IO_setup_button = tk.Button(window, text='Setup default I/O options: INPUT corpu
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                IO_setup_button)
 
-software_setup_button = tk.Button(window, text='Setup external software', font=("Courier", 12, "bold"))
+def setup_software_warning():
+    mb.showwarning('Software option', 'Please, using the dropdown menu, select the external software that you would like to install.')
+    return
+
+software_setup_button = tk.Button(window, text='Setup external software', font=("Courier", 12, "bold"), command=lambda: setup_software_warning())
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                software_setup_button,True)
 
@@ -278,7 +282,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coord
 
 # check for external software installation (Stanford CoreNLP, WordNet, Mallet, SENNA)
 def setup_software(*args):
-    IO_libraries_util.get_external_software_dir('NLP_menu', software_setup_var.get())
+    if software_setup_var.get()!='':
+        IO_libraries_util.get_external_software_dir('NLP_menu', software_setup_var.get())
 
 software_setup_var.trace('w',setup_software)
 
@@ -557,11 +562,9 @@ readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_
 GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 if platform == "darwin":
-    title_options = ['tkinter MacOS bug']
-    message = 'MacOS bug in tkinter (https://www.python.org/download/mac/tcltk/).\n\nPython\'s integrated development environment, IDLE, and the tkinter GUI toolkit it uses, depend on the Tk GUI toolkit which is not part of Python itself. For best results, it is important that the proper release of Tcl/Tk is installed on your machine. For recent Python installers for macOS downloadable from this website, here is a summary of current recommendations followed by more detailed information.'
     reminders_util.checkReminder(config_filename,
-                                 title_options,
-                                 message,
+                                 reminders_util.title_options_Mac_tkinter_bug,
+                                 reminders_util.message_Mac_tkinter_bug,
                                  True)
 
 # check for external software installation (Stanford CoreNLP, WordNet, Mallet, SENNA)

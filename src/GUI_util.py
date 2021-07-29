@@ -714,14 +714,15 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
 
     if ('GUI front end' not in reminder_options) and (configArray==['EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE']):
         # reminders_util.No_IO_reminder(config_filename)
-        reminder_options=['GUI front end']
-        message = 'The current GUI is a convenient front end that displays all the options available for the GUI.\n\nNo Input/Output options are displayed in this GUI since any selected option, when RUN, will open a specialized GUI with its own Input/Output requirements.'
         # recompute the options since a new line has been added
+        message=reminders_util.message_GUIfrontend
     else:
         message=''
 
     # this will now display the error message
     if reminders_error==True:
-        reminders_util.checkReminder(config_filename, reminder_options, message)
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.reminder_options_GUIfrontend,
+                                     message)
 
     window.protocol("WM_DELETE_WINDOW", _close_window)

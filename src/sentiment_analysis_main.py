@@ -510,32 +510,24 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 def display_reminder(*args):
     if SA_algorithm_var.get()=='Stanford CoreNLP':
-        message='The Stanford CoreNLP Sentiment Analysis tool requires two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/'
-        title_option = [SA_algorithm_var.get()]
         reminders_util.checkReminder(config_filename,
-                                     title_option,
-                                     message,
+                                     reminders_util.title_options_SA_CoreNLP_system_requirements,
+                                     reminders_util.message_SA_CoreNLP_system_requirements,
                                      True)
     elif SA_algorithm_var.get()=='VADER':
-        message = 'VADER heavily relies on a number of NLTK libraries. If VADER fails to run, make sure that in command line you run\n\npython -m nltk.downloader all'
-        title_option = [SA_algorithm_var.get()]
         reminders_util.checkReminder(config_filename,
-                                     title_option,
-                                     message,
+                                     reminders_util.title_options_SA_VADER,
+                                     reminders_util.message_SA_VADER,
                                      True)
         if mean_var.get() or median_var.get()==True:
-            message = 'VADER cannot compute sentence mean and median values because VADER computes a single compound value for the entire sentence.\n\nUse the hedonometer to compute separate values and word list of words found.'
-            title_option = ['VADER Mean/Median']
             reminders_util.checkReminder(config_filename,
-                                         title_option,
-                                         message,
+                                         reminders_util.title_options_VADER_MeanMedian,
+                                         reminders_util.message_VADER_MeanMedian,
                                          True)
     elif SA_algorithm_var.get() == 'SentiWordNet':
-        message = 'SentiWordNet does not compute sentence mean and median values nor does it display a list of the individual words found.'
-        title_option = ['SentiWordNet']
         reminders_util.checkReminder(config_filename,
-                                    title_option,
-                                    message,
+                                    reminders_util.title_options_SA_SentiWordNet,
+                                    reminders_util.message_SA_SentiWordNet,
                                     True)
     else:
         return

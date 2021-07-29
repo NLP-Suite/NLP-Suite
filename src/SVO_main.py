@@ -4,7 +4,6 @@
 ##########################################
 
 import sys
-
 import GUI_util
 import IO_libraries_util
 
@@ -312,224 +311,67 @@ def run(inputFilename, inputDir, outputDir,
     # CoreNLP OpenIE _____________________________________________________
     if CoreNLP_SVO_extractor_var:
 
+        # answer=mb.askyesno("OpenIE script","Do you want to use the\n   Python version of OpenIE (YES) (still under development)\n   Java version of OpenIE (NO)")
+        # if answer ==True:
+        if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+            return
 
-        answer=mb.askyesno("OpenIE script","Do you want to use the\n   Python version of OpenIE (YES) (still under development)\n   Java version of OpenIE (NO)")
-        if answer ==True:
-            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
-                return
+        # IO_user_interface_util.script_under_development('Stanford CoreNLP OpenIE')
 
-            IO_user_interface_util.script_under_development('Stanford CoreNLP OpenIE')
+        tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+                                                                       outputDir, openOutputFiles,
+                                                                       createExcelCharts,
+                                                                       'OpenIE', False,
+                                                                       memory_var,
+                                                                       extract_date_from_filename_var=False,
+                                                                       date_format='',
+                                                                       date_separator_var='',
+                                                                       date_position_var=0)
+        if len(tempOutputFiles)>0:
+            filesToOpen.extend(tempOutputFiles)
+            svo_result_list.append(tempOutputFiles[0])
 
-            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
-                                                                           outputDir, openOutputFiles,
-                                                                           createExcelCharts,
-                                                                           'openIE', False,
-                                                                           memory_var,
-                                                                           extract_date_from_filename_var=False,
-                                                                           date_format='',
-                                                                           date_separator_var='',
-                                                                           date_position_var=0)
-            if len(tempOutputFiles)>0:
-                filesToOpen.extend(tempOutputFiles)
-
+        # Adding output files to toProcess_list
+        # process the txt files created by the OpenIE Java script to create a csv output file
+        toProcess_list = []
+        field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'PERSON', 'TIME',
+                       'TIME_STAMP', 'Sentence']
+        if isFile & Coref:
+            # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
+            # NLP_CoreNLP_coref_The Three Little Pigs-svoResult-woFilter.txt
+            # inputFileBase contains _coref
+            # fName is the filename returned by Java SVO -svoResult-woFilter.txt files will be removed below
+            fName = os.path.join(outputDir, "NLP_CoreNLP_" + inputFileBase + "-svoResult-woFilter.txt")
+            toProcess_list.append(fName)
+        elif isFile:
+            # fName is the filename returned by Java SVO The Three Little Pigs SHORT-svoResult-woFilter.txt
+            fName = os.path.join(outputDir, inputFileBase + "-svoResult-woFilter.txt")
+            toProcess_list.append(fName)
         else:
-
-            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                               'Started running Stanford CoreNLP OpenIE to extract SVOs at', True,
-                                               'Contrary to the Stanford CoreNLP parser, OpenIE does not display in command line the chuncks of text being currently processed.')
-            # Calling the source OpenIE file
-            if isFile:
-                subprocess.call(
-                    ['java', '-jar', '-Xmx' + str(memory_var) + "g", 'Stanford_CoreNLP_OpenIE.jar', '-inputFile',
-                     inputFilename, '-outputDir', outputDir])
-            else:
-                subprocess.call(
-                    ['java', '-jar', '-Xmx' + str(memory_var) + "g", 'Stanford_CoreNLP_OpenIE.jar', '-inputDir',
-                     inputDir, '-outputDir', outputDir])
-            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                               'Finished running Stanford CoreNLP OpenIE to extract SVOs at', True)
-
-            # Adding output files to toProcess_list
-            # process the txt files created by the OpenIE Java script to create a csv output file
-            toProcess_list = []
-            field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'PERSON', 'TIME',
-                           'TIME_STAMP', 'Sentence']
-            if isFile & Coref:
+            for tmp in os.listdir(outputSVODir):
                 # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
-                # NLP_CoreNLP_coref_The Three Little Pigs-svoResult-woFilter.txt
-                # inputFileBase contains _coref
-                # fName is the filename returned by Java SVO -svoResult-woFilter.txt files will be removed below
-                fName = os.path.join(outputDir, "NLP_CoreNLP_" + inputFileBase + "-svoResult-woFilter.txt")
-                toProcess_list.append(fName)
-            elif isFile:
-                # fName is the filename returned by Java SVO The Three Little Pigs SHORT-svoResult-woFilter.txt
-                fName = os.path.join(outputDir, inputFileBase + "-svoResult-woFilter.txt")
-                toProcess_list.append(fName)
-            else:
-                for tmp in os.listdir(outputSVODir):
-                    # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
-                    # THE SUBSCRIPT _coref_ IS CHECKED BELOW
-                    if Coref and "-svoResult-woFilter.txt" in tmp:
-                        toProcess_list.append(tmp)
-                    elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-coref" not in tmp):
-                        toProcess_list.append(tmp)
+                # THE SUBSCRIPT _coref_ IS CHECKED BELOW
+                if Coref and "-svoResult-woFilter.txt" in tmp:
+                    toProcess_list.append(tmp)
+                elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-coref" not in tmp):
+                    toProcess_list.append(tmp)
 
-            original_toProcess = {}
-            if isFile:  # input is a file (including merged directory)
-                original_toProcess[toProcess_list[0]] = inputFilename
-                # svo_OpenIE_merged_file=''
-                svo_OpenIE_merged_file = os.path.join(outputSVODir, "NLP_OpenIE_SVO_" + inputFileBase + ".csv")
-            else:  # input is a directory
-                for tmp in os.listdir(outputSVODir):
-                    # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
-                    # THE SUBSCRIPT _coref_ IS CHECKED BELOW
-                    # "-svoResult-woFilter.txt"  is the filename produced by JAVA
-                    # original_toProcess is the txt files in the original inputDir
-                    if Coref and "-svoResult-woFilter.txt" in tmp:
-                        original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
-                    elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-coref" not in tmp):
-                        original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
-                svo_OpenIE_merged_file = os.path.join(outputSVODir, "NLP_OpenIE_SVO_Dir_" + inputDirBase + ".csv")
-
-            # when not merging a text file that will be processed as a unique file
-            #   the single svo csv files should always be merged together in a single file
-            #   currently, a merged csv file is the only option; no reason to produce potentially thousands of files
-            if not merge_txt_file_option:
-                result = IO_files_util.openCSVFile(svo_OpenIE_merged_file, 'w')
-                if result == '':
-                    return
-                svo_OpenIE_writer = csv.DictWriter(result, fieldnames=field_names)
-                svo_OpenIE_writer.writeheader()
-                result.close()
-                filesToOpen.append(svo_OpenIE_merged_file)
-                svo_result_list.append(svo_OpenIE_merged_file)
-
-            SVOerror = 0
-            for proc_file in toProcess_list:
-                # proc_file is the current -svoResult-woFilter produced by the Java OpenIE
-                # check if svo file is empty
-                # proc_file does not have path when processing an inputDir
-                if not os.path.exists(os.path.join(outputSVODir, proc_file)):
-                    error_msg = "Stanford CoreNLP OpenIE has failed to process your document: " + original_toProcess[
-                        proc_file] + \
-                                "\n\nPlease refer to command line prompt (or terminal) for more details. Most likely, your laptop runs out of memory."
-                    if merge_txt_file_option:
-                        error_msg += "\n\nYou have chosen merge file option to process the directory. You can try not using merge file option."
-                    mb.showwarning("Stanford OpenIE error", error_msg)
-                    continue
-
-                f = open(os.path.join(outputSVODir, proc_file), "r", encoding='utf-8', errors='ignore')
-                svo_wofilter = f.read()
-                f.close()
-                if svo_wofilter == "":
-                    SVOerror = SVOerror + 1
-                    print("\nOpenIE SVO error (empty SVO output file) while extracting SVOs from " + str(proc_file))
-
-                fileHandler = open(os.path.join(outputSVODir, proc_file), encoding='utf-8', errors='ignore')
-                listOfLines = fileHandler.readlines()
-                fileHandler.close()
-                svo_triplets = []
-                for line in listOfLines:
-                    spl = line.split("|")
-                    # RF why 9??? this excludes wife gave glance
-                    if len(spl) != 9:
-                        continue
-                    spl[0] = int(spl[0])
-                    svo_triplets.append(spl)
-                svo_triplets = sorted(svo_triplets)
-
-                baseName = os.path.basename(proc_file)
-                last_index = baseName.rindex("-")
-                baseName = baseName[0:last_index]
-                second_last_index = baseName.rindex("-")
-                baseName = baseName[0:second_last_index]
-                # remove NLP_CoreNLP_ from filename, added to filename in case of coref
-                baseName = baseName.replace("NLP_CoreNLP_", "")
-                svo_OpenIE_single_file = os.path.join(outputSVODir, "NLP_OpenIE_SVO_temp_" + baseName + ".csv")
-
-                extract_OpenIE_svo(svo_triplets, svo_OpenIE_single_file, svo_OpenIE_merged_file, field_names, document_index, original_toProcess[proc_file])
-
-                # Filter SVO
-                if subjects_dict_var or verbs_dict_var or objects_dict_var:
-                    SVO_util.filter_svo(svo_OpenIE_single_file, subjects_dict_var, verbs_dict_var, objects_dict_var)
-                    if svo_OpenIE_merged_file:
-                        SVO_util.filter_svo(svo_OpenIE_merged_file, subjects_dict_var, verbs_dict_var, objects_dict_var)
-
-                result = IO_files_util.openCSVFile(svo_OpenIE_single_file, 'a')
-                if not merge_txt_file_option:
-                    result_merge = IO_files_util.openCSVFile(svo_OpenIE_merged_file, 'a')
-                    svo_OpenIE_writer = csv.DictWriter(result_merge, fieldnames=field_names)
-                if result != '':  # permission error for result = ''
-                    svo_writer = csv.DictWriter(result, fieldnames=field_names)
-                    for svo in notSure:
-                        if " " in svo[4]:
-                            location_list = svo[4].split(" ")
-                            for each_location in location_list:
-                                svo_writer.writerow(
-                                    {'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
-                                     'Document': IO_csv_util.dressFilenameForCSVHyperlink(original_toProcess[proc_file]),
-                                     'S': "Someone?", 'V': svo[1], 'O/A': svo[2],
-                                     'TIME': svo[3], 'LOCATION': each_location, 'PERSON': svo[5], 'TIME_STAMP': svo[6],
-                                     field_names[10]: svo[7]})
-                                if not merge_txt_file_option:
-                                    svo_OpenIE_writer.writerow(
-                                        {'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
-                                         'Document': IO_csv_util.dressFilenameForCSVHyperlink(
-                                             original_toProcess[proc_file]), 'S': "Someone?", 'V': svo[1], 'O/A': svo[2],
-                                         'TIME': svo[3], 'LOCATION': each_location, 'PERSON': svo[5], 'TIME_STAMP': svo[6],
-                                         field_names[10]: svo[7]})
-                        else:
-                            svo_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
-                                                 'Document': IO_csv_util.dressFilenameForCSVHyperlink(
-                                                     original_toProcess[proc_file]), 'S': "Someone?", 'V': svo[1],
-                                                 'O/A': svo[2],
-                                                 'TIME': svo[3], 'LOCATION': svo[4], 'PERSON': svo[5], 'TIME_STAMP': svo[6],
-                                                 field_names[10]: svo[7]})
-                            if not merge_txt_file_option:
-                                svo_OpenIE_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
-                                                            'Document': IO_csv_util.dressFilenameForCSVHyperlink(
-                                                                original_toProcess[proc_file]), 'S': "Someone?",
-                                                            'V': svo[1], 'O/A': svo[2],
-                                                            'TIME': svo[3], 'LOCATION': svo[4], 'PERSON': svo[5],
-                                                            'TIME_STAMP': svo[6],
-                                                            field_names[10]: svo[7]})
-                    result.close()
-                    if not merge_txt_file_option:
-                        result_merge.close()
-                document_index += 1
-                if not merge_txt_file_option:
-                    if not save_intermediate_file:  # set to false when processing a directory
-                        # delete intermediate individual svofilename
-                        os.remove(svo_OpenIE_single_file)
-                    else:
-                        if not isFile:
-                            # do not append the single file and merged file when processing a txt file in input, since they will both have the same name
-                            svo_result_list.append(svo_OpenIE_single_file)
-                    continue
-                else:
-                    svo_result_list.append(svo_OpenIE_single_file)
-                # do not append the single file and merged file when processing a txt file in input, since they will both have the same name
-                # if not isFile:
-                #     filesToOpen.append(svo_OpenIE_single_file)
-                #     inputFilename = svo_OpenIE_single_file
-
-            if SVOerror > 0:
-                print("\n\nErrors were encountered in extracting SVOs from " + str(SVOerror) + " files out of " + str(
-                    len(toProcess_list)) + " files processed.")
-                mb.showwarning("SVO extraction error",
-                               "Errors were encountered in extracting SVOs from " + str(SVOerror) + " files out of " + str(
-                                   len(
-                                       toProcess_list)) + " files processed.\n\nPlease, check the command line to see the files.")
-
-            # delete intermediate -svoResult-woFilter.txt files produced by java
-            if not merge_txt_file_option:
-                if os.path.exists(outputSVODir):
-                    txt_files = [os.path.join(outputSVODir, f) for f in os.listdir(outputSVODir) if
-                                 f.endswith('-svoResult-woFilter.txt')]
-                    # txt_files contain the temporary -svoResult-woFilter files with | generated by th Java script
-                    #   no reason to keep them
-                    for f in txt_files:
-                        os.remove(f)
+        original_toProcess = {}
+        if isFile:  # input is a file (including merged directory)
+            original_toProcess[toProcess_list[0]] = inputFilename
+            # svo_OpenIE_merged_file=''
+            svo_OpenIE_merged_file = os.path.join(outputSVODir, "NLP_OpenIE_SVO_" + inputFileBase + ".csv")
+        else:  # input is a directory
+            for tmp in os.listdir(outputSVODir):
+                # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
+                # THE SUBSCRIPT _coref_ IS CHECKED BELOW
+                # "-svoResult-woFilter.txt"  is the filename produced by JAVA
+                # original_toProcess is the txt files in the original inputDir
+                if Coref and "-svoResult-woFilter.txt" in tmp:
+                    original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
+                elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-coref" not in tmp):
+                    original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
+            svo_OpenIE_merged_file = os.path.join(outputSVODir, "NLP_OpenIE_SVO_Dir_" + inputDirBase + ".csv")
 
     # next lines create summaries of comparative results from CoreNLP and SENNA
     if SENNA_SVO_extractor_var and CoreNLP_SVO_extractor_var:
@@ -566,19 +408,20 @@ def run(inputFilename, inputDir, outputDir,
                 for f in svo_result_list:
                     if IO_csv_util.GetNumberOfRecordInCSVFile(f) > 1:  # including headers; file is empty
                         gexf_file = Gephi_util.create_gexf(os.path.basename(f)[:-4], outputDir, f)
-                        if "OpenIE_SVO" in f or "SENNA_SVO" in f:
+                        if "OpenIE" in f or "SENNA_SVO" in f:
                             filesToOpen.append(gexf_file)
                         if not save_intermediate_file:
                             gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if
                                           f.endswith('.gexf')]
                             for f in gexf_files:
-                                if "OpenIE_SVO" not in f and "SENNA_SVO" not in f:
+                                if "OpenIE" not in f and "SENNA_SVO" not in f:
                                     os.remove(f)
 
         # wordcloud  _________________________________________________
         if wordcloud_var:
             IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                'Started running Wordclouds at', True)
+            collocation = False
             if inputFilename[-4:] == ".csv":
                 if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1:  # including headers; file is empty
                     myfile = IO_files_util.openCSVFile(inputFilename, 'r')
@@ -587,7 +430,7 @@ def run(inputFilename, inputDir, outputDir,
                                                                                     '(0, 0, 255)', '|', 'O/A',
                                                                                     '(0, 128, 0)', '|'], myfile)
                     out_file = wordclouds_util.display_wordCloud_sep_color(inputFilename, outputDir, currenttext,
-                                                                           color_to_words, "")
+                                                                           color_to_words, "", collocation)
                     myfile.close()
                     filesToOpen.append(out_file)
             else:
@@ -600,16 +443,16 @@ def run(inputFilename, inputDir, outputDir,
                                                                                         '(0, 128, 0)', '|'], myfile)
                         out_file = wordclouds_util.display_wordCloud_sep_color(f, outputDir, currenttext,
                                                                                color_to_words,
-                                                                               "",False)
+                                                                               "",collocation)
                         myfile.close()
-                        if "OpenIE_SVO" in f or "SENNA_SVO" in f:
+                        if "OpenIE" in f or "SENNA_SVO" in f:
                             filesToOpen.append(out_file)
-                        if not merge_txt_file_option and not save_intermediate_file:
-                            png_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if
-                                         f.endswith('.png')]
-                            for f in png_files:
-                                if "OpenIE_SVO" not in f and "SENNA_SVO" not in f:
-                                    os.remove(f)
+                        # if not merge_txt_file_option and not save_intermediate_file:
+                        #     png_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if
+                        #                  f.endswith('.png')]
+                        #     for f in png_files:
+                        #         if "OpenIE_SVO" not in f and "SENNA_SVO" not in f:
+                        #             os.remove(f)
         # GIS maps _____________________________________________________
 
         # SENNA locations are not really geocodable locations

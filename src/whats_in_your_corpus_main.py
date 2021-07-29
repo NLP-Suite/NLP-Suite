@@ -110,8 +110,8 @@ def run(inputFilename,inputDir, outputDir,
                 return
             routine_options = reminders_util.getReminder_list(config_filename)
             reminders_util.checkReminder(config_filename,
-                                         ['What is in your corpus - Gensim'],
-                                         'The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.\n\nFor a more in-depth analysis of topics, use the topic modeling scripts for Gensim and Mallet.',
+                                         reminders_util.title_options_gensim,
+                                         reminders_util.message_gensim,
                                          True)
             routine_options = reminders_util.getReminder_list(config_filename)
 

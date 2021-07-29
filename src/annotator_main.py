@@ -478,11 +478,9 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
     if annotator_DBpedia_var.get()==True or annotator_YAGO_var.get()==True:
         # display the reminder only once in the same GUI or the trace will display it many times
         if firstTime==False:
-            title_options = ['DBpedia/YAGO options']
-            message = "Please, using the dropdown menu, select an ontology class or enter a sub-class in the \'Sub-class\' widget (for sub-classes, consult the TIPS files on ontology classes). If you select an ontology class from the dropdown menu, the \'Select color\' widget will become available. You MUST select a color to be associated to the selected ontology class. After selecting a color, the + button will become available for multiple selections of class/color.\n\nYou can select the same color for different classes."
             reminders_util.checkReminder(config_filename,
-                                         title_options,
-                                         message,
+                                         reminders_util.title_options_DBpedia_YAGO,
+                                         reminders_util.message_DBpedia_YAGO,
                                          True)
         firstTime=True
         databases_menu.configure(state="normal")
