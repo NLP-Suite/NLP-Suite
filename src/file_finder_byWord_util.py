@@ -35,7 +35,7 @@ import mlconjug #conjugation of verbs
 import IO_user_interface_util
 import IO_files_util
 
-def run(inputFilename,input_main_dir_path, outputPath, search_by_dictionary_var, search_by_keyword_var, keyword, lemmatization):
+def run(inputFilename,input_main_dir_path, outputPath, search_by_dictionary_var, search_by_keyword_var, keyword, lemmatization, within_sentence):
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', "Started running the file search script at", True)
 

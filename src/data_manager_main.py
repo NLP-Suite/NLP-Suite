@@ -14,8 +14,9 @@ import tkinter.messagebox as mb
 
 import GUI_IO_util
 import IO_csv_util
+from pandas import DataFrame
 
-# RUN section ______________________________________________________________________________________________________________________________________________________
+# RUN section ________________________________________________________________________________________________________
 
 
 def listToString(s, sep):
@@ -149,11 +150,39 @@ def run(inputFilename,
     data_cols = [file for file in get_cols(data_files, headers)]  # selected cols
 
     if merge_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv', 'merge',
-                                                           'stats', '', '', '', False, True)
-        df_merged = reduce(lambda left, right: pd.merge(left, right, on=headers[0], how='inner'), data_files)
+        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv',
+                                                                 'merge',
+                                                                 'stats', '', '', '', False, True)
+        # processed_params: [(field1, field2..., dataframe1), (field1', field2'..., dataframe2)]
+        processed_params = []
+        csv_file_field_list = list(dict.fromkeys(csv_file_field_list))
+        param_str: str
+        for param_str in csv_file_field_list:
+            params = list(param_str.split(','))
+            csv_path = params[0]
+            df = pd.read_csv(csv_path)
+            params.pop(0)
+            params.append(df)
+            processed_params.append(params)
+        indexes = processed_params[0][:-1]
+        data_files_for_merge = [processed_params[0][-1]]
+        for row in processed_params[1:]:
+            # rename different field names to the field name on the first document.
+            # They will be merged anyway so this doesn't change much.
+            column_mapping = dict()
+            for index_int, field in enumerate(indexes):
+                # {original_index1: new_index1, original_index2: new_index2...}
+                column_mapping[row[index_int]] = field
+            df: DataFrame = row[-1]
+            df.rename(columns=column_mapping)
+            data_files_for_merge.append(df)
+
+        df_merged: DataFrame = data_files_for_merge[0]
+        for df in data_files_for_merge[1:]:
+            df_merged = pd.concat([df_merged, df], join='inner', ignore_index=True)
         df_merged.to_csv(outputFilename)
         filesToOpen.append(outputFilename)
+
     if concatenate_var:
         outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv', 'concatenate',
                                                            'stats', '', '', '', False, True)

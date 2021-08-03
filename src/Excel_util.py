@@ -707,8 +707,21 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     A single Workbook can have multiple Worksheets
     See https://www.pythonexcel.com/openpyxl.php
     """
-    
-    n = len(data_to_be_plotted)
+
+    # head, tail = os.path.split(Excel_outputFilename)
+    head, tail = os.path.split(inputFilename)
+    num_label=len(data_to_be_plotted[0])-1
+
+
+    # ValueError: Row numbers must be between 1 and 1048576
+    # 1048576 is simply 2 to the 20th power, and thus this number is the largest that can be represented in twenty bits.
+    # https://stackoverflow.com/questions/33775423/how-to-set-a-data-type-for-a-column-with-closedxml
+    if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1048575:
+        IO_user_interface_util.timed_alert(window, 4000, 'Warning',
+                                           "Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.'")
+        print("Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.")
+        return
+
     if len(hover_info_column_list) > 0:
         outputExtension='.xlsm'
     else:
@@ -716,15 +729,13 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
 
     Excel_outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, outputExtension, scriptType, chart_type_list[0],'chart')
 
+    n = len(data_to_be_plotted)
+
     #while the chart_type_list is complete in the Excel_charts GUI,
     #   when calling this function from other scripts only one chartType is typically passed 
     if len(chart_type_list) != n:
         for i in range(n-1):
             chart_type_list.append(chart_type_list[0])
-
-    # head, tail = os.path.split(Excel_outputFilename)
-    head, tail = os.path.split(inputFilename)
-    num_label=len(data_to_be_plotted[0])-1
 
     IO_user_interface_util.timed_alert(window, 2000, 'Warning', 'Preparing Excel chart ' + tail + '\n\nPlease wait...', False)
 
@@ -837,8 +848,12 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         for i in range(len(hover_column_numbers)):
             hover_data = prepare_hover_data(inputFilename, hover_column_numbers[i], i)
             for j in range(len(hover_data)):
-                ws1.cell(row=j + 1, column=i + 1).value = hover_data[j][0]
-
+                if j > 1048575:
+                    print(
+                        "Excel chart error with hover over data: The number of rows in the input csv file\n\n" + inputFilename + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.'\n\nProcessing continues...")
+                    break
+                else:
+                    ws1.cell(row=j + 1, column=i + 1).value = hover_data[j][0]
         names = []
         names.append(chartTitle)
         names.append(column_yAxis_label)

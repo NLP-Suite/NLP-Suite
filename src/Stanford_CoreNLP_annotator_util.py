@@ -1148,13 +1148,16 @@ def SVO_extraction (sent_data):
                         
 # Dec. 21
 def process_json_openIE(documentID, document, sentenceID, json, **kwargs):
-    noteOutputPath = "/Users/claude/Desktop/ClaudeCase/Emory/Trabajo/SVO/txt_output_notes"
-    filename = os.path.split(document)[1]
-    # print("filename: ",filename)
-    # notefilename = noteOutputPath + '/openIE_json_'+filename
-    # with open(notefilename, 'wt') as out:
-    #     pprint.pprint(json, stream = out)
-    # out.close()
+    # TODO these are temporary fixes to bypass the hardcoded noteOutputPath
+    head, tail = os.path.split(document)
+    noteOutputPath = head
+    filename = tail
+    # noteOutputPath = "/Users/claude/Desktop/ClaudeCase/Emory/Trabajo/SVO/txt_output_notes"
+    # filename = os.path.split(document)[1]
+    notefilename = noteOutputPath + '/openIE_json_'+filename
+    with open(notefilename, 'wt') as out:
+        pprint.pprint(json, stream = out)
+    out.close()
     extract_date_from_filename_var = False
     for key, value in kwargs.items():
         if key == 'extract_date_from_filename_var' and value == True:

@@ -6,6 +6,8 @@
 
 3. Go to the extracted folder
 
+3. If you don't have [Anaconda](https://www.anaconda.com/products/individual#windows) installed yet, please download the `exe` and place the `exe` in the `NLP/setup_Windows/` subfolder.
+
 4. Run "STEP1-install_anaconda" by double-clicking on it.
     - SKIP THIS STEP IF YOU ALREADY HAVE ANACONDA INSTALLED ON YOUR MACHINE
     - If you'd like to skip this step, make sure you have Anaconda in $PATH. One way to check is to type conda in a command-line window, press enter, and see if there is an error.
