@@ -247,10 +247,10 @@ def get_external_software_dir(calling_script, package, warning=True):
                                        software_name.upper() + ' directory.')
                 errorFound=True
                 silent = True
-            # else:
-            #     # if you are checking for a specific package and that is found return the appropriate directory
-            #     if (package.lower()!='') and (package.lower() in software_name.lower()):
-            #         return software_dir
+            else:
+                # if you are checking for a specific package and that is found return the appropriate directory unless called from NLP_menu_main
+                if (package.lower()!='') and (package.lower() in software_name.lower()) and (calling_script!='NLP_menu'):
+                    return software_dir
 
         if errorFound:
             software_dir = ''
@@ -264,7 +264,7 @@ def get_external_software_dir(calling_script, package, warning=True):
 
         if (not errorFound) and (package!='') and (calling_script=='NLP_menu'):
             mb.showwarning(title=package,
-                           message='The external software ' + package + ' is up-to-date and correctly installed.')
+                           message='The external software ' + package + ' is up-to-date and correctly installed at ' + software_dir)
             # if you are checking for a specific package and that is found return the appropriate directory
             if (package!=''):
                 return software_dir

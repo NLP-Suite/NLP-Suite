@@ -185,6 +185,10 @@ def run(inputFilename,
             locationsNotFoundoutputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'GIS',
                                                                                       geoName, 'Not-Found', locationColumnName, '',
                                                                                       False, True)
+
+            reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
+                                         reminders_util.message_geocoder, True)
+
             locations=''
             geocodedLocationsoutputFilename, locationsNotFoundoutputFilename = GIS_geocode_util.geocode(GUI_util.window,
                                                                                 locations,

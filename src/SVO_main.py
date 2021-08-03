@@ -37,6 +37,7 @@ import IO_csv_util
 import Stanford_CoreNLP_coreference_util as stanford_coref
 import Stanford_CoreNLP_annotator_util
 import semantic_role_labeling_senna
+import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -474,6 +475,9 @@ def run(inputFilename, inputDir, outputDir,
                     #   containing several csv files of geocoded locations and non geocoded locations
                     # kmloutputFilename is a string; empty when the kml file fails to be created
 
+                    reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
+                                                 reminders_util.message_geocoder, True)
+
                     out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window, f,
                                                                                  outputDir,
                                                                                  'Nominatim', 'Google Earth Pro',
@@ -876,7 +880,7 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
                                   "The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that).\n\nThe filter file social-actor-list, created via WordNet with person as keyword and saved in the \'lib/wordLists\' subfolder, will be automatically set as the DEFAULT filter for subjects (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly set as the DEFAULT dictionary file for verbs.\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be prompted to select a new file.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
-                                  "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;;\n\n  2. to visualize SVO relations in a wordcloud;\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro. ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.")
+                                  "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;;\n\n  2. to visualize SVO relations in a wordcloud;\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro. ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+9), "Help",
                                   GUI_IO_util.msg_openOutputFiles)
 
@@ -892,8 +896,8 @@ GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_co
 
 def warnUser(*args):
     if GUI_util.input_main_dir_path.get() != '':
-        mb.showwarning(title='Warning',
-                       message='You have selected to work with a set of txt files in a directory (your corpus).\n\nBeware that SVO extraction is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.\n\nDepending upon corpus size, manual coreference editing may also not be possible, due to memory requirements..')
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_corpus,
+                                     reminders_util.message_SVO_corpus, True)
         # manual_Coref_var.set(0)
         # manual_Coref_checkbox.configure(state='disabled')
 

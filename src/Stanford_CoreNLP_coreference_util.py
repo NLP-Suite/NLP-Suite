@@ -198,7 +198,7 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
 
     errorFound, error_code, system_output=IO_libraries_util.check_java_installation('SVO extractor')
     if errorFound:
-        return filesToOpen
+        return filesToOpen, errorFound
 
     # IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Analysis start',
     #                     'Started running Stanford CoreNLP ' + coRefOptions + ' Co-Reference Resolution at', True,
@@ -228,4 +228,5 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
         else:
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Feature Not Available', 'Manual Coreference is only available when processing single file, not input directory.')
             # input_main_dir_path = os.path.split(inputFilename)[0]
-    return corefed_file
+   
+    return corefed_file, errorFound

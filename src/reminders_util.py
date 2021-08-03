@@ -22,6 +22,9 @@ from csv import writer
 
 # below is a lit of most reminders called from various scripts with their title_options and message
 
+title_options_SVO_corpus = ['SVO with corpus data']
+message_SVO_corpus = 'You have selected to work with a set of txt files in a directory (your corpus).\n\nBeware that SVO extraction is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.\n\nDepending upon corpus size, manual coreference editing may also not be possible, due to memory requirements.'
+
 title_options_shape_of_stories_CoreNLP = ['Stanford CoreNLP Neural Network']
 message_shape_of_stories_CoreNLP = 'The Stanford CoreNLP Neural Network approach to Sentiment analysis, like all neural network algorithms, is VERY slow. On a few hundred stories it may take hours to run.\n\nAlso, neural network algorithms are memory hogs. MAKE SURE TO ALLOCATE AS MUCH MEMORY AS YOU CAN AFFORD ON YOUR MACHINE.'
 
@@ -76,8 +79,8 @@ message_Excel = 'The Excel chart to be displayed has hover-over effects (i.e., w
 title_options_gensim = ['What is in your corpus - Gensim']
 message_gensim = 'The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.\n\nFor a more in-depth analysis of topics, use the topic modeling scripts for Gensim and Mallet.'
 
-title_options_geocoder = ["GIS Nominatim geocoder"]
-message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, addng Georgia as the state, e.g., Rome, Georgia.'
+title_options_geocoder = ["GIS geocoder"]
+message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.'
 
 def generate_reminder_list(path: str) -> None:
     """
@@ -175,7 +178,8 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
     if config_filename=='*':
         routine='*'
     else:
-        routine = config_filename[:-len('-config.txt')]
+        routine = config_filename.replace('-config.txt', '')
+        # routine = config_filename[:-len('-config.txt')]
     if title_options==None:
         title_options = getReminder_list(config_filename)
     else:
@@ -200,34 +204,36 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
     # get the row number of the routine that we are looking at
     silent = False
     for title in title_options:
-        df1=df.loc[(df['Routine'] == routine) & (df['Title'] == title)]
-        if len(df1) == 0:
-            # if the title does not exist for a given routine try to see if a universal routine (*) is available
-            df1=df.loc[(df['Routine'] == '*') & (df['Title'] == title)]
-        if len(df1) != 0:
-            row_num = df1.index[0]
-            event=df1.at[row_num, "Event"]
-            status = df1.at[row_num, "Status"]
-            if triggered_by_GUI_event == False and event=='Yes':
-                silent = True
-            else:
-                silent = False
-            if status == "Yes":
+        routines = routine.split(';')
+        for routine in routines:
+            df1 = df.loc[(df['Routine'] == routine) & (df['Title'] == title)]
+            if len(df1) == 0:
+                # if the title does not exist for a given routine try to see if a universal routine (*) is available
+                df1 = df.loc[(df['Routine'] == '*') & (df['Title'] == title)]
+            if len(df1) != 0:
+                row_num = df1.index[0]
+                event = df1.at[row_num, "Event"]
+                status = df1.at[row_num, "Status"]
+                if triggered_by_GUI_event == False and event=='Yes':
+                    silent = True
+                else:
+                    silent = False
+                if status == "Yes":
+                    if silent == False:
+                        # must pass the entire dataframe and not the sub-dataframe dt1
+                        displayReminder(df, row_num, title, message, event, status,
+                                        "\n\nDo you want to see this message again?", True)
+            else: # the reminder option does not exist and must be inserted and then displayed
+                if triggered_by_GUI_event == True:
+                    event='Yes'
+                else:
+                    event = 'No'
+                insertReminder(routine, title, message, event, "Yes")
+                # after inserting the new reminder return to check whether you want to see the reminder again
                 if silent == False:
-                    # must pass the entire dataframe and not the sub-dataframe dt1
-                    displayReminder(df, row_num, title, message, event, status,
-                                    "\n\nDo you want to see this message again?", True)
-        else: # the reminder option does not exist and must be inserted and then displayed
-            if triggered_by_GUI_event == True:
-                event='Yes'
-            else:
-                event = 'No'
-            insertReminder(routine, title, message, event, "Yes")
-            # after inserting the new reminder return to check whether you want to see the reminder again
-            if silent == False:
-                # title_options is the value you originally came in with (i.e., [title]) and that was inserted
-                checkReminder(config_filename, title_options, message,
-                              triggered_by_GUI_event)
+                    # title_options is the value you originally came in with (i.e., [title]) and that was inserted
+                    checkReminder(config_filename, title_options, message,
+                                  triggered_by_GUI_event)
 
 # called from a GUI when a reminder is selected from the reminder dropdown menu
 # title is a string, the reminders option selected in the GUI dropdown menu

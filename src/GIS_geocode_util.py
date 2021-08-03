@@ -17,7 +17,6 @@ from geopy.exc import GeocoderTimedOut
 import GIS_location_util
 import GIS_file_check_util
 import IO_internet_util
-import reminders_util
 
 filesToOpen = []
 
@@ -115,9 +114,6 @@ def geocode(window,locations, inputFilename, outputDir,
 	# if geocoder=='Nominatim':
 	# 	config_filename='GIS-geocode-config.txt'
 	# 	reminders_util.checkReminder(config_filename,["GIS Nominatim geocoder"],'',True)
-
-	config_filename='GIS-geocode-config.txt'
-	reminders_util.checkReminder(config_filename,reminders_util.title_options_geocoder,reminders_util.message_geocoder,True)
 
 	geoName = 'geo-' + str(geocoder[:3])
 	geocodedLocationsoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',

@@ -56,6 +56,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(inputFilename, inputDir,
                                                                            outputDir, openOutputFiles, createExcelCharts, memory_var,
                                                                            CoRef_Option, manual_Coref)
+
         if error_indicator == 0:
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
                                                'Finished running Stanford CoreNLP Co-Reference Resolution using the ' + CoRef_Option + ' approach at',
@@ -64,7 +65,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
             mb.showinfo("Coreference Resolution Error",
                         "Since Stanford CoreNLP Co-Reference Resolution throws error, " +
                         "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.")
-        filesToOpen = filesToOpen + file_open
+        # filesToOpen = filesToOpen + file_open
+        # print("Number of files to Open: ", len(file_open))
+        filesToOpen.extend(file_open)
 
     outputCoNLLfilePath = ''
 
