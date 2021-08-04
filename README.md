@@ -19,9 +19,21 @@ The NLP Suite was developed by **Roberto Franzosi** at **Emory University** with
 
 To learn more about NLP Suite, its architecture, and screenshots, visit the [NLP Suite Wiki](https://github.com/NLP-Suite/NLP-Suite/wiki)
 
-## Installing, Updating, & Running the NLP Suite
+## Supported Systems
 
-Ensure your operating system is supported (Windows or Mac)
+Ensure your operating system is supported (Windows or Mac).
+
+The following systems have been tested on:
+
+- OS X (intel)
+- Windows 10
+
+
+The following systems are not officially supported, but have been proven to work:
+
+- OS X (Apple Silicon - using Rosetta)
+
+## Installing, Updating, & Running the NLP Suite
 
 ### To install NLP Suite from scratch
 
@@ -42,17 +54,5 @@ Run the appropriate update script
 - [Windows](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows#run-instructions)
 - [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows#run-instructions)
 
-
-## Supported Systems
-
-The following systems have been tested on:
-
-- OS X (intel)
-- Windows 10
-
-
-The following systems are not officially supported, but have been proven to work:
-
-- OS X (Apple Silicon - using Rosetta)
 
 ## Acknowledgements
