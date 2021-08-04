@@ -36,7 +36,7 @@ Many of the core algorithms of the current release of the NLP Suite only work fo
 
 ## Installing, Updating, & Running the NLP Suite
 
-### To install NLP Suite from scratch
+To **install** the NLP Suite from scratch
 
 1. Download the lateset release of NLP Suite through [this link](https://github.com/NLP-Suite/NLP-Suite/releases).
 2. Follow the instructions to run the appropriate installation script
