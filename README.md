@@ -53,7 +53,7 @@ To **run** the NLP Suite, once installed or updated
 - [Windows](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows#run-instructions)
 - [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows#run-instructions)
 
-# External Software Download
+## External Software Download
 
 The NLP Suite relies on a set of **external freeware software** to run specialized algorithms.
 
