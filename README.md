@@ -38,19 +38,19 @@ Many of the core algorithms of the current release of the NLP Suite only work fo
 
 To **install** the NLP Suite from scratch
 
-1. Download the lateset release of NLP Suite through [this link](https://github.com/NLP-Suite/NLP-Suite/releases).
+1. Download the lateset release of the NLP Suite through [this link](https://github.com/NLP-Suite/NLP-Suite/releases).
 2. Follow the instructions to run the appropriate installation script
     - [Windows](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows)
     - [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Mac) 
 
-### To update the NLP Suite to the latest release
+To **update** the NLP Suite to the latest release
 
 Run the appropriate update script
 
 - [Windows](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows#update-instructions)
 - [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Mac#update-instructions)
 
-### To run the NLP Suite, once installed or updated
+To **run** the NLP Suite, once installed or updated
 
 - [Windows](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows#run-instructions)
 - [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows#run-instructions)
