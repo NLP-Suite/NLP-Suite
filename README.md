@@ -32,7 +32,7 @@ The following systems are not officially supported, but have been proven to work
 
 ## Supported Languages
 
-Many of the core algorithms of the current release of **the NLP Suite only work for the English Language** (e.g., Stanford CoreNLP, WordNet).
+Many of the core algorithms of the current release of the NLP Suite only work for the **English Language** (e.g., Stanford CoreNLP, WordNet).
 
 ## Installing, Updating, & Running the NLP Suite
 
