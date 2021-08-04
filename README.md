@@ -67,7 +67,6 @@ The NLP Suite relies on a set of **external freeware software** to run specializ
 - **Mallet** LDA topic modeling [Download here](http://mallet.cs.umass.edu/download.php)
 
 - **Gephi** Network visualization [Download here](https://gephi.org/users/download/)
-
 - **Google Earth Pro** Geographic Information System (GIS) maps [Download here](https://www.google.com/earth/download/gep/agree.html?hl=en-GB)
 
 ## Acknowledgements
