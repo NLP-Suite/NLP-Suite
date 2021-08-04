@@ -45,8 +45,6 @@ To **install** the NLP Suite from scratch
 
 To **update** the NLP Suite to the latest release
 
-Run the appropriate update script
-
 - [Windows](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows#update-instructions)
 - [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Mac#update-instructions)
 
