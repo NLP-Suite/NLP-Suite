@@ -60,6 +60,7 @@ The NLP Suite relies on a set of **external freeware software** to run specializ
 **Stanford CoreNLP** The main NLP parser and annotator [Download here](https://stanfordnlp.github.io/CoreNLP/download.html)
 **SENNA** SVO extractor (Subject-Verb-Object) [Download here](https://ronan.collobert.com/senna/)
 **WordNet** Lexical database [Download here](https://wordnet.princeton.edu/download/current-version)
+
 **Mallet** LDA topic modeling [Download here](http://mallet.cs.umass.edu/download.php)
 **Gephi** Network visualization [Download here](https://gephi.org/users/download/)
 **Google Earth Pro** Geographic Information System (GIS) maps [Download here](https://www.google.com/earth/download/gep/agree.html?hl=en-GB)
