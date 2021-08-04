@@ -53,5 +53,15 @@ To **run** the NLP Suite, once installed or updated
 - [Windows](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows#run-instructions)
 - [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows#run-instructions)
 
+External Software Download
+The NLP Suite relies on a set of external freeware software to run specialized algorithms.
+
+Stanford CoreNLP The main NLP parser and annotator Download here
+SENNA SVO extractor (Subject-Verb-Object) Download here
+WordNet Lexical database Download here
+Mallet LDA topic modeling Download here
+Gephi Network visualization Download here
+Google Earth Pro Geographic Information System (GIS) maps Download here
+
 
 ## Acknowledgements
