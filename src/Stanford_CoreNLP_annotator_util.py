@@ -1133,19 +1133,21 @@ def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):
             # print("Detect obl:tmod")
             # pprint.pprint(verb_token)
             tmod_idx = vgd["obl:tmod"]
-            if tmod_idx in sent_data.keys():
-                tmod_token = sent_data[tmod_idx]
-                tmod_gd = tmod_token["govern_dict"]
-                if "nmod:poss" in tmod_gd.keys():
-                    o = s_o_formation(tmod_gd["nmod:poss"], sent_data)
-    
-                    if isinstance(tmod_gd["nmod:poss"], list):
-                        o_list = tmod_gd["nmod:poss"]
-                    else:
-                        o_list = [tmod_gd["nmod:poss"]]
-                    for o_id in o_list: 
-                        negation = negation or negation_detect(sent_data[o_id], sent_data)
-                            
+            try:
+                if tmod_idx in sent_data.keys():
+                    tmod_token = sent_data[tmod_idx]
+                    tmod_gd = tmod_token["govern_dict"]
+                    if "nmod:poss" in tmod_gd.keys():
+                        o = s_o_formation(tmod_gd["nmod:poss"], sent_data)
+
+                        if isinstance(tmod_gd["nmod:poss"], list):
+                            o_list = tmod_gd["nmod:poss"]
+                        else:
+                            o_list = [tmod_gd["nmod:poss"]]
+                        for o_id in o_list:
+                            negation = negation or negation_detect(sent_data[o_id], sent_data)
+            except:
+                print('ERROR in sent_data.keys: ' + str(sent_data.keys()))
     if o_ner != '':
         if isinstance(vgd[o_ner], list):
             o_list = vgd[o_ner]

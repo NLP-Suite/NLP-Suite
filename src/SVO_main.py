@@ -338,7 +338,7 @@ def run(inputFilename, inputDir, outputDir,
         field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'PERSON', 'TIME',
                        'TIME_STAMP', 'Sentence']
         if isFile & Coref:
-            # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
+            # ANY CHANGES IN THE COREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
             # NLP_CoreNLP_coref_The Three Little Pigs-svoResult-woFilter.txt
             # inputFileBase contains _coref
             # fName is the filename returned by Java SVO -svoResult-woFilter.txt files will be removed below
