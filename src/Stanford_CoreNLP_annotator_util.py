@@ -1063,10 +1063,11 @@ def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):
 
     negation = negation_detect(verb_token, sent_data)
         
-    
-    if 'compound:prt' in vgd.keys():
-        v_string = v_string + " "  +sent_data[vgd['compound:prt']]['word']
-
+    try:
+        if 'compound:prt' in vgd.keys():
+            v_string = v_string + " "  +sent_data[vgd['compound:prt']]['word']
+    except:
+        print('   ERROR in vgd.keys: ' + str(vgd.keys()))
     s_ner = ''
     if "nsubj" in vgd.keys():
         s = s_o_formation(vgd["nsubj"], sent_data)
@@ -1147,7 +1148,7 @@ def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):
                         for o_id in o_list:
                             negation = negation or negation_detect(sent_data[o_id], sent_data)
             except:
-                print('ERROR in sent_data.keys: ' + str(sent_data.keys()))
+                print('   ERROR in sent_data.keys: ' + str(sent_data.keys()))
     if o_ner != '':
         if isinstance(vgd[o_ner], list):
             o_list = vgd[o_ner]
@@ -1219,10 +1220,11 @@ def pred_root(token, gov_dict, sent_data):
     if "aux" in gov_dict.keys():
         v = token_connect(gov_dict["aux"], sent_data) + " " +v 
     o = token["word"]
-    if "case" in gov_dict.keys():
-        v = v + " " + sent_data[gov_dict["case"]]['word'] 
-
-    
+    try:
+        if "case" in gov_dict.keys():
+            v = v + " " + sent_data[gov_dict["case"]]['word']
+    except:
+        print('   ERROR in gov_dict.keys: ' + str(gov_dict.keys()))
     return s, v, o
 
 
