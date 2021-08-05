@@ -17,41 +17,6 @@ The NLP Suite was developed by **Roberto Franzosi** at **Emory University** with
 
 To learn more about NLP Suite, its architecture, and screenshots, visit the [NLP Suite Wiki](https://github.com/NLP-Suite/NLP-Suite/wiki)
 
-## Supported Systems
-
-Ensure your operating system is supported (Windows or Mac).
-
-The following systems have been tested on:
-
-- OS X (intel)
-- Windows 10
-
-The following systems are not officially supported, but have been proven to work:
-
-- OS X (Apple Silicon - using Rosetta)
-
-## Supported Languages
-
-Many of the core algorithms of the current release of the NLP Suite only work for the **English Language** (e.g., Stanford CoreNLP, WordNet).
-
-## Installing, Updating, & Running the NLP Suite
-
-To **install** the NLP Suite from scratch
-
-1. Download the lateset release of the NLP Suite through [this link](https://github.com/NLP-Suite/NLP-Suite/releases).
-2. Follow the instructions to run the appropriate installation script
-    - [Windows](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows)
-    - [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Mac) 
-
-To **update** the NLP Suite to the latest release
-
-- [Windows](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows#update-instructions)
-- [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Mac#update-instructions)
-
-To **run** the NLP Suite, once installed or updated
-
-- [Windows](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows#run-instructions)
-- [Mac](https://github.com/NLP-Suite/NLP-Suite/tree/current-stable/setup_Windows#run-instructions)
 
 ## External Software Download
 
