@@ -1157,7 +1157,7 @@ def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):
        
 def verb_root(verb_list, token, sent_data):
     v_prep_text = GUI_IO_util.OpenIE_libPath + os.sep + "verb_prep_json.txt"
-    v_obj_obl_text = GUI_IO_util.OpenIE_libPath + os.sep + "v_obj_obl_json.txt"
+    v_obj_obl_text = GUI_IO_util.OpenIE_libPath + os.sep + "verb_obj_obl_json.txt"
     with open(v_prep_text) as v_prep_doc:
         v_prep_json = json.load(v_prep_doc)
     with open(v_obj_obl_text) as v_obj_obl_doc:

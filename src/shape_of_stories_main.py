@@ -494,7 +494,7 @@ def check_IO_requirements(inputFilename, inputDir):
                     return Error
                 if nSAscoreFiles < 50 and sentimentAnalysis == True:
                     answer = mb.askyesno("Directory error",
-                                         message=Dir_Err_txt)
+                                         message=DirErr_txt)
                     Error = True
                     return Error
 
