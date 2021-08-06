@@ -167,8 +167,8 @@ Several Emory undergraduate students have contributed over the years to the deve
         Ishan Saran\n\
         Gabriel Wang\n\
         Yi Wang\n\
+        Catherine Xiao\n\
         Angel Xie\n\
-        Catherine Xie\n\
         Doris Zhou\n\n\
 JOIN THE TEAM: If you want to contribute to the continued development of the NLP Suite, please write to Roberto Franzosi at rfranzo@emory.edu or join directly via GitHub at https://github.com/NLP-Suite/NLP-Suite\n\n\
 LICENSE: The NLP Suite is freely distributed under a GNU License Agreement.\n\n\
