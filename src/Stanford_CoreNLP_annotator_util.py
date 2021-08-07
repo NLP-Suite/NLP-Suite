@@ -1233,7 +1233,8 @@ def be_pos(token, gov_dict, sent_data):
     v = ''
     o = ''
     if "nsubj" in gov_dict.keys():
-        s = s_o_formation(gov_dict["nsubj"]src/Stanford_CoreNLP_annotator_util.py:1236, sent_data)
+        # s = s_o_formation(gov_dict["nsubj"]src/Stanford_CoreNLP_annotator_util.py:1236,sent_data)
+        s = s_o_formation(gov_dict["nsubj"],sent_data)
     for gov_key in gov_dict.keys():
         if "obl" in gov_key :
             if gov_key[4:] != "tmod":
