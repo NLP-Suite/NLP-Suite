@@ -90,7 +90,7 @@ def compute_field_statistics_NoGroupBy(window,inputFilename, outputDir, openOutp
         mb.showwarning(title='File type error', message="The input file\n\n" + inputFilename + "\n\nis not a csv file. The statistical function only works with input csv files.\n\nPlease, select a csv file in input and try again!")
         return None
 
-    output_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'CSV', 'ungroup_stats')
+    output_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'ungroup_stats')
     filesToOpen.append(output_file_name)
 
     stats=[]
@@ -151,7 +151,7 @@ def percentile(n):
 #written by Yi Wang March 2020, edited Landau/Franzosi February 20021
 def compute_field_statistics_groupBy(window,inputFilename, outputDir, groupByField: list, openOutputFiles, createExcelCharts, columnNumber=-1):
     filesToOpen=[]
-    output_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'CSV', 'group_stats')
+    output_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'group_stats')
     # filesToOpen.append(output_name)
 
     if not set(groupByField).issubset(set(IO_csv_util.get_csvfile_headers(inputFilename))):

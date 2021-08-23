@@ -28,7 +28,7 @@ import GUI_util
 import IO_libraries_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"Mallet Topic modeling",['os','tkinter.messagebox','subprocess'])==False:
-	sys.exit(0)
+    sys.exit(0)
 
 import os
 import tkinter as tk
@@ -62,7 +62,25 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1100x360'
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief=False
+GUI_width=1100
+GUI_height=360 # height of GUI with full I/O display
+
+if IO_setup_display_brief:
+    GUI_height = GUI_height - 40
+    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+    increment=0 # used in the display of HELP messages
+else: # full display
+    # GUI CHANGES add following lines to every special GUI
+    # +3 is the number of lines starting at 1 of IO widgets
+    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 1  # IO FULL display
+    increment=1
+
+GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
 GUI_label='Graphical User Interface (GUI) for Topic Modeling with Mallet'
 config_filename='topic-modeling-mallet-config.txt'
 # The 6 values of config_option refer to:
@@ -82,15 +100,12 @@ config_option=[0,0,1,0,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-# GUI CHANGES add following lines to every special GUI
-# +2 is the number of lines starting at 1 of IO widgets
-y_multiplier_integer=GUI_util.y_multiplier_integer+1
 window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 
-GUI_util.GUI_top(config_input_output_options,config_filename)
+GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
 
 optimize_intervals_var=tk.IntVar()
 num_topics_var=tk.IntVar()
@@ -113,19 +128,22 @@ TIPS_options='Topic modeling in Mallet','Mallet installation','JAVA installation
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_corpusData)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_outputDirectory)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", "Please, tick the checkbox if you do NOT wish to optimize intervals.\n\nOptimization, however, seems to lead to better reults (http://programminghistorian.org/lessons/topic-modeling-and-mallet).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help", "Please, enter the number of topics to be used (recommended default = 20).\n\nVarying the number of topics may provide better results.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help",GUI_IO_util.msg_openOutputFiles)
+    if not IO_setup_display_brief:
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_corpusData)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_outputDirectory)
+    else:
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_IO_setup)
+
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help", "Please, tick the checkbox if you do NOT wish to optimize intervals.\n\nOptimization, however, seems to lead to better reults (http://programminghistorian.org/lessons/topic-modeling-and-mallet).")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help", "Please, enter the number of topics to be used (recommended default = 20).\n\nVarying the number of topics may provide better results.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help",GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script analyzes a set of documents for topic modeling with Mallet (http://mallet.cs.umass.edu/topics.php).\n\nMALLET CODE WILL BREAK IF INPUT AND/OR OUTPUT PATHS CONTAIN SPACES (I.E., BLANKS).\n\nIn INPUT the script expects a set of text files stored in a directory.\n\nIn OUTPUT, the script creates a set of four files:\n  MalletFormatted_TXTFiles.mallet\n  NLP-Mallet_Output_Keys.tsv\n  NLP-Mallet_Output_Composition\n  NLP-Mallet_Output_Compressed.gz.\n\nThe 2 files of interest are:\nNLP-Mallet_Output_Keys.tsv\nNLP-Mallet_Output_Composition.\n\nThe KEYS file has as many lines as specified topics and three columns:\n  TOPIC #,\n  WEIGHT OF TOPIC that measures the weight of the topic across all the documents,\n  KEY WORDS IN TOPIC that lists a set of typical words belonging to the topic.\n\nThe COMPOSITION file has as many lines as documents analyzed (one document per line) and several columns:\n  column 1 (Document ID),\n  column 2 (Document with path),\n  as many successive pairs of columns as the number of topics, with column pairs as follow:\n    TOPIC is a number corresponding to the number in column 1 in the Keys file;\n    PROPORTION measures the % of words in the document attributed to that topic (pairs sorted in descending PROPORTION order)."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
-
-# GUI_util.softwareDir.set(IO_libraries_util.get_software_path_if_available('Mallet'))
+GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options,IO_setup_display_brief)
 
 GUI_util.window.mainloop()

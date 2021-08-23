@@ -1,21 +1,17 @@
 import sys
-
-import GUI_IO_util
-import IO_files_util
 import GUI_util
 import IO_libraries_util
-import IO_user_interface_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"GIS_geocode_util",['os','tkinter','csv','geopy'])==False:
 	sys.exit(0)
 
-import os
+import IO_files_util
+import IO_user_interface_util
 import csv
 import tkinter.messagebox as mb
 
 from geopy import Nominatim 
 from geopy.geocoders import GoogleV3
-import geopy.exc
 from geopy.exc import GeocoderTimedOut
 
 import GIS_location_util

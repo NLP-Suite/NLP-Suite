@@ -141,7 +141,7 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 	return sorted(locList)
 
 # called from GIS_Google_util
-#locationColumnNumber where locations are stored in the csv file
+#locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
 def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumber,encodingValue):
 	# IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Started extracting locations from csv file at", True)
 	print("Started extracting locations from csv file")

@@ -98,6 +98,7 @@ config_filename='file-classifier-config.txt'
 #   output file
 #   output dir
 config_option=[0,0,1,1,0,1]
+IO_setup_display_brief=False
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
@@ -109,7 +110,7 @@ config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 
-GUI_util.GUI_top(config_input_output_options,config_filename)
+GUI_util.GUI_top(config_input_output_options,config_filename, IO_setup_display_brief)
 
 
 by_date_var = tk.IntVar()
@@ -195,7 +196,7 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 # change the value of the readMe_message
 readMe_message="The Python 3 script provides a way to classify unsorted files into the proper subdirectory using either a naive approach based on dates embedded in the filenames or a more sophisticated approach based on social actors and CoreNLP NER values of location, date, person, organization.\n\nThe NER classifier \n\nThe script will first build a dictionary of NER values for the documents in each subfolder, then process each unclassified document.\n\nIn INPUT the script takes three directories:\n  1. a directory where the Stanford CoreNLP was downloaded\n  2. a main directory containing a list of SOURCE files with a date embedded in the filename;\n  3. a secondary directory containing a set of TARGET subdirectories, each with a set of files also with embedded dates.\n\nIn OUTPUT the sript produces a 2-columns csv file with: SOURCE filename; TARGET subdirectory.\n\nThe csv output file, after inspection, can be used to move the SOURCE files to the TARGET subdirectory.\n\nThe script processes each file in the SOURCE directory against each file in each sub-directory in the TARGET directory to compare embedded dates."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
+GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()
 

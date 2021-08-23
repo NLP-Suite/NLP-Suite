@@ -86,7 +86,25 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1100x430'
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief=True
+GUI_width=1100
+GUI_height=430 # height of GUI with full I/O display
+
+if IO_setup_display_brief:
+    GUI_height = GUI_height - 80
+    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+    increment=0 # used in the display of HELP messages
+else: # full display
+    # GUI CHANGES add following lines to every special GUI
+    # +3 is the number of lines starting at 1 of IO widgets
+    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 2  # IO FULL display
+    increment=2
+
+GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
 GUI_label='Graphical User Interface (GUI) for File Content Checker & File Type Converter & File Content Cleaner'
 config_filename='file-checker-converter-cleaner-config.txt'
 # The 6 values of config_option refer to: 
@@ -106,16 +124,13 @@ config_option=[0,4,1,0,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-# GUI CHANGES add following lines to every special GUI
-# +2 is the number of lines starting at 1 of IO widgets
-y_multiplier_integer=GUI_util.y_multiplier_integer+2
 window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
 input_main_dir_path =GUI_util.input_main_dir_path
 output_dir_path =GUI_util.output_dir_path
 
-GUI_util.GUI_top(config_input_output_options,config_filename)
+GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
 
 script_to_run=''
 function_to_run=''
@@ -250,19 +265,24 @@ TIPS_options= 'File content checker & converter & cleaner','File handling in NLP
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",GUI_IO_util.msg_anyFile)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_anyData)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help","Please, using the dropdown menu, select one of the options available for checking txt files.\n\nWhen a directory is selected as the input option, all files in a directory and its subdirectories can be checked. The script will ask users whether they want to check files in subdirectories." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help","Please, using the dropdown menu, select one of the options available for converting the file type: from pdf to txt, docx (NOT doc) to txt, or rtf to txt.\n\nThe pdf convert (via the pdfminer package) can also convert column-based pdf files. MAKE SURE TO OCR THE PDF DOCUMENT(S) BEFORE CONVERTING FOR BETTER QUALITY RESULTS.\n\nIn INPUT, when a directory is selected, all files in a directory and its subdirectories can be converted. The script will ask users whether they want to convert files in subdirectories.\n\nIn OUTPUT, the converted file(s) will be placed in the same directory as the input file(s)." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help","Please, using the dropdown menu, select one of the options available for cleaning a text file:\n\n   find & replace, via a single expression or a set of expressions in a csv file (will replace EXACT expressions - even multiple words but cannot include punctuation);\n   removing blank lines;\n   removing titles in documents (e.g., newspaper articles) and putting them in separate documents (titles and body text).\n\nOf particular IMPORTANTCE is the function that converts non-ASCII apostrophes and quotes and the % symbol.\n   The Windows Word non-ASCII slanted apostrophes and quotes will NOT break any NLP Suite code but will display as weird characters in a csv file (in a Windows machine; not on Mac).\n   The presence in your corpus of % signs is more fatal and will break the Stanford CoreNLP parser since % is interpreted as the start of a special escaped sequence.\n   Slanted apostrophes and quotes will be converted to straight apostrophes and quotes.\n   % signs will be converted to the word \'percent\'." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help",GUI_IO_util.msg_openOutputFiles)
+    if not IO_setup_display_brief:
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",GUI_IO_util.msg_anyFile)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_anyData)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory)
+    else:
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_IO_setup)
+
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help","Please, using the dropdown menu, select one of the options available for checking txt files.\n\nWhen a directory is selected as the input option, all files in a directory and its subdirectories can be checked. The script will ask users whether they want to check files in subdirectories." + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","Please, using the dropdown menu, select one of the options available for converting the file type: from pdf to txt, docx (NOT doc) to txt, or rtf to txt.\n\nThe pdf convert (via the pdfminer package) can also convert column-based pdf files. MAKE SURE TO OCR THE PDF DOCUMENT(S) BEFORE CONVERTING FOR BETTER QUALITY RESULTS.\n\nIn INPUT, when a directory is selected, all files in a directory and its subdirectories can be converted. The script will ask users whether they want to convert files in subdirectories.\n\nIn OUTPUT, the converted file(s) will be placed in the same directory as the input file(s)." + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help","Please, using the dropdown menu, select one of the options available for cleaning a text file:\n\n   find & replace, via a single expression or a set of expressions in a csv file (will replace EXACT expressions - even multiple words but cannot include punctuation);\n   removing blank lines;\n   removing titles in documents (e.g., newspaper articles) and putting them in separate documents (titles and body text).\n\nOf particular IMPORTANTCE is the function that converts non-ASCII apostrophes and quotes and the % symbol.\n   The Windows Word non-ASCII slanted apostrophes and quotes will NOT break any NLP Suite code but will display as weird characters in a csv file (in a Windows machine; not on Mac).\n   The presence in your corpus of % signs is more fatal and will break the Stanford CoreNLP parser since % is interpreted as the start of a special escaped sequence.\n   Slanted apostrophes and quotes will be converted to straight apostrophes and quotes.\n   % signs will be converted to the word \'percent\'." + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help",GUI_IO_util.msg_openOutputFiles)
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script can check the CONTENT of txt files for\n  utf-8 compliace;\n  spelling.\n\nThe script can also convert a file type from\n  pdf to txt;\n  docx to txt;\n  rtf to txt.\nThe txt type is the only file type NLP tools can process.\n\nIn INPUT the script can take either a single txt file or a directory, processing all txt fles in the directory."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
+GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options,IO_setup_display_brief)
 
 GUI_util.window.mainloop()
 

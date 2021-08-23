@@ -61,7 +61,7 @@ def create_js(output_filename, locations, api_key, geocoder, latLongList):
     create_google_heatmap(output_filename, gmaps_list, api_key)
     config_filename = 'GIS-config.txt'
     reminders_util.checkReminder(config_filename,
-                                 ['Google Maps API'],
-                                 'If the heatmap produced by Google Maps is displayed correctly for a split second and then displays "Oops! Something went wrong" you probably:\n  1. pasted incorrectly into the API key widget the Google API key;\n  2. you may not have entered billing information when applying for an API key; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale;\n  3. you may not have enabled the Maps JavaScript API (and if you use Google for geocoding, you also need to enable the Geocoding API.\n\nPlease, check the API key, your billing information, and tthe API enabled and try again.',
-                                 True)
+                            reminders_util.title_options_Google_API,
+                            reminders_util.message_Google_API,
+                            True)
 

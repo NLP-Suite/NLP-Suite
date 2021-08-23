@@ -371,7 +371,25 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1200x710'
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief=False
+GUI_width=1200
+GUI_height=710 # height of GUI with full I/O display
+
+if IO_setup_display_brief:
+    GUI_height = GUI_height - 40
+    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+    increment=0 # used in the display of HELP messages
+else: # full display
+    # GUI CHANGES add following lines to every special GUI
+    # +3 is the number of lines starting at 1 of IO widgets
+    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 1  # IO FULL display
+    increment=1
+
+GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
 GUI_label='Graphical User Interface (GUI) for File Manager (by Filename)'
 config_filename='file-manager-config.txt'
 # The 6 values of config_option refer to:
@@ -391,15 +409,12 @@ config_option=[0,0,1,0,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-# GUI CHANGES add following lines to every special GUI
-y_multiplier_integer=GUI_util.y_multiplier_integer+1
-# +1 is the number of lines starting at 1 of IO widgets
 window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 
-GUI_util.GUI_top(config_input_output_options,config_filename)
+GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
 
 
 selectedCsvFile_var=tk.StringVar()
@@ -876,26 +891,31 @@ TIPS_options= 'File manager','File handling in NLP Suite', 'Filename checker', '
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_csvFile)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_outputDirectory)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", "Please, click to select a csv file containing a list of filenames to be handled by a selected file operation: Rename, Copy, Delete, Count.\n\nThe csv file can contain several columns. Once a csv file has been selected, using the dropdown menu, select the field containing the filenames to be processed.\n\nWHEN THE FILENAME IN THE SELECTED FIELD CONTAINS A FULL PATH, THE SELECTED INPUT FILE DIRECTORY WILL BE IGNORED.\n\nSuch csv file can be obtained, for instance, by using the List option.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help","Please, tick the checkboxes if you wish to check the input text filename for utf-8 compliance. Non utf-8 compliant filename(s) are likely to lead to code breakdown in some scripts.\n\nTick the checkbox to convert non-ASCII apostrophes & quotes. ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help", "Please, tick the appropriate checkbox for the file operation you wish to run.\n\nNot all filter options (By_...) are available for all operations (e.g., the filter option 'Filename embeds date' is only available when listing files).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help", "Please, using the dropdown menu, select the file type to restrict the selected file handling option.\n\nThe 'By file type' option can be used in conjuction with the options 'By prefix value' or 'By sub-string value.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help", "Please, tick the checkbox to restrict by file creation/modification date and by author the selected file handling option.\n\nThe 'By author' option is available for Windows Office files only (doc, docx, xls, xlsx, xlsm).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help", "Please, tick the checkbox to restrict the selected file handling option by prefix value (e.g., all filenames starting with ._) or sub-string value (e.g., all filenames that contain the string _NLP_SSR_).\n\nAppropriate prefix and sub-string values will need to be entered.\n\nWhen renaming files, the 'New substring for renaming' will also need to be entered.\n\nThe options 'By prefix value' or 'By sub-string value can be used in conjuction with the 'By file type' option.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help", "Please, tick the checkbox to rename files in a folder by embedding the LAST PART of folder path in the renamed filename (e.g., The Boston Globe_19-19-1919 found in the subfolder 'John Willis' of a folder path 'c:\mydata\\newspapers\lynching\John Willis' will be remamed as The Boston Globe_19-19-1919__John Willis if __ is selected as the separator character(s).\n\nThe option is available only when renaming files.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help", "Please, tick the checkbox to list, copy, move files in a folder by filtering files by the number of items embedded in a filename and separated by specific character(s).\n\nThe user can choose to exclude or include the selected items.\n\nThus, for instance, given the file The Chicago Tribune_17-22-1922_4_3__Ben Treppard, and the options Separator character(s) __, Number of characters 1, and Exclude would result in th filename The Chicago Tribune_17-22-1922_4_3   items embedding the directory name in the renamed filename (e.g., The Boston Globe_19-19-1919 found in the folder John Willis will be remamed as The Boston Globe_19-19-1919__John Willis if __ is selected as the separator character(s).\n\nThe option is available only when listing, copying, or moving files.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*10,"Help", "The 'By number of embedded character(s)' checkbox is available only when listing files in a folder.\n\nWhen available, tick the checkbox to provide a list of files with a count of characters embedded in the filename (e.g., the character _ counted).\n\nOnce ticked, you must enter appropriate character value(s) (e.g. _).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*11,"Help", "The 'Filename embeds date' checkbox is available only when listing files in a folder.\n\nWHEN THE OPTION IS SELECTED, SINCE THE DATE FUNCTION AUTOMATICALLY CHECKS EMBEDDED DATES FOR THE CORRECT FORMAT, THE OPTION CAN BE USED TO CHECK THAT FILENAMES HAVE THE CORRECT DATE FORMAT. FAULTY DATES ARE EXPORTED AS BLANK.\n\nWhen available, tick the checkbox if filenames contain a date (e.g., The New York Time_2-18-1872). Once the checkbox is ticked, date options will become available. The date in the filename will then be exported, along with filename and path, to the output csv file that lists all files in a folder.\n\nThe embedded date will be checked automatically to ensure that the date has the correct date format. Detected incorrect dates will be listed with a BLANK date.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*12,"Help", "Please, tick the checkbox to process all files found in the input directory and all its subdirectories.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*13,"Help", GUI_IO_util.msg_openOutputFiles)
+    if not IO_setup_display_brief:
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_csvFile)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_outputDirectory)
+    else:
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_IO_setup)
+
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help", "Please, click to select a csv file containing a list of filenames to be handled by a selected file operation: Rename, Copy, Delete, Count.\n\nThe csv file can contain several columns. Once a csv file has been selected, using the dropdown menu, select the field containing the filenames to be processed.\n\nWHEN THE FILENAME IN THE SELECTED FIELD CONTAINS A FULL PATH, THE SELECTED INPUT FILE DIRECTORY WILL BE IGNORED.\n\nSuch csv file can be obtained, for instance, by using the List option.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","Please, tick the checkboxes if you wish to check the input text filename for utf-8 compliance. Non utf-8 compliant filename(s) are likely to lead to code breakdown in some scripts.\n\nTick the checkbox to convert non-ASCII apostrophes & quotes. ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help", "Please, tick the appropriate checkbox for the file operation you wish to run.\n\nNot all filter options (By_...) are available for all operations (e.g., the filter option 'Filename embeds date' is only available when listing files).")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help", "Please, using the dropdown menu, select the file type to restrict the selected file handling option.\n\nThe 'By file type' option can be used in conjuction with the options 'By prefix value' or 'By sub-string value.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help", "Please, tick the checkbox to restrict by file creation/modification date and by author the selected file handling option.\n\nThe 'By author' option is available for Windows Office files only (doc, docx, xls, xlsx, xlsm).")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help", "Please, tick the checkbox to restrict the selected file handling option by prefix value (e.g., all filenames starting with ._) or sub-string value (e.g., all filenames that contain the string _NLP_SSR_).\n\nAppropriate prefix and sub-string values will need to be entered.\n\nWhen renaming files, the 'New substring for renaming' will also need to be entered.\n\nThe options 'By prefix value' or 'By sub-string value can be used in conjuction with the 'By file type' option.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+7),"Help", "Please, tick the checkbox to rename files in a folder by embedding the LAST PART of folder path in the renamed filename (e.g., The Boston Globe_19-19-1919 found in the subfolder 'John Willis' of a folder path 'c:\mydata\\newspapers\lynching\John Willis' will be remamed as The Boston Globe_19-19-1919__John Willis if __ is selected as the separator character(s).\n\nThe option is available only when renaming files.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+8),"Help", "Please, tick the checkbox to list, copy, move files in a folder by filtering files by the number of items embedded in a filename and separated by specific character(s).\n\nThe user can choose to exclude or include the selected items.\n\nThus, for instance, given the file The Chicago Tribune_17-22-1922_4_3__Ben Treppard, and the options Separator character(s) __, Number of characters 1, and Exclude would result in th filename The Chicago Tribune_17-22-1922_4_3   items embedding the directory name in the renamed filename (e.g., The Boston Globe_19-19-1919 found in the folder John Willis will be remamed as The Boston Globe_19-19-1919__John Willis if __ is selected as the separator character(s).\n\nThe option is available only when listing, copying, or moving files.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+9),"Help", "The 'By number of embedded character(s)' checkbox is available only when listing files in a folder.\n\nWhen available, tick the checkbox to provide a list of files with a count of characters embedded in the filename (e.g., the character _ counted).\n\nOnce ticked, you must enter appropriate character value(s) (e.g. _).")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+10),"Help", "The 'Filename embeds date' checkbox is available only when listing files in a folder.\n\nWHEN THE OPTION IS SELECTED, SINCE THE DATE FUNCTION AUTOMATICALLY CHECKS EMBEDDED DATES FOR THE CORRECT FORMAT, THE OPTION CAN BE USED TO CHECK THAT FILENAMES HAVE THE CORRECT DATE FORMAT. FAULTY DATES ARE EXPORTED AS BLANK.\n\nWhen available, tick the checkbox if filenames contain a date (e.g., The New York Time_2-18-1872). Once the checkbox is ticked, date options will become available. The date in the filename will then be exported, along with filename and path, to the output csv file that lists all files in a folder.\n\nThe embedded date will be checked automatically to ensure that the date has the correct date format. Detected incorrect dates will be listed with a BLANK date.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+11),"Help", "Please, tick the checkbox to process all files found in the input directory and all its subdirectories.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+12),"Help", GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide several ways of handling files in a directory:\n\nLIST, RENAME, COPY, MOVE, DELETE, COUNT files in a directory (and subdirectories), by a variety of filename filters.\n\nMore specialized file managment options based on the filename are available as separate tools (e.g., Filename checker, File matcher, File classifier)\n\nAll these tools deal with the name of a file, rather than its content. A number of other tools deal with file content (e.g., File merger, File splitter, File type converter, File utf-8 encoding checker)."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
+GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()
