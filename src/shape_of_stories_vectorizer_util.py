@@ -49,7 +49,7 @@ class Vectorizer:
                                    + "The file will be dropped from the analyses.")
                     filesToDelete.append(narrativeFile)
                     continue
-                #==============A================= added additional checks for merged file
+                #============== Angel ================= added additional checks for merged file
                 elif 'Document' in df.columns or 'Document Name' in df.columns: # a merged file
                     print(len(self.narrative_file_paths))
                     if 'Document Name' in df.columns:  # sometimes "Document" sometimes "Document Name"
@@ -80,7 +80,7 @@ class Vectorizer:
                     re_merged=pd.concat(splitted, ignore_index=True)
                     addedFiles.append((str(IO_csv_util.undressFilenameForCSVHyperlink(narrativeFile))[:-4]+".csv",re_merged))#save to regenerate later
                     filesToDelete.append(narrativeFile) #delete original merged file
-                #==============end of A===============
+                #==============end of Angel ===============
                 else: #not a merged file
                     if len(readerList) == 1:
                     # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Sentiment Analysis Score Error',
@@ -140,7 +140,7 @@ class Vectorizer:
         sentimentVectors = []
         file_list = []
 
-        #===========================A====================================================
+        #=========================== Angel ====================================================
         scoresFile_list = {}
         #Create a list of input dataframes to standardize inputDir and inputFile
         with codecs.open(self.narrative_file_paths[0], mode='r', encoding='utf-8', errors='ignore') as nF1:
@@ -166,7 +166,7 @@ class Vectorizer:
                 if len(df)<self.sentiment_vector_size:
                     continue
                 df.reset_index(inplace=True)
-                # =================================End of A===============================================
+                # ================================= End of Angel ===============================================
                 sentimentVector = []
                 addIndex = int(len(df) / self.sentiment_vector_size) #number of rows per bucket
                 files_lengths.append(len(df))

@@ -7,6 +7,7 @@ import sys
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
+from subprocess import call
 
 import config_util
 import IO_files_util
@@ -14,13 +15,14 @@ import IO_files_util
 # HELP messages
 text_msg=''
 
-introduction_main = "Welcome to this Python 3 script.\nFor brief general information about this script, click on the \"Read Me\" button.\nFor brief information on specific lines click on any of the \"?HELP\" buttons.\nFor longer information on various aspects of the script, click on the \"Open TIPS files\" button and select the pdf help file to view.\nAfter selecting an option, click on \"RUN\" (the RUN button is disabled until all I/O information has been entered).   To exit the script, click on \"QUIT\"."
+introduction_main = "Welcome to this Python 3 script.\nFor brief general information about this script, click on the \"Read Me\" button.\nFor brief information on specific lines click on any of the \"?HELP\" buttons.\nFor longer information on various aspects of the script, click on the \"Open TIPS files\" button and select the pdf help file to view.\nAfter selecting an option, click on \"RUN\" (the RUN button is disabled until all I/O information has been entered).   Click on \"CLOSE\" to exit."
 # msg_fileButtonDisabled="\n\nIf the Select INPUT file button is greyed out because you previously selected an INPUT directory but you now wish to use a file as input, click on the Select INPUT directory button and press ESCape to make all INPUT options available."
 # msg_dirButtonDisabled="\n\nIf the Select INPUT directory button is greyed out because you previously selected an INPUT file but you now wish to use a directory as input, click on the Select INPUT file button and press ESCape to make all INPUT options available."
 msg_openExplorer="\n\nA small button appears next to the select directory button. Click on the button to open Windows Explorer on the directory displayed, if one is displayed, or on the directory where the NLP script is saved." 
 msg_openFile="\n\nA small button appears next to the select file button. Click on the button to open the file, if one has been selected, as a check that you selected the correct file." # + msg_fileButtonDisabled
 msg_Esc="\n\nPress the ESCape button to clear any previously selected options and start fresh."
 
+msg_IO_setup="Please, using the dropdown menu, select the type of INPUT/OUTPUT configuration you wish to use in this GUI.\n   INPUT file or directory\n   OUTPUT directory where files produced by the NLP tools will be saved (csv, txt, html, kml, jpg).\n\nThe default configuration is the I/O option used for all GUIs as default;\n   the GUI-specific configuration is an I/O option also typically used in this GUI;\n   the New configuration allows you to setup a new GUI-specific I/O configuration.\n\nYou can click on the display area and scroll to visualize the current configuration. You can also click on the 'Setup INPUT/OUTPUT configuration' button to get a better view of the available options."
 msg_CoreNLP="Please, select the directory where you downloaded the Stanford CoreNLP software.\n\nYou can download Stanford CoreNLP from https://stanfordnlp.github.io/CoreNLP/download.html\n\nYou can place the Stanford CoreNLP folder anywhere on your machine. But... on some machines CoreNLP will not run unless the folder is inside the NLP folder.\n\nIf you suspect that CoreNLP may have given faulty results for some sentences, you can test those sentences directly on the Stanford CoreNLP website at https://corenlp.run\n\nYOU MUST BE CONNECTED TO THE INTERNET TO RUN CoreNLP."
 msg_WordNet="Please, select the directory where you downloaded the WordNet lexicon database.\n\nYou can download WordNet from https://wordnet.princeton.edu/download/current-version."
 msg_Mallet="Please, select the directory where you downloaded the Mallet topic modeling software."
@@ -31,11 +33,11 @@ msg_anyFile="Please, select the file to be analyzed (of any type: pdf, docx, txt
 msg_txtFile="Please, select the TXT file to be analyzed." + msg_openFile # + msg_fileButtonDisabled
 msg_csvFile="Please, select the csv file to be analyzed." + msg_openFile # + msg_fileButtonDisabled
 msg_csv_txtFile="Please, select either a CSV file or a TXT file to be analyzed." + msg_openFile # + msg_fileButtonDisabled
-msg_outputDirectory="Please, select the directory where the script will save all output files of any type (txt, csv, png, html)."  + msg_openExplorer
+msg_txt_htmlFile="Please, select either a TXT file or an html file to be analyzed." + msg_openFile # + msg_fileButtonDisabled
+msg_outputDirectory="Please, select the directory where the script will save all OUTPUT files of any type (txt, csv, png, html)."  + msg_openExplorer
 msg_outputFilename="Please, enter the OUTPUT file name. THE SELECT OUTPUT BUTTON IS DISABLED UNTIL A SEARCHED TOKEN HAS BEEN ENTERED.\n\nThe search result will be saved as a separated csv file with the file path and name entered. \n\nThe same information will be displayed in the command line."
 msg_openOutputFiles="Please, tick the checkbox to open automatically (or not open) output csv file(s), including any Excel charts.\n\nIn the NLP Suite, all CSV FILES that contain information on web links or files with their path will encode this information as hyperlinks. If you click on the hyperlink, it will automatically open the file or take you to a website. IF YOU ARE A MAC USER, YOU MUST OPEN ALL CSV FILES WITH EXCEL, RATHER THAN NUMBERS, OR THE HYPERLINK WILL BE BARRED AND DISPLAYED AS A RED TRIANGLE.\n\nEXCEL HOVER-OVER EFFECT.  Most Excel charts have been programmed for hover-over effects, whereby when you pass the cursor over a point on the chart (hover over) some releveant information will be displayed (e.g., the sentence at that particular point).\n\nEXCEL EMPTY CHART AREA.  If the hover-over chart area is empty, with no chart displayed, enlarge the chart area by dragging any of its corners or by moving the zoom slide bar on the bottomg right-hand corner of Excel.\n\nEXCEL ENABLE MACROS.  The hover-over effect is achieved using VBA macros (Virtual Basic for Applications, Windows programming language). If Excel warns you that you need to enable macros, while at the same time warning you that macros may contain viruses, do the following: open an Excel workbook; click on File; slide cursor all the way down on the left-hand banner to Options; click on Trust Center; then on Trust Center Settings; then Macro Settings; Click on Enable all macros, then OK. The message will never appear again."
 msg_multipleDocsCoNLL="\n\nFOR CONLL FILES THAT INCLUDE MULTIPLE DOCUMENTS, THE EXCEL CHARTS PROVIDE OVERALL FREQUENCIES ACROSS ALL DOCUMENTS. FOR SPECIFIC DOCUMENT ANALYSES, PLEASE USE THE GENERAL EXCEL OUTPUT FILE."
-
 
 # location of this src python file
 #one folder UP, the NLP folder
@@ -59,6 +61,7 @@ Google_heatmaps_libPath = os.path.join(NLPPath,'lib'+os.sep+'sampleHeatmap')
 Excel_charts_libPath = os.path.join(NLPPath,'lib'+os.sep+'sampleCharts')
 sentiment_libPath = os.path.join(NLPPath,'lib'+os.sep+'sentimentLib')
 concreteness_libPath = os.path.join(NLPPath,'lib'+os.sep+'concretenessLib')
+OpenIE_libPath = os.path.join(NLPPath,'lib'+os.sep+'OpenIE')
 wordLists_libPath = os.path.join(NLPPath,'lib'+os.sep+'wordLists')
 namesGender_libPath = os.path.join(NLPPath, 'lib'+os.sep+'namesGender')
 GISLocations_libPath = os.path.join(NLPPath,'lib'+os.sep+'GIS')
@@ -90,7 +93,7 @@ if sys.platform == 'darwin': #Mac OS
     open_TIPS_x_coordinate = 370
     open_reminders_x_coordinate = 570
     run_button_x_coordinate = 850
-    quit_button_x_coordinate = 980
+    close_button_x_coordinate = 980
 
     # special internal GUI specific values
     SVO_2nd_column = 570
@@ -108,7 +111,7 @@ else: #windows and anything else
     open_TIPS_x_coordinate = 350
     open_reminders_x_coordinate = 550
     run_button_x_coordinate = 840
-    quit_button_x_coordinate = 960
+    close_button_x_coordinate = 960
 
     # special internal GUI specific values
     SVO_2nd_column = 520
@@ -163,8 +166,8 @@ Several Emory undergraduate students have contributed over the years to the deve
         Ishan Saran\n\
         Gabriel Wang\n\
         Yi Wang\n\
+        Catherine Xiao\n\
         Angel Xie\n\
-        Catherine Xie\n\
         Doris Zhou\n\n\
 JOIN THE TEAM: If you want to contribute to the continued development of the NLP Suite, please write to Roberto Franzosi at rfranzo@emory.edu or join directly via GitHub at https://github.com/NLP-Suite/NLP-Suite\n\n\
 LICENSE: The NLP Suite is freely distributed under a GNU License Agreement.\n\n\
@@ -182,9 +185,11 @@ Franzosi, Roberto, Wenqin Dong, Alberto Purpura. 2020. "The Shape of Stories." U
 
 #configFilename with no path;
 #configArray contains all the IO files and paths
-#configArray is computed by setup_IO_configArray in config_util 
-def exit_window(window,configFilename, configArray):
-    if configFilename!="NLP-config.txt":
+#configArray is computed by setup_IO_configArray in config_util
+# config_input_output_options is set to [0, 0, 0, 0, 0, 0] for GUIs that are placeholders for more specialized GUIs
+#   in these cases (e.g., narrative_analysis_main, there are no I/O options to save
+def exit_window(window,configFilename, config_input_output_options, configArray):
+    if configFilename!="NLP-config.txt" and config_input_output_options != [0, 0, 0, 0, 0, 0]:
         # check whether the current IO configuration
         #	is different from the saved configuration
         #	if changed you want to ask the question
@@ -204,13 +209,14 @@ def exit_window(window,configFilename, configArray):
 def check_missingIO(window,missingIO,config_filename,silent=False):
     Run_Button_Off=False
     #do not check IO requirements for NLP.py; too many IO options available depending pon the sript run
-    if config_filename=="NLP-config.txt" or config_filename=="social-science-research-config.txt":
+    # if config_filename=="NLP-config.txt" or config_filename=="social-science-research-config.txt":
+    if config_filename == "social-science-research-config.txt":
         # RUN button always active since several options are available and IO gets checked in the respective scripts
         Run_Button_Off=False
         missingIO=''
     if len(missingIO)>0:
         if not silent:
-            mb.showwarning(title='Warning', message='The required information in the input/output fields listed below is missing:\n\n' + missingIO + '\n\nThe RUN button is disabled until the required information for all Input/Output fields is entered.\n\nPlease, enter the required I/O information.')
+            mb.showwarning(title='Warning', message='The following required INPUT/OUTPUT information is missing in config file ' + config_filename + ':\n\n' + missingIO + '\n\nThe RUN button is disabled until the required information for all Input/Output fields is entered.\n\nPlease, click on the "Setup INPUT/OUTPUT configuration" button and enter the required I/O information.')
         Run_Button_Off=True
     if Run_Button_Off==True:
         run_button_state="disabled"
@@ -218,57 +224,6 @@ def check_missingIO(window,missingIO,config_filename,silent=False):
         run_button_state="normal"
     window.focus_force()
     return run_button_state
-
-# set input/output file name based on IO_util selectFile
-#changeVar is the name of the IO FIELD (.get()) that needs to be displayed (e.g., filename) 
-#changeVar1 is the name of the IO BUTTON that needs to be disabled in the case of mutuallyexclusive options
-# def selectFile_set_options(window, config_input_output_options,IsInputFile,checkCoNLL,changeVar,changeVar1,title,fileType,extension,input_main_dir_path):
-#     currentFilename=changeVar.get()
-#     if len(changeVar.get())>0:
-#         initialFolder=os.path.dirname(changeVar.get())
-#     else:
-#         initialFolder=''
-#     #get the file
-#     if IsInputFile==True:
-#         filename= IO_files_util.selectFile(window, IsInputFile, checkCoNLL, changeVar, changeVar1, title, fileType, extension, None, initialFolder)
-#     else:
-#         filename= IO_files_util.selectFile(window, IsInputFile, checkCoNLL, changeVar, changeVar1, title, fileType, extension, outputFilename, None, initialFolder)
-#     if len(filename)==0:
-#         changeVar.set(currentFilename)
-#     else:
-#         input_main_dir_path.set('')
-
-# #changeVar is the name of the IO FIELD (.get()) that needs to be displayed (e.g., softwareDir)
-# #changeVar1 is the name of the IO BUTTON that needs to be disabled in the case of mutuallyexclusive options
-# #title is the name that will appear when selecting the directory, e.g., "Select Stanford CoreNLP directory"
-# def selectDirectory_set_options(window, changeVar,changeVar1,title,config_input_output_options,inputFilename,inputMainDir=False):
-#     currentDirectory=changeVar.get()
-#     if len(changeVar.get())>0:
-#         initialFolder=os.path.dirname(changeVar.get())
-#     else:
-#         initialFolder=''
-#     #get the directory
-#     directoryName=IO_files_util.selectDirectory(window, changeVar, changeVar1, title, initialFolder)
-#     # try:  # if the inputFilename button is not present this would throw an error
-#     # 	changeVar1.config(state="normal")
-#     # except:
-#     # 	pass
-#     if directoryName=='':
-#         changeVar.set(currentDirectory)
-#         print(changeVar.get())
-#     else:
-#         if inputMainDir==True:
-#             try:
-#                 changeVar1.set('') # inputFilename
-#             except:
-#                 pass
-#             print('changeVar1',changeVar1.get())
-#             try:
-#                 changeVar.set('testa di cazzo') # input_main_dir_path
-#             except:
-#                 pass
-#             print('changeVar',changeVar.get())
-#     return directoryName
 
 from tkinter import Toplevel
 def Dialog2Display(title: str):

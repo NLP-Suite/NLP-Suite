@@ -861,11 +861,11 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         for i in range(3):
             ws1.cell(row=i+1, column = 26*27).value = names[i]
 
-        # config_filename = 'Excel-config.txt' # use the Excel config filename
         reminders_util.checkReminder('*',
-                                     ['Excel Charts'],
-                                     'The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).\n\nFirst, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).\n\nSecond, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.',
-                                     True)
+                                       reminders_util.title_options_Excel,
+                                       reminders_util.message_Excel,
+                                       True)
+
     # NO hover-over effects; the Excel filename extension MUST be xlsx
     else:
         wb = Workbook()

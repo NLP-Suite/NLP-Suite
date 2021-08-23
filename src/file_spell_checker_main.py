@@ -127,8 +127,25 @@ run_similarity_command = lambda: run(
 GUI_util.run_button.configure(command=run_similarity_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief=True
+GUI_width=1100
+GUI_height=560 # height of GUI with full I/O display
 
-GUI_size = '1100x560'
+if IO_setup_display_brief:
+    GUI_height = GUI_height - 80
+    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+    increment=0 # used in the display of HELP messages
+else: # full display
+    # GUI CHANGES add following lines to every special GUI
+    # +3 is the number of lines starting at 1 of IO widgets
+    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 2  # IO FULL display
+    increment=2
+
+GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
 GUI_label = 'Graphical User Interface (GUI) for Spelling Checker and Word Similarity (Levenshtein\'s Word/Edit Distance)'
 config_filename = 'spell-checker-config.txt'
 # The 6 values of config_option refer to:
@@ -142,16 +159,13 @@ config_option = [0, 2, 1, 0, 0, 1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-# GUI CHANGES add following lines to every special GUI
-# +2 is the number of lines starting at 1 of IO widgets
-y_multiplier_integer = GUI_util.y_multiplier_integer + 2
 window = GUI_util.window
 config_input_output_options = GUI_util.config_input_output_options
 config_filename = GUI_util.config_filename
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_options, config_filename)
+GUI_util.GUI_top(config_input_output_options, config_filename,IO_setup_display_brief)
 
 NER_list = []
 
@@ -328,27 +342,31 @@ TIPS_options = 'Word similarity (Levenshtein distance)', 'NER (Named Entity Reco
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
-                                  GUI_IO_util.msg_txtFile)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
-                                  GUI_IO_util.msg_corpusData)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
-                                  GUI_IO_util.msg_outputDirectory)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 3, "Help",
-                                  'Please, tick the checkbox if you wish to use Levenshtein\' edit distance algorithm..' + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 4, "Help",
-                                  'Please, tick the checkbox if you wish to find the edit distance of any token (word) in your input document(s), regardless of their NER value.' + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 5, "Help",
-                                  'Please, tick the checkbox if you wish to find the edit distance of tokens (words) in your input document(s) by their selected NER values.' + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 6, "Help",
-                                  'Please, using the dropdown menu, select the NER (Named Entity Recognition) type you wish to use for computing spelling differences (Levenshtein\'s edit distance).\n\nFor all NER values, select *; for multiple values, but not *, enter the NER values, comma separated, in the next widget.' + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 7, "Help",
-                                  'Please, enter the value of word length (in number of characters) to be used to gage Levenshtein\'s edit distance or word similarity (default value 80). You can enter a number on a scale from 0 to 100, with 100 being completely the same.\n\nIf a word is shorter than the selected word lenght (in number of characters):\n   1 or more character difference will be considered as a possible typo;\n\nIf a word is equal or longer than the selected word lenght (in number of characters):\n   2 or more characters difference will be considered as a possible typo.\n\nYou have the option of checking for selected NER values WITHIN each subdirectory only or ACROSS all subdirectories (or an entire directory, for that matter); in this second option, the algorithm will take much longer to process.\n\nThe output list fully processes words with a frequency greater than 1.' + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 8, "Help",
-                                  'Please, tick the checkbox if you wish to run a spelling checker.\n\nLanguage detection is carried out via LANGDETECT, LANGID, SPACY. Languages are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages (check here for the list https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).' + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 9, "Help",
-                                  GUI_IO_util.msg_openOutputFiles)
+    if not IO_setup_display_brief:
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_txtFile)
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
+                                      GUI_IO_util.msg_corpusData)
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
+                                      GUI_IO_util.msg_outputDirectory)
+    else:
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_IO_setup)
 
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+1), "Help",
+                                  'Please, tick the checkbox if you wish to use Levenshtein\' edit distance algorithm..' + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
+                                  'Please, tick the checkbox if you wish to find the edit distance of any token (word) in your input document(s), regardless of their NER value.' + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
+                                  'Please, tick the checkbox if you wish to find the edit distance of tokens (words) in your input document(s) by their selected NER values.' + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
+                                  'Please, using the dropdown menu, select the NER (Named Entity Recognition) type you wish to use for computing spelling differences (Levenshtein\'s edit distance).\n\nFor all NER values, select *; for multiple values, but not *, enter the NER values, comma separated, in the next widget.' + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
+                                  'Please, enter the value of word length (in number of characters) to be used to gage Levenshtein\'s edit distance or word similarity (default value 80). You can enter a number on a scale from 0 to 100, with 100 being completely the same.\n\nIf a word is shorter than the selected word lenght (in number of characters):\n   1 or more character difference will be considered as a possible typo;\n\nIf a word is equal or longer than the selected word lenght (in number of characters):\n   2 or more characters difference will be considered as a possible typo.\n\nYou have the option of checking for selected NER values WITHIN each subdirectory only or ACROSS all subdirectories (or an entire directory, for that matter); in this second option, the algorithm will take much longer to process.\n\nThe output list fully processes words with a frequency greater than 1.' + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
+                                  'Please, tick the checkbox if you wish to run a spelling checker.\n\nLanguage detection is carried out via LANGDETECT, LANGID, SPACY. Languages are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages (check here for the list https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).' + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
+                                  GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
              GUI_IO_util.get_y_step())
@@ -357,6 +375,6 @@ help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get
 readMe_message = "This Python 3 script provides a way of checking for word similarieties (or dissimilarities) using the Levenshtein's distance (also popularly called the edit distance). The algorithm can also be used to check word spelling.\n\nIn INPUT the scripts expect a directory where the software Stanford CoreNLP has been downloaded and a main drectory where txt files to be analyzed are stored.\n\nIn OUTPUT, the scripts will save the csv files and Excel charts written by the various scripts. The csv output list contains words with a frequency greater than 1."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options)
+GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()

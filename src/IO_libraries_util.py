@@ -210,12 +210,14 @@ def get_existing_software_config(package):
     return existing_csv
 
 
-def save_software_config(new_csv):
+def save_software_config(new_csv,package):
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
     with open(software_config, 'w+', newline='') as csv_file:
         writer = csv.writer(csv_file)
         writer.writerows(new_csv)
 
+    mb.showwarning(title=package + ' saved',
+                               message="The installation location of " + package + " was successfully saved to " + software_config)
 
 def get_external_software_dir(calling_script, package, warning=True):
     # get a list of software in software-config.csv
@@ -246,8 +248,8 @@ def get_external_software_dir(calling_script, package, warning=True):
                 errorFound=True
                 silent = True
             else:
-                # if you are checking for a specific package and that is found return the appropriate directory
-                if (package.lower()!='') and (package.lower() in software_name.lower()):
+                # if you are checking for a specific package and that is found return the appropriate directory unless called from NLP_menu_main
+                if (package.lower()!='') and (package.lower() in software_name.lower()) and (calling_script!='NLP_menu'):
                     return software_dir
 
         if errorFound:
@@ -259,6 +261,13 @@ def get_external_software_dir(calling_script, package, warning=True):
             if (package.lower()!='') and (package.lower() in software_name.lower()):
                 break
             errorFound = False
+
+        if (not errorFound) and (package!='') and (calling_script=='NLP_menu'):
+            mb.showwarning(title=package,
+                           message='The external software ' + package + ' is up-to-date and correctly installed at ' + software_dir)
+            # if you are checking for a specific package and that is found return the appropriate directory
+            if (package!=''):
+                return software_dir
 
     # check for missing software
     if len(missing_software) > 0:
@@ -308,7 +317,8 @@ def get_external_software_dir(calling_script, package, warning=True):
                     if package.lower() in software_name.lower():
                         # exit loop: for (index, row) in enumerate(existing_csv)
                         break
-        save_software_config(existing_csv)
+        save_software_config(existing_csv,package)
+
     if software_dir == '':
         software_dir = None
     return software_dir

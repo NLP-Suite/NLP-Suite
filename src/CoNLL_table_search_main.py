@@ -123,9 +123,6 @@ config_option = [0, 1, 0, 0, 0, 1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-# GUI CHANGES add following lines to every special GUI
-# +1 is the number of lines starting at 1 of IO widgets
-y_multiplier_integer = GUI_util.y_multiplier_integer + 1
 window = GUI_util.window
 config_input_output_options = GUI_util.config_input_output_options
 config_filename = GUI_util.config_filename

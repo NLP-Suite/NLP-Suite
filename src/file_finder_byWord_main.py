@@ -61,7 +61,25 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1100x470'
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief=True
+GUI_width=1100
+GUI_height=470 # height of GUI with full I/O display
+
+if IO_setup_display_brief:
+    GUI_height = GUI_height - 80
+    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+    increment=0 # used in the display of HELP messages
+else: # full display
+    # GUI CHANGES add following lines to every special GUI
+    # +3 is the number of lines starting at 1 of IO widgets
+    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 2  # IO FULL display
+    increment=2
+
+GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
 GUI_label='Graphical User Interface (GUI) for File Search by Single Word or Collocations'
 config_filename='search-byWord-config.txt'
 # The 6 values of config_option refer to:
@@ -81,16 +99,13 @@ config_option=[0,6,1,0,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-# GUI CHANGES add following lines to every special GUI
-# +2 is the number of lines starting at 1 of IO widgets
-y_multiplier_integer=GUI_util.y_multiplier_integer+2
 window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
 input_main_dir_path =GUI_util.input_main_dir_path
 output_dir_path =GUI_util.output_dir_path
 
-GUI_util.GUI_top(config_input_output_options,config_filename)
+GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
 
 search_options_menu_var=tk.StringVar()
 search_by_dictionary_var=tk.IntVar()
@@ -186,21 +201,26 @@ TIPS_options='No TIPS available'
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     clearOptions="\n\nTo clear a previously selected option for any of the tools, click on the appropriate dropdown menu and press ESCape."
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",GUI_IO_util.msg_anyFile)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_anyData)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help", "Please, use the dropdown menu to set up the search criteria:\n    1. lemmatize words/collocations searched\n   2. search occurrences within SENTENCES (default, within DOCUMENTS).\n\nWhen lemmatizing, the scripts would search 'coming out' in all its lemmatized forms: 'coming out', 'come out', 'comes out', 'came out'.\n\nWhen searching 'Within sentence' combinations of words or collocations will be searched and displayed within SENTENCE otherwise within DOCUMENT.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help", "Please, tick the checkbox to search input txt file(s) using the values contained in a csv dictionary file.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help", "Please, click to select a csv file containing a list of values to be used as a dictionary for searching the file(s).\n\nEntries in the file, one per line, can be single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nSeveral words/collocations can be entered, comma separated (e.g, coming out, gay, boyfriend).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","Please, tick the checkbox to activate the search entry widget.\n\nAfter the data entry widget becomes available, please enter words/collocations to be searched. Several words/collocations can be entered, comma separated (e.g, coming out, gay, boyfriend).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help",GUI_IO_util.msg_openOutputFiles)
+    if not IO_setup_display_brief:
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",GUI_IO_util.msg_anyFile)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_anyData)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory)
+    else:
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_IO_setup)
+
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 1),"Help", "Please, use the dropdown menu to set up the search criteria:\n    1. lemmatize words/collocations searched\n   2. search occurrences within SENTENCES (default, within DOCUMENTS).\n\nWhen lemmatizing, the scripts would search 'coming out' in all its lemmatized forms: 'coming out', 'come out', 'comes out', 'came out'.\n\nWhen searching 'Within sentence' combinations of words or collocations will be searched and displayed within SENTENCE otherwise within DOCUMENT.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 2),"Help", "Please, tick the checkbox to search input txt file(s) using the values contained in a csv dictionary file.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 3),"Help", "Please, click to select a csv file containing a list of values to be used as a dictionary for searching the file(s).\n\nEntries in the file, one per line, can be single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 4),"Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nSeveral words/collocations can be entered, comma separated (e.g, coming out, gay, boyfriend).")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 5),"Help","Please, tick the checkbox to activate the search entry widget.\n\nAfter the data entry widget becomes available, please enter words/collocations to be searched. Several words/collocations can be entered, comma separated (e.g, coming out, gay, boyfriend).")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 6),"Help",GUI_IO_util.msg_openOutputFiles)
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
 readMe_message="These Python 3 scripts search txt files by single words or collocations (e.g., a set of multiple words, such as 'coming out' or 'standing in line'). Search words can be entered in a csv dictionary or manually in the GUI enter widget.\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in the text."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
+GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options, IO_setup_display_brief)
 
 # a reminder is in file_manager_merger_splitter_main
 #	reminders_util.checkReminder("Split output files")

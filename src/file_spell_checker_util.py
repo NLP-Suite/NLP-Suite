@@ -786,8 +786,8 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
 
     config_filename = 'file-spell-checker-config.txt'
     reminders_util.checkReminder(config_filename,
-                                 ['Language detection'],
-                                 'Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.\n\nPlease, arm yourself with patience, depennding upon the number and size of documents processed.',
+                                 reminders_util.title_options_language_detection,
+                                 reminders_util.message_language_detection,
                                  True)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',

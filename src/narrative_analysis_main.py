@@ -136,7 +136,11 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1200x590'
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief=False
+
+GUI_size='1200x550'
 GUI_label='Graphical User Interface (GUI) for Narrative Analysis'
 config_filename='narrative-analysis-config.txt'
 # The 6 values of config_option refer to:
@@ -159,14 +163,15 @@ GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
 # GUI CHANGES add following lines to every special GUI
 # +2 is the number of lines starting at 1 of IO widgets
-y_multiplier_integer=GUI_util.y_multiplier_integer+0 #2
+# y_multiplier_integer=GUI_util.y_multiplier_integer+0 #2
+y_multiplier_integer = 0
 window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 input_main_dir_path=GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_options,config_filename)
+GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
 
 characters_NER_var= tk.IntVar()
 characters_WordNet_var= tk.IntVar()
@@ -303,20 +308,18 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     # GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",GUI_IO_util.msg_CoNLL)
     # GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_corpusData)
     # GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2, "Help","Please, tick any of the checkboxes to extract the story characters using different NLP tools.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step*4, "Help","Please, tick the checkbox to analyze the TEMPORAL (story/plot) dimensions of stories, extracting time via Stanford CoreNLP NER normalized time.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step*5, "Help","Please, tick any of the checkboxes to analyze the SPATIAL dimensions of stories via the GIS pipeline, WordNet, and/or the knowledge bases DBpedia/YAGO.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","Please, tick the checkbox to extract characters by setting.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help","Please, tick the checkboxes to extract action via WordNet or the knowledge bases DBpedia/YAGO.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*10,"Help","Please, tick the checkboxes:\n\n  1. to open the specialized GUI to extract SVO triplets (Subject-Verb-Object);\n  2. to open the specialized GUI to analyze the shape of stories;\n  3. to open the specialized GUI to analyze narrative elements.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step, "Help","Please, tick any of the checkboxes to extract the story characters using different NLP tools.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step*3, "Help","Please, tick the checkbox to analyze the TEMPORAL (story/plot) dimensions of stories, extracting time via Stanford CoreNLP NER normalized time.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step*4, "Help","Please, tick any of the checkboxes to analyze the SPATIAL dimensions of stories via the GIS pipeline, WordNet, and/or the knowledge bases DBpedia/YAGO.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help","Please, tick the checkbox to extract characters by setting.\n\nThe option is not available. Sorry!")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help","Please, tick the checkboxes to extract action via WordNet or the knowledge bases DBpedia/YAGO.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help","Please, tick the checkboxes:\n\n  1. to open the specialized GUI to extract SVO triplets (Subject-Verb-Object) and time (When) and location (Where);\n  2. to open the specialized GUI to analyze the shape of stories;\n  3. to open the specialized GUI to analyze narrative elements.")
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
 readMe_message="The GUI brings together various Python 3 scripts to buil a pipeline for the analysis of stories, automatically extracting the Who, What, Whom, When, and Where from texts and visualiziing the results.\n\nEach tool performs all required computations then saves results as csv files and visualizes them in various ways (word clouds, network graphs, geographic maps, Excel charts)."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
-
-
+GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()

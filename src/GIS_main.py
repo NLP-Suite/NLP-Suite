@@ -5,7 +5,7 @@ import GUI_util
 import IO_libraries_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"GIS",['os','tkinter','pandas','subprocess'])==False:
-	sys.exit(0)
+    sys.exit(0)
 
 import os
 import tkinter.messagebox as mb
@@ -34,287 +34,309 @@ import Stanford_CoreNLP_annotator_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename,
-		inputDir,
-		outputDir,
-		openOutputFiles,
-		createExcelCharts,
-		encoding_var,
-		extract_date_from_text_var,
-		extract_date_from_filename_var,
-		date_format,
-		date_separator_var,
-		date_position_var,
-		memory_var,
-		NER_extractor_var,
-		location_menu_var,
-		geocode_locations_var,
-		GIS_package_var,
-		GIS_package2_var,
-		Google_API):
+        inputDir,
+        outputDir,
+        openOutputFiles,
+        createExcelCharts,
+        encoding_var,
+        extract_date_from_text_var,
+        extract_date_from_filename_var,
+        date_format,
+        date_separator_var,
+        date_position_var,
+        memory_var,
+        NER_extractor_var,
+        location_menu_var,
+        geocode_locations_var,
+        GIS_package_var,
+        GIS_package2_var,
+        Google_API):
 
-	filesToOpen = []
+    filesToOpen = []
 
-	inputIsCoNLL=False
-	inputIsGeocoded=False
-	geocoder='Nominatim'
-	split_locations = ''
-	locationColumnName = 'Location'
-	datePresent = False
+    inputIsCoNLL=False
+    inputIsGeocoded=False
+    geocoder='Nominatim'
+    split_locations = ''
+    locationColumnName = 'Location'
+    datePresent = False
 
-	# TODO code should go to pipeline?
+    # TODO code should go to pipeline?
 
-	if inputFilename!='':
-		if inputFilename.endswith('.txt'):
-			#RF NER_extractor_var.set(1)
-			NER_extractor_var=True
+    if inputFilename!='':
+        if inputFilename.endswith('.txt'):
+            #RF NER_extractor_var.set(1)
+            NER_extractor_var=True
 
-		location_menu_var=''
-		if inputFilename.endswith('.csv'):
-			# If Column A is 'Word', rename to 'Location'
-			temp = pd.read_csv(inputFilename)
-			if temp.columns[0] == 'Word':
-				temp = temp.rename(columns={"Word": "Location"})
-			temp.to_csv(inputFilename, index=False)
+        location_menu_var=''
+        if inputFilename.endswith('.csv'):
+            # If Column A is 'Word', rename to 'Location'
+            temp = pd.read_csv(inputFilename)
+            if temp.columns[0] == 'Word':
+                temp = temp.rename(columns={"Word": "Location"})
+            temp.to_csv(inputFilename, index=False)
 
-			inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable= GIS_file_check_util.CoNLL_checker(inputFilename)
+            inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable= GIS_file_check_util.CoNLL_checker(inputFilename)
 
-			# TODO check that lat or long are not there already; if they are then run Google Earth Pro
-			#RF NER_extractor_var.set(0)
-			NER_extractor_var=False
-			if 'Latitude' in headers and 'Longitude' in headers:
-				geocode_locations_var=0
-				geocode_locations_var=False
-				location_menu_var='Latitude'
-				# GIS_package_var.set("Google Earth Pro")
-				# GIS_package_var="Google Earth Pro"
-			elif 'postag' and 'deprel' and 'ner' in str(headers).lower():
-				location_menu_var='NER'
-			else:
-				geocode_locations_var=1
-				geocode_locations_var=True
-	else:
-		#RF NER_extractor_var.set(1)
-		NER_extractor_var = True
+            # TODO check that lat or long are not there already; if they are then run Google Earth Pro
+            #RF NER_extractor_var.set(0)
+            NER_extractor_var=False
+            if 'Latitude' in headers and 'Longitude' in headers:
+                geocode_locations_var=0
+                geocode_locations_var=False
+                location_menu_var='Latitude'
+                # GIS_package_var.set("Google Earth Pro")
+                # GIS_package_var="Google Earth Pro"
+            elif 'postag' and 'deprel' and 'ner' in str(headers).lower():
+                location_menu_var='NER'
+            else:
+                geocode_locations_var=1
+                geocode_locations_var=True
+    else:
+        #RF NER_extractor_var.set(1)
+        NER_extractor_var = True
 
-	if NER_extractor_var==False and geocode_locations_var==False and GIS_package_var=='':
-		mb.showwarning("Warning",
-					   "No options have been selected.\n\nPlease, select an option to run and try again.")
-		return
+    if NER_extractor_var==False and geocode_locations_var==False and GIS_package_var=='':
+        mb.showwarning("Warning",
+                       "No options have been selected.\n\nPlease, select an option to run and try again.")
+        return
 
 
 # START PROCESSING ---------------------------------------------------------------------------------------------------
 
-	# save original filename/Dir since it will be changed by the pipeline but the original filename is used by the kml script
-	inputFilenameSv = inputFilename
-	inputDirSv = inputDir
+    # save original filename/Dir since it will be changed by the pipeline but the original filename is used by the kml script
+    inputFilenameSv = inputFilename
+    inputDirSv = inputDir
 
-	# checking for txt: NER=='LOCATION', provide a csv output with column: [Locations]
-	if NER_extractor_var==True:
+    # checking for txt: NER=='LOCATION', provide a csv output with column: [Locations]
+    if NER_extractor_var==True:
 
-		NERs = ['COUNTRY', 'STATE_OR_PROVINCE', 'CITY']
+        NERs = ['COUNTRY', 'STATE_OR_PROVINCE', 'CITY']
 
-		locations = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
-																outputDir, openOutputFiles, createExcelCharts, 'NER', False,
-																memory_var,
-																NERs=NERs,
-																extract_date_from_text_var=extract_date_from_text_var,
-																extract_date_from_filename_var=extract_date_from_filename_var,
-																date_format=date_format,
-																date_separator_var=date_separator_var,
-																date_position_var=date_position_var)
+        locations = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+                                                                outputDir, openOutputFiles, createExcelCharts, 'NER', False,
+                                                                memory_var,
+                                                                NERs=NERs,
+                                                                extract_date_from_text_var=extract_date_from_text_var,
+                                                                extract_date_from_filename_var=extract_date_from_filename_var,
+                                                                date_format=date_format,
+                                                                date_separator_var=date_separator_var,
+                                                                date_position_var=date_position_var)
 
-		if len(locations)==0:
-			mb.showwarning("No locations","There are no NER locations to be geocoded and mapped in the selected input txt file.\n\nPlease, select a different txt file and try again.")
-			return
-		if extract_date_from_text_var or extract_date_from_filename_var:
-			datePresent = True
-			df = pd.read_csv(locations[0]).rename(columns={"Word": "Location"})
-			# 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
-			# Fill in empty dates with most recent valid date
-			saved_date = ""
-			for index, row in df.iterrows():
-				if df['Date'][index] != "":
-					# We found a valid date, save it
-					saved_date = df['Date'][index]
-				else:
-					df['Date'][index] = saved_date
-		else:
-			df = pd.read_csv(locations[0]).rename(columns={"Word": "Location"})
-			# 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
+        if len(locations)==0:
+            mb.showwarning("No locations","There are no NER locations to be geocoded and mapped in the selected input txt file.\n\nPlease, select a different txt file and try again.")
+            return
+        if extract_date_from_text_var or extract_date_from_filename_var:
+            datePresent = True
+            df = pd.read_csv(locations[0]).rename(columns={"Word": "Location"})
+            # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
+            # Fill in empty dates with most recent valid date
+            saved_date = ""
+            for index, row in df.iterrows():
+                if df['Date'][index] != "":
+                    # We found a valid date, save it
+                    saved_date = df['Date'][index]
+                else:
+                    df['Date'][index] = saved_date
+        else:
+            df = pd.read_csv(locations[0]).rename(columns={"Word": "Location"})
+            # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
 
-		# Clean dataframe, remove any 'DATE' or non-location rows
-		del_list = []
-		for index, row in df.iterrows():
-			if df['NER Value'][index] not in ['COUNTRY','STATE_OR_PROVINCE','CITY']:
-				del_list.append(index)
-		df = df.drop(del_list)
+        # Clean dataframe, remove any 'DATE' or non-location rows
+        del_list = []
+        for index, row in df.iterrows():
+            if df['NER Value'][index] not in ['COUNTRY','STATE_OR_PROVINCE','CITY']:
+                del_list.append(index)
+        df = df.drop(del_list)
 
-		if inputDir!='':
-			outputFilename = outputDir + os.sep + os.path.basename(os.path.normpath(inputDir)) + '_LOCATIONS.csv'
-		else:
-			head, tail = os.path.split(inputFilename)
-			outputFilename = outputDir + os.sep + tail[:-4]
-			outputFilename=outputFilename+'_LOCATIONS.csv'
-		df.to_csv(outputFilename, index=False)
-		inputFilename=outputFilename
-		withHeader=True
-		locationColumnNumber=0
-		location_num=0
-		filenamePositionInCoNLLTable=0
-		GUI_util.inputFilename.set(outputFilename)
-		if GUI_util.input_main_dir_path.get()!='':
-			GUI_util.input_main_dir_path.set('')
-		locationColumn='Location'
+        if inputDir!='':
+            outputFilename = outputDir + os.sep + os.path.basename(os.path.normpath(inputDir)) + '_LOCATIONS.csv'
+        else:
+            head, tail = os.path.split(inputFilename)
+            outputFilename = outputDir + os.sep + tail[:-4]
+            outputFilename=outputFilename+'_LOCATIONS.csv'
+        df.to_csv(outputFilename, index=False)
+        inputFilename=outputFilename
+        withHeader=True
+        locationColumnNumber=0
+        location_num=0
+        filenamePositionInCoNLLTable=0
+        GUI_util.inputFilename.set(outputFilename)
+        if GUI_util.input_main_dir_path.get()!='':
+            GUI_util.input_main_dir_path.set('')
+        locationColumn='Location'
 
-	geocoder = 'Nominatim'
-	geoName = 'geo-' + str(geocoder[:3])
-	kmloutputFilename = ''
-	if geocode_locations_var==True:
-		if not inputFilename.endswith('.csv'):
-			mb.showwarning("Input file error","The geocoding option expects in input a csv file containing a list of locations (locations, perhaps, extracted using the Stanford CoreNLP NER extractor).\n\nPlease, select a csv file in input and try again.")
-			return
-		else:
+    geocoder = 'Nominatim'
+    geoName = 'geo-' + str(geocoder[:3])
+    kmloutputFilename = ''
+    if geocode_locations_var==True:
+        if not inputFilename.endswith('.csv'):
+            mb.showwarning("Input file error","The geocoding option expects in input a csv file containing a list of locations (locations, perhaps, extracted using the Stanford CoreNLP NER extractor).\n\nPlease, select a csv file in input and try again.")
+            return
+        else:
 
-			# Google_API=''
-			country_bias=''
-			locationColumnNumber=0
-			locationColumnName='Location'
-			geocodedLocationsoutputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'GIS',
-																					  geoName, locationColumnName, '', '',
-																					  False, True)
-			locationsNotFoundoutputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'GIS',
-																					  geoName, 'Not-Found', locationColumnName, '',
-																					  False, True)
-			locations=''
-			geocodedLocationsoutputFilename, locationsNotFoundoutputFilename = GIS_geocode_util.geocode(GUI_util.window,
-																				locations,
-																				inputFilename,
-																				outputDir,
-																				locationColumnName,
-																				geocoder,
-																				Google_API,
-																				country_bias,
-																				encoding_var)
-			if geocodedLocationsoutputFilename=='':
-				GUI_util.inputFilename.set(inputFilenameSv)
-				GUI_util.input_main_dir_path.set(inputDirSv)
-				return
+            # Google_API=''
+            country_bias=''
+            locationColumnNumber=0
+            locationColumnName='Location'
+            geocodedLocationsoutputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'GIS',
+                                                                                      geoName, locationColumnName, '', '',
+                                                                                      False, True)
+            locationsNotFoundoutputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'GIS',
+                                                                                      geoName, 'Not-Found', locationColumnName, '',
+                                                                                      False, True)
 
-			# Add in date info here if it exists
-			if datePresent:
-				temp_geocoded_csv = pd.read_csv(geocodedLocationsoutputFilename)
-				temp_input_csv = pd.read_csv(inputFilename)
-				temp_geocoded_csv['Date'] = temp_input_csv['Date']
-				temp_geocoded_csv.to_csv(geocodedLocationsoutputFilename, index=False)
-			inputIsGeocoded=True
-			# when using the locations file the inputFilenameSv leads to errors in extract_index in GIS_locations_util; it does not happen with SVO
-			inputFilenameSv=inputFilename
-			GUI_util.inputFilename.set(geocodedLocationsoutputFilename)
-			if GUI_util.input_main_dir_path.get()!='':
-				GUI_util.input_main_dir_path.set('')
+            reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
+                                         reminders_util.message_geocoder, True)
 
+            locations=''
+            geocodedLocationsoutputFilename, locationsNotFoundoutputFilename = GIS_geocode_util.geocode(GUI_util.window,
+                                                                                locations,
+                                                                                inputFilename,
+                                                                                outputDir,
+                                                                                locationColumnName,
+                                                                                geocoder,
+                                                                                Google_API,
+                                                                                country_bias,
+                                                                                encoding_var)
+            if geocodedLocationsoutputFilename=='':
+                GUI_util.inputFilename.set(inputFilenameSv)
+                GUI_util.input_main_dir_path.set(inputDirSv)
+                return
 
-	if inputIsGeocoded==False and geocoder_var.get()=='':
-		mb.showwarning(title='Warning',message='No geocoding option selected. The GIS script will exit.')
-		return
-
-	if GIS_package_var=='Google Maps':
-		if IO_libraries_util.inputProgramFileCheck('GIS_Google_Maps_util.py') == False:
-			return
-		heatMapoutputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'GIS',
-																		geoName, locationColumnName, '', '',
-																		False, True)
-		coordList = []
-		df = pd.read_csv(GUI_util.inputFilename.get())
-		if 'Latitude' in df and 'Longitude' in df:
-			lat = df.Latitude
-			lon = df.Longitude
-
-			for i in range(len(lat)):
-				coordList.append([lat[i], lon[i]])
-		else:
-			print("Error! input csv does not contain Latitude or Longitude columns")
-
-		if Google_API=='':
-			mb.showwarning('Warning','Google Maps requires an API key. You can get the key free of charge at the Google website console.developers.google.com/apis. Then, paste the API key  in the Google API box and try again.')
-			return
-		GIS_Google_Maps_util.create_js(heatMapoutputFilename, coordList, Google_API, geocoder, True)
-		filesToOpen.append(heatMapoutputFilename)
-
-	elif GIS_package_var=='Google Earth Pro':
-		if GIS_package2_var == True:
-			if IO_libraries_util.inputProgramFileCheck('GIS_Google_Earth_main.py') == False:
-				return
-			# save the current configuration to open GIS_Google_Earth_main with the right IO files
-			if inputFilename.endswith('.csv'):
-				configArray=['EMPTY LINE', inputFilename, 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
-				config_util.saveConfig(GUI_util.window, 'GIS-Google-Earth-config.txt', configArray,True)
-			call("python GIS_Google_Earth_main.py", shell=True)
-			return
-		if IO_libraries_util.inputProgramFileCheck('GIS_KML_util.py') == False:
-			return
-		geocodedLocationsoutputFilename=GUI_util.inputFilename.get()
-		locationColumnNumber=0
-		# check that the starting input is not a geocoded file; only a ocations file would contain sentences to be displayed in KML DESCRIPTION field
-		if inputFilenameSv==geocodedLocationsoutputFilename:
-			description_var_list=[1]
-			description_csv_field_var_list=['Location']
-		else:
-			description_var_list = [1]
-			description_csv_field_var_list = ['Sentence']
-		kmloutputFilename = GIS_KML_util.generate_kml(GUI_util.window, inputFilenameSv, geocodedLocationsoutputFilename,
-													  datePresent,
-													  locationColumnNumber,
-													  'utf-8',
-													  1, 1, 1, [1], [1],
-													  'Location',
-													  0, [''], [''],
-													  ['Pushpins'], ['red'],
-													  [0], ['1'], [0], [''],
-													  description_var_list, description_csv_field_var_list)
+            # Add in date info here if it exists
+            if datePresent:
+                temp_geocoded_csv = pd.read_csv(geocodedLocationsoutputFilename)
+                temp_input_csv = pd.read_csv(inputFilename)
+                temp_geocoded_csv['Date'] = temp_input_csv['Date']
+                temp_geocoded_csv.to_csv(geocodedLocationsoutputFilename, index=False)
+            inputIsGeocoded=True
+            # when using the locations file the inputFilenameSv leads to errors in extract_index in GIS_locations_util; it does not happen with SVO
+            inputFilenameSv=inputFilename
+            GUI_util.inputFilename.set(geocodedLocationsoutputFilename)
+            if GUI_util.input_main_dir_path.get()!='':
+                GUI_util.input_main_dir_path.set('')
 
 
-	else:
-		if GIS_package_var!='':
-			mb.showwarning("Option not available","The " + GIS_package_var + " option is not available yet.\n\nSorry! Please, check back soon...")
-			return
+    if inputIsGeocoded==False and geocoder_var.get()=='':
+        mb.showwarning(title='Warning',message='No geocoding option selected. The GIS script will exit.')
+        return
 
-	if kmloutputFilename!='':
-		filesToOpen.append(kmloutputFilename)
-		# IO_files_util.open_kmlFile(kmloutputFilename)
+    if GIS_package_var=='Google Maps':
+        if IO_libraries_util.inputProgramFileCheck('GIS_Google_Maps_util.py') == False:
+            return
+        heatMapoutputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'GIS',
+                                                                        geoName, locationColumnName, '', '',
+                                                                        False, True)
+        coordList = []
+        df = pd.read_csv(GUI_util.inputFilename.get())
+        if 'Latitude' in df and 'Longitude' in df:
+            lat = df.Latitude
+            lon = df.Longitude
 
-	if len(filesToOpen) == 0:
-		return
+            for i in range(len(lat)):
+                coordList.append([lat[i], lon[i]])
+        else:
+            print("Error! input csv does not contain Latitude or Longitude columns")
 
-	if openOutputFiles == 1:
-		IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        if Google_API=='':
+            mb.showwarning('Warning','Google Maps requires an API key. You can get the key free of charge at the Google website console.developers.google.com/apis. Then, paste the API key  in the Google API box and try again.')
+            return
+        GIS_Google_Maps_util.create_js(heatMapoutputFilename, coordList, Google_API, geocoder, True)
+        filesToOpen.append(heatMapoutputFilename)
+
+    elif GIS_package_var=='Google Earth Pro':
+        if GIS_package2_var == True:
+            if IO_libraries_util.inputProgramFileCheck('GIS_Google_Earth_main.py') == False:
+                return
+            # save the current configuration to open GIS_Google_Earth_main with the right IO files
+            if inputFilename.endswith('.csv'):
+                configArray=['EMPTY LINE', inputFilename, 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
+                config_util.saveConfig(GUI_util.window, 'GIS-Google-Earth-config.txt', configArray,True)
+            call("python GIS_Google_Earth_main.py", shell=True)
+            return
+        if IO_libraries_util.inputProgramFileCheck('GIS_KML_util.py') == False:
+            return
+        geocodedLocationsoutputFilename=GUI_util.inputFilename.get()
+        locationColumnNumber=0
+        # check that the starting input is not a geocoded file; only a ocations file would contain sentences to be displayed in KML DESCRIPTION field
+        if inputFilenameSv==geocodedLocationsoutputFilename:
+            description_var_list=[1]
+            description_csv_field_var_list=['Location']
+        else:
+            description_var_list = [1]
+            description_csv_field_var_list = ['Sentence']
+        kmloutputFilename = GIS_KML_util.generate_kml(GUI_util.window, inputFilenameSv, geocodedLocationsoutputFilename,
+                                                      datePresent,
+                                                      locationColumnNumber,
+                                                      'utf-8',
+                                                      1, 1, 1, [1], [1],
+                                                      'Location',
+                                                      0, [''], [''],
+                                                      ['Pushpins'], ['red'],
+                                                      [0], ['1'], [0], [''],
+                                                      description_var_list, description_csv_field_var_list)
+
+
+    else:
+        if GIS_package_var!='':
+            mb.showwarning("Option not available","The " + GIS_package_var + " option is not available yet.\n\nSorry! Please, check back soon...")
+            return
+
+    if kmloutputFilename!='':
+        filesToOpen.append(kmloutputFilename)
+        # IO_files_util.open_kmlFile(kmloutputFilename)
+
+    if len(filesToOpen) == 0:
+        return
+
+    if openOutputFiles == 1:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
-							GUI_util.input_main_dir_path.get(),
-							GUI_util.output_dir_path.get(),
-							GUI_util.open_csv_output_checkbox.get(),
-							GUI_util.create_Excel_chart_output_checkbox.get(),
-							encoding_var.get(),
-							extract_date_from_text_var.get(),
-							extract_date_from_filename_var.get(),
-							date_format.get(),
-							date_separator_var.get(),
-							date_position_var.get(),
-							memory_var.get(),
-							NER_extractor_var.get(),
-							location_menu_var.get(),
-							geocode_locations_var.get(),
-							GIS_package_var.get(),
-							GIS_package2_var.get(),
-							Google_API_Google_maps_var.get()
-							)
+                            GUI_util.input_main_dir_path.get(),
+                            GUI_util.output_dir_path.get(),
+                            GUI_util.open_csv_output_checkbox.get(),
+                            GUI_util.create_Excel_chart_output_checkbox.get(),
+                            encoding_var.get(),
+                            extract_date_from_text_var.get(),
+                            extract_date_from_filename_var.get(),
+                            date_format.get(),
+                            date_separator_var.get(),
+                            date_position_var.get(),
+                            memory_var.get(),
+                            NER_extractor_var.get(),
+                            location_menu_var.get(),
+                            geocode_locations_var.get(),
+                            GIS_package_var.get(),
+                            GIS_package2_var.get(),
+                            Google_API_Google_maps_var.get()
+                            )
 
 GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1300x520'
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief=True
+GUI_width=1200
+GUI_height=520 # height of GUI with full I/O display
+
+if IO_setup_display_brief:
+    GUI_height = GUI_height - 80
+    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+    increment=0 # used in the display of HELP messages
+else: # full display
+    # GUI CHANGES add following lines to every special GUI
+    # +3 is the number of lines starting at 1 of IO widgets
+    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 2  # IO FULL display
+    increment=2
+
+GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
 GUI_label='Graphical User Interface (GUI) for GIS (Geographic Information System) Pipeline from Text to Map'
 config_filename='GIS-config.txt'
 # The 6 values of config_option refer to:
@@ -334,16 +356,13 @@ config_option=[0,6,1,0,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-# GUI CHANGES add following lines to every special GUI
-# +3 is the number of lines starting at 1 of IO widgets (CoreNLP+inputfile+inputdir+ouutputdir=3)
-y_multiplier_integer=GUI_util.y_multiplier_integer+2
 window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 input_main_dir_path=GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_options,config_filename)
+GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
 
 encoding_var=tk.StringVar()
 memory_var = tk.IntVar()
@@ -369,15 +388,15 @@ config_filename = 'GIS-config.txt'
 Google_API=''
 
 def clear(e):
-	encoding_var.set('utf-8')
-	location_menu_var.set('')
-	GIS_package_var.set('')
-	geocoder_var.set('Nominatim')
-	Google_API_Google_geocode_var.set('')
-	Google_API_geocode_lb.place_forget()  # invisible
-	Google_API_geocode.place_forget()  # invisible
-	save_APIkey_button_Google_geocode.place_forget()  # invisible
-	GUI_util.clear("Escape")
+    encoding_var.set('utf-8')
+    location_menu_var.set('')
+    GIS_package_var.set('')
+    geocoder_var.set('Nominatim')
+    Google_API_Google_geocode_var.set('')
+    Google_API_geocode_lb.place_forget()  # invisible
+    Google_API_geocode.place_forget()  # invisible
+    save_APIkey_button_Google_geocode.place_forget()  # invisible
+    GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
 encoding_lb = tk.Label(window, text='Select encoding type (utf-8 default)')
@@ -464,9 +483,9 @@ menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 location_field_lb = tk.Label(window, text='Select the column containing location names')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,location_field_lb,True)
 if menu_values!='':
-	location_field = tk.OptionMenu(window,location_menu_var,*menu_values)
+    location_field = tk.OptionMenu(window,location_menu_var,*menu_values)
 else:
-	location_field = tk.OptionMenu(window,location_menu_var,menu_values)
+    location_field = tk.OptionMenu(window,location_menu_var,menu_values)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,location_field)
 
 y_multiplier_integer_save_one=y_multiplier_integer
@@ -513,7 +532,7 @@ def activate_Google_API_geocode(y_multiplier_integer_save_one,Google_API_geocode
             Google_API=key
     else:
         # hide the Google API label and entry widgets until Google is selected
-		# pack and place have their own _forget options
+        # pack and place have their own _forget options
         Google_API_geocode_lb.place_forget() #invisible
         Google_API_geocode.place_forget() #invisible
         save_APIkey_button_Google_geocode.place_forget() #invisible
@@ -576,7 +595,7 @@ def activate_Google_API_Google_Maps(y_multiplier_integer_save_two,Google_API_lb,
     global GIS_package2_checkbox
     if GIS_package_var.get()=='Google Maps':
         # hide the widget
-		# pack and place have their own _forget options
+        # pack and place have their own _forget options
         GIS_package2_checkbox.place_forget()  #invisible
         y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+650,y_multiplier_integer_save_two,Google_API_Google_maps_lb,True)
         y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,Google_API_Google_maps,True)
@@ -595,7 +614,7 @@ def activate_Google_API_Google_Maps(y_multiplier_integer_save_two,Google_API_lb,
     else: # nominatim
         y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer_save_two,GIS_package2_checkbox)
         # hide the Google API label and entry widgets until Google is selected
-		# pack and place have their own _forget options
+        # pack and place have their own _forget options
         Google_API_Google_maps_lb.place_forget() #invisible
         Google_API_Google_maps.place_forget() #invisible
         save_APIkey_button_Google_maps.place_forget() #invisible
@@ -677,43 +696,48 @@ def display_warning(*args):
     if GIS_package2_var.get():
         # routine_options = reminders_util.getReminder_list(config_filename)
         reminders_util.checkReminder(config_filename,
-                                     ['Open Google Earth GUI'],
-                                     'You should tick the Open GUI checkbox ONLY if you wish to open the GUI.\n\nThe Google Earth Pro GUI will provide a number of options to personalize a Google Earth Pro map. Press Run after selecting the Open GUI option.',
+                                     reminders_util.title_options_Google_Earth,
+                                     reminders_util.message_Google_Earth,
                                      True)
         routine_options = reminders_util.getReminder_list(config_filename)
         return
 GIS_package2_var.trace('w', display_warning)
 
-TIPS_lookup = {"Geocoding":"TIPS_NLP_Geocoding.pdf","Google Earth Pro":"TIPS_NLP_Google Earth Pro.pdf","Google API Key":"TIPS_NLP_Google API Key.pdf", "Google Earth Pro KML Options":"TIPS_NLP_Google Earth Pro KML options.pdf","HTML":"TIPS_NLP_Google Earth Pro HTML.pdf","Google Earth Pro Icon":"TIPS_NLP_Google Earth Pro Icon.pdf", "Google Earth Pro Description":"TIPS_NLP_Google Earth Pro Description.pdf"}
-TIPS_options='Geocoding', 'Google Earth Pro', 'Google API Key', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
+TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',"Geocoding":"TIPS_NLP_Geocoding.pdf","Google Earth Pro":"TIPS_NLP_Google Earth Pro.pdf","Google API Key":"TIPS_NLP_Google API Key.pdf", "Google Earth Pro KML Options":"TIPS_NLP_Google Earth Pro KML options.pdf","HTML":"TIPS_NLP_Google Earth Pro HTML.pdf","Google Earth Pro Icon":"TIPS_NLP_Google Earth Pro Icon.pdf", "Google Earth Pro Description":"TIPS_NLP_Google Earth Pro Description.pdf"}
+TIPS_options='utf-8 encoding','Geocoding', 'Google Earth Pro', 'Google API Key', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",'Please, select an input file for the GIS script. Two two types of files are acceptable: txt or csv.\n\nTXT FILE. When a txt file is selected, the script will use the NER values from Stanford CoreNLP to obtain a list of locations saved as a csv file. The script will then process this file the same way as it would process a csv file in input containing location names.\n\nCSV FILE. When a csv file is selected it can be:\n  1. a file containing a column of location names that need to be geocoded (e.g., New York);\n  2. a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script Stanford_CoreNLP_main.py (the script parses text documents using the Stanford CoreNLP parser).'+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_corpusData+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding.\n\nYou can adjust the memory required to run the CoreNLP NER annotator by sliding the memory bar; the default value of 4 should be sufficient."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help","Please, tick the checkbox if you wish to EXTRACT locations from a text file using Stanford CoreNLP NER extractor.\n\nThe option is available ONLY when an input txt file is selected.\n\nTick the Open GUI checkbox ONLY if you wish to open the Stanford CoreNLP NER extractor GUI for more options. Do not tick the checkbox if you wish to run the pipeline automatically from text to maps."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help","Please, using the dropdown menu, select the column containing the location names (e.g., New York) to be geocoded and mapped.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. NER IS THE COLUMN AUTOMATICALLY USED WHEN WORKING WITH A CONLL FILE IN INPUT."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","Please, tick the checkbox if you wish to GEOCODE  a list of locations.\n\nThe option is available ONLY when a csv file of locations NOT yet geocoded is selected.\n\nTo obtain more accurate geocoded results, select a country where most locations are expected to be. Thus, if you select United States as your country bias, the geocoder will geocode locations such as Florence, Rome, or Venice in the United States rather than in Italy.\n\nTick the Open GUI checkbox ONLY if you wish to open the geocode GUI for more options. Do not tick the checkbox if you wish to run the pipeline automatically from text to maps."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help","Please, tick the checkbox if you wish to MAP a list of geococed locations.\n\nUsing the dropdown menu, select the GIS (Geographic Information System) package you wish to use to produce maps.\n\nGoogle Maps requires an API key that you obtain from registering.\n\nWhen selecting Google Maps, the API key field will become available.\n\nYou will need to get the API key from the Google console and entering it there. REMEMBER! When applying for an API key you will need to enter billing information; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale.\n https://developers.google.com/maps/documentation/embed/get-api-key.\n\nAfter entering the Google API key, click OK to save it and the key will be read in automatically next time around.\n\nTick the Open GUI checkbox ONLY if you wish to open the Google Earth Pro GUI for more options. Do not tick the checkbox if you wish to run the pipeline automatically from text to maps."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help",GUI_IO_util.msg_openOutputFiles)
+    if IO_setup_display_brief==False:
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",'Please, select an input file for the GIS script. Two two types of files are acceptable: txt or csv.\n\nTXT FILE. When a txt file is selected, the script will use the NER values from Stanford CoreNLP to obtain a list of locations saved as a csv file. The script will then process this file the same way as it would process a csv file in input containing location names.\n\nCSV FILE. When a csv file is selected it can be:\n  1. a file containing a column of location names that need to be geocoded (e.g., New York);\n  2. a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script Stanford_CoreNLP_main.py (the script parses text documents using the Stanford CoreNLP parser).'+GUI_IO_util.msg_Esc)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_corpusData+GUI_IO_util.msg_Esc)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory+GUI_IO_util.msg_Esc)
+    else:
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_IO_setup)
+
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+1),"Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding.\n\nYou can adjust the memory required to run the CoreNLP NER annotator by sliding the memory bar; the default value of 4 should be sufficient."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+2),"Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+3),"Help","Please, tick the checkbox if you wish to EXTRACT locations from a text file using Stanford CoreNLP NER extractor.\n\nThe option is available ONLY when an input txt file is selected.\n\nTick the Open GUI checkbox ONLY if you wish to open the Stanford CoreNLP NER extractor GUI for more options. Do not tick the checkbox if you wish to run the pipeline automatically from text to maps."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+4),"Help","Please, using the dropdown menu, select the column containing the location names (e.g., New York) to be geocoded and mapped.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. NER IS THE COLUMN AUTOMATICALLY USED WHEN WORKING WITH A CONLL FILE IN INPUT."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+5),"Help","Please, tick the checkbox if you wish to GEOCODE  a list of locations.\n\nThe option is available ONLY when a csv file of locations NOT yet geocoded is selected.\n\nTo obtain more accurate geocoded results, select a country where most locations are expected to be. Thus, if you select United States as your country bias, the geocoder will geocode locations such as Florence, Rome, or Venice in the United States rather than in Italy.\n\nTick the Open GUI checkbox ONLY if you wish to open the geocode GUI for more options. Do not tick the checkbox if you wish to run the pipeline automatically from text to maps."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+6),"Help","Please, tick the checkbox if you wish to MAP a list of geococed locations.\n\nUsing the dropdown menu, select the GIS (Geographic Information System) package you wish to use to produce maps.\n\nGoogle Maps requires an API key that you obtain from registering.\n\nWhen selecting Google Maps, the API key field will become available.\n\nYou will need to get the API key from the Google console and entering it there. REMEMBER! When applying for an API key you will need to enter billing information; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale.\n https://developers.google.com/maps/documentation/embed/get-api-key.\n\nAfter entering the Google API key, click OK to save it and the key will be read in automatically next time around.\n\nTick the Open GUI checkbox ONLY if you wish to open the Google Earth Pro GUI for more options. Do not tick the checkbox if you wish to run the pipeline automatically from text to maps."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+7),"Help",GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script allows users to go from text to map in three steps:\n\n1. EXTRACT locations from a text file using Stanford CoreNLP NER extractor (NER values: CITY, STATE_OR_PROVINCE, COUNTRY);\n2. GEOCODE locations, previously extracted, using Nominatim or Google (an API is needed for Google);\n3. MAP locations, previously geocoded, using a selected GIS package (e.g., Google Earth Pro; Google Maps to produce heat maps; Google Maps requires an API key).\n\nOptions are preset and\or disabled depending upon the input type (directory or file; txt or csv file; csv CoNLL file or list of locations to be geocoded or already geocoded).\n\nAll three steps can be selected and carried out in sequence in a pipeline, going automatically from text to map."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
+GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options,IO_setup_display_brief)
 
 # routine_options = reminders_util.getReminder_list(config_filename)
 result = reminders_util.checkReminder(config_filename,
-                             ['GIS GUI options'],
-                             'The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv.\n\nWith a TXT file, NER extraction via Stanford CoreNLP must be first performed.\n\nWith a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.')
+                              reminders_util.title_options_GIS_GUI,
+                              reminders_util.message_GIS_GUI)
 if result!=None:
-	routine_options = reminders_util.getReminder_list(config_filename)
+    routine_options = reminders_util.getReminder_list(config_filename)
 
 GUI_util.window.mainloop()
