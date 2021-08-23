@@ -269,11 +269,15 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
 
             if lemmatizeWords:
                 lemmatizer = WordNetLemmatizer()
-                text_vocab = set(lemmatizer.lemmatize(w.lower()) for w in fullText.split(" ") if w.isalpha())
-                words = set(lemmatizing(w.lower()) for w in words if w.isalpha()) # fullText.split(" ") if w.isalpha())
+                text_vocab = []
+                for w in words:
+                    if w.isalpha():
+                        text_vocab.append(lemmatizer.lemmatize(w.lower()))
+                words = text_vocab
 
             word_counts = Counter(words)
-            # 20 most frequent words
+
+            # 20 most frequent words in the document
             #print("\n\nTOP 20 most frequent words  ----------------------------")
             # for item in word_counts.most_common(20):
             #     print(item)

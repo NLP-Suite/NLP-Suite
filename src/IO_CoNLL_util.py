@@ -48,8 +48,11 @@ def check_CoNLL(filename,skipWarning=False):
     headers=IO_csv_util.get_csvfile_headers(filename)
     numColumns=len(headers)
     #check the headers; 12 or 13 if date is available
-    if (('ID' and 'Form' and 'Lemma') not in headers) and ((numColumns!=12) and (numColumns!=13)):
-        wrongFile=True
+    if ('ID' and 'Form' and 'Lemma' not in headers):
+        wrongFile = True
+    else:
+        if (numColumns!=12 and numColumns!=13):
+            wrongFile=True
     if wrongFile==True and skipWarning==False:
         mb.showwarning(title='Input file error', message='The script expects in input a CoNLL table with the headers ID, Form, and Lemma and either 13 or 12 columns (with/without date field).\n\nThe selected file does not have these expected characteristics (number of columns = ' + str(numColumns) + ').\n\nPlease, select a CoNLL file and try again.')
     if wrongFile==True:

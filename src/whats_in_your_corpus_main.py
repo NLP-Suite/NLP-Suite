@@ -99,6 +99,25 @@ def run(inputFilename,inputDir, outputDir,
             if output!=None:
                 filesToOpen.extend(output)
 
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
+                                           'Started running word n-grams at', True,
+                                           'You can follow the script in command line.')
+
+        if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py') == False:
+            return
+
+        inputFilename = ''  # for now we only process a whole directory
+        excludePunctuation=True
+        n_grams_size=3
+        bySentenceIndex_word_var=False
+        normalize=False
+
+        statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
+                                                          outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts,
+                                                          bySentenceIndex_word_var)
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams end',
+                            'Finished running word n-grams at', True)
+
         if 'lines' in corpus_options_menu_var:
             output = statistics_txt_util.read_line(window, '', inputDir, outputDir, False, createExcelCharts)
             if output!=None:
@@ -357,7 +376,7 @@ ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & qu
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,ASCII_checkbox)
 
 corpus_statistics_var.set(1)
-corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute corpus statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0)
+corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute corpus statistics (word frequency & word n-grams by document)", variable=corpus_statistics_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,corpus_statistics_checkbox,True)
 
 corpus_options_menu_var.set('*')
@@ -466,8 +485,8 @@ memory_var.set(4)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 750, y_multiplier_integer,
                                                memory_var)
 
-TIPS_lookup = {'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','Topic modeling':'TIPS_NLP_Topic modeling.pdf','Topic modeling and corpus size':'TIPS_NLP_Topic modeling and corpus size.pdf','Topic modeling (Gensim)':'TIPS_NLP_Topic modeling Gensim.pdf','Topic modeling (Mallet)':'TIPS_NLP_Topic modeling Mallet.pdf','Mallet installation':'TIPS_NLP_Topic modeling Mallet installation.pdf','NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf','WordNet':'TIPS_NLP_WordNet.pdf','Stanford CoreNLP date extractor (NER normalized date)':'TIPS_NLP_Stanford CoreNLP date extractor.pdf',"Gender annotator":"TIPS_NLP_Gender annotator.pdf"}
-TIPS_options='Text encoding (utf-8)','Statistical measures','Topic modeling','Topic modeling and corpus size','Topic modeling (Gensim)','Topic modeling (Mallet)','Mallet installation','NER (Named Entity Recognition)','Stanford CoreNLP date extractor (NER normalized date)','WordNet','Gender annotator'
+TIPS_lookup = {'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf','N-Grams (word & character)':'TIPS_NLP_Ngram (word & character).pdf','Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf','NLP Suite Ngram and Word Co-Occurrence Viewer':'TIPS_NLP_Ngram and Word Co-Occurrence Viewer.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','Topic modeling':'TIPS_NLP_Topic modeling.pdf','Topic modeling and corpus size':'TIPS_NLP_Topic modeling and corpus size.pdf','Topic modeling (Gensim)':'TIPS_NLP_Topic modeling Gensim.pdf','Topic modeling (Mallet)':'TIPS_NLP_Topic modeling Mallet.pdf','Mallet installation':'TIPS_NLP_Topic modeling Mallet installation.pdf','NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf','WordNet':'TIPS_NLP_WordNet.pdf','Stanford CoreNLP date extractor (NER normalized date)':'TIPS_NLP_Stanford CoreNLP date extractor.pdf',"Gender annotator":"TIPS_NLP_Gender annotator.pdf"}
+TIPS_options='Text encoding (utf-8)','N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Statistical measures','Topic modeling','Topic modeling and corpus size','Topic modeling (Gensim)','Topic modeling (Mallet)','Mallet installation','NER (Named Entity Recognition)','Stanford CoreNLP date extractor (NER normalized date)','WordNet','Gender annotator'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
@@ -482,7 +501,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
 
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 1), "Help",
                                       "Please, tick the checkbox to check your input corpus for utf-8 encoding.\n   Non utf-8 compliant texts are likely to lead to code breakdown.\n\nTick the checkbox to convert non-ASCII apostrophes & quotes and % to percent.\n   ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n   % signs may lead to code breakdon of Stanford CoreNLP.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 2), "Help","Please, tick checkbox to compute corpus statistics: number of documents, number of sentences and words per document.\nThe * option will lemmatize words and exclude stopwords and punctuation. IT WILL NOT COMPUTE LINE LENGTH. YOU WOULD NEED TO RUN THE LINE LENGTH OPTION SEPARATELY.\n\nLine length in a typical document mostly depends upon typesetting formats. Only for poetry or music lyrics does the line-length measure make sense; in act, you could use the option the detect those documents in your corpus characterized by different typesetting formats (.g., a poem document among narrative documents).\n\nRUN THE LINE-LENGTH OPTION ONLY IF IT MAKES SENSE FOR YOUR CORPUS.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 2), "Help","Please, tick checkbox to compute corpus statistics: number of documents, number of sentences and words, word n-grams by document.\n\nFOR N-GRAMS, THERE IS A SEPARATE SCRIPT WITH MORE GENERAL OPTIONS: NGrams_CoOccurrences_Viewer_main.\n\nThe * option will lemmatize words and exclude stopwords and punctuation. IT WILL COMPUTE BASIC WORD N-GRAMS. IT WILL NOT COMPUTE LINE LENGTH. YOU WOULD NEED TO RUN THE LINE LENGTH OPTION SEPARATELY.\n\nLine length in a typical document mostly depends upon typesetting formats. Only for poetry or music lyrics does the line-length measure make sense; in fact, you could use the option the detect those documents in your corpus characterized by different typesetting formats (.g., a poem document among narrative documents).\n\nRUN THE LINE-LENGTH OPTION ONLY IF IT MAKES SENSE FOR YOUR CORPUS.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step*(increment + 3), "Help","Please, tick the Mallet or Gensim checkboxes to run run LDA Topic Modeling to find out the main topics of your corpus.\n\nTick the \'open GUI\' checkbox to open the specialized Gensim topic modeling GUI that offers more options. Mallet can only be run via its GUI")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step*(increment + 4), "Help","Please, tick the checkbox to analyze your corpus for a variety of tools. Select the default \'*\' to run all options. Allternatively, select the specific option to run.\n\nThe NLP tools will allow you to answer questions such as:\n  1. Are there dialogues in your corpus?\n  .2 Do nouns and verbs cluster in specific aggregates (e.g., communication, movement)?\n  3. Does the corpus contain references to people (by gender) and organizations?\n  4.  References to dates and times?\n  5. References to geographical locations that could be placed on a map?\n  6. References to nature (e.g., weather, seasons, animals, plants)?")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 5),"Help", GUI_IO_util.msg_openOutputFiles)

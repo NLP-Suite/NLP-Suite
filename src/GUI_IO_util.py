@@ -34,11 +34,10 @@ msg_txtFile="Please, select the TXT file to be analyzed." + msg_openFile # + msg
 msg_csvFile="Please, select the csv file to be analyzed." + msg_openFile # + msg_fileButtonDisabled
 msg_csv_txtFile="Please, select either a CSV file or a TXT file to be analyzed." + msg_openFile # + msg_fileButtonDisabled
 msg_txt_htmlFile="Please, select either a TXT file or an html file to be analyzed." + msg_openFile # + msg_fileButtonDisabled
-msg_outputDirectory="Please, select the directory where the script will save all output files of any type (txt, csv, png, html)."  + msg_openExplorer
+msg_outputDirectory="Please, select the directory where the script will save all OUTPUT files of any type (txt, csv, png, html)."  + msg_openExplorer
 msg_outputFilename="Please, enter the OUTPUT file name. THE SELECT OUTPUT BUTTON IS DISABLED UNTIL A SEARCHED TOKEN HAS BEEN ENTERED.\n\nThe search result will be saved as a separated csv file with the file path and name entered. \n\nThe same information will be displayed in the command line."
 msg_openOutputFiles="Please, tick the checkbox to open automatically (or not open) output csv file(s), including any Excel charts.\n\nIn the NLP Suite, all CSV FILES that contain information on web links or files with their path will encode this information as hyperlinks. If you click on the hyperlink, it will automatically open the file or take you to a website. IF YOU ARE A MAC USER, YOU MUST OPEN ALL CSV FILES WITH EXCEL, RATHER THAN NUMBERS, OR THE HYPERLINK WILL BE BARRED AND DISPLAYED AS A RED TRIANGLE.\n\nEXCEL HOVER-OVER EFFECT.  Most Excel charts have been programmed for hover-over effects, whereby when you pass the cursor over a point on the chart (hover over) some releveant information will be displayed (e.g., the sentence at that particular point).\n\nEXCEL EMPTY CHART AREA.  If the hover-over chart area is empty, with no chart displayed, enlarge the chart area by dragging any of its corners or by moving the zoom slide bar on the bottomg right-hand corner of Excel.\n\nEXCEL ENABLE MACROS.  The hover-over effect is achieved using VBA macros (Virtual Basic for Applications, Windows programming language). If Excel warns you that you need to enable macros, while at the same time warning you that macros may contain viruses, do the following: open an Excel workbook; click on File; slide cursor all the way down on the left-hand banner to Options; click on Trust Center; then on Trust Center Settings; then Macro Settings; Click on Enable all macros, then OK. The message will never appear again."
 msg_multipleDocsCoNLL="\n\nFOR CONLL FILES THAT INCLUDE MULTIPLE DOCUMENTS, THE EXCEL CHARTS PROVIDE OVERALL FREQUENCIES ACROSS ALL DOCUMENTS. FOR SPECIFIC DOCUMENT ANALYSES, PLEASE USE THE GENERAL EXCEL OUTPUT FILE."
-
 
 # location of this src python file
 #one folder UP, the NLP folder
@@ -186,9 +185,11 @@ Franzosi, Roberto, Wenqin Dong, Alberto Purpura. 2020. "The Shape of Stories." U
 
 #configFilename with no path;
 #configArray contains all the IO files and paths
-#configArray is computed by setup_IO_configArray in config_util 
-def exit_window(window,configFilename, configArray):
-    if configFilename!="NLP-config.txt":
+#configArray is computed by setup_IO_configArray in config_util
+# config_input_output_options is set to [0, 0, 0, 0, 0, 0] for GUIs that are placeholders for more specialized GUIs
+#   in these cases (e.g., narrative_analysis_main, there are no I/O options to save
+def exit_window(window,configFilename, config_input_output_options, configArray):
+    if configFilename!="NLP-config.txt" and config_input_output_options != [0, 0, 0, 0, 0, 0]:
         # check whether the current IO configuration
         #	is different from the saved configuration
         #	if changed you want to ask the question

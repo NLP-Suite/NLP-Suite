@@ -573,8 +573,8 @@ TIPS_lookup = {'Statistical tools in the NLP Suite': 'TIPS_NLP_Statistical tools
                'Statistical descriptive measures': "TIPS_NLP_Statistical measures.pdf",
                'Style measures': 'TIPS_NLP_Style measures.pdf',
                'N-Grams (word & character)': "TIPS_NLP_Ngrams (word & character).pdf",
-               'NLP Ngram and Word Co-Occurrence VIEWER': "TIPS_NLP_NLP Ngram and Co-Occurrence VIEWER.pdf",
-               'Google Ngram Viewer': 'TIPS_NLP_Google Ngram Viewer.pdf'}
+               'NLP Ngram and Word Co-Occurrence Viewer': "TIPS_NLP_NLP Ngram and Co-Occurrence Viewer.pdf",
+               'Google Ngram Viewer': 'TIPS_NLP_Ngram Google Ngram Viewer.pdf'}
 TIPS_options = 'Statistical tools in the NLP Suite', 'Statistical descriptive measures', 'Style measures', 'N-Grams (word & character)', 'NLP Ngram and Word Co-Occurrence VIEWER', 'Google Ngram Viewer'
 
 

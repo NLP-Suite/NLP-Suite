@@ -74,6 +74,27 @@ def checkConfigDirExists(configFile, dirName, IO):
             dirName = ''
     return dirName
 
+def get_IO_options(config_filename,config_input_output_options):
+    if config_input_output_options!=[0,0,0,0,0,0]:
+        # use default config at first
+        IO_options=readConfig(config_filename,config_input_output_options)
+    else:
+        IO_options=None
+
+    # the following check and lines are necessary
+    #   to avoid code break in
+    #   if IO_options[] in later tests
+    #   when there is no config folder
+    if IO_options==None or IO_options==[]:
+        IO_options=[]
+        for i in range(len(config_input_output_options)):
+            if config_input_output_options[i]>0:
+                lineValue="EMPTY LINE"
+            else:
+                lineValue=""
+            IO_options.append(lineValue)
+    return IO_options
+
 
 # configFile includes path
 # changes made here must reflect changes in GUI_util.preload_configData_set_input_output_options(window,configFile)
@@ -123,6 +144,50 @@ def readConfig(configFile, config_array):
     # else:
     #     mb.showwarning(title='File error', message="There is no Input/Output configuration file\n\n" + configFile + "\n\nPlease, click on the Setup INPUT/OUTPUT button to set it up.")
     return input_output_options
+
+# the function is sed to obtain the list of six numeric values of IO options for a specific config file (e.g., [0, 1, 0, 1, 0, 1])
+
+# the function does NOT check for the various options in software dir and input file type
+# input_output_options[0] Directory of software used: 0 NO SOFTWARE 1 CoreNLP 2 WordNet 3 Mallet
+# input_output_options[1] 0 No input file 1 CoNLL file 2 TXT file 3 csv file 4 any single txt, pdf, docx, csv, conll file
+# input_output_options[2] 0 NO input dir
+# input_output_options[3] 0 NO input secondary dir
+# input_output_options[4] 0 NO output file
+# input_output_options[5] 0 NO output dir
+def get_config_array_from_configFile(configFile):
+    # configFile_basename is the filename w/o the full path
+    config_array = []
+    error = False
+    configFile_basename = ntpath.basename(configFile)
+    configFilePath = os.path.join(GUI_IO_util.configPath, configFile)
+    configFile = ''
+    if os.path.isfile(configFilePath):
+        configFile = configFilePath
+    else:
+        if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)):
+            configFile = os.path.join(GUI_IO_util.configPath, defaultConfigFilename)
+    if configFile != '':
+        f_config = open(configFile, 'r', encoding='utf-8', errors='ignore')
+        configList = f_config.readlines()
+        configList = [i.strip() for i in configList]
+        length = len(configList)
+        for i in range(len(configList)):
+            if (i == 1):
+                if (configList[i] != ""):
+                    config_array.append(1)
+                else: # check Dir option
+                    config_array.append(0)
+            elif (i == 2):
+                if (configList[i] != ""):
+                    config_array.append(1)
+                else: # check Dir option
+                    config_array.append(0)
+            else:
+                if configList[i]!="EMPTY LINE" and configList[i]!="":
+                    config_array.append(1)
+                else:
+                    config_array.append(0)
+    return config_array
 
 
 def writeConfigFile(configFilename, configArray):
@@ -309,7 +374,7 @@ def add2Missing(missingIO, configName, button_state):
 # config lines can be blank, if NOT required by the specific NLP script
 # config lines with missing values for a required IO widget will be exported as "EMPTY LINE"
 # config_input_output_options is the list of IO values set in the main scrip of a script with GUI 
-#   for examples, for NLP.py config_array=[0,4,1,0,0,1]
+#   for examples, for NLP.py config_array=[0, 4, 1, 0, 0, 1]
 #   where config_array is config_input_output_options
 
 # called by GUI_util as second step
