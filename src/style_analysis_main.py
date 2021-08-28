@@ -150,22 +150,11 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
             sentence_analysis_util.sentence_text_readability(GUI_util.window, inputFilename, inputDir,
                                                              outputDir, openOutputFiles, createExcelCharts)
         elif 'tree' in complexity_readability_analysis_menu_var:
-            if IO_libraries_util.inputProgramFileCheck('DependenSee.Jar') == False:
-                return
-            errorFound, error_code, system_output = IO_libraries_util.check_java_installation(
-                'Sentence structure visualization')
-            if errorFound:
-                return
             if inputFilename == '' and inputFilename.strip()[-4:] != '.txt':
                 mb.showwarning(title='Input file error',
                                message='The Sentence tree viewer script requires a single txt file in input.\n\nPlease, select a txt file and try again.')
                 return
-            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                               'Started running Sentence visualization: Dependency tree viewer (png graphs) at',
-                                               True, '\n\nYou can follow Sentence Complexity in command line.')
-            subprocess.call(['java', '-jar', 'DependenSee.Jar', inputFilename, outputDir])
-            mb.showwarning(title='Analysis end',
-                           message='Finished running the Dependency tree viewer (png graphs).\n\nMake sure to open the png files in output, one graph for each sentence.')
+            sentence_analysis_util.sentence_structure_tree(inputFilename, outputDir)
 
         else:
             mb.showwarning('Warning', 'No option has been selected for Complex/readability analysis.\n\nPlease, select an option and try again.')
@@ -439,7 +428,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 complexity_readability_analysis_lb = tk.Label(window, text='Select the complexity/readability analysis you wish to perform')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,complexity_readability_analysis_lb,True)
-complexity_readability_analysis_menu = tk.OptionMenu(window,complexity_readability_analysis_menu_var,'*','Sentence complexity','Text readability','Visualize sentence structure (via dependency tree)')
+complexity_readability_analysis_menu = tk.OptionMenu(window,complexity_readability_analysis_menu_var,'*','Sentence complexity','Text readability','Visualize sentence structure (via dependency tree) \n(please include no more than 10 sentences in the input text file)')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+400, y_multiplier_integer,complexity_readability_analysis_menu)
 
 vocabulary_analysis_var.set(0)

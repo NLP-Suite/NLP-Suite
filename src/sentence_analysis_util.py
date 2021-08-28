@@ -28,6 +28,16 @@ import IO_user_interface_util
 import Excel_util
 import statistics_csv_util
 
+import spacy
+from nltk.tree import Tree
+from nltk.draw import TreeView
+from PIL import Image
+spacy_nlp = spacy.load("en")
+import os
+
+
+
+
 def Extract(lst):
     return [item[0] for item in lst]
 
@@ -793,3 +803,46 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                            nFile) + ' files in the input directory processed by Textstat.')
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen)
+
+def sentence_structure_tree(inputFilename, outputDir):
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                       'Started running Sentence visualization: Dependency tree viewer (post script graphs) at',
+                                       True, '\n\nYou can follow Sentence Complexity in command line.')
+
+    # split into sentences
+    text = (open(inputFilename, "r", encoding="utf-8", errors='ignore').read())
+    sentences = nltk.sent_tokenize(text)
+    if len(sentences) >= 10:
+        mb.showwarning(title='Warning',
+                       message='The number of sentences in the selected text is larger than 10.')
+        return
+    sentenceID = 0  # to store sentence index
+    for sent in sentences:
+        sentenceID = sentenceID + 1
+
+        doc = spacy_nlp(sent)
+
+        def token_format(token):
+            return "_".join([token.orth_, token.tag_, token.dep_])
+
+        def to_nltk_tree(node):
+            if node.n_lefts + node.n_rights > 0:
+                return Tree(token_format(node),
+                            [to_nltk_tree(child)
+                             for child in node.children]
+                            )
+            else:
+                return token_format(node)
+
+        tree = [to_nltk_tree(sent.root) for sent in doc.sents]
+
+        cf = TreeView(tree[0])._cframe
+
+        cf.print_to_file(outputDir + '/' + os.path.basename(inputFilename) + '_' + str(sentenceID) + '_tree.ps')
+
+    mb.showwarning(title='Analysis end',
+                   message='Finished running the Dependency tree viewer (post script graphs).\n\nMake sure to open the post script files in output, one graph for each sentence.')
+
+
+
