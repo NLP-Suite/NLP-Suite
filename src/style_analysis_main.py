@@ -150,12 +150,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
             sentence_analysis_util.sentence_text_readability(GUI_util.window, inputFilename, inputDir,
                                                              outputDir, openOutputFiles, createExcelCharts)
         elif 'tree' in complexity_readability_analysis_menu_var:
-            if IO_libraries_util.inputProgramFileCheck('DependenSee.Jar') == False:
-                return
-            errorFound, error_code, system_output = IO_libraries_util.check_java_installation(
-                'Sentence structure visualization')
-            if errorFound:
-                return
             if inputFilename == '' and inputFilename.strip()[-4:] != '.txt':
                 mb.showwarning(title='Input file error',
                                message='The Sentence tree viewer script requires a single txt file in input.\n\nPlease, select a txt file and try again.')
