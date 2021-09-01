@@ -116,17 +116,17 @@ def readConfig(configFile, config_array):
     configFile_basename = ntpath.basename(configFile)
     configFilePath = os.path.join(GUI_IO_util.configPath, configFile)
     configFile = ''
-    # when BOTH the default-config-txt file and
+    # when BOTH the default-config.txt file and
     #   specific GUI config file are present
     #   the specific GUI config file will take precedence
-    # otherwise the default-config-txt will always be used for all tools
+    # otherwise the default-config.txt will always be used for all tools
 
     # must pass the right config filename in case there is only the default config
     if os.path.isfile(configFilePath):
         configFile = configFilePath
-    else:
-        if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)):
-            configFile = os.path.join(GUI_IO_util.configPath, defaultConfigFilename)
+    # else:
+    #     if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)):
+    #         configFile = os.path.join(GUI_IO_util.configPath, defaultConfigFilename)
     if configFile != '':
         f_config = open(configFile, 'r', encoding='utf-8', errors='ignore')
         configList = f_config.readlines()
@@ -257,8 +257,7 @@ def saveConfig(window, configFilename, configArray, silent=False):
         (configArray[2] == 'EMPTY LINE' or configArray[0] == '') and \
         (configArray[3] == 'EMPTY LINE' or configArray[0] == '') and \
         (configArray[4] == 'EMPTY LINE' or configArray[0] == '') and \
-        (configArray[5] == 'EMPTY LINE' or configArray[0] == '') and \
-        (configArray[6] == 'EMPTY LINE' or configArray[0] == ''):
+        (configArray[5] == 'EMPTY LINE' or configArray[0] == ''):
         return
     currentStringArray = ''
     configFileWritten = False
@@ -271,13 +270,13 @@ def saveConfig(window, configFilename, configArray, silent=False):
                            message="The command failed to create the Config directory.\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
             return
 
-    # when no default-config-txt file has been saved
+    # when no default-config.txt file has been saved
     #   a default-config-txt can be saved
     # In reading the config file for a GUI tool, 
-    #   when BOTH the default-config-txt file and
+    #   when BOTH the default-config.txt file and
     #   specific GUI config file are present
     #   the specific GUI config file will take precedence
-    # otherwise the default-config-txt will always be used for all tools
+    # otherwise the default-config.txt will always be used for all tools
 
     # if there are no selected IO values in the displayed GUI
     #   exit

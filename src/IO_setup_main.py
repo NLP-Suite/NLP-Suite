@@ -13,6 +13,7 @@ import tkinter.messagebox as mb
 
 import GUI_IO_util
 import config_util
+import reminders_util
 
 if __name__ == '__main__':
 	# get arguments from command line
@@ -40,7 +41,7 @@ if __name__ == '__main__':
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_label = 'Graphical User Interface (GUI) for Setting Up Input/Output, IO, Options (' +config_filename + ")"
+GUI_label = 'Graphical User Interface (GUI) for Setting Up Input/Output, I/O, Options (' +config_filename + ")"
 # The 6 values of config_option refer to:
 #   software directory
 #   input file
@@ -71,7 +72,7 @@ if config_option[2] != 0:  # both input file and input dir are valid options
 	else:
 		GUI_size = '1100x280'
 		help_increment = 1
-# the secondary INPUT directory iis currently not used in IO_setup
+# the secondary INPUT directory is currently not used in IO_setup
 if config_option[3] != 0:  # secondary INPUT directory
 	GUI_size = '1100x320'
 	help_increment = 2
@@ -89,15 +90,15 @@ GUI_util.GUI_top(config_input_output_options, config_filename, False)
 #	warning the user for any discrepancy
 
 msg = ""
+default_IO_options = config_util.get_IO_options(config_filename, config_input_output_options)
 if config_filename == 'default-config.txt':
-	default_IO_options = config_util.get_IO_options(config_filename, config_input_output_options)
 	if (default_IO_options[1]!='' and default_IO_options[1]!='EMPTY LINE') or default_IO_options[2]!='':
 		# check the input filename
-		if default_IO_options[1] != '' and config_input_output_options[1]==0:
+		if (default_IO_options[1]!='' and default_IO_options[1]!='EMPTY LINE') and config_input_output_options[1]==0:
 			msg = "The Default I/O configuration used by all scripts in the NLP Suite is currently set up with a FILE in INPUT.\n\n" \
 				"But the current script expects a DIRECTORY in INPUT.\n\n"
 		# check the input directory
-		if default_IO_options[2] != '' and config_input_output_options[2]==0:
+		if (default_IO_options[2]!='' and default_IO_options[2]!='EMPTY LINE') and config_input_output_options[2]==0:
 			msg = "The Default I/O configuration used by all scripts in the NLP Suite is currently set up with a DIRECTORY in INPUT.\n\n" \
 				"But the current script expects a FILE in INPUT.\n\n"
 		if msg!="":
@@ -157,10 +158,17 @@ help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the Input/Output information necessary to run the NLP-Suite scripts, namely the INPUT files to be used - a single file or a set of files in a directory - and the OUTPUT directory where the files produced by the NLP Suite scripts will be saved - txt, csv, html, kml, jpg.\n\nThe selected I/O configuration will be saved in config files in the config subdirectory. The default-config.txt file will be used for all NLP Suite scripts unless a different configuraton is selected for a specific script by selecting the 'Alternative I/O configuation'. When opening the GUI with the option 'Alternative I/O configuation' a configuration file will be saved under the config subdirectory with the specif name of the calling script (e.g., Stanford-CoreNLP-config.txt).\n\nWhen clicking the CLOSE button, the script will give the option to save the currently selected configuration IF different from the previously saved configuration."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
-												   GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options,False)
+                                                   GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
+GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options,False,'IO_setup_main')
 
 if msg!="":
-	mb.showwarning(title='Warning', message=msg)
+    mb.showwarning(title='Warning', message=msg)
+
+# routine_options = reminders_util.getReminder_list(config_filename)
+result = reminders_util.checkReminder(config_filename,
+                              reminders_util.title_options_IO_setup,
+                              reminders_util.message_IO_setup)
+if result!=None:
+    routine_options = reminders_util.getReminder_list(config_filename)
 
 GUI_util.window.mainloop()

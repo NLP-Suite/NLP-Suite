@@ -206,7 +206,20 @@ def exit_window(window,configFilename, config_input_output_options, configArray)
 
 
 # missingIO is called from GUI_util
-def check_missingIO(window,missingIO,config_filename,silent=False):
+def check_missingIO(window,missingIO,config_filename,IO_setup_display_brief,ScriptName,silent=False):
+    # the IO_button_name error message changes depending upon the call
+    button = "button"
+    # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
+    run_button_disabled_msg = "The RUN button is disabled until the required information for all Input/Output fields is entered.\n\n"
+    if "IO_setup_main" in ScriptName:
+        run_button_disabled_msg = ""
+    if IO_setup_display_brief==True:
+        IO_button_name = "Setup INPUT/OUTPUT configuration" # when displaying brief
+    if IO_setup_display_brief==False:
+        IO_button_name = "Select INPUT & Select OUTPUT" # when displaying full
+        button="buttons"
+    if config_filename=='NLP-config.txt':
+        IO_button_name = "Setup default I/O options" # when displaying from NLP_menu_main
     Run_Button_Off=False
     #do not check IO requirements for NLP.py; too many IO options available depending pon the sript run
     # if config_filename=="NLP-config.txt" or config_filename=="social-science-research-config.txt":
@@ -216,8 +229,8 @@ def check_missingIO(window,missingIO,config_filename,silent=False):
         missingIO=''
     if len(missingIO)>0:
         if not silent:
-            mb.showwarning(title='Warning', message='The following required INPUT/OUTPUT information is missing in config file ' + config_filename + ':\n\n' + missingIO + '\n\nThe RUN button is disabled until the required information for all Input/Output fields is entered.\n\nPlease, click on the "Setup INPUT/OUTPUT configuration" button and enter the required I/O information.')
-        Run_Button_Off=True
+            mb.showwarning(title='Warning', message='The following required INPUT/OUTPUT information is missing in config file ' + config_filename + ':\n\n' + missingIO + '\n\n' + run_button_disabled_msg + 'Please, click on the "' + IO_button_name + '" ' + button + ' at the top of the GUI and enter the required I/O information.')
+            Run_Button_Off=True
     if Run_Button_Off==True:
         run_button_state="disabled"
     else:

@@ -22,6 +22,12 @@ from csv import writer
 
 # below is a lit of most reminders called from various scripts with their title_options and message
 
+title_options_IO_configuration = ['Input/Output configurations']
+message_IO_configuration = 'Most GUIs in the NLP Suite provide two types of Input/Output (I/O) configurations that specify your selection for your input file or directory (these are mutually exclusive; you can only select one or the other) and output directory:\n\n  Default I/O configuration\n  Alternative I/O configuration\n\nThe Default I/O configuration applies to ALL GUIs in the NLP Suite. This is an ideal option if you work exclusively, or mostly, with the same input file(s) regardless of GUI (i.e., NLP algorithms); you would not need to select these options for every GUI.\n\nIf you occasionally need to run a script using a different set of I/O options, setup the Alternative I/O configuration. This will not affect your I/O selections for all GUIs and will only apply to a specific GUI if you chose the menu option Alternative I/O configuration.'
+
+title_options_IO_setup = ['Input/Output options']
+message_IO_setup = 'The two widgets for INPUT FILE and INPUT DIRECTORY are mutually exclusive. You can select one OR the other but not both. Click on either button to make your selection.\n\nTo change an already selected option from FILE to DIRECTORY or from DIRECTORY to FILE, simply click on the button you want to select, make your selection, and the I/O configuration will automatically update.'
+
 title_options_SVO_corpus = ['SVO with corpus data']
 message_SVO_corpus = 'You have selected to work with a set of txt files in a directory (your corpus).\n\nBeware that SVO extraction is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.\n\nDepending upon corpus size, manual coreference editing may also not be possible, due to memory requirements.'
 
