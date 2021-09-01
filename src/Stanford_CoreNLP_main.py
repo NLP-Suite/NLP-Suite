@@ -107,7 +107,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
     if CoNLL_table_analyzer_var:
         if IO_libraries_util.inputProgramFileCheck('CoNLL_table_analyzer_main.py') == False:
             return
-        # open the analyzer having saved the new new parser output in config so that it open the right input file
+        # open the analyzer having saved the new parser output in config so that it opens the right input file
         config_filename_temp = 'conll-table-analyzer-config.txt'
         config_array = ['EMPTY LINE', outputCoNLLfilePath, 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
         config_util.saveConfig(GUI_util.window, config_filename_temp, config_array, True)

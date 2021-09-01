@@ -96,7 +96,7 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
             document_index += 1
 
     senna_df = pd.DataFrame(formatted_table, columns=['Col %s' % i for i in range(len(formatted_table[0]))])
-    print(senna_df[20:45])
+    print(senna_df)
     # Result of SENNA
 
     convert_to_svo(senna_df, SENNA_output_file_name, createExcelCharts, filter_svo)

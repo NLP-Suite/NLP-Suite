@@ -253,36 +253,15 @@ def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,titl
 #     return IO_options
 
 # configuration_type is the value displayed on the GUI: Default I/O configuration, Alternative I/O configuration
-def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,*args):
+def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,ScriptName,*args):
     y_multiplier_integer=1
     if 'Default' in IO_setup_menu_var.get():
-        IO_options=config_util.get_IO_options('default-config-txt', config_input_output_options)
+        IO_options=config_util.get_IO_options('default-config.txt', config_input_output_options)
     else:
         IO_options=config_util.get_IO_options(config_filename,config_input_output_options)
 
 
-    # IO_options=get_IO_optionsdefault_config_filename,config_input_output_options
-    #
-    # if config_input_output_options!=[0,0,0,0,0,0]:
-    #     # use default config at first
-    #     IO_options=config_util.readConfig(default_config_filename,config_input_output_options)
-    # else:
-    #     IO_options=None
-    #
-    # # the following check and lines are necessary
-    # #   to avoid code break in
-    # #   if IO_options[] in later tests
-    # #   when there is no config folder
-    # if IO_options==None or IO_options==[]:
-    #     IO_options=[]
-    #     for i in range(len(config_input_output_options)):
-    #         if config_input_output_options[i]>0:
-    #             lineValue="EMPTY LINE"
-    #         else:
-    #             lineValue=""
-    #         IO_options.append(lineValue)
-
-    # the full options must always be displayed, even when the brief option is seleted;
+    # the full options must always be displayed, even when the brief option is selected;
     #   the reason is that the IO widgets filename, inputDir, and outputDir are used to check missing options and activate the RUN button
 
     inputDirName = ''
@@ -302,8 +281,6 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,*a
         input_main_dir_path.set('')
     else:
         input_main_dir_path.set(config_util.checkConfigDirExists(config_filename,IO_options[2],'INPUT'))
-        # inputDirName = IO_options[2]
-        # IO_setup_display_string = "INPUT DIR " + input_main_dir_path.get()
 
     if IO_options[3]=='' or IO_options[3]=="EMPTY LINE": # INPUT secondary directory
         input_secondary_dir_path.set('')
@@ -342,10 +319,6 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,*a
             IO_setup_display_string = "INPUT FILE:\nINPUT DIR:"
 
         IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(outputDirName)
-        # window.IO_setup_brief_display_area.delete(0.1, tk.END)
-        # window.IO_setup_var.set(IO_setup_display_string)
-        # window.IO_setup_brief_display_area.insert("end", IO_setup_display_string)
-        # window.IO_setup_brief_display_area.pack()
         IO_setup_brief_display_area = tk.Text(width=60, height=2)
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+250,
                                                        0, IO_setup_brief_display_area)
@@ -354,13 +327,15 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,*a
         IO_setup_brief_display_area.insert("end", IO_setup_display_string)
         # IO_setup_brief_display_area.pack(side=tk.LEFT)
         IO_setup_brief_display_area.configure(state='disabled')
-    activateRunButton()
+    activateRunButton(IO_setup_display_brief,ScriptName)
 
-def activateRunButton(*args):
+def activateRunButton(IO_setup_display_brief,ScriptName):
+    # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
+    silent = False
     # global config_filename, config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path
     configArray, missingIO=config_util.setup_IO_configArray(window,config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path)
-    # last parameter True: do not continue to warn the user about missing options when entering all IOs
-    run_button_state=GUI_IO_util.check_missingIO(window,missingIO,config_filename,True)
+    # last parameter True: do not continue/repeat to warn the user about missing options when entering all IOs
+    run_button_state=GUI_IO_util.check_missingIO(window,missingIO,config_filename,IO_setup_display_brief,ScriptName,silent)
     run_button.configure(state=run_button_state)
 
 #__________________________________________________________________________________________________________________
@@ -369,13 +344,12 @@ def activateRunButton(*args):
 #__________________________________________________________________________________________________________________
 
 def IO_config_setup_full (window, y_multiplier_integer):
-
     if 'Default' in IO_setup_menu_var.get():
-        IO_options=config_util.get_IO_options('default-config-txt', config_input_output_options)
+        IO_options=config_util.get_IO_options('default-config.txt', config_input_output_options)
     else:
         IO_options=config_util.get_IO_options(config_filename,config_input_output_options)
 
-    activateRunButton()
+    # activateRunButton(False)
 
     # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
     global select_softwareDir_button, select_input_file_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_file_button, select_output_dir_button
@@ -403,7 +377,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
             # buttons are set to normal or disabled in selectFile_set_options
             select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
 
-        inputFilename.trace("w",activateRunButton)
+        # inputFilename.trace("w",activateRunButton(False))
 
         # place the INPUT file widget
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_file_button)
@@ -423,7 +397,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
         if IO_options[2]=="EMPTY LINE":
             input_main_dir_path.set("")
 
-        input_main_dir_path.trace("w",activateRunButton)
+        # input_main_dir_path.trace("w",activateRunButton(False))
 
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_main_dir_button)
         tk.Label(window, textvariable=input_main_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
@@ -438,7 +412,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
         # buttons are set to normal or disabled in selectFile_set_options
         select_input_secondary_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT secondary directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path, input_secondary_dir_path,"Select INPUT secondary TXT directory"))
 
-        input_secondary_dir_path.trace("w",activateRunButton)
+        # input_secondary_dir_path.trace("w",activateRunButton(False))
 
         y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_secondary_dir_button)
         tk.Label(window, textvariable=input_secondary_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
@@ -459,14 +433,14 @@ def IO_config_setup_full (window, y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_output_file_button)
         tk.Label(window, textvariable=outputFilename).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
 
-        outputFilename.trace("w",activateRunButton)
+        # outputFilename.trace("w",activateRunButton(False))
 
     #OUTPUT directory ______________________________________________
     if config_input_output_options[5]==1: #output directory
         # buttons are set to normal or disabled in selectFile_set_options
         select_output_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select OUTPUT files directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select OUTPUT files directory"))
 
-        output_dir_path.trace("w",activateRunButton)
+        # output_dir_path.trace("w",activateRunButton(False))
 
         y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_output_dir_button)
         tk.Label(window, textvariable=output_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
@@ -476,7 +450,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
         openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
         openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer4)
 
-def setup_IO_configuration_options(IO_setup_display_brief,y_multiplier_integer):
+def setup_IO_configuration_options(IO_setup_display_brief,y_multiplier_integer,ScriptName):
     if 'Default' in GUI_util.IO_setup_menu_var.get():
         temp_config_filename = 'default-config.txt'
     else:
@@ -488,10 +462,10 @@ def setup_IO_configuration_options(IO_setup_display_brief,y_multiplier_integer):
     #       a warning will be raised
     #   2. temp_config_filename, either as default or calling GUI config
     call("python IO_setup_main.py --config_option " + str(config_input_output_options).replace('[', '"').replace(']', '"') + " --config_filename " + temp_config_filename, shell=True)
-    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options)
+    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options, ScriptName)
 
-def IO_config_setup_brief(window, y_multiplier_integer):
-    IO_setup_button = tk.Button(window, text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,y_multiplier_integer))
+def IO_config_setup_brief(window, y_multiplier_integer,ScriptName):
+    IO_setup_button = tk.Button(window, text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,y_multiplier_integer,ScriptName))
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer,
                                                    IO_setup_button, True)
@@ -501,7 +475,10 @@ def IO_config_setup_brief(window, y_multiplier_integer):
                                                    y_multiplier_integer,
                                                    IO_setup_menu)
 
-def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief):
+# ScriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main
+#   it can be used for handling GUIs with special treatment (e.g., IO_setup_main which does not have a RUN button)
+#   for consistency, it should also be used for NLP_main that for now relies on a previous approach based on config (i.e., NLP-config.txt)
+def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,ScriptName=''):
     import IO_libraries_util
     from PIL import Image, ImageTk
 
@@ -543,7 +520,7 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief)
     # there should only be one case of
     #   config_input_output_options = [0,0,0,0,0,0]
     #   in NLP_GUI (NLP-config.txt) since no IO lines are displayed
-    # default_config_filename = 'default-config-txt'
+    # default_config_filename = 'default-config.txt'
     # if config_input_output_options!=[0,0,0,0,0,0]:
     #     # use default config at first
     #     IO_options=config_util.readConfig(default_config_filename,config_input_output_options)
@@ -571,13 +548,11 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief)
     #	5 for txt, html (used in annotator)
     #	6 for txt, csv (used in SVO)
 
-    if config_filename != 'NLP-config.txt':
+    if ScriptName != 'NLP_menu_main':
         if not IO_setup_display_brief:
             IO_config_setup_full(window, y_multiplier_integer)
         else:
-            IO_config_setup_brief(window, y_multiplier_integer)
-    else:
-        activateRunButton()
+            IO_config_setup_brief(window, y_multiplier_integer,ScriptName)
 
     old_license_file=os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-1.0.txt')
     if os.path.isfile(old_license_file):
@@ -596,8 +571,11 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief)
 #GUI bottom buttons widgets (ReadMe, TIPS, RUN, CLOSE)
 #__________________________________________________________________________________________________________________
 
+# ScriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main
+#   it can be used for handling GUIs with special treatment (e.g., IO_setup_main which does not have a RUN button)
 def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
-               TIPS_lookup,TIPS_options, IO_setup_display_brief):
+               TIPS_lookup,TIPS_options, IO_setup_display_brief,ScriptName=''):
+
     """
     :type TIPS_options: object
     """
@@ -615,13 +593,11 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
     #   since there is no output to display
     # if config_input_output_options!=[0, 0, 0, 0, 0, 0] and config_filename!='default-config.txt':
 
-    # inspect.stack() will return the stack information
-    ScriptName = inspect.stack()[1]
-    # "IO_setup_main.py" has no Excel display
+    # "IO_setup_main" has no Excel display
     # GUIs that serve only as frontend GUIs for more specialized GUIs should NOT display Open ooutput and Excel tickboxes
     #   that is the case, for instance, in narrative_analysis_main
     #   in this case config_input_output_options = [0, 0, 0, 0, 0, 0]
-    if config_input_output_options!= [0, 0, 0, 0, 0, 0] and config_filename != 'NLP-config.txt' and config_filename != 'default-config.txt' and not "IO_setup_main.py" in ScriptName:
+    if config_input_output_options!= [0, 0, 0, 0, 0, 0] and config_filename != 'NLP-config.txt' and config_filename != 'default-config.txt' and not "IO_setup_main" in ScriptName:
         #open out csv files widget defined above since it is used earlier
         open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Automatically open output csv file(s)", "Do NOT automatically open output csv file(s)"))
         open_csv_output_label.configure(text="Automatically open output csv file(s)")
@@ -635,7 +611,7 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
         create_Excel_chart_output_checkbox.set(1)
         y_multiplier_integer=y_multiplier_integer+1
 
-    if "IO_setup_main.py" in ScriptName:
+    if "IO_setup_main" in ScriptName:
         if config_input_output_options[1]!=0 and config_input_output_options[2]!=0:
             y_multiplier_integer = y_multiplier_integer + 2
         else:
@@ -702,11 +678,8 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
             reminders_util.resetReminder(config_filename,reminders_dropdown_field.get())
     reminders_dropdown_field.trace('w', trace_reminders_dropdown)
 
-    # if config_filename != 'default-config.txt':
-    # inspect.stack() will return the stack information
-    ScriptName=inspect.stack()[1]
-    # there is no RUN button when setting up IO information
-    if not "IO_setup_main.py" in ScriptName:
+    # there is no RUN button when setting up IO information in IO_setup_main.py
+    if not "IO_setup_main" in ScriptName:
         run_button.place(x=GUI_IO_util.run_button_x_coordinate, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     def _close_window():
@@ -735,18 +708,14 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
         mb.showwarning(title='Fatal error', message="The licence agreement file 'LICENSE-NLP-1.0.txt' could not be found in the 'lib' subdirectory of your main NLP Suite directory\n" + GUI_IO_util.NLPPath + "\n\nPlease, make sure to copy this file in the 'lib' subdirectory.\n\nThe NLP Suite will now exit.")
         sys.exit()
 
-    IO_setup_menu_var.trace("w",lambda x,y,z: display_IO_setup(window, IO_setup_display_brief,config_filename,config_input_output_options))
+    IO_setup_menu_var.trace("w",lambda x,y,z: display_IO_setup(window, IO_setup_display_brief,config_filename,config_input_output_options,ScriptName))
 
-    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options)
+    # this will display the available IO options for the GUI
+    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options,ScriptName)
 
-    # set the state (enabled/disabled) of the RUN button
-    #   depending upon IO widgets; no IO info, RUN disabled
-    configArray, missingIO=config_util.setup_IO_configArray(window,config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path)
-    run_button_state=GUI_IO_util.check_missingIO(window,missingIO,config_filename)
-    run_button.configure(state=run_button_state)
-
+    # GUI front end is used for those GUIs that do not have any code to run functions but the buttons just open other GUIs
+    configArray =[]
     if ('GUI front end' not in reminder_options) and (configArray==['EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE']):
-        # reminders_util.No_IO_reminder(config_filename)
         # recompute the options since a new line has been added
         message=reminders_util.message_GUIfrontend
     else:
@@ -757,5 +726,12 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
         reminders_util.checkReminder(config_filename,
                                      reminders_util.reminder_options_GUIfrontend,
                                      message)
+
+    # routine_options = reminders_util.getReminder_list(config_filename)
+    result = reminders_util.checkReminder('*',
+                                          reminders_util.title_options_IO_configuration,
+                                          reminders_util.message_IO_configuration)
+    if result != None:
+        routine_options = reminders_util.getReminder_list(config_filename)
 
     window.protocol("WM_DELETE_WINDOW", _close_window)
