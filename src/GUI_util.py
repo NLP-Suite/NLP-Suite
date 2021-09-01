@@ -169,7 +169,7 @@ def display_release():
     # second digit for new features
     # third digit for bug fixes and minor changes to current version
     # must also change the Release version in readMe on GitHub
-    release_version_var.set("1.5.1")
+    release_version_var.set("1.5.2")
 
     y_multiplier_integer=-.7
 
@@ -349,8 +349,6 @@ def IO_config_setup_full (window, y_multiplier_integer):
     else:
         IO_options=config_util.get_IO_options(config_filename,config_input_output_options)
 
-    # activateRunButton(False)
-
     # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
     global select_softwareDir_button, select_input_file_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_file_button, select_output_dir_button
     if config_input_output_options[1]>0:
@@ -377,8 +375,6 @@ def IO_config_setup_full (window, y_multiplier_integer):
             # buttons are set to normal or disabled in selectFile_set_options
             select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
 
-        # inputFilename.trace("w",activateRunButton(False))
-
         # place the INPUT file widget
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_file_button)
         tk.Label(window, textvariable=inputFilename).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
@@ -397,8 +393,6 @@ def IO_config_setup_full (window, y_multiplier_integer):
         if IO_options[2]=="EMPTY LINE":
             input_main_dir_path.set("")
 
-        # input_main_dir_path.trace("w",activateRunButton(False))
-
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_main_dir_button)
         tk.Label(window, textvariable=input_main_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
 
@@ -411,8 +405,6 @@ def IO_config_setup_full (window, y_multiplier_integer):
     if config_input_output_options[3]==1: #secondary directory input
         # buttons are set to normal or disabled in selectFile_set_options
         select_input_secondary_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT secondary directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path, input_secondary_dir_path,"Select INPUT secondary TXT directory"))
-
-        # input_secondary_dir_path.trace("w",activateRunButton(False))
 
         y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_secondary_dir_button)
         tk.Label(window, textvariable=input_secondary_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
@@ -433,14 +425,10 @@ def IO_config_setup_full (window, y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_output_file_button)
         tk.Label(window, textvariable=outputFilename).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
 
-        # outputFilename.trace("w",activateRunButton(False))
-
     #OUTPUT directory ______________________________________________
     if config_input_output_options[5]==1: #output directory
         # buttons are set to normal or disabled in selectFile_set_options
         select_output_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select OUTPUT files directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select OUTPUT files directory"))
-
-        # output_dir_path.trace("w",activateRunButton(False))
 
         y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_output_dir_button)
         tk.Label(window, textvariable=output_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
@@ -696,7 +684,7 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
         else:
             temp_config_filename = config_filename
 
-        GUI_IO_util.exit_window(window, temp_config_filename, config_input_output_options, configArray)
+        GUI_IO_util.exit_window(window, temp_config_filename, ScriptName, config_input_output_options, configArray)
 
     close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
     # get_help_button_x_coordinate()+820
