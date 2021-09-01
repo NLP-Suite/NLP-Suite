@@ -188,19 +188,10 @@ Franzosi, Roberto, Wenqin Dong, Alberto Purpura. 2020. "The Shape of Stories." U
 #configArray is computed by setup_IO_configArray in config_util
 # config_input_output_options is set to [0, 0, 0, 0, 0, 0] for GUIs that are placeholders for more specialized GUIs
 #   in these cases (e.g., narrative_analysis_main, there are no I/O options to save
-def exit_window(window,configFilename, config_input_output_options, configArray):
-    if configFilename!="NLP-config.txt" and config_input_output_options != [0, 0, 0, 0, 0, 0]:
-        # check whether the current IO configuration
-        #	is different from the saved configuration
-        #	if changed you want to ask the question
+def exit_window(window,configFilename, ScriptName, config_input_output_options, configArray):
+    if ScriptName!='NLP_menu_main' and config_input_output_options != [0, 0, 0, 0, 0, 0]:
+    # if configFilename!="NLP-config.txt" and config_input_output_options != [0, 0, 0, 0, 0, 0]:
         config_util.saveConfig(window,configFilename, configArray)
-        # if config_util.checkSavedConfig(configFilename, configArray)==False:
-        # 	msgbox_save = tk.messagebox.askyesnocancel("Save Input/Output Configuration", "Since the paths configuration has changed (i.e., input and output paths), would you like to save the paths configuration? \n\nIf you save the paths configuration you will not need to enter them again next time you run this Python script.")
-        # 	if msgbox_save == True: #yes
-        # 		config_util.saveConfig(window,configFilename, configArray)
-        # 	elif msgbox_save is None: #cancel
-        # 		window.focus_force()
-        # 		return
     window.destroy()
     exit(0)
 

@@ -74,6 +74,8 @@ def checkConfigDirExists(configFile, dirName, IO):
             dirName = ''
     return dirName
 
+# the function either reads available IO_options saved in the config file or
+#   takes the numeric list of I/O values (e.g. [0,1,0,0,1,0]) and converts it to a string list of items 'EMPTY LINE'
 def get_IO_options(config_filename,config_input_output_options):
     if config_input_output_options!=[0,0,0,0,0,0]:
         # use default config at first
@@ -88,10 +90,7 @@ def get_IO_options(config_filename,config_input_output_options):
     if IO_options==None or IO_options==[]:
         IO_options=[]
         for i in range(len(config_input_output_options)):
-            if config_input_output_options[i]>0:
-                lineValue="EMPTY LINE"
-            else:
-                lineValue=""
+            lineValue = "EMPTY LINE"
             IO_options.append(lineValue)
     return IO_options
 
@@ -108,7 +107,7 @@ def get_IO_options(config_filename,config_input_output_options):
 # GUI_util calls setup_IO_configArray as second step
 #   config_array is config_input_output_options
 #   for examples, for NLP.py config_array=[0,4,1,0,0,1]
-
+# returns a list input_output_options
 def readConfig(configFile, config_array):
     # configFile_basename is the filename w/o the full path
     input_output_options = []
@@ -196,6 +195,9 @@ def writeConfigFile(configFilename, configArray):
         with open(os.path.join(GUI_IO_util.configPath, configFilename), "w+", newline='', encoding='utf-8',
                   errors='ignore') as f:
             for i in range(0, len(configArray)):
+                # all empty items are set to EMPTY LINE
+                if configArray[i]=='':
+                    configArray[i]='EMPTY LINE'
                 f.write(configArray[i])
                 f.write('\n')
         f.close()
@@ -209,25 +211,36 @@ def writeConfigFile(configFilename, configArray):
 # returns True if the IO values are all blank
 #   or are the same as the saved ones in either
 #   GUI config or default config
-# When True, there no need to ask the question to save
+# When True, i.e., saved config and current config are the same, there will be need to ask the question to save
 def checkSavedConfig(configFilename, configArray):
     currentStringArray = ''
     savedStringArray = ''
+    IO_setup_display_string=''
     for i in range(0, len(configArray)):
         currentStringArray = currentStringArray + configArray[i]
-    # get config saved values
+    # get config saved values; savedConfigArray is a list []
     savedConfigArray = readConfig(configFilename, configArray)
     for i in range(0, len(savedConfigArray)):
         savedStringArray = savedStringArray + savedConfigArray[i]
+        # compute the IO_setup_display_string for display brief
+        # head is path, tail is filename
+        if i == 1:
+            if savedConfigArray[i]!='' and savedConfigArray[i]!='EMPTY LINE':
+                head, tail = os.path.split(savedConfigArray[i])
+                IO_setup_display_string = "INPUT FILE: " + str(tail)
+        if i == 2:
+            if savedConfigArray[i]!='' and savedConfigArray[i]!='EMPTY LINE':
+                head, tail = os.path.split(savedConfigArray[i])
+                IO_setup_display_string = "INPUT DIR: " + str(tail)
+        if i == 5:
+            if savedConfigArray[i] != '' and savedConfigArray[i] != 'EMPTY LINE':
+                head, tail = os.path.split(savedConfigArray[i])
+                IO_setup_display_string = IO_setup_display_string+"\nOUTPUT DIR: " + str(tail)
 
-    if (currentStringArray != emptyConfigString and
-            currentStringArray != savedStringArray):
-        return False
+    if (currentStringArray != emptyConfigString and currentStringArray != savedStringArray):
+        return False, IO_setup_display_string
     else:
-        return True
-
-    # Write out saved config information to a txt file
-
+        return True, IO_setup_display_string
 
 # Takes in the name of the config file (including .txt extension), the number of paths to save (nSaves)
 # and an array that should contain all the input-output files & dir
@@ -248,7 +261,7 @@ def checkSavedConfig(configFilename, configArray):
 # input_output_options[3] 0 NO input secondary dir
 # input_output_options[4] 0 NO output file
 # input_output_options[5] 0 NO output dir
-
+# MUTUALLY EXCLUSIVE OPTIONS (i.e., IInput file and input dir) ARE SAVED WITH A BLANK VALUE WHEN NOT PRESENT
 def saveConfig(window, configFilename, configArray, silent=False):
     # for GUIs with no I/O widgets configArray 
     #   is empty lines
@@ -261,7 +274,6 @@ def saveConfig(window, configFilename, configArray, silent=False):
         return
     currentStringArray = ''
     configFileWritten = False
-    defaultConfigFileWritten = False
     if os.path.isdir(GUI_IO_util.configPath) == False:
         try:
             os.mkdir(GUI_IO_util.configPath)
@@ -270,16 +282,6 @@ def saveConfig(window, configFilename, configArray, silent=False):
                            message="The command failed to create the Config directory.\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
             return
 
-    # when no default-config.txt file has been saved
-    #   a default-config-txt can be saved
-    # In reading the config file for a GUI tool, 
-    #   when BOTH the default-config.txt file and
-    #   specific GUI config file are present
-    #   the specific GUI config file will take precedence
-    # otherwise the default-config.txt will always be used for all tools
-
-    # if there are no selected IO values in the displayed GUI
-    #   exit
     for i in range(0, len(configArray)):
         currentStringArray = currentStringArray + configArray[i]
     if currentStringArray == emptyConfigString:
@@ -288,60 +290,19 @@ def saveConfig(window, configFilename, configArray, silent=False):
     #   and current IO values = saved IO values 
     #   exit without asking save question    
     if os.path.isfile(os.path.join(GUI_IO_util.configPath, configFilename)) == True:
-        # check config file content against current values
-        if checkSavedConfig(configFilename, configArray) == True:
+        # check config file content against current values; if the same, i.e., True, exit with no question
+        sameValues, IO_setup_display_string=checkSavedConfig(configFilename, configArray)
+        if sameValues==True:
             return
-    # else:  # NO GUI config
-    #     # check default config
-    #     if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)) == True:
-    #         # check config file content against current values
-    #         if checkSavedConfig(defaultConfigFilename, configArray) == True:
-    #             return
-
-    # There IS GUI config ask question to save in GUI config
-    #   There is also default config 
-    #     If IO values in default config are the same as current exit
-    #     Else ask question if you want to save as default as well
-    if os.path.isfile(os.path.join(GUI_IO_util.configPath, configFilename)) == True:
-        if silent == True:
-            saveGUIconfig = True
         else:
-            saveGUIconfig = mb.askyesno("Save IO values to " + configFilename,
-                                        "The selected input/output options are different from the IO values previously saved in\n\n" + configFilename + "\n\nDo you want to replace the previously saved IO values with the current ones?")
-        if saveGUIconfig == True:
-            configFileWritten = writeConfigFile(configFilename, configArray)
-            # check default config
-            # temporarily disconnected
-            # if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)) == True:
-            #     if silent == True:
-            #         saveDefault = False
-            #     else:
-            #         saveDefault = mb.askyesno("Save IO values to default-config.txt",
-            #                                   "There is also a default-config.txt with IO options different from the currently selected ones.\n\nDo you want to update the default values saving the new IO values?")
-            #     if saveDefault:
-            #         defaultConfigFileWritten = writeConfigFile(defaultConfigFilename, configArray)
+            if silent == True:
+                saveGUIconfig = True
+            else:
+                saveGUIconfig = mb.askyesno("Save I/O values to " + configFilename,
+                                            'The selected Input/Output options are different from the I/O values previously saved in "' + configFilename + '"' + ' listed below in succinct form for readability:\n\n' + IO_setup_display_string + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
+            if saveGUIconfig == True:
+                configFileWritten = writeConfigFile(configFilename, configArray)
     else:  # no GUI config available
-        # temporarily disconnected
-        # if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)) == False:
-        #     saveDefault = mb.askyesno("Save IO values to default-config.txt",
-        #                               "If the input/output options you have selected are likely to be your default options to be used for all NLP Suite tools, would you like to save the options as your preferred IO options?\n\nYou can always change these options at any time and for any tool. Some tools (e.g., Stanford CoreNLP) may need additional IO information (e.g., the directory where you saved Stanford CoreNLP).\n\nSave?")
-        #     if saveDefault:
-        #         defaultConfigFileWritten = writeConfigFile(defaultConfigFilename, configArray)
-        #     else:
-        #         saveGUIconfig = mb.askyesno("Save IO values to " + configFilename,
-        #                                     "Do you want to save the selected input/output options in\n\n" + configFilename + "\n\nIF YOU DO SO, THE IO VALUES IN THIS GUI-SPECIFIC CONFIG FILE WILL ALWAYS BE USED, ALTHOUGH, YOU CAN CHANGE THEM AT ANY TIME.\n\nSave?")
-        #         if saveGUIconfig:
-        #             configFileWritten = writeConfigFile(configFilename, configArray)
-        # else:
-        #     saveDefault = mb.askyesno("Save IO values to default-config.txt",
-        #                               "The selected input/output options are different from the IO values previously saved in the default config\n\n" + defaultConfigFilename + "\n\nDo you want to replace the previously saved IO values with the current ones?\n\nTHE NEW VALUES WILL THEN BECOME THE DEFAULT IO VALUES TO BE USED IN ALL SCRIPTS.\n\nSave?")
-        #     if saveDefault:
-        #         defaultConfigFileWritten = writeConfigFile(defaultConfigFilename, configArray)
-        #     saveGUIconfig = mb.askyesno("Save IO values to " + configFilename,
-        #                                 "Do you also want to save the selected input/output options in\n\n" + configFilename + "\n\nIF YOU DO SO, THE IO VALUES IN THIS GUI-SPECIFIC CONFIG FILE WILL ALWAYS BE USED, RATHER THAN THE VALUES IN THE DEFAULT CONFIG. ALL OTHER SCRIPTS WILL NOT BE AFFECTED.\n\nSave?")
-        #     if saveGUIconfig:
-        #         configFileWritten = writeConfigFile(configFilename, configArray)
-        # temporarily copied
             configFileWritten = writeConfigFile(configFilename, configArray)
 
     if configFilename != 'license-config.txt':
@@ -349,11 +310,6 @@ def saveConfig(window, configFilename, configArray, silent=False):
             IO_user_interface_util.timed_alert(window, 3000, 'Warning',
                                                'INPUT and OUTPUT paths configuration have been saved to\n\n' + configFilename,
                                                False)
-        # if defaultConfigFileWritten:
-        #     IO_user_interface_util.timed_alert(window, 3000, 'Warning',
-        #                                        'INPUT and OUTPUT paths configuration have been saved to\n\n' + defaultConfigFilename,
-        #                                        False)
-
 
 # in some circumstances, some buttons are disabled in the GUI
 #   (e.g., in WordNet the input csv file is disabled)
