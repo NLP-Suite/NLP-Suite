@@ -1,3 +1,5 @@
+# Written by Brett Landau, Fall 2020
+
 import sys
 import IO_libraries_util
 import GUI_util
@@ -9,6 +11,7 @@ import os
 import tkinter as tk
 import tkinter.messagebox as mb
 import sqlite3, pandas as pd
+from subprocess import call
 
 import IO_csv_util
 import IO_files_util
@@ -17,7 +20,8 @@ import GUI_IO_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def dbFromCSV(inpath, outpath):
-
+    inpath=inpath.get()
+    outpath=outpath.get()
     dbFileName = os.path.basename(os.path.normpath(inpath)) + ".sqlite"
     dbOutput = outpath + os.sep + dbFileName
     dirSearch = os.listdir(inpath)
@@ -30,7 +34,7 @@ def dbFromCSV(inpath, outpath):
             tableList.append(file[:len(file) - 4])
     if len(tableList) == 0:
         mb.showwarning(title='Warning',
-                       message='There are no csv files in the input directory!')
+                       message='There are no csv files in the input directory.\n\nThe script expects a set of csv files with overlapping ID fields across files in order to construct an SQLite relational database.\n\nPlease, select an input directory that contains csv files and try again.')
         return -1
     print("Found", len(tableList), ".csv files, creating database...")
 
@@ -158,6 +162,8 @@ window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
+inputDir=GUI_util.input_main_dir_path
+outputDir=GUI_util.output_dir_path
 
 GUI_util.GUI_top(config_input_output_options,config_filename, IO_setup_display_brief)
 
@@ -184,8 +190,10 @@ def get_SQLite_file(window,title,fileType):
         SQLite_DB_file.config(state='normal')
         select_SQLite_DB_var.set(filePath)
 
-construct_SQLite_DB_checkbox = tk.Checkbutton(window, text='Construct SQLite database', variable=construct_SQLite_DB_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_checkbox)
+construct_SQLite_DB_button=tk.Button(window, width=23, text='Construct SQLite database',command=lambda: dbFromCSV(inputDir,outputDir))
+#construct_SQLite_DB_checkbox = tk.Checkbutton(window, text='Construct SQLite database', variable=construct_SQLite_DB_var, onvalue=1, offvalue=0)
+#y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_button)
 
 select_SQLite_DB_button=tk.Button(window, width=23, text='Select SQLite database',command=lambda: get_SQLite_file(window,'Select INPUT SQLite file', [("SQLite files", "*.sqlite")]))
 # select_SQLite_DB_button.config(state='disabled')
@@ -286,7 +294,8 @@ def save_query():
                                                filetypes=[('SQL query file','.txt')])
         if filePath is None:
             filePath = ""
-        filePath = str(filePath.name)
+        else:
+            filePath = str(filePath.name)
 
         if len(filePath)>0:
             with open(filePath, 'w+', encoding='utf_8', errors='ignore') as file:
@@ -359,7 +368,6 @@ auto_SQL_var.trace('w',display_SQL)
 
 display_SQL()
 
-
 TIPS_lookup = {'No TIPS available':''}
 TIPS_options='No TIPS available'
 
@@ -376,9 +384,9 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
 
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help", "Please, click on the Construct SQLlite button to construct an SQLite database from a set of INPUT csv files." + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help", "Please, click on the Select SQLite database button to select the database you want to work with.\n\nAn SQLite database has extension sqlite." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help", "Please, using the 'Select DB table' dropdown menu, select the table available in the SQLite database.\n\nOnce an SQLite table has been selected, use the 'Select DB table field' dropdown menu to select a specific field available in the selected table.\n\nClick on the Import SQL query button to import a previously saved query.\n\nClick on the Save SQL query button to save the query currently available in the query text box." + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help", "Please, using the 'Select DB table' dropdown menu, select the table available in the SQLite database.\n\nOnce an SQLite table has been selected, use the 'Select DB table field' dropdown menu to select a specific field available in the selected table.\n\nClick on the Import SQL query button to import a previously saved query.\n\nClick on the Save SQL query button to save the query currently available in the query text box.\n\nSaved and imported queries will be of file type .txt." + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help", "Please, enter an SQL query in the form SELECT ...\n\nYou can visualize a preset template query, using the dropdown menu 'Select the type of SQL query'."+ GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+8+.5),"Help", "Please, using the dropdown menu, select the type of SQL query for which to display a standard template. You will name to change table names and field names to the appropriate nams in your database.\n\nTick the Distinct checkbox to display the SQL query as distinct."+ GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+8+.5),"Help", "Please, using the dropdown menu, select the type of SQL query for which to display a standard template. You will need to change table names and field names to the appropriate names in your database.\n\nTick the Distinct checkbox to display the SQL query as distinct.\n\nClick on the Viw table relations button to visualize the table relations via their overlapping IDs. "+ GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+9+.5),"Help",GUI_IO_util.msg_openOutputFiles)
 
 "COUNT Display a template SQL COUNT query."

@@ -9,11 +9,15 @@ import GUI_IO_util
 import json
 import os
 import difflib
+import pprint
+import sys
+
 
 def OpenIE_sent_data_reorg(sentence):#reorganize the dependencies output of stanford corenlp
     result = {}#store each token's information
     tokens = sentence['tokens']
-    dependencies = sentence["enhancedDependencies"]
+    # dependencies = sentence["enhancedDependencies"]
+    dependencies = sentence["enhancedPlusPlusDependencies"]
     # openie = sentence['openie']
     for token in tokens:
         idx = token["index"]
@@ -67,6 +71,7 @@ def s_o_formation (subjects, sent_data):
 def conj_string(subjects, sent_data): # connect multiple conjugates into a single string
     subj = subjects[0]
     result = sent_data[subj]['word']
+    start_result = result
     subj_gov = sent_data[subj]["govern_dict"]
     for key in subj_gov.keys():
         if "conj" in key:
@@ -77,11 +82,14 @@ def conj_string(subjects, sent_data): # connect multiple conjugates into a singl
                         result = result +  ", " + sent_data[subjects[i]]['word']
                     result = result + ", " + conj + " " + sent_data[subjects[-1]]['word']
                     break
-            else:
+            else: 
                 if len(subjects) == 2 and subjects[-1] == subj_gov[key]:
                     result = result +  " " + conj + " " + sent_data[subjects[-1]]['word']
                     break
-    return result
+    if result != start_result:
+        return result
+    else:
+        return token_connect(subjects, sent_data)
 
 def token_connect(keys, sent_data):
     #if there are multiple tokens with the same dep uner a governor
@@ -212,16 +220,14 @@ def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):#extrac
     v_lemma = verb_token["lemma"]
     vgd = verb_token["govern_dict"]
 
-
-    negation = negation_detect(verb_token, sent_data)
     
+    negation = negation_detect(verb_token, sent_data)
     #form the verb
     #'compound:prt' is the compound part of the verb, usually a preposition that follows the the verb
-    try:
-        if 'compound:prt' in vgd.keys():
-            v_string = v_string + " "  +sent_data[vgd['compound:prt']]['word']
-    except:
-        print('   ERROR in vgd.keys: ' + str(vgd.keys()))
+    if 'compound:prt' in vgd.keys():
+        # v_string = v_string + " "  +sent_data[vgd['compound:prt']]['word']
+        v_string = v_string + " " + token_connect(vgd["compound:prt"], sent_data)
+    
         
     
     #extract subject    
@@ -277,7 +283,7 @@ def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):#extrac
         if len(obl_preps) == 1:
             o_dep = obl_preps[0]
             o, o_idx  = s_o_formation(vgd[obl_preps[0]], sent_data)
-            v_string = v_string + " " + obl_preps[0][4:]
+            v_string = v_string + " " + obl_preps[0][4:].replace("_", " ")
         elif len(obl_preps) > 1:#multiple potential objects that needs selecting
             for oblp in obl_preps:
                 prep = oblp[4:]
@@ -287,27 +293,24 @@ def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):#extrac
                         o, o_idx = s_o_formation(vgd[oblp], sent_data)
                         v_string = v_string + " " + prep
                         break
+        # check for double prepositions, 
+        #example: "people who sit next to each other" (the dep of "other" is "obl:next_to")
+            for oblp in obl_preps:
+                prep = oblp[4:]
+                if "_" in prep:
+                    o_dep = oblp
+                    o, o_idx = s_o_formation(vgd[oblp], sent_data)
+                    v_string = v_string + " " + obl_preps[0][4:].replace("_", " ")
+                    break
+            
 
-    if o == '':
-        if 'obl:tmod' in vgd.keys():
-            tmod_idx = vgd["obl:tmod"]
-            try:
-                # o_dep = "obl:tmod"
-                if tmod_idx in sent_data.keys():
-                    tmod_token = sent_data[tmod_idx]
-                    tmod_gd = tmod_token["govern_dict"]
-                    if "nmod:poss" in tmod_gd.keys():
-                        o, o_idx = s_o_formation(tmod_gd["nmod:poss"], sent_data)
-                        negation = negation or content_negation(tmod_gd["nmod:poss"], sent_data)
 
-            except:
-                print('   ERROR in sent_data.keys: ' + str(sent_data.keys()))
     if o_dep != '':
         negation = negation or content_negation(vgd[o_dep], sent_data)
     return s, v_string, o, negation, o_idx
 
        
-def verb_root(verb_list, token, sent_data):#extract subject, object, and negation of a single verb or multiple verbs that are conjuncts
+def verb_root(verb_list, conj_word, token, sent_data):#extract subject, object, and negation of a single verb or multiple verbs that are conjuncts
     v_prep_text = GUI_IO_util.OpenIE_libPath + os.sep + "verb_prep_json.txt"#json that help with extracting object that follows a preposition
     v_obj_obl_text = GUI_IO_util.OpenIE_libPath + os.sep + "verb_obj_obl_json.txt" #json that help with extracting certain light verb constructions as a whole verb
     with open(v_prep_text) as v_prep_doc:
@@ -331,8 +334,9 @@ def verb_root(verb_list, token, sent_data):#extract subject, object, and negatio
         s, v, o, negation, o_idx = verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json)
         if verb > o_share_idx:#default object needs resetting if it's not following the verb.
             o_set = False
-        if True in negation_list:
-            negation = True
+        if len(negation_list) > 0:
+            if negation_list[0] == True and conj_word == "or":
+                negation = True
             
             
         
@@ -373,17 +377,19 @@ def pred_root(token, gov_dict, sent_data):# returns one triplet of subject-link 
         negation = negation or content_negation(gov_dict["nsubj"], sent_data)
     if "cop" in gov_dict.keys():
         # v = sent_data[gov_dict["cop"]]['word']
+        # if v != "":
         v = token_connect(gov_dict["cop"], sent_data) + " " +v 
+        # else:
+        #     v = token_connect(gov_dict["cop"], sent_data)
         negation = negation or content_negation(gov_dict["cop"], sent_data)
-    if "aux" in gov_dict.keys():
+    if "aux" in gov_dict.keys() and v != "":
         v = token_connect(gov_dict["aux"], sent_data) + " " +v 
         negation = negation or content_negation(gov_dict["aux"], sent_data)
     o = token["word"]
-    try:
-        if "case" in gov_dict.keys():
-            v = v + " " + sent_data[gov_dict["case"]]['word']
-    except:
-        print('   ERROR in gov_dict.keys: ' + str(gov_dict.keys()))
+    if "case" in gov_dict.keys() and v != "":
+        # v = v + " " + sent_data[gov_dict["case"]]['word']
+        v = v + " " + token_connect(gov_dict["case"], sent_data)
+
     return s, v, o, negation
 
 
@@ -403,7 +409,7 @@ def negation_detect(token, sent_data):#detect if there's negation associated wit
     result = False
     if len(gov_dict.keys()) == 0:
         return result
-    dep_list = ["advmod", "det", 'cc:preconj', 'cc', 'mark']#the common dep of tokens tokens in negation_tokens
+    dep_list = ["advmod", "det", 'cc:preconj', 'cc', 'mark', 'aux']#the common dep of tokens tokens in negation_tokens
     negation_tokens = ["no", "not", "n't", "seldom", "without","never", "hardly", "neither", "nor"]
     for dep in dep_list:
         #seek for negation recursively
@@ -440,8 +446,8 @@ def link_verb_LVC_extraction(token, gov_dict, sent_data):
     link_verb_LVC_text = GUI_IO_util.OpenIE_libPath + os.sep + "link_verb_LVC_json.txt"#json that help with extracting object that follows a preposition
     with open(link_verb_LVC_text) as link_verb_LVC_doc:
         link_verb_LVC_json = json.load(link_verb_LVC_doc)
-
-    if token["lemma"] in link_verb_LVC_json.keys():#that token is the dependency ROOT (the syntactical head of other tokens in that LVC) of that LVC
+    
+    if token["lemma"] in link_verb_LVC_json.keys():#that token is the dependency ROOT (the syntactical head of other tokens in that LVC) of that LVC 
         for conb in link_verb_LVC_json[token["lemma"]]:
             start_index= token["index"]
             end_index= token["index"]
@@ -473,17 +479,17 @@ def link_verb_LVC_extraction(token, gov_dict, sent_data):
                                 negation = negation or content_negation(gov_dict["nsubj"], sent_data)
                             return s, v, o, negation
     return "", "", "", negation
-
-
-
-
-
-
-
-
-
-
-
+                            
+                            
+                            
+                            
+                    
+                    
+                    
+                        
+            
+    
+    
         
 def SVO_extraction (sent_data): #returns columns of the final output
 
@@ -498,7 +504,7 @@ def SVO_extraction (sent_data): #returns columns of the final output
     s = "Someone?"#default subject
     v = ""
     o = ""
-
+    
     link_verb_LVC_text = GUI_IO_util.OpenIE_libPath + os.sep + "verb_obj_obl_json.txt"
     for key in sent_data.keys():#traverse each token token in that sentence
         negation = False 
@@ -516,7 +522,7 @@ def SVO_extraction (sent_data): #returns columns of the final output
             L.append(token["word"])
         
         
-
+        
         gov_dict = token["govern_dict"]#the dictionary that contains information of the dep and index of tokens whose syntactical head is the corrent token
         if ("VB" in token["pos"]) and ("advcl" not in token['deprel']) and ("xcomp" not in token['deprel'])and (token['deprel'] != "dep") and (token['deprel'] != "acl"):#if the verb has not been processed and its dep is not a special dep that will be processed independently
             # If the current token is a verb
@@ -526,7 +532,7 @@ def SVO_extraction (sent_data): #returns columns of the final output
                 #verb_list will contain the other verbs in this sentence that are the current verb's conjunct
                 #verb_index_conj is the conjunct token (and, or, nor, etc.)
                 CollectedVs.extend(verb_list)
-                svo_verb, negation_verb = verb_root(verb_list, token, sent_data)#processing
+                svo_verb, negation_verb = verb_root(verb_list, conj_word, token, sent_data)#processing
                 for i in range(len(svo_verb)):
                     s = svo_verb[i][0]
                     v = svo_verb[i][1]
@@ -539,9 +545,9 @@ def SVO_extraction (sent_data): #returns columns of the final output
                         SVO.append([s, v, o])
                         N.append(n)
                
-
-
-        else:#if that token is not a verb
+        
+        
+        else:#if that token is not a verb 
             #check if that token is a part of an LVC that starts with a link verb (like "be responsible for")
             s,v,o, negation = link_verb_LVC_extraction(token, gov_dict, sent_data)
             if v != "" and ( s != "Someone?" or o != ''):
@@ -549,21 +555,23 @@ def SVO_extraction (sent_data): #returns columns of the final output
                     SVO.append([s, v, o])
                     N.append(negation)
             #check if the token is a predicative modifier
-            elif (token["deprel"] == "ROOT" or token["deprel"] == "parataxis") and "NN" in token["pos"]:#Subject -> Verb(be) -> predicative nominative
+            elif (token["deprel"] == "ROOT" or token["deprel"] == "parataxis") and ("NN" in token["pos"] or token["pos"] == "PRP"):#Subject -> Verb(be) -> predicative nominative
                 s, v, o, negation = pred_root(token, gov_dict, sent_data)
-
+                
                 if v != "" and ( s != "Someone?" or o != ''):
                     if [s, v, o] not in SVO:#avoid repetition
                         SVO.append([s, v, o])
                         N.append(negation)
-
-
+            
+        
         acl_key = ""#detect if there's clausal modifier whose syntactical head is the current token
         #find the dep of the clausal modifier (acl or acl:relcl)
         if "acl" in gov_dict.keys():
             acl_key = "acl"
         elif "acl:relcl" in gov_dict.keys():
              acl_key = "acl:relcl"
+        elif "dep" in gov_dict.keys():
+             acl_key = "dep"
         if acl_key != "":
         
             if isinstance(gov_dict[acl_key], list):
@@ -575,7 +583,7 @@ def SVO_extraction (sent_data): #returns columns of the final output
                 v_token = sent_data[v_id]
                 if "VB" in v_token["pos"]:
                     CollectedVs.append(v_id)
-                    svo_acl, negation_acl = verb_root([v_id], v_token, sent_data)
+                    svo_acl, negation_acl = verb_root([v_id], "",v_token, sent_data)
                     if len(svo_acl) != 0:
                         if svo_acl[0][0] == "Someone?":
                             #if the subject is missing in the dependency, the subject of the clausal modifier is the token that it modifies (syntactical head)

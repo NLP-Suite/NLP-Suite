@@ -59,7 +59,49 @@ stanfordnlp
 twython
 
 #used by Excel_util.py for visualzing Excel charts
-openpyxl~=3.0.6
+openpyxl~=3.0.6-------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #used by GIS_main.py for generating Google Earth KML files, wordclouds_main
 geopy~=2.1.0
@@ -70,9 +112,9 @@ tkcolorpicker~=2.1.3
 
 #used by Gensim, topic modeling script
 gensim
+pyLDAvis~=2.1.2
 IPython # THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA; but... not!
 spacy
-pyLDAvis~=2.1.2
 # pprint #THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA
 # matplotlib #THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA
 
