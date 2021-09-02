@@ -46,33 +46,51 @@ def Google_API_Config_Save(Google_API):
                                message='The Google API key\n\n' + Google_API + '\n\nhas been saved to ' + GoogleConfigFilename + '."\n\nIt will read in automatically every time you select the Google geocoder.')
             file1.close()
 
-
 # fileName with path
 def checkConfigFileExists(configFile, fileName, IO):
-    if fileName != '' and fileName != 'EMPTY LINE':
-        if not os.path.isfile(fileName):
-            # must pass the right config filename in case there is only the default config
-            if (not os.path.isfile(configFile) and
-                    os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename))):
-                configFile = defaultConfigFilename
-            mb.showwarning(title='File error',
-                           message="The " + IO + " file saved in " + configFile + "\n\n" + fileName + "\n\nno longer exists. It must have been deleted or moved.\n\nPlease, select a new " + IO + " file and try again!")
-            fileName = ''
-    return fileName
+    error=False
+    # check that the config file exists first
+    if not os.path.isfile(os.path.join(GUI_IO_util.configPath,configFile)):
+        error = True
+        mb.showwarning(title='File error',
+                       message='The "' + configFile + '" config file does not exist. It must have been never created, deleted, or moved.\n\nYou must re-create the file by selecting the appropriate I/O options, save them, and try again!')
+        fileName = ''
+    else:
+        if fileName != '' and fileName != 'EMPTY LINE':
+            if not os.path.isfile(fileName):
+                # must pass the right config filename in case there is only the default config
+                if (not os.path.isfile(configFile) and
+                        os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename))):
+                    configFile = defaultConfigFilename
+                mb.showwarning(title='File error',
+                               message="The " + IO + " file saved in " + configFile + "\n\n" + fileName + "\n\nno longer exists. It must have been deleted or moved.\n\nPlease, select a new " + IO + " file and try again!")
+                fileName = ''
+    return error, fileName
 
 
 # fileName with path
 def checkConfigDirExists(configFile, dirName, IO):
-    if dirName != '' and dirName != 'EMPTY LINE':
-        if not os.path.isdir(dirName):
-            # must pass the right config filename in case there is only the default config
-            if (not os.path.isfile(configFile) and
-                    os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename))):
-                configFile = defaultConfigFilename
-            mb.showwarning(title='Directory error',
-                           message="The " + IO + " directory saved in " + configFile + "\n\n" + dirName + "\n\nno longer exists. It must have been deleted or moved.\n\nPlease, select a new " + IO + " directory and try again!")
-            dirName = ''
-    return dirName
+    # the error variable is used to avoid checking repeatedly, with repeated error messages, when checking the config file
+    error=False
+    # check that the config file exists first; add path to file
+    # configFile = os.path.isfile(os.path.join(GUI_IO_util.configPath,configFile))
+    if not os.path.isfile(os.path.join(GUI_IO_util.configPath,configFile)):
+        error = True
+        mb.showwarning(title='File error',
+                       message='The "' + configFile + '" config file does not exist. It must have been never created, deleted, or moved.\n\nYou must re-create the file by selecting the appropriate I/O options, save them, and try again!')
+
+        dirName = ''
+    else:
+        if dirName != '' and dirName != 'EMPTY LINE':
+            if not os.path.isdir(dirName):
+                # must pass the right config filename in case there is only the default config
+                if (not os.path.isfile(configFile) and
+                        os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename))):
+                    configFile = defaultConfigFilename
+                mb.showwarning(title='Directory error',
+                               message="The " + IO + " directory saved in " + configFile + "\n\n" + dirName + "\n\nno longer exists. It must have been deleted or moved.\n\nPlease, select a new " + IO + " directory and try again!")
+                dirName = ''
+    return error, dirName
 
 # the function either reads available IO_options saved in the config file or
 #   takes the numeric list of I/O values (e.g. [0,1,0,0,1,0]) and converts it to a string list of items 'EMPTY LINE'
@@ -217,10 +235,14 @@ def checkSavedConfig(configFilename, configArray):
     savedStringArray = ''
     IO_setup_display_string=''
     for i in range(0, len(configArray)):
+        if configArray[i]=='':
+            configArray[i] = 'EMPTY LINE'
         currentStringArray = currentStringArray + configArray[i]
     # get config saved values; savedConfigArray is a list []
     savedConfigArray = readConfig(configFilename, configArray)
     for i in range(0, len(savedConfigArray)):
+        if savedConfigArray[i]=='':
+            savedConfigArray[i] = 'EMPTY LINE'
         savedStringArray = savedStringArray + savedConfigArray[i]
         # compute the IO_setup_display_string for display brief
         # head is path, tail is filename
@@ -236,7 +258,6 @@ def checkSavedConfig(configFilename, configArray):
             if savedConfigArray[i] != '' and savedConfigArray[i] != 'EMPTY LINE':
                 head, tail = os.path.split(savedConfigArray[i])
                 IO_setup_display_string = IO_setup_display_string+"\nOUTPUT DIR: " + str(tail)
-
     if (currentStringArray != emptyConfigString and currentStringArray != savedStringArray):
         return False, IO_setup_display_string
     else:
@@ -266,11 +287,11 @@ def saveConfig(window, configFilename, configArray, silent=False):
     # for GUIs with no I/O widgets configArray 
     #   is empty lines
     if (configArray[0] == 'EMPTY LINE' or configArray[0] == '') and \
-        (configArray[1] == 'EMPTY LINE' or configArray[0] == '') and \
-        (configArray[2] == 'EMPTY LINE' or configArray[0] == '') and \
-        (configArray[3] == 'EMPTY LINE' or configArray[0] == '') and \
-        (configArray[4] == 'EMPTY LINE' or configArray[0] == '') and \
-        (configArray[5] == 'EMPTY LINE' or configArray[0] == ''):
+        (configArray[1] == 'EMPTY LINE' or configArray[1] == '') and \
+        (configArray[2] == 'EMPTY LINE' or configArray[2] == '') and \
+        (configArray[3] == 'EMPTY LINE' or configArray[3] == '') and \
+        (configArray[4] == 'EMPTY LINE' or configArray[4] == '') and \
+        (configArray[5] == 'EMPTY LINE' or configArray[5] == ''):
         return
     currentStringArray = ''
     configFileWritten = False

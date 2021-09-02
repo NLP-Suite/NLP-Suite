@@ -190,7 +190,6 @@ Franzosi, Roberto, Wenqin Dong, Alberto Purpura. 2020. "The Shape of Stories." U
 #   in these cases (e.g., narrative_analysis_main, there are no I/O options to save
 def exit_window(window,configFilename, ScriptName, config_input_output_options, configArray):
     if ScriptName!='NLP_menu_main' and config_input_output_options != [0, 0, 0, 0, 0, 0]:
-    # if configFilename!="NLP-config.txt" and config_input_output_options != [0, 0, 0, 0, 0, 0]:
         config_util.saveConfig(window,configFilename, configArray)
     window.destroy()
     exit(0)
