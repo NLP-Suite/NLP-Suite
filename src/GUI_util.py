@@ -169,7 +169,7 @@ def display_release():
     # second digit for new features
     # third digit for bug fixes and minor changes to current version
     # must also change the Release version in readMe on GitHub
-    release_version_var.set("1.5.2")
+    release_version_var.set("1.5.3")
 
     y_multiplier_integer=-.7
 
@@ -254,16 +254,24 @@ def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,titl
 
 # configuration_type is the value displayed on the GUI: Default I/O configuration, Alternative I/O configuration
 def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,ScriptName,*args):
+    error = False
+    fileName = ''
+    dirName = ''
+    checkDefaultConfig = True
     y_multiplier_integer=1
+    # temp_config_filename is used to check the existence of the default or GUI specific config
     if 'Default' in IO_setup_menu_var.get():
+        temp_config_filename='default-config.txt'
         IO_options=config_util.get_IO_options('default-config.txt', config_input_output_options)
     else:
+        temp_config_filename=config_filename
         IO_options=config_util.get_IO_options(config_filename,config_input_output_options)
 
 
     # the full options must always be displayed, even when the brief option is selected;
     #   the reason is that the IO widgets filename, inputDir, and outputDir are used to check missing options and activate the RUN button
 
+    # the next two variables are used in setup display brief
     inputDirName = ''
     outputDirName = ''
 
@@ -272,32 +280,58 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,Sc
     else:
         softwareDir.set(config_util.checkConfigDirExists(config_filename,IO_options[0],'INPUT'))
 
+    # -----------------------------------------------------------------------------------
+    # file name
+
     if IO_options[1]=='' or IO_options[1]=="EMPTY LINE": # INPUT filename
         inputFilename.set('')
     else:
-        inputFilename.set(config_util.checkConfigFileExists(config_filename,IO_options[1],'INPUT'))
+        if error==False:
+            error, fileName = config_util.checkConfigFileExists(temp_config_filename, IO_options[1], 'INPUT')
+        inputFilename.set(fileName)
+
+    # -----------------------------------------------------------------------------------
+    # main input directory
 
     if IO_options[2]=='' or IO_options[2]=="EMPTY LINE": # INPUT main directory
         input_main_dir_path.set('')
     else:
-        input_main_dir_path.set(config_util.checkConfigDirExists(config_filename,IO_options[2],'INPUT'))
+        inputDirName = IO_options[2]
+        if error==False:
+
+            error, dirName = config_util.checkConfigDirExists(temp_config_filename, IO_options[2], 'INPUT')
+        input_main_dir_path.set(dirName)
+
+    # -----------------------------------------------------------------------------------
+    # secondary input directory
 
     if IO_options[3]=='' or IO_options[3]=="EMPTY LINE": # INPUT secondary directory
         input_secondary_dir_path.set('')
     else:
-        input_secondary_dir_path.set(config_util.checkConfigDirExists(config_filename,IO_options[3],'INPUT'))
+        if error==False:
+            error, dirName = config_util.checkConfigDirExists(temp_config_filename, IO_options[3], 'INPUT')
+        input_secondary_dir_path.set(dirName)
 
+    # -----------------------------------------------------------------------------------
+    # output file
+
+    # output files currently never used
     if IO_options[4]=='' or IO_options[4]=="EMPTY LINE": # OUTPUT file name
         outputFilename.set('')
     else:
-        outputFilename.set(config_util.checkConfigFileExists(config_filename,IO_options[4],'OUTPUT'))
+        outputFilename.set(config_util.checkConfigFileExists(temp_config_filename,IO_options[4],'OUTPUT'))
+
+    # -----------------------------------------------------------------------------------
+    # output directory
 
     if IO_options[5]=='' or IO_options[5]=="EMPTY LINE": # OUTPUT directory
         outputDirName = ''
         output_dir_path.set('')
     else:
         outputDirName = IO_options[5]
-        output_dir_path.set(config_util.checkConfigDirExists(config_filename,IO_options[5],'OUTPUT'))
+        if error==False:
+            error, dirName = config_util.checkConfigDirExists(temp_config_filename, IO_options[5], 'OUTPUT')
+        output_dir_path.set(dirName)
 
     # else: #display I/O info briefly
     if IO_setup_display_brief == True and config_input_output_options!=[0,0,0,0,0,0]:
