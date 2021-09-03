@@ -44,7 +44,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         extract_proper_nouns,
         extract_improper_nouns):
 
-    WordNetDir = IO_libraries_util.get_external_software_dir('WordNet_main', 'WordNet')
+    WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('WordNet_main', 'WordNet')
     if WordNetDir == None:
         return
 

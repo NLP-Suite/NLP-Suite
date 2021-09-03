@@ -200,16 +200,17 @@ def check_missingIO(window,missingIO,config_filename,IO_setup_display_brief,Scri
     # the IO_button_name error message changes depending upon the call
     button = "button"
     # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
-    run_button_disabled_msg = "The RUN button is disabled until the required information for all Input/Output fields is entered.\n\n"
+    run_button_disabled_msg = "The RUN button is disabled until the required information for the selected Input/Output fields is entered.\n\n"
     if "IO_setup_main" in ScriptName:
         run_button_disabled_msg = ""
     if IO_setup_display_brief==True:
         IO_button_name = "Setup INPUT/OUTPUT configuration" # when displaying brief
     if IO_setup_display_brief==False:
-        IO_button_name = "Select INPUT & Select OUTPUT" # when displaying full
-        button="buttons"
-    if config_filename=='NLP-config.txt':
-        IO_button_name = "Setup default I/O options" # when displaying from NLP_menu_main
+        if 'NLP_menu_main' in ScriptName:
+            IO_button_name = "Setup default I/O options"  # when displaying from NLP_menu_main
+        else:
+            IO_button_name = "Select INPUT & Select OUTPUT" # when displaying full
+            button="buttons"
     Run_Button_Off=False
     #do not check IO requirements for NLP.py; too many IO options available depending pon the sript run
     # if config_filename=="NLP-config.txt" or config_filename=="social-science-research-config.txt":
@@ -217,9 +218,13 @@ def check_missingIO(window,missingIO,config_filename,IO_setup_display_brief,Scri
         # RUN button always active since several options are available and IO gets checked in the respective scripts
         Run_Button_Off=False
         missingIO=''
+    mutually_exclusive_msg=''
+    if "Input file" in missingIO and "Input files directory" in missingIO:
+        mutually_exclusive_msg='The two I/O options - "Input file" and "Input files directory" - are mutually exclusive. You can only select one or the other. In other words, you can choose to work with a sigle file in input or with many files stored in a directory.\n\n'
+
     if len(missingIO)>0:
         if not silent:
-            mb.showwarning(title='Warning', message='The following required INPUT/OUTPUT information is missing in config file ' + config_filename + ':\n\n' + missingIO + '\n\n' + run_button_disabled_msg + 'Please, click on the "' + IO_button_name + '" ' + button + ' at the top of the GUI and enter the required I/O information.')
+            mb.showwarning(title='Warning', message='The following required INPUT/OUTPUT information is missing in config file ' + config_filename + ':\n\n' + missingIO + '\n\n' + mutually_exclusive_msg + run_button_disabled_msg + 'Please, click on the "' + IO_button_name + '" ' + button + ' at the top of the GUI and enter the required I/O information.')
             Run_Button_Off=True
     if Run_Button_Off==True:
         run_button_state="disabled"
