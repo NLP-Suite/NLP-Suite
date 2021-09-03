@@ -233,7 +233,7 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
     corefed_file = []
 
     # check that the CoreNLPdir as been setup
-    CoreNLPdir=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_coreference_util', 'Stanford CoreNLP')
+    CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_coreference_util', 'Stanford CoreNLP')
     if CoreNLPdir==None:
         return filesToOpen
 

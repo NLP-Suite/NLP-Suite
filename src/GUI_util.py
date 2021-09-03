@@ -2,9 +2,10 @@
 
 import sys
 import GUI_util
+import IO_libraries_util
 
 # Creates a circular dependent imports
-# if install_all_packages(GUI_util.window, "GUI_util", ['tkinter', 'os', 'subprocess', 'PIL']) == False:
+# if IO_libraries_util.install_all_packages(GUI_util.window, "GUI_util", ['tkinter', 'os', 'subprocess', 'PIL']) == False:
 #     sys.exit(0)
 
 import tkinter as tk
@@ -61,7 +62,6 @@ window.bind("<Escape>", clear)
 IO_setup_menu_var = tk.StringVar()
 IO_setup_menu = tk.OptionMenu(window, IO_setup_menu_var, 'Default I/O configuration', 'Alternative I/O configuration')
 IO_setup_var = tk.StringVar()
-# IO_setup_brief_display_area = tk.Text()
 
 select_softwareDir_button=tk.Button()
 select_input_file_button=tk.Button()
@@ -70,7 +70,7 @@ select_input_secondary_dir_button=tk.Button()
 select_output_file_button=tk.Button()
 select_output_dir_button=tk.Button()
 
-softwareDir=tk.StringVar() #StanfordCoreNLP, WordNet, or Mallet
+softwareDir=tk.StringVar() #StanfordCoreNLP, WordNet, Mallet, SENNA
 softwareDir.set('')
 inputFilename=tk.StringVar()
 inputFilename.set('')
@@ -169,7 +169,7 @@ def display_release():
     # second digit for new features
     # third digit for bug fixes and minor changes to current version
     # must also change the Release version in readMe on GitHub
-    release_version_var.set("1.5.3")
+    release_version_var.set("1.5.4")
 
     y_multiplier_integer=-.7
 
@@ -366,7 +366,7 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,Sc
 def activateRunButton(IO_setup_display_brief,ScriptName):
     # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
     silent = False
-    # global config_filename, config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path
+    # # global config_filename, config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path
     configArray, missingIO=config_util.setup_IO_configArray(window,config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path)
     # last parameter True: do not continue/repeat to warn the user about missing options when entering all IOs
     run_button_state=GUI_IO_util.check_missingIO(window,missingIO,config_filename,IO_setup_display_brief,ScriptName,silent)
@@ -506,6 +506,7 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
 
     # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
     global select_softwareDir_button, select_input_file_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_file_button, select_output_dir_button
+    global IO_options
 
     # No top help lines displayed when opening the license agreement GUI
     if config_filename!='license-config.txt':
@@ -517,7 +518,7 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
 
         display_release()
 
-        if config_filename == 'NLP-config.txt':
+        if ScriptName == 'NLP_menu_main':
 
             team_button = tk.Button(window, text='NLP Suite team', width=13, height=1, foreground="red",
                                     command=lambda: GUI_IO_util.list_team(window, config_filename))
@@ -529,8 +530,6 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
                                                            cite_button)
 
     y_multiplier_integer=0
-
-    global IO_options
     missingIO=""
 
     #__________________________________________________________________________________________________________________
@@ -569,6 +568,8 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
     #	4 for any type file
     #	5 for txt, html (used in annotator)
     #	6 for txt, csv (used in SVO)
+
+    # global config_filename, config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path
 
     if ScriptName != 'NLP_menu_main':
         if not IO_setup_display_brief:
@@ -619,7 +620,8 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
     # GUIs that serve only as frontend GUIs for more specialized GUIs should NOT display Open ooutput and Excel tickboxes
     #   that is the case, for instance, in narrative_analysis_main
     #   in this case config_input_output_options = [0, 0, 0, 0, 0, 0]
-    if config_input_output_options!= [0, 0, 0, 0, 0, 0] and config_filename != 'NLP-config.txt' and config_filename != 'default-config.txt' and not "IO_setup_main" in ScriptName:
+    #RF
+    if config_input_output_options!= [0, 0, 0, 0, 0, 0] and ScriptName != 'NLP_menu_main' and config_filename != 'default-config.txt' and not "IO_setup_main" in ScriptName:
         #open out csv files widget defined above since it is used earlier
         open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Automatically open output csv file(s)", "Do NOT automatically open output csv file(s)"))
         open_csv_output_label.configure(text="Automatically open output csv file(s)")
