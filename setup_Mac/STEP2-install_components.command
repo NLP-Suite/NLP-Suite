@@ -5,8 +5,8 @@ git remote add -t \* -f origin https://github.com/NLP-Suite/NLP-Suite.git
 git checkout current-stable
 
 source $HOME/anaconda/bin/activate || true
-conda activate NLP
 conda create -y -n NLP python=3.9
+conda activate NLP
 
 conda install pytorch torchvision cudatoolkit -c pytorch
 conda install -y -c conda-forge scikit-learn
