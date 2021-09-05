@@ -1,14 +1,17 @@
+# Written by Brett Landau, Fall 2020
+
 import sys
 import IO_libraries_util
 import GUI_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "DB_SQL_main.py", ['os', 'tkinter','pandas','sqlite3'])==False:
-	sys.exit(0)
+    sys.exit(0)
 
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
 import sqlite3, pandas as pd
+from subprocess import call
 
 import IO_csv_util
 import IO_files_util
@@ -17,105 +20,124 @@ import GUI_IO_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def dbFromCSV(inpath, outpath):
+    inpath=inpath.get()
+    outpath=outpath.get()
+    dbFileName = os.path.basename(os.path.normpath(inpath)) + ".sqlite"
+    dbOutput = outpath + os.sep + dbFileName
+    dirSearch = os.listdir(inpath)
+    tableList = []
 
-	dbFileName = os.path.basename(os.path.normpath(inpath)) + ".sqlite"
-	dbOutput = outpath + os.sep + dbFileName
-	dirSearch = os.listdir(inpath)
-	tableList = []
+    for file in dirSearch:
+        # Only include .csv files from the input dir
+        if ".csv" in file and len(file) > 4:
+            # Strip off the .csv extension
+            tableList.append(file[:len(file) - 4])
+    if len(tableList) == 0:
+        mb.showwarning(title='Warning',
+                       message='There are no csv files in the input directory.\n\nThe script expects a set of csv files with overlapping ID fields across files in order to construct an SQLite relational database.\n\nPlease, select an input directory that contains csv files and try again.')
+        return -1
+    print("Found", len(tableList), ".csv files, creating database...")
 
-	for file in dirSearch:
-		# Only include .csv files from the input dir
-		if ".csv" in file and len(file) > 4:
-			# Strip off the .csv extension
-			tableList.append(file[:len(file) - 4])
-	if len(tableList) == 0:
-		mb.showwarning(title='Warning',
-					   message='There are no csv files in the input directory!')
-		return -1
-	print("Found", len(tableList), ".csv files, creating database...")
+    if os.path.exists(dbOutput):
+        # Delete the DB if it already exists, we will replace it.
+        os.unlink(dbOutput)
 
-	if os.path.exists(dbOutput):
-		# Delete the DB if it already exists, we will replace it.
-		os.unlink(dbOutput)
+    conn = sqlite3.connect(dbOutput)
+    cur = conn.cursor()
+    for t in tableList:
+        # Replace dashes with underscore, SQLite bug.
+        tableName = t.replace("-", "_")
+        # Read in fullpath of csv file
+        df = pd.read_csv(inpath + os.sep + t + ".csv")
+        df.to_sql(name=tableName, con=conn, index=False)
 
-	conn = sqlite3.connect(dbOutput)
-	cur = conn.cursor()
-	for t in tableList:
-		# Replace dashes with underscore, SQLite bug.
-		tableName = t.replace("-", "_")
-		# Read in fullpath of csv file
-		df = pd.read_csv(inpath + os.sep + t + ".csv")
-		df.to_sql(name=tableName, con=conn, index=False)
+    print("Database saved as", dbOutput)
 
-	print("Database saved as", dbOutput)
-
-	cur.close()
-	conn.close()
-	return dbOutput
+    cur.close()
+    conn.close()
+    return dbOutput
 
 
 def run(inputDir,outputDir, openOutputFiles, createExcelCharts,SQL_query_var, createFromCSV):
 
-	if createFromCSV==1:
-		dbOutput = dbFromCSV(inputDir,outputDir)
-		if dbOutput != -1:
-			# != -1 means that the DB was created successfully, we can use it.
-			# Use the newly created DB to fill in the sqlite selection box
-			select_SQLite_DB_var.set(dbOutput)
-			# Uncheck the box
-			construct_SQLite_DB_var.set(0)
-			mb.showwarning(title='Alert',
-						   message='Your DB has been created and is selected for use. You may now input and run queries.')
-	elif select_SQLite_DB_var.get() != "":
-		# IO_util.timed_alert(GUI_util.window,3000,'Analysis start','Started running Nominalization at',True)
-		print("SQL_query_var", SQL_query_var)
-		dbVar = select_SQLite_DB_var.get()
-		conn = sqlite3.connect(dbVar)
-		cur = conn.cursor()
-		colNames = []
-		results = []
-		try:
-			# SQL_query_var contains the query a user has entered
-			sql_rows = cur.execute(SQL_query_var)
-		except:
-			# Exception as e:
-			# print("error: ", e.__doc__)
-			mb.showwarning(title='Warning',
-						   message='The query you are running did not execute properly. If you are running a template query selected from the dropdown menu of the \'Select the type of SQL query\' widget, you will need to change the table names to the table names in your database.\n\nPlease, check your query and try again.')
-			return
-		for col in cur.description:
-			# .description returns column names from the resulting SQL query
-			# Each column is a 7-tuple, but we just need the first index to get it's name
-			colNames.append(col[0])
-		results.append(colNames)
-		for row in sql_rows:
-			results.append(row)
-		filesToOpen=[outputDir+os.sep+'sql_result.csv']
-		IO_csv_util.list_to_csv(GUI_util.window, results, outputDir+os.sep+'sql_result.csv', colnum=0)
-		if openOutputFiles:
-			IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+    if createFromCSV==1:
+        dbOutput = dbFromCSV(inputDir,outputDir)
+        if dbOutput != -1:
+            # != -1 means that the DB was created successfully, we can use it.
+            # Use the newly created DB to fill in the sqlite selection box
+            select_SQLite_DB_var.set(dbOutput)
+            # Uncheck the box
+            construct_SQLite_DB_var.set(0)
+            mb.showwarning(title='Alert',
+                           message='Your DB has been created and is selected for use. You may now input and run queries.')
+    elif select_SQLite_DB_var.get() != "":
+        # IO_util.timed_alert(GUI_util.window,3000,'Analysis start','Started running Nominalization at',True)
+        print("SQL_query_var", SQL_query_var)
+        dbVar = select_SQLite_DB_var.get()
+        conn = sqlite3.connect(dbVar)
+        cur = conn.cursor()
+        colNames = []
+        results = []
+        try:
+            # SQL_query_var contains the query a user has entered
+            sql_rows = cur.execute(SQL_query_var)
+        except:
+            # Exception as e:
+            # print("error: ", e.__doc__)
+            mb.showwarning(title='Warning',
+                           message='The query you are running did not execute properly. If you are running a template query selected from the dropdown menu of the \'Select the type of SQL query\' widget, you will need to change the table names to the table names in your database.\n\nPlease, check your query and try again.')
+            return
+        for col in cur.description:
+            # .description returns column names from the resulting SQL query
+            # Each column is a 7-tuple, but we just need the first index to get it's name
+            colNames.append(col[0])
+        results.append(colNames)
+        for row in sql_rows:
+            results.append(row)
+        filesToOpen=[outputDir+os.sep+'sql_result.csv']
+        IO_csv_util.list_to_csv(GUI_util.window, results, outputDir+os.sep+'sql_result.csv', colnum=0)
+        if openOutputFiles:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
 
-		cur.close()
-		conn.close()
-	else:
-		mb.showwarning(title='Warning',
-					   message='No SQLite database selected.\n\nPlease, select an SQLite file or tick the checkbox the \'Construct an SQLite database\'.')
+        cur.close()
+        conn.close()
+    else:
+        mb.showwarning(title='Warning',
+                       message='No SQLite database selected.\n\nPlease, select an SQLite file or tick the checkbox the \'Construct an SQLite database\'.')
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(
-								GUI_util.input_main_dir_path.get(),
-								GUI_util.output_dir_path.get(),
-								GUI_util.open_csv_output_checkbox.get(),
-								GUI_util.create_Excel_chart_output_checkbox.get(),
-								SQL_query_entry.get("1.0", "end-1c"),
-								construct_SQLite_DB_var.get())
+                                GUI_util.input_main_dir_path.get(),
+                                GUI_util.output_dir_path.get(),
+                                GUI_util.open_csv_output_checkbox.get(),
+                                GUI_util.create_Excel_chart_output_checkbox.get(),
+                                SQL_query_entry.get("1.0", "end-1c"),
+                                construct_SQLite_DB_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1100x620'
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief = True
+GUI_width = 1100
+GUI_height = 620  # height of GUI with full I/O display
+
+if IO_setup_display_brief:
+    GUI_height = GUI_height - 40
+    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+    increment = 0  # used in the display of HELP messages
+else:  # full display
+    # GUI CHANGES add following lines to every special GUI
+    # +3 is the number of lines starting at 1 of IO widgets
+    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 1  # IO FULL display
+    increment = 1
+
+GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
 GUI_label='Graphical User Interface (GUI) for Relational Database SQL queries'
 config_filename='DB-SQL-config.txt'
 
@@ -136,15 +158,14 @@ config_option=[0,0,1,0,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-# GUI CHANGES add following lines to every special GUI
-# +1 is the number of lines starting at 1 of IO widgets
-y_multiplier_integer=GUI_util.y_multiplier_integer+1
 window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
+inputDir=GUI_util.input_main_dir_path
+outputDir=GUI_util.output_dir_path
 
-GUI_util.GUI_top(config_input_output_options,config_filename)
+GUI_util.GUI_top(config_input_output_options,config_filename, IO_setup_display_brief)
 
 construct_SQLite_DB_var=tk.IntVar()
 select_SQLite_DB_var=tk.StringVar()
@@ -163,14 +184,16 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 def get_SQLite_file(window,title,fileType):
-	#annotator_dictionary_var.set('')
-	filePath = tk.filedialog.askopenfilename(title = title, initialdir =GUI_IO_util.namesGender_libPath, filetypes = fileType)
-	if len(filePath)>0:
-		SQLite_DB_file.config(state='normal')
-		select_SQLite_DB_var.set(filePath)
+    #annotator_dictionary_var.set('')
+    filePath = tk.filedialog.askopenfilename(title = title, initialdir =GUI_IO_util.namesGender_libPath, filetypes = fileType)
+    if len(filePath)>0:
+        SQLite_DB_file.config(state='normal')
+        select_SQLite_DB_var.set(filePath)
 
-construct_SQLite_DB_checkbox = tk.Checkbutton(window, text='Construct SQLite database', variable=construct_SQLite_DB_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_checkbox)
+construct_SQLite_DB_button=tk.Button(window, width=23, text='Construct SQLite database',command=lambda: dbFromCSV(inputDir,outputDir))
+#construct_SQLite_DB_checkbox = tk.Checkbutton(window, text='Construct SQLite database', variable=construct_SQLite_DB_var, onvalue=1, offvalue=0)
+#y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_button)
 
 select_SQLite_DB_button=tk.Button(window, width=23, text='Select SQLite database',command=lambda: get_SQLite_file(window,'Select INPUT SQLite file', [("SQLite files", "*.sqlite")]))
 # select_SQLite_DB_button.config(state='disabled')
@@ -271,7 +294,8 @@ def save_query():
                                                filetypes=[('SQL query file','.txt')])
         if filePath is None:
             filePath = ""
-        filePath = str(filePath.name)
+        else:
+            filePath = str(filePath.name)
 
         if len(filePath)>0:
             with open(filePath, 'w+', encoding='utf_8', errors='ignore') as file:
@@ -344,7 +368,6 @@ auto_SQL_var.trace('w',display_SQL)
 
 display_SQL()
 
-
 TIPS_lookup = {'No TIPS available':''}
 TIPS_options='No TIPS available'
 
@@ -352,14 +375,19 @@ TIPS_options='No TIPS available'
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_corpusData)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_outputDirectory)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", "Please, click on the Construct SQLlite button to construct an SQLite database from a set of INPUT csv files." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help", "Please, click on the Select SQLite database button to select the database you want to work with.\n\nAn SQLite database has extension sqlite." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help", "Please, using the 'Select DB table' dropdown menu, select the table available in the SQLite database.\n\nOnce an SQLite table has been selected, use the 'Select DB table field' dropdown menu to select a specific field available in the selected table.\n\nClick on the Import SQL query button to import a previously saved query.\n\nClick on the Save SQL query button to save the query currently available in the query text box." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help", "Please, enter an SQL query in the form SELECT ...\n\nYou can visualize a preset template query, using the dropdown menu 'Select the type of SQL query'."+ GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(9.5),"Help", "Please, using the dropdown menu, select the type of SQL query for which to display a standard template. You will name to change table names and field names to the appropriate nams in your database.\n\nTick the Distinct checkbox to display the SQL query as distinct."+ GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*10.5,"Help",GUI_IO_util.msg_openOutputFiles)
+    if not IO_setup_display_brief:
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_corpusData)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_outputDirectory)
+    else:
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_IO_setup)
+
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help", "Please, click on the Construct SQLlite button to construct an SQLite database from a set of INPUT csv files." + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help", "Please, click on the Select SQLite database button to select the database you want to work with.\n\nAn SQLite database has extension sqlite." + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help", "Please, using the 'Select DB table' dropdown menu, select the table available in the SQLite database.\n\nOnce an SQLite table has been selected, use the 'Select DB table field' dropdown menu to select a specific field available in the selected table.\n\nClick on the Import SQL query button to import a previously saved query.\n\nClick on the Save SQL query button to save the query currently available in the query text box.\n\nSaved and imported queries will be of file type .txt." + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help", "Please, enter an SQL query in the form SELECT ...\n\nYou can visualize a preset template query, using the dropdown menu 'Select the type of SQL query'."+ GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+8+.5),"Help", "Please, using the dropdown menu, select the type of SQL query for which to display a standard template. You will need to change table names and field names to the appropriate names in your database.\n\nTick the Distinct checkbox to display the SQL query as distinct.\n\nClick on the View table relations button to visualize the table relations via their overlapping IDs. "+ GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+9+.5),"Help",GUI_IO_util.msg_openOutputFiles)
 
 "COUNT Display a template SQL COUNT query."
 "DUPLICATES The query builds a temporary table of duplicate records, then, depending on user's choice, extracts only one occurrence of all duplicate records or all duplicate occurrences except one (all DISTINCT records will not be displayed). Query results can be used to move occurrences of objects for which multiples should not be allowed."
@@ -368,8 +396,8 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
-readMe_message="This Python 3 script can construct an SQLite relational database from a set of input csv files characterized by the presence of overlaping relational fields.\n\nThe script allows to perform SQL queries on any sqlite databases thus constructed."
+readMe_message="This Python 3 script can construct an SQLite relational database from a set of input csv files characterized by the presence of overlapping relational fields.\n\nThe script allows to perform SQL queries on any sqlite databases thus constructed."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
+GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()

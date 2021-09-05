@@ -227,7 +227,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
     ner_dict = {}
 
     # check that the CoreNLPdir as been setup
-    CoreNLPdir = IO_libraries_util.get_external_software_dir('spell_checker_main', 'Stanford CoreNLP')
+    CoreNLPdir, missing_external_software  = IO_libraries_util.get_external_software_dir('spell_checker_main', 'Stanford CoreNLP')
 
     if CoreNLPdir == '':
         return

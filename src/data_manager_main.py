@@ -235,7 +235,25 @@ if __name__ == '__main__':
 
     # GUI section ______________________________________________________________________________________________________________________________________________________
 
-    GUI_size = '1250x680'
+    # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+    #   just change the next statement to True or False IO_setup_display_brief=True
+    IO_setup_display_brief = False
+    GUI_width = 1250
+    GUI_height = 680  # height of GUI with full I/O display
+
+    if IO_setup_display_brief:
+        GUI_height = GUI_height - 40
+        y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+        increment = 0  # used in the display of HELP messages
+    else:  # full display
+        # GUI CHANGES add following lines to every special GUI
+        # +3 is the number of lines starting at 1 of IO widgets
+        # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+        y_multiplier_integer = GUI_util.y_multiplier_integer + 1  # IO FULL display
+        increment = 1
+
+    GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
     GUI_label = 'Graphical User Interface (GUI) for Data Manager'
     config_filename = 'data-manager-config.txt'
     # The 6 values of config_option refer to:
@@ -263,15 +281,12 @@ if __name__ == '__main__':
 
     # GUI CHANGES search for GUI CHANGES
 
-    # GUI CHANGES add following lines to every special GUI
-    # +1 is the number of lines starting at 1 of IO widgets
-    y_multiplier_integer = GUI_util.y_multiplier_integer + 1
     window = GUI_util.window
     config_input_output_options = GUI_util.config_input_output_options
     config_filename = GUI_util.config_filename
     inputFilename = GUI_util.inputFilename
 
-    GUI_util.GUI_top(config_input_output_options, config_filename)
+    GUI_util.GUI_top(config_input_output_options, config_filename,IO_setup_display_brief)
 
     # GUI CHANGES cut/paste special GUI widgets from GUI_util
     csv_file_field_list = []
@@ -1097,32 +1112,35 @@ if __name__ == '__main__':
         resetAll = "\n\nPress the RESET ALL button to clear all values, including csv files and fields, and start fresh."
         plusButton = "\n\nPress the + buttons, when available, to add either a new field from the same csv file (the + button at the end of this line) or a new csv file (the + button next to File at the top of this GUI). Multiple csv files can be used with any of the operations."
         OKButton = "\n\nPress the OK button, when available, to accept the selections made, then press the RUN button to process the query."
+        if not IO_setup_display_brief:
+            GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help", GUI_IO_util.msg_csvFile)
+            GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
+                                          GUI_IO_util.msg_outputDirectory)
+        else:
+            GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                          GUI_IO_util.msg_IO_setup)
 
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help", GUI_IO_util.msg_csvFile)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
-                                      GUI_IO_util.msg_outputDirectory)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
                                       "The label groups together the next two widgets that display the currently selected csv filename and fields.")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 3, "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
                                       "Press the + button to add a new csv file.\n\nThe currently selected csv file is displayed in the next(read-only) widget.")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 4, "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
                                       "Press the RESET CSV FIELD(S) button to clear all selected csv fields and start fresh.\n\nThe currently selected csv fields are displayed in the second (read-only) widget.")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 5, "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
                                       resetAll + "\n\nThe next two (read-only) widgets display the arguments that will be processed when pressing the RUN button for the selected operation.\n\nThe first (read-only) widget displays the currently selected type of operation.\n\nThe second (read-only) widget displays a list of items:\n   csv filename\n   csv column/field.\n   For the Concatenate option the character separator will also be displayed.\n   For the Extract option, the comparator value (e.g., =, >), the WHERE value, and the selected add/or option will be displayed.")
         # empty line to account for the height of the text widget
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 7, "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
                                       "The MERGE option allows you to select several files, merge them together in a single file using the key of overlapping fields (the equivalent of an SQL JOIN operation), and save the output as a new file.\n\nAfter selecting the 'Merge files (Join)' option, press the + button either to add a new csv field or a new csv file (you can add repeatedly more fields and/or files)." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 8, "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
                                       "The CONCATENATE option allows you to select specific fields from one or more csv files, concatenate them together in a new field, and save the output as a new file.\n\nThe character(s) separator must be entered for every new csv field selected.\n\nTo select concatenate fields from different csv files, after selecting the first field and the character(s) separator, press the + button to add a new csv file and the RESET button to clear all values and start fresh." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 9, "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
                                       "The APPEND option allows you to select a specific field from a csv file and append its values at the bottom of the values of another field, and save the output as a new file." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 10, "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+9), "Help",
                                       "The EXTRACT option allows you to select specific fields, even by specific values, from one or more csv files and save the output as a new file.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value, and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 11, "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+10), "Help",
                                       "The PURGE DUPLICATE ROWS option allows you to delete duplicate records in a csv file.\n\n" + GUI_IO_util.msg_Esc)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 12, "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+11), "Help",
                                       GUI_IO_util.msg_openOutputFiles)
-
 
     help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
                  GUI_IO_util.get_y_step())
@@ -1131,6 +1149,6 @@ if __name__ == '__main__':
     readMe_message = "The Python 3 scripts provide several ways of handling data from csv files.\n\nIn INPUT, the script takes one or more csv files depending upon the selected operation.\n\nIn OUTPUT, the script creates a new csv file.\n\nThe following operation are possible.\n\n   1. MERGE different csv files using one overalpping common field as a way to JOIN the files together, with the option of selecting only certain fields for the output file;\n   2. CONCATENATE into a single field the values of different fields from one or more csv files;\n   3. APPEND the content of different fields from one or more csv files after the content of the target field;\n   4. EXTRACT fields from one or more csv files, perhaps by specific field values (the equivalent of an SQL WHERE clause)."
     readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                        GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-    GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options)
+    GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
     GUI_util.window.mainloop()

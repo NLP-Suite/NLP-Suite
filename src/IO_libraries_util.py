@@ -113,10 +113,7 @@ def import_nltk_resource(window, resource_path, resource):
 
 def check_java_installation(script):
     errorFound = False
-    if sys.platform == 'darwin':  # Mac
-        java_output = subprocess.run(['java', '-version'], capture_output=True)
-    else:
-        java_output = subprocess.run(['java', '-version'], capture_output=True)
+    java_output = subprocess.run(['java', '-version'], capture_output=True)
     error_code = java_output.returncode  # Should be 0 if java installed
     system_output = java_output.stderr.decode(
         'utf-8')  # This is what you see when you run "java -version" in your command line
@@ -201,7 +198,7 @@ def update_csv_fields(existing_csv: list) -> list:
             existing_csv.append(sample_csv[index])
     return existing_csv
 
-def get_existing_software_config(package):
+def get_existing_software_config():
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
     # FIXED: must insert the new package into software-config.csv when the package is missing in the user csv file
     try:
@@ -212,22 +209,36 @@ def get_existing_software_config(package):
     update_csv_fields(existing_csv)
     return existing_csv
 
+def get_missing_software_list(existing_csv):
+    if existing_csv=='':
+        existing_csv=get_existing_software_config()
+    index = 0
+    missing_software=''
+    for row in existing_csv[1:]:  # skip header line
+        software_name = row[0]
+        download_software = row[2]
+        index = index + 1
+        if existing_csv[index][1]=='':
+            missing_software = missing_software + str(software_name).upper() + ' download at ' + str(download_software + '\n\n')
+    return missing_software
 
-def save_software_config(new_csv):
+def save_software_config(new_csv,package):
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
     with open(software_config, 'w+', newline='') as csv_file:
         writer = csv.writer(csv_file)
         writer.writerows(new_csv)
 
+    mb.showwarning(title=package + ' saved',
+                               message="The installation location of " + package + " was successfully saved to " + software_config)
 
-def get_external_software_dir(calling_script, package, warning=True):
+# when coming from NLP_menu_main only_check_missing is set to True to set te checkbox to 0/1 if there is/isn't missing software
+def get_external_software_dir(calling_script, package, silent=False, only_check_missing=False):
     # get a list of software in software-config.csv
-    existing_csv = get_existing_software_config(package)
+    existing_csv = get_existing_software_config()
     download_software = ''
     missing_software = ''
     software_dir = None
     software_name = ''
-    silent = False
     index = 0
     errorFound = False
     # get any existing software_config csv file
@@ -240,6 +251,7 @@ def get_external_software_dir(calling_script, package, warning=True):
             print("MISSING SOFTWARE", str(software_name).upper() + ' download at ' + str(download_software))
             errorFound=True
         else:
+            errorFound=False
             # the software directory is stored in config file but...
             #   check that the software directory still exists and the package has not been moved
             if os.path.isdir(software_dir) == False or inputExternalProgramFileCheck(software_dir, software_name) == False:
@@ -250,8 +262,9 @@ def get_external_software_dir(calling_script, package, warning=True):
                 silent = True
             else:
                 # if you are checking for a specific package and that is found return the appropriate directory
-                if (package.lower()!='') and (package.lower() in software_name.lower()):
-                    return software_dir
+                # unless called from NLP_menu_main
+                if (package.lower()!='') and (package.lower() in software_name.lower()) and (calling_script!='NLP_menu'):
+                    return software_dir, missing_software
 
         if errorFound:
             software_dir = ''
@@ -260,13 +273,25 @@ def get_external_software_dir(calling_script, package, warning=True):
             # if you are checking for a specific package and the directory is NOT found
             #   return None; no point continuing
             if (package.lower()!='') and (package.lower() in software_name.lower()):
+                errorFound = False
                 break
-            errorFound = False
+        if (package.lower()!='') and (package.lower() not in software_name.lower()):
+            continue
+
+        if (not errorFound) and (package!='') and (calling_script=='NLP_menu'):
+
+            mb.showwarning(title=package,
+                           message='The external software ' + package + ' is up-to-date and correctly installed at ' + software_dir)
+            # if you are checking for a specific package and that is found return the appropriate directory
+            if (package!=''):
+                return software_dir, missing_software
 
     # check for missing software
     if len(missing_software) > 0:
+        if only_check_missing==True:
+            return None, missing_software
         if calling_script == 'NLP_menu':  # called from NLP_main GUI. We just need to warn the user to download and install options
-            title = 'NLP Suite external software'
+            title = 'NLP Suite external software ' + str(package.upper())
             message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\n' + missing_software + 'If you have already downloaded the software, please, select next the directory where you installed it; ESC or CANCEL to exit, if you haven\'t installed it yet.'
         else:
             title = package.upper() + ' software'
@@ -286,7 +311,6 @@ def get_external_software_dir(calling_script, package, warning=True):
                     initialFolder = os.path.dirname(os.path.abspath(__file__))
                     software_dir = tk.filedialog.askdirectory(initialdir=initialFolder,
                                                               title=title + '. Please, select the directory where the software was installed; or press CANCEL or ESC if you have not downloaded the software yet.')
-                    # software_name=''
                     if software_dir != '':
                         # check that it is the correct software directory
                         if 'corenlp' in software_name.lower():
@@ -297,22 +321,19 @@ def get_external_software_dir(calling_script, package, warning=True):
                             software_name = 'SENNA'
                         elif 'wordnet' in software_name.lower():
                             software_name = 'WordNet'
-                        # check that the selected folder for the external program is correct
+                        # check that the selected folder for the external program is correct; if so save
                         if not inputExternalProgramFileCheck(software_dir, software_name):
                             software_dir = ''
                     # update the array existing_csv with the value of software_dir
-                    # David: Has to have a +1 here, otherwise it updates the row above.
-                    existing_csv[index+1][1] = software_dir
+                    if software_dir != '':
+                        existing_csv[index][1] = software_dir
+                        save_software_config(existing_csv, software_name)
                     # exit when you are considering a specific software (package)
                     if package.lower()!='':
                         if package.lower() in software_name.lower():
                             # exit loop: while software_dir == None
                             break
-                if package.lower() != '':
-                    if package.lower() in software_name.lower():
-                        # exit loop: for (index, row) in enumerate(existing_csv)
-                        break
-        save_software_config(existing_csv)
+
     if software_dir == '':
         software_dir = None
-    return software_dir
+    return software_dir, missing_software

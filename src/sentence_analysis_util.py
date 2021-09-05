@@ -341,8 +341,13 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
     # https://github.com/ekapope/Combine-CSV-files-in-the-folder/blob/master/Combine_CSVs.py
     if inputDir != '':
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SentComp',
-                                                                        'dir', '')
-        combined_data = pd.concat([pd.read_csv(f) for f in output_csv])
+                                                                        '', '')
+        try:
+            combined_data = pd.concat([pd.read_csv(f) for f in output_csv])
+        except:
+            mb.showwarning("Fatal error",
+                           "An error was encountered in merging the " + str(Ndocs) + " individual csv files of sentence complexity. Please, use R to merge the csv files containing the sentence complexity scores for each sentence of each input txt file saved in the output directory " + outputDir)
+            return
         combined_data.to_csv(outputFilename, index=False, encoding='utf-8')
         # Delete the individual CSV files
         for f in output_csv:

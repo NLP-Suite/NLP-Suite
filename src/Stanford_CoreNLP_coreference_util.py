@@ -16,11 +16,23 @@ import re
 
 import Stanford_CoreNLP_annotator_util
 
+# part of the code about search text function is adapted from 
+# https://www.geeksforgeeks.org/create-find-and-replace-features-in-tkinter-text-widget/
 def createCompareWindow(origin_display, coref_display, coref_method, root, result):
     top = Toplevel(root)
     top.title("Comparing result from {0} (Edit text on the right hand side and Save)".format(coref_method))
-    text1 = tk.Text(top, height=40, width=70)
 
+    # adding of single line text box
+    topFrame = tk.Frame(top)
+    topFrame.pack(fill="both", expand=False, side=tk.TOP, padx=300)
+    searchBox = Entry(topFrame)
+    searchBox.pack(fill = BOTH, expand=False)
+    searchBox.focus_set()
+    # adding of search button
+    findButton = Button(topFrame, text ='Find')
+    findButton.pack()
+
+    text1 = tk.Text(top, height=40, width=70)
     text1.pack(side=tk.LEFT)
     scroll = tk.Scrollbar(top, command=text1.yview)
     text1.configure(yscrollcommand=scroll.set)
@@ -54,24 +66,49 @@ def createCompareWindow(origin_display, coref_display, coref_method, root, resul
     scroll.pack(side=tk.RIGHT, fill=tk.Y)
 
     def exit_btn_save():
-        result.append(text2.get('1.0', tk.END))
-        # print("exit result: ", result)
+        result[0] = text2.get('1.0', tk.END)
         top.destroy()
         top.update()
 
     def exit_btn():
         msgbox_save = tk.messagebox.askyesnocancel("Finish Manual Editing", "Do you want to quit manual editing without saving changes?")
-        result.append(text1.get('1.0', tk.END))
         if msgbox_save:
             top.destroy()
             top.update()
         return
+    
+    # function to search string in text
+    def find():
+        # remove tag 'found' from index 1 to END
+        text2.tag_remove('found', '1.0', END)
+        # returns to widget currently in focus
+        s = searchBox.get()
+        
+        if (s):
+            idx = '1.0'
+            while 1:
+                # searches for desired string from index 1
+                idx = text2.search(s, idx, nocase = 1,
+                                stopindex = END)  
+                if not idx: break          
+                # last index sum of current index and
+                # length of text
+                lastidx = '% s+% dc' % (idx, len(s))
+                # overwrite 'Found' at idx
+                text2.tag_add('found', idx, lastidx)
+                idx = lastidx
+    
+            # mark located string as red    
+            text2.tag_config('found', foreground ='red', background='gainsboro')
+        searchBox.focus_set()
+    findButton.config(command = find)
 
     bottomFrame = tk.Frame(top)
     bottomFrame.pack(fill="both", expand=True, side=tk.BOTTOM)
     tk.Button(bottomFrame, text="Quit", command=exit_btn).pack(side="left")
     tk.Button(bottomFrame, text="Save", command=exit_btn_save).pack(side="left")
-
+    
+    top.protocol("WM_DELETE_WINDOW", exit_btn)
     root.wait_window(top)
 
 caps = "([A-HJ-Z])"
@@ -108,6 +145,9 @@ def split_into_sentences(text):
     return sentences
 
 def compare_results(origin_text,corefed_text):
+    # remove first two lines in corefed_text
+    corefed_text = "\n".join(corefed_text.split("\n")[2:])
+
     origin_sentences = split_into_sentences(origin_text)
     corefed_sentences = split_into_sentences(corefed_text)
     origin_display = []
@@ -117,7 +157,6 @@ def compare_results(origin_text,corefed_text):
     We use this to find the difference.
     """
     for i in range(0, min(len(corefed_sentences), len(origin_sentences))):
-
         origin_display_highlighted = []
         corefed_display_highlighted = []
 
@@ -128,7 +167,6 @@ def compare_results(origin_text,corefed_text):
         s = df.SequenceMatcher(lambda x: x in " \'\t\"",
                                origin_sentences[i], corefed_sentences[i], autojunk=False)
         matching = s.get_matching_blocks()
-
         try:
             end = matching[1]
         except:
@@ -158,6 +196,8 @@ def compare_results(origin_text,corefed_text):
 
     return origin_display, corefed_display
 
+
+    
 # return error indicator: 1 error; 0 no error
 def manualCoref(original_file, corefed_file, outputFile, coRefOptions):
     f = open(original_file, "r", encoding='utf-8', errors='ignore')
@@ -172,6 +212,7 @@ def manualCoref(original_file, corefed_file, outputFile, coRefOptions):
     if len(corefed_display) == 0 and len(origin_display) == 0:
         return 1
     result = []
+    result.append("\n".join(corefed_text.split("\n")[2:])) 
     createCompareWindow(origin_display, corefed_display, coRefOptions, GUI_util.window, result)
     f = open(outputFile, "w", encoding='utf-8', errors='ignore')
     try:
@@ -192,13 +233,13 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
     corefed_file = []
 
     # check that the CoreNLPdir as been setup
-    CoreNLPdir=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_coreference_util', 'Stanford CoreNLP')
+    CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_coreference_util', 'Stanford CoreNLP')
     if CoreNLPdir==None:
         return filesToOpen
 
     errorFound, error_code, system_output=IO_libraries_util.check_java_installation('SVO extractor')
     if errorFound:
-        return filesToOpen
+        return filesToOpen, errorFound
 
     # IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Analysis start',
     #                     'Started running Stanford CoreNLP ' + coRefOptions + ' Co-Reference Resolution at', True,
@@ -228,4 +269,5 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
         else:
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Feature Not Available', 'Manual Coreference is only available when processing single file, not input directory.')
             # input_main_dir_path = os.path.split(inputFilename)[0]
-    return corefed_file
+   
+    return corefed_file, errorFound

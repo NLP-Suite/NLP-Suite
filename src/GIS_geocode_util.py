@@ -1,21 +1,17 @@
 import sys
-
-import GUI_IO_util
-import IO_files_util
 import GUI_util
 import IO_libraries_util
-import IO_user_interface_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"GIS_geocode_util",['os','tkinter','csv','geopy'])==False:
 	sys.exit(0)
 
-import os
+import IO_files_util
+import IO_user_interface_util
 import csv
 import tkinter.messagebox as mb
 
 from geopy import Nominatim 
 from geopy.geocoders import GoogleV3
-import geopy.exc
 from geopy.exc import GeocoderTimedOut
 
 import GIS_location_util
@@ -114,7 +110,7 @@ def geocode(window,locations, inputFilename, outputDir,
 
 	inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
 
-	IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Started geocoding locations via the online service '" + geocoder + "' at", True, 'You can follow geocoding in command line.')
+	# IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Started geocoding locations via the online service '" + geocoder + "' at", True, 'You can follow geocoding in command line.')
 	# if geocoder=='Nominatim':
 	# 	config_filename='GIS-geocode-config.txt'
 	# 	reminders_util.checkReminder(config_filename,["GIS Nominatim geocoder"],'',True)
@@ -220,7 +216,7 @@ def geocode(window,locations, inputFilename, outputDir,
 	
 	if locationsNotFound==0:
 		locationsNotFoundoutputFilename='' #used NOT to open the file since there are NO errors
-		IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at", True, str(index) + " locations were geocoded.")
+		# IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at", True, str(index) + " locations were geocoded.")
 	else:
 		if locationsNotFound==index:
 			geocodedLocationsoutputFilename='' #used NOT to open the file since there are no records

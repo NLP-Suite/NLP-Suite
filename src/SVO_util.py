@@ -1,4 +1,5 @@
 import pandas as pd
+from nltk.stem import WordNetLemmatizer
 
 import IO_files_util
 
@@ -154,6 +155,7 @@ def filter_svo(svo_file_name, filter_s, filter_v, filter_o):
     """
     df = pd.read_csv(svo_file_name)
     filtered_df = pd.DataFrame(columns=df.columns)
+    lemmatizer = WordNetLemmatizer()
 
     # Generating filter dicts
     if filter_s:
@@ -168,10 +170,22 @@ def filter_svo(svo_file_name, filter_s, filter_v, filter_o):
 
     # Adding rows to filtered df
     for i in range(len(df)):
-        if filter_s and df.loc[i, 'S'] not in s_dict or filter_v and df.loc[i, 'V'] not in v_dict or filter_o and \
-                df.loc[i, 'O/A'] not in o_dict:
+        subject, verb, object = '', '', ''
+        if pd.notnull(df.loc[i, 'S']):
+            subject = lemmatizer.lemmatize(df.loc[i, 'S'], 'n')
+        if pd.notnull(df.loc[i, 'V']):
+            verb = lemmatizer.lemmatize(df.loc[i, 'V'], 'v')
+        if pd.notnull(df.loc[i, 'O/A']):
+            object = lemmatizer.lemmatize(df.loc[i, 'O/A'], 'n')
+
+        if subject and filter_s and subject not in s_dict:
             continue
-        filtered_df.append(df.loc[i, :], ignore_index=True)
+        if verb and filter_v and verb not in v_dict:
+            continue
+        if object and filter_o and object not in o_dict:
+            continue
+
+        filtered_df = filtered_df.append(df.loc[i, :], ignore_index=True)
 
     # Replacing the original csv file
     filtered_df.to_csv(svo_file_name, index=False)

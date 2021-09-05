@@ -97,13 +97,13 @@ def processColorList(currenttext, color_to_words, csvField_color_list, myfile):
     return currenttext, color_to_words
 
 
-def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transformed_image_mask):
+def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transformed_image_mask,collocation):
     stopwords = set(STOPWORDS)
     if len(transformed_image_mask) != 0:
-        wc = WordCloud(collocations=False,width = 800, height = 800, max_words=1000, stopwords = stopwords, mask=transformed_image_mask,
+        wc = WordCloud(collocations=collocation,width = 800, height = 800, max_words=1000, stopwords = stopwords, mask=transformed_image_mask,
                        contour_width=3, contour_color='firebrick', background_color ='white').generate(text.lower())
     else:
-        wc = WordCloud(collocations=False, width=800, height=800, max_words=1000, stopwords = stopwords, contour_width=3,
+        wc = WordCloud(collocations=collocation, width=800, height=800, max_words=1000, stopwords = stopwords, contour_width=3,
                         background_color='white').generate(text.lower())
     default_color = "(169, 169, 169)"
     grouped_color_func = GroupedColorFunc(color_to_words, default_color)
@@ -116,7 +116,7 @@ def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transforme
     wc.to_file(output_file_name)
     return output_file_name
 
-def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask):
+def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation):
 # def display_wordCloud(doc, outputDir,textToProcess,transformed_image_mask):
 
     comment_words = ' '
@@ -140,14 +140,14 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
                         stopwords = stopwords,
                         contour_width=3,
                         contour_color='firebrick',
-                        min_font_size = 10, collocations=False).generate(comment_words)
+                        min_font_size = 10, collocations=collocation).generate(comment_words)
     else:
         wordcloud = WordCloud(width = 800, height = 800,
                         background_color ='white',
                         max_words=1000,
                         stopwords = stopwords,
                         contour_width=3,
-                        min_font_size = 10, collocations=False).generate(comment_words)
+                        min_font_size = 10, collocations=collocation).generate(comment_words)
     # plot the WordCloud image
     plt.figure(figsize = (8, 8), facecolor = None)
     plt.imshow(wordcloud,interpolation='bilinear')
@@ -179,7 +179,7 @@ def check_file_empty(currenttext,doc,Ndocs,NumEmptyDocs):
     else:
         return False, False, NumEmptyDocs
 
-def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, differentPOS_differentColors_checkbox, csvField_color_list, doNotListIndividualFiles,openOutputFiles):
+def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, differentPOS_differentColors_checkbox, csvField_color_list, doNotListIndividualFiles,openOutputFiles, collocation):
     # https://www.geeksforgeeks.org/generating-word-cloud-python/
     # Python program to generate WordCloud
     # for a more sophisticated Python script see
@@ -289,12 +289,12 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, differen
             else:
                 textToProcess=currenttext
                 # wordclouds_util.display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask)
-                tempOutputfile=display_wordCloud_sep_color(doc, outputDir, textToProcess, color_to_words, transformed_image_mask)
+                tempOutputfile=display_wordCloud_sep_color(doc, outputDir, textToProcess, color_to_words, transformed_image_mask, collocation)
                 filesToOpen.append(tempOutputfile)
             if i == len(inputDocs) and len(inputDir) > 0:
                 # print(color_to_words)
                 # wordclouds_util.display_wordCloud(inputDir,inputDir,outputDir,textToProcess,True,transformed_image_mask)
-                tempOutputfile=display_wordCloud_sep_color(doc, outputDir, textToProcess, color_to_words, transformed_image_mask)
+                tempOutputfile=display_wordCloud_sep_color(doc, outputDir, textToProcess, color_to_words, transformed_image_mask, collocation)
                 filesToOpen.append(tempOutputfile)
 
     else: # not using NN*, VB*, JJ* POS tags for different colors
@@ -324,16 +324,16 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, differen
                     continue
 
                 if len(csvField_color_list) != 0:
-                    display_wordCloud_sep_color(doc, outputDir, currenttext, color_to_words, transformed_image_mask)
+                    display_wordCloud_sep_color(doc, outputDir, currenttext, color_to_words, transformed_image_mask, collocation)
                 else:
                     if inputDir!='' and doNotListIndividualFiles==True:
                         textToProcess=combinedtext
                     else:
                         textToProcess=currenttext
-                        tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask)
+                        tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation)
                         filesToOpen.append(tempOutputfile)
                     if i == len(inputDocs) and len(inputDir) > 0:
-                        tempOutputfile=display_wordCloud(inputDir,inputDir,outputDir,textToProcess,True,transformed_image_mask)
+                        tempOutputfile=display_wordCloud(inputDir,inputDir,outputDir,textToProcess,True,transformed_image_mask, collocation)
                         filesToOpen.append(tempOutputfile)
 
     if len(combinedtext) < 1:

@@ -255,7 +255,7 @@ def run(input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutp
 	global filesToOpen
 	filesToOpen = []
 	# check that the CoreNLPdir as been setup
-	CoreNLPdir = IO_libraries_util.get_external_software_dir('social_science_research', 'Stanford CoreNLP')
+	CoreNLPdir, missing_external_software = IO_libraries_util.get_external_software_dir('social_science_research', 'Stanford CoreNLP')
 	if CoreNLPdir==None:
 		return filesToOpen
 
@@ -313,7 +313,25 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size = '1100x640'
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief=False
+GUI_width=1100
+GUI_height=640 # height of GUI with full I/O display
+
+if IO_setup_display_brief:
+    GUI_height = GUI_height - 80
+    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+    increment=0 # used in the display of HELP messages
+else: # full display
+    # GUI CHANGES add following lines to every special GUI
+    # +3 is the number of lines starting at 1 of IO widgets
+    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 2  # IO FULL display
+    increment=2
+
+GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
 GUI_label = 'Graphical User Interface (GUI) for Various Tools for Social Science Research'
 config_filename = 'social-science-research-config.txt'
 # The 6 values of config_option refer to: 
@@ -333,15 +351,12 @@ config_option = [0, 0, 1, 1, 0, 1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-# GUI CHANGES add following lines to every special GUI
-# +3 is the number of lines starting at 1 of IO widgets
-y_multiplier_integer = GUI_util.y_multiplier_integer + 2
 window = GUI_util.window
 config_input_output_options = GUI_util.config_input_output_options
 config_filename = GUI_util.config_filename
 inputFilename = GUI_util.inputFilename
 
-GUI_util.GUI_top(config_input_output_options, config_filename)
+GUI_util.GUI_top(config_input_output_options, config_filename,IO_setup_display_brief)
 
 check_filename_var = tk.IntVar()
 character_var = tk.IntVar()
@@ -710,31 +725,35 @@ TIPS_options = 'Filename well-formedness', 'WordNet', 'Find the character\'s hom
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
-	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
-								  "Please, select the main INPUT directory of the TXT files to be analyzed." + GUI_IO_util.msg_openExplorer)
-	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
-								  "Please, select the secondary INPUT directory of the TXT files to be analyzed." + GUI_IO_util.msg_openExplorer)
-	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
-								  GUI_IO_util.msg_outputDirectory)
-	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 3, "Help",
-								  "Please, tick the checkbox if the filenames processed by the scripts 'Check the filenames well-formedness' and 'Find the plagiarist' embed a date (e.g., The New York Times_12-23-1992).\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the following information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy);\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _);\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers).\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field.")
-	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 4, "Help",
-								  "Please, tick the checkbox if you wish to check the well-formedness of filenames (for filenames that embed different items of information, e.g., The New York Times_4-22-1918_4_2, i.e., newspaper name, date, page number, column number, separated by _.")
-	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 5, "Help",
-								  "Please, tick the checkbox if you wish to open the WordNet GUI and run the Python 3 scripts 'Find the character' and 'Find the ancestor'.\n\n'Find the character' uses the WordNet lexicon database to provide a list of words as social actors (i.e., human characters, groups, or organizations) or other characters (e.g., animals, for folktales).\n\n'Find the ancestor' uses the WordNet lexicon database to aggregate nouns and verbs of a csv list (e.g., run, flee, walk, ... aggregated as verbs of movement).")
-	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 6, "Help",
-								  "Please, tick the checkbox if you wish to run the Python 3 script 'Find the missing character'. The script checks an event summary (whether human- or machine-generated) against a set of documents (e.g., all describing the same event) that provided the basis for the summary. The script will generate a list of social actors missing in the event summary.\n\nPlease, check the NER (Named Entity Recognition) tick box to run the script with the added NER filter. The NER option relies on the Stanford NER tagger to increase the probability of identifying missing information in document summaries against the original documents. Summaries will be checked against the originals not just on the basis of missing social actors (by their improper name, e.g., girl), but by proper names (e.g., Mary), and also dates, locations, organizations, as computed by the Stanford NER tagger.\n\nIn INPUT the script expects 3 paths:\n  path to a directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event);\n  path to the directory containing the set of event summaries;\n  output path directory.\n\nIn OUTPUT the script will create two csv files: a csv file that contains the missing social actors and the location of the error; a csv file that calculates the frequency of having a missing social actor problem.")
-	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 7, "Help",
-								  "Please, tick the checkbox if you wish to run the Python 3 script \'Check the character\'s name tag\' (i.e., the Levenshtein\'s word distance, also known as edit distance, between any 2 words selected by their NER, Named Entity Recognition, values: CITY, COUNTRY, LOCATION, ORGANIZATION, PERSON).\n\nIn INPUT, the script expects a main directory with several subdirectories with varying sets of txt files. This set of files will be checked for word difference.\n\nIn OUTPUT, the script will produce a csv files with a list suggested ")
-	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 8, "Help",
-								  "Please, tick the checkbox if you wish to run the Python 3 script 'Find the character\'s home. The script uses the date embedded in the filename of files in a directory to check against the dates of files grouped in the same subdirectory (e.g., because they talk about the same event).\n\nIt is presumed that files with dates that are very close to each other, as user specified, will belong to the same event.\n\nIn INPUT the script expects 3 paths:\n  path to a directory containing a list of files;\n  a directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event);\n  output path directory.\n\nIn OUTPUT the script will create two csv files: a csv file that contains the missing social actors and the location of the error; a csv file that calculates the frequency of having a missing social actor problem.")
-	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 9, "Help",
-								  "Please, tick the checkbox if you wish to run the Python 3 script 'Find the intruder'. The script checks the documents grouped together in a directory, as perhaps all describing a specific event, to see whether any of them do not belong to the group. The script uses NER values for 'Location','Date','Organization', and 'Person' as criteria for checking files.\n\nPlease, using the dropdown menu, select a value for the similarity index. The similarity index, based on cosine similarity, is used to compute the degree of similarity between documents. The default value is set as 0.2. If you set a high value >.6, then every document may be an intruder; so, the recommended value should be <.4.\n\nIn INPUT the script expects the path to a directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event).\n\nIn OUTPUT, the script creates two csv files: One includes a list of irrelevant files, and the folder they are in; The other csv file contains the frequency of having intruders in the input folders.\n\nNo Excel charts are produced since the csv output lists only one record of frequencies and percentages.")
-	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 10, "Help",
-								  "Please, tick the checkbox if you wish to run the Java script 'Find the plagiarist'. The script, based on Lucene, checks a set of documents to compute the percentage of similarity between any two of them.\n\nIn INPUT the script expects:\n   1. the file stopwords.txt stored in the lib subdirectory;\n   2. a directory that contains all the files to be compared.\n\nIn OUTPUT, the script produces four output files: \n   1. document_duplicates.txt that shows the summary of duplicated files;\n   2. Lucene_class_freq.csv that shows how many documents fall into each class of frequency (e.g., 100 documents have 10%-20% similarity with other files);\n   3. Lucene_classes_time_freq.csv that shows, for each year, how many documents fall into each class of frequency (e.g., in 1897, 100 documents have 10%-20% similarity with other files);\n  4. Lucene_document_classes_freq.csv that shows for each document, how many documents fall into each class of frequency (e.g., for the document “The Oglethorpe Echo_09-19-1919_1_1.txt”, 10 other documents have 10%-20% frequency of similarity with it).\n\nThe default threshold for similarity is set at 80%. Documents that get a score over this value are considered duplicates of the candidate document. This level was arrived at by running several different threshold levels on different corpora. Lowering the level would give too many false positives (too many documents wrongly classified as similar); raising the level may exclude too many documents.")
-	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 11, "Help",
-								  GUI_IO_util.msg_openOutputFiles)
+	if not IO_setup_display_brief:
+		GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+									  "Please, select the main INPUT directory of the TXT files to be analyzed." + GUI_IO_util.msg_openExplorer)
+		GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
+									  "Please, select the secondary INPUT directory of the TXT files to be analyzed." + GUI_IO_util.msg_openExplorer)
+		GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
+									  GUI_IO_util.msg_outputDirectory)
+	else:
+		GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+									  GUI_IO_util.msg_IO_setup)
 
+	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 1), "Help",
+								  "Please, tick the checkbox if the filenames processed by the scripts 'Check the filenames well-formedness' and 'Find the plagiarist' embed a date (e.g., The New York Times_12-23-1992).\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the following information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy);\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _);\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers).\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field.")
+	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 2), "Help",
+								  "Please, tick the checkbox if you wish to check the well-formedness of filenames (for filenames that embed different items of information, e.g., The New York Times_4-22-1918_4_2, i.e., newspaper name, date, page number, column number, separated by _.")
+	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 3), "Help",
+								  "Please, tick the checkbox if you wish to open the WordNet GUI and run the Python 3 scripts 'Find the character' and 'Find the ancestor'.\n\n'Find the character' uses the WordNet lexicon database to provide a list of words as social actors (i.e., human characters, groups, or organizations) or other characters (e.g., animals, for folktales).\n\n'Find the ancestor' uses the WordNet lexicon database to aggregate nouns and verbs of a csv list (e.g., run, flee, walk, ... aggregated as verbs of movement).")
+	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 4), "Help",
+								  "Please, tick the checkbox if you wish to run the Python 3 script 'Find the missing character'. The script checks an event summary (whether human- or machine-generated) against a set of documents (e.g., all describing the same event) that provided the basis for the summary. The script will generate a list of social actors missing in the event summary.\n\nPlease, check the NER (Named Entity Recognition) tick box to run the script with the added NER filter. The NER option relies on the Stanford NER tagger to increase the probability of identifying missing information in document summaries against the original documents. Summaries will be checked against the originals not just on the basis of missing social actors (by their improper name, e.g., girl), but by proper names (e.g., Mary), and also dates, locations, organizations, as computed by the Stanford NER tagger.\n\nIn INPUT the script expects 3 paths:\n  path to a directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event);\n  path to the directory containing the set of event summaries;\n  output path directory.\n\nIn OUTPUT the script will create two csv files: a csv file that contains the missing social actors and the location of the error; a csv file that calculates the frequency of having a missing social actor problem.")
+	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 5), "Help",
+								  "Please, tick the checkbox if you wish to run the Python 3 script \'Check the character\'s name tag\' (i.e., the Levenshtein\'s word distance, also known as edit distance, between any 2 words selected by their NER, Named Entity Recognition, values: CITY, COUNTRY, LOCATION, ORGANIZATION, PERSON).\n\nIn INPUT, the script expects a main directory with several subdirectories with varying sets of txt files. This set of files will be checked for word difference.\n\nIn OUTPUT, the script will produce a csv files with a list suggested ")
+	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 6), "Help",
+								  "Please, tick the checkbox if you wish to run the Python 3 script 'Find the character\'s home. The script uses the date embedded in the filename of files in a directory to check against the dates of files grouped in the same subdirectory (e.g., because they talk about the same event).\n\nIt is presumed that files with dates that are very close to each other, as user specified, will belong to the same event.\n\nIn INPUT the script expects 3 paths:\n  path to a directory containing a list of files;\n  a directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event);\n  output path directory.\n\nIn OUTPUT the script will create two csv files: a csv file that contains the missing social actors and the location of the error; a csv file that calculates the frequency of having a missing social actor problem.")
+	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 7), "Help",
+								  "Please, tick the checkbox if you wish to run the Python 3 script 'Find the intruder'. The script checks the documents grouped together in a directory, as perhaps all describing a specific event, to see whether any of them do not belong to the group. The script uses NER values for 'Location','Date','Organization', and 'Person' as criteria for checking files.\n\nPlease, using the dropdown menu, select a value for the similarity index. The similarity index, based on cosine similarity, is used to compute the degree of similarity between documents. The default value is set as 0.2. If you set a high value >.6, then every document may be an intruder; so, the recommended value should be <.4.\n\nIn INPUT the script expects the path to a directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event).\n\nIn OUTPUT, the script creates two csv files: One includes a list of irrelevant files, and the folder they are in; The other csv file contains the frequency of having intruders in the input folders.\n\nNo Excel charts are produced since the csv output lists only one record of frequencies and percentages.")
+	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 8), "Help",
+								  "Please, tick the checkbox if you wish to run the Java script 'Find the plagiarist'. The script, based on Lucene, checks a set of documents to compute the percentage of similarity between any two of them.\n\nIn INPUT the script expects:\n   1. the file stopwords.txt stored in the lib subdirectory;\n   2. a directory that contains all the files to be compared.\n\nIn OUTPUT, the script produces four output files: \n   1. document_duplicates.txt that shows the summary of duplicated files;\n   2. Lucene_class_freq.csv that shows how many documents fall into each class of frequency (e.g., 100 documents have 10%-20% similarity with other files);\n   3. Lucene_classes_time_freq.csv that shows, for each year, how many documents fall into each class of frequency (e.g., in 1897, 100 documents have 10%-20% similarity with other files);\n  4. Lucene_document_classes_freq.csv that shows for each document, how many documents fall into each class of frequency (e.g., for the document “The Oglethorpe Echo_09-19-1919_1_1.txt”, 10 other documents have 10%-20% frequency of similarity with it).\n\nThe default threshold for similarity is set at 80%. Documents that get a score over this value are considered duplicates of the candidate document. This level was arrived at by running several different threshold levels on different corpora. Lowering the level would give too many false positives (too many documents wrongly classified as similar); raising the level may exclude too many documents.")
+	GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 9), "Help",
+								  GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
 			 GUI_IO_util.get_y_step())
@@ -743,6 +762,6 @@ help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for a set of NLP tools, written in Java and Python 3, that can be of use in a variety of social science research projects based on documents.\n\nIn INPUT the scripts expect a main drectory where txt files to be analyzed are stored and, depending upon the type of tools run, a secondary directory where further txt files are stored.\n\nIn OUTPUT, the scripts will save the csv files and Excel charts written by the various scripts."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
 												   GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options)
+GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()

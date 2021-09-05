@@ -199,7 +199,7 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
 # see also https://people.duke.edu/~ccc14/sta-663/TextProcessingSolutions.html
 def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutputFiles,createExcelCharts,excludeStopWords=True,lemmatizeWords=True):
     filesToOpen=[]
-    outputFilenameCSV=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus', 'stats')
+    outputFilenameCSV=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus_stats', '')
     filesToOpen.append(outputFilenameCSV)
     inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 
@@ -269,11 +269,15 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
 
             if lemmatizeWords:
                 lemmatizer = WordNetLemmatizer()
-                text_vocab = set(lemmatizer.lemmatize(w.lower()) for w in fullText.split(" ") if w.isalpha())
-                words = set(lemmatizing(w.lower()) for w in words if w.isalpha()) # fullText.split(" ") if w.isalpha())
+                text_vocab = []
+                for w in words:
+                    if w.isalpha():
+                        text_vocab.append(lemmatizer.lemmatize(w.lower()))
+                words = text_vocab
 
             word_counts = Counter(words)
-            # 20 most frequent words
+
+            # 20 most frequent words in the document
             #print("\n\nTOP 20 most frequent words  ----------------------------")
             # for item in word_counts.most_common(20):
             #     print(item)
@@ -302,7 +306,7 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             hover_label=['Document','Document']
             inputFilename=outputFilenameCSV
             Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                      outputFileLabel='corpus_stats',
+                                                      outputFileLabel='',
                                                       chart_type_list=["bar"],
                                                       # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
                                                       chart_title='Corpus Statistics: Frequency of Sentences & Words by Document',
@@ -450,6 +454,16 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
             else:
                 columns_to_be_plotted=[[0,2]] # 0,1
                 hover_label=[str(index+1)+'-grams'] # change to sentence
+
+                # def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
+                #             chart_type_list, chart_title, column_xAxis_label_var,
+                #             hover_info_column_list=[],
+                #             count_var=0,
+                #             column_yAxis_label_var='Frequencies',
+                #             column_yAxis_field_list=[],
+                #             reverse_column_position_for_series_label=False,
+                #             series_label_list=[], second_y_var=0, second_yAxis_label=''):
+
                 Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                           outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
                                                           chart_type_list=["bar"],

@@ -60,7 +60,8 @@ def run(inputFilename, inputDir, outputDir, visualization_tools,differentPOS_dif
             webPage="http://www.wordle.net/"
         webbrowser.open_new(webPage)
     elif visualization_tools=="Python WordCloud":
-             wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, differentPOS_differentColors_checkbox, csvField_color_list,doNotCreateIntermediateFiles,openOutputFiles)
+        collocation = False
+        wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, differentPOS_differentColors_checkbox, csvField_color_list,doNotCreateIntermediateFiles,openOutputFiles, collocation)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -76,9 +77,27 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
 
 GUI_util.run_button.configure(command=run_script_command)
 
-# GUUI section ______________________________________________________________________________________________________________________________________________________
+# GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1100x520'
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief=False
+GUI_width=1100
+GUI_height=520 # height of GUI with full I/O display
+
+if IO_setup_display_brief:
+    GUI_height = GUI_height - 80
+    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+    increment=0 # used in the display of HELP messages
+else: # full display
+    # GUI CHANGES add following lines to every special GUI
+    # +3 is the number of lines starting at 1 of IO widgets
+    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 2  # IO FULL display
+    increment=2
+
+GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
 GUI_label='Graphical User Interface (GUI) for Word Clouds'
 config_filename='wordclouds-config.txt'
 # The 6 values of config_option refer to:
@@ -97,16 +116,13 @@ config_filename='wordclouds-config.txt'
 config_option=[0,4,1,0,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
-# GUI CHANGES add following lines to every special GUI
-# +2 is the number of lines starting at 1 of IO widgets
-y_multiplier_integer=GUI_util.y_multiplier_integer+2
 window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 input_main_dir_path=GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_options,config_filename)
+GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
 
 differentPOS_differentColors_var=tk.IntVar()
 csv_field_var=tk.StringVar()
@@ -150,7 +166,7 @@ differentPOS_differentColors_var.set(0)
 differentPOS_differentColors_checkbox = tk.Checkbutton(window, variable=differentPOS_differentColors_var,
                                                        onvalue=1, offvalue=0)
 
-# for Python Wordcloud use different colors for different POSTAGs (red for noun, blue for verb, green for adjectives, black fro edverbs"
+# for Python Wordcloud use different colors for different POSTAGs (red for noun, blue for verb, green for adjectives, black for adverbs"
 def activate_POSTAG_option(*args):
     if 'Python' in wordclouds_var.get():
         y_multiplier_integer = y_multiplier_integer_SV - 1
@@ -321,21 +337,26 @@ TIPS_options='Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle',
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",GUI_IO_util.msg_CoNLL)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_corpusData)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help","Please, using the dropdown menu, select the word cloud service you want to use to generate a worldcloud. For 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle' you must be connected to the internet.\n\nAndreas Mueller's Python package WordCloud (https://amueller.github.io/word_cloud/) can be run without internet connection.\n\nThe Python option allows users to display different POSTAG values (namely, nouns, verbs, and adjectives) in different colors (RED for NOUNS, BLUE for VERBS, GREEN for and ADJECTIVES).\n\nPOS tags are computed via Stanford CoreNLP and may be time consuming. For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values).\n\nIn INPUT the algorithm expects a txt file (single file or entire directory).\n\nIn OUTPUT the algorithm creates a word cloud image file.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help","Please, select a png image file to be used to dislay the word cloud in the image.\n\nThe image must be a completely black image set in a white background.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help","Please, tick the checkbox if you wish to run the Python 3 Andreas Mueller's package WordCloud (https://amueller.github.io/word_cloud/) and assign different colors to the values of different columns of a csv file.\n\nThus, if, from a file, you have extracted SVOs (Subjects, Verbs, Objects) or POSTAG values (nouns, verbs, and adjectives), saving these values in in different columns, this function will allow you to display the values in the different columns in different, user-selected colors (e.g., RED for NOUNS, BLUE for VERBS, GREEN for and ADJECTIVES).\n\nIn INPUT the algorithm expects a single csv file (e.g., a CoNLL table) rather than a text file.\n\nIn OUTPUT the algorithm creates a word cloud image file.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help","Please, select the sets of csv file fields and colors.\n\nPress the + button to add more csv file fields.\n\nPress the RESET button (or simply ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help","Please, untick the checkbox if you want to create intermediate image files for every txt file in a directory when processing all the txt files in a directory. These image files will be in addition to the final file which will include the words from all files in the directory (so, if there is 1 file in the directory, this will lead to 2 files, although in this case, the image utput will be exactly the same for each of he 2 files).\n\nWARNING! Unticking the checkbox may result in a very large number of intermediate files (1 word cloud image file for every txt file in the directory).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help",GUI_IO_util.msg_openOutputFiles)
+    if not IO_setup_display_brief:
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",GUI_IO_util.msg_CoNLL)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_corpusData)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory)
+    else:
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_IO_setup)
+
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help","Please, using the dropdown menu, select the word cloud service you want to use to generate a worldcloud. For 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle' you must be connected to the internet.\n\nAndreas Mueller's Python package WordCloud (https://amueller.github.io/word_cloud/) can be run without internet connection.\n\nThe Python option allows users to display different POSTAG values (namely, nouns, verbs, adjectives, and adverbs) in different colors (RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, and BLACK for ADVERBS).\n\nPOS tags are computed via Stanford CoreNLP and may be time consuming. For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values). Stopwords and numeric tokens are excluded; all tokens are converted to lowercase.\n\nIn INPUT the algorithm expects a txt file (single file or entire directory).\n\nIn OUTPUT the algorithm creates a word cloud image file.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","Please, select a png image file to be used to dislay the word cloud in the image.\n\nThe image must be a completely black image set in a white background.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help","Please, tick the checkbox if you wish to run the Python 3 Andreas Mueller's package WordCloud (https://amueller.github.io/word_cloud/) and assign different colors to the values of different columns of a csv file.\n\nThus, if, from a file, you have extracted SVOs (Subjects, Verbs, Objects) or POSTAG values (nouns, verbs, and adjectives), saving these values in in different columns, this function will allow you to display the values in the different columns in different, user-selected colors (e.g., RED for NOUNS, BLUE for VERBS, GREEN for and ADJECTIVES).\n\nIn INPUT the algorithm expects a single csv file (e.g., a CoNLL table) rather than a text file.\n\nIn OUTPUT the algorithm creates a word cloud image file.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help","Pease, select the sets of csv file fields and colors.\n\nPress the + button to add more csv file fields.\n\nPress the RESET button (or simply ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help","Please, untick the checkbox if you want to create intermediate image files for every txt file in a directory when processing all the txt files in a directory. These image files will be in addition to the final file which will include the words from all files in the directory (so, if there is 1 file in the directory, this will lead to 2 files, although in this case, the image utput will be exactly the same for each of he 2 files).\n\nWARNING! Unticking the checkbox may result in a very large number of intermediate files (1 word cloud image file for every txt file in the directory).")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help",GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
 readMe_message="The Python 3 script and online services display the content of text files as word cloud.\n\nA word cloud, also known as text cloud or tag cloud, is a collection of words depicted visually in different sizes (and colors). The bigger and bolder the word appears, the more often it’s mentioned within a given text and the more important it is.\n\nDifferent, freeware, word cloud applications are available: 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle'. These applications require internet connection.\n\nThe script also provides Python word clouds (via Andreas Mueller's Python package WordCloud https://amueller.github.io/word_cloud/) for which no internet connection is required."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
+GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()

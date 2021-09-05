@@ -80,7 +80,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                        message='No options have been selected.\n\nPlease, select an option and try again.')
         return
 
-    if check_IO_requirements():
+    # Error set to True
+    if check_IO_requirements(inputFilename,inputDir):
         return
 
 
@@ -106,11 +107,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
     if GUI_util.output_dir_path.get()!=outputDir:
         # outputDir = head
         GUI_util.output_dir_path.set(outputDir)
-        title_options = ['Output directory']
-        message = 'The output directory was changed to:\n\n'+str(outputDir)
+        title_options_shape_of_stories = ['Output directory']
+        message_shape_of_stories = 'The output directory was changed to:\n\n'+str(outputDir)
         reminders_util.checkReminder(config_filename,
-                                     title_options,
-                                     message,
+                                     title_options_shape_of_stories,
+                                     message_shape_of_stories,
                                      True)
 
 # RUN SCRIPTS ---------------------------------------------------------------------------
@@ -129,11 +130,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
     if sentimentAnalysis == 1:
         # run appropriate sentiment analysis method as indicated by sentimentAnalysisMethod
         if sentimentAnalysisMethod == "Stanford CoreNLP Neural Network":
-            title_options = ['Stanford CoreNLP Neural Network']
-            message = 'The Stanford CoreNLP Neural Network approach to Sentiment analysis, like all neural network algorithms, is VERY slow. On a few hundred stories it may take hours to run.\n\nAlso, neural network algorithms are memory hogs. MAKE SURE TO ALLOCATE AS MUCH MEMORY AS YOU CAN AFFORD ON YOUR MACHINE.'
             reminders_util.checkReminder(config_filename,
-                                         title_options,
-                                         message,
+                                         reminders_util.title_options_shape_of_stories_CoreNLP,
+                                         reminders_util.message_shape_of_stories_CoreNLP,
                                          True)
 
             # TODO any changes in the way the CoreNLP_annotator generates output filenames will need to be edited here
@@ -152,6 +151,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
             return
 
     if hierarchical_clustering or SVD or NMF or best_topic_estimation:
+        nSAscoreFiles = IO_csv_util.GetNumberOfDocumentsInCSVfile(sentiment_scores_input, 'Shape of Stories')
 
         # step 2: vectorize
         # the sentiment_scores_input can either be a single merged csv file or a directory with multiple SA scores files
@@ -279,7 +279,25 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size = '1100x550'
+# the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
+#   just change the next statement to True or False IO_setup_display_brief=True
+IO_setup_display_brief=True
+GUI_width=1100
+GUI_height=550 # height of GUI with full I/O display
+
+if IO_setup_display_brief:
+    GUI_height = GUI_height - 80
+    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+    increment=0 # used in the display of HELP messages
+else: # full display
+    # GUI CHANGES add following lines to every special GUI
+    # +3 is the number of lines starting at 1 of IO widgets
+    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 2  # IO FULL display
+    increment=2
+
+GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
 GUI_label = 'Graphical User Interface (GUI) for "Shape of Stories" Extraction and Visualization Pipeline'
 config_filename = 'shape-of-stories-config.txt'
 # The 6 values of config_option refer to: 
@@ -299,14 +317,11 @@ config_option = [0, 3, 1, 0, 0, 1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-# GUI CHANGES add following lines to every special GUI
-# +2 is the number of lines starting at 1 of IO widgets
-y_multiplier_integer=GUI_util.y_multiplier_integer+2
 window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
 
-GUI_util.GUI_top(config_input_output_options,config_filename)
+GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
 
 sentiment_analysis_var=tk.IntVar()
 sentiment_analysis_menu_var=tk.StringVar()
@@ -416,59 +431,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 # NMF_default_entry.set(NMF_window_max/2)
 # y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,NMF_default_entry)
 
-TIPS_lookup = {'Shape of stories':'TIPS_NLP_Shape of stories.pdf','Data reduction algorithms: Parameters formulae':'TIPS_NLP_Data reduction algorithms: Parameters formulae.pdf','Hierarchical clustering':'Data reduction algorithms: Hierarchical clustering.pdf','Singular Value Decomposition':'Data reduction algorithms: Singular Value Decomposition.pdf','Non-negative Matrix Factorization (NMF)':'TIPS_NLP_Shape of stories - Non-Negative Matrix Factorization (NMF).pdf','Sentiment analysis':'TIPS_NLP_Sentiment analysis.pdf'}
-TIPS_options='Shape of stories','Sentiment analysis','Data reduction algorithms: Parameters formulae','Hierarchical clustering','Singular Value Decomposition','Non-negative Matrix Factorization (NMF)'
-
-def display_reminder(*args):
-    if best_topic_estimation_var.get():
-        reminders_util.checkReminder(config_filename,
-                                     ['Best topic estimation'],
-                                     'The function that estimates the best topics is VERY slow and may take an hour or longer. You can follow its progress in command line.',
-                                     True)
-best_topic_estimation_var.trace('w',display_reminder)
-
-# add all the lines lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function help_buttons
-# any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
-    inputFileMsg ='Please, slect the csv file of merged sentiment scores to be analyzed by the data reduction algorithms to visualize the shape of stories.'
-    inputDirTXTCSVMsg ='In INPUT the algorithms expect either a set of TXT files or CSV files in a directory depending upon the options selected:\n   1. compute sentiment scores (txt files);\n   2. compute data-reduction shape-of-stories visuals (csv files).\n\nPlease, use the \'Select INPUT files directory\' IO widget to select the appropriate directory.'
-    inputDirCSVMsg ='\n\nIn INPUT the algorithms expect a set of csv files of sentiment scores in a directory. Please, use the \'Select INPUT files directory\' IO widget to select the directory.'
-    inputDirTXTMsg ='\n\nIn INPUT the algorithms expect a set of txt files in a directory for which to compute sentiment scores. Please, use the \'Select INPUT files directory\' IO widget to select the directory.'
-    outputDirMsg='\n\nIn OUPUT the sentiment analysis scores will be saved in a double subdirectory of the output directory - Shape of Stories/Last part of input directory name/sentiment_analysis_results_last part of input directory name.'
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", inputFileMsg+GUI_IO_util.msg_openFile)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", inputDirTXTCSVMsg+GUI_IO_util.msg_openExplorer)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", GUI_IO_util.msg_outputDirectory)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help", 'Please, tick the checkbox \'Sentiment Analysis\' if you wish to run the Sentiment Analysis algorithm.\n\nIf you do want to run the algorithm, using the dropdown menu, please select the type of Sentiment Analysis algorithm you wish to use (Stanford CoreNLP neural network approach recommended).'+inputDirTXTMsg+outputDirMsg)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help", 'Please, tick the checkbox if you wish to compute & visualize corpus statistics. This will help you identify any document outlier in terms of number of words and, particularly relevant for the analysis of the shape of stories, number of sentences.'+inputDirTXTMsg+outputDirMsg)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help", 'Please, tick the checkbox if you wish to run the Hierarchical Clustering algorithm of data reduction.'+inputDirCSVMsg+outputDirMsg)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help", 'Please, tick the checkbox if you wish to run the SVD (Singular Value Decomposition) algorithm of data reduction.'+inputDirCSVMsg+outputDirMsg)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help", 'Please, tick the checkbox if you wish to run the NMF (Non-Negative Matrix Factorization) algorithm of data reduction.'+inputDirCSVMsg+outputDirMsg)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help", 'Please, tick the checkbox if you wish to estimate the best number of topics providing graphical visualization.\n\nWARNING! This function is very slow and make take an hour or longer. You can follow its progress in command line.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help", GUI_IO_util.msg_openOutputFiles)
-help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
-
-# change the value of the readMe_message
-readMe_message="The Python 3 scripts provide ways of analyzing the emotional arc of a set of stories and of visualizing common patterns of behavior among the stories.\n\nThe shape of stories algorithms are fundamentally based on sentiment analysis of the input stories and on data reduction of the calculated sentiment scores.\n\n" \
-"In INPUT the algorithms expect either\n   1. a csv file of sentiment scores or an directory of csv files of sentiment scores\n" \
-"   2. a set of TXT files or CSV files in a directory depending upon the options selected: compute sentiment scores (txt files); compute data-reduction shape-of-stories visuals (csv files).\n\nPlease, use the \'Select INPUT files directory\' IO widget to select the appropriate directory.\n\n" \
-"In OUTPUT the algorithms will produce sentiment analysis scores (if the option is selected) and a number of visual plots (e.g., sentiment arcs). " \
-"Output files will be saved in a sub-directory called \'Shape of Stories\' itself a subdirectory of the current default output directory; inside this \'Shape of Stories\' subdirecory all files will be saved inside a further subdirectory with the name of the final part of the input directory.\n\n" \
-"Four different approaches to SENTIMENT ANALYSIS can be used to measure the emotional arc of stories: ANEW, VADER, hedonometer, Stanford CoreNLP neural network approach (recommended).\n\n" \
-"Three different approaches to DATA REDUCTION are used: Hierarchical clustering (HC), Singular Value Decomposition (SVD), Non-Negative Matrix Factorization (NMF).\n\n" \
-"During execution, the algorithm will ask the user to confirm three different PARAMETERS used by the data reduction algorithms: Window size, Sentiment Vector Size, Cluster (modes) size.\n\n" \
-"   WINDOW SIZE: the number of sentences that will be averaged to obtain one point of the story arc.\n   Lower bound: At least one sentence must be take average to get the values in sentiment score vector.\n   Upper bound: minimum document length-1. Window size should be less than the minimum document length, i.e, number of sentences in the shortest document.\n" \
-"\n   SENTIMENT VECTOR SIZE: the number of values that each document will be represented with.\n   Lower bound: Each document should be represented by at least one value.\n   Upper bound: minimum document length. Each document should be represented by at most [minimum document length] values.\n" \
-"\n   CLUSTER (MODE) SIZE: the number of clusters that users want the documents to be grouped into.\n   The recommended cluster size is calculated using Principal Component Analysis (PCA, via the Python sklearn library). A cluster size is considered good if documents in the same cluster are similar to one another, and dissimilar from the documents in other clusters.\n   Lower bound: All documents should be clustered into at least one cluster.\n   Upper bound: sentiment vector size. The number of clusters should not exceed the sentiment vector size."
-readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
-
-# check_requirements()
-
-
-def check_IO_requirements(*args):
-    inputDir=GUI_util.input_main_dir_path.get()
-    inputFilename=GUI_util.inputFilename.get()
+def check_IO_requirements(inputFilename, inputDir):
     sentimentAnalysis=sentiment_analysis_var.get()
     corpus_analysis=corpus_analysis_var.get()
     hierarchical_clustering=hierarchical_clustering_var.get()
@@ -477,27 +440,27 @@ def check_IO_requirements(*args):
     best_topic_estimation=best_topic_estimation_var.get()
 
     nSAscoreFiles = None
-    if inputFilename!='':
-        nSAscoreFiles = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename,'Shape of Stories')
 
     DirErr_txt = "The selected options \'Sentiment analysis\' and/or \'Compute & visualize corpus statistcs\' require in input a LARGE set of txt files for which to compute sentiment scores and/or compute corpus statistics. The selected input directory\n\n" + inputDir + "\n\ndoes not contain any txt files.\n\nPlease, use the IO widget \'Select INPUT files directory\' to select a different directory (or untick the checkboxes 'Sentiment Analysis' and/or 'Compute & visualize corpus statistics') and try again."
     DirErr_txt_file = "The selected options \'Sentiment analysis\' and/or \'Compute & visualize corpus statistcs\' require in input a LARGE set of txt files for which to compute sentiment scores and/or compute corpus statistics.\n\nPlease, use the IO widget \'Select INPUT files directory\' to select the appropriate directory containg txt files (or untick the checkboxes 'Sentiment Analysis' and/or 'Compute & visualize corpus statistics') and try again."
+    DirErr_csv_file = "The data reduction options selected (Hierarchical Clustering and/or Singular Value Decomposition and/or Non-Negative Matrix Factorization and/or Best topic estimation) require in input a LARGE set of csv files in a directory (or a csv file containing sentiment analysis scores). The selected input directory\n\n" + inputDir + "\n\ndoes not contain any csv files.\n\nPlease, select a different directory (or untick the checkboxes 'Hierarchical Clustering' and/or 'Singular Value Decomposition' and/or 'Non-Negative Matrix Factorization'  and/or 'Best topic estimation' or select an input csv file of sentiment scores) and try again."
     csv_fileWarning = "The data reduction options selected (Hierarchical Clustering and/or Singular Value Decomposition and/or Non-Negative Matrix Factorization) require in input a LARGE set of txt files. The selected input directory\n\n" + inputDir + "\n\ncontains only " + str(
          nSAscoreFiles) + " txt files from which to compute sentiment scores. TOO FEW!\n\nYou REALLY should select a different directory (or untick the checkbox 'Sentiment Analysis') and try again.\n\nAre you sure you want to continue?"
-    DirErr_fileErr = "The data reduction options selected (Hierarchical Clustering and/or Singular Value Decomposition and/or Non-Negative Matrix Factorization) require in input a LARGE set of csv files in a directory (or a csv file containing sentiment analysis scores). The selected input directory\n\n" + inputDir + "\n\ndoes not contain any csv files.\n\nPlease, select a different directory (or untick the checkboxes 'Hierarchical Clustering' and/or 'Singular Value Decomposition' and/or 'Non-Negative Matrix Factorization' or select an input csv file of sentiment scores) and try again."
-    csv_fileErr='The selected file\n\n' + inputFilename + '\n\nis not a csv file containing sentiment scores.\n\nPlease, use the IO widget \'Select INPUT csv file\' to select the appropriate csv file containing sentiment scores and try again.'
+    csv_fileErr='The data reduction options selected (Hierarchical Clustering and/or Singular Value Decomposition and/or Non-Negative Matrix Factorization and/or Best topic estimation) require in input a csv file containing sentiment scores (or a directory containing a LARGE set of csv files of sentiment scores).\n\nThe selected file\n\n' + inputFilename + '\n\nis not a csv file containing sentiment scores.\n\nPlease, use the IO widget \'Select INPUT csv file\' to select the appropriate csv file containing sentiment scores (or the appropriate directory) and try again.'
 
     Error = False
 
     if inputDir=='' and inputFilename!='':
         if sentimentAnalysis == True:
-            mb.showwarning(title='Input directory error',
+            mb.showwarning(title='Input file error',
                            message=DirErr_txt_file)
-            return
+            Error = True
+            return Error
         if corpus_analysis == True:
-            mb.showwarning(title='Input directory error',
+            mb.showwarning(title='Input folder error',
                            message=DirErr_txt)
-            return
+            Error = True
+            return Error
 
     if inputFilename!='':
         # get headers so as to check that it is a sentiment score file
@@ -506,7 +469,8 @@ def check_IO_requirements(*args):
         if not('Document' in str2 and 'Sentence' in str2 and 'Sentiment' in str2):
             mb.showwarning(title='csv file error',
                            message=csv_fileErr)
-            return
+            Error = True
+            return Error
 
         computeSAScores = False
 
@@ -517,30 +481,36 @@ def check_IO_requirements(*args):
             answer = mb.askyesno("Data warning: Data reduction algorithms",
                                  message=csv_fileWarning)
             if answer == False:
-                return
+                Error = True
+                return Error
     else: # inputDir
         if inputDir!='':
             if sentimentAnalysis == True or corpus_analysis == True:
                 nSAscoreFiles=IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
                 if nSAscoreFiles == 0:
-                    mb.showwarning(title="Directory error",
+                    mb.showwarning(title="Input folder error",
                                    message=DirErr_txt)
-                    return
+                    Error = True
+                    return Error
                 if nSAscoreFiles < 50 and sentimentAnalysis == True:
                     answer = mb.askyesno("Directory error",
-                                         message=Dir_Err_txt)
+                                         message=DirErr_txt)
+                    Error = True
+                    return Error
 
             if (not sentimentAnalysis) and (hierarchical_clustering or SVD or NMF or best_topic_estimation):
                 nSAscoreFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'csv')
                 if nSAscoreFiles==0:
                     mb.showwarning(title="Directory error",
-                                   message=DirErr_fileErr)
-                    return
+                                   message=DirErr_csv_file)
+                    Error = True
+                    return Error
                 elif nSAscoreFiles < 50 and sentimentAnalysis == True:
                     answer = mb.askyesno("Data reduction algorithms",
                                          message=csv_fileWarning)
                 if answer == False:
-                    return
+                    Error = True
+                    return Error
 
     # check input file that must be a csv file containing sentiment analysis score of any data reduction options are ticked
     if inputFilename!='' and sentiment_analysis_var.get() == False and corpus_analysis_var.get() == False and (
@@ -566,22 +536,20 @@ def check_IO_requirements(*args):
     if inputDir!='' and sentiment_analysis_var.get() == True or corpus_analysis_var.get() == True:
         nSAscoreFiles=IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
         if nSAscoreFiles==0:
-            mb.showwarning(title="Directory error",
+            mb.showwarning(title="Input folder error",
                            message=DirErr_txt)
             Error = True
             return Error
         if sentiment_analysis_var.get() == True:
-            title_options = ['Stanford CoreNLP Sentiment Analysis system requirements']
-            message = 'The Stanford CoreNLP Sentiment Analysis tool requires two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/'
             reminders_util.checkReminder(config_filename,
-                                         title_options,
-                                         message,
+                                         reminders_util.title_options_SA_CoreNLP_system_requirements,
+                                         reminders_util.message_SA_CoreNLP_system_requirements,
                                          True)
-            Error = True
-            return Error
+            # Error = True
+            # return Error
 
     # check data reduction and IO input values
-    if inputFilename=='' and sentiment_analysis_var.get() == False and corpus_analysis_var.get() == False and (
+    if inputDir!='' and sentiment_analysis_var.get() == False and corpus_analysis_var.get() == False and (
             hierarchical_clustering_var.get() == True or SVD_var.get() == True or NMF_var.get() == True):
         try:
             nSAscoreFiles=IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'csv')
@@ -595,17 +563,67 @@ def check_IO_requirements(*args):
 
     return Error
 
-sentiment_analysis_var.trace('w',check_IO_requirements)
-corpus_analysis_var.trace('w',check_IO_requirements)
-hierarchical_clustering_var.trace('w',check_IO_requirements)
-SVD_var.trace('w',check_IO_requirements)
-NMF_var.trace('w',check_IO_requirements)
+# sentiment_analysis_var.trace('w',lambda x, y, z: check_IO_requirements(GUI_util.inputFilename.get(),GUI_util.input_main_dir_path.get()))
+# corpus_analysis_var.trace('w',lambda x, y, z: check_IO_requirements(GUI_util.inputFilename.get(),GUI_util.input_main_dir_path.get()))
+# hierarchical_clustering_var.trace('w',lambda x, y, z: check_IO_requirements(GUI_util.inputFilename.get(),GUI_util.input_main_dir_path.get()))
+# SVD_var.trace('w',lambda x, y, z: check_IO_requirements(GUI_util.inputFilename.get(),GUI_util.input_main_dir_path.get()))
+# NMF_var.trace('w',lambda x, y, z: check_IO_requirements(GUI_util.inputFilename.get(),GUI_util.input_main_dir_path.get()))
+#
+# GUI_util.inputFilename.trace('w',lambda x, y, z: check_IO_requirements(GUI_util.inputFilename.get(),GUI_util.input_main_dir_path.get()))
+# GUI_util.input_main_dir_path.trace('w',lambda x, y, z: check_IO_requirements(GUI_util.inputFilename.get(),GUI_util.input_main_dir_path.get()))
 
-check_IO_requirements()
+TIPS_lookup = {'Shape of stories':'TIPS_NLP_Shape of stories.pdf','Data reduction algorithms: Parameters formulae':'TIPS_NLP_Data reduction algorithms: Parameters formulae.pdf','Hierarchical clustering':'Data reduction algorithms: Hierarchical clustering.pdf','Singular Value Decomposition':'Data reduction algorithms: Singular Value Decomposition.pdf','Non-negative Matrix Factorization (NMF)':'TIPS_NLP_Shape of stories - Non-Negative Matrix Factorization (NMF).pdf','Sentiment analysis':'TIPS_NLP_Sentiment analysis.pdf'}
+TIPS_options='Shape of stories','Sentiment analysis','Data reduction algorithms: Parameters formulae','Hierarchical clustering','Singular Value Decomposition','Non-negative Matrix Factorization (NMF)'
 
-def change_input(*args):
-    check_IO_requirements()
-GUI_util.inputFilename.trace('w',change_input)
-GUI_util.input_main_dir_path.trace('w',change_input)
+def display_reminder(*args):
+    if best_topic_estimation_var.get():
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_shape_of_stories_best_topic,
+                                     reminders_util.message_shape_of_stories_best_topic,
+                                     True)
+best_topic_estimation_var.trace('w',display_reminder)
+
+# add all the lines lines to the end to every special GUI
+# change the last item (message displayed) of each line of the function help_buttons
+# any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
+def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
+    inputFileMsg ='Please, select the csv file of merged sentiment scores to be analyzed by the data reduction algorithms to visualize the shape of stories.'
+    inputDirTXTCSVMsg ='In INPUT the algorithms expect either a set of TXT files or CSV files in a directory depending upon the options selected:\n   1. compute sentiment scores (txt files);\n   2. compute data-reduction shape-of-stories visuals (csv files).\n\nPlease, use the \'Select INPUT files directory\' IO widget to select the appropriate directory.'
+    inputDirCSVMsg ='\n\nIn INPUT the algorithms expect a set of csv files of sentiment scores in a directory. Please, use the \'Select INPUT files directory\' IO widget to select the directory.'
+    inputDirTXTMsg ='\n\nIn INPUT the algorithms expect a set of txt files in a directory for which to compute sentiment scores. Please, use the \'Select INPUT files directory\' IO widget to select the directory.'
+    outputDirMsg='\n\nIn OUPUT the sentiment analysis scores will be saved in a double subdirectory of the output directory - Shape of Stories/Last part of input directory name/sentiment_analysis_results_last part of input directory name.'
+    if not IO_setup_display_brief:
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", inputFileMsg+GUI_IO_util.msg_openFile)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", inputDirTXTCSVMsg+GUI_IO_util.msg_openExplorer)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", GUI_IO_util.msg_outputDirectory)
+    else:
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_IO_setup)
+
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help", 'Please, tick the checkbox \'Sentiment Analysis\' if you wish to run the Sentiment Analysis algorithm.\n\nIf you do want to run the algorithm, using the dropdown menu, please select the type of Sentiment Analysis algorithm you wish to use (Stanford CoreNLP neural network approach recommended).'+inputDirTXTMsg+outputDirMsg)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help", 'Please, tick the checkbox if you wish to compute & visualize corpus statistics. This will help you identify any document outlier in terms of number of words and, particularly relevant for the analysis of the shape of stories, number of sentences.'+inputDirTXTMsg+outputDirMsg)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help", 'Please, tick the checkbox if you wish to run the Hierarchical Clustering algorithm of data reduction.'+inputDirCSVMsg+outputDirMsg)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help", 'Please, tick the checkbox if you wish to run the SVD (Singular Value Decomposition) algorithm of data reduction.'+inputDirCSVMsg+outputDirMsg)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help", 'Please, tick the checkbox if you wish to run the NMF (Non-Negative Matrix Factorization) algorithm of data reduction.'+inputDirCSVMsg+outputDirMsg)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help", 'Please, tick the checkbox if you wish to estimate the best number of topics providing graphical visualization.\n\nWARNING! This function is very slow and make take an hour or longer. You can follow its progress in command line.')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+7),"Help", GUI_IO_util.msg_openOutputFiles)
+help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
+
+# change the value of the readMe_message
+readMe_message="The Python 3 scripts provide ways of analyzing the emotional arc of a set of stories and of visualizing common patterns of behavior among the stories.\n\nThe shape of stories algorithms are fundamentally based on sentiment analysis of the input stories and on data reduction of the calculated sentiment scores.\n\nThe data reduction algorithms rely heavily on Andrew Reagan et al. work on the emotional arc of stories. Andrew J. Reagan et al. 2016. The emotional arcs of stories are dominated by six basic shapes. https://epjdatascience.springeropen.com/articles/10.1140/epjds/s13688-016-0093-1   For code, see Reagan's GitHub repository at https://github.com/andyreagan \n\n" \
+"In INPUT the algorithms expect either\n   1. a csv file of sentiment scores or an directory of csv files of sentiment scores\n" \
+"   2. a set of TXT files or CSV files in a directory depending upon the options selected: compute sentiment scores (txt files); compute data-reduction shape-of-stories visuals (csv files).\n\nPlease, use the \'Select INPUT files directory\' IO widget to select the appropriate directory.\n\n" \
+"In OUTPUT the algorithms will produce sentiment analysis scores (if the option is selected) and a number of visual plots (e.g., sentiment arcs). " \
+"Output files will be saved in a sub-directory called \'Shape of Stories\' itself a subdirectory of the current default output directory; inside this \'Shape of Stories\' subdirecory all files will be saved inside a further subdirectory with the name of the final part of the input directory.\n\n" \
+"Four different approaches to SENTIMENT ANALYSIS can be used to measure the emotional arc of stories: ANEW, VADER, hedonometer, Stanford CoreNLP neural network approach (recommended).\n\n" \
+"Three different approaches to DATA REDUCTION are used: Hierarchical clustering (HC), Singular Value Decomposition (SVD), Non-Negative Matrix Factorization (NMF).\n\n" \
+"During execution, the algorithm will ask the user to confirm three different PARAMETERS used by the data reduction algorithms: Window size, Sentiment Vector Size, Cluster (modes) size.\n\n" \
+"   WINDOW SIZE: the number of sentences that will be averaged to obtain one point of the story arc.\n   Lower bound: At least one sentence must be take average to get the values in sentiment score vector.\n   Upper bound: minimum document length-1. Window size should be less than the minimum document length, i.e, number of sentences in the shortest document.\n" \
+"\n   SENTIMENT VECTOR SIZE: the number of values that each document will be represented with.\n   Lower bound: Each document should be represented by at least one value.\n   Upper bound: minimum document length. Each document should be represented by at most [minimum document length] values.\n" \
+"\n   CLUSTER (MODE) SIZE: the number of clusters that users want the documents to be grouped into.\n   The recommended cluster size is calculated using Principal Component Analysis (PCA, via the Python sklearn library). A cluster size is considered good if documents in the same cluster are similar to one another, and dissimilar from the documents in other clusters.\n   Lower bound: All documents should be clustered into at least one cluster.\n   Upper bound: sentiment vector size. The number of clusters should not exceed the sentiment vector size."
+readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
+GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options, IO_setup_display_brief)
+
+# check_IO_requirements(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get())
 
 GUI_util.window.mainloop()

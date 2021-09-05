@@ -170,7 +170,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createExc
 
     filesToOpen = []
     # check that the CoreNLPdir as been setup
-    CoreNLPdir=IO_libraries_util.get_external_software_dir('file_classifier_NER_util', 'Stanford CoreNLP')
+    CoreNLPdir, missing_external_software, missing_external_software=IO_libraries_util.get_external_software_dir('file_classifier_NER_util', 'Stanford CoreNLP')
     if CoreNLPdir==None:
         return filesToOpen
 
