@@ -67,7 +67,7 @@ except:
         '\n  Right click on Anaconda Prompt'
         '\n  Click on More'
         '\n  Click on Run as Administrator'
-        '\n  At the command prompt, Enter "activate " and your environment'
+        '\n  At the command prompt, Enter "conda activate NLP" (if NLP is your environment)'
         '\n  Then enter: "python -m spacy download en_core_web_sm" and Return'
         '\n\nThis imports the package.')
     sys.exit(0)

@@ -405,7 +405,7 @@ def compute_csv_column_frequencies_NEW(window, inputFileName, inputDataFrame, ou
         temp_str = '%s' + '\n%s' * (len(hover_col) - 1)
         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col), axis=1)
         data.drop(hover_col, axis=1, inplace=True)
-    return Excel_prepare_charts_util.prepare_csv_data_for_chart(window, inputFileName, data, output_dir, select_col,
+    return prepare_csv_data_for_chart(window, inputFileName, data, output_dir, select_col,
                                                                 Hover_over_header, group_col, fileNameType, chartType,
                                                                 openOutputFiles, createExcelCharts, count_var)
 

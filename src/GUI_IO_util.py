@@ -178,8 +178,8 @@ def cite_NLP(Window, configFilename=''):
     mb.showinfo(title='How to cite NLP Suite', message='Franzosi, Roberto. 2020. NLP Suite: A collection of natural language processing tools.\n\nGitHub: https://github.com/NLP-Suite/NLP-Suite\n\n\
 The following papers are based on the NLP Suite tools:\n\n\
 Franzosi, Roberto. 2020. "What’s in a Text? Bridging the Gap Between Quality and Quantity in the Digital Era." Quality & Quantity. DOI: https://doi.org/10.1007/s11135-020-01067-6\n\n\
+Franzosi, Roberto, Wenqin Dong, Yilin Dong. 2021. "Qualitative and Quantitative Research in the Humanities and Social Sciences: How Natural Language Processing (NLP) Can Help." Quality & Quantity. In press.\n\n\
 Unpublished papers:\n\n\
-Franzosi, Roberto, Wenqin Dong, Yilin Dong, Yi Wang. 2020. "Social Movements Research: How Natural Language Processing (NLP) Can Help." Unpublished manuscript.\n\n\
 Franzosi, Roberto, Wenqin Dong, Yuhang Feng, Gabriel Wang. 2020. "Automatic Information Extraction of the Narrative Elements Who, What, When, and Where." Unpublished manuscript.\n\n\
 Franzosi, Roberto, Wenqin Dong, Alberto Purpura. 2020. "The Shape of Stories." Unpublished manuscript.')
 
