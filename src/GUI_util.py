@@ -169,7 +169,7 @@ def display_release():
     # second digit for new features
     # third digit for bug fixes and minor changes to current version
     # must also change the Release version in readMe on GitHub
-    release_version_var.set("1.5.4")
+    release_version_var.set("1.5.5")
 
     y_multiplier_integer=-.7
 
@@ -620,8 +620,7 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
     # GUIs that serve only as frontend GUIs for more specialized GUIs should NOT display Open ooutput and Excel tickboxes
     #   that is the case, for instance, in narrative_analysis_main
     #   in this case config_input_output_options = [0, 0, 0, 0, 0, 0]
-    #RF
-    if config_input_output_options!= [0, 0, 0, 0, 0, 0] and ScriptName != 'NLP_menu_main' and config_filename != 'default-config.txt' and not "IO_setup_main" in ScriptName:
+    if config_input_output_options!= [0, 0, 0, 0, 0, 0] and ScriptName != 'NLP_menu_main' and ScriptName != "IO_setup_main":
         #open out csv files widget defined above since it is used earlier
         open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Automatically open output csv file(s)", "Do NOT automatically open output csv file(s)"))
         open_csv_output_label.configure(text="Automatically open output csv file(s)")
