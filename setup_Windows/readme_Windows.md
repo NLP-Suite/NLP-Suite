@@ -5,7 +5,7 @@
 
 ![NLP Suite Folder](https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/images/image001.png?raw=true)
 
-- The folder should be called NLP-Suite followed by the version number. The extracted content should be like this:
+- The folder should be called NLP-Suite. The extracted content should be like this:
 
 ![NLP Suite Folder](https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/images/image002.png?raw=true)
  
@@ -31,13 +31,13 @@ Example of missing Anaconda in PATH
 
 There are two ways of updating to the newest NLP Suite version.
 
-1. Double click update.bat on your local machine every time you want to get new/changed files from GitHub.
-2. Double click on setup_auto_update.bat and, from then on, when exiting the NLP Suite new/changed files will be automatically pulled from GitHub. You only need to run setup_auto_update.bat once.
+1. Double click update_NLP-Suite.bat on your local machine every time you want to get new/changed files from GitHub.
+2. Double click on update_NLP-Suite_auto.bat and, from then on, when exiting the NLP Suite new/changed files will be automatically pulled from GitHub. You only need to run update_NLP-Suite_auto.bat once.
 
 ## Run Instructions
-The Windows installation script creates an NLP Suite desktop icon. Double click the NLP_Suite icon on your desktop to run the Suite.
+The Windows installation script creates an NLP Suite desktop icon. Double click the NLP_Suite icon on your desktop to run the Suite. You can also click on the run_NLP-Suite.bat directly.
  
-## Shortcuts
-Run the add_shortcut.bat file by double clicking it. This will add a shortcut to your command prompt that will allow you to type nlp and automatically be placed into your NLP Anaconda environment as well as in your NLP Suite Directory. You can remove the alias this script creates by running the remove_shortcut.bat.
+## NLP environment shortcuts for Windows
+Run the NLP-environment_shortcut_add.bat file by double clicking it. This will add a shortcut to your command prompt that will allow you to type nlp and automatically be placed into your NLP Anaconda environment as well as in your NLP Suite Directory. You can remove the alias this script creates by running the NLP_environmen_shortcut_remove.bat.
 
 ![NLP Suite Folder](https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/images/image006.png?raw=true)

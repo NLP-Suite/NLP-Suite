@@ -4,7 +4,6 @@ conda create -n NLP -y
 conda activate NLP
 
 conda install pytorch torchvision cudatoolkit -c pytorch
-conda install -y -c conda-forge scikit-learn
 python -m pip install -r requirements.txt
 
 conda activate NLP
@@ -24,6 +23,5 @@ copy setup_Windows\run.bat run.bat
 copy setup_Windows\nlp.bat nlp.bat
 
 Write-Host "----------------------" -ForegroundColor Green
-Write-Host "Installation complete!" -ForegroundColor Green
+Write-Host "Installation Completed! Although installation completed, errors may have occurred in the installation of specific Python packages. Please, scroll up to see if errors occurred or use CTRL+F to search for words such as “error” or “fail.”" -ForegroundColor Green
 Write-Host "----------------------" -ForegroundColor Green
-msg "Installation Complete!"

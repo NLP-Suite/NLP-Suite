@@ -35,5 +35,5 @@ To run the NLP Suite, once installed or updated, please double click the Mac_run
 ![NLP Suite Folder](https://github.com/NLP-Suite/NLP-Suite/blob/current-stable/images/image011.png?raw=true)
 
 
-## Shortcuts for Mac
+## NLP environment shortcuts for Mac
 Run the add_terminal_shortcut.command file by double clicking it. This will add a shortcut to your terminal that will allow you to type nlp and automatically be placed into your NLP Anaconda environment as well as in your NLP Suite Directory. You can remove the alias this script creates by running the remove_terminal_shortcut.command.

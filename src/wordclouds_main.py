@@ -17,7 +17,7 @@ import GUI_IO_util
 import IO_csv_util
 import IO_internet_util
 import wordclouds_util
-
+import reminders_util
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'#for mac users to solve one error: https://stackoverflow.com/questions/53014306/error-15-initializing-libiomp5-dylib-but-found-libiomp5-dylib-already-initial
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -47,7 +47,8 @@ def run(inputFilename, inputDir, outputDir, visualization_tools,differentPOS_dif
         #check internet connection
         if not IO_internet_util.check_internet_availability_warning(visualization_tools):
             return
-
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_wordclouds,
+                                     reminders_util.message_wordclouds, True)
         if visualization_tools=="TagCrowd":
             webPage="https://tagcrowd.com/"
         if visualization_tools=="Tagul":
@@ -345,7 +346,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help","Please, using the dropdown menu, select the word cloud service you want to use to generate a worldcloud. For 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle' you must be connected to the internet.\n\nAndreas Mueller's Python package WordCloud (https://amueller.github.io/word_cloud/) can be run without internet connection.\n\nThe Python option allows users to display different POSTAG values (namely, nouns, verbs, adjectives, and adverbs) in different colors (RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, and BLACK for ADVERBS).\n\nPOS tags are computed via Stanford CoreNLP and may be time consuming. For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values). Stopwords and numeric tokens are excluded; all tokens are converted to lowercase.\n\nIn INPUT the algorithm expects a txt file (single file or entire directory).\n\nIn OUTPUT the algorithm creates a word cloud image file.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help","Please, using the dropdown menu, select the word cloud service you want to use to generate a worldcloud.\n\nFor 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle' you must be connected to the internet. You will also need to copy/paste text or upload a text file, depending upon the word clouds service.\n\nAndreas Mueller's Python package WordCloud (https://amueller.github.io/word_cloud/) can be run without internet connection.\n\nThe Python option allows users to display different POSTAG values (namely, nouns, verbs, adjectives, and adverbs) in different colors (RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, and BLACK for ADVERBS).\n\nPOS tags are computed via Stanford CoreNLP and may be time consuming. For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values). Stopwords and numeric tokens are excluded; all tokens are converted to lowercase.\n\nIn INPUT the algorithm expects a txt file (single file or entire directory).\n\nIn OUTPUT the algorithm creates a word cloud image file.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","Please, select a png image file to be used to dislay the word cloud in the image.\n\nThe image must be a completely black image set in a white background.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help","Please, tick the checkbox if you wish to run the Python 3 Andreas Mueller's package WordCloud (https://amueller.github.io/word_cloud/) and assign different colors to the values of different columns of a csv file.\n\nThus, if, from a file, you have extracted SVOs (Subjects, Verbs, Objects) or POSTAG values (nouns, verbs, and adjectives), saving these values in in different columns, this function will allow you to display the values in the different columns in different, user-selected colors (e.g., RED for NOUNS, BLUE for VERBS, GREEN for and ADJECTIVES).\n\nIn INPUT the algorithm expects a single csv file (e.g., a CoNLL table) rather than a text file.\n\nIn OUTPUT the algorithm creates a word cloud image file.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help","Pease, select the sets of csv file fields and colors.\n\nPress the + button to add more csv file fields.\n\nPress the RESET button (or simply ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.")
