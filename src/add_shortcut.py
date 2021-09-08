@@ -75,9 +75,10 @@ def prepend_env_pathext(values):
 
 if __name__ == '__main__':
     path = Path(os.path.dirname(os.path.abspath(__file__))).parent
+    path_setup = path / 'setup_Windows'
     print(get_env('Path'))
     prepend_env('Path', [
-        os.path.abspath(path)
+        os.path.abspath(path_setup)
     ])
 
     # allow running of these filetypes without having to type the extension
