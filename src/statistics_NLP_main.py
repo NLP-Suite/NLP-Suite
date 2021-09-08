@@ -571,11 +571,12 @@ def changed_filename(*args):
 
 TIPS_lookup = {'Statistical tools in the NLP Suite': 'TIPS_NLP_Statistical tools.pdf',
                'Statistical descriptive measures': "TIPS_NLP_Statistical measures.pdf",
+               'Lemmas & stopwords':'TIPS_NLP_NLP Basic Language.pdf',
                'Style measures': 'TIPS_NLP_Style measures.pdf',
                'N-Grams (word & character)': "TIPS_NLP_Ngrams (word & character).pdf",
                'NLP Ngram and Word Co-Occurrence Viewer': "TIPS_NLP_NLP Ngram and Co-Occurrence Viewer.pdf",
                'Google Ngram Viewer': 'TIPS_NLP_Ngram Google Ngram Viewer.pdf'}
-TIPS_options = 'Statistical tools in the NLP Suite', 'Statistical descriptive measures', 'Style measures', 'N-Grams (word & character)', 'NLP Ngram and Word Co-Occurrence VIEWER', 'Google Ngram Viewer'
+TIPS_options = 'Statistical tools in the NLP Suite', 'Statistical descriptive measures', 'Lemmas & stopwords','Style measures', 'N-Grams (word & character)', 'NLP Ngram and Word Co-Occurrence VIEWER', 'Google Ngram Viewer'
 
 
 # add all the lines lines to the end to every special GUI
