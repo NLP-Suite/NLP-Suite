@@ -15,12 +15,9 @@ python -m spacy download en
 
 $WshShell = New-Object -comObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\NLP_Suite.lnk")
-$Shortcut.TargetPath = "${PSScriptRoot}\run.bat"
+$Shortcut.TargetPath = "${PSScriptRoot}\run_NLP-Suite.bat"
 $Shortcut.IconLocation = "${PSScriptRoot}\logo.ico"
 $Shortcut.Save()
-
-copy setup_Windows\run.bat run.bat
-copy setup_Windows\nlp.bat nlp.bat
 
 Write-Host "----------------------" -ForegroundColor Green
 Write-Host "Installation Completed! Although installation completed, errors may have occurred in the installation of specific Python packages. Please, scroll up to see if errors occurred or use CTRL+F to search for words such as “error” or “fail.”" -ForegroundColor Green
