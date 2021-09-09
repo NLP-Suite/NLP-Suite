@@ -59,7 +59,7 @@ from nltk.corpus import stopwords
 try:
     spacy.load('en_core_web_sm')
 except:
-    mb.showerror(title='Library error', message='The Gensim Topic modeling tool could not find the English language spacy library. This needs to be installed. At command promp type: "python -m spacy download en_core_web_sm" then enter.\n\nYOU MAY HAVE TO RUN THE COMMAND AS ADMINISTRATOR.\n\nHOW DO YOU DO THAT?'
+    mb.showerror(title='Library error', message='The Gensim Topic modeling tool could not find the English language spacy library. This needs to be installed. At command promp type:\npython -m spacy download en_core_web_sm\n\nYOU MAY HAVE TO RUN THE COMMAND AS ADMINISTRATOR.\n\nHOW DO YOU DO THAT?'
         '\n\nIn Mac, at terminal, type sudo python -m spacy download en_core_web_sm'
         '\n\nIn Windows, click on left-hand start icon in task bar'
         '\n  Scroll down to Anaconda' 

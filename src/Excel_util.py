@@ -67,7 +67,7 @@ def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_
         except:
             try:
                 data = pd.read_csv(inputFilename,encoding='ISO-8859-1')
-                IO_user_interface_util.timed_alert(window, 2000, 'Warning',
+                IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
                                                    'Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 in reading into pandas the csv file ' + inputFilename)
                 print("Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 encoding in reading into pandas the csv file " + inputFilename)
             except ValueError as err:

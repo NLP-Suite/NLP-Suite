@@ -158,8 +158,9 @@ if current_process().name == 'MainProcess':
     TIPS_lookup = {"Topic modeling": "TIPS_NLP_Topic modeling.pdf",
                    "Topic modeling in Gensim": "TIPS_NLP_Topic modeling Gensim.pdf",
                    "Topic modeling in Mallet": "TIPS_NLP_Topic modeling Mallet.pdf",
-                   'Topic modeling and corpus size': 'TIPS_NLP_Topic modeling and corpus size.pdf'}
-    TIPS_options = 'Topic modeling', 'Topic modeling in Gensim', 'Topic modeling in Mallet', 'Topic modeling and corpus size'
+                   'Topic modeling and corpus size': 'TIPS_NLP_Topic modeling and corpus size.pdf',
+                   'Lemmas & stopwords':'TIPS_NLP_NLP Basic Language.pdf'}
+    TIPS_options = 'Topic modeling', 'Topic modeling in Gensim', 'Topic modeling in Mallet', 'Topic modeling and corpus size', 'Lemmas & stopwords'
 
 
     # add all the lines lines to the end to every special GUI

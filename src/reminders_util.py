@@ -88,6 +88,9 @@ message_gensim = 'The Gensim topic modeling routine run from here is a reduced v
 title_options_geocoder = ["GIS geocoder"]
 message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.'
 
+title_options_wordclouds = ['Web-based word clouds services']
+message_wordclouds = "After the selected web-based word-clouds service opens up on your browser, you will need to either copy/paste the text you want to visualize or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file."
+
 def generate_reminder_list(path: str) -> None:
     """
     Generate The Reminder List with Default Text
