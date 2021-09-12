@@ -85,6 +85,9 @@ message_Excel = 'The Excel chart to be displayed has hover-over effects (i.e., w
 title_options_gensim = ['What is in your corpus - Gensim']
 message_gensim = 'The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.\n\nFor a more in-depth analysis of topics, use the topic modeling scripts for Gensim and Mallet.'
 
+title_options_gensim_release = ['Gensim 4.0']
+message_gensim_release = 'Gensim release 4.0 removed the wrappers of other library algorithms. The algorithms running Mallet through Gensim cannot be run. Please, run Mallet using the Mallet topic modelling script to run Mallet. If your work depends on any of the Gensim modules based on wrappers, uninstall Gensim 4.0 and install Gensim 3.8.3, the last release when wrappers was supported.\n\nFor more information, please, visit the Gensim GitHub page https://github.com/RaRe-Technologies/gensim/wiki/Migrating-from-Gensim-3.x-to-4#15-removed-third-party-wrappers.'
+
 title_options_geocoder = ["GIS geocoder"]
 message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.'
 
