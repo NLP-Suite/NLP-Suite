@@ -46,6 +46,7 @@ warnings.filterwarnings("ignore",category=DeprecationWarning)
 import IO_files_util
 import IO_user_interface_util
 import Excel_util
+import reminders_util
 
 #whether stopwordst were already downloaded can be tested, see stackoverflow
 #	https://stackoverflow.com/questions/23704510/how-do-i-test-whether-an-nltk-resource-is-already-installed-on-the-machine-runni
@@ -114,7 +115,18 @@ def format_topics_sentences(ldamodel, corpus, texts):
 
 def malletModelling(MalletDir, outputDir, createExcelCharts, corpus,num_topics, id2word,data_lemmatized, lda_model, data):
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Mallet LDA topic modeling at',True)
-    ldamallet = gensim.models.wrappers.LdaMallet(MalletDir, corpus=corpus, num_topics=num_topics, id2word=id2word)
+    config_filename='topic-modeling-gensim-config.txt'
+    try:
+        ldamallet = gensim.models.wrappers.LdaMallet(MalletDir, corpus=corpus, num_topics=num_topics, id2word=id2word)
+    except:
+        routine_options = reminders_util.getReminder_list(config_filename)
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_gensim_release,
+                                     reminders_util.message_gensim_release,
+                                     True)
+        routine_options = reminders_util.getReminder_list(config_filename)
+        return
+
     # Show Topics
     pprint(ldamallet.show_topics(formatted=False))
 
@@ -476,7 +488,6 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
     start_new_thread(show_web, (vis,))
 
     if run_Mallet==True:
-
         # check that the MalletDir as been setup
         MalletDir, missing_external_software = IO_libraries_util.get_external_software_dir('topic_modeling_gensim', 'Mallet')
         if MalletDir==None:

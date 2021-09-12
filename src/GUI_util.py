@@ -169,7 +169,8 @@ def display_release():
     # second digit for new features
     # third digit for bug fixes and minor changes to current version
     # must also change the Release version in readMe on GitHub
-    release_version_var.set("1.5.8")
+
+    release_version_var.set("1.5.9")
 
     y_multiplier_integer=-.7
 
