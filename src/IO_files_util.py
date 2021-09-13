@@ -320,7 +320,7 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen):
 									 ['csv files'],
 									 'If csv ouput files open displaying weird characters in a Windows OS (e.g., a€), most likely the cause is due to non utf-8 compliant input text. Apostrophes and quotes are the typical culprits, but also other punctuation characters.\n\nPlease, run the tool to check documents for utf-8 compliance and, if necessary, run the tool for automatic apostrophe and quote conversion from non utf-8 to utf-8.\n\nTo learm more on utf-8 compliance, read the TIPS on utf-8 compliance.',
 									 True)
-		routine_options = reminders_util.getReminder_list('*')
+		routine_options = reminders_util.getReminders_list('*')
 		timed_alert(window, 2000, 'Warning',
 					'Opening ' + str(len(filesToOpen)) + ' output ' + singularPlural + '... Please wait...', False)
 		for file in filesToOpen:

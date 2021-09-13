@@ -119,12 +119,12 @@ def malletModelling(MalletDir, outputDir, createExcelCharts, corpus,num_topics, 
     try:
         ldamallet = gensim.models.wrappers.LdaMallet(MalletDir, corpus=corpus, num_topics=num_topics, id2word=id2word)
     except:
-        routine_options = reminders_util.getReminder_list(config_filename)
+        routine_options = reminders_util.getReminders_list(config_filename)
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_gensim_release,
                                      reminders_util.message_gensim_release,
                                      True)
-        routine_options = reminders_util.getReminder_list(config_filename)
+        routine_options = reminders_util.getReminders_list(config_filename)
         return
 
     # Show Topics
