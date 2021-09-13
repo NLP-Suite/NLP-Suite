@@ -245,7 +245,7 @@ pydict["WHAT\'S IN YOUR CORPUS? A SWEEPING VIEW"] = ["whats_in_your_corpus_main.
 pydict["Corpus statistics (Sentences, words, lines)"] = ["statistics_NLP_main.py", 1]
 pydict["Word clouds"] = ["wordclouds_main.py", 1]
 pydict["WordNet"] = ["WordNet_main.py", 1]
-pydict["Word2Vec (via Gensim)"] = ["", 0]
+pydict["Word2Vec (via Gensim)"] = ["word2vec_main.py", 1]
 
 # NLP Suite team & How to cite are in GUI_util
 
@@ -611,11 +611,26 @@ readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
 GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief, ScriptName)
 
-if platform == "darwin":
-    reminders_util.checkReminder(config_filename,
-                                 reminders_util.title_options_Mac_tkinter_bug,
-                                 reminders_util.message_Mac_tkinter_bug,
-                                 True)
+routine_options = reminders_util.getReminders_list('NLP')
+
+reminders_util.checkReminder('NLP',
+                             reminders_util.title_options_NLP_Suite_welcome,
+                             reminders_util.message_NLP_Suite_welcome,
+                             True)
+
+reminders_util.checkReminder('NLP',
+                             reminders_util.title_options_NLP_Suite_architecture,
+                             reminders_util.message_NLP_Suite_architecture,
+                             True)
+
+routine_options = reminders_util.getReminders_list('NLP')
+
+# this problem seems to have been fixed by tkinter
+# if platform == "darwin":
+#     reminders_util.checkReminder(config_filename,
+#                                  reminders_util.title_options_Mac_tkinter_bug,
+#                                  reminders_util.message_Mac_tkinter_bug,
+#                                  True)
 
 # check for external software installation (Stanford CoreNLP, WordNet, Mallet, SENNA)
 # IO_libraries_util.get_external_software_dir('NLP_menu','')

@@ -127,12 +127,12 @@ def run(inputFilename,inputDir, outputDir,
         if topics_Gensim_var==True:
             if IO_libraries_util.inputProgramFileCheck('topic_modeling_gensim_main.py')==False:
                 return
-            routine_options = reminders_util.getReminder_list(config_filename)
+            routine_options = reminders_util.getReminders_list(config_filename)
             reminders_util.checkReminder(config_filename,
                                          reminders_util.title_options_gensim,
                                          reminders_util.message_gensim,
                                          True)
-            routine_options = reminders_util.getReminder_list(config_filename)
+            routine_options = reminders_util.getReminders_list(config_filename)
 
             if open_GUI_var == True:
                 call("python topic_modeling_gensim_main.py", shell=True)

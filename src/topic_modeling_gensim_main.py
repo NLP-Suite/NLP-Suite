@@ -57,7 +57,6 @@ def run(inputDir, outputDir, openOutputFiles,createExcelCharts, num_topics, remo
     topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics,
                                           remove_stopwords_var, lemmatize_var, nounsOnly_var, Mallet_var, openOutputFiles,createExcelCharts)
 
-
 run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
