@@ -22,6 +22,60 @@ from csv import writer
 
 # below is a lit of most reminders called from various scripts with their title_options and message
 
+title_options_NLP_Suite_welcome = ['NLP Suite welcome & system requirements']
+message_NLP_Suite_welcome = 'Welcome to the NLP Suite a package of Python 3 and Java tools designed for text processing and visualization. The Suite requires several FREWARE software components in order to run. You will need to download and install them.\n\n1. JAVA. Several scripts are based on the FREEWARE Java. You can download and install Java at https://www.java.com/en/download\n\n2. STANFORD CORENLP. The core text analyses of the NLP Suite are based on the FREEWARE Stanford CoreNLP. You can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n3. GEPHI. The visualization of network graphs requires the installation of the FREEWARE software Gephi. You can download and install Gephi at https://gephi.org/users/download/\n\n4. GOOGLE EARTH PRO. The visualization of geographic maps requires the installation of the FREEWARE software Google Earth Pro. You can download and install Google Earth Pro at https://www.google.com/earth/versions/#download-pro.\n\n5. MALLET. Mallet topic modelling requires the installation of the FREEWARE Mallet. You can download and install Mallet at http://mallet.cs.umass.edu/download.php.\n\n6. WORDNET. Aggregating and disaggregating words requires the installation of the FREWARE WordNet. You can download WordNet at https://wordnet.princeton.edu/download/current-version.'
+
+title_options_NLP_Suite_architecture = ['NLP Suite architecture & filenames']
+message_NLP_Suite_architecture = 'The Python scripts in the NLP Suite have filenames that clearly identify the Suite architecture.\n\nThe filename suffix designates two different types of files: _main and _util.\n\n_main files are the only ones that you can run in command line independently of others; they may call _util files.\n\nThe _main files, with their GUI options, lay out on the screen the widgets of a script for easy Graphical User Interface (GUI).\n\nALL SCRIPTS SUFFIXED BY _main CAN BE RUN INDIPENDENTLY OF THE NLP SUITE. Thus on command line you can type\nPython annotator_main.py\nand it will fire up the annotator GUI independently of NLP_main.py.\n\nThe filename prefix cluster together scripts used for the same purpose. Thus annotator identifies all files dealing with html annotation.'
+
+title_options_NLP_Suite_reminders = ['NLP Suite reminders']
+message_NLP_Suite_reminders = 'Several NLP Suite scripts will fire up reminders for the user. You can turn them off once you are familiar with a script. You can always turn any reminder back ON (or OFF for that matter) if you select the reminders dropdown menu at the bottom of each GUI and then select a specific reminder (if reminders are available for that GUI).'
+
+title_options_SVO_input = ['SVO input']
+message_SVO_input = "The SVO pipeline allows you to start from a TXT file in input and extract from it via OpenIE the SVOs and visualize them.\n\nBut you can also select a CSV file in input, the output file previosuly created by OpenIE characerized by the suffix '-svo.csv', and use that file to visualize the results without having to rerun OpenIE."
+
+title_options_SVO_output = ['SVO output']
+message_SVO_output = 'Depending upon the options you select, the SVO pipeline will produce in output different types of files: cvf files, wordcloud image, Google Earth Pro map, and Gephi network graph.\n\nWhile cvf and png files are easy to read, less so are Google Earth Pro kml files and, particularly, Gephi gexf files.\n\nPLEASE, read the Gephi TIPS file before you run the SVO pipeline.'
+
+title_options_SVO_system_requirements = ['SVO system requirements']
+message_SVO_system_requirements = 'The extraction and visualization of SVOs requires several software components.\n\n1. The extraction of SVOs requires the Stanford CoreNLP set of NLP tools. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP requires to have the Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/\n\n3. The visualization of the SVO output as GIS maps and network graphs further requires the installation of the FREEWARE software Gephi and Google Earth Pro.\n\n3a. You can download and install the FREEWARE GEPHI at https://gephi.org/users/download/\n\n3b. You can download and install the FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro'
+
+title_options_Excel_Charts = ['Excel Charts']
+message_Excel_Charts = 'The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).\n\nFirst, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).\n\nSecond, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.'
+
+title_options_GIS_Nominatim = ['GIS Nominatim geocoder']
+message_GIS_Nominatim = "If the Nominatim geocoder service exits with the error 'too many requests', you can break up the csv location file and process each subfile for geocoding as normal csv files."
+
+title_options_Google_Earth_Pro_download = ['Google Earth Pro download']
+message_Google_Earth_Pro_download = 'The GIS pipeline requires a copy of the FREEWARE Google Earth Pro installed on your machine.\n\nYou can download and install the FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro'
+
+title_options_VADER = ['VADER']
+message_VADER = 'VADER heavily relies on a number of NLTK libraries. If VADER fails to run, make sure that in command line you run\n\npython -m nltk.downloader all'
+
+title_options_WordNet_system_requirements = ['WordNet system requirements']
+message_WordNet_system_requirements = 'The scripts in this GUI require the FREEWARE WordNet on your machine. You can download WordNet at https://wordnet.princeton.edu/download/current-version.'
+
+title_options_WordNet_input_file_button = ['WordNet input file button']
+message_WordNet_input_file_button = 'The Select INPUT file button is disabled (grayed out) when you open WordNet. Different options require either no file or different file types.\n\nPlease, tick a checkbox to activate the button.'
+
+title_options_Mallet_installation = ['Mallet download and installation']
+message_Mallet_installation = 'The Mallet topic modelling tool requires a copy of the FREEWARE Mallet installed on your machine. You can download the FREEWARE Mallet at http://mallet.cs.umass.edu/download.php.\n\nMallet in turn requires a copy of the JAVA development kit installed on your machine.\n\nRead carrefully the Mallet and Java installation TIPS.'
+
+title_options_CoreNLP_Sentiment_Analysis_system_requirements = ['Stanford CoreNLP Sentiment Analysis system requirements']
+message_CoreNLP_Sentiment_Analysis_system_requirements = 'The Stanford CoreNLP Sentiment Analysis tool requires two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/'
+
+title_options_CoreNLP_system_requirements = ['Stanford CoreNLP system requirements']
+message_CoreNLP_system_requirements = 'Some of the NLP tools in this GUI require two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/'
+
+title_options_CoNLL_table = ['CoNLL table']
+message_CoNLL_table = 'The CoNLL table produced by the Stanford CoreNLP parser is the input to a number of NLP Suite algorithms.\n\nPLEASE, DO NOT TINKER WITH THE CONLL TABLE OR MANY NLP SUITE ALGORITHMS WILL FAIL.'
+
+title_options_Output_directory_of_split_files = ['Output directory of split files']
+message_Output_directory_of_split_files = 'This is a reminder that all file splitter scripts save the split files inside a subdirectory by the name of split_files of the directory where the input txt files are located, regardless of the choice of output directory.'
+
+title_options_Plagiarist = ['Plagiarist']
+message_Plagiarist = "The 'plagiarist' script, based on Lucene, can process files with embedded dates.\n\nIf the filenames in the input directory embed dates, please tick the checkbox 'Filename embeds date' above."
+
 title_options_IO_configuration = ['Input/Output configurations']
 message_IO_configuration = 'Most GUIs in the NLP Suite provide two types of Input/Output (I/O) configurations that specify your selection for your input file or directory (these are mutually exclusive; you can only select one or the other) and output directory:\n\n  Default I/O configuration\n  Alternative I/O configuration\n\nThe Default I/O configuration applies to ALL GUIs in the NLP Suite. This is an ideal option if you work exclusively, or mostly, with the same input file(s) regardless of GUI (i.e., NLP algorithms); you would not need to select these options for every GUI.\n\nIf you occasionally need to run a script using a different set of I/O options, setup the Alternative I/O configuration. This will not affect your I/O selections for all GUIs and will only apply to a specific GUI if you chose the menu option Alternative I/O configuration.'
 
@@ -49,6 +103,7 @@ message_SSdata = 'It has been more than two years since the US Social Security g
 reminder_options_GUIfrontend = ['GUI front end']
 message_GUIfrontend = 'The current GUI is a convenient front end that displays all the options available for the GUI.\n\nNo Input/Output options are displayed in this GUI since any selected option, when RUN, will open a specialized GUI with its own Input/Output requirements.'
 
+# this problem seems to have been fixed by tkinter
 title_options_Mac_tkinter_bug = ['tkinter MacOS bug']
 message_Mac_tkinter_bug = 'MacOS bug in tkinter (https://www.python.org/download/mac/tcltk/).\n\nPython\'s integrated development environment, IDLE, and the tkinter GUI toolkit it uses, depend on the Tk GUI toolkit which is not part of Python itself. For best results, it is important that the proper release of Tcl/Tk is installed on your machine. For recent Python installers for macOS downloadable from this website, here is a summary of current recommendations followed by more detailed information.'
 
@@ -86,7 +141,7 @@ title_options_gensim = ['What is in your corpus - Gensim']
 message_gensim = 'The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.\n\nFor a more in-depth analysis of topics, use the topic modeling scripts for Gensim and Mallet.'
 
 title_options_gensim_release = ['Gensim 4.0']
-message_gensim_release = 'Gensim release 4.0 removed the wrappers of other library algorithms. The algorithms running Mallet through Gensim cannot be run. Please, run Mallet using the Mallet topic modelling script to run Mallet. If your work depends on any of the Gensim modules based on wrappers, uninstall Gensim 4.0 and install Gensim 3.8.3, the last release when wrappers was supported.\n\nFor more information, please, visit the Gensim GitHub page https://github.com/RaRe-Technologies/gensim/wiki/Migrating-from-Gensim-3.x-to-4#15-removed-third-party-wrappers.'
+message_gensim_release = 'Gensim release 4.0 removed the wrappers of other library algorithms. The algorithms running Mallet through Gensim cannot be run. Please, run Mallet using the Mallet topic modelling script to run Mallet. If your work depends on any of the Gensim modules based on wrappers (e.g., the computation of the coherence value for each topic or of the optimal number of topics), uninstall Gensim 4.0 and install Gensim 3.8.3, the last release when wrappers was supported.\n\nFor more information, please, visit the Gensim GitHub page https://github.com/RaRe-Technologies/gensim/wiki/Migrating-from-Gensim-3.x-to-4#15-removed-third-party-wrappers.'
 
 title_options_geocoder = ["GIS geocoder"]
 message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.'
@@ -94,21 +149,24 @@ message_geocoder = 'After the geocoding and mapping is done, please, check caref
 title_options_wordclouds = ['Web-based word clouds services']
 message_wordclouds = "After the selected web-based word-clouds service opens up on your browser, you will need to either copy/paste the text you want to visualize or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file."
 
-def generate_reminder_list(path: str) -> None:
+def create_remindersFile() -> None:
     """
     Generate The Reminder List with Default Text
 
     Args:
         path - the path to the reminders file
     """
-    if not os.path.exists(path):
-        os.makedirs(path, exist_ok=True)
-    if not os.path.isfile(path+os.sep+'reminders.csv'):
-        if sys.platform == 'win32':
-            os.system(f"copy ..{os.sep}reminders{os.sep}default.csv ..{os.sep}reminders{os.sep}reminders.csv")
-        else: # darwin and linux
-            os.system(f"cp ..{os.sep}reminders{os.sep}default.csv ..{os.sep}reminders{os.sep}reminders.csv")
-#
+    remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
+    if not os.path.exists(GUI_IO_util.remindersPath):
+        os.makedirs(GUI_IO_util.remindersPath, exist_ok=True)
+    if not os.path.isfile(remindersFile):
+        # save new reminders file
+        with open(remindersFile, "a", newline='', encoding='utf-8',
+                  errors='ignore') as reminders:  # write a new row in the reminder csv file
+            writer = csv.writer(reminders)
+            writer.writerow(['Routine', 'Title', 'Message', 'Event', 'Status'])
+            reminders.close()
+
 # config_filename is the first column in reminders.csv
 #   it refers to the general Python script that calls the reminder
 #   The routine field contains the name used by the reminder script to visualize the correct reminder; it is the name of the config filename trimmed of -config.txt (e.g., GIS for GIS-config.txt, GIS-Google-Earth for GIS-Google-Earth-config.txt).
@@ -121,19 +179,17 @@ def generate_reminder_list(path: str) -> None:
 #   the message is passed (an example is found in GUI_frontEnd in GUI_IO_util.py)
 # triggered_by_GUI_event is passed when triggered by an event in the GUI (a checkbox ticked, a file opened)
 #   (e.g., in shape_of_stories_GUI)
-def getReminder_list(config_filename,silent=False):
+def getReminders_list(config_filename,silent=False):
     routine=config_filename[:-len('-config.txt')]
     title_options=[]
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
-    if IO_files_util.checkFile(remindersFile)==False:
-        return title_options
     try:
         df = pd.read_csv(remindersFile)
     except FileNotFoundError:
         if silent == False:
             mb.showwarning(title='Reminders file generated', message="The reminders.csv file saved in the reminders subdirectory was not found. If this is your first time running NLP Suite, do not worry. A default reminders.csv has been automatically generated for you.")
-        generate_reminder_list(GUI_IO_util.remindersPath)
-        return getReminder_list(config_filename, silent)
+        create_remindersFile()
+        return getReminders_list(config_filename, silent)
     except Exception as e:
         print(str(e))
         if silent==False:
@@ -152,6 +208,7 @@ def getReminder_list(config_filename,silent=False):
 # * in the Routine column are used for reminders that apply to any GUI
 # the functions gets the list of reminders for any given GUI (i.e., routine)
 
+# when displaying messages the message field is '' since the actual message is not known until the csv file is read
 def displayReminder(df,row_num,title, message, event, currentStatus, question, seeMsgAgain=False) -> object:
     try:
         message = df.at[row_num, "Message"].replace("\\n", os.linesep)
@@ -177,9 +234,8 @@ def displayReminder(df,row_num,title, message, event, currentStatus, question, s
                 status = 'No'
         else:
             status=currentStatus
-    # save any status changes
     if currentStatus!=status:
-        saveReminder(df,row_num, event, status)
+        saveReminder(df,row_num, message, event, status)
 
 # routine is a string
 # title_options is a list [] of all Routine values
@@ -193,22 +249,18 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
         routine = config_filename.replace('-config.txt', '')
         # routine = config_filename[:-len('-config.txt')]
     if title_options==None:
-        title_options = getReminder_list(config_filename)
+        title_options = getReminders_list(config_filename)
     else:
         if len(title_options)==0:
-            title_options = getReminder_list(config_filename)
+            title_options = getReminders_list(config_filename)
             if len(title_options)==0: # ill formed reminders
                 return None
-    # if len(title_options)==1 and title_options[0] == 'No Reminders available':
-    #         mb.showwarning(title='Reminders warning', message="There are no reminders available for this script.")
-    #         return
-    # open_message = True
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
     try:
         df = pd.read_csv(remindersFile)
     except FileNotFoundError:
-        generate_reminder_list(GUI_IO_util.remindersPath)
-        mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory was not found. If this is your first time running NLP Suite, do not worry. A default reminders.csv has been automatically generated for you.")
+        create_remindersFile()
+        # mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory was not found. If this is your first time running NLP Suite, do not worry. A default reminders.csv has been automatically generated for you.")
         return checkReminder(config_filename, title_options, message, triggered_by_GUI_event)
     except Exception:
         mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory is ill formed. Most likely, it contains extra , in one of the three fields (Routine, Title, Message).\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.\n\nIf any of the fields contain , the field content must be enclosed in \"\".")
@@ -216,7 +268,7 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
     # get the row number of the routine that we are looking at
     silent = False
     for title in title_options:
-        routines = routine.split(';')
+        routines = routine.split(';') # if more routines use the same reminder; NOT used
         for routine in routines:
             df1 = df.loc[(df['Routine'] == routine) & (df['Title'] == title)]
             if len(df1) == 0:
@@ -224,8 +276,17 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
                 df1 = df.loc[(df['Routine'] == '*') & (df['Title'] == title)]
             if len(df1) != 0:
                 row_num = df1.index[0]
+                # message_csv = df1.at[row_num, "Message"]
+                # if message != '' and message != message_csv:
+                #     message = df1.at[row_num, "Message"]
                 event = df1.at[row_num, "Event"]
                 status = df1.at[row_num, "Status"]
+                # save any status changes or messages in reminders.csv file different from the Python reminder message in this scrit
+                #   always update the reminder message in reminders.csv file if we changed the message programmatically
+                message_csv = df1.at[row_num, "Message"].replace("\\n", os.linesep)
+                if message != '' and message != message_csv:
+                    # must save the new message
+                    saveReminder(df, row_num, message, event, status)
                 if triggered_by_GUI_event == False and event=='Yes':
                     silent = True
                 else:
@@ -290,8 +351,9 @@ def resetReminder(config_filename,title):
 
 # update do_not_show_message.csv so that we don't show the message box again
 # status: "Yes"/"No"
-def saveReminder(df,row_num, event, status):
+def saveReminder(df,row_num, message, event, status):
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
+    df.at[row_num, "Message"] = message # change it to yes or no
     df.at[row_num, "Event"] = event # change it to yes or no
     df.at[row_num, "Status"] = status # change it to yes or no
     df.to_csv(remindersFile, index=False, header=True)

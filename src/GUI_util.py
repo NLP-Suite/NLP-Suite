@@ -670,9 +670,14 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
 
     TIPS_util.trace_open_tips(tips_dropdown_field,tips_menu_lb,TIPS_lookup)
 
+    reminders_util.checkReminder('*',
+                                 reminders_util.title_options_NLP_Suite_reminders,
+                                 reminders_util.message_NLP_Suite_reminders,
+                                 True)
+
     routine = config_filename[:-len('-config.txt')]
     # get the list of titles available for a given GUI
-    reminder_options = reminders_util.getReminder_list(config_filename, True)
+    reminder_options = reminders_util.getReminders_list(config_filename, True)
     # None returned for a faulty reminders.csv
     reminders_error = False
     if reminder_options==None:
@@ -751,11 +756,11 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
                                      reminders_util.reminder_options_GUIfrontend,
                                      message)
 
-    # routine_options = reminders_util.getReminder_list(config_filename)
+    # routine_options = reminders_util.getReminders_list(config_filename)
     result = reminders_util.checkReminder('*',
                                           reminders_util.title_options_IO_configuration,
                                           reminders_util.message_IO_configuration)
     if result != None:
-        routine_options = reminders_util.getReminder_list(config_filename)
+        routine_options = reminders_util.getReminders_list(config_filename)
 
     window.protocol("WM_DELETE_WINDOW", _close_window)

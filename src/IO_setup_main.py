@@ -165,11 +165,11 @@ GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_co
 if msg!="":
     mb.showwarning(title='Warning', message=msg)
 
-# routine_options = reminders_util.getReminder_list(config_filename)
+# routine_options = reminders_util.getReminders_list(config_filename)
 result = reminders_util.checkReminder(config_filename,
                               reminders_util.title_options_IO_setup,
                               reminders_util.message_IO_setup)
 if result!=None:
-    routine_options = reminders_util.getReminder_list(config_filename)
+    routine_options = reminders_util.getReminders_list(config_filename)
 
 GUI_util.window.mainloop()
