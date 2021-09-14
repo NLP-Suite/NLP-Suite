@@ -169,7 +169,14 @@ def display_release():
     # second digit for new features
     # third digit for bug fixes and minor changes to current version
     # must also change the Release version in readMe on GitHub
-    release_version_var.set("1.5.9")
+
+    release_version_file=GUI_IO_util.libPath + os.sep + "release_version.txt"
+    if os.path.isfile(release_version_file):
+        with open(release_version_file,'r') as file:
+            version_str=file.read()
+            release_version_var.set(version_str)
+    else:
+        release_version_var.set("1.6.0")
 
     y_multiplier_integer=-.7
 
