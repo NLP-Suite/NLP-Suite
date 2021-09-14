@@ -7,8 +7,14 @@ git add -A .
 git stash
 git pull -f origin current-stable
 
-source $HOME/anaconda/bin/activate || true
-source $HOME/anaconda3/bin/activate || true
+if test -f $HOME/anaconda3/bin/activate; then
+    source $HOME/anaconda3/bin/activate
+fi
+
+if test -f $HOME/anaconda/bin/activate; then
+    source $HOME/anaconda/bin/activate
+fi
+
 conda create -y -n NLP python=3.9
 conda activate NLP
 
