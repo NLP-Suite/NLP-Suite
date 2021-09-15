@@ -168,15 +168,18 @@ def display_logo():
         logo.place(x=GUI_IO_util.get_help_button_x_coordinate()-offset, y=10)
 
 
+version_str = '1.5.9'
+
 def check_newest_release(current_release: str):
+    setup_folder="setup_Windows"
+    if sys.platform == 'darwin':
+        setup_folder="setup_Mac"
     release_url = 'https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/lib/release_version.txt'
-    newest_release = requests.get(release_url).text
-    if 'Not Found' not in newest_release and newest_release != current_release:
-        mb.showwarning(title='Software Outdated',
-                       message="A new version of the NLP Suite has been released. "
-                               "Please run update script to update it.")
-
-
+    GitHub_newest_release = requests.get(release_url).text
+    if 'Not Found' not in GitHub_newest_release and GitHub_newest_release != current_release:
+        mb.showwarning(title='NLP Suite Outdated',
+                       message="You are running NLP Suite release version " + str(current_release) + ".\n\nA new version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) +
+                               ".\n\nPlease, exit the NLP Suite, go to the " + setup_folder + " subfolder inside the NLP installation folder and run the update script to update your NLP Suite to the latest release.")
 
 def display_release():
     # first digit for major upgrades
@@ -185,7 +188,6 @@ def display_release():
     # must also change the Release version in readMe on GitHub
 
     release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
-    version_str = '1.6.0'
     if os.path.isfile(release_version_file):
         with open(release_version_file,'r') as file:
             version_str = file.read()
@@ -200,7 +202,6 @@ def display_release():
     release_version = tk.Entry(window, state='disabled', width=6, foreground="red", textvariable=release_version_var)
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer, release_version,True)
-    check_newest_release(version_str)
 
 
 def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_main_dir_path,title,fileType,extension):
@@ -783,5 +784,7 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
                                           reminders_util.message_IO_configuration)
     if result != None:
         routine_options = reminders_util.getReminders_list(config_filename)
+
+    check_newest_release(version_str)
 
     window.protocol("WM_DELETE_WINDOW", _close_window)
