@@ -28,7 +28,7 @@ import IO_files_util
 import IO_user_interface_util
 import Excel_util
 import annotator_dictionary_util
-import SVO_enhanced_dependencies_util
+import SVO_enhanced_dependencies_util # Enhanced++ dependencies
 import GUI_IO_util
 # from operator import itemgetter, attrgetter
 # central CoreNLP_annotator function that pulls together our approach to processing many files,

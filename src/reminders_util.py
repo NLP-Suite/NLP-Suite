@@ -14,7 +14,7 @@ import csv
 from csv import writer
 
 # reminders content for specific GUIs are set in the csv file reminders
-# check if the user wants to see the message again
+# check if the user wants tadded the release_version.txt fio see the message again
 # reminders are typically called from GUIs (at the bottom)
 #   but can also be called from main or util scripts
 #       e.g., file_splitter_util

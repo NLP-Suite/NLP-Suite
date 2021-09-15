@@ -1,6 +1,9 @@
 #Written by Roberto Franzosi (help by Jack Hester, Feb 2019 and Karol Josh, March 2020)
 
 import sys
+
+import requests
+
 import GUI_util
 import IO_libraries_util
 
@@ -164,13 +167,30 @@ def display_logo():
             offset=12
         logo.place(x=GUI_IO_util.get_help_button_x_coordinate()-offset, y=10)
 
+
+def check_newest_release(current_release: str):
+    release_url = 'https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/lib/release_version.txt'
+    newest_release = requests.get(release_url).text
+    if 'Not Found' not in newest_release and newest_release != current_release:
+        mb.showwarning(title='Software Outdated',
+                       message="A new version of the NLP Suite has been released. "
+                               "Please run update script to update it.")
+
+
+
 def display_release():
     # first digit for major upgrades
     # second digit for new features
     # third digit for bug fixes and minor changes to current version
     # must also change the Release version in readMe on GitHub
 
-    release_version_var.set("1.5.9")
+    release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
+    version_str = '1.6.0'
+    if os.path.isfile(release_version_file):
+        with open(release_version_file,'r') as file:
+            version_str = file.read()
+
+    release_version_var.set(version_str)
 
     y_multiplier_integer=-.7
 
@@ -180,6 +200,7 @@ def display_release():
     release_version = tk.Entry(window, state='disabled', width=6, foreground="red", textvariable=release_version_var)
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer, release_version,True)
+    check_newest_release(version_str)
 
 
 def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_main_dir_path,title,fileType,extension):

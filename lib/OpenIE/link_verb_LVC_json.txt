@@ -1,0 +1,20 @@
+{
+    "charge": [
+        {
+            "be": "cop",
+            "in": "case",
+            "prep": [
+                "nmod:of"
+            ]
+        }
+    ],
+    "responsible": [
+        {
+            "be": "cop",
+            "prep": [
+                "obl:for",
+                "advcl:for"
+            ]
+        }
+    ]
+}
