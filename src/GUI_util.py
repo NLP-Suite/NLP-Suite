@@ -193,6 +193,7 @@ def display_release():
 
     global version_str
     release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
+
     if os.path.isfile(release_version_file):
         with open(release_version_file,'r') as file:
             version_str = file.read()
@@ -207,6 +208,7 @@ def display_release():
     release_version = tk.Entry(window, state='disabled', width=6, foreground="red", textvariable=release_version_var)
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer, release_version,True)
+    check_newest_release(version_str)
 
 
 def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_main_dir_path,title,fileType,extension):
