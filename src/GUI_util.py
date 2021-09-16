@@ -172,14 +172,18 @@ version_str = '1.5.9'
 
 def check_newest_release(current_release: str):
     setup_folder="setup_Windows"
+    update_command_auto='update_NLP-Suite_auto.bat'
+    update_command='update_NLP-Suite.bat'
     if sys.platform == 'darwin':
         setup_folder="setup_Mac"
+        update_command_auto = 'update_NLP-Suite_auto.command'
+        update_command='update_NLP-Suite.command'
     release_url = 'https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/lib/release_version.txt'
     GitHub_newest_release = requests.get(release_url).text
     if 'Not Found' not in GitHub_newest_release and GitHub_newest_release != current_release:
         mb.showwarning(title='NLP Suite Outdated',
-                       message="You are running NLP Suite release version " + str(current_release) + ".\n\nA new version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) +
-                               ".\n\nPlease, exit the NLP Suite, go to the " + setup_folder + " subfolder inside the NLP installation folder and run the update script to update your NLP Suite to the latest release.")
+                       message="You are running NLP Suite release version " + str(current_release) + " an OLD version.\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) +
+                               ".\n\nEXIT the NLP Suite NOW.\n\n   1. If you have setup the NLP Suite for automatic updates (click on " + update_command_auto + " - HIGHLY RECOMMENDED), the NLP Suite will be automatically updated every time you exit the NLP Suite.\n\n   2. Otherwise, go to the " + setup_folder + " subfolder inside the NLP installation folder and run the update script by clicking on " + update_command + " to update your NLP Suite to the latest " + str(GitHub_newest_release) + " release.\n\nFire up the NLP Suite again and if you have performed either update command you will be all set.")
 
 def display_release():
     # first digit for major upgrades
@@ -187,6 +191,7 @@ def display_release():
     # third digit for bug fixes and minor changes to current version
     # must also change the Release version in readMe on GitHub
 
+    global version_str
     release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
     if os.path.isfile(release_version_file):
         with open(release_version_file,'r') as file:
