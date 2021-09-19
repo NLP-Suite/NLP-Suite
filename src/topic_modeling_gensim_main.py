@@ -140,13 +140,13 @@ if current_process().name == 'MainProcess':
                                                    remove_stopwords_checkbox)
 
     lemmatize_var.set(1)
-    lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize words', variable=lemmatize_var, onvalue=1, offvalue=0)
+    lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize words (Nouns, verbs, adverbs, adjectives)', variable=lemmatize_var, onvalue=1, offvalue=0)
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    lemmatize_checkbox)
 
     nounsOnly_var.set(0)
-    nounsOnly_checkbox = tk.Checkbutton(window, text='Use nouns only', variable=nounsOnly_var, onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+    nounsOnly_checkbox = tk.Checkbutton(window, text='Use nouns only (lemmatized)', variable=nounsOnly_var, onvalue=1, offvalue=0)
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
                                                    nounsOnly_checkbox)
 
     Mallet_var.set(0)
@@ -182,7 +182,7 @@ if current_process().name == 'MainProcess':
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
                                       "Please, tick the checkbox if you wish to run LDA topic modeling using lemmatized words. Nouns, verbs, adjectives, and advervbs will be lemmatized.\n\nLemmatizing words may provide better results.")
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
-                                      "Please, tick the checkbox if you wish to run LDA topic modeling using nouns only.\n\nFocusing on nouns only may provide better results.\n\nhttps://msaxton.github.io/topic-model-best-practices/compare_noun_and_regular.html\n\nMartin, Fiona and Mark Johnson. 2015. “More Efficient Topic Modelling Through a Noun Only Approach.” Proceedings of the Australasian Language Technology Association Workshop, pp. 111−115.")
+                                      "Please, tick the checkbox if you wish to run LDA topic modeling using lemmatized nouns only.\n\nFocusing on nouns only may provide better results.\n\nhttps://msaxton.github.io/topic-model-best-practices/compare_noun_and_regular.html\n\nMartin, Fiona and Mark Johnson. 2015. “More Efficient Topic Modelling Through a Noun Only Approach.” Proceedings of the Australasian Language Technology Association Workshop, pp. 111−115.")
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
                                       "Please, tick the checkbox if you wish to run the LDA Mallet topic modeling.\n\nThe algorithm will compute\n   1. the coherence value of each topic and\n   2. a plot that provides a visual clue for the 'best' number of topics to be used.\n\nTHESE ALGORITHMS CAN BE VERY SLOW DEPENDING UPON THE NUMBER OF INPUT DOCUMENTS PROCESSED.")
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",

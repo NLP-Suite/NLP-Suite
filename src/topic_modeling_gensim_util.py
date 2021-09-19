@@ -406,13 +406,16 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
     # Python -m spacy download en
     nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
 
-    if nounsOnly == True:
-        # Do lemmatization keeping only noun
-        data_lemmatized = lemmatization(data_words_bigrams, lemmatize, allowed_postags=['NOUN'])
-    else:
-        # Do lemmatization keeping only noun, adj, vb, adv
-        data_lemmatized = lemmatization(data_words_bigrams, lemmatize,
+    if lemmatize:
+        if nounsOnly == True:
+            # Do lemmatization keeping only noun
+            data_lemmatized = lemmatization(data_words_bigrams, lemmatize, allowed_postags=['NOUN'])
+        else:
+            # Do lemmatization keeping only noun, adj, vb, adv
+            data_lemmatized = lemmatization(data_words_bigrams, lemmatize,
                                         allowed_postags=['NOUN', 'ADJ', 'VERB', 'ADV'])
+    else:
+        data_lemmatized = data_words_bigrams
 
     # @print(data_lemmatized[:1])
 
@@ -467,7 +470,9 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
     # 	print("Type of doc_lda: ", type(doc_lda))
     # visualize and generate html
     # step 15 in website
-    vis = pyLDAvis.gensim.prepare(lda_model, corpus, id2word)
+    # https://stackoverflow.com/questions/46379763/typeerror-object-of-type-complex-is-not-json-serializable-while-using-pyldavi
+    # Roberto added , mds='mmds' to avoid the error described above
+    vis = pyLDAvis.gensim.prepare(lda_model, corpus, id2word, mds='mmds')
     pyLDAvis.prepared_data_to_html(vis)
     try:
         pyLDAvis.save_html(vis, outputFilename)

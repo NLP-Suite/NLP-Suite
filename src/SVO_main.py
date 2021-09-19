@@ -447,7 +447,7 @@ def run(inputFilename, inputDir, outputDir,
                                                                                     '(0, 0, 255)', '|', 'O/A',
                                                                                     '(0, 128, 0)', '|'], myfile)
                     out_file = wordclouds_util.display_wordCloud_sep_color(inputFilename, outputDir, currenttext,
-                                                                           color_to_words, "", collocation)
+                                                                           color_to_words, "", collocation,prefer_horizontal=.9)
                     myfile.close()
                     filesToOpen.append(out_file)
             else:
@@ -460,7 +460,7 @@ def run(inputFilename, inputDir, outputDir,
                                                                                         '(0, 128, 0)', '|'], myfile)
                         out_file = wordclouds_util.display_wordCloud_sep_color(f, outputDir, currenttext,
                                                                                color_to_words,
-                                                                               "",collocation)
+                                                                               "",collocation,prefer_horizontal=.9)
                         myfile.close()
                         if "SVO" in f or "SENNA_SVO" in f:
                             filesToOpen.append(out_file)
