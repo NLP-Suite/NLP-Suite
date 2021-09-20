@@ -7,9 +7,8 @@ import subprocess
 from typing import List
 
 import IO_user_interface_util
-import IO_files_util
 import GUI_IO_util
-
+import reminders_util
 
 # import pip not used
 # def install(package):
@@ -117,15 +116,24 @@ def check_java_installation(script):
     error_code = java_output.returncode  # Should be 0 if java installed
     system_output = java_output.stderr.decode(
         'utf-8')  # This is what you see when you run "java -version" in your command line
+
+    if not system_output:
+        if 'CoreNLP' in script:
+            title_options=['Java JDK version']
+            message = 'You are running ' + system_output.split("\r\n""", 1)[0] + '.\n\nStanford CoreNLP works best with Java version JDK 8.\n\nIf you run into problems with Stanford CoreNLP, you may wish to uninstall the Java version you are currently running and install Java JDK 8. Please, read the installation instructions on the NLP Suite GitHub wiki pages at\nhttps://github.com/NLP-Suite/NLP-Suite/wiki/Install-External-Software#JAVA-JDK.'
+
+            reminders_util.checkReminder('Stanford-CoreNLP-config.txt', title_options,
+                                     message, True)
+
     if error_code != 0 and "not recognized" in system_output:
         mb.showwarning(title='Java installation error',
                        message='A test for Java returned a non-zero error code ' + str(
-                           error_code) + ' and Java not recognized (You can check this in command line). Java is not installed.\n\n' + script + ' is a Java script that requires Java installed on your machine (you need the JDK version, Java Development Kit).\n\nPlease, read the Java installation TIPS, install Java and try again. Program will exit.')
+                           error_code) + ' and Java not recognized (You can check this in command line by typing Java -version). Java is not installed.\n\n' + script + ' is a Java script that requires Java installed on your machine (you need the JDK version, Java Development Kit; install Java JDK 8, which seems to work best for Stanford CoreNLP).\n\nPlease, read the Java installation TIPS, install Java and try again. Program will exit.')
         errorFound = True
     elif error_code != 0:
         mb.showwarning(title='Java error',
                        message='A test for Java returned a non-zero error code ' + str(
-                           error_code) + ' with the following system error: ' + system_output + '.\n\nJava may not be properly installed.\n\n' + script + ' is a Java script that requires Java installed on your machine (you need the JDK version, Java Development Kit).\n\nPlease, read the Java installation TIPS, check your Java installation, install Java properly and try again. Program will exit.')
+                           error_code) + ' with the following system error: ' + system_output + '.\n\nJava may not be properly installed.\n\n' + script + ' is a Java script that requires Java installed on your machine (you need the JDK version, Java Development Kit; install Java JDK 8, which seems to work best for Stanford CoreNLP).\n\nPlease, read the Java installation TIPS, check your Java installation, install Java properly and try again (go to command line and type Java -version). Program will exit.')
         errorFound = True
 
     return errorFound, error_code, system_output

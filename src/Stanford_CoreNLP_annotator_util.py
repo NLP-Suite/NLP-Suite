@@ -66,9 +66,8 @@ def CoreNLP_annotate(inputFilename,
     if CoreNLPdir== None:
         return filesToOpen
 
-
-    errorFound, error_code, system_output=IO_libraries_util.check_java_installation('SVO extractor')
-
+    # check for Java and Java version JDK 8
+    errorFound, error_code, system_output=IO_libraries_util.check_java_installation('Stanford CoreNLP')
     if errorFound:
         return filesToOpen
 

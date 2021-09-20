@@ -185,9 +185,9 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
     if (n_grams_viewer_var or CoOcc_Viewer_var):
         if IO_libraries_util.inputProgramFileCheck('NGrams_CoOccurrences_Viewer.jar') == False:
             return
-        errorFound, error_code, system_output=IO_libraries_util.check_java_installation('Ngram/CoOccurrence Viewer')
-        if errorFound:
-            return
+        # errorFound, error_code, system_output=IO_libraries_util.check_java_installation('Ngram/CoOccurrence Viewer')
+        # if errorFound:
+        #     return
 
     if ',' in search_words:
         mb.showwarning(title='Warning',
