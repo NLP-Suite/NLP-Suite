@@ -176,10 +176,6 @@ def run(inputFilename, inputDir, outputDir,
                          message="The data analysis option(s) you have selected require in input a txt file, rather than a csv file.\n\nPlease, check your input file and/or algorithm selections and try again.")
             return
 
-    errorFound, error_code, system_output = IO_libraries_util.check_java_installation('SVO extractor')
-    if errorFound:
-        return
-
     Coref_Option = Coref_Option.lower()
 
     if utf8_var:

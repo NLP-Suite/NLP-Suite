@@ -33,12 +33,7 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
     if len(visualization_tools)==0 and differentColumns_differentColors==False:
         mb.showwarning("Warning",
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
-        # mb.showerror(title='Word cloud service', message='No word cloud service has been entered.\n\nPlease, select a word cloud service and try again.')
         return
-
-    # if visualization_tools!='Python WordCloud' and differentColumns_differentColors_var==True:
-    #     mb.showerror(title='Word cloud service', message='The option of using different colors for different words is only available for the Python WordCloud package.\n\nPlease, select the Python WordCloud service (or diselect the different colors option) and try again.')
-    #     return
 
     if (differentColumns_differentColors==True) and ((len(inputFilename)==0) or (inputFilename[-3:]!='csv')):
         mb.showerror(title='Warning', message='You have selected the option of using different colors for different columns of a single csv file. But...you have not selected in input a csv file.\n\nPlease, select an appropriate csv file in input and try again.')

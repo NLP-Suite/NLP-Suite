@@ -189,14 +189,11 @@ def check_file_empty(currenttext,doc,nDocs,NumEmptyDocs):
         return False, False, NumEmptyDocs
 
 def processCsvColumns(doc, inputDir, outputDir, openOutputFiles,csvField_color_list, doNotListIndividualFiles):
-    # else: # not using NN*, VB*, JJ* POS tags for different colors
     transformed_image_mask=[]
     collocation=False
     prefer_horizontal=.9
     currenttext = ''
     color_to_words = defaultdict(list)
-    #open the doc and create wordcloud
-    # need to tokenize if stopwords or punctuation are excluded
     with open(doc, 'r', encoding='utf-8', errors='ignore') as myfile:
         if len(csvField_color_list) != 0:
             # process csvField_color_list
@@ -320,9 +317,6 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, prefer_h
         i = i+1
         head, tail = os.path.split(doc)
         print("Processing file " + str(i) + "/" + str(nDocs) + ' ' + tail)
-        # print(i)
-        # print(type(doc))
-        # print(doc)
         if doc[-4:]=='.csv':#processing CoNLL table that contains pos values
             try:
                 df = pd.read_csv(doc)
