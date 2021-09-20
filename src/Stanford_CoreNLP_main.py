@@ -41,10 +41,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
     if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
         return
 
-    errorFound, error_code, system_output = IO_libraries_util.check_java_installation('Stanford CoreNLP')
-    if errorFound:
-        return
-
     if parser == 0 and CoNLL_table_analyzer_var == 0 and CoreNLP_annotators_var == 0:
         mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
 
