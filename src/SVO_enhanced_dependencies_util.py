@@ -13,12 +13,11 @@ import pprint
 import sys
 
 
-def OpenIE_sent_data_reorg(sentence):#reorganize the dependencies output of stanford corenlp
+def SVO_enhanced_dependencies_sent_data_reorg(sentence):#reorganize the dependencies output of stanford corenlp
     result = {}#store each token's information
     tokens = sentence['tokens']
     # dependencies = sentence["enhancedDependencies"]
     dependencies = sentence["enhancedPlusPlusDependencies"]
-    # openie = sentence['openie']
     for token in tokens:
         idx = token["index"]
         result[idx] = {}#the key of each token's information is their index in the sentence
@@ -311,8 +310,8 @@ def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):#extrac
 
        
 def verb_root(verb_list, conj_word, token, sent_data):#extract subject, object, and negation of a single verb or multiple verbs that are conjuncts
-    v_prep_text = GUI_IO_util.OpenIE_libPath + os.sep + "verb_prep_json.txt"#json that help with extracting object that follows a preposition
-    v_obj_obl_text = GUI_IO_util.OpenIE_libPath + os.sep + "verb_obj_obl_json.txt" #json that help with extracting certain light verb constructions as a whole verb
+    v_prep_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "verb_prep_json.txt"#json that help with extracting object that follows a preposition
+    v_obj_obl_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "verb_obj_obl_json.txt" #json that help with extracting certain light verb constructions as a whole verb
     with open(v_prep_text) as v_prep_doc:
         v_prep_json = json.load(v_prep_doc)
     with open(v_obj_obl_text) as v_obj_obl_doc:
@@ -443,7 +442,7 @@ def link_verb_LVC_extraction(token, gov_dict, sent_data):
     o = ''
     negation = negation_detect(token, sent_data)
     #load the json from the txt file
-    link_verb_LVC_text = GUI_IO_util.OpenIE_libPath + os.sep + "link_verb_LVC_json.txt"#json that help with extracting object that follows a preposition
+    link_verb_LVC_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "link_verb_LVC_json.txt"#json that help with extracting object that follows a preposition
     with open(link_verb_LVC_text) as link_verb_LVC_doc:
         link_verb_LVC_json = json.load(link_verb_LVC_doc)
     
@@ -505,7 +504,7 @@ def SVO_extraction (sent_data): #returns columns of the final output
     v = ""
     o = ""
     
-    link_verb_LVC_text = GUI_IO_util.OpenIE_libPath + os.sep + "verb_obj_obl_json.txt"
+    link_verb_LVC_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "verb_obj_obl_json.txt"
     for key in sent_data.keys():#traverse each token token in that sentence
         negation = False 
         token = sent_data[key]

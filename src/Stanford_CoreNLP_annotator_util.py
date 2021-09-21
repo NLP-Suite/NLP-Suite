@@ -350,8 +350,11 @@ def CoreNLP_annotate(inputFilename,
                                 run_output[i].append(j)
                     else:
                         run[3].extend(sub_result)
-  
-            sentenceID += len(CoreNLP_output["sentences"])#update the sentenceID of the first sentence of the next split file
+            try:
+                sentenceID_SV = sentenceID
+                sentenceID += len(CoreNLP_output["sentences"])#update the sentenceID of the first sentence of the next split file
+            except:
+                print("Error processing sentence #: ",sentenceID_SV+1," in document ",tail)
     #generate output csv files and write output
     output_start_time = time.time()
     # print("Length of Files to Open after generating output: ", len(filesToOpen))
@@ -899,9 +902,9 @@ def process_json_SVO_enhanced_dependencies(documentID, document, sentenceID, jso
             extract_date_from_filename_var = True
 
     date_str = date_in_filename(document, **kwargs)
-    OpenIE = []
+    SVO_enhanced_dependencies = []
     for sentence in json['sentences']:#traverse output of each sentence 
-        sent_data = SVO_enhanced_dependencies_util.OpenIE_sent_data_reorg(sentence)#reorganize the output into a dictionary in which each content (also dictionary) contains information of a token
+        sent_data = SVO_enhanced_dependencies_util.SVO_enhanced_dependencies_sent_data_reorg(sentence)#reorganize the output into a dictionary in which each content (also dictionary) contains information of a token
         #including a dictionary (govern_dictionary) indicating the index of tokens whose syntactical head is the current token
 
         complete_sent = ''#build sentence string
@@ -921,11 +924,11 @@ def process_json_SVO_enhanced_dependencies(documentID, document, sentenceID, jso
 
         for row in SVO: 
             if extract_date_from_filename_var:
-                OpenIE.append([documentID, sentenceID, document, row[0], row[1], row[2], N[nidx]," ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent, date_str])
+                SVO_enhanced_dependencies.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx]," ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent, date_str])
             else:
-                OpenIE.append([documentID, sentenceID, document, row[0], row[1], row[2], N[nidx], " ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent])
+                SVO_enhanced_dependencies.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], " ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent])
             nidx += 1
-    return OpenIE
+    return SVO_enhanced_dependencies
 
 def process_json_openIE(documentID, document, sentenceID, json, **kwargs):
     extract_date_from_filename_var = False

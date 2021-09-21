@@ -710,7 +710,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
                                                date_extractor_checkbox)
 
 CoreNLP_SVO_extractor_var.set(1)
-CoreNLP_SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs & SVs (via Stanford CoreNLP Enhanced++ Dependencies)',
+CoreNLP_SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs & SVs (via CoreNLP Enhanced++ Dependencies)',
                                                 variable=CoreNLP_SVO_extractor_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                CoreNLP_SVO_extractor_checkbox, True)
