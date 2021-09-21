@@ -180,7 +180,18 @@ def check_newest_release(current_release: str):
         update_command='update_NLP-Suite.command'
     release_url = 'https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/lib/release_version.txt'
     GitHub_newest_release = requests.get(release_url).text
-    if 'Not Found' not in GitHub_newest_release and GitHub_newest_release != current_release:
+    # split the text string of release version (e.g., 1.5.9) into three parts separated by .
+    current_release_parts=[current_release[i:i + 1] for i in range(0, len(current_release), 2)]
+    GitHub_release_parts=[GitHub_newest_release[i:i + 1] for i in range(0, len(GitHub_newest_release), 2)]
+    old_version = False
+    # check numbers
+    if int(current_release_parts[0])<int(GitHub_release_parts[0]):
+        old_version = True
+    if int(current_release_parts[1])<int(GitHub_release_parts[1]):
+        old_version = True
+    if int(current_release_parts[2])<int(GitHub_release_parts[2]):
+        old_version = True
+    if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != current_release:
         mb.showwarning(title='NLP Suite Outdated',
                        message="You are running NLP Suite release version " + str(current_release) + " an OLD version.\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) +
                                ".\n\nEXIT the NLP Suite NOW.\n\n   1. If you have setup the NLP Suite for automatic updates (click on " + update_command_auto + " - HIGHLY RECOMMENDED), the NLP Suite will be automatically updated every time you exit the NLP Suite.\n\n   2. Otherwise, go to the " + setup_folder + " subfolder inside the NLP installation folder and run the update script by clicking on " + update_command + " to update your NLP Suite to the latest " + str(GitHub_newest_release) + " release.\n\nFire up the NLP Suite again and if you have performed either update command you will be all set.")
@@ -208,7 +219,6 @@ def display_release():
     release_version = tk.Entry(window, state='disabled', width=6, foreground="red", textvariable=release_version_var)
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer, release_version,True)
-    check_newest_release(version_str)
 
 
 def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_main_dir_path,title,fileType,extension):
