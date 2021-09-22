@@ -115,7 +115,7 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
         # set memory_var if not there
         if memory_var==0:
             memory_var=4
-        outputFilename = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+        outputFilename = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                           outputDir, openOutputFiles, createExcelCharts,'sentiment', False,
                                                                           memory_var)
         outputFilename=outputFilename[0] # annotators return a list and not a string

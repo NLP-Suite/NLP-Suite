@@ -70,6 +70,9 @@ message_CoreNLP_system_requirements = 'Some of the NLP tools in this GUI require
 title_options_CoreNLP_Java = ['Stanford CoreNLP Java 64']
 message_CoreNLP_Java = 'The Java call to Stanford CoreNLP script uses the property -d64 for the 64 bits JAVA. Java is normally set to 32 bits Virtual Machine as default on a Windows machine. If you see an error the property -d64 is not recognized, you will need to change the Java default to 64 bits VM.\n\nTo test your VM settings, open  command prompt/terminal and type Java - version. You should see "64-Bit Server VM" in the last line of output.'
 
+title_options_CoreNLP_percent = ['% sign in file']
+message_CoreNLP_percent = 'The file contains % sign. This will break Stanford CoreNLP annotators. The % sign was temporarily replaced with "percent" for processing. But... you should run the script "Convert non-ASCII apostrophes & quotes and % to percent" to change the sign permanently.'
+
 title_options_CoNLL_table = ['CoNLL table']
 message_CoNLL_table = 'The CoNLL table produced by the Stanford CoreNLP parser is the input to a number of NLP Suite algorithms.\n\nPLEASE, DO NOT TINKER WITH THE CONLL TABLE OR MANY NLP SUITE ALGORITHMS WILL FAIL.'
 

@@ -58,7 +58,7 @@ def splitAt(text,index):
 # called by annotators DBpedia, YAGO utils
 #   In DBpedia and YAGO the temporary split files are deleted
 #def splitDocument_byLength(window,filename,output_path, maxLength=90000, inWords=False):
-def splitDocument_byLength(window, software, filename_path,output_path='', maxLength=90000, inWords=False):
+def splitDocument_byLength(window, config_filename, filename_path,output_path='', maxLength=90000, inWords=False):
     # a new folder is created in output
     #   as a subfolder of the input folder and/or file
     #   the subfolder will be named split_files_9000_filename (no extension)
@@ -108,8 +108,8 @@ def splitDocument_byLength(window, software, filename_path,output_path='', maxLe
                 filesToReturn.append(SplitFile)
             sf.close()
         title=['Split files']
-        message=str(i) + ' split files were created in the split_files sub-folder:\n\n' + output_path + "\n\nIf you are processing files in a directory, other files may similarly need to be split and the message display may become annoying."
-        reminders_util.checkReminder(software, title,
+        message='Split files were created in a sub-folder named "split_files" under the input folder and/or file.\n\nIf you are processing files in a directory, other files may similarly need to be split and the message display may become annoying.'
+        reminders_util.checkReminder(config_filename, title,
                                       message, True)
         # IO_user_interface_util.timed_alert(window, 3000, 'File split warning', str(i) + ' Split files were created in the split_files sub-folder:\n\n' + output_path)
     else:

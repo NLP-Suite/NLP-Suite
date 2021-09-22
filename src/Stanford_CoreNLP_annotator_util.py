@@ -51,7 +51,7 @@ import GUI_IO_util
 
 # ner GIS, date
 
-def CoreNLP_annotate(inputFilename,
+def CoreNLP_annotate(config_filename,inputFilename,
                      inputDir, outputDir,
                      openOutputFiles, createExcelCharts,
                      annotator_params,
@@ -244,7 +244,7 @@ def CoreNLP_annotate(inputFilename,
             ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
     else:
-        reminders_util.checkReminder('Stanford CoreNLP', reminders_util.title_options_CoreNLP_Java,
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_Java,
                                      reminders_util.message_CoreNLP_Java, True)
         p = subprocess.Popen(
             ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir, '*'),
@@ -266,7 +266,7 @@ def CoreNLP_annotate(inputFilename,
         docTitle = os.path.basename(docName)
         docID = docID + 1
         sentenceID = 0
-        split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,'Stanford CoreNLP',docName) #if the file is too long, it needs spliting to be able to processed by the Stanford CoreNLP
+        split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName) #if the file is too long, it needs spliting to be able to processed by the Stanford CoreNLP
         for doc in split_file:
             annotated_length = 0#the number of tokens
             # doc_start_time = time.time()
@@ -274,6 +274,10 @@ def CoreNLP_annotate(inputFilename,
             head, tail = os.path.split(doc)
             print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
             text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
+            if "%" in text:
+                reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_percent,
+                                             reminders_util.message_CoreNLP_percent, True)
+                text=text.replace("%","percent")
             nlp = StanfordCoreNLP('http://localhost:9000')
             #if there's only one annotator and it uses neural nerwork model, skip annoatiting with PCFG to save time
             if param_string != '':

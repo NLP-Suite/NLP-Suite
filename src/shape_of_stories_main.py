@@ -142,7 +142,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                 computeSAScores=mb.askyesno("Sentiment Analysis","You have selected to run sentiment analysis on your corpus. But there already exists a csv file of sentiment scores for this corpus saved in the default output directory:\n\n"+outputFilename+"\n\nAre you sure you want to recompute the scores?")
                 if not computeSAScores:
                     return
-            tempOutputfile=Stanford_CoreNLP_annotator_util.CoreNLP_annotate('', inputDir, outputDir, openOutputFiles, createExcelCharts,'sentiment',False, memory_var)
+            tempOutputfile=Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles, createExcelCharts,'sentiment',False, memory_var)
             if tempOutputfile==None:
                 return
             sentiment_scores_input=tempOutputfile[0]
