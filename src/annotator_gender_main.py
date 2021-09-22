@@ -37,7 +37,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
         return
     #CoreNLP annotate
     if CoreNLP_gender_annotator_var==True:
-        output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, input_main_dir_path,
+        output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
                                                                output_dir_path, openOutputFiles, createExcelCharts, 'gender', False, memory_var)
         # annotator returns a list and not a string
         # the gender annotator returns 2 Excel charts in addition to the csv file

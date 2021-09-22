@@ -29,6 +29,8 @@ import IO_user_interface_util
 import Excel_util
 import annotator_dictionary_util
 import SVO_enhanced_dependencies_util # Enhanced++ dependencies
+import reminders_util
+
 import GUI_IO_util
 # from operator import itemgetter, attrgetter
 # central CoreNLP_annotator function that pulls together our approach to processing many files,
@@ -49,13 +51,13 @@ import GUI_IO_util
 
 # ner GIS, date
 
-def CoreNLP_annotate(inputFilename,
+def CoreNLP_annotate(config_filename,inputFilename,
                      inputDir, outputDir,
                      openOutputFiles, createExcelCharts,
                      annotator_params,
                      DoCleanXML,
                      memory_var, **kwargs):
-
+    silent=True
     start_time = time.time()
     speed_assessment = []#storing the information used for speed assessment
     speed_assessment_format = ['Document ID', 'Document','Time', 'Tokens to Annotate', 'Params', 'Number of Params']#the column titles of the csv output of speed assessment
@@ -242,6 +244,8 @@ def CoreNLP_annotate(inputFilename,
             ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
     else:
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_Java,
+                                     reminders_util.message_CoreNLP_Java, True)
         p = subprocess.Popen(
             ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
@@ -262,7 +266,7 @@ def CoreNLP_annotate(inputFilename,
         docTitle = os.path.basename(docName)
         docID = docID + 1
         sentenceID = 0
-        split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,'Stanford CoreNLP',docName) #if the file is too long, it needs spliting to be able to processed by the Stanford CoreNLP
+        split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName) #if the file is too long, it needs spliting to be able to processed by the Stanford CoreNLP
         for doc in split_file:
             annotated_length = 0#the number of tokens
             # doc_start_time = time.time()
@@ -270,6 +274,10 @@ def CoreNLP_annotate(inputFilename,
             head, tail = os.path.split(doc)
             print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
             text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
+            if "%" in text:
+                reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_percent,
+                                             reminders_util.message_CoreNLP_percent, True)
+                text=text.replace("%","percent")
             nlp = StanfordCoreNLP('http://localhost:9000')
             #if there's only one annotator and it uses neural nerwork model, skip annoatiting with PCFG to save time
             if param_string != '':
@@ -282,8 +290,11 @@ def CoreNLP_annotate(inputFilename,
                                                     doc,
                                                     nDocs,
                                                     filesError,
-                                                    text)
-                if errorFound: continue  # move to next document
+                                                    text,
+                                                    silent)
+                if errorFound:
+                    errorFound=False
+                    continue  # move to next document
                 annotator_time_elapsed = time.time() - annotator_start_time
                 file_length=len(text)
                 total_length += file_length
@@ -308,8 +319,9 @@ def CoreNLP_annotate(inputFilename,
                     NN_start_time = time.time()
                     CoreNLP_output = nlp.annotate(text, properties=params_NN)
                     errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(
-                        GUI_util.window, CoreNLP_output, doc, nDocs, filesError, text)
-                    if errorFound: continue  # move to next document
+                        GUI_util.window, CoreNLP_output, doc, nDocs, filesError, text, silent)
+                    if errorFound:
+                        continue  # move to next document; this only continues to next routine_list
                     NN_time_elapsed = time.time() - NN_start_time
                     file_length = len(text)
                     total_length += file_length
@@ -351,6 +363,9 @@ def CoreNLP_annotate(inputFilename,
                     else:
                         run[3].extend(sub_result)
             try:
+                if errorFound:
+                    errorFound=False
+                    continue  # move to next document; this only continues to next routine_list
                 sentenceID_SV = sentenceID
                 sentenceID += len(CoreNLP_output["sentences"])#update the sentenceID of the first sentence of the next split file
             except:
@@ -444,7 +459,7 @@ def CoreNLP_annotate(inputFilename,
     if len(filesError)>0:
         mb.showwarning("Stanford CoreNLP Error", 'Stanford CoreNLP ' +annotator_chosen+ ' annotator has found '+str(len(filesError)-1)+' files that could not be processed by Stanford CoreNLP.\n\nPlease, read the error output file carefully to see the errors generated by CoreNLP.')
         errorFile = os.path.join(outputDir,
-                                           IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                           IO_files_util.generate_output_file_name(IO_csv_util.dressFilenameForCSVHyperlink(inputFilename), inputDir, outputDir, '.csv',
                                                                                    'CoreNLP', 'file_ERRORS'))
         IO_csv_util.list_to_csv(GUI_util.window, filesError, errorFile)
         filesToOpen.append(errorFile)

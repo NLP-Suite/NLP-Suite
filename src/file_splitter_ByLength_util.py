@@ -22,6 +22,7 @@ import GUI_util
 from nltk.tokenize import sent_tokenize, word_tokenize
 
 import IO_user_interface_util
+import reminders_util
 
 #Jack Hester
 #the function is used to split a document longer than 100K characters since Stanford CoreNLP can only deal with text files of 100K characters max.
@@ -57,7 +58,7 @@ def splitAt(text,index):
 # called by annotators DBpedia, YAGO utils
 #   In DBpedia and YAGO the temporary split files are deleted
 #def splitDocument_byLength(window,filename,output_path, maxLength=90000, inWords=False):
-def splitDocument_byLength(window, software, filename_path,output_path='', maxLength=90000, inWords=False):
+def splitDocument_byLength(window, config_filename, filename_path,output_path='', maxLength=90000, inWords=False):
     # a new folder is created in output
     #   as a subfolder of the input folder and/or file
     #   the subfolder will be named split_files_9000_filename (no extension)
@@ -76,7 +77,7 @@ def splitDocument_byLength(window, software, filename_path,output_path='', maxLe
             # print("length",length)
     F.close()
     if length > maxLength:
-        IO_user_interface_util.timed_alert(window, 3000, 'File split warning', 'The file ' + filename_path + ' was too long for ' + software + ' to process, and was split into sub-files and stored in the split_files sub-folder:\n\n' + new_splitFiles_folder)
+        # IO_user_interface_util.timed_alert(window, 3000, 'File split warning', 'The file ' + filename_path + ' was too long for ' + software + ' to process, and was split into sub-files and stored in the split_files sub-folder:\n\n' + new_splitFiles_folder)
         if os.path.exists(new_splitFiles_folder):
             shutil.rmtree(new_splitFiles_folder)
         try:
@@ -106,7 +107,11 @@ def splitDocument_byLength(window, software, filename_path,output_path='', maxLe
                 sf.write(text[splits[i-1]+1:splits[i]+1])
                 filesToReturn.append(SplitFile)
             sf.close()
-        IO_user_interface_util.timed_alert(window, 3000, 'File split warning', str(i) + ' Split files were created in the split_files sub-folder:\n\n' + output_path)
+        title=['Split files']
+        message='Split files were created in a sub-folder named "split_files" under the input folder and/or file.\n\nIf you are processing files in a directory, other files may similarly need to be split and the message display may become annoying.'
+        reminders_util.checkReminder(config_filename, title,
+                                      message, True)
+        # IO_user_interface_util.timed_alert(window, 3000, 'File split warning', str(i) + ' Split files were created in the split_files sub-folder:\n\n' + output_path)
     else:
         filesToReturn.append(filename_path)
     # print("filesToReturn",filesToReturn)
@@ -118,7 +123,7 @@ def splitDocument_byLength(window, software, filename_path,output_path='', maxLe
 #   the subfolder will be named split_files_9000_filename (no extension)
 # contrary to the function splitDocument_byLength that carries out
 #   making the split_files subdirectory, for this function
-#   the creation of the drectory is carried out in the calling script
+#   the creation of the directory is carried out in the calling script
 def split_byLength(window,input_path,filename,output_path, maxLength, inSentence=False):
     #inSentence: no incomplete sentence in subfiles
     docname = os.path.split(filename)[1]

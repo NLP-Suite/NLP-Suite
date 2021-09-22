@@ -113,7 +113,7 @@ def run(inputFilename,
 
         NERs = ['COUNTRY', 'STATE_OR_PROVINCE', 'CITY']
 
-        locations = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+        locations = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                 outputDir, openOutputFiles, createExcelCharts, 'NER', False,
                                                                 memory_var,
                                                                 NERs=NERs,

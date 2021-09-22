@@ -28,7 +28,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         mb.showwarning(title='No NER tag selected', message='No NER tag has been selected.\n\nPlease, select an NER tag and try again.')
         return
 
-    tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir, outputDir,
+    tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                         openOutputFiles, createExcelCharts,
                                                         'NER',
                                                         NERs=NER_list,

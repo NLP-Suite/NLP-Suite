@@ -5,6 +5,8 @@ import os
 import json
 import logging
 
+import IO_csv_util
+
 logger = logging.getLogger()
 
 #The argument GUI is the title of the GUI displayed (e.g., Narrative Analysis)
@@ -67,9 +69,8 @@ def subdirectory_file_output_save(inputDir, inputSubdir, IO, script):
 
 # inputFilename has complete path
 # filesError is []
-def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesError, text):
+def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesError, text, silent=True):
     errorFound = False
-    silent = False
     duration = 1000
     head, tail = os.path.split(inputFilename)
     error = None
@@ -92,7 +93,7 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
                 errorFound = True
                 error = str(e)
     # OutOfMemoryError Java heap space
-    # this error may occur with Java JDK version > 8. Rge heap memoryy size is set tpo 32 bits by default instead of 64, leading to this error.
+    # this error may occur with Java JDK version > 8. Java heap memoryy size is set to 32 bits by default instead of 64, leading to this error.
     # for memory errors and solutions https://stackoverflow.com/questions/40832022/outofmemoryerror-when-running-the-corenlp-tool
     # You can use Java8. They use metaspace for heap. So, no heap space error will occur.
     # see also
@@ -126,5 +127,5 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
         if not silent:
             timed_alert(window, duration, 'Stanford CoreNLP error', msg)
         print("\n\n" + msgPrint)
-        filesError.append([len(filesError), inputFilename, str(CoreNLP_output) + " " + str(error)])
+        filesError.append([len(filesError), IO_csv_util.dressFilenameForCSVHyperlink(inputFilename), str(CoreNLP_output) + " " + str(error)])
     return errorFound, filesError, CoreNLP_output

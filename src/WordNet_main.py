@@ -70,7 +70,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         memory_var=4
         nouns_var = True
         verbs_var = True
-        files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+        files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                  outputDir, openOutputFiles, createExcelCharts,
                                                                  annotator, False, memory_var)
         if len(files) > 0:

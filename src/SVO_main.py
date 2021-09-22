@@ -257,7 +257,7 @@ def run(inputFilename, inputDir, outputDir,
     # Date extractor _____________________________________________________
 
     if date_extractor_var:
-        files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir, outputDir,
+        files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                                  openOutputFiles, createExcelCharts,
                                                                  'normalized-date', False, memory_var)
         filesToOpen.extend(files)
@@ -316,7 +316,7 @@ def run(inputFilename, inputDir, outputDir,
 
         # IO_user_interface_util.script_under_development('Stanford CoreNLP OpenIE')
 
-        tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+        tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir, openOutputFiles,
                                                                        createExcelCharts,
                                                                        'SVO', False,
@@ -385,7 +385,7 @@ def run(inputFilename, inputDir, outputDir,
     # CoreNLP OpenIE _____________________________________________________
     if CoreNLP_OpenIE_var:
         # IO_user_interface_util.script_under_construction('Extract relation triples (via CoreNLP OpenIE)')
-        tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+        tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
                                                                            'OpenIE', 
