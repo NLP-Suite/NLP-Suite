@@ -196,7 +196,7 @@ def run(inputFilename,inputDir, outputDir,
                     return
 
                 annotator = ['POS']
-                files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+                files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                             outputDir, openOutputFiles, createExcelCharts,
                                             annotator, False, memory_var)
                 if len(files) > 0:
@@ -230,7 +230,7 @@ def run(inputFilename,inputDir, outputDir,
         if what_else_var and what_else_menu_var == '*':
             annotator_list = ['NER', 'gender', 'quote', 'normalized-date']
             NER_list=['PERSON','ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY']
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir, openOutputFiles, createExcelCharts,
                                                                       annotator_list, False, memory_var,
                                                                       NERs=NER_list)
@@ -241,7 +241,7 @@ def run(inputFilename,inputDir, outputDir,
             annotator = 'NER'
             NER_list=['PERSON','ORGANIZATION']
 
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir, openOutputFiles, createExcelCharts,
                                                                       annotator, False, memory_var,
                                                                       NERs=NER_list)
@@ -250,7 +250,7 @@ def run(inputFilename,inputDir, outputDir,
 
         if gender_var == True:
             annotator = 'gender'
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir, openOutputFiles, createExcelCharts,
                                                                       annotator, False, memory_var)
             if output != None:
@@ -258,7 +258,7 @@ def run(inputFilename,inputDir, outputDir,
 
         if dialogues_var==True:
             annotator = 'quote'
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir, openOutputFiles, createExcelCharts,
                                                                       annotator, False, memory_var)
             if output != None:
@@ -266,7 +266,7 @@ def run(inputFilename,inputDir, outputDir,
 
         if times_var==True:
             annotator='normalized-date'
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir, outputDir,
+            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                         openOutputFiles, createExcelCharts,
                         annotator, False, memory_var)
             if output != None:
@@ -276,7 +276,7 @@ def run(inputFilename,inputDir, outputDir,
             annotator = 'NER'
             NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY']
 
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, inputDir,
+            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir, openOutputFiles, createExcelCharts,
                                                                       annotator, False, memory_var,
                                                                       NERs=NER_list)

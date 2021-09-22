@@ -252,11 +252,11 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
 
         if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py')==False:
             return
-        corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename,input_main_dir_path,
+        corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename,input_main_dir_path,
                                                                         output_dir_path, openOutputFiles, createExcelCharts,'coref',False,
                                                                         memory_var)
     else: # dir input
-        corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(inputFilename, input_main_dir_path,
+        corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
                                                                    output_dir_path, openOutputFiles, createExcelCharts,'coref', False,
                                                                    memory_var)
     

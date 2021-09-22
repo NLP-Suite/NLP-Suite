@@ -291,7 +291,7 @@ def save_query():
     boxContent = SQL_query_entry.get(0.1, tk.END)
     if len(boxContent)>0:
         filePath = tk.filedialog.asksaveasfile(initialdir=GUI_util.output_dir_path.get(), initialfile='saveQry.txt', title="Save SQL query file",
-                                               filetypes=[('SQL query file','.txt')])
+                                               filetypes=[('SQL query file','.sql')])
         if filePath is None:
             filePath = ""
         else:
@@ -312,7 +312,7 @@ def view_relations():
         view_rels_command = ['C:\\Program Files\\DBeaver\\dbeaver-cli.exe', '-con', 'driver=sqlite|database='+select_SQLite_DB_var.get()]
         call(view_rels_command)
 
-import_query_button=tk.Button(window, width=15, text='Import SQL query',command=lambda: import_query(window,'Select INPUT SQL query file', [("SQL files", "*.txt")]))
+import_query_button=tk.Button(window, width=15, text='Import SQL query',command=lambda: import_query(window,'Select INPUT SQL query file', [("SQL files", "*.sql")]))
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700, y_multiplier_integer,import_query_button,True)
 
 save_query_button=tk.Button(window, width=15, text='Save SQL query',command=lambda: save_query())
