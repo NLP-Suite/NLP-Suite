@@ -107,11 +107,12 @@ def splitDocument_byLength(window, config_filename, filename_path,output_path=''
                 sf.write(text[splits[i-1]+1:splits[i]+1])
                 filesToReturn.append(SplitFile)
             sf.close()
-        title=['Split files']
-        message='Split files were created in a sub-folder named "split_files" under the input folder and/or file.\n\nIf you are processing files in a directory, other files may similarly need to be split and the message display may become annoying.'
-        reminders_util.checkReminder(config_filename, title,
-                                      message, True)
-        # IO_user_interface_util.timed_alert(window, 3000, 'File split warning', str(i) + ' Split files were created in the split_files sub-folder:\n\n' + output_path)
+        if 'SVO' in config_filename or 'CoreNLP' in config_filename:
+            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_split_files,
+                                         reminders_util.message_CoreNLP_split_files, True)
+        else:
+            reminders_util.checkReminder(config_filename, reminders_util.title_options_Output_directory_of_split_files,
+                                         reminders_util.message_Output_directory_of_split_files, True)
     else:
         filesToReturn.append(filename_path)
     # print("filesToReturn",filesToReturn)

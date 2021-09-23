@@ -67,7 +67,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             return
         if "Neural" in CoreNLP_annotators_menu_var:
             CoRef_Option = 'Neural Network'
-        file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(inputFilename, inputDir,
+        file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
                                                                            outputDir, openOutputFiles, createExcelCharts, memory_var,
                                                                            CoRef_Option, manual_Coref)
 

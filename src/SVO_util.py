@@ -4,11 +4,11 @@ from nltk.stem import WordNetLemmatizer
 import IO_files_util
 
 
-def count_frequency_two_svo(open_ie_csv, senna_csv, inputFilename, inputDir, outputDir) -> list:
+def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, outputDir) -> list:
     """
-    Only triggered when both Senna and OpenIE options are chosen.
-    Counts the frequency of same and different SVOs and SVs in the Senna and OpenIE results and lists them
-    :param open_ie_csv: the path of the stanford core Open IE csv file
+    Only triggered when both SENNA and CoreNLP ++ options are chosen.
+    Counts the frequency of same and different SVOs and SVs in the SENNA and CoreNLP ++ results and lists them
+    :param CoreNLP_csv: the path of the stanford core CoreNLP ++ csv file
     :param senna_csv: the path of the Senna csv file
     :param inputFilename: the input file name; used for generating output file name
     :param inputDir: the input directory name; used for generating output file name
@@ -36,21 +36,21 @@ def count_frequency_two_svo(open_ie_csv, senna_csv, inputFilename, inputDir, out
         return key
 
     df = pd.DataFrame(columns=['Same SVO', 'Same SV', 'Different SVO', 'Different SV', 'Total SVO', 'Total SV'])
-    openIE_df = pd.read_csv(open_ie_csv)
+    CoreNLP_df = pd.read_csv(CoreNLP_csv)
     senna_df = pd.read_csv(senna_csv)
     open_ie_svo, open_ie_sv, senna_svo, senna_sv = set(), set(), set(), set()
 
     # Adding each row of SVO into the corresponding sets
-    for i in range(len(openIE_df)):
-        if pd.notnull(openIE_df.iloc[i, 4]):
-            if not pd.isnull(openIE_df.iloc[i, 5]) and not pd.isnull(openIE_df.iloc[i, 3]):
-                open_ie_svo.add(generate_key(S=openIE_df.iloc[i, 3], V=openIE_df.iloc[i, 4], O=openIE_df.iloc[i, 5]))
-            elif not pd.isnull(openIE_df.iloc[i, 3]):
-                open_ie_sv.add(generate_key(S=openIE_df.iloc[i, 3], V=openIE_df.iloc[i, 4], O=''))
-            # elif not pd.isnull(openIE_df.iloc[i, 5]):
-            #     open_ie_sv.add(generate_key(S='', V=openIE_df.iloc[i, 4], O=openIE_df.iloc[i, 5]))
+    for i in range(len(CoreNLP_df)):
+        if pd.notnull(CoreNLP_df.iloc[i, 4]):
+            if not pd.isnull(CoreNLP_df.iloc[i, 5]) and not pd.isnull(CoreNLP_df.iloc[i, 3]):
+                open_ie_svo.add(generate_key(S=CoreNLP_df.iloc[i, 3], V=CoreNLP_df.iloc[i, 4], O=CoreNLP_df.iloc[i, 5]))
+            elif not pd.isnull(CoreNLP_df.iloc[i, 3]):
+                open_ie_sv.add(generate_key(S=CoreNLP_df.iloc[i, 3], V=CoreNLP_df.iloc[i, 4], O=''))
+            # elif not pd.isnull(CoreNLP_df.iloc[i, 5]):
+            #     open_ie_sv.add(generate_key(S='', V=CoreNLP_df.iloc[i, 4], O=CoreNLP_df.iloc[i, 5]))
             # else:
-            #     open_ie_sv.add(generate_key(S='', V=openIE_df.iloc[i, 4], O=''))
+            #     open_ie_sv.add(generate_key(S='', V=CoreNLP_df.iloc[i, 4], O=''))
 
     for i in range(len(senna_df)):
         if pd.notnull(senna_df.iloc[i, 4]):
@@ -75,7 +75,7 @@ def count_frequency_two_svo(open_ie_csv, senna_csv, inputFilename, inputDir, out
                                 columns=['Same SVO', 'Same SV', 'Different SVO', 'Different SV', 'Total SVO',
                                          'Total SV']), ignore_index=True)
     freq_output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                               'SENNA_OPENIE_SVO_FREQ')
+                                                               'SENNA_CoreNLP_SVO_FREQ')
     df.to_csv(freq_output_name, index=False)
 
     # Listing all same and diff SV and SVOs
@@ -95,7 +95,7 @@ def count_frequency_two_svo(open_ie_csv, senna_csv, inputFilename, inputDir, out
         splitted_svo = svo.split(',')
         s, v = splitted_svo[0], splitted_svo[1]
         o = splitted_svo[2] if len(splitted_svo) >= 3 else ''
-        tool = 'Senna' if svo in senna_svo or svo in senna_sv else 'OpenIE'
+        tool = 'SENNA' if svo in senna_svo or svo in senna_sv else 'CoreNLP ++'
         diff.append((s, v, o, tool))
 
     if len(same) < max(len(same), len(diff)):
@@ -109,16 +109,16 @@ def count_frequency_two_svo(open_ie_csv, senna_csv, inputFilename, inputDir, out
 
     # Outputting the file
     compare_outout_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                  'SENNA_OPENIE_SVO_COMPARE')
+                                                                  'SENNA_CoreNLP_SVO_COMPARE')
     compare_df.to_csv(compare_outout_name, index=False)
 
     return [freq_output_name, compare_outout_name]
 
 
-def combine_two_svo(open_ie_svo, senna_svo, inputFilename, inputDir, outputDir) -> str:
+def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) -> str:
     """
-    Combine the OpenIE results and Senna SVO results into one table; sorted by document ID then sentence ID
-    :param open_ie_svo: the path of the stanford core Open IE csv file
+    Combine the CoreNLP ++ results and Senna SVO results into one table; sorted by document ID then sentence ID
+    :param CoreNLP ++_svo: the path of the stanford core CoreNLP ++ csv file
     :param senna_svo: the path of the Senna csv file
     :param inputFilename: the input file name; used for generating output file name
     :param inputDir: the input directory name; used for generating output file name
@@ -127,7 +127,7 @@ def combine_two_svo(open_ie_svo, senna_svo, inputFilename, inputDir, outputDir) 
     """
     columns = ['Tool', 'Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'TIME', 'Sentence']
     combined_df = pd.DataFrame(columns=columns)
-    dfs = [(pd.read_csv(open_ie_svo), 'Open IE'), (pd.read_csv(senna_svo), 'Senna')]
+    dfs = [(pd.read_csv(CoreNLP_svo), 'CoreNLP ++'), (pd.read_csv(senna_svo), 'Senna')]
 
     for df, df_name in dfs:
         for i in range(len(df)):
@@ -139,7 +139,7 @@ def combine_two_svo(open_ie_svo, senna_svo, inputFilename, inputDir, outputDir) 
 
     combined_df.sort_values(by=['Document ID', 'Sentence ID'], inplace=True)
     output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                          'SENNA_OPENIE_SVO_COMBINE')
+                                                          'SENNA_CoreNLP_SVO_COMBINE')
     combined_df.to_csv(output_name, index=False)
 
     return output_name
@@ -193,6 +193,5 @@ def filter_svo(svo_file_name, filter_s, filter_v, filter_o):
 
 if __name__ == '__main__':
     senna_csv = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/test_output/SVO_Result/NLP_SENNA_SVO_Dir_test.csv'
-    openIE_csv = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/test_output/SVO_Result/test-merge-svo.csv'
-    count_frequency_two_svo(openIE_csv, senna_csv)
-    # combine_two_svo(open_ie_svo=openIE_csv, senna_svo=senna_csv)
+    CoreNLP_csv = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/test_output/SVO_Result/test-merge-svo.csv'
+    count_frequency_two_svo(CoreNLP_csv, senna_csv)
