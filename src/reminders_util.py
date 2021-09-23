@@ -79,6 +79,9 @@ message_CoreNLP_percent = 'The file contains % sign. This will break Stanford Co
 title_options_CoNLL_table = ['CoNLL table']
 message_CoNLL_table = 'The CoNLL table produced by the Stanford CoreNLP parser is the input to a number of NLP Suite algorithms.\n\nPLEASE, DO NOT TINKER WITH THE CONLL TABLE OR MANY NLP SUITE ALGORITHMS WILL FAIL.'
 
+title_options_CoreNLP_split_files = ['CoreNLP split files']
+message_CoreNLP_split_files = 'Stanford CoreNLP has a limit of 100,000 characters maximum text size.\n\nThe input file was automatically split into chunks smaller than 100K characters size, fed to Stanford CoreNLP and the output recomposed into a single file.\n\nSplit files are created in a sub-folder named "split_files" inside the directory where the input txt files are located, regardless of the choice of output directory.\n\nIf you are processing files in a directory, other files may similarly need to be split and the message display may become annoying.'
+
 title_options_Output_directory_of_split_files = ['Output directory of split files']
 message_Output_directory_of_split_files = 'This is a reminder that all file splitter scripts save the split files inside a subdirectory by the name of split_files of the directory where the input txt files are located, regardless of the choice of output directory.'
 

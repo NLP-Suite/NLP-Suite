@@ -61,7 +61,7 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
                                                                      'SENNA_SVO')
 
     # rename a filename coreferenced by CoreNLP to obtain the correct SENNA filename
-    SENNA_output_file_name = SENNA_output_file_name.replace("NLP_CoreNLP_", "NLP_SENNA_SVO_")
+    SENNA_output_file_name = SENNA_output_file_name.replace("CoreNLP_SENNA_SVO_coref", "coref")
 
     if inputDir:
         # If the input is a directory

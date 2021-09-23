@@ -34,7 +34,7 @@ import GUI_util
 import file_utf8_compliance_util
 import file_cleaner_util
 import IO_csv_util
-import Stanford_CoreNLP_coreference_util as stanford_coref
+import Stanford_CoreNLP_coreference_util
 import Stanford_CoreNLP_annotator_util
 import semantic_role_labeling_senna
 import reminders_util
@@ -229,26 +229,24 @@ def run(inputFilename, inputDir, outputDir,
             return
 
         # inputFilename and inputDir are the original txt files to be coreferenced
-        file_open = stanford_coref.run(config_filename, inputFilename, inputDir, outputCorefedDir,
+        # 2 items are returned: filename string and true/False for error
+        file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir, outputCorefedDir,
                                        openOutputFiles, createExcelCharts,
                                        memory_var, Coref_Option,
                                        Manual_Coref_var)
-        if file_open is None:
+        if error_indicator != 0:
             return
 
         if isFile:
-            inputFilename = str(file_open[0]) # str(file_open[0][0])  # os.path.join(outputDir, inputFileBase + "-CoRefed.txt")
+            inputFilename = str(file_open[0])
             inputDir = ''
         else:
             # processing a directory
             inputFilename = ''
             inputDir = outputCorefedDir
 
-        # file_open[0] contains the coreferenced txt file
-        # file_open[1] contains the csv file of running time
-
         if len(file_open) > 0:
-            filesToOpen.extend(file_open[0])
+            filesToOpen.extend(str(file_open[0]))
 
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
                                                'Finished running Stanford CoreNLP Co-Reference Resolution using the ' + Coref_Option + ' approach at',
@@ -277,36 +275,7 @@ def run(inputFilename, inputDir, outputDir,
         if not IO_files_util.make_directory(outputSVODir):
             return
 
-    # SENNA _____________________________________________________
-    if SENNA_SVO_extractor_var:
-        # TODO must filter SVO results by social actors if the user selected that option
-        #   both options run correctly for CoreNLP ++
-        svo_SENNA_files = []
-        svo_SENNA_file = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles,
-                                                                createExcelCharts=True)
-        if len(svo_SENNA_file)>0:
-            svo_SENNA_file = svo_SENNA_file[0]
-
-        if save_intermediate_file:
-            for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
-                svo_SENNA_files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='',
-                                                                          outputDir=os.path.join(outputDir,
-                                                                                                 outputSVODir),
-                                                                          openOutputFiles=openOutputFiles,
-                                                                          createExcelCharts=createExcelCharts)
-        else:
-            svo_SENNA_files = [svo_SENNA_file]
-
-        # Filtering SVO
-        if subjects_dict_var or verbs_dict_var or objects_dict_var:
-            for file in svo_SENNA_files:
-                SVO_util.filter_svo(file, subjects_dict_var, verbs_dict_var, objects_dict_var)
-        filesToOpen.extend(svo_SENNA_files)
-
-        for file in svo_SENNA_files:
-            svo_result_list.append(file)
-
-    # CoreNLP _____________________________________________________
+      # CoreNLP _____________________________________________________
     if CoreNLP_SVO_extractor_var:
 
         if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
@@ -364,6 +333,36 @@ def run(inputFilename, inputDir, outputDir,
                 elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-coref" not in tmp):
                     original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
             svo_CoreNLP_merged_file = os.path.join(outputSVODir, "NLP_CoreNLP_SVO_Dir_" + inputDirBase + ".csv")
+
+    # SENNA _____________________________________________________
+
+    if SENNA_SVO_extractor_var:
+        # TODO must filter SVO results by social actors if the user selected that option
+        #   both options run correctly for CoreNLP ++
+        svo_SENNA_files = []
+        svo_SENNA_file = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles,
+                                                                createExcelCharts=True)
+        if len(svo_SENNA_file) > 0:
+            svo_SENNA_file = svo_SENNA_file[0]
+
+        if save_intermediate_file:
+            for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
+                svo_SENNA_files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='',
+                                                                          outputDir=os.path.join(outputDir,
+                                                                                                 outputSVODir),
+                                                                          openOutputFiles=openOutputFiles,
+                                                                          createExcelCharts=createExcelCharts)
+        else:
+            svo_SENNA_files = [svo_SENNA_file]
+
+        # Filtering SVO
+        if subjects_dict_var or verbs_dict_var or objects_dict_var:
+            for file in svo_SENNA_files:
+                SVO_util.filter_svo(file, subjects_dict_var, verbs_dict_var, objects_dict_var)
+        filesToOpen.extend(svo_SENNA_files)
+
+        for file in svo_SENNA_files:
+            svo_result_list.append(file)
 
     # next lines create summaries of comparative results from CoreNLP and SENNA
     if SENNA_SVO_extractor_var and CoreNLP_SVO_extractor_var:
