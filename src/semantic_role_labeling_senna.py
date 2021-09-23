@@ -59,10 +59,6 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
 
     SENNA_output_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'SENNA_SVO')
-
-    # rename a filename coreferenced by CoreNLP to obtain the correct SENNA filename
-    SENNA_output_file_name = SENNA_output_file_name.replace("CoreNLP_SENNA_SVO_coref", "coref")
-
     if inputDir:
         # If the input is a directory
         input_docs = IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt')

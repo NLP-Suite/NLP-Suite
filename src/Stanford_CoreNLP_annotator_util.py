@@ -413,12 +413,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
             elif output_format != 'text':
                 # TODO any changes in the way the CoreNLP_annotator generates output filenames for sentiment analysis
                 #    will affect the shape of stories algorithms (search TODO there)
-                # if 'NLP_CoreNLP_coref' in inputFilename:
-                #     tempFilename = inputFilename.replace('NLP_CoreNLP_coref','_coref')
-                # else:
-                tempFilename=inputFilename
-
-                outputFilename = IO_files_util.generate_output_file_name(tempFilename, inputDir, outputDir, '.csv',
+                outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                              'CoreNLP_'+annotator_chosen)
             filesToOpen.append(outputFilename)
             if output_format != 'text' and not isinstance(output_format[0],list): # output is csv file
