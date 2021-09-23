@@ -4,6 +4,8 @@ import re
 import subprocess
 
 import pandas as pd
+import json
+import stanza
 
 import GUI_util
 import GUI_IO_util
@@ -11,8 +13,8 @@ import IO_csv_util
 import IO_files_util
 import IO_libraries_util
 import IO_user_interface_util
-import json
-import stanza
+import reminders_util
+
 # stanza.download('en')
 lemmatizer = stanza.Pipeline(lang='en', processors='tokenize,mwt,pos,lemma')
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
@@ -45,7 +47,7 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
     doc_id = 0
 
     # check that the SENNA dir as been setup
-    SENNAdir, missing_external_software  = IO_libraries_util.get_external_software_dir('SVO SENNA', 'SENNA')
+    SENNAdir, missing_external_software = IO_libraries_util.get_external_software_dir('SVO SENNA', 'SENNA')
 
     if SENNAdir is None:
         return filesToOpen
@@ -83,7 +85,8 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
     try:
         max_length = max([len(row) for row in formatted_table])
     except ValueError:
-        print('Error occurred when trying to read the input file. Please select "check utf-8 encoding" and try again')
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_non_utf8,
+                                     reminders_util.message_options_non_utf8, True)
         return []
 
     document_index = 0
@@ -121,9 +124,8 @@ def senna_single_file(SENNAdir, inputFilename: str) -> list:
             input_text = file.read().strip()
             file.close()
     except UnicodeDecodeError:
-        print(
-            'We have skipped input file %s because it contains non-utf8 characters and is unable to decode. '
-            'Please select \"Check corpus for utf-8 encoding before running\"' % inputFilename)
+        reminders_util.checkReminder('SVO', reminders_util.title_options_non_utf8,
+                                     reminders_util.message_non_utf8, True)
         return []
 
     encoded_input = input_text.replace('\n', ' ').encode()
@@ -197,7 +199,7 @@ def get_verb_root(verb: str):
 
 
 def process_verb_obj_obl(sent_len, mapping, df, sent_col, start_index):
-    with open(os.path.join(GUI_IO_util.OpenIE_libPath, "verb_obj_obl_json.txt")) as f:
+    with open(os.path.join(GUI_IO_util.CoreNLP_enhanced_dependencies_libPath, "verb_obj_obl_json.txt")) as f:
         verb_obj_obl = json.load(f)
 
     verb_index = sent_col.index('S-V') if 'S-V' in sent_col else sent_col.index('B-V')
@@ -213,7 +215,7 @@ def process_verb_obj_obl(sent_len, mapping, df, sent_col, start_index):
 
 
 def process_verb_prep(sent_len, mapping, df, sent_col, start_index):
-    with open(os.path.join(GUI_IO_util.OpenIE_libPath, "verb_prep_json.txt")) as f:
+    with open(os.path.join(GUI_IO_util.CoreNLP_enhanced_dependencies_libPath, "verb_prep_json.txt")) as f:
         verb_prep = json.load(f)
 
     verb_index = sent_col.index('S-V') if 'S-V' in sent_col else sent_col.index('B-V')
@@ -368,9 +370,9 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
 
                 # Extract only if verb exists
                 if 'V' in clause and len(clause) > 1:
-                    if os.path.exists(os.path.join(GUI_IO_util.OpenIE_libPath, "verb_obj_obl_json.txt")):
+                    if os.path.exists(os.path.join(GUI_IO_util.CoreNLP_enhanced_dependencies_libPath, "verb_obj_obl_json.txt")):
                         process_verb_obj_obl(sent_len, mapping, df, sent_col, start_index)
-                    if os.path.exists(os.path.join(GUI_IO_util.OpenIE_libPath, "verb_prep_json.txt")):
+                    if os.path.exists(os.path.join(GUI_IO_util.CoreNLP_enhanced_dependencies_libPath, "verb_prep_json.txt")):
                         process_verb_prep(sent_len, mapping, df, sent_col, start_index)
                         clause = list(mapping.values())  # update clause since mapping has been updated
                     extract_svo(clause, SVO, mapping, df, noun_postag)
@@ -389,7 +391,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
                 SVO['NEGATION'] = ', '.join(SVO['NEGATION'])
                 SVO['S(NP)'] = ' '.join(SVO['S(NP)'])
                 SVO['O(NP)'] = ' '.join(SVO['O(NP)'])
-                print(SVO)
+                # print(SVO)
 
                 formatted_input_file_name = IO_csv_util.dressFilenameForCSVHyperlink(df.iloc[sentence_index, 1])
                 new_row = pd.DataFrame(

@@ -400,7 +400,7 @@ def generate_output_file_name(inputfilePath, inputDir, outputDir, outputExtensio
 				else:
 					default_outputFilename_str = default_outputFilename_str + outputExtension
 					break  # file name found, end loop
-	outFilename = os.path.normpath(os.path.join(outputDir, default_outputFilename_str))
+	outFilename = os.path.join(outputDir, default_outputFilename_str)
 	return outFilename
 
 

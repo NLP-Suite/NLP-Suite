@@ -70,6 +70,9 @@ message_CoreNLP_system_requirements = 'Some of the NLP tools in this GUI require
 title_options_CoreNLP_Java = ['Stanford CoreNLP Java 64']
 message_CoreNLP_Java = 'The Java call to Stanford CoreNLP script uses the property -d64 for the 64 bits JAVA. Java is normally set to 32 bits Virtual Machine as default on a Windows machine. If you see an error the property -d64 is not recognized, you will need to change the Java default to 64 bits VM.\n\nTo test your VM settings, open  command prompt/terminal and type Java - version. You should see "64-Bit Server VM" in the last line of output.'
 
+title_options_CoreNLP_coref = ['Stanford CoreNLP coref merged files']
+message_CoreNLP_coref = 'The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged coref file in output.'
+
 title_options_CoreNLP_percent = ['% sign in file']
 message_CoreNLP_percent = 'The file contains % sign. This will break Stanford CoreNLP annotators. The % sign was temporarily replaced with "percent" for processing. But... you should run the script "Convert non-ASCII apostrophes & quotes and % to percent" to change the sign permanently.'
 
@@ -78,6 +81,9 @@ message_CoNLL_table = 'The CoNLL table produced by the Stanford CoreNLP parser i
 
 title_options_Output_directory_of_split_files = ['Output directory of split files']
 message_Output_directory_of_split_files = 'This is a reminder that all file splitter scripts save the split files inside a subdirectory by the name of split_files of the directory where the input txt files are located, regardless of the choice of output directory.'
+
+title_options_non_utf8 = ['file not utf-8 compliant']
+message_non_utf8 = 'The file contains non-utf-8 compliant characters. The file cannot be processed. Please, run he utf-8 file check to get a csv sting of all non-utf-8 compliantt characters.'
 
 title_options_Plagiarist = ['Plagiarist']
 message_Plagiarist = "The 'plagiarist' script, based on Lucene, can process files with embedded dates.\n\nIf the filenames in the input directory embed dates, please tick the checkbox 'Filename embeds date' above."

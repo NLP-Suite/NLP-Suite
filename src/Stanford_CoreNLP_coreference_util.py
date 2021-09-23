@@ -15,6 +15,7 @@ from tkinter import *
 import re
 
 import Stanford_CoreNLP_annotator_util
+import reminders_util
 
 # part of the code about search text function is adapted from 
 # https://www.geeksforgeeks.org/create-find-and-replace-features-in-tkinter-text-widget/
@@ -227,7 +228,7 @@ def manualCoref(original_file, corefed_file, outputFile, coRefOptions):
     return 0
 
 # return file_to_open
-def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts,
+def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts,
         memory_var,coRefOptions, manual_Coref):
 
     corefed_file = []
@@ -256,6 +257,8 @@ def run(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, cr
                                                                         output_dir_path, openOutputFiles, createExcelCharts,'coref',False,
                                                                         memory_var)
     else: # dir input
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
+                                     reminders_util.message_CoreNLP_coref, True)
         corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
                                                                    output_dir_path, openOutputFiles, createExcelCharts,'coref', False,
                                                                    memory_var)
