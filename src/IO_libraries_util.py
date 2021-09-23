@@ -6,7 +6,6 @@ import tkinter.messagebox as mb
 import subprocess
 from typing import List
 
-import IO_user_interface_util
 import GUI_IO_util
 import reminders_util
 
@@ -101,6 +100,7 @@ def install_all_packages(window, calling_script, modules_to_try):
 #   'corpora/stopwords','stopwords'
 
 def import_nltk_resource(window, resource_path, resource):
+    import IO_user_interface_util
     try:
         import nltk.data
         nltk.data.find(resource_path)
