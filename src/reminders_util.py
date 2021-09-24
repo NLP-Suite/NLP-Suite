@@ -73,6 +73,9 @@ message_CoreNLP_Java = 'The Java call to Stanford CoreNLP script uses the proper
 title_options_CoreNLP_coref = ['Stanford CoreNLP coref merged files']
 message_CoreNLP_coref = 'The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged coref file in output.'
 
+title_options_memory = ['Available memory']
+message_memory = 'Your computer may not have enough memory to run some of the more resource-intensive algorithms of Stanford CoreNLP (e.g., coreference or some neural network models)\n\nStill, there are several options you may take (e.g., splitting up long documents into shorter parts and feeding tem to CoreNLP; checking your sentence length statistics - anything above 70 will most likely give you troubles, cnsidering that the average sentence length in modern English is 20 words). On Stanford Core NLP and memory ssues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.'
+
 title_options_CoreNLP_percent = ['% sign in file']
 message_CoreNLP_percent = 'The file contains % sign. This will break Stanford CoreNLP annotators. The % sign was temporarily replaced with "percent" for processing. But... you should run the script "Convert non-ASCII apostrophes & quotes and % to percent" to change the sign permanently.'
 
