@@ -38,6 +38,7 @@ import Stanford_CoreNLP_coreference_util
 import Stanford_CoreNLP_annotator_util
 import semantic_role_labeling_senna
 import reminders_util
+import sentence_analysis_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -126,6 +127,7 @@ def extract_CoreNLP_SVO(svo_triplets, svo_CoreNLP_single_file, svo_CoreNLP_merge
 def run(inputFilename, inputDir, outputDir,
         utf8_var,
         ASCII_var,
+        sentence_length_var,
         Coref,
         Coref_Option,
         memory_var,
@@ -154,7 +156,7 @@ def run(inputFilename, inputDir, outputDir,
     # the merge option refers to merging the txt files into one
     merge_txt_file_option = False
 
-    if utf8_var == False and ASCII_var == False and Coref == False and date_extractor_var == False and CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False and CoreNLP_OpenIE_var == False:
+    if utf8_var == False and ASCII_var == False and sentence_length_var == False and Coref == False and date_extractor_var == False and CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False and CoreNLP_OpenIE_var == False:
         mb.showwarning(title='No option selected',
                        message="No option has been selected.\n\nPlease, select an option and try again.")
         return
@@ -188,6 +190,13 @@ def run(inputFilename, inputDir, outputDir,
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                            'Started running characters conversion at', True)
         file_cleaner_util.convert_quotes(GUI_util.window, inputFilename, inputDir)
+
+    if sentence_length_var:
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                           'Started running sentence length computation at', True, 'You can follow Geocoder in command line.')
+        outputFile=sentence_analysis_util.extract_sentence_length(inputFilename, inputDir, outputDir)
+        if len(outputFile)>0:
+            filesToOpen.extend(outputFile)
 
     isFile = True
     inputFileBase = ""
@@ -238,7 +247,7 @@ def run(inputFilename, inputDir, outputDir,
             return
 
         if isFile:
-            inputFilename = str(file_open[0])
+            inputFilename = str(file_open)
             inputDir = ''
         else:
             # processing a directory
@@ -246,7 +255,7 @@ def run(inputFilename, inputDir, outputDir,
             inputDir = outputCorefedDir
 
         if len(file_open) > 0:
-            filesToOpen.extend(str(file_open[0]))
+            filesToOpen.extend(file_open)
 
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
                                                'Finished running Stanford CoreNLP Co-Reference Resolution using the ' + Coref_Option + ' approach at',
@@ -510,7 +519,7 @@ def run(inputFilename, inputDir, outputDir,
         #     if kmloutputFilename != '':
         #         IO_files_util.open_kmlFile(kmloutputFilename)
 
-    if len(inputDir) > 1 and len(filesToOpen) > 0:  # when processing a directory, the output changes
+    if len(inputDir) > 1 and len(filesToOpen) > 0 and outputSVODir!='':  # when processing a directory, the output changes
         # not a good idea to change the IO widget output because if you run the script again without first closing the GUI
         #   the new output dir becomes the new output in an infinite loop
         # mb.showwarning("Output directory", "All output files have been saved to a subdirectory of the selected output directory at\n\n"+str(outputDir)+"\n\nThe IO widget 'Select OUTPUT files directory' has been updated to reflect the change.")
@@ -523,13 +532,13 @@ def run(inputFilename, inputDir, outputDir,
                        "All output files have been saved to a subdirectory of the selected output directory at\n\n" + str(
                            outputFileDir))
 
-
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  utf8_var.get(),
                                  ASCII_var.get(),
+                                 sentence_length_var.get(),
                                  CoRef_var.get(),
                                  CoRef_menu_var.get(),
                                  memory_var.get(),
@@ -619,6 +628,7 @@ window.bind("<Escape>", clear)
 
 utf8_var = tk.IntVar()
 ASCII_var = tk.IntVar()
+sentence_length_var = tk.IntVar()
 CoRef_var = tk.IntVar()
 CoRef_menu_var = tk.StringVar()
 memory_var = tk.StringVar()
@@ -646,7 +656,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 ASCII_var.set(0)
 ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent',
                                 variable=ASCII_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column, y_multiplier_integer, ASCII_checkbox)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column_top, y_multiplier_integer, ASCII_checkbox,True)
+
+sentence_length_var.set(0)
+sentence_length_checkbox = tk.Checkbutton(window, text='Compute sentence length',
+                                variable=sentence_length_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_3rd_column_top, y_multiplier_integer, sentence_length_checkbox)
 
 CoRef_var.set(0)
 CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP)',
@@ -848,6 +863,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 
 TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
                'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
+               'Stanford CoreNLP memory issues':'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
                'Stanford CoreNLP date extractor': 'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
                'Stanford CoreNLP OpenIE': 'TIPS_NLP_Stanford CoreNLP OpenIE.pdf',
                'Stanford CoreNLP parser': 'TIPS_NLP_Stanford CoreNLP parser.pdf',
@@ -857,7 +873,7 @@ TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and 
                "Google Earth Pro": "TIPS_NLP_Google Earth Pro.pdf", "Geocoding": "TIPS_NLP_Geocoding.pdf",
                "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf",
                'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
-TIPS_options = 'SVO extraction and visualization', 'utf-8 encoding', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'CoNLL table', 'Stanford CoreNLP coreference resolution', 'Google Earth Pro', 'Geocoding', 'Gephi network graphs', 'Java download install run'
+TIPS_options = 'SVO extraction and visualization', 'utf-8 encoding', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'CoNLL table', 'Stanford CoreNLP coreference resolution', 'Google Earth Pro', 'Geocoding', 'Gephi network graphs', 'Java download install run'
 
 
 # add all the lines lines to the end to every special GUI

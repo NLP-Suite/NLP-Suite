@@ -73,7 +73,10 @@ def run(inputFilename, input_main_dir_path, output_dir_path,openOutputFiles,crea
             mb.showwarning(title='No search words entered', message='You have selected to extract sentences from input file(s). You MUST enter specific words to be used to extract the sentences from input.\n\nPlease enter the word(s) and try again.')
             return
 
-        sentence_analysis_util.extract_sentences(inputFilename, input_main_dir_path, output_dir_path, search_words_var)
+        outputFile=sentence_analysis_util.extract_sentences(inputFilename, input_main_dir_path, output_dir_path, search_words_var)
+
+        if len(outputFile)>0:
+            filesToOpen.append(outputFile)
 
     IO_files_util.runScript_fromMenu_option(script_to_run,IO_values,inputFilename,input_main_dir_path, output_dir_path, openOutputFiles,createExcelCharts)
 

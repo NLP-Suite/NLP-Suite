@@ -23,6 +23,7 @@ import Stanford_CoreNLP_coreference_util
 import IO_CoNLL_util
 import file_utf8_compliance_util
 import file_cleaner_util
+import sentence_analysis_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -37,6 +38,7 @@ import file_cleaner_util
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         utf8_var,
         ASCII_var,
+        sentence_length_var,
         memory_var,
         manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat,
         compute_sentence_var, CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var):
@@ -48,7 +50,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
         return
 
-    if utf8_var == 0 and ASCII_var == 0 and parser == 0 and CoNLL_table_analyzer_var == 0 and CoreNLP_annotators_var == 0:
+    if utf8_var == 0 and ASCII_var == 0 and sentence_length_var == 0 and parser == 0 and CoNLL_table_analyzer_var == 0 and CoreNLP_annotators_var == 0:
         mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
 
     if utf8_var:
@@ -61,6 +63,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                            'Started running characters conversion at', True)
         file_cleaner_util.convert_quotes(GUI_util.window, inputFilename, inputDir)
+
+    if sentence_length_var:
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                           'Started running sentence length computation at', True, 'You can follow Geocoder in command line.')
+        outputFile=sentence_analysis_util.extract_sentence_length(inputFilename, inputDir, outputDir)
+        if len(outputFile)>0:
+            filesToOpen.extend(outputFile)
 
     if CoreNLP_annotators_var == True and 'Coreference PRONOMINAL resolution' in CoreNLP_annotators_menu_var:
         if IO_libraries_util.inputProgramFileCheck("Stanford_CoreNLP_coReference_util.py") == False:
@@ -298,6 +307,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),
                                  utf8_var.get(),
                                  ASCII_var.get(),
+                                 sentence_length_var.get(),
                                  memory_var.get(),
                                  manual_Coref_var.get(),
                                  parser_var.get(),
@@ -364,12 +374,11 @@ def clear(e):
     CoreNLP_annotators_menu_var.set('')
     manual_Coref_checkbox.place_forget()  # invisible
     GUI_util.clear("Escape")
-
-
 window.bind("<Escape>", clear)
 
 utf8_var = tk.IntVar()
 ASCII_var = tk.IntVar()
+sentence_length_var = tk.IntVar()
 memory_var = tk.IntVar()
 date_extractor_var = tk.IntVar()
 CoreNLP_gender_annotator_var = tk.IntVar()
@@ -399,7 +408,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 ASCII_var.set(0)
 ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent',
                                 variable=ASCII_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column, y_multiplier_integer, ASCII_checkbox)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column_top, y_multiplier_integer, ASCII_checkbox,True)
+
+sentence_length_var.set(0)
+sentence_length_checkbox = tk.Checkbutton(window, text='Compute sentence length',
+                                variable=sentence_length_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_3rd_column_top, y_multiplier_integer, sentence_length_checkbox)
 
 # memory options
 
@@ -575,6 +589,12 @@ manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced 
 def activate_CoreNLP_annotators_menu(*args):
     global y_multiplier_integer
     if CoreNLP_annotators_var.get() == True:
+        if parser_var.get():
+            if CoreNLP_annotators_menu_var.get()=='*' or 'POS' in CoreNLP_annotators_menu_var.get() or 'DepRel' in CoreNLP_annotators_menu_var.get():
+                mb.showinfo("Warning", "You have selected to run the CoreNLP parser AND the POS/DepRel annotator. The parser already computes POS tags and DepRel tags.\n\nPlease, tick either the parser or the annotator checkbox.")
+                CoreNLP_annotators_var.set(0)
+                CoreNLP_annotators_menu_var.set('')
+                return
         CoreNLP_annotators_menu.configure(state='normal')
         if 'Coreference' in CoreNLP_annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer-1
@@ -590,6 +610,7 @@ def activate_CoreNLP_annotators_menu(*args):
             manual_Coref_checkbox.place_forget()  # invisible
     else:
         manual_Coref_checkbox.place_forget()  # invisible
+        CoreNLP_annotators_menu_var.set('')
         CoreNLP_annotators_menu.configure(state='disabled')
 CoreNLP_annotators_var.trace('w', activate_CoreNLP_annotators_menu)
 CoreNLP_annotators_menu_var.trace('w', activate_CoreNLP_annotators_menu)
@@ -598,6 +619,7 @@ activate_CoreNLP_annotators_menu()
 
 TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download install run.pdf',
                'Stanford CoreNLP parser': 'TIPS_NLP_Stanford CoreNLP parser.pdf',
+               'Stanford CoreNLP memory issues': 'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
                'NER (Named Entity Recognition)': 'TIPS_NLP_NER (Named Entity Recognition).pdf',
                'Stanford CoreNLP date extractor (NER normalized date)': 'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
                'Stanford CoreNLP OpenIE': 'TIPS_NLP_Stanford CoreNLP OpenIE.pdf',
@@ -609,8 +631,7 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                'Noun Analysis': "TIPS_NLP_Noun Analysis.pdf", 'Verb Analysis': "TIPS_NLP_Verb Analysis.pdf",
                'Function Words Analysis': 'TIPS_NLP_Function Words Analysis.pdf',
                'Clause Analysis': 'TIPS_NLP_Clause analysis.pdf'}
-TIPS_options = 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'Stanford CoreNLP OpenIE', 'Java download install run', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'NER (Named Entity Recognition)', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis'
-
+TIPS_options = 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'Stanford CoreNLP OpenIE', 'Java download install run', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'NER (Named Entity Recognition)', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
