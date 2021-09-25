@@ -185,7 +185,7 @@ window.bind("<Escape>", clear)
 
 def get_SQLite_file(window,title,fileType):
     #annotator_dictionary_var.set('')
-    filePath = tk.filedialog.askopenfilename(title = title, initialdir =GUI_IO_util.namesGender_libPath, filetypes = fileType)
+    filePath = tk.filedialog.askopenfilename(title = title, initialdir =inputDir, filetypes = fileType)
     if len(filePath)>0:
         SQLite_DB_file.config(state='normal')
         select_SQLite_DB_var.set(filePath)
@@ -290,7 +290,7 @@ def import_query(window, title, fileType):
 def save_query():
     boxContent = SQL_query_entry.get(0.1, tk.END)
     if len(boxContent)>0:
-        filePath = tk.filedialog.asksaveasfile(initialdir=GUI_util.output_dir_path.get(), initialfile='saveQry.txt', title="Save SQL query file",
+        filePath = tk.filedialog.asksaveasfile(initialdir=inputDir, initialfile='saveQry.txt', title="Save SQL query file",
                                                filetypes=[('SQL query file','.sql')])
         if filePath is None:
             filePath = ""

@@ -97,6 +97,8 @@ if sys.platform == 'darwin': #Mac OS
 
     # special internal GUI specific values
     SVO_2nd_column = 570
+    SVO_2nd_column_top = 450
+    SVO_3rd_column_top = 850
 
 else: #windows and anything else
     help_button_x_coordinate = 50
@@ -115,6 +117,8 @@ else: #windows and anything else
 
     # special internal GUI specific values
     SVO_2nd_column = 520
+    SVO_2nd_column_top = 400
+    SVO_3rd_column_top = 800
 
 basic_y_coordinate = 90
 y_step = 40 #the line-by-line increment on the GUI
