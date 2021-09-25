@@ -27,6 +27,7 @@ import IO_files_util
 import IO_user_interface_util
 import Excel_util
 import statistics_csv_util
+import TIPS_util
 
 def Extract(lst):
     return [item[0] for item in lst]
@@ -207,8 +208,50 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_v
 
     return filesToOpen
 
+def extract_sentence_length(inputFilename, inputDir, outputDir):
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    Ndocs = len(inputDocs)
+    if Ndocs==0:
+        return
+
+    fileID=0
+    long_sentences = 0
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                     'sentence_length')
+    csv_headers=['Document ID','Sentence ID','Sentence length (in words)','Sentence','Document']
+
+    with open(outputFilename, 'w', newline = "", encoding='utf-8', errors='ignore') as csvOut:
+        writer = csv.writer(csvOut)
+        writer.writerow(csv_headers)
+        for doc in inputDocs:
+            sentenceID = 0
+            fileID = fileID + 1
+            head, tail = os.path.split(doc)
+            print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
+            with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
+                text = inputFile.read().replace("\n", " ")
+                sentences = tokenize.sent_tokenize(text)
+                for sentence in sentences:
+                    tokens = nltk.word_tokenize(sentence)
+                    if len(tokens)>100:
+                        long_sentences=long_sentences+1
+                    sentenceID=sentenceID+1
+                    writer.writerow([fileID,sentenceID,len(tokens),sentence,IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+        csvOut.close()
+        answer = tk.messagebox.askyesno("TIPS file on memory issues",str(Ndocs) + " file(s) processed in input.\n\n"+
+                    "Output csv file written to the output directory "+outputDir + "\n\n"+
+                   str(long_sentences) + " SENTENCES WERE LONGER THAN 100 WORDS. The average sentence length in modern English is 20 words.\n\nMore to the point... Stanford CoreNLP would heavily tax memory resources with such long sentences.\n\nYou should consider editing these sentences if Stanford CoreNLP takes too long to process the file or runs out of memory.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?")
+        if answer:
+            TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
+    return [outputFilename]
+
 # wordList is a string
 def extract_sentences(input_file, input_dir, output_dir, inputString):
+    inputDocs = IO_files_util.getFileList(input_file, input_dir, fileType='.txt')
+    Ndocs = len(inputDocs)
+    if Ndocs==0:
+        return
+
     # Win/Mac may use different quotation, we replace any directional quotes to straight ones
     right_double = u"\u201C"  # “
     left_double = u"\u201D"  # ”
@@ -221,11 +264,6 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
         inputString += ', '
     # convert the string inputString to a list []
     wordList=ast.literal_eval(inputString)
-    inputDocs = IO_files_util.getFileList(input_file, input_dir, fileType='.txt')
-    Ndocs = len(inputDocs)
-    if Ndocs==0:
-        return
-
     caseSensitive = mb.askyesno("Python", "Do you want to process your search word(s) as case sensitive?")
 
     fileID=0
@@ -245,7 +283,7 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
         with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(outputFilename_extract_minus, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_minus:
             sentences = tokenize.sent_tokenize(text)
             for sentence in sentences:
-                sentenceSV=sentence
+                sentenceSV = sentence
                 nextSentence = False
                 for word in wordList:
                     if nextSentence == True:
@@ -260,17 +298,19 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
                         file_extract_written = True
                         wordFound=True
                         nextSentence = True
-                # if none of the words in wordList are found in a sentence write the sentence to the extract_minus file
-                if wordFound == False:
-                    outputFile_extract_minus.write(sentenceSV + " ") #write out original sentence
-                    file_extract_minus_written=True
+                    # if none of the words in wordList are found in a sentence write the sentence to the extract_minus file
+                    if wordFound == False:
+                        outputFile_extract_minus.write(sentenceSV + " ")  # write out original sentence
+                        file_extract_minus_written = True
         if file_extract_written == True:
+            filesToOpen.append(outputFilename_extract)
             nDocsExtractOutput += 1
             file_extract_written = False
+        outputFile_extract.close()
         if file_extract_minus_written:
+            filesToOpen.append(outputFilename_extract_minus)
             nDocsExtractMinusOutput += 1
             file_extract_minus_written = False
-        outputFile_extract.close()
         outputFile_extract_minus.close()
     if Ndocs==1:
         msg1=str(Ndocs) + " file was"
@@ -289,7 +329,6 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
                     msg3 + " written with _extract_minus in the filename.\n\n" +
                     "Files were written to the output directory "+output_dir+
                    "\n\nPlease, check the output directory for filenames ending with _extract.txt and _extract_minus.txt.")
-
 
 def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts):
     filesToOpen = []
