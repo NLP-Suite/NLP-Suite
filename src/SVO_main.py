@@ -34,10 +34,11 @@ import GUI_util
 import file_utf8_compliance_util
 import file_cleaner_util
 import IO_csv_util
-import Stanford_CoreNLP_coreference_util as stanford_coref
+import Stanford_CoreNLP_coreference_util
 import Stanford_CoreNLP_annotator_util
 import semantic_role_labeling_senna
 import reminders_util
+import sentence_analysis_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -126,6 +127,7 @@ def extract_CoreNLP_SVO(svo_triplets, svo_CoreNLP_single_file, svo_CoreNLP_merge
 def run(inputFilename, inputDir, outputDir,
         utf8_var,
         ASCII_var,
+        sentence_length_var,
         Coref,
         Coref_Option,
         memory_var,
@@ -154,7 +156,7 @@ def run(inputFilename, inputDir, outputDir,
     # the merge option refers to merging the txt files into one
     merge_txt_file_option = False
 
-    if utf8_var == False and ASCII_var == False and Coref == False and date_extractor_var == False and CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False and CoreNLP_OpenIE_var == False:
+    if utf8_var == False and ASCII_var == False and sentence_length_var == False and Coref == False and date_extractor_var == False and CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False and CoreNLP_OpenIE_var == False:
         mb.showwarning(title='No option selected',
                        message="No option has been selected.\n\nPlease, select an option and try again.")
         return
@@ -189,6 +191,13 @@ def run(inputFilename, inputDir, outputDir,
                                            'Started running characters conversion at', True)
         file_cleaner_util.convert_quotes(GUI_util.window, inputFilename, inputDir)
 
+    if sentence_length_var:
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                           'Started running sentence length computation at', True, 'You can follow Geocoder in command line.')
+        outputFile=sentence_analysis_util.extract_sentence_length(inputFilename, inputDir, outputDir)
+        if len(outputFile)>0:
+            filesToOpen.extend(outputFile)
+
     isFile = True
     inputFileBase = ""
     inputDirBase = ""
@@ -217,7 +226,7 @@ def run(inputFilename, inputDir, outputDir,
         if isFile:
             inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
             outputCorefedDir = os.path.join(outputDir, "coref_" + inputFileBase)  # + "_CoRefed_files")
-            # change input for all scripts - OpenIE, SENNA, Gephi, wordclouds, Google Earth
+            # change input for all scripts - CoreNLP ++, SENNA, Gephi, wordclouds, Google Earth
             inputDir = ''
         else:
             # processing a directory
@@ -229,26 +238,24 @@ def run(inputFilename, inputDir, outputDir,
             return
 
         # inputFilename and inputDir are the original txt files to be coreferenced
-        file_open = stanford_coref.run(inputFilename, inputDir, outputCorefedDir,
+        # 2 items are returned: filename string and true/False for error
+        file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir, outputCorefedDir,
                                        openOutputFiles, createExcelCharts,
                                        memory_var, Coref_Option,
                                        Manual_Coref_var)
-        if file_open is None:
+        if error_indicator != 0:
             return
 
         if isFile:
-            inputFilename = str(file_open[0])  # os.path.join(outputDir, inputFileBase + "-CoRefed.txt")
+            inputFilename = str(file_open)
             inputDir = ''
         else:
             # processing a directory
             inputFilename = ''
             inputDir = outputCorefedDir
 
-        # file_open[0] contains the coreferenced txt file
-        # file_open[1] contains the csv file of running time
-
         if len(file_open) > 0:
-            filesToOpen.extend(file_open[0])
+            filesToOpen.extend(file_open)
 
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
                                                'Finished running Stanford CoreNLP Co-Reference Resolution using the ' + Coref_Option + ' approach at',
@@ -277,44 +284,11 @@ def run(inputFilename, inputDir, outputDir,
         if not IO_files_util.make_directory(outputSVODir):
             return
 
-    # SENNA _____________________________________________________
-    if SENNA_SVO_extractor_var:
-        # TODO must filter SVO results by social actors if the user selected that option
-        #   both options run correctly for OpenIE
-        svo_SENNA_files = []
-        svo_SENNA_file = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles,
-                                                                createExcelCharts=True)
-
-        svo_SENNA_file = svo_SENNA_file[0]
-
-        if save_intermediate_file:
-            for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
-                svo_SENNA_files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='',
-                                                                          outputDir=os.path.join(outputDir,
-                                                                                                 outputSVODir),
-                                                                          openOutputFiles=openOutputFiles,
-                                                                          createExcelCharts=createExcelCharts)
-        else:
-            svo_SENNA_files = [svo_SENNA_file]
-
-        # Filtering SVO
-        if subjects_dict_var or verbs_dict_var or objects_dict_var:
-            for file in svo_SENNA_files:
-                SVO_util.filter_svo(file, subjects_dict_var, verbs_dict_var, objects_dict_var)
-        filesToOpen.extend(svo_SENNA_files)
-
-        for file in svo_SENNA_files:
-            svo_result_list.append(file)
-
-    # CoreNLP _____________________________________________________
+      # CoreNLP _____________________________________________________
     if CoreNLP_SVO_extractor_var:
 
-        # answer=mb.askyesno("OpenIE script","Do you want to use the\n   Python version of OpenIE (YES) (still under development)\n   Java version of OpenIE (NO)")
-        # if answer ==True:
         if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
             return
-
-        # IO_user_interface_util.script_under_development('Stanford CoreNLP OpenIE')
 
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir, openOutputFiles,
@@ -329,8 +303,6 @@ def run(inputFilename, inputDir, outputDir,
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
-        # Adding output files to toProcess_list
-        # process the txt files created by the OpenIE Java script to create a csv output file
         toProcess_list = []
         field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'PERSON', 'TIME',
                        'TIME_STAMP', 'Sentence']
@@ -371,20 +343,47 @@ def run(inputFilename, inputDir, outputDir,
                     original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
             svo_CoreNLP_merged_file = os.path.join(outputSVODir, "NLP_CoreNLP_SVO_Dir_" + inputDirBase + ".csv")
 
+    # SENNA _____________________________________________________
+
+    if SENNA_SVO_extractor_var:
+        # TODO must filter SVO results by social actors if the user selected that option
+        #   both options run correctly for CoreNLP ++
+        svo_SENNA_files = []
+        svo_SENNA_file = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles,
+                                                                createExcelCharts=True)
+        if len(svo_SENNA_file) > 0:
+            svo_SENNA_file = svo_SENNA_file[0]
+
+        if save_intermediate_file:
+            for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
+                svo_SENNA_files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='',
+                                                                          outputDir=os.path.join(outputDir,
+                                                                                                 outputSVODir),
+                                                                          openOutputFiles=openOutputFiles,
+                                                                          createExcelCharts=createExcelCharts)
+        else:
+            svo_SENNA_files = [svo_SENNA_file]
+
+        # Filtering SVO
+        if subjects_dict_var or verbs_dict_var or objects_dict_var:
+            for file in svo_SENNA_files:
+                SVO_util.filter_svo(file, subjects_dict_var, verbs_dict_var, objects_dict_var)
+        filesToOpen.extend(svo_SENNA_files)
+
+        for file in svo_SENNA_files:
+            svo_result_list.append(file)
+
     # next lines create summaries of comparative results from CoreNLP and SENNA
     if SENNA_SVO_extractor_var and CoreNLP_SVO_extractor_var:
         if svo_CoreNLP_merged_file and svo_SENNA_file:
-            # the current SVO always produces a merged csv output file
-            # OpenIe_file = svo_CoreNLP_single_file if isFile else svo_CoreNLP_merged_file
-            OpenIe_file = svo_CoreNLP_merged_file
-            freq_csv = SVO_util.count_frequency_two_svo(OpenIe_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
-            combined_csv = SVO_util.combine_two_svo(OpenIe_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
+            CoreNLP_PlusPlus_file = svo_CoreNLP_merged_file
+            freq_csv = SVO_util.count_frequency_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
+            combined_csv = SVO_util.combine_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
             filesToOpen.extend(freq_csv)
             filesToOpen.append(combined_csv)
 
     # CoreNLP OpenIE _____________________________________________________
     if CoreNLP_OpenIE_var:
-        # IO_user_interface_util.script_under_construction('Extract relation triples (via CoreNLP OpenIE)')
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
@@ -421,13 +420,13 @@ def run(inputFilename, inputDir, outputDir,
                 for f in svo_result_list:
                     if IO_csv_util.GetNumberOfRecordInCSVFile(f) > 1:  # including headers; file is empty
                         gexf_file = Gephi_util.create_gexf(os.path.basename(f)[:-4], outputDir, f)
-                        if "OpenIE" in f or "SENNA_SVO" in f:
+                        if "CoreNLP++" in f or "SENNA_SVO" in f:
                             filesToOpen.append(gexf_file)
                         if not save_intermediate_file:
                             gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if
                                           f.endswith('.gexf')]
                             for f in gexf_files:
-                                if "OpenIE" not in f and "SENNA_SVO" not in f:
+                                if "CoreNLP++" not in f and "SENNA_SVO" not in f:
                                     os.remove(f)
 
         # wordcloud  _________________________________________________
@@ -520,7 +519,7 @@ def run(inputFilename, inputDir, outputDir,
         #     if kmloutputFilename != '':
         #         IO_files_util.open_kmlFile(kmloutputFilename)
 
-    if len(inputDir) > 1 and len(filesToOpen) > 0:  # when processing a directory, the output changes
+    if len(inputDir) > 1 and len(filesToOpen) > 0 and outputSVODir!='':  # when processing a directory, the output changes
         # not a good idea to change the IO widget output because if you run the script again without first closing the GUI
         #   the new output dir becomes the new output in an infinite loop
         # mb.showwarning("Output directory", "All output files have been saved to a subdirectory of the selected output directory at\n\n"+str(outputDir)+"\n\nThe IO widget 'Select OUTPUT files directory' has been updated to reflect the change.")
@@ -533,13 +532,13 @@ def run(inputFilename, inputDir, outputDir,
                        "All output files have been saved to a subdirectory of the selected output directory at\n\n" + str(
                            outputFileDir))
 
-
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  utf8_var.get(),
                                  ASCII_var.get(),
+                                 sentence_length_var.get(),
                                  CoRef_var.get(),
                                  CoRef_menu_var.get(),
                                  memory_var.get(),
@@ -629,6 +628,7 @@ window.bind("<Escape>", clear)
 
 utf8_var = tk.IntVar()
 ASCII_var = tk.IntVar()
+sentence_length_var = tk.IntVar()
 CoRef_var = tk.IntVar()
 CoRef_menu_var = tk.StringVar()
 memory_var = tk.StringVar()
@@ -656,7 +656,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 ASCII_var.set(0)
 ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent',
                                 variable=ASCII_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column, y_multiplier_integer, ASCII_checkbox)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column_top, y_multiplier_integer, ASCII_checkbox,True)
+
+sentence_length_var.set(0)
+sentence_length_checkbox = tk.Checkbutton(window, text='Compute sentence length',
+                                variable=sentence_length_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_3rd_column_top, y_multiplier_integer, sentence_length_checkbox)
 
 CoRef_var.set(0)
 CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP)',
@@ -858,6 +863,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 
 TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
                'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
+               'Stanford CoreNLP memory issues':'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
                'Stanford CoreNLP date extractor': 'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
                'Stanford CoreNLP OpenIE': 'TIPS_NLP_Stanford CoreNLP OpenIE.pdf',
                'Stanford CoreNLP parser': 'TIPS_NLP_Stanford CoreNLP parser.pdf',
@@ -867,7 +873,7 @@ TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and 
                "Google Earth Pro": "TIPS_NLP_Google Earth Pro.pdf", "Geocoding": "TIPS_NLP_Geocoding.pdf",
                "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf",
                'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
-TIPS_options = 'SVO extraction and visualization', 'utf-8 encoding', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'CoNLL table', 'Stanford CoreNLP coreference resolution', 'Google Earth Pro', 'Geocoding', 'Gephi network graphs', 'Java download install run'
+TIPS_options = 'SVO extraction and visualization', 'utf-8 encoding', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'CoNLL table', 'Stanford CoreNLP coreference resolution', 'Google Earth Pro', 'Geocoding', 'Gephi network graphs', 'Java download install run'
 
 
 # add all the lines lines to the end to every special GUI

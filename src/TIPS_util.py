@@ -13,7 +13,7 @@ import IO_files_util
 
 def get_TIPS(selected_TIPS,lookup,menu_lb, dropdown_field):
     # lookup[selected_TIPS] would throw a keyError 
-    #   if there is a differen spelling, even in letter case
+    #   if there is a different spelling, even in letter case
     #   between TIPS_lookup and TIPS_options, for instance
     #   TIPS_lookup = {'NLP Searches': 'TIPS_NLP_NLP searches.pdf'}
     #   TIPS_options='NLP searches'
@@ -76,4 +76,18 @@ def trace_open_tips(field_local,menu_local,lookup_local):
     lookup=lookup_local
     menu=menu_local
     field.trace("w",TIPS_Tracer)
+
+def open_TIPS(selected_TIPS):
+    if os.path.isfile(os.path.join(GUI_IO_util.TIPSPath, selected_TIPS)) == False:
+        TIPSFile_Exists = False
+        mb.showinfo(title='TIPS Warning', message="The TIPS file\n\n" + lookup[
+            selected_TIPS] + "\n\ncould not be found in your TIPS directory.")
+        return False
+    else:
+        TIPSFile_Exists = True
+        if sys.platform in ['win32', 'cygwin', 'win64']:
+            subprocess.Popen([GUI_IO_util.TIPSPath + os.sep + selected_TIPS], shell=True)
+        else:
+            call(['open', GUI_IO_util.TIPSPath + os.sep + selected_TIPS])
+    return TIPSFile_Exists
 

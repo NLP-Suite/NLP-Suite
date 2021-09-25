@@ -1,9 +1,12 @@
 import csv
 import sys
+from sys import platform
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
 import subprocess
+import psutil
+from psutil import virtual_memory
 from typing import List
 
 import GUI_IO_util
@@ -110,6 +113,14 @@ def import_nltk_resource(window, resource_path, resource):
         print('Downloading nltk ' + resource + '   If downloading fails, in command line please type: python -m nltk.downloader all')
         nltk.download(resource)
 
+def check_avaialable_memory(software):
+    mem = virtual_memory()
+    mem.total  # total physical memory available
+    mem_GB=int(mem.total/1000000000)
+    if mem_GB<10:
+        reminders_util.checkReminder('Stanford-CoreNLP-config.txt', reminders_util.title_options_memory,
+                                     reminders_util.message_memory, True)
+
 def check_java_installation(script):
     errorFound = False
     java_output = subprocess.run(['java', '-version'], capture_output=True)
@@ -118,12 +129,12 @@ def check_java_installation(script):
         'utf-8')  # This is what you see when you run "java -version" in your command line
 
     if not system_output:
-        if 'CoreNLP' in script:
-            title_options=['Java JDK version']
-            message = 'You are running ' + system_output.split("\r\n""", 1)[0] + '.\n\nStanford CoreNLP works best with Java version JDK 8.\n\nIf you run into problems with Stanford CoreNLP, you may wish to uninstall the Java version you are currently running and install Java JDK 8. Please, read the installation instructions on the NLP Suite GitHub wiki pages at\nhttps://github.com/NLP-Suite/NLP-Suite/wiki/Install-External-Software#JAVA-JDK.'
-
-            reminders_util.checkReminder('Stanford-CoreNLP-config.txt', title_options,
-                                     message, True)
+        # Java issues do not seem to be a problem with Mac
+        if platform == "win32" and 'CoreNLP' in script:
+                title_options=['Java JDK version']
+                message = 'You are running ' + system_output.split("\r\n""", 1)[0] + '.\n\nStanford CoreNLP works best with Java version JDK 8 on Windows machines.\n\nIf you run into problems with Stanford CoreNLP, you may wish to uninstall the Java version you are currently running and install Java JDK 8. Please, read the installation instructions on the NLP Suite GitHub wiki pages at\nhttps://github.com/NLP-Suite/NLP-Suite/wiki/Install-External-Software#JAVA-JDK.'
+                reminders_util.checkReminder('Stanford-CoreNLP-config.txt', title_options,
+                                         message, True)
 
     if error_code != 0 and "not recognized" in system_output:
         mb.showwarning(title='Java installation error',

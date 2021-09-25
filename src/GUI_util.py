@@ -173,6 +173,9 @@ def display_logo():
 version_str = '1.5.9'
 
 def check_newest_release(current_release: str):
+    # check internet connection
+    if not IO_internet_util.check_internet_availability_warning("Automatic check for NLP Suite newest release version on GitHub"):
+        return
     # current_release = '1.5.9' # line used for testing
     setup_folder="setup_Windows"
     update_command_auto='update_NLP-Suite_auto.bat'
@@ -182,7 +185,11 @@ def check_newest_release(current_release: str):
         update_command_auto = 'update_NLP-Suite_auto.command'
         update_command='update_NLP-Suite.command'
     release_url = 'https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/lib/release_version.txt'
-    GitHub_newest_release = requests.get(release_url).text
+    try:
+        GitHub_newest_release = requests.get(release_url).text
+    except:
+        mb.showwarning(title='Internet connection error', message="The attempt to connect to GitHub failed.\n\nIt is not possible to check the latest release of the NLP Suite at this time. You can continue run your current release and try again later.")
+        return
     # split the text string of release version (e.g., 1.5.9) into three parts separated by .
     current_release_parts=[current_release[i:i + 1] for i in range(0, len(current_release), 2)]
     GitHub_release_parts=[GitHub_newest_release[i:i + 1] for i in range(0, len(GitHub_newest_release), 2)]
@@ -200,9 +207,6 @@ def check_newest_release(current_release: str):
                     ".\n\nEXIT the NLP Suite NOW.\n\n   1. If you have setup the NLP Suite for automatic updates (click on " + update_command_auto + " - HIGHLY RECOMMENDED), the NLP Suite will be automatically updated every time you exit the NLP Suite.\n\n   2. Otherwise, go to the " + setup_folder + " subfolder inside the NLP installation folder and run the update script by clicking on " + update_command + " to update your NLP Suite to the latest " + str(GitHub_newest_release) + " release.\n\nFire up the NLP Suite again and if you have performed either update command you will be all set.\n\n" +
                     "WOULD YOU LIKE TO SEE WHAT IS NEW IN THE RELEASE VERSION " + str(GitHub_newest_release) + " AVAILABLE ON GitHub? (You must be connected to the internet)")
         if result:
-            # check internet connection
-            if not IO_internet_util.check_internet_availability_warning("NLP Suite release version"):
-                return
             webbrowser.open_new("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
 
 def display_release():
