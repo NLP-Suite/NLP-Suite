@@ -57,8 +57,8 @@ def dictionary_annotate(inputFilename, inputDir, outputDir, dictionary_file, per
         ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
          'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
     time.sleep(5)
-    nlp = StanfordCoreNLP('http://localhost', port=9000)
-
+    # nlp = StanfordCoreNLP('http://localhost', port=9000)
+    nlp = StanfordCoreNLP('http://point.dd.works:9000')
     articles, inputDir = text_generate(inputFilename, inputDir)
 
     people = []

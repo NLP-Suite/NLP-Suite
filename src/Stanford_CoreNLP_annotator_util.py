@@ -252,12 +252,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
     # -d64 to use 64 bits JAVA, normally set to 32 as default; option not recognized in Mac
     if sys.platform == 'darwin':  # Mac OS
+        # mx is the same as Xmx and refers to maximum Java heap size
         CoreNLP_nlp = subprocess.Popen(
             ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
     else:
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_Java,
-                                     reminders_util.message_CoreNLP_Java, True)
         CoreNLP_nlp = subprocess.Popen(
             ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
@@ -278,7 +277,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
         docTitle = os.path.basename(docName)
         docID = docID + 1
         sentenceID = 0
-        split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName) #if the file is too long, it needs spliting to be able to processed by the Stanford CoreNLP
+        # if the file is too long, it needs splitting to allow processing by the Stanford CoreNLP
+        #   which has a maximum 100,000 characters doc size limit
+        split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName)
         for doc in split_file:
             annotated_length = 0#the number of tokens
             # doc_start_time = time.time()
@@ -291,10 +292,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                              reminders_util.message_CoreNLP_percent, True)
                 text=text.replace("%","percent")
             nlp = StanfordCoreNLP('http://localhost:9000')
+            # nlp = StanfordCoreNLP('http://point.dd.works:9000')
+
             #if there's only one annotator and it uses neural nerwork model, skip annoatiting with PCFG to save time
             if param_string != '':
                 # text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
-                # nlp = StanfordCoreNLP('http://localhost:9000')
                 annotator_start_time = time.time()
                 CoreNLP_output = nlp.annotate(text, properties=params)
                 errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window,
@@ -1010,8 +1012,8 @@ def process_json_postag(documentID, document, sentenceID, json, **kwargs):
     Verbs = []
     Nouns = []
     for sentence in json['sentences']:
-        if len(sentence)> 20:
-            print("WAY TOO LOONG!")
+        # if len(sentence)> 20:
+        #     print("WAY TOO LOONG!")
         for token in sentence['tokens']:
             if token['pos'] in ['VB','VBD','VBG','VBN','VBP','VBZ']:
                 Verbs.append(token['lemma'])

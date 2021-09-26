@@ -540,7 +540,7 @@ def setup_IO_configuration_options(IO_setup_display_brief,y_multiplier_integer,S
     display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options, ScriptName)
 
 def IO_config_setup_brief(window, y_multiplier_integer,ScriptName):
-    IO_setup_button = tk.Button(window, text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,y_multiplier_integer,ScriptName))
+    IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,y_multiplier_integer,ScriptName))
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer,
                                                    IO_setup_button, True)
