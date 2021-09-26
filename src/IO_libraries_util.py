@@ -11,6 +11,7 @@ from typing import List
 
 import GUI_IO_util
 import reminders_util
+import TIPS_util
 
 # import pip not used
 # def install(package):
@@ -120,6 +121,7 @@ def check_avaialable_memory(software):
     if mem_GB<10:
         reminders_util.checkReminder('Stanford-CoreNLP-config.txt', reminders_util.title_options_memory,
                                      reminders_util.message_memory, True)
+    return mem_GB
 
 def check_java_installation(script):
     errorFound = False
@@ -131,10 +133,22 @@ def check_java_installation(script):
     if not system_output:
         # Java issues do not seem to be a problem with Mac
         if platform == "win32" and 'CoreNLP' in script:
-                title_options=['Java JDK version']
-                message = 'You are running ' + system_output.split("\r\n""", 1)[0] + '.\n\nStanford CoreNLP works best with Java version JDK 8 on Windows machines.\n\nIf you run into problems with Stanford CoreNLP, you may wish to uninstall the Java version you are currently running and install Java JDK 8. Please, read the installation instructions on the NLP Suite GitHub wiki pages at\nhttps://github.com/NLP-Suite/NLP-Suite/wiki/Install-External-Software#JAVA-JDK.'
-                reminders_util.checkReminder('Stanford-CoreNLP-config.txt', title_options,
+            title_options = ['Java JDK version']
+            message = 'You are running ' + system_output.split("\r\n""", 1)[
+                0] + '.\n\nStanford CoreNLP works best with Java version JDK 8 on Windows machines.\n\nIf you run into problems with Stanford CoreNLP, you may wish to uninstall the Java version you are currently running and install Java JDK 8. Please, read the installation instructions on the NLP Suite GitHub wiki pages at\nhttps://github.com/NLP-Suite/NLP-Suite/wiki/Install-External-Software#JAVA-JDK.'
+            reminders_util.checkReminder('Stanford-CoreNLP-config.txt', title_options,
                                          message, True)
+
+    if system_output:
+        if platform == "win32" and 'CoreNLP' in script:
+            for info in system_output.split(" "):
+                if "-Bit" in info:  # find the information about bit
+                    if info[:2] != "64":  # check if it's 64 bit
+                        answer = tk.messagebox.askyesno("Java version Error",
+                                                        "You are not using JAVA 64-Bit version.\n\nThis will cause an error running Stanford CoreNLP: Could not create the Java Virtual Machine.\n\nPlease, configure your machine to use JAVA 64-Bit.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?")
+                        if answer:
+                            TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
+                        errorFound = True
 
     if error_code != 0 and "not recognized" in system_output:
         mb.showwarning(title='Java installation error',
@@ -183,6 +197,7 @@ def inputExternalProgramFileCheck(software_dir, programName):
         else:
             mb.showwarning(title='Software error',
                            message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Mallet directory. The directory should contain, among other things, the directories \'bin\' and \'class\'. DO MAKE SURE THAT WHEN YOU UNZIP THE MALLET ARCHIVE YOU DO NOT END UP WITH A MALLET DIRECTORY INSIDE A MALLET DIRECTORY.\n\nPlease, select the appropriate Mallet directory and try again!\n\nYou can download Mallet at http://mallet.cs.umass.edu/download.php.\n\nPlease, read the TIPS_NLP_Topic modeling Mallet installation.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
+
             return False
     if programName == 'SENNA':
         if 'senna-osx' in fileList and 'senna-win32.exe' in fileList:

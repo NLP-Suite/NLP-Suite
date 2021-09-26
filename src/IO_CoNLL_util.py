@@ -247,14 +247,14 @@ def get_nouns_verbs_CoNLL(input_file,output_dir):
 
     for index, row in conll_table.iterrows():
         # Check if cell value has length greq. than 2 since we're looking for VB* and NN*
-        if len(conll_table['Postag'][index]) >= 2:
+        if len(conll_table['POStag'][index]) >= 2:
             # Check if begins with VB
-            if "VB" in conll_table['Postag'][index][0:2]:
+            if "VB" in conll_table['POStag'][index][0:2]:
                 # Starts with VB, add to verb set
                 verb_form_set.add(conll_table['Form'][index])
                 verb_lemma_set.add(conll_table['Lemma'][index])
             # Check if begins with NN
-            elif 'NN' in conll_table['Postag'][index][0:2]:
+            elif 'NN' in conll_table['POStag'][index][0:2]:
                 noun_form_set.add(conll_table['Form'][index])
                 noun_lemma_set.add(conll_table['Lemma'][index])
 
