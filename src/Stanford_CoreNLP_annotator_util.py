@@ -258,12 +258,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
         # mx is the same as Xmx and refers to maximum Java heap size
         CoreNLP_nlp = subprocess.Popen(
             ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
+             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length), '-timeout', '999999'])
     else:
-        # '-parse.maxlen ' + str(sentence_length)
         CoreNLP_nlp = subprocess.Popen(
-            ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir, '*'),
-             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
+            ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp',  os.path.join(CoreNLPdir, '*'),
+             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
 
     time.sleep(5)
 

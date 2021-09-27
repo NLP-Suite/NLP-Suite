@@ -107,7 +107,7 @@ def splitDocument_byLength(window, config_filename, filename_path,output_path=''
                 sf.write(text[splits[i-1]+1:splits[i]+1])
                 filesToReturn.append(SplitFile)
             sf.close()
-        if 'SVO' in config_filename or 'CoreNLP' in config_filename:
+        if 'SVO' in config_filename or 'NER' in config_filename or 'CoreNLP' in config_filename:
             reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_split_files,
                                          reminders_util.message_CoreNLP_split_files, True)
         else:

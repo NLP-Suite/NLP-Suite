@@ -18,9 +18,11 @@ import IO_user_interface_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 # def run(CoreNLPdir,inputFilename,inputDir,outputDir,openOutputFiles,createExcelCharts,encoding_var,memory_var,extract_date_from_text_var,extract_date_from_filename_var,date_format,date_separator_var,date_position_var,NER_list,NER_split_prefix_values_entry_var,NER_split_suffix_values_entry_var,NER_sentence_var):
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, encoding_var,
-            memory_var, extract_date_from_text_var, extract_date_from_filename_var, date_format, date_separator_var,
-            date_position_var, NER_list, NER_sentence_var):
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
+        encoding_var, utf8_var, ASCII_var, compute_sentence_length_var,
+        memory_var, document_length_var, limit_sentence_length_var,
+        extract_date_from_text_var, extract_date_from_filename_var, date_format, date_separator_var,
+        date_position_var, NER_list, NER_sentence_var):
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -34,6 +36,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                                                         NERs=NER_list,
                                                         DoCleanXML=False,
                                                         memory_var=memory_var,
+                                                        document_length=document_length_var,
+                                                        sentence_length=limit_sentence_length_var,
                                                         dateExtractedFromFileContent=extract_date_from_text_var,
                                                         filename_embeds_date_var=extract_date_from_filename_var,
                                                         date_format=date_format,
@@ -71,7 +75,12 @@ run_script_command=lambda: run(
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_Excel_chart_output_checkbox.get(),
                             encoding_var.get(),
+                            utf8_var.get(),
+                            ASCII_var.get(),
+                            compute_sentence_length_var.get(),
                             memory_var.get(),
+                            document_length_var.get(),
+                            limit_sentence_length_var.get(),
                             extract_date_from_text_var.get(),
                             extract_date_from_filename_var.get(),
                             date_format.get(),
@@ -88,7 +97,7 @@ GUI_util.run_button.configure(command=run_script_command)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
 GUI_width=1200
-GUI_height=510 # height of GUI with full I/O display
+GUI_height=550 # height of GUI with full I/O display
 
 if IO_setup_display_brief:
     GUI_height = GUI_height - 80
@@ -130,6 +139,9 @@ NER_list=[]
 
 encoding_var=tk.StringVar()
 
+utf8_var = tk.IntVar()
+ASCII_var = tk.IntVar()
+compute_sentence_length_var = tk.IntVar()
 memory_var = tk.IntVar()
 
 extract_date_from_text_var= tk.IntVar()
@@ -151,15 +163,53 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordin
 encoding_lb = tk.Label(window, text='Select the encoding type (utf-8 default)')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,encoding_lb)
 
-#memory options
+utf8_var.set(0)
+utf8_checkbox = tk.Checkbutton(window, text='Check input corpus for utf-8 encoding ', variable=utf8_var, onvalue=1,
+                               offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               utf8_checkbox, True)
+
+ASCII_var.set(0)
+ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent',
+                                variable=ASCII_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column_top, y_multiplier_integer, ASCII_checkbox,True)
+
+compute_sentence_length_var.set(0)
+compute_sentence_length_checkbox = tk.Checkbutton(window, text='Compute sentence length',
+                                variable=compute_sentence_length_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_3rd_column_top, y_multiplier_integer, compute_sentence_length_checkbox)
+
+# memory options
 
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,memory_var_lb,True)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               memory_var_lb, True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(4)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,memory_var)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100, y_multiplier_integer,
+                                               memory_var,True)
+
+document_length_var_lb = tk.Label(window, text='Document length')
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+                                               document_length_var_lb, True)
+
+document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
+document_length_var.pack()
+document_length_var.set(90000)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+150, y_multiplier_integer,
+                                               document_length_var,True)
+
+limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
+                                               limit_sentence_length_var_lb,True)
+
+limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
+limit_sentence_length_var.pack()
+limit_sentence_length_var.set(100)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 550, y_multiplier_integer,
+                                               limit_sentence_length_var)
 
 extract_date_lb = tk.Label(window, text='Extract date (for dynamic GIS)')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_date_lb,True)
@@ -379,13 +429,15 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
                                       GUI_IO_util.msg_IO_setup)
 
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding.\n\nTick the 'Filename embeds date' checkbox if the filename embeds a date (e.g., The New York Times_12-05-1885). The date will then be used to construct dynamic GIS models."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","Please, using the scale widget, adjust the memory size you wish to use. The default size of 4 should be quite sufficient for the Stanford CoreNLP NER annotator."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help","Please, using the dropdown menu, select the 23 NER tags that you would like to extract.\n\nFor English, the Stanford CoreNLP, by default through the NERClassifierCombiner annotator, recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\nClick on the + button to add more NER tags.\nClick on the Reset button (or ESCape) to cancel all selected options and start over."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","Please, tick the utf-8 checkbox to check your input corpus for utf-8 encoding.\n   Non utf-8 compliant texts are likely to lead to code breakdown.\n\nTick the Convert ... checkbox to convert non-ASCII apostrophes & quotes and % to percent.\n   ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n   % signs will lead to code breakdon of Stanford CoreNLP.\n\nTick the Compute sentence length checkbox to extract all sentences and their length. Sentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf." +GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
+                                  "The Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help","Please, using the dropdown menu, select the 23 NER tags that you would like to extract.\n\nFor English, the Stanford CoreNLP, by default through the NERClassifierCombiner annotator, recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\nClick on the + button to add more NER tags.\nClick on the Reset button (or ESCape) to cancel all selected options and start over."+GUI_IO_util.msg_Esc)
     # GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*8,"Help","Please, edit the list of split names, entering only the FIRST part - prefix - of the name.\n\nYOU HAVE 2 OPTIONS:\n  1. You can click on the little button to the left of the label 'NER split values (Prefix)' to open a csv file where you can enter any prefix (and suffix) values of your choice (these are the values used to populate the \'NER split values\' widgets);\n  2. You can enter comma separated values directly in the \'NER split values\' (this, however, will only be a temporary solution).\n\nEntering prefix and suffix values is particularly useful for geographic locations (e.g., hong for Hong Kong), but could be used to group together peoples' names (e.g. Mary for Mary Ann, de for de Witt)."+GUI_IO_util.msg_Esc)
     # GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*9,"Help","Please, edit the list of split names, entering only the LAST part - suffix - of the name.\n\nYOU HAVE 2 OPTIONS:\n  1. You can click on the little button to the left of the label 'NER split values (Prefix)' to open a csv file where you can enter any suffix (or prefix) values of your choice (these are the values used to populate the \'NER split values\' widgets);\n  2. You can enter comma separated values directly in the \'NER split values\' (this, however, will only be a temporary solution).\n\nEntering prefix and suffix values is particularly useful for geographic locations (e.g., city for Atlantic City), but could be used to group together peoples' names (e.g. Ann for Mary Ann or Jo Ann)."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help","Please, tick the checkbox if you wish to plot the extracted NER tags by sentence index."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help",GUI_IO_util.msg_openOutputFiles)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help","Please, tick the checkbox if you wish to plot the extracted NER tags by sentence index."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+7),"Help",GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 

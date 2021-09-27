@@ -126,9 +126,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                date_position_var=date_field_position)
             if len(tempOutputFiles) > 0:
                 filesToOpen.extend(tempOutputFiles)
-                if compute_sentence_var:
-                    tempOutputFile = IO_CoNLL_util.compute_sentence_table(tempOutputFiles[0], outputDir)
-                    filesToOpen.append(tempOutputFile)
+                # if compute_sentence_var:
+                #     tempOutputFile = IO_CoNLL_util.compute_sentence_table(tempOutputFiles[0], outputDir)
+                #     filesToOpen.append(tempOutputFile)
 
     if CoNLL_table_analyzer_var:
         if IO_libraries_util.inputProgramFileCheck('CoNLL_table_analyzer_main.py') == False:
