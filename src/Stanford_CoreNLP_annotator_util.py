@@ -66,7 +66,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      openOutputFiles, createExcelCharts,
                      annotator_params,
                      DoCleanXML,
-                     memory_var, **kwargs):
+                     memory_var,
+                     document_length=90000,
+                     sentence_length=100,
+                     **kwargs):
     silent=True
     start_time = time.time()
     speed_assessment = []#storing the information used for speed assessment
@@ -83,7 +86,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     if errorFound:
         return filesToOpen
 
-    # check avaialable memory
+    # check available memory
     IO_libraries_util.check_avaialable_memory('Stanford CoreNLP')
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, "You can follow CoreNLP annotator in command line.")
@@ -257,12 +260,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
             ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
     else:
+        # '-parse.maxlen ' + str(sentence_length)
         CoreNLP_nlp = subprocess.Popen(
             ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
 
     time.sleep(5)
-
 
     # annotating each input file
     docID=0
@@ -279,7 +282,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         sentenceID = 0
         # if the file is too long, it needs splitting to allow processing by the Stanford CoreNLP
         #   which has a maximum 100,000 characters doc size limit
-        split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName)
+        split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName,'',document_length)
         for doc in split_file:
             annotated_length = 0#the number of tokens
             # doc_start_time = time.time()
