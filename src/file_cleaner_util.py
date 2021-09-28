@@ -116,7 +116,19 @@ def remove_blank_lines(window,inputFilename,inputDir, outputDir='',openOutputFil
     if IO_files_util.make_directory(outputDir)==False:
         return
     files = []
-    backup_
+
+    if inputFilename != "":
+        temp_inputDir, tail = os.path.split(inputFilename)
+    else:
+        temp_inputDir = inputDir
+
+    backup_path = os.path.join(temp_inputDir, 'backup')
+
+    answer=mb.askyesno("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
+    if answer:
+        IO_files_util.make_directory(backup_path)
+        file_filename_util.backup_files(inputFilename, inputDir, backup_path)
+
     files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt')
     for file in files:
         head, tail = os.path.split(file)
