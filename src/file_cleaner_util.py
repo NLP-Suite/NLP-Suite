@@ -21,48 +21,46 @@ import IO_files_util
 import GUI_IO_util
 import IO_user_interface_util
 import IO_csv_util
+import file_filename_util
 
 def add_full_stop_to_sentence(window, inputFilename, inputDir, outputDir, openOutputFiles):
-
-    if inputDir == '' and inputFilename != '':
-        NUM_DOCUMENT = 1
-    else:
-        NUM_DOCUMENT = len(glob.glob(os.path.join(inputDir, '*.txt')))
-    if NUM_DOCUMENT == 0:
-        return
-    Title_length_limit = 100
-
-    # Title length pop up widget
-    # window, textCaption, lower_bound, upper_bound, default_value
-    val = GUI_IO_util.slider_widget(GUI_util.window,
-                                    "Please, select the value for number of characters in a document title. The suggested value is " + str(
-                                        Title_length_limit) + ".", 1, 1000, 100)
-    Title_length_limit = val
-
-    TITLENESS = 'NO'
-
-    titleness = True
-    if TITLENESS == "NO":
-        titleness = False
-
-    # DOCUMENTS WITH TITLES
-    count = 0
-    titles = []
-    docID = 0
-    path_documents = os.path.join(inputDir,'documentsWithFullstops')
-
-    if inputFilename != "":
-        temp_inputDir, tail = os.path.split(inputFilename)
-    else:
-        temp_inputDir = inputDir
-    path_documentsWithFullstops = os.path.join(temp_inputDir, 'documents_with_fullstops')
-    if not os.path.exists(path_documentsWithFullstops):
-        os.makedirs(path_documentsWithFullstops)
 
     # collecting input txt files
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     nDocs = len(inputDocs)
     docID = 0
+    if nDocs == 0:
+        return
+    Title_length_limit = 100
+
+    if inputFilename != "":
+        temp_inputDir, tail = os.path.split(inputFilename)
+    else:
+        temp_inputDir = inputDir
+
+    backup_path = os.path.join(temp_inputDir, 'backup')
+    answer=mb.askyesno("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
+    if answer:
+        IO_files_util.make_directory(backup_path)
+
+    file_filename_util.backup_files(inputFilename, inputDir, backup_path)
+
+    # Title length pop up widget
+    # window, textCaption, lower_bound, upper_bound, default_value
+    val = GUI_IO_util.slider_widget(GUI_util.window,
+                                    "Please, select the value for number of characters in a sentence with no final puntuation. The suggested value is " + str(
+                                        Title_length_limit) + ".", 1, 1000, 500)
+
+    # Cynthia, I took the existing function that separates out newspaper titles that typically have no final punctuation
+    # I am actually not sure about the sliding bar etc. :-(
+
+    Title_length_limit = val
+
+    # DOCUMENTS WITH FULL STOPS ADDED
+    count = 0
+    titles = []
+    docID = 0
+    path_documents = inputDir
 
     for filename in inputDocs:
         docID = docID + 1
@@ -77,11 +75,11 @@ def add_full_stop_to_sentence(window, inputFilename, inputDir, outputDir, openOu
                     lst.append(s)
             paragraphs = lst
             paragraphs = [each.strip() for each in paragraphs if each.strip()]
-            file_path = os.path.join(path_documentsWithFullstops, tail)
-            with open(file_path, 'w', encoding='utf-8', errors='ignore') as out:
+            with open(filename, 'w', encoding='utf-8', errors='ignore') as out:
                 for paragraph in paragraphs:
                     if isTitle(paragraph, Title_length_limit):
-                        if paragraph and paragraph[-1] != '.':
+                        # Cynthia, we should check here for the cases ." !" ?" when a sentence is a quote but it could aso be a single '
+                        if paragraph and paragraph[-1] != '.' and paragraph[-1] != '!' paragraph[-1] != '?':
                             out.write(paragraph + '.\n')
                         else:
                             out.write(paragraph)
@@ -95,21 +93,21 @@ def add_full_stop_to_sentence(window, inputFilename, inputDir, outputDir, openOu
         count += 1
     msgString = ''
     if count==0:
-        if NUM_DOCUMENT==1:
+        if nDocs==1:
             msgString="The document has no added full stops."
         else:
-            msgString="No documents have been rewritten with added full stops."
+            msgString="No documents have been edited for added full stops."
     else:
-        msgString == "%s documents out of %d have generated titles." % (NUM_DOCUMENT,count) + "\n\nThe percentage of documents processed is %f" % ((float(count)/NUM_DOCUMENT) * 100)
+        # Cynthia this line does not seem to work
+        msgString == "%s documents out of %d have been edited for full stops." % (nDocs,count) + "\n\nThe percentage of documents processed is %f" % ((float(count)/nDocs) * 100)
     # msgString=" %s documents out of %d have generated titles." % (NUM_DOCUMENT, count)
     if count>0:
         if inputFilename!="":
-            msgString=msgString+"\n\nThe files were saved in the subdirectory\n\n" + str(path_documentsWithFullstops) + "\n\nof the input file directory\n\n"+temp_inputDir
+            msgString=msgString+"\n\nAll edits were saved directly in the input file."
         else:
-            msgString=msgString+"\n\nThe files were saved in the subdirectory\n\n" + str(path_documentsWithFullstops) + "\n\nof the input directory\n\n"+temp_inputDir
+            msgString=msgString+"\n\nAll edits were saved directly in all affected input files."
 
     mb.showwarning(title='Full stops processing', message=msgString)
-
 
 # inputFilename contains path
 def remove_blank_lines(window,inputFilename,inputDir, outputDir='',openOutputFiles=False):

@@ -423,7 +423,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         else: # single, merged output
             # generate output file name
             if annotator_chosen == 'NER':
-                print("Annotator: NER")
+                print("Stanford CoreNLP annotator: NER")
                 ner = '_'.join(kwargs['NERs'])
                 outputFilename_tag=str(ner)
                 if ner=='CITY_STATE_OR_PROVINCE_COUNTRY':
