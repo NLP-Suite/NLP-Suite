@@ -19,6 +19,22 @@ import platform
 import IO_csv_util
 import IO_files_util
 
+def backup_files (filename,inputDir,outputDir,fileType='.txt'):
+    inputDocs = IO_files_util.getFileList(filename, inputDir, fileType='.txt')
+    nDocs = len(inputDocs)
+    docID=0
+    for doc in inputDocs:
+        docID = docID + 1
+        head, tail = os.path.split(doc)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        try:
+            shutil.copy(doc, outputDir + os.sep + os.path.split(doc)[1])
+        except:
+            print(
+                'The file ' + doc + ' was skipped from processing. An unexpected error occurred when processing the file.')
+            fileFound = False
+        fileFound = True
+
 def dateGreater(d1, d2):
     # This function returns True if d1 is a more recent date than d2, False otherwise
     if d1 == '' or d2 == '':

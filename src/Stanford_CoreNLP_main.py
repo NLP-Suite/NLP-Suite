@@ -36,12 +36,11 @@ import sentence_analysis_util
 # def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, memory_var, date_extractor, split_files, quote_extractor, CoreNLP_gender_annotator, CoReference, CoRef_Option, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
-        utf8_var,
-        ASCII_var,
-        sentence_length_var,
         memory_var,
+        document_length_var,
+        limit_sentence_length_var,
         manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat,
-        compute_sentence_var, CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var):
+        CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var):
 
     filesToOpen = []
     outputCoNLLfilePath = ''
@@ -50,26 +49,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
         return
 
-    if utf8_var == 0 and ASCII_var == 0 and sentence_length_var == 0 and parser == 0 and CoNLL_table_analyzer_var == 0 and CoreNLP_annotators_var == 0:
+    if parser == 0 and CoNLL_table_analyzer_var == 0 and CoreNLP_annotators_var == 0:
         mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
-
-    if utf8_var:
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                           'Started running utf8 compliance test at', True)
-        file_utf8_compliance_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,
-                                                        openOutputFiles)
-
-    if ASCII_var:
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                           'Started running characters conversion at', True)
-        file_cleaner_util.convert_quotes(GUI_util.window, inputFilename, inputDir)
-
-    if sentence_length_var:
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                           'Started running sentence length computation at', True, 'You can follow Geocoder in command line.')
-        outputFile=sentence_analysis_util.extract_sentence_length(inputFilename, inputDir, outputDir)
-        if len(outputFile)>0:
-            filesToOpen.extend(outputFile)
 
     if CoreNLP_annotators_var == True and 'Coreference PRONOMINAL resolution' in CoreNLP_annotators_menu_var:
         if IO_libraries_util.inputProgramFileCheck("Stanford_CoreNLP_coReference_util.py") == False:
@@ -92,19 +73,23 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         # print("Number of files to Open: ", len(file_open))
         filesToOpen.extend(file_open)
 
+    if parser or (CoreNLP_annotators_var and CoreNLP_annotators_menu_var != ''):
+        if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+            return
+
     # parser ---------------------------------------------------------------------------------------------------------------------------
 
     if parser:
 
         # Parser  ------------------------------
         if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)' or parser_menu_var == 'Neural Network':
-            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
-                return
             if parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
                 tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                 outputDir, openOutputFiles,
                                                                 createExcelCharts,
-                                                                'parser (pcfg)', False, memory_var,
+                                                                'parser (pcfg)', False,
+                                                                memory_var, document_length_var,
+                                                                limit_sentence_length_var,
                                                                 extract_date_from_filename_var = dateInclude,
                                                                 date_format = dateFormat,
                                                                 date_separator_var = sep,
@@ -114,16 +99,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                 tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                outputDir, openOutputFiles,
                                                                createExcelCharts,
-                                                               'parser (nn)', False, memory_var,
+                                                               'parser (nn)', False,
+                                                               memory_var, document_length_var, limit_sentence_length_var,
                                                                extract_date_from_filename_var=dateInclude,
                                                                date_format=dateFormat,
                                                                date_separator_var=sep,
                                                                date_position_var=date_field_position)
             if len(tempOutputFiles) > 0:
                 filesToOpen.extend(tempOutputFiles)
-                if compute_sentence_var:
-                    tempOutputFile = IO_CoNLL_util.compute_sentence_table(tempOutputFiles[0], outputDir)
-                    filesToOpen.append(tempOutputFile)
+                # if compute_sentence_var:
+                #     tempOutputFile = IO_CoNLL_util.compute_sentence_table(tempOutputFiles[0], outputDir)
+                #     filesToOpen.append(tempOutputFile)
 
     if CoNLL_table_analyzer_var:
         if IO_libraries_util.inputProgramFileCheck('CoNLL_table_analyzer_main.py') == False:
@@ -142,15 +128,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
     if CoreNLP_annotators_var and CoreNLP_annotators_menu_var != '':
 
-        # POS annotator ---------------------------------------------------------------------------------------------------------------------------
-        if 'POS annotator' in CoreNLP_annotators_menu_var or CoreNLP_annotators_menu_var == '*':
-            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
-                return
+        # 'Lemma annotator' ---------------------------------------------------------------------------------------------------------------------------
+        if 'Lemma annotator' in CoreNLP_annotators_menu_var or CoreNLP_annotators_menu_var == '*':
 
             tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir,
                                                                            openOutputFiles, createExcelCharts,
-                                                                           'All POS', False, memory_var,
+                                                                           'Lemma', False,
+                                                                           memory_var, document_length_var, limit_sentence_length_var,
                                                                            extract_date_from_filename_var=dateInclude,
                                                                            date_format=dateFormat,
                                                                            date_separator_var=sep,
@@ -158,16 +143,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             if len(tempOutputFiles)>0:
                 filesToOpen.extend(tempOutputFiles)
 
-        # DepRel annotator ---------------------------------------------------------------------------------------------------------------------------
+        # POS annotator ---------------------------------------------------------------------------------------------------------------------------
 
-        if 'DepRel annotator' in CoreNLP_annotators_menu_var or CoreNLP_annotators_menu_var == '*':
-            if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
-                return
+        if 'POS annotator' in CoreNLP_annotators_menu_var or CoreNLP_annotators_menu_var == '*':
 
             tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir,
                                                                            openOutputFiles, createExcelCharts,
-                                                                           'DepRel', False, memory_var,
+                                                                           'All POS', False,
+                                                                           memory_var, document_length_var, limit_sentence_length_var,
                                                                            extract_date_from_filename_var=dateInclude,
                                                                            date_format=dateFormat,
                                                                            date_separator_var=sep,
@@ -192,7 +176,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir,
                                                                            openOutputFiles, createExcelCharts,
-                                                                           'normalized-date', False, memory_var,
+                                                                           'normalized-date', False,
+                                                                           memory_var, document_length_var,
+                                                                           limit_sentence_length_var,
                                                                            extract_date_from_filename_var=dateInclude,
                                                                            date_format=dateFormat,
                                                                            date_separator_var=sep,
@@ -211,7 +197,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
                                                                            'quote', False,
-                                                                           memory_var,
+                                                                           memory_var, document_length_var,
+                                                                           limit_sentence_length_var,
                                                                            extract_date_from_filename_var=dateInclude,
                                                                            date_format=dateFormat,
                                                                            date_separator_var=sep,
@@ -229,7 +216,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
-                                                                           'gender', False, memory_var,
+                                                                           'gender', False,
+                                                                           memory_var, document_length_var, limit_sentence_length_var,
                                                                            extract_date_from_filename_var=dateInclude,
                                                                            date_format=dateFormat,
                                                                            date_separator_var=sep,
@@ -248,7 +236,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
                                                                            'sentiment', False,
-                                                                           memory_var,
+                                                                           memory_var, document_length_var, limit_sentence_length_var,
                                                                            extract_date_from_filename_var=dateInclude,
                                                                            date_format=dateFormat,
                                                                            date_separator_var=sep,
@@ -268,7 +256,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
                                                                            'SVO', False,
-                                                                           memory_var,
+                                                                           memory_var, document_length_var, limit_sentence_length_var,
                                                                            extract_date_from_filename_var=dateInclude,
                                                                            date_format=dateFormat,
                                                                            date_separator_var=sep,
@@ -287,7 +275,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
                                                                            'OpenIE', False,
-                                                                           memory_var,
+                                                                           memory_var, document_length_var, limit_sentence_length_var,
                                                                            extract_date_from_filename_var=dateInclude,
                                                                            date_format=dateFormat,
                                                                            date_separator_var=sep,
@@ -305,10 +293,9 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),
-                                 utf8_var.get(),
-                                 ASCII_var.get(),
-                                 sentence_length_var.get(),
                                  memory_var.get(),
+                                 document_length_var.get(),
+                                 limit_sentence_length_var.get(),
                                  manual_Coref_var.get(),
                                  parser_var.get(),
                                  parser_menu_var.get(),
@@ -316,7 +303,6 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  date_separator_var.get(),
                                  date_position_var.get(),
                                  date_format.get(),
-                                 compute_sentence_var.get(),
                                  CoNLL_table_analyzer_var.get(),
                                  CoreNLP_annotators_var.get(),
                                  CoreNLP_annotators_menu_var.get())
@@ -329,7 +315,7 @@ GUI_util.run_button.configure(command=run_script_command)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
 GUI_width=1100
-GUI_height=600 # height of GUI with full I/O display
+GUI_height=560 # height of GUI with full I/O display
 
 if IO_setup_display_brief:
     GUI_height = GUI_height - 80
@@ -376,9 +362,6 @@ def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
-utf8_var = tk.IntVar()
-ASCII_var = tk.IntVar()
-sentence_length_var = tk.IntVar()
 memory_var = tk.IntVar()
 date_extractor_var = tk.IntVar()
 CoreNLP_gender_annotator_var = tk.IntVar()
@@ -387,7 +370,6 @@ quote_extractor_var = tk.IntVar()
 manual_Coref_var = tk.IntVar()
 parser_var = tk.IntVar()
 parser_menu_var = tk.StringVar()
-compute_sentence_var = tk.IntVar()
 fileName_embeds_date = tk.IntVar()
 
 date_format = tk.StringVar()
@@ -399,21 +381,12 @@ CoNLL_table_analyzer_var = tk.IntVar()
 CoreNLP_annotators_var = tk.IntVar()
 CoreNLP_annotators_menu_var = tk.StringVar()
 
-utf8_var.set(0)
-utf8_checkbox = tk.Checkbutton(window, text='Check input corpus for utf-8 encoding ', variable=utf8_var, onvalue=1,
-                               offvalue=0)
+def open_GUI():
+    call("python file_checker_converter_cleaner_main.py", shell=True)
+
+pre_processing_button = tk.Button(window, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               utf8_checkbox, True)
-
-ASCII_var.set(0)
-ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent',
-                                variable=ASCII_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column_top, y_multiplier_integer, ASCII_checkbox,True)
-
-sentence_length_var.set(0)
-sentence_length_checkbox = tk.Checkbutton(window, text='Compute sentence length',
-                                variable=sentence_length_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_3rd_column_top, y_multiplier_integer, sentence_length_checkbox)
+                                               pre_processing_button)
 
 # memory options
 
@@ -424,9 +397,28 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(4)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
-                                               memory_var)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100, y_multiplier_integer,
+                                               memory_var,True)
 
+document_length_var_lb = tk.Label(window, text='Document length')
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+                                               document_length_var_lb, True)
+
+document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
+document_length_var.pack()
+document_length_var.set(90000)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+150, y_multiplier_integer,
+                                               document_length_var,True)
+
+limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
+                                               limit_sentence_length_var_lb,True)
+
+limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
+limit_sentence_length_var.pack()
+limit_sentence_length_var.set(100)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 550, y_multiplier_integer,
+                                               limit_sentence_length_var)
 
 date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm',
                                  'yyyy')
@@ -518,27 +510,27 @@ def activate_SentenceTable(*args):
         CoNLL_table_analyzer_var.set(1)
 
 
-parser_var.trace('w', activate_SentenceTable)
+# parser_var.trace('w', activate_SentenceTable)
 
-activate_SentenceTable()
+# activate_SentenceTable()
+#
+# compute_sentence_var.set(0)
+# sentence_table_checkbox = tk.Checkbutton(window, text='Compute sentence table', variable=compute_sentence_var,
+#                                          onvalue=1, offvalue=0)
+# y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+#                                                sentence_table_checkbox, True)
+#
+# sentence_table_checkbox_msg = tk.Label()
+# sentence_table_checkbox_msg.config(text="Compute sentence table")
+# y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+#                                                sentence_table_checkbox_msg)
 
-compute_sentence_var.set(0)
-sentence_table_checkbox = tk.Checkbutton(window, text='Compute sentence table', variable=compute_sentence_var,
-                                         onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
-                                               sentence_table_checkbox, True)
-
-sentence_table_checkbox_msg = tk.Label()
-sentence_table_checkbox_msg.config(text="Compute sentence table")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
-                                               sentence_table_checkbox_msg)
-
-def check_sentence_table(*args):
-    if compute_sentence_var.get() == 1:
-        sentence_table_checkbox_msg.config(text="Compute sentence table")
-    else:
-        sentence_table_checkbox_msg.config(text="Do NOT compute sentence table")
-compute_sentence_var.trace('w', check_sentence_table)
+# def check_sentence_table(*args):
+#     if compute_sentence_var.get() == 1:
+#         sentence_table_checkbox_msg.config(text="Compute sentence table")
+#     else:
+#         sentence_table_checkbox_msg.config(text="Do NOT compute sentence table")
+# compute_sentence_var.trace('w', check_sentence_table)
 
 CoNLL_table_analyzer_var.set(0)
 CoNLL_table_analyzer_checkbox = tk.Checkbutton(window, text='CoNLL table analyzer', variable=CoNLL_table_analyzer_var,
@@ -572,8 +564,8 @@ CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var,
         'OpenIE - Relation triples extractor (Neural Network)',
         'SVO extraction (Enhanced++ Dependencies; Neural Network)',
         '*',
+        'Lemma annotator',
         'POS annotator',
-        'DepRel annotator',
         '**',
         'Normalized NER date',
         'Gender annotator (Neural Network)',
@@ -590,8 +582,8 @@ def activate_CoreNLP_annotators_menu(*args):
     global y_multiplier_integer
     if CoreNLP_annotators_var.get() == True:
         if parser_var.get():
-            if CoreNLP_annotators_menu_var.get()=='*' or 'POS' in CoreNLP_annotators_menu_var.get() or 'DepRel' in CoreNLP_annotators_menu_var.get():
-                mb.showinfo("Warning", "You have selected to run the CoreNLP parser AND the POS/DepRel annotator. The parser already computes POS tags and DepRel tags.\n\nPlease, tick either the parser or the annotator checkbox.")
+            if CoreNLP_annotators_menu_var.get()=='*' or 'POS' in CoreNLP_annotators_menu_var.get():
+                mb.showinfo("Warning", "You have selected to run the CoreNLP parser AND the lemma/POS annotator. The parser already computes lemmas and POS tags.\n\nPlease, tick either the parser or the annotator checkbox.")
                 CoreNLP_annotators_var.set(0)
                 CoreNLP_annotators_menu_var.set('')
                 return
@@ -627,7 +619,6 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                'Java download install run': 'TIPS_NLP_Java download install run.pdf',
                'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
-               'DEPREL (Stanford Dependency Relations)': "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf",
                'Noun Analysis': "TIPS_NLP_Noun Analysis.pdf", 'Verb Analysis': "TIPS_NLP_Verb Analysis.pdf",
                'Function Words Analysis': 'TIPS_NLP_Function Words Analysis.pdf',
                'Clause Analysis': 'TIPS_NLP_Clause analysis.pdf'}
@@ -650,22 +641,22 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
                                   GUI_IO_util.msg_IO_setup)
 
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+1), "Help",
-                                  "Please, tick the checkbox to check your input corpus for utf-8 encoding.\n   Non utf-8 compliant texts are likely to lead to code breakdown.\n\nTick the checkbox to convert non-ASCII apostrophes & quotes and % to percent.\n   ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n   % signs may lead to code breakdon of Stanford CoreNLP.")
+                                  "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
-                                  "Please, using the dropdown menu, select the type of Stanford coreference you wish to use for coreference Resolution (Deterministic is fastest but less accurate; Neural Network is slowest but most accurate; recommended!\n\nThe co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nWhile CoreNLP can resolve different coreference types (e.g., nominal, pronominal), the SVO script filters only pronominal types. Pronominal coreference refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'.\n\nPlease, select the memory size Stanford CoreNLP will use to resolve coreference. Default = 6. Lower this value if CoreNLP runs out of resources. Increase the value for larger files.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.")
+                                  "The Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
-                                  "Please, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n\nFor CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
                                   "Please, tick the checkbox if your filenames embed a date (e.g., The New York Times_12-23-1992).\n\nWhen the date option is ticked, the script will add a date field to the CoNLL table. The date field will be used by other NLP scripts (e.g., Ngrams).\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the follwing information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
                                   "Please, tick the checkbox if you wish to use the CoreNLP parser to obtain a CoNLL table.\n\nThe CoNLL table is the basis of many of the NLP analyses: noun & verb analysis, function words, clause analysis, query CoNLL.\n\nYou have a choice between two types of papers:\n   1. the recommended default Probabilistic Context Free Grammar (PCFG) parser;\n   2. a Neural-network dependency parser.\n\nThe neural network approach is more accurate but much slower.\n\nIn output the scripts produce a CoNLL table with the following 8 fields: ID, FORM, LEMMA, POSTAG, NER (23 classes), HEAD, DEPREL, CLAUSAL TAGS (the neural-network parser does not produce clausal tags).\n\nThe following fields will be automatically added to the standard 8 fields of a CoNLL table: RECORD NUMBER, DOCUMENT ID, SENTENCE ID, DOCUMENT (INPUT filename), DATE (if the filename embeds a date).\n\nIf you suspect that CoreNLP may have given faulty results for some sentences, you can test those sentences directly on the Stanford CoreNLP website at https://corenlp.run")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
-                                  "Please, tick the checkbox if you wish to compute a sentence table with various sentence statistics.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
+    # GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
+    #                               "Please, tick the checkbox if you wish to compute a sentence table with various sentence statistics.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
                                   "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the CoreNLP parser results contained in the CoNLL table.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
-                                  "Please, using the dropdown menu, select one of the many other annotators available through Stanford CoreNLP: Coreference pronominal resolution, DepRel, POS, NER (Named Entity Recognition), NER normalized date. gender, quote, and sentiment analysis.\n\nANNOTATORS MARKED AS NEURAL NETWORK ARE MORE ACCURATE, BUT SLOW AND REQUIRE A GREAT DEAL OF MEMORY.\n\n1.  PRONOMINAL co-reference resolution refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'. CoreNLP can resolve other cases but the algorithm here is restricted to pronominal resolution.\n\nThe co-reference resolution checkbox is disabled when selected an entire directory in input. The co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nDeterministic Coreference Resolution is fastest but less accurate; Neural Network is slowest but most accurate; recommended!\n\nTick the checkbox Manually edit coreferenced document if you wish to resolve manually cases of unresolved or wrongly resolved coreferences. MANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\n2.  The CoreNLP NER annotator recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\n3.  The NER NORMALIZED DATE annotator extracts standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\n4.  The CoreNLP coref GENDER annotator extracts the gender of both first names and personal pronouns (he, him, his, she, her, hers) using a neural network approach. This annotator requires a great deal of memory. So, please, adjust the memory allowing as much memory as you can afford.\n\n5.  The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker.\n\n6.  The SENTIMENT ANALYSIS annotator computes the sentiment values (negative, neutral, positive) of each sentence in a text.\n\n6.  The OpenIE (Open Information Extraction) annotator extracts  open-domain relation triples, representing a subject, a relation, and the object of the relation.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files annd Excel charts. The Gender annotator will also produce an html file with male tags displayed in blue and female tags displayed in red. The Coreference annotator will produce txt-format copies of the same input txt files but co-referenced.\n\Select * ton run POS annotator, DepRel annotator, Normalized NER date, Gender annotator (Neural Network), Quote/dialogue annotator (Neural Network).")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+9), "Help",
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
+                                  "Please, using the dropdown menu, select one of the many other annotators available through Stanford CoreNLP: Coreference pronominal resolution, DepRel, POS, NER (Named Entity Recognition), NER normalized date. gender, quote, and sentiment analysis.\n\nANNOTATORS MARKED AS NEURAL NETWORK ARE MORE ACCURATE, BUT SLOW AND REQUIRE A GREAT DEAL OF MEMORY.\n\n1.  PRONOMINAL co-reference resolution refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'. CoreNLP can resolve other cases but the algorithm here is restricted to pronominal resolution.\n\nThe co-reference resolution checkbox is disabled when selected an entire directory in input. The co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nDeterministic Coreference Resolution is fastest but less accurate; Neural Network is slowest but most accurate; recommended!\n\nTick the checkbox Manually edit coreferenced document if you wish to resolve manually cases of unresolved or wrongly resolved coreferences. MANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\n2.  The CoreNLP NER annotator recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\n3.  The NER NORMALIZED DATE annotator extracts standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\n4.  The CoreNLP coref GENDER annotator extracts the gender of both first names and personal pronouns (he, him, his, she, her, hers) using a neural network approach. This annotator requires a great deal of memory. So, please, adjust the memory allowing as much memory as you can afford.\n\n5.  The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker.\n\n6.  The SENTIMENT ANALYSIS annotator computes the sentiment values (negative, neutral, positive) of each sentence in a text.\n\n6.  The OpenIE (Open Information Extraction) annotator extracts  open-domain relation triples, representing a subject, a relation, and the object of the relation.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files annd Excel charts. The Gender annotator will also produce an html file with male tags displayed in blue and female tags displayed in red. The Coreference annotator will produce txt-format copies of the same input txt files but co-referenced.\n\Select * to run lemma and POS annotators, Normalized NER date, Gender annotator (Neural Network), Quote/dialogue annotator (Neural Network).")
+    # GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
+    #                               "Please, using the dropdown menu, select the type of Stanford coreference you wish to use for coreference Resolution (Deterministic is fastest but less accurate; Neural Network is slowest but most accurate; recommended!\n\nThe co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nWhile CoreNLP can resolve different coreference types (e.g., nominal, pronominal), the SVO script filters only pronominal types. Pronominal coreference refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'.\n\nPlease, select the memory size Stanford CoreNLP will use to resolve coreference. Default = 6. Lower this value if CoreNLP runs out of resources. Increase the value for larger files.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
                                   GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),

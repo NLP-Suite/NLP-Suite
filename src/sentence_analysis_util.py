@@ -213,6 +213,8 @@ def extract_sentence_length(inputFilename, inputDir, outputDir):
     Ndocs = len(inputDocs)
     if Ndocs==0:
         return
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                       'Started running sentence length computation at', True, 'You can follow Geocoder in command line.')
 
     fileID=0
     long_sentences = 0

@@ -67,14 +67,15 @@ message_CoreNLP_Sentiment_Analysis_system_requirements = 'The Stanford CoreNLP S
 title_options_CoreNLP_system_requirements = ['Stanford CoreNLP system requirements']
 message_CoreNLP_system_requirements = 'Some of the NLP tools in this GUI require two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/'
 
-title_options_CoreNLP_Java = ['Stanford CoreNLP Java 64']
+# not used
+title_options_CoreNLP_Java = ['Stanford CoreNLP Java 64-Bits']
 message_CoreNLP_Java = 'The Java call to Stanford CoreNLP script uses the property -d64 for the 64 bits JAVA. Java is normally set to 32 bits Virtual Machine as default on a Windows machine. If you see an error the property -d64 is not recognized, you will need to change the Java default to 64 bits VM.\n\nTo test your VM settings, open  command prompt/terminal and type Java - version. You should see "64-Bit Server VM" in the last line of output.'
 
 title_options_CoreNLP_coref = ['Stanford CoreNLP coref merged files']
 message_CoreNLP_coref = 'The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged coref file in output.'
 
 title_options_memory = ['Available memory']
-message_memory = 'Your computer may not have enough memory to run some of the more resource-intensive algorithms of Stanford CoreNLP (e.g., coreference or some neural network models)\n\nStill, there are several options you may take (e.g., splitting up long documents into shorter parts and feeding tem to CoreNLP; checking your sentence length statistics - anything above 70 will most likely give you troubles, cnsidering that the average sentence length in modern English is 20 words). On Stanford Core NLP and memory ssues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.'
+message_memory = 'Your computer may not have enough memory to run some of the more resource-intensive algorithms of Stanford CoreNLP (e.g., coreference or some neural network models)\n\nStill, there are several options you may take (e.g., splitting up long documents into shorter parts and feeding tem to CoreNLP; checking your sentence length statistics - anything above 70 will most likely give you troubles, cnsidering that the average sentence length in modern English is 20 words). On Stanford Core NLP and memory issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.'
 
 title_options_CoreNLP_percent = ['% sign in file']
 message_CoreNLP_percent = 'The file contains % sign. This will break Stanford CoreNLP annotators. The % sign was temporarily replaced with "percent" for processing. But... you should run the script "Convert non-ASCII apostrophes & quotes and % to percent" to change the sign permanently.'
@@ -84,6 +85,9 @@ message_CoNLL_table = 'The CoNLL table produced by the Stanford CoreNLP parser i
 
 title_options_CoreNLP_split_files = ['CoreNLP split files']
 message_CoreNLP_split_files = 'Stanford CoreNLP has a limit of 100,000 characters maximum text size.\n\nThe input file was automatically split into chunks smaller than 100K characters size, fed to Stanford CoreNLP and the output recomposed into a single file.\n\nSplit files are created in a sub-folder named "split_files" inside the directory where the input txt files are located, regardless of the choice of output directory.\n\nIf you are processing files in a directory, other files may similarly need to be split and the message display may become annoying.'
+
+title_options_CoreNLP_sentence_length = ['CoreNLP sentence length']
+message_CoreNLP_sentence_length = "The length of the current sentence exceeds 100 words. The average sentence length in modern English is 20 words.\n\nMore to the point, Stanford CoreNLP's performance deteriorates with sentences with more that 70/100 words.\n\nYou should run the algorithm that extracts all sentences from a corpus and computes sentence length. This will allow you to either edit the sentence manually or perhaps run the algorithm that will add full stops (.) to sentences without end-of-sentence markers (too many sentences of this kind, one after the other, can create unduly long sentences).\n\nOn Stanford CoreNLP and memory and performance issues and what to do about them, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nIf you are processing files in a directory, other files may similarly need to be split and the message display may become annoying."
 
 title_options_Output_directory_of_split_files = ['Output directory of split files']
 message_Output_directory_of_split_files = 'This is a reminder that all file splitter scripts save the split files inside a subdirectory by the name of split_files of the directory where the input txt files are located, regardless of the choice of output directory.'
