@@ -2,12 +2,8 @@
 #edited by Cynthia Dong
 
 import sys
-
-import GUI_IO_util
-import IO_files_util
 import GUI_util
 import IO_libraries_util
-import IO_user_interface_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"utf8_compliance_util",['os','re','tkinter','chardet'])==False:
     sys.exit(0)
@@ -18,6 +14,9 @@ import tkinter as tk
 import tkinter.messagebox as mb
 import chardet
 import IO_csv_util
+
+import IO_files_util
+import IO_user_interface_util
 
 # to detect encoding could use chardet (https://pypi.org/project/chardet/)
 # pip install chardet
@@ -97,6 +96,8 @@ def check_utf8_compliance(window,inputFilename,inputDir,outputDir,openOutputFile
     if len(inputDocs) == 0:
         mb.showwarning(title='Input error', message='There are no files of type txt in the selected input directory to be checked for utf-8 compliance.\n\nPlease, select a different directory (or file) and try again.')
         return
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                       'Started running utf8 compliance test at', True)
     nonUtf8CompliantNumber=0
     numberOfDocs=len(inputDocs)
     nonUtf8CompliantList=[['Document ID','Document','Line number', 'Line text', 'Non utf-8 Character Position','Non utf-8 Character']]

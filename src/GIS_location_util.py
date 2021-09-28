@@ -14,6 +14,7 @@ import IO_CoNLL_util
 import IO_csv_util
 import IO_user_interface_util
 
+# inputFilename is a csv file
 def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_name):
 	geo_index = 0
 	index = 0
