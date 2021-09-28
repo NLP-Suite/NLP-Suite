@@ -42,8 +42,7 @@ def add_full_stop_to_sentence(window, inputFilename, inputDir, outputDir, openOu
     answer=mb.askyesno("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
     if answer:
         IO_files_util.make_directory(backup_path)
-
-    file_filename_util.backup_files(inputFilename, inputDir, backup_path)
+        file_filename_util.backup_files(inputFilename, inputDir, backup_path)
 
     # Title length pop up widget
     # window, textCaption, lower_bound, upper_bound, default_value
@@ -117,6 +116,7 @@ def remove_blank_lines(window,inputFilename,inputDir, outputDir='',openOutputFil
     if IO_files_util.make_directory(outputDir)==False:
         return
     files = []
+    backup_
     files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt')
     for file in files:
         head, tail = os.path.split(file)
@@ -132,7 +132,7 @@ def remove_blank_lines(window,inputFilename,inputDir, outputDir='',openOutputFil
         mb.showwarning(title='Blank lines removed',
                        message='Blank lines were removed from '+str(len(files)) +' files in the input directory.\n\nThe new files were saved in a subdirectory of the input directory\n  '+outputDir)
 
-# criteria for title are no puntuation and
+# criteria for title are no punctuation and
 #	a shorter (user determined) sentence in number of words
 
 #Title_length_limit = int(sys.argv[1])
@@ -314,9 +314,24 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     Ndocs=len(inputDocs)
     index=0
+    if Ndocs==0:
+        return
     result= IO_user_interface_util.input_output_save("Convert apostrophes/quotes/%")
     if result ==False:
         return
+
+    if inputFilename != "":
+        temp_inputDir, tail = os.path.split(inputFilename)
+    else:
+        temp_inputDir = inputDir
+
+    backup_path = os.path.join(temp_inputDir, 'backup')
+
+    answer=mb.askyesno("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
+    if answer:
+        IO_files_util.make_directory(backup_path)
+        file_filename_util.backup_files(inputFilename, inputDir, backup_path)
+
     docError = 0
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        'Started running characters conversion at', True)
@@ -354,7 +369,6 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
             mb.showwarning(title='Non-ASCII punctuations converted',message=str(Ndocs) + ' document(s) processed.\n\n' + str(docError)+' documents were edited to convert non-ASCII apostrophes and/or quotes and % to percent.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILES.')
     else:
         mb.showwarning(title='Non-ASCII punctuations converted', message=str(Ndocs) + ' document(s) processed.\n\nNo documents were found with non-ASCII apostrophes or quotes and % to percent.')
-
 
 # TODO to be completed w/o opening and closing the txt file for every string processed
 #Finished
@@ -400,6 +414,18 @@ def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFil
     result= IO_user_interface_util.input_output_save("Find & Replace")
     if result ==False:
         return
+
+    if inputFilename != "":
+        temp_inputDir, tail = os.path.split(inputFilename)
+    else:
+        temp_inputDir = inputDir
+
+    backup_path = os.path.join(temp_inputDir, 'backup')
+    answer=mb.askyesno("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
+    if answer:
+        IO_files_util.make_directory(backup_path)
+        file_filename_util.backup_files(inputFilename, inputDir, backup_path)
+
     if string_IN == []:#if string_IN empty, string_IN and string_OUT will be typed in
         string_in, string_out = GUI_IO_util.enter_value_widget("Enter the FIND & REPLACE strings (CASE SENSITIVE)", 'Find',2,'','Replace','')
         #put input strings into list so that they can be processed
