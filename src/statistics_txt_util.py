@@ -647,6 +647,8 @@ def get_ngramlist(inputFilename,ngramsNumber=4, wordgram=1, excludePunctuation=F
 def tokenize(s):
     tokens = re.split(r"[^0-9A-Za-z\-'_]+", s)
     return tokens
+
+# measures lexical diversity
 # see code in cophi https://github.com/cophi-wue/cophi-toolbox
 # code from https://gist.github.com/magnusnissel/d9521cb78b9ae0b2c7d6#file-lexical_diversity_yule-py
 def get_yules_k_i(s):

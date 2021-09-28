@@ -22,36 +22,125 @@ import GUI_IO_util
 import IO_user_interface_util
 import IO_csv_util
 
+def add_full_stop_to_sentence(window, inputFilename, inputDir, outputDir, openOutputFiles):
+
+    if inputDir == '' and inputFilename != '':
+        NUM_DOCUMENT = 1
+    else:
+        NUM_DOCUMENT = len(glob.glob(os.path.join(inputDir, '*.txt')))
+    if NUM_DOCUMENT == 0:
+        return
+    Title_length_limit = 100
+
+    # Title length pop up widget
+    # window, textCaption, lower_bound, upper_bound, default_value
+    val = GUI_IO_util.slider_widget(GUI_util.window,
+                                    "Please, select the value for number of characters in a document title. The suggested value is " + str(
+                                        Title_length_limit) + ".", 1, 1000, 100)
+    Title_length_limit = val
+
+    TITLENESS = 'NO'
+
+    titleness = True
+    if TITLENESS == "NO":
+        titleness = False
+
+    # DOCUMENTS WITH TITLES
+    count = 0
+    titles = []
+    docID = 0
+    path_documents = os.path.join(inputDir,'documentsWithFullstops')
+
+    if inputFilename != "":
+        temp_inputDir, tail = os.path.split(inputFilename)
+    else:
+        temp_inputDir = inputDir
+    path_documentsWithFullstops = os.path.join(temp_inputDir, 'documents_with_fullstops')
+    if not os.path.exists(path_documentsWithFullstops):
+        os.makedirs(path_documentsWithFullstops)
+
+    # collecting input txt files
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    nDocs = len(inputDocs)
+    docID = 0
+
+    for filename in inputDocs:
+        docID = docID + 1
+        head, tail = os.path.split(filename)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        with open(filename, 'r', encoding='utf-8', errors='ignore') as each:
+            paragraphs = []
+            paragraphs = each.read().split('\r') # carriage return/hard return
+            lst = []
+            for paragraph in paragraphs:
+                for s in paragraph.split('\n'):
+                    lst.append(s)
+            paragraphs = lst
+            paragraphs = [each.strip() for each in paragraphs if each.strip()]
+            file_path = os.path.join(path_documentsWithFullstops, tail)
+            with open(file_path, 'w', encoding='utf-8', errors='ignore') as out:
+                for paragraph in paragraphs:
+                    if isTitle(paragraph, Title_length_limit):
+                        if paragraph and paragraph[-1] != '.':
+                            out.write(paragraph + '.\n')
+                        else:
+                            out.write(paragraph)
+                            out.write('\n')
+                    else:
+                        for one in sent_tokenize(paragraph):  # .decode('utf-8')):
+                            out.write(one)  # .encode('utf-8'))
+                            out.write(' ')
+                        out.write('\n')
+                # titles.append((title,filename))
+        count += 1
+    msgString = ''
+    if count==0:
+        if NUM_DOCUMENT==1:
+            msgString="The document has no added full stops."
+        else:
+            msgString="No documents have been rewritten with added full stops."
+    else:
+        msgString == "%s documents out of %d have generated titles." % (NUM_DOCUMENT,count) + "\n\nThe percentage of documents processed is %f" % ((float(count)/NUM_DOCUMENT) * 100)
+    # msgString=" %s documents out of %d have generated titles." % (NUM_DOCUMENT, count)
+    if count>0:
+        if inputFilename!="":
+            msgString=msgString+"\n\nThe files were saved in the subdirectory\n\n" + str(path_documentsWithFullstops) + "\n\nof the input file directory\n\n"+temp_inputDir
+        else:
+            msgString=msgString+"\n\nThe files were saved in the subdirectory\n\n" + str(path_documentsWithFullstops) + "\n\nof the input directory\n\n"+temp_inputDir
+
+    mb.showwarning(title='Full stops processing', message=msgString)
+
+
 # inputFilename contains path
-def remove_blank_lines(window,inputFilename,input_main_dir_path, output_dir_path='',openOutputFiles=False):
+def remove_blank_lines(window,inputFilename,inputDir, outputDir='',openOutputFiles=False):
     if inputFilename!="":
-        input_main_dir_path, tail = os.path.split(inputFilename)
-    output_dir_path = os.path.join(input_main_dir_path,"NoBlankLines")
-    if IO_files_util.make_directory(output_dir_path)==False:
+        inputDir, tail = os.path.split(inputFilename)
+    outputDir = os.path.join(inputDir,"NoBlankLines")
+    if IO_files_util.make_directory(outputDir)==False:
         return
     files = []
-    files=IO_files_util.getFileList(inputFilename, input_main_dir_path, fileType='txt')
+    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt')
     for file in files:
         head, tail = os.path.split(file)
-        outputFilename=os.path.join(output_dir_path,tail)
+        outputFilename=os.path.join(outputDir,tail)
         with open(file,encoding='utf_8',errors='ignore') as infile, open(outputFilename, 'w',encoding='utf_8',errors='ignore') as outfile:
             for line in infile:
                 if not line.strip(): continue  # skip the empty line
                 outfile.write(line)  # non-empty line. Write it to output
     if inputFilename!="":
         mb.showwarning(title='Blank lines removed',
-                       message='Blank lines were removed from the input file.\n\nThe new file was saved in a subdirectory of the input file\n  '+output_dir_path)
+                       message='Blank lines were removed from the input file.\n\nThe new file was saved in a subdirectory of the input file\n  '+outputDir)
     else:
         mb.showwarning(title='Blank lines removed',
-                       message='Blank lines were removed from '+str(len(files)) +' files in the input directory.\n\nThe new files were saved in a subdirectory of the input directory\n  '+output_dir_path)
+                       message='Blank lines were removed from '+str(len(files)) +' files in the input directory.\n\nThe new files were saved in a subdirectory of the input directory\n  '+outputDir)
 
 # criteria for title are no puntuation and
 #	a shorter (user determined) sentence in number of words
 
 #Title_length_limit = int(sys.argv[1])
 #TITLENESS = sys.argv[2]
-#input_dir_path = sys.argv[3]
-#output_dir_path = sys.argv[4]
+#inputDir = sys.argv[3]
+#outputDir = sys.argv[4]
 
 
 # Check whether a sentence is title
@@ -68,12 +157,12 @@ def isTitle(sentence,Title_length_limit):
         # print sentence
         return True
 
-def newspaper_titles(window,inputFilename,input_dir_path,output_dir_path,openOutputFiles):
+def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles):
 
-    if input_dir_path=='' and inputFilename!='':
+    if inputDir=='' and inputFilename!='':
         NUM_DOCUMENT=1
     else:
-        NUM_DOCUMENT = len(glob.glob(os.path.join(input_dir_path, '*.txt')))
+        NUM_DOCUMENT = len(glob.glob(os.path.join(inputDir, '*.txt')))
     if NUM_DOCUMENT==0:
         return
     Title_length_limit = 100
@@ -95,78 +184,95 @@ def newspaper_titles(window,inputFilename,input_dir_path,output_dir_path,openOut
     count = 0
     titles = []
 
-    if inputFilename!="":
-        input_main_dir_path, tail = os.path.split(inputFilename)
-    path_aritclesWithTitles = os.path.join(input_dir_path,'documentsWithTitles')
+    if inputFilename != "":
+        temp_inputDir, tail = os.path.split(inputFilename)
+    else:
+        temp_inputDir = inputDir
+
+    path_aritclesWithTitles = os.path.join(temp_inputDir, 'documents_with_titles')
+
     if not os.path.exists(path_aritclesWithTitles):
         os.makedirs(path_aritclesWithTitles)
-    for filename in glob.glob(os.path.join(input_dir_path, '*.txt')):
-        print("Processing file " + filename)
+
+    #collecting input txt files
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    nDocs = len(inputDocs)
+    docID = 0
+
+    print("\n\nProcessing documents with titles...\n\n")
+    for filename in inputDocs:
+        docID = docID + 1
+        head, tail = os.path.split(filename)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
         with open(filename,'r', encoding='utf-8', errors='ignore') as each:
-            sentences = []
-            sentences = each.read().split('\r')
+            paragraphs = []
+            paragraphs = each.read().split('\r') # carriage return/hard return
             lst = []
-            for sentence in sentences:
-                for s in sentence.split('\n'):
+            for paragraph in paragraphs:
+                for s in paragraph.split('\n'):
                     lst.append(s)
-            sentences = lst
-            sentences = [each.strip() for each in sentences if each.strip()]
-            filename = filename.split('\\')[-1]
-            file_path = os.path.join(path_aritclesWithTitles,filename)
+            paragraphs = lst
+            paragraphs = [each.strip() for each in paragraphs if each.strip()]
+            file_path = os.path.join(path_aritclesWithTitles,tail)
             with open(file_path, 'w', encoding='utf-8',errors='ignore') as out:
-                for sentence in sentences:
-                    if isTitle(sentence,Title_length_limit):
-                        if sentence and sentence[-1]!='.':
-                            out.write(sentence + '.')
+                for paragraph in paragraphs:
+                    if isTitle(paragraph,Title_length_limit):
+                        if paragraph and paragraph[-1]!='.':
+                            out.write(paragraph + '.\n')
                         else:
-                            out.write(sentence)
+                            out.write(paragraph)
                     else:
-                        for one in sent_tokenize(sentence):#.decode('utf-8')):
+                        for one in sent_tokenize(paragraph):#.decode('utf-8')):
                             out.write(one)#.encode('utf-8'))
                             out.write(' ')
+                        out.write('\n')
                 # titles.append((title,filename))
         count += 1
 
     # DOCUMENTS WITHOUT TITLES
     count = 0
     titles = []
-    path_documents = os.path.join(input_dir_path,'documentsWithoutTitles')
+    docID = 0
+
+    path_documents = os.path.join(temp_inputDir,'documents_no_titles')
+    print("\n\nProcessing documents without titles...\n\n")
     if not os.path.exists(path_documents):
         os.makedirs(path_documents)
-    for filename in glob.glob(os.path.join(input_dir_path, '*.txt')):
-        print("Processing file " + filename)
+    for filename in inputDocs:
+        docID = docID + 1
+        head, tail = os.path.split(filename)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
         with open(filename,'r', encoding='utf-8', errors='ignore') as each:
-            sentences = []
-            sentences = each.read().split('\r')
+            paragraphs = []
+            paragraphs = each.read().split('\r') # carriage return/hard return
             lst = []
-            for sentence in sentences:
-                for s in sentence.split('\n'):
+            for paragraph in paragraphs:
+                for s in paragraph.split('\n'):
                     lst.append(s)
-            sentences = lst
-            sentences = [each.strip() for each in sentences if each.strip()]
-            filename = filename.split('\\')[-1]
-            file_path = os.path.join(path_documents,filename)
-            # file_path = '/Users/apple/Desktop/Roberto-Research/TitleExtractor/output/data%d__%s' %(count, filename)
+            paragraphs = lst
+            paragraphs = [each.strip() for each in paragraphs if each.strip()]
+            file_path = os.path.join(path_documents,tail)
             with open(file_path, 'w', encoding='utf-8',errors='ignore') as out:
                 title = []
-                for sentence in sentences:
-                    if isTitle(sentence,Title_length_limit):
-                        title.append(sentence)
+                for paragraph in paragraphs:
+                    if isTitle(paragraph,Title_length_limit):
+                        title.append(paragraph)
                     else:
-                        for one in sent_tokenize(sentence):#.decode('utf-8')):
+                        for one in sent_tokenize(paragraph):#.decode('utf-8')):
                             out.write(one)
                             out.write(' ')
+                        out.write('\n')
                 titles.append((title,filename))
         count += 1
         # print(count)
 
-
     # TITLES ONLY
-    path_title = os.path.join(input_dir_path,'titles')
+    print("\n\nProcessing documents with titles...\n\n")
+    path_title = os.path.join(temp_inputDir,'document_titles_only')
     if not os.path.exists(path_title):
         os.makedirs(path_title)
-    path_title = os.path.join(path_title,'titles.txt')
-    with open(path_title,'w',encoding='utf_8',errors='ignore') as output:
+    titles_file = os.path.join(path_title,'titles.txt')
+    with open(titles_file,'w',encoding='utf_8',errors='ignore') as output:
         count = 0
         for i,title in enumerate(titles):
             if title:
@@ -175,15 +281,14 @@ def newspaper_titles(window,inputFilename,input_dir_path,output_dir_path,openOut
             # a boundary can be added
             if titleness:
                 output.write('Document %d: %s ' % (i,title[1]))
-
             output.write('\n')
             for t in title[0]:
                 if t and t[-1]!='.':
-                    output.write(t + '.')
-                else:
-                    output.write(t)
+                    t = t + '. \n'
+                output.write(t)
                 output.write('\n')
 
+    msgString = ''
     if count==0:
         if NUM_DOCUMENT==1:
             msgString="The document has not generated separate titles."
@@ -194,9 +299,9 @@ def newspaper_titles(window,inputFilename,input_dir_path,output_dir_path,openOut
     # msgString=" %s documents out of %d have generated titles." % (NUM_DOCUMENT, count)
     if count>0:
         if inputFilename!="":
-            msgString=msgString+"\n\nThe files were saved in subdirectories of the input file directory\n\n  "+input_dir_path
+            msgString=msgString+"\n\nThe files were saved in the subdirectory\n\n" + str(path_documents) + "\n\nof the input file directory\n\n"+inputDir
         else:
-            msgString=msgString+"\n\nThe files were saved in subdirectories of the input directory\n\n  "+input_dir_path
+            msgString=msgString+"\n\nThe files were saved in the subdirectory\n\n" + str(path_documents) + "\n\nof the input directory\n\n"+inputDir
 
     mb.showwarning(title='Document titles', message=msgString)
 

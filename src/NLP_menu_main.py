@@ -189,6 +189,7 @@ pydict["File checker (file name)"] = ["file_manager_main.py", 1]
 pydict["File cleaner (Change to ASCII non-ASCII apostrophes & quotes and % to percent)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File cleaner (Find & Replace string)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File cleaner (Remove blank lines from txt file(s))"] = ["file_checker_converter_cleaner_main.py", 1]
+pydict["File cleaner (Add full stop (.) at the end of lines without .)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File classifier (dumb classifier via embedded date) (file name)"] = ["file_filename_checker_main.py", 1]
 pydict["File finder (file name)"] = ["file_manager_main.py", 1]
 pydict["File finder (file content for words/collocations)"] = ["file_finder_byWord_main.py", 1]
@@ -375,6 +376,7 @@ pre_processing_menu = tk.OptionMenu(window, pre_processing_tools_var,
                                     'File cleaner (Change to ASCII non-ASCII apostrophes & quotes and % to percent)',
                                     'File cleaner (Find & Replace string)',
                                     'File cleaner (Remove blank lines from txt file(s))',
+                                    'File cleaner (Add full stop (.) at the end of lines without .)',
                                     'File finder (file name)',
                                     'File finder (file content for words/collocations)',
                                     'File-type converter (csv, docx, pdf, rtf --> txt)',
