@@ -67,7 +67,8 @@ message_CoreNLP_Sentiment_Analysis_system_requirements = 'The Stanford CoreNLP S
 title_options_CoreNLP_system_requirements = ['Stanford CoreNLP system requirements']
 message_CoreNLP_system_requirements = 'Some of the NLP tools in this GUI require two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/'
 
-title_options_CoreNLP_Java = ['Stanford CoreNLP Java 64']
+# not used
+title_options_CoreNLP_Java = ['Stanford CoreNLP Java 64-Bits']
 message_CoreNLP_Java = 'The Java call to Stanford CoreNLP script uses the property -d64 for the 64 bits JAVA. Java is normally set to 32 bits Virtual Machine as default on a Windows machine. If you see an error the property -d64 is not recognized, you will need to change the Java default to 64 bits VM.\n\nTo test your VM settings, open  command prompt/terminal and type Java - version. You should see "64-Bit Server VM" in the last line of output.'
 
 title_options_CoreNLP_coref = ['Stanford CoreNLP coref merged files']

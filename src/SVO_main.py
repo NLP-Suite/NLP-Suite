@@ -17,7 +17,8 @@ import SVO_util
 import csv
 import tkinter as tk
 import tkinter.messagebox as mb
-import subprocess
+from subprocess import call
+
 # to install stanfordnlp, first install
 #   pip3 install torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
 #   pip3 install stanfordnlp
@@ -125,9 +126,6 @@ def extract_CoreNLP_SVO(svo_triplets, svo_CoreNLP_single_file, svo_CoreNLP_merge
 
 
 def run(inputFilename, inputDir, outputDir,
-        utf8_var,
-        ASCII_var,
-        compute_sentence_length_var,
         memory_var,
         document_length_var,
         limit_sentence_length_var,
@@ -159,7 +157,7 @@ def run(inputFilename, inputDir, outputDir,
     # the merge option refers to merging the txt files into one
     merge_txt_file_option = False
 
-    if utf8_var == False and ASCII_var == False and compute_sentence_length_var == False and Coref == False and date_extractor_var == False and CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False and CoreNLP_OpenIE_var == False:
+    if Coref == False and date_extractor_var == False and CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False and CoreNLP_OpenIE_var == False:
         mb.showwarning(title='No option selected',
                        message="No option has been selected.\n\nPlease, select an option and try again.")
         return
@@ -182,24 +180,6 @@ def run(inputFilename, inputDir, outputDir,
             return
 
     Coref_Option = Coref_Option.lower()
-
-    if utf8_var:
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                           'Started running utf8 compliance test at', True)
-        file_utf8_compliance_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,
-                                                        openOutputFiles)
-
-    if ASCII_var:
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                           'Started running characters conversion at', True)
-        file_cleaner_util.convert_quotes(GUI_util.window, inputFilename, inputDir)
-
-    if compute_sentence_length_var:
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                           'Started running sentence length computation at', True, 'You can follow Geocoder in command line.')
-        outputFile=sentence_analysis_util.extract_compute_sentence_length(inputFilename, inputDir, outputDir)
-        if len(outputFile)>0:
-            filesToOpen.extend(outputFile)
 
     isFile = True
     inputFileBase = ""
@@ -539,9 +519,6 @@ def run(inputFilename, inputDir, outputDir,
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
-                                 utf8_var.get(),
-                                 ASCII_var.get(),
-                                 compute_sentence_length_var.get(),
                                  memory_var.get(),
                                  document_length_var.get(),
                                  limit_sentence_length_var.get(),
@@ -631,9 +608,6 @@ def clear(e):
 
 window.bind("<Escape>", clear)
 
-utf8_var = tk.IntVar()
-ASCII_var = tk.IntVar()
-compute_sentence_length_var = tk.IntVar()
 CoRef_var = tk.IntVar()
 CoRef_menu_var = tk.StringVar()
 memory_var = tk.StringVar()
@@ -652,22 +626,12 @@ gephi_var = tk.IntVar()
 wordcloud_var = tk.IntVar()
 google_earth_var = tk.IntVar()
 
-utf8_var.set(0)
-utf8_checkbox = tk.Checkbutton(window, text='Check input corpus for utf-8 encoding ', variable=utf8_var, onvalue=1,
-                               offvalue=0)
+def open_GUI():
+    call("python file_checker_converter_cleaner_main.py", shell=True)
+
+pre_processing_button = tk.Button(window, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               utf8_checkbox, True)
-
-ASCII_var.set(0)
-ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent',
-                                variable=ASCII_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column_top, y_multiplier_integer, ASCII_checkbox,True)
-
-compute_sentence_length_var.set(0)
-compute_sentence_length_checkbox = tk.Checkbutton(window, text='Compute sentence length',
-                                variable=compute_sentence_length_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_3rd_column_top, y_multiplier_integer, compute_sentence_length_checkbox)
-
+                                               pre_processing_button)
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
@@ -745,7 +709,7 @@ CoreNLP_SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs & SVs
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                CoreNLP_SVO_extractor_checkbox, True)
 
-SENNA_SVO_extractor_var.set(1)
+SENNA_SVO_extractor_var.set(0)
 SENNA_SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs & SVs (via SENNA)',
                                               variable=SENNA_SVO_extractor_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
@@ -916,8 +880,8 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+1), "Help",
-                                  "Please, tick the utf-8 checkbox to check your input corpus for utf-8 encoding.\n   Non utf-8 compliant texts are likely to lead to code breakdown.\n\nTick the Convert ... checkbox to convert non-ASCII apostrophes & quotes and % to percent.\n   ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n   % signs will lead to code breakdon of Stanford CoreNLP.\n\nTick the Compute sentence length checkbox to extract all sentences and their length. Sentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
+                                  "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
                                   "The Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",

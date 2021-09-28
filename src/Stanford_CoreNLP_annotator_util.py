@@ -52,6 +52,7 @@ import GUI_IO_util
 # tokenize: tokenize
 # ssplit:  tokenize,ssplit
 # MWT: tokenize,ssplit,mwt
+# lemma: tokenize,ssplit,pos,lemma
 # POS: tokenize,ssplit,pos
 # lemma: tokenize,ssplit,pos,lemma
 # NER: tokenize,ssplit,pos,lemma,ner
@@ -119,11 +120,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
             date_position_var = value
 
     produce_split_files=False
-    
+
     params_option = {
         'tokenize': {'annotators':['tokenize']},
         'ssplit': {'annotators':['tokenize', 'ssplit']},
         'MWT': {'annotators': ['tokenize','ssplit','mwt']},
+        'Lemma': {'annotators': ['lemma']},
         'POS': {'annotators': ['tokenize','ssplit','pos','lemma']},
         'All POS':{'annotators': ['tokenize','ssplit','pos','lemma']},
         'DepRel': {'annotators': ['parse']},
@@ -139,8 +141,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'parser (pcfg)':{"annotators": ['tokenize','ssplit','pos','lemma','ner', 'parse','regexner']},
         'parser (nn)' :{"annotators": ['tokenize','ssplit','pos','lemma','ner','depparse','regexner']}
     }
+
     routine_option = {
         'sentiment': process_json_sentiment,
+        'Lemma': process_json_lemma,
         'POS':process_json_postag,
         'All POS':process_json_all_postag,
         'NER': process_json_ner,
@@ -157,12 +161,13 @@ def CoreNLP_annotate(config_filename,inputFilename,
     }
     #@ change coref-text to coref, change coref-spreadsheet to gender@
     output_format_option = {
+        'Lemma': ["ID", "Form", "Lemma", "Record ID", "Sentence ID", "Document ID", "Document"],
         'POS':[['Verbs'],['Nouns']],
+        'All POS':["ID", "Form", "Lemma", "POStag", "Record ID", "Sentence ID", "Document ID", "Document"],
         'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document'],
         # TODO NER with date for dynamic GIS; modified below
         # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
         'sentiment': ['Document ID', 'Document','Sentence ID', 'Sentence', 'Sentiment score', 'Sentiment label'],
-        'All POS':["ID", "Form", "Lemma", "POStag", "Record ID", "Sentence ID", "Document ID", "Document"],
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
         'quote': ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of Quotes'],
         'coref': 'text',
@@ -247,8 +252,15 @@ def CoreNLP_annotate(config_filename,inputFilename,
         run_output = []
         POS_WordNet=False
 
-    # params = {'annotators':param_string}
-    params = {'annotators':param_string, 'parse.model': 'edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz','outputFormat': 'json', 'outputDirectory': outputDir, 'replaceExtension': True}
+    params = {'annotators':param_string,
+                'parse.model': 'edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz',
+                'outputFormat': 'json',
+                'outputDirectory': outputDir,
+                'replaceExtension': True,
+                'parse.maxlen': str(sentence_length),
+                'ner.maxlen': str(sentence_length),
+                'pos.maxlen': str(sentence_length)}
+
     if DoCleanXML:
         params['annotators'] = params['annotators'] + ',cleanXML'
         param_string_NN = param_string_NN + ',cleanXML'
@@ -352,7 +364,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         sub_result, recordID = routine(config_filename, docID, docName, sentenceID, recordID, True,CoreNLP_output, **kwargs)
                     else:
                         sub_result, recordID = routine(config_filename, docID, docName, sentenceID, recordID, False,CoreNLP_output, **kwargs)
-                elif "DepRel" in annotator_chosen or "All POS" in annotator_chosen:
+                elif "DepRel" in annotator_chosen or "All POS" in annotator_chosen or "Lemma" in annotator_chosen:
                      sub_result, recordID = routine(config_filename,docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
                 else:
                     sub_result = routine(config_filename,docID, docName, sentenceID, CoreNLP_output, **kwargs)
@@ -495,6 +507,21 @@ def CoreNLP_annotate(config_filename,inputFilename,
     return filesToOpen
 
 
+def check_sentence_length(sentence_length, sentenceID, config_filename):
+    # WARNING for sentences with > 100 tokens
+    if sentence_length > 100:
+        order = "th"
+        if sentenceID % 10 == 1:
+            order = "st"
+        elif sentenceID % 10 == 2:
+            order = "nd"
+        elif sentenceID % 10 == 3:
+            order = "rd"
+        print("Warning: The", sentenceID, order, "sentence has " + str(sentence_length) + " words, more than the 100 max recommended by CoreNLP for best performance.")
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
+                                     reminders_util.message_CoreNLP_sentence_length, True)
+
+
 def date_in_filename(document, **kwargs):
     extract_date_from_filename_var = False
     date_format = ''
@@ -601,18 +628,8 @@ def process_json_normalized_date(config_filename,documentID, document, sentenceI
                     tid = ''
                     #tense = ''
                     info = ''
-        #WARNING for sentences with > 100 tokens
-        if len(sentence['tokens']) > 100:
-            order = "th"
-            if sentenceID % 10 == 1:
-                order = "st"
-            elif sentenceID % 10 == 2:
-                order = "nd"
-            elif sentenceID % 10 == 3:
-                order = "rd"
-            print("Warning: The", sentenceID, order, "sentence has " + str(len(sentence['tokens'])) + " words, more than the 100 max recommended by CoreNLP for best performance.")
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
-                                         reminders_util.message_CoreNLP_sentence_length, True)
+
+        check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
     return result
 
@@ -703,18 +720,8 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
         # sentenceID = sentence['index'] + 1
-        sentenceID = sentenceID + 1
-        if len(sentence['tokens']) > 100:
-            order = "th"
-            if sentenceID % 10 == 1:
-                order = "st"
-            elif sentenceID % 10 == 2:
-                order = "nd"
-            elif sentenceID % 10 == 3:
-                order = "rd"
-            print("Warning: The", sentenceID, order, "sentence has " + str(len(sentence['tokens'])) + " words, more than the 100 max recommended by CoreNLP for best performance.")
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
-                                         reminders_util.message_CoreNLP_sentence_length, True)
+
+        check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         for ner in sentence['entitymentions']:
             temp = [ner['text'], ner['ner'], sentenceID, complete_sent,  ner['tokenBegin'],
@@ -806,17 +813,8 @@ def process_json_sentiment(config_filename,documentID, document, sentenceID,json
                    text = text + ' ' + token['originalText']
         # text = " ".join([["word"] for token in sentence["tokens"]])
         # temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentence['index'] + 1, text, sentence["sentimentValue"], sentence["sentiment"].lower()]
-        if len(sentence['tokens']) > 100:
-            order = "th"
-            if sentenceID % 10 == 1:
-                order = "st"
-            elif sentenceID % 10 == 2:
-                order = "nd"
-            elif sentenceID % 10 == 3:
-                order = "rd"
-            print("Warning: The", sentenceID, order, "sentence has " + str(len(sentence['tokens'])) + " words, more than the 100 max recommended by CoreNLP for best performance.")
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
-                                         reminders_util.message_CoreNLP_sentence_length, True)
+
+        check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         if extract_date_from_filename_var:
             temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentence['index'] + 1, text, sentence["sentimentValue"], sentence["sentiment"].lower(), date_str]
@@ -858,18 +856,7 @@ def process_json_coref(config_filename,documentID, document, sentenceID, json, *
                 output_word += token['after']
                 result = result + output_word
 
-            if len(sentence['tokens']) > 100:
-                order = "th"
-                if sentenceID % 10 == 1:
-                    order = "st"
-                elif sentenceID % 10 == 2:
-                    order = "nd"
-                elif sentenceID % 10 == 3:
-                    order = "rd"
-                print("Warning: The", sentenceID, order, "sentence has " + str(len(
-                    sentence['tokens'])) + " words, more than the 100 max recommended by CoreNLP for best performance.")
-                reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
-                                             reminders_util.message_CoreNLP_sentence_length, True)
+            check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         return result
     resolve(json)
@@ -905,18 +892,8 @@ def process_json_gender(config_filename,documentID, document, start_sentenceID, 
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
         sentenceID = sentence['index'] + 1
-        #WARNING for sentences with > 100 tokens
-        if len(sentence['tokens']) > 100:
-            order = "th"
-            if sentenceID % 10 == 1:
-                order = "st"
-            elif sentenceID % 10 == 2:
-                order = "nd"
-            elif sentenceID % 10 == 3:
-                order = "rd"
-            print("Warning: The", sentenceID, order, "sentence has " + str(len(sentence['tokens'])) + " words, more than the 100 max recommended by CoreNLP for best performance.")
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
-                                         reminders_util.message_CoreNLP_sentence_length, True)
+
+        check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         sent_dict[sentenceID] = complete_sent
     # print("Coreference: ")
@@ -971,20 +948,7 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
 
-        # sentenceID = quoted_sent_id
-        sentenceID = sentenceID + quoted_sent_id
-        #WARNING for sentences with > 100 tokens
-        if len(sentence_data['tokens']) > 100:
-            order = "th"
-            if sentenceID % 10 == 1:
-                order = "st"
-            elif sentenceID % 10 == 2:
-                order = "nd"
-            elif sentenceID % 10 == 3:
-                order = "rd"
-            print("Warning: The", sentenceID, order, "sentence has " + str(len(sentence_data['tokens'])) + " words, more than the 100 max recommended by CoreNLP for best performance.")
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
-                                         reminders_util.message_CoreNLP_sentence_length, True)
+        check_sentence_length(len(sentence_data['tokens']), sentenceID, config_filename)
 
         # leave out the filename for now
         # path, file_name = os.path.split(document)
@@ -1025,19 +989,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
 
-        sentenceID = sentenceID + 1
-        #WARNING for sentences with > 100 tokens
-        if len(sentence['tokens']) > 100:
-            order = "th"
-            if sentenceID % 10 == 1:
-                order = "st"
-            elif sentenceID % 10 == 2:
-                order = "nd"
-            elif sentenceID % 10 == 3:
-                order = "rd"
-            print("Warning: The", sentenceID, order, "sentence has " + str(len(sentence['tokens'])) + " words, more than the 100 max recommended by CoreNLP for best performance.")
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
-                                         reminders_util.message_CoreNLP_sentence_length, True)
+        check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         SVO, L, T, T_S, P, N = SVO_enhanced_dependencies_util.SVO_extraction(sent_data)# main function
 
@@ -1071,18 +1023,8 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
         sentenceID = sentenceID + 1
-        #WARNING for sentences with > 100 tokens
-        if len(sentence['tokens']) > 100:
-            order = "th"
-            if sentenceID % 10 == 1:
-                order = "st"
-            elif sentenceID % 10 == 2:
-                order = "nd"
-            elif sentenceID % 10 == 3:
-                order = "rd"
-            print("Warning: The", sentenceID, order, "sentence has " + str(len(sentence['tokens'])) + " words, more than the 100 max recommended by CoreNLP for best performance.")
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
-                                         reminders_util.message_CoreNLP_sentence_length, True)
+
+        check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         SVOs = []
         for openie in sentence['openie']:
@@ -1113,6 +1055,50 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
 
     return openIE
 
+def process_json_lemma(config_filename, documentID, document, sentenceID, recordID, json, **kwargs):
+    print("   Processing Json output file for Lemma")
+    extract_date_from_filename_var = False
+    for key, value in kwargs.items():
+        if key == 'extract_date_from_filename_var' and value == True:
+            extract_date_from_filename_var = True
+
+    # get date string of this sub file
+    date_str = date_in_filename(document, **kwargs)
+    result = []
+
+    for i in range(len(json["sentences"])):
+        # print("*************")
+        # print("The ", i, "th Sentence in ", document)
+        # print("OutputSentenceID: ", )
+        sentenceID += 1
+        # print("OutputSentenceID: ", sentenceID)
+        #result = []
+
+        clauseID = 0
+        tokens = json["sentences"][i]["tokens"]
+
+        for row in tokens:
+            recordID += 1
+            # if row["ner"]=="DATE":
+            #     print("NER normalized DATE ",row["normalizedNER"])
+            temp = []
+            temp.append(row["index"])
+            temp.append(row["word"])
+            temp.append(row["lemma"])
+            # temp.append(" ")
+            clauseID += 1
+            temp.append(str(recordID))
+            temp.append(str(sentenceID))
+            temp.append(str(documentID))
+            # temp.append(file)
+            temp.append(IO_csv_util.dressFilenameForCSVHyperlink(document))
+            if extract_date_from_filename_var:
+                temp.append(date_str)
+            result.append(temp)
+
+        check_sentence_length(len(tokens), sentenceID, config_filename)
+    return result, recordID
+
 def process_json_postag(config_filename,documentID, document, sentenceID, json, **kwargs):
     # only processes verbs and nouns
     Verbs = []
@@ -1126,18 +1112,8 @@ def process_json_postag(config_filename,documentID, document, sentenceID, json, 
                 Verbs.append(token['lemma'])
             elif token['pos'] in ['NN','NNP','NNS']:
                 Nouns.append(token['lemma'])
-        #WARNING for sentences with > 100 tokens
-        if len(sentence['tokens']) > 100:
-            order = "th"
-            if sentenceID % 10 == 1:
-                order = "st"
-            elif sentenceID % 10 == 2:
-                order = "nd"
-            elif sentenceID % 10 == 3:
-                order = "rd"
-            print("Warning: The", sentenceID, order, "sentence has " + str(len(sentence['tokens'])) + " words, more than the 100 max recommended by CoreNLP for best performance.")
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
-                                         reminders_util.message_CoreNLP_sentence_length, True)
+
+        check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
     return Verbs, Nouns
 
@@ -1194,18 +1170,8 @@ def process_json_all_postag(config_filename,documentID, document, sentenceID, re
 
         # print("The result after adding the ", sentenceID, "th sentence: ")
         # pprint.pprint(result)
-        #WARNING for sentences with > 100 tokens
-        if len(tokens) > 100:
-            order = "th"
-            if sentenceID % 10 == 1:
-                order = "st"
-            elif sentenceID % 10 == 2:
-                order = "nd"
-            elif sentenceID % 10 == 3:
-                order = "rd"
-            print("Warning: The", sentenceID, order, "sentence has " + str(len(tokens)) + " words, more than the 100 max recommended by CoreNLP for best performance.")
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
-                                         reminders_util.message_CoreNLP_sentence_length, True)
+
+        check_sentence_length(len(tokens), sentenceID, config_filename)
 
     return result, recordID
 
@@ -1259,18 +1225,8 @@ def process_json_deprel(config_filename,documentID, document, sentenceID, record
             if extract_date_from_filename_var:
                 temp.append(date_str)
             result.append(temp)
-        #WARNING for sentences with > 100 tokens
-        if len(tokens) > 100:
-            order = "th"
-            if sentenceID % 10 == 1:
-                order = "st"
-            elif sentenceID % 10 == 2:
-                order = "nd"
-            elif sentenceID % 10 == 3:
-                order = "rd"
-            print("Warning: The", sentenceID, order, "sentence has " + str(len(tokens)) + " words, more than the 100 max recommended by CoreNLP for best performance.")
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
-                                         reminders_util.message_CoreNLP_sentence_length, True)
+
+        check_sentence_length(len(tokens), sentenceID, config_filename)
 
     return result, recordID
 
@@ -1341,18 +1297,8 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
             # print(temp)
             # if dateInclude == 1 and dateStr!='DATE ERROR!!!':
             #     temp.append(dateStr)
-        #WARNING for sentences with > 100 tokens
-        if len(tokens) > 100:
-            order = "th"
-            if sentenceID % 10 == 1:
-                order = "st"
-            elif sentenceID % 10 == 2:
-                order = "nd"
-            elif sentenceID % 10 == 3:
-                order = "rd"
-            print("Warning: The", sentenceID, order, "sentence has " + str(len(tokens)) + " words, more than the 100 max recommended by CoreNLP for best performance.")
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
-                                         reminders_util.message_CoreNLP_sentence_length, True)
+
+        check_sentence_length(len(tokens), sentenceID, config_filename)
 
         # print("The result after adding the ", sentenceID, "th sentence: ")
         # pprint.pprint(result)

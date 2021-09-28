@@ -16,6 +16,7 @@ import tkinter.messagebox as mb
 import importlib
 
 import GUI_IO_util
+import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -29,6 +30,8 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
     menu_option,
     script_to_run,
     function_to_run):
+
+    filesToOpen=[]
 
     if (check_tools=='') and (convert_tools=='') and (clean_tools==""):
         mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select one of the available options and try again.')
@@ -47,21 +50,29 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
             mb.showwarning(title='Option not available', message='The Levenshtein\'s distance option is not available from this GUI.\n\nPlease, run the script from the spell_checker_main.')
             return
 
-        if 'Vocabulary richness' in function_to_run or 'Short words' in function_to_run or 'Vowel words' in function_to_run:
-            mb.showwarning(title='Option not available',
-                           message='The option is not available from this GUI.\n\nPlease, run the script from the style_analysis_main.')
-            return
+        # if 'Vocabulary richness' in function_to_run or 'Short words' in function_to_run or 'Vowel words' in function_to_run:
+        #     mb.showwarning(title='Option not available',
+        #                    message='The option is not available from this GUI.\n\nPlease, run the script from the style_analysis_main.')
+        #     return
 
         pythonFile = importlib.import_module(script_to_run)
         func = getattr(pythonFile, function_to_run)
         if IO_libraries_util.inputProgramFileCheck(script_to_run + ".py") == False:
             return
-
+        outputFile=[]
         if 'predict_encoding' in function_to_run:
             # use default first 20 lines
             func(inputFilename,input_main_dir_path)
+        elif 'sentence_length' in function_to_run:
+            outputFile=func(inputFilename,input_main_dir_path,output_dir_path)
         else:
             func(GUI_util.window,inputFilename,input_main_dir_path, output_dir_path,openOutputFiles)
+
+        if len(outputFile)>0:
+            filesToOpen.extend(outputFile)
+
+    if openOutputFiles:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
     # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
     #                                        'Started running ' + menu_option + ' at', True,
@@ -142,6 +153,7 @@ pydict["Document converter (docx --> txt)"] = ["file_type_converter_util.docx_co
 pydict["Document converter (pdf --> txt)"] = ["file_type_converter_util.pdf_converter"]
 pydict["Document converter (rtf --> txt)"] = ["file_type_converter_util.rtf_converter"]
 pydict["Check utf-8 encoding compliance"] = ["file_utf8_compliance_util.check_utf8_compliance"]
+pydict["Extract sentences computing sentence length"] = ["sentence_analysis_util.extract_sentence_length"]
 pydict["Predict encoding (via chardet)"] = ["file_utf8_compliance_util.predict_encoding"]
 pydict["Spelling checker/Unusual words (via nltk)"] = ["file_spell_checker_util.nltk_unusual_words"]
 pydict["Spelling checker (via SpellChecker)"] = ["file_spell_checker_util.check_for_typo"]
@@ -150,10 +162,10 @@ pydict["Remove blank lines from text file(s)"] = ["file_cleaner_util.remove_blan
 pydict["Find & Replace string"] = ["file_cleaner_util.find_replace_string"]
 pydict["Find & Replace string (via csv file)"] = ["file_spell_checker_util.spelling_checker_cleaner"]
 pydict["Separate titles from documents (newspaper articles)"] = ["file_cleaner_util.newspaper_titles"]
-pydict["Add full stop (.) at the end of lines without ."] = ["file_cleaner_util.add_full_stop_to_sentence"]
-pydict["Vocabulary richness (Yule\'s K)"] = ["style_analysis_main.Vocabulary richness"]
-pydict["Short words"] = ["style_analysis_main.Short words"]
-pydict["Vowel words"] = ["style_analysis_main.Vowel words"]
+pydict["Add full stop (.) at the end of lines without end-of-line marker"] = ["file_cleaner_util.add_full_stop_to_sentence"]
+# pydict["Vocabulary richness (Yule\'s K)"] = ["style_analysis_main.Vocabulary richness"]
+# pydict["Short words"] = ["style_analysis_main.Short words"]
+# pydict["Vowel words"] = ["style_analysis_main.Vowel words"]
 
 check_tools_var=tk.StringVar()
 convert_tools_var=tk.StringVar()
@@ -178,12 +190,13 @@ check_lb = tk.Label(window, text='Check Files')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,check_lb,True)
 check_menu = tk.OptionMenu(window,check_tools_var,
                     'Check utf-8 encoding compliance',
+                    'Extract sentences computing sentence length',
                     'Predict encoding (via chardet)',
                     'Spelling checker/Unusual words (via nltk)',
-                    'Spelling checker (via SpellChecker)',
-                    'Vocabulary richness (Yule\'s K)',
-                    'Short words',
-                    'Vowel words')
+                    'Spelling checker (via SpellChecker)')
+                    # 'Vocabulary richness (Yule\'s K)',
+                    # 'Short words',
+                    # 'Vowel words')
 
 check_menu.configure(width=70)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,check_menu)
@@ -214,7 +227,7 @@ clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Find & Replace string',
                     'Find & Replace string (via csv file)',
                     'Remove blank lines from text file(s)',
-                    'Add full stop (.) at the end of lines without .',
+                    'Add full stop (.) at the end of lines without end-of-line marker',
                     'Separate titles from documents (newspaper articles)')
 
 clean_menu.configure(width=70)

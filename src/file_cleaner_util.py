@@ -320,6 +320,8 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
     if result ==False:
         return
     docError = 0
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                       'Started running characters conversion at', True)
     for doc in inputDocs:
         index = index + 1
         head, tail = os.path.split(doc)
