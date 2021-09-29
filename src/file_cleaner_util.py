@@ -78,7 +78,7 @@ def add_full_stop_to_sentence(window, inputFilename, inputDir, outputDir, openOu
                 for paragraph in paragraphs:
                     if isTitle(paragraph, Title_length_limit):
                         # Cynthia, we should check here for the cases ." !" ?" when a sentence is a quote but it could aso be a single '
-                        if paragraph and paragraph[-1] != '.' and paragraph[-1] != '!' paragraph[-1] != '?':
+                        if paragraph and paragraph[-1] != '.' and paragraph[-1] != '!' and paragraph[-1] != '?':
                             out.write(paragraph + '.\n')
                         else:
                             out.write(paragraph)
