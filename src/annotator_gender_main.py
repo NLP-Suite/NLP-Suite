@@ -51,7 +51,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
             return
         import annotator_gender_dictionary_util
         # csvValue_color_list, bold_var, tagAnnotations, '.txt'
-        filesToOpen= [annotator_gender_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, output_dir_path, annotator_dictionary_file_var,personal_pronouns_var)]
+        filesToOpen= [annotator_gender_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, output_dir_path, memory_var, annotator_dictionary_file_var,personal_pronouns_var)]
 
     #plot annotate
     elif plot_var==True:

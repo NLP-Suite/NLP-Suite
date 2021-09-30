@@ -51,14 +51,21 @@ def text_generate(inputFilename, inputDir):
     return articles, inputDir
 
 
-def dictionary_annotate(inputFilename, inputDir, outputDir, dictionary_file, personal_pronouns_var):
+def dictionary_annotate(inputFilename, inputDir, outputDir, memory_var, dictionary_file, personal_pronouns_var):
     fileToOpen=[]
-    p = subprocess.Popen(
-        ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
+
+    # we need the NER tags PERSON
+    # check that the CoreNLPdir as been setup
+    CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('annotator_gender_main', 'Stanford CoreNLP')
+    if CoreNLPdir== None:
+        return filesToOpen
+    CoreNLP_nlp = subprocess.Popen(
+        ['java', '-mx' + str(memory_var) + "g",'-cp', os.path.join(CoreNLPdir, '*'),
          'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
+
     time.sleep(5)
-    # nlp = StanfordCoreNLP('http://localhost', port=9000)
-    nlp = StanfordCoreNLP('http://point.dd.works:9000')
+    nlp = StanfordCoreNLP('http://localhost:9000')
+    # nlp = StanfordCoreNLP('http://point.dd.works:9000')
     articles, inputDir = text_generate(inputFilename, inputDir)
 
     people = []
@@ -89,10 +96,8 @@ def dictionary_annotate(inputFilename, inputDir, outputDir, dictionary_file, per
     annotated = pd.DataFrame(people,columns=['Name','Gender','Sentence','SentenceID','DocumentID','Document'])
     output_dir = IO_files_util.generate_output_file_name('',inputDir, outputDir, '.csv', 'gender', 'annotated')
     annotated.to_csv(output_dir)
-    p.kill()
+    CoreNLP_nlp.kill()
     return fileToOpen
-
-
 
 
 def SSA_annotate(year_state_var,firstName_entry_var,outputDir):
