@@ -162,7 +162,7 @@ pydict["Remove blank lines from text file(s)"] = ["file_cleaner_util.remove_blan
 pydict["Find & Replace string"] = ["file_cleaner_util.find_replace_string"]
 pydict["Find & Replace string (via csv file)"] = ["file_spell_checker_util.spelling_checker_cleaner"]
 pydict["Separate titles from documents (newspaper articles)"] = ["file_cleaner_util.newspaper_titles"]
-pydict["Add full stop (.) at the end of lines without end-of-line marker"] = ["file_cleaner_util.add_full_stop_to_sentence"]
+pydict["Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation"] = ["file_cleaner_util.add_full_stop_to_paragraph"]
 # pydict["Vocabulary richness (Yule\'s K)"] = ["style_analysis_main.Vocabulary richness"]
 # pydict["Short words"] = ["style_analysis_main.Short words"]
 # pydict["Vowel words"] = ["style_analysis_main.Vowel words"]
@@ -227,7 +227,7 @@ clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Find & Replace string',
                     'Find & Replace string (via csv file)',
                     'Remove blank lines from text file(s)',
-                    'Add full stop (.) at the end of lines without end-of-line marker',
+                    'Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation',
                     'Separate titles from documents (newspaper articles)')
 
 clean_menu.configure(width=70)

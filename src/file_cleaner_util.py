@@ -23,7 +23,18 @@ import IO_user_interface_util
 import IO_csv_util
 import file_filename_util
 
-def add_full_stop_to_sentence(window, inputFilename, inputDir, outputDir, openOutputFiles):
+
+# the function checks for end of paragraph punctuation
+#   where a paragraph is any chunk of text followed by a carriage return/hard return
+#   the function checks for double quotation and single quotation first, then check for .!?
+#   if .?| or ." ?" |" or .' ?' |' then a full stop . is added
+#   The reason is that if many successive paragraphs have no end-of-paragraph punctuation, Stanford CoreNLP will string all of them together
+#       potentially creating unduly long sentences that may lead to efficiency issues
+#       https://stanfordnlp.github.io/CoreNLP/memory-time.html
+def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, openOutputFiles):
+    result=file_filename_util.backup_files(inputFilename, inputDir)
+    if result==False:
+        return
 
     # collecting input txt files
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
@@ -31,29 +42,6 @@ def add_full_stop_to_sentence(window, inputFilename, inputDir, outputDir, openOu
     docID = 0
     if nDocs == 0:
         return
-    Title_length_limit = 100
-
-    if inputFilename != "":
-        temp_inputDir, tail = os.path.split(inputFilename)
-    else:
-        temp_inputDir = inputDir
-
-    backup_path = os.path.join(temp_inputDir, 'backup')
-    answer=mb.askyesno("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
-    if answer:
-        IO_files_util.make_directory(backup_path)
-        file_filename_util.backup_files(inputFilename, inputDir, backup_path)
-
-    # Title length pop up widget
-    # window, textCaption, lower_bound, upper_bound, default_value
-    val = GUI_IO_util.slider_widget(GUI_util.window,
-                                    "Please, select the value for number of characters in a sentence with no final puntuation. The suggested value is " + str(
-                                        Title_length_limit) + ".", 1, 1000, 500)
-
-    # Cynthia, I took the existing function that separates out newspaper titles that typically have no final punctuation
-    # I am actually not sure about the sliding bar etc. :-(
-
-    Title_length_limit = val
 
     # DOCUMENTS WITH FULL STOPS ADDED
     count = 0
@@ -76,20 +64,20 @@ def add_full_stop_to_sentence(window, inputFilename, inputDir, outputDir, openOu
             paragraphs = [each.strip() for each in paragraphs if each.strip()]
             with open(filename, 'w', encoding='utf-8', errors='ignore') as out:
                 for paragraph in paragraphs:
-                    if isTitle(paragraph, Title_length_limit):
-                        # Cynthia, we should check here for the cases ." !" ?" when a sentence is a quote but it could aso be a single '
-                        if paragraph and paragraph[-1] != '.' and paragraph[-1] != '!' and paragraph[-1] != '?':
-                            out.write(paragraph + '.\n')
-                        else:
-                            out.write(paragraph)
-                            out.write('\n')
+                    check_index = -1
+                    if paragraph and paragraph[-1] in ['\'', '"']:
+                        if (len(paragraph) >= 2):
+                            check_index = -2
+                    # check for enf of paragraph punctuation, quotation and single quotation first, then check for .!?
+                    if paragraph and paragraph[check_index] not in ['.', '!', '?']:
+                        out.write(paragraph + '.\n')
                     else:
-                        for one in sent_tokenize(paragraph):  # .decode('utf-8')):
-                            out.write(one)  # .encode('utf-8'))
-                            out.write(' ')
+                        out.write(paragraph)
                         out.write('\n')
                 # titles.append((title,filename))
         count += 1
+
+    # Cynthia we should display the number of Documents processed (nDocs or count) and the number of documents that required editing (i.e., that required adding .)
     msgString = ''
     if count==0:
         if nDocs==1:
@@ -97,52 +85,60 @@ def add_full_stop_to_sentence(window, inputFilename, inputDir, outputDir, openOu
         else:
             msgString="No documents have been edited for added full stops."
     else:
-        # Cynthia this line does not seem to work
-        msgString == "%s documents out of %d have been edited for full stops." % (nDocs,count) + "\n\nThe percentage of documents processed is %f" % ((float(count)/nDocs) * 100)
-    # msgString=" %s documents out of %d have generated titles." % (NUM_DOCUMENT, count)
+        msgString = "%s documents out of %d have been edited for full stops." % (nDocs,count) + "\n\nThe percentage of documents processed is %f" % ((float(count)/nDocs) * 100)
     if count>0:
         if inputFilename!="":
             msgString=msgString+"\n\nAll edits were saved directly in the input file."
         else:
             msgString=msgString+"\n\nAll edits were saved directly in all affected input files."
 
-    mb.showwarning(title='Full stops processing', message=msgString)
+    mb.showwarning(title='End of paragraph punctuation', message=msgString)
 
 # inputFilename contains path
 def remove_blank_lines(window,inputFilename,inputDir, outputDir='',openOutputFiles=False):
-    if inputFilename!="":
-        inputDir, tail = os.path.split(inputFilename)
-    outputDir = os.path.join(inputDir,"NoBlankLines")
-    if IO_files_util.make_directory(outputDir)==False:
+    result=file_filename_util.backup_files(inputFilename, inputDir)
+    if result==False:
         return
-    files = []
-
-    if inputFilename != "":
-        temp_inputDir, tail = os.path.split(inputFilename)
-    else:
-        temp_inputDir = inputDir
-
-    backup_path = os.path.join(temp_inputDir, 'backup')
-
-    answer=mb.askyesno("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
-    if answer:
-        IO_files_util.make_directory(backup_path)
-        file_filename_util.backup_files(inputFilename, inputDir, backup_path)
 
     files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt')
+    nDocs = len(files)
+    if nDocs==0:
+        return
+    docID = 0
+    filesWithEmptyLines=0
     for file in files:
+        docID = docID + 1
+        fileSV = ''
         head, tail = os.path.split(file)
-        outputFilename=os.path.join(outputDir,tail)
-        with open(file,encoding='utf_8',errors='ignore') as infile, open(outputFilename, 'w',encoding='utf_8',errors='ignore') as outfile:
+        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        outputFilename=file
+        with open(file,encoding='utf_8',errors='ignore') as infile, open(outputFilename, 'w+',encoding='utf_8',errors='ignore') as outfile:
             for line in infile:
-                if not line.strip(): continue  # skip the empty line
+                # if not line.strip(): continue  # skip the empty line
+                # outfile.write(line)  # non-empty line. Write it to output
+                if not (line.strip()):
+                    if file!=fileSV:
+                        filesWithEmptyLines=filesWithEmptyLines+1
+                        print('   Empty line in',file)
+                        del line
+                    continue
                 outfile.write(line)  # non-empty line. Write it to output
+        fileSV=file
     if inputFilename!="":
-        mb.showwarning(title='Blank lines removed',
-                       message='Blank lines were removed from the input file.\n\nThe new file was saved in a subdirectory of the input file\n  '+outputDir)
+        if filesWithEmptyLines==0:
+            mb.showwarning(title='Blank lines removed',
+                           message='No blank lines were removed from the input file.')
+        else:
+            mb.showwarning(title='Blank lines removed',
+                           message='Blank lines were removed from the input file.')
     else:
-        mb.showwarning(title='Blank lines removed',
-                       message='Blank lines were removed from '+str(len(files)) +' files in the input directory.\n\nThe new files were saved in a subdirectory of the input directory\n  '+outputDir)
+        if filesWithEmptyLines==0:
+            mb.showwarning(title='Blank lines removed',
+                           message='No files contained blank lines' + ' out of ' + str(
+                               nDocs) + ' files in the input directory.')
+        else:
+            mb.showwarning(title='Blank lines removed',
+                       message='Blank lines were removed from ' +str(filesWithEmptyLines) +' out of '+str(nDocs) +' files in the input directory.')
 
 # criteria for title are no punctuation and
 #	a shorter (user determined) sentence in number of words
@@ -208,7 +204,8 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles):
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     nDocs = len(inputDocs)
     docID = 0
-
+    if nDocs==0:
+        return
     print("\n\nProcessing documents with titles...\n\n")
     for filename in inputDocs:
         docID = docID + 1
@@ -305,7 +302,7 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles):
         else:
             msgString="No documents have generated separate titles."
     else:
-        msgString == "%s documents out of %d have generated titles." % (NUM_DOCUMENT,count) + "\n\nThe percentage of documents processed is %f" % ((float(count)/NUM_DOCUMENT) * 100)
+        msgString = "%s documents out of %d have generated titles." % (NUM_DOCUMENT,count) + "\n\nThe percentage of documents processed is %f" % ((float(count)/NUM_DOCUMENT) * 100)
     # msgString=" %s documents out of %d have generated titles." % (NUM_DOCUMENT, count)
     if count>0:
         if inputFilename!="":
@@ -323,6 +320,10 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles):
 # Needs special handling https://stackoverflow.com/questions/6067673/urldecoder-illegal-hex-characters-in-escape-pattern-for-input-string
 # https://stackoverflow.com/questions/7395789/replacing-a-weird-single-quote-with-blank-string-in-python
 def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
+    result=file_filename_util.backup_files(inputFilename, inputDir)
+    if result==False:
+        return
+
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     Ndocs=len(inputDocs)
     index=0
@@ -331,18 +332,6 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
     result= IO_user_interface_util.input_output_save("Convert apostrophes/quotes/%")
     if result ==False:
         return
-
-    if inputFilename != "":
-        temp_inputDir, tail = os.path.split(inputFilename)
-    else:
-        temp_inputDir = inputDir
-
-    backup_path = os.path.join(temp_inputDir, 'backup')
-
-    answer=mb.askyesno("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
-    if answer:
-        IO_files_util.make_directory(backup_path)
-        file_filename_util.backup_files(inputFilename, inputDir, backup_path)
 
     docError = 0
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
@@ -418,6 +407,10 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
 def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFiles,string_IN=[],string_OUT=[],silent=False):
     #edited by Claude Hu 02/2021
     #string_IN=[],string_OUT=[], in the form as list so that running this function can finish replacement of multiple strings without open one file repetitively
+    result=file_filename_util.backup_files(inputFilename, inputDir)
+    if result==False:
+        return
+
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     filesToOpen=[]
     Ndocs=len(inputDocs)
@@ -426,17 +419,6 @@ def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFil
     result= IO_user_interface_util.input_output_save("Find & Replace")
     if result ==False:
         return
-
-    if inputFilename != "":
-        temp_inputDir, tail = os.path.split(inputFilename)
-    else:
-        temp_inputDir = inputDir
-
-    backup_path = os.path.join(temp_inputDir, 'backup')
-    answer=mb.askyesno("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
-    if answer:
-        IO_files_util.make_directory(backup_path)
-        file_filename_util.backup_files(inputFilename, inputDir, backup_path)
 
     if string_IN == []:#if string_IN empty, string_IN and string_OUT will be typed in
         string_in, string_out = GUI_IO_util.enter_value_widget("Enter the FIND & REPLACE strings (CASE SENSITIVE)", 'Find',2,'','Replace','')

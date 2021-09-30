@@ -129,7 +129,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     if CoreNLP_annotators_var and CoreNLP_annotators_menu_var != '':
 
         # 'Lemma annotator' ---------------------------------------------------------------------------------------------------------------------------
-        if 'Lemma annotator' in CoreNLP_annotators_menu_var or CoreNLP_annotators_menu_var == '*':
+        if 'Lemma annotator' in CoreNLP_annotators_menu_var:
 
             tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir,
@@ -145,7 +145,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
         # POS annotator ---------------------------------------------------------------------------------------------------------------------------
 
-        if 'POS annotator' in CoreNLP_annotators_menu_var or CoreNLP_annotators_menu_var == '*':
+        if 'POS annotator' in CoreNLP_annotators_menu_var:
 
             tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir,
@@ -558,14 +558,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 
 CoreNLP_annotators_menu_var.set("")
 CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var,
+        'Lemma annotator',
+        'POS annotator',
         'NER (GUI)',
         'Coreference PRONOMINAL resolution (Neural Network)',
         'Sentiment analysis (Neural Network)',
         'OpenIE - Relation triples extractor (Neural Network)',
         'SVO extraction (Enhanced++ Dependencies; Neural Network)',
-        '*',
-        'Lemma annotator',
-        'POS annotator',
         '**',
         'Normalized NER date',
         'Gender annotator (Neural Network)',
@@ -582,7 +581,7 @@ def activate_CoreNLP_annotators_menu(*args):
     global y_multiplier_integer
     if CoreNLP_annotators_var.get() == True:
         if parser_var.get():
-            if CoreNLP_annotators_menu_var.get()=='*' or 'POS' in CoreNLP_annotators_menu_var.get():
+            if 'POS' in CoreNLP_annotators_menu_var.get():
                 mb.showinfo("Warning", "You have selected to run the CoreNLP parser AND the lemma/POS annotator. The parser already computes lemmas and POS tags.\n\nPlease, tick either the parser or the annotator checkbox.")
                 CoreNLP_annotators_var.set(0)
                 CoreNLP_annotators_menu_var.set('')

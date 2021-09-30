@@ -456,10 +456,10 @@ what_else_var.set(1)
 what_else_checkbox = tk.Checkbutton(window,text="What else is in your corpus? (via Stanford CoreNLP and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,what_else_checkbox,True)
 what_else_menu_var.set('*')
-what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues','Noun and verb classes', 'People & organizations', 'Females & males',
-                               'References to date & time',
-                               'References to geographical locations',
-                               'References to nature')
+what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues (CoreNLP Neural Network)','Noun and verb classes (CoreNLP NER & WordNet)', 'People & organizations (CoreNLP NER)', 'Females & males (CoreNLP Neural Network)',
+                               'References to date & time (CoreNLP normalized NER dates)',
+                               'References to geographical locations (CoreNLP NER)',
+                               'References to nature (CoreNLP & WordNet)')
 what_else_menu.config(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 440, y_multiplier_integer,
                                                what_else_menu, True)
