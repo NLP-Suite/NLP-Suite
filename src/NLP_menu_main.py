@@ -200,7 +200,7 @@ pydict["File splitter (file content)"] = ["file_splitter_main.py", 1]
 pydict["File manager (List, Rename, Copy, Move, Delete, Count)"] = ["file_manager_main.py", 1]
 pydict["Find non-related documents"] = ["social_science_research_main.py", 1]
 pydict["Excel charts"] = ["Excel_charts_main.py", 1]
-pydict["Network graphs (Gephi)"] = ["", 0]  # not available
+pydict["Network graphs (Gephi)"] = ["visualization_main.py", 1]  # ["", 0] not available
 pydict["Geographic maps: Geocoding & maps"] = ["GIS_main.py", 1]
 pydict["Geographic maps: Google Earth Pro"] = ["GIS_Google_Earth_main.py", 1]
 pydict["Geographic maps: From texts to maps"] = ["GIS_main.py", 1]
@@ -382,10 +382,10 @@ pre_processing_menu = tk.OptionMenu(window, pre_processing_tools_var,
                                     'File-type converter (csv, docx, pdf, rtf --> txt)',
                                     'File merger (file content)',
                                     'File splitter (file content)',
-                                    'CoreNLP annotator - date (NER normalized date)',
-                                    'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)',
-                                    'CoreNLP annotator - quote',
-                                    'CoreNLP Co-Reference PRONOMINAL resolution',
+                                    # 'CoreNLP annotator - date (NER normalized date)',
+                                    # 'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)',
+                                    # 'CoreNLP annotator - quote',
+                                    # 'CoreNLP Co-Reference PRONOMINAL resolution',
                                     'Find non-related documents',
                                     'Language detection',
                                     'Newspaper article/Document titles',

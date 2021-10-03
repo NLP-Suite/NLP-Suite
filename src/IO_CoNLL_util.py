@@ -171,9 +171,9 @@ def compute_sentence(CoNLL_table, recordID, sentenceID, documentID):
         # print("index: ",index)
         if sentenceID == row[9] and documentID == row[10]:  # Build the sentence if we are on the same document and sentence
             if row[6] == "punct":
-                sent_str = sent_str + row[1]
+                sent_str = sent_str + str(row[1])
             else:
-                sent_str = sent_str + " " + row[1]
+                sent_str = sent_str + " " + str(row[1])
         else:
             if row[9] > sentenceID or row[10] > documentID:
                 break
