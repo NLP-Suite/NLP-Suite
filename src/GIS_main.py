@@ -64,6 +64,8 @@ def run(inputFilename,
 
     # TODO code should go to pipeline?
 
+    if csv_file!='':
+        inputFilename=csv_file
     if inputFilename!='':
         if inputFilename.endswith('.txt'):
             #RF NER_extractor_var.set(1)

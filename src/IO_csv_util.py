@@ -134,7 +134,16 @@ def GetNumberOfDocumentsInCSVfile(inputFilename,algorithm,columnHeader='Document
                            message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + "\n\nThe '" + algorithm + "' algorithm requires in input a csv file with a \'Document ID\' column.\n\nPlease, select a different csv file in input and try again!")
             return None
         columnNumber=get_columnNumber_from_headerValue(headers,columnHeader)
-        maxnum = max(int(column[columnNumber].replace(',', '')) for column in reader)
+
+        val_list = list()
+        for column in reader:
+            try:
+                val_list.append(int(float(column[columnNumber].replace(',', ''))))
+            except:
+                pass
+        maxnum = max(val_list)
+        # the following line would break in the presence of a blank field in column
+        # maxnum = max(int(column[columnNumber].replace(',', '')) for column in reader)
         f.close()
     return maxnum
 
