@@ -1061,6 +1061,10 @@ class GexfImport:
 
 
 # use Sentence ID to display a dynamic model by sentence
+# TODO
+#  generalize function beyond SVO
+#   passing the three headers that need to be displayed
+#   processing Sentence ID optional with a Dynamic boolean
 def create_gexf(fileName, OutputDir, SVOFile):
     """
     Create gexf format file that can be used in Gephi to visualize result dynamically.
