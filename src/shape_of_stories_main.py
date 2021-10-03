@@ -33,7 +33,7 @@ import sentiment_analysis_ANEW_util as ANEW
 import sentiment_analysis_VADER_util as VADER
 import sentiment_analysis_hedonometer_util as hedonometer
 import sentiment_analysis_SentiWordNet_util as SentiWordNet
-import file_utf8_compliance_util as utf
+import file_checker_util as utf
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

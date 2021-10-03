@@ -21,7 +21,7 @@ import IO_internet_util
 import Stanford_CoreNLP_annotator_util
 import Stanford_CoreNLP_coreference_util
 import IO_CoNLL_util
-import file_utf8_compliance_util
+import file_checker_util
 import file_cleaner_util
 import sentence_analysis_util
 
@@ -107,6 +107,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                date_position_var=date_field_position)
             if len(tempOutputFiles) > 0:
                 filesToOpen.extend(tempOutputFiles)
+                reminders_util.checkReminder(config_filename,
+                                             title_options_CoreNLP_NER_tags,
+                                             reminders_util.CoreNLP_NER_tags,
+                                             True)
                 # if compute_sentence_var:
                 #     tempOutputFile = IO_CoNLL_util.compute_sentence_table(tempOutputFiles[0], outputDir)
                 #     filesToOpen.append(tempOutputFile)

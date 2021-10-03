@@ -68,8 +68,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      annotator_params,
                      DoCleanXML,
                      memory_var,
+                     # print_json = False,
                      document_length=90000,
                      sentence_length=100,
+                     print_json = True,
                      **kwargs):
     silent=True
     start_time = time.time()
@@ -163,13 +165,13 @@ def CoreNLP_annotate(config_filename,inputFilename,
     output_format_option = {
         'Lemma': ["ID", "Form", "Lemma", "Record ID", "Sentence ID", "Document ID", "Document"],
         'POS':[['Verbs'],['Nouns']],
-        'All POS':["ID", "Form", "Lemma", "POStag", "Record ID", "Sentence ID", "Document ID", "Document"],
+        'All POS':["ID", "Form", "POStag", "Record ID", "Sentence ID", "Document ID", "Document"],
         'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document'],
         # TODO NER with date for dynamic GIS; modified below
         # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
         'sentiment': ['Document ID', 'Document','Sentence ID', 'Sentence', 'Sentiment score', 'Sentiment label'],
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
-        'quote': ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of Quotes'],
+        'quote': ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of Quotes', 'Speakers'],
         'coref': 'text',
         'gender':['Word', 'Gender', 'Sentence','Sentence ID', 'Document ID', 'Document'],
         'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
@@ -282,7 +284,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     docID=0
     recordID = 0
     filesError=[]
-    json = True
+    # json = True
     errorFound=False
     total_length = 0
     # record the time consumption before annotating text in each file
@@ -329,6 +331,14 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 speed_assessment.append(
                     [docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), annotator_time_elapsed, file_length,
                      param_string, param_number])
+                #print out the json output of CoreNLP to a txt file
+                if print_json:
+                    jsonFilename = IO_files_util.generate_output_file_name(docName, inputDir, outputDir, '.txt', 'CoreNLP_json_output')
+                    with open(jsonFilename, "a+", encoding='utf-8', errors='ignore') as json_out:
+                        json.dump(CoreNLP_output, json_out, indent=4)
+                    # no need to open the Json file
+                    # if jsonFilename not in filesToOpen:
+                    #     filesToOpen.append(jsonFilename)
             else: CoreNLP_output = ""
 
             # routine_list contains all annotators
@@ -356,7 +366,14 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     speed_assessment.append(
                         [docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), NN_time_elapsed, file_length,
                          param_string_NN, param_number_NN])
-     
+                    #print out the json output of CoreNLP (model: neural network) to a txt file
+                    if print_json:
+                        jsonFilename = IO_files_util.generate_output_file_name(docName, inputDir, outputDir, '.txt', 'CoreNLP_json_output_NN')
+                        with open(jsonFilename, "a+", encoding='utf-8', errors='ignore') as json_out_nn:
+                            json.dump(CoreNLP_output, json_out_nn, indent=4)
+                        # no need to open the Json file
+                        # if jsonFilename not in filesToOpen:
+                        #     filesToOpen.append(jsonFilename)
 
                 #generating output from json file for specific annotators
                 if "parser" in annotator_chosen:
@@ -927,13 +944,17 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
     date_str = date_in_filename(document, **kwargs)
     result = []
     quoted_sentences = {}
+    speakers = {}#the speakers of each quote
     for quote in json['quotes']:
         # quote_text = quote['text']
         # to find all sentences with quotes
         sentenceIDs = list(range(quote['beginSentence'], quote['endSentence'] + 1))
         for sent in sentenceIDs:
             quoted_sentences[sent] = quoted_sentences.get(sent, 0) + 1
-
+            if sent in speakers.keys():
+                speakers[sent].append(quote['speaker'])
+            else:
+                speakers[sent] = [quote['speaker']]
     # iterate over those sentence indexes and find its complete sentence
     for quoted_sent_id, number_of_quotes in quoted_sentences.items():
         sentence_data = json['sentences'][quoted_sent_id]
@@ -947,7 +968,7 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
                     complete_sent = complete_sent + token['originalText']
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
-
+            
         check_sentence_length(len(sentence_data['tokens']), sentenceID, config_filename)
 
         # leave out the filename for now
@@ -956,10 +977,10 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
         #         complete_sent, number_of_quotes]
         if extract_date_from_filename_var:
             temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentenceID,
-                    complete_sent, number_of_quotes, date_str]
+                    complete_sent, number_of_quotes, speakers[quoted_sent_id],date_str]
         else:
             temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentenceID,
-                    complete_sent, number_of_quotes]
+                    complete_sent, number_of_quotes, speakers[quoted_sent_id]]
         result.append(temp)
     return result
 
@@ -1151,7 +1172,6 @@ def process_json_all_postag(config_filename,documentID, document, sentenceID, re
             temp = []
             temp.append(row["index"])
             temp.append(row["word"])
-            temp.append(row["lemma"])
             temp.append(row["pos"])
             # temp.append(" ")
             clauseID += 1

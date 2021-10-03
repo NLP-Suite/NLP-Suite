@@ -51,7 +51,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
             return
         import annotator_gender_dictionary_util
         # csvValue_color_list, bold_var, tagAnnotations, '.txt'
-        filesToOpen= [annotator_gender_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, output_dir_path, memory_var, annotator_dictionary_file_var,personal_pronouns_var)]
+        filesToOpen= [annotator_gender_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, memory_var, annotator_dictionary_file_var,personal_pronouns_var)]
 
     #plot annotate
     elif plot_var==True:
@@ -167,18 +167,18 @@ new_SS_folder_var=tk.StringVar()
 last_SS_year_var=tk.IntVar()
 new_SS_folders=[]
 
-CoreNLP_gender_annotator_checkbox = tk.Checkbutton(window, text='Annotate nouns & pronouns gender (via CoreNLP)', variable=CoreNLP_gender_annotator_var, onvalue=1, offvalue=0)
+CoreNLP_gender_annotator_checkbox = tk.Checkbutton(window, text='Annotate nouns & pronouns gender (via CoreNLP Gener annotator - Neural Network)', variable=CoreNLP_gender_annotator_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoreNLP_gender_annotator_checkbox,True)
 
 #memory options
 
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,memory_var_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,memory_var_lb,True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(6)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+470,y_multiplier_integer,memory_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,memory_var)
 
 CoreNLP_download_gender_file_checkbox = tk.Checkbutton(window, text='Download CoreNLP gender file', variable=CoreNLP_download_gender_file_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,CoreNLP_download_gender_file_checkbox,True)
@@ -187,7 +187,7 @@ CoreNLP_upload_gender_file_checkbox = tk.Checkbutton(window, text='Upload CoreNL
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,CoreNLP_upload_gender_file_checkbox)
 
 annotator_dictionary_var.set(0)
-annotator_dictionary_checkbox = tk.Checkbutton(window, text='Annotate first names by gender (using dictionary)', variable=annotator_dictionary_var, onvalue=1, offvalue=0)
+annotator_dictionary_checkbox = tk.Checkbutton(window, text='Annotate first names by gender (via CoreNLP NER PERSON & dictionary file)', variable=annotator_dictionary_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,annotator_dictionary_checkbox)
 
 annotator_dictionary_button=tk.Button(window, width=20, text='Select dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
@@ -355,8 +355,8 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
                                       GUI_IO_util.msg_IO_setup)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+1),"Help", 'Please, tick the checkbox if you wish to run the Stanford CoreNLP gender annotator. The CoreNLP gender annotator is based on CoreNLP annotator which, unfortunately, only has about 60\% accuracy. The algorithm annotates the gender of both first names and personal pronouns (he, him, his, she, her, hers).\n\nThe CoreNLP annotator uses a neural network approach. This annotator requires a great deal of memory. Please, adjust the memory allowing as much memory as you can afford.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+2),"Help", 'Please, tick the DOWNLOAD checkbox to dowload the Stanford CoreNLP gender file for editing.\n\nTick the UPLOAD checkbox to upload the edited Stanford CoreNLP gender file.\n\nThe CoreNLP gender file has the format JOHN\\MALE with one NAME\\GENDER entry per line. The CoreNLP gender file is found in The default gender mappings file is in the stanford-corenlp-3.5.2-models.jar file. It is called tmp-stanford-models-expanded/edu/stanford/nlp/models/gender/first_name_map_small')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+3),"Help", 'Please, tick the checkbox if you wish to annotate the first names found in a text using an input dictionary list of gender annotated first names. As a caveat, keep in mind that some first names may be both male and female names (e.g., Jamie in the US) or male and female depending upon the country (e.g., Andrea is a male name in Italy, a female name in the US).\n\nThe algorithm uses the NER PERSON value from the Stanford CoreNLP NER annotator to annotate the gender of proper first names.\n\nThe algorithm also annotates the gender of personal pronouns (he, him, his, she, her, hers, as, respectively, male and female).')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+4),"Help", 'Please, click on the \'Select dictionary file\' to select the first name file to be used to annotate the first names found in the input text(s) by gender.\n\nSeveral files are available as default files in the lib subdirectory (e.g., the 1990 US census lists, the US Social Security list, Carnegie Mellon lists). But, users can also select any file of their choice.')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+3),"Help", 'Please, tick the checkbox if you wish to annotate the first names found in a text using an input dictionary list of gender annotated first names. As a caveat, keep in mind that some first names may be both male and female names (e.g., Jamie in the US) or male and female depending upon the country (e.g., Andrea is a male name in Italy, a female name in the US).\n\nThe algorithm uses the NER PERSON value from the Stanford CoreNLP NER annotator to annotate the gender of proper first names.\n\nThe algorithm also annotates the gender of personal pronouns (he, him, his, she, her, hers, as, respectively, male and female).\n\nThe "Select dictionary file" widget will become available when the "Annotate first names by gender" checkbox is ticked off.')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+4),"Help", 'Please, click on the \'Select dictionary file\' to select the first name file to be used to annotate the first names found in the input text(s) by gender.\n\nSeveral files are available as default files in the lib subdirectory (e.g., the 1990 US census lists, the US Social Security list, Carnegie Mellon lists). But, users can also select any file of their choice.\n\nThe "Select dictionary file" widget will become available when the "Annotate first names by gender" checkbox is ticked off.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+5),"Help", 'Please, tick the checkbox if you wish to annotate the gender of personal pronouns (he, him, his, she, her, hers as male and female, respectively).')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+6),"Help", 'Please, tick the checkbox if you wish to plot selected first name(s) by US State, by Year of use of the first name, by Year of birth of individuals bearing the first name, by US State & Year (combining both into one file), or State & Year of birth (combining both into one file) using United States Social Security lists.\n\nEnter comma-separated first names, including double names, e.g., Jo Ann.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+7),"Help", 'Please, tick the checkbox if you wish to generate new US Social Security files (by US State, Year, Year of birth, US State & Year, US State & Year of birth).\n\nTHIS IS ONLY NECESSARY WHEN THE US SOCIAL SECURITY ADMINISTRATION RELEASES NEW GENDER NAMES DATA.')

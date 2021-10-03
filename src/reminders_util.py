@@ -58,6 +58,9 @@ message_WordNet_system_requirements = 'The scripts in this GUI require the FREEW
 title_options_WordNet_input_file_button = ['WordNet input file button']
 message_WordNet_input_file_button = 'The Select INPUT file button is disabled (grayed out) when you open WordNet. Different options require either no file or different file types.\n\nPlease, tick a checkbox to activate the button.'
 
+title_options_WordNet_verb_aggregation = ['WordNet VERB aggregation']
+message_WordNet_verb_aggregation = "CAVEAT!\n\nFor VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies."
+
 title_options_Mallet_installation = ['Mallet download and installation']
 message_Mallet_installation = 'The Mallet topic modelling tool requires a copy of the FREEWARE Mallet installed on your machine. You can download the FREEWARE Mallet at http://mallet.cs.umass.edu/download.php.\n\nMallet in turn requires a copy of the JAVA development kit installed on your machine.\n\nRead carrefully the Mallet and Java installation TIPS.'
 
@@ -73,6 +76,12 @@ message_CoreNLP_Java = 'The Java call to Stanford CoreNLP script uses the proper
 
 title_options_CoreNLP_coref = ['Stanford CoreNLP coref merged files']
 message_CoreNLP_coref = 'The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged coref file in output.'
+
+title_options_CoreNLP_shutting_down = ['CoreNLP Server is shutting down']
+message_CoreNLP_shutting_down = "The Stanford CoreNLP, after firing up, will display on command line/prompt the message: CoreNLP Server is shutting down.\n\nIt is NOT a problem. The process will continue..."
+
+title_options_CoreNLP_NER_tags = ['CoreNLP NER tags']
+message_CoreNLP_NER_tags = "If you are planning to produce frequency distributions of NER tags directly from the CoNLL table, you need to remember that the tag 'Date' may be grossly overestimated. For instance, in the expression 'the day before Christmas' each word 'the,' 'day,' 'before,' 'Christmas' will be tagged as NER date. The same is true for NER CITY tags such as 'New York City.'\n\nA better way to obtain frquency distrinbutions of NER values is to run the NER annotators from the 'Stanford_CoreNLP_NER_main.py.'"
 
 title_options_memory = ['Available memory']
 message_memory = 'Your computer may not have enough memory to run some of the more resource-intensive algorithms of Stanford CoreNLP (e.g., coreference or some neural network models)\n\nStill, there are several options you may take (e.g., splitting up long documents into shorter parts and feeding tem to CoreNLP; checking your sentence length statistics - anything above 70 will most likely give you troubles, cnsidering that the average sentence length in modern English is 20 words). On Stanford Core NLP and memory issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.'

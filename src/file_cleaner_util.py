@@ -45,14 +45,13 @@ def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, openO
 
     # DOCUMENTS WITH FULL STOPS ADDED
     count = 0
-    titles = []
     docID = 0
-    path_documents = inputDir
 
     for filename in inputDocs:
         docID = docID + 1
-        head, tail = os.path.split(filename)
+        _, tail = os.path.split(filename)
         print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        edited = False
         with open(filename, 'r', encoding='utf-8', errors='ignore') as each:
             paragraphs = []
             paragraphs = each.read().split('\r') # carriage return/hard return
@@ -71,13 +70,13 @@ def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, openO
                     # check for enf of paragraph punctuation, quotation and single quotation first, then check for .!?
                     if paragraph and paragraph[check_index] not in ['.', '!', '?']:
                         out.write(paragraph + '.\n')
+                        edited = True
                     else:
                         out.write(paragraph)
                         out.write('\n')
-                # titles.append((title,filename))
-        count += 1
+        if (edited):
+            count += 1
 
-    # Cynthia we should display the number of Documents processed (nDocs or count) and the number of documents that required editing (i.e., that required adding .)
     msgString = ''
     if count==0:
         if nDocs==1:
@@ -85,7 +84,7 @@ def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, openO
         else:
             msgString="No documents have been edited for added full stops."
     else:
-        msgString = "%s documents out of %d have been edited for full stops." % (nDocs,count) + "\n\nThe percentage of documents processed is %f" % ((float(count)/nDocs) * 100)
+        msgString = "%s documents out of %d have been edited for full stops." % (nDocs,count) + "\n\nThe percentage of documents processed is %.2f" % ((float(count)/nDocs) * 100)
     if count>0:
         if inputFilename!="":
             msgString=msgString+"\n\nAll edits were saved directly in the input file."
@@ -108,22 +107,20 @@ def remove_blank_lines(window,inputFilename,inputDir, outputDir='',openOutputFil
     filesWithEmptyLines=0
     for file in files:
         docID = docID + 1
-        fileSV = ''
         head, tail = os.path.split(file)
         print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
-        outputFilename=file
-        with open(file,encoding='utf_8',errors='ignore') as infile, open(outputFilename, 'w+',encoding='utf_8',errors='ignore') as outfile:
-            for line in infile:
-                # if not line.strip(): continue  # skip the empty line
-                # outfile.write(line)  # non-empty line. Write it to output
-                if not (line.strip()):
-                    if file!=fileSV:
-                        filesWithEmptyLines=filesWithEmptyLines+1
-                        print('   Empty line in',file)
-                        del line
-                    continue
-                outfile.write(line)  # non-empty line. Write it to output
-        fileSV=file
+        withEmptyLines = False
+        outputLines = ""
+        with open(file,encoding='utf_8',errors='ignore') as infile:
+            for line in infile.read().split("\n"): # check if any line is empty line
+                if line.strip() == '':
+                    withEmptyLines = True
+                else:
+                    outputLines += line + "\n"
+        with open(file, 'w+',encoding='utf_8',errors='ignore') as outfile:
+            outfile.write(outputLines[:-1])  # non-empty line. Write it to output
+        if withEmptyLines: # if there is any empty line, increment count
+            filesWithEmptyLines += 1
     if inputFilename!="":
         if filesWithEmptyLines==0:
             mb.showwarning(title='Blank lines removed',
@@ -302,7 +299,7 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles):
         else:
             msgString="No documents have generated separate titles."
     else:
-        msgString = "%s documents out of %d have generated titles." % (NUM_DOCUMENT,count) + "\n\nThe percentage of documents processed is %f" % ((float(count)/NUM_DOCUMENT) * 100)
+        msgString = "%s documents out of %d have generated titles." % (NUM_DOCUMENT,count) + "\n\nThe percentage of documents processed is %.2f" % ((float(count)/nDocs) * 100)
     # msgString=" %s documents out of %d have generated titles." % (NUM_DOCUMENT, count)
     if count>0:
         if inputFilename!="":

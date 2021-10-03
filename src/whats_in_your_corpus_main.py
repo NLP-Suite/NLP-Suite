@@ -21,7 +21,7 @@ import Stanford_CoreNLP_annotator_util
 import topic_modeling_gensim_util
 import topic_modeling_mallet_util
 import reminders_util
-import file_utf8_compliance_util
+import file_checker_util
 import file_cleaner_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -74,7 +74,7 @@ def run(inputFilename,inputDir, outputDir,
     if utf8_var==True:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                             'Started running utf8 compliance test at', True)
-        file_utf8_compliance_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
+        file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
 
     if ASCII_var==True:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
