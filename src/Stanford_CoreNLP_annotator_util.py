@@ -736,8 +736,7 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                     complete_sent = complete_sent + token['originalText']
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
-        # sentenceID = sentence['index'] + 1
-
+        sentenceID = sentence['index'] + 1
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         for ner in sentence['entitymentions']:
