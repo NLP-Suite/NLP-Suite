@@ -16,35 +16,24 @@ from subprocess import call
 
 import GUI_IO_util
 import IO_csv_util
-import IO_internet_util
+import Gephi_util
 
-
-def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizontal, lemmatize, stopwords, punctuation, lowercase, collocation, differentPOS_differentColors,selectedImage,
-        differentColumns_differentColors, csvField_color_list, openOutputFiles, doNotCreateIntermediateFiles):
-    if len(visualization_tools)==0 and differentColumns_differentColors==False:
+def run(inputFilename, inputDir, outputDir, openOutputFiles):
+    if Gephi_var==False:
         mb.showwarning("Warning",
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
         return
 
+    inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .csv
 
+    gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, inputFilename)
+    filesToOpen.append(gexf_file)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
-                            wordclouds_var.get(),
-                            prefer_horizontal_var.get(),
-                            lemmatize_var.get(),
-                            stopwords_var.get(),
-                            punctuation_var.get(),
-                            lowercase_var.get(),
-                            collocation_var.get(),
-                            differentPOS_differentColors_var.get(),
-                            selectedImage_var.get(),
-                            differentColumns_differentColors_var.get(),
-                            csvField_color_list,
-                            GUI_util.open_csv_output_checkbox.get(),
-                            doNotCreateIntermediateFiles_var.get())
+                            GUI_util.open_csv_output_checkbox.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -54,7 +43,7 @@ GUI_util.run_button.configure(command=run_script_command)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
 GUI_width=1200
-GUI_height=460 # height of GUI with full I/O display
+GUI_height=600 # height of GUI with full I/O display
 
 if IO_setup_display_brief:
     GUI_height = GUI_height - 80
@@ -96,25 +85,35 @@ input_main_dir_path=GUI_util.input_main_dir_path
 GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
 
 def clear(e):
-    csvField_color_list.clear()
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
 
 Gephi_var = tk.IntVar()
+selected_csv_file_fields_var = tk.StringVar()
 
-# def run_clouds(window,y_multiplier_integer, wordclouds_var,selectedImage_var,
-# 	doNotCreateIntermediateFiles_var,input_main_dir_path):
+csv_file_field_list = []
+menu_values = []
 
-Excel_button = tk.Button(window, text='Open Excel GUI', width=15, height=1,
+Excel_button = tk.Button(window, text='Open Excel GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
                                command=lambda: call("python Excel_charts_main.py", shell=True))
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                Excel_button)
 
-GIS_button = tk.Button(window, text='Open GIS GUI', width=15, height=1,
+GIS_button = tk.Button(window, text='Open GIS GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
                                command=lambda: call("python GIS_main.py", shell=True))
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                GIS_button)
+
+HTML_button = tk.Button(window, text='Open HTML annotator GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
+                               command=lambda: call("python annotator_main.py", shell=True))
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               HTML_button)
+
+wordcloud_button = tk.Button(window, text='Open wordcloud GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
+                               command=lambda: call("python wordclouds_main.py", shell=True))
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               wordcloud_button)
 
 Gephi_var.set(0)
 Gephi_checkbox = tk.Checkbutton(window, text='Visualize relations in a Gephi network graph', variable=Gephi_var,
@@ -122,63 +121,109 @@ Gephi_checkbox = tk.Checkbutton(window, text='Visualize relations in a Gephi net
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                Gephi_checkbox)
 
-# wordclouds_var.set('')
-# selectedImage_var.set('')
-# wordclouds = tk.OptionMenu(window,wordclouds_var,'Python WordCloud','TagCrowd','Tagul','Tagxedo','Wordclouds','Wordle')
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+120, y_multiplier_integer,wordclouds,True)
-# wordclouds_lb = tk.Label(window, text='Select the word cloud service you wish to use (txt file(s)/CoNLL table)')
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,wordclouds_lb)
-#
-# y_multiplier_integer_SV=y_multiplier_integer
+if GUI_util.inputFilename.get() != '':
+    if selectedCsvFile_var.get() == '':
+        selectedCsvFile_var.set(GUI_util.inputFilename.get())
+    numColumns = IO_csv_util.get_csvfile_numberofColumns(GUI_util.inputFilename.get())
+    if IO_csv_util.csvFile_has_header(GUI_util.inputFilename.get()) == False:
+        menu_values = range(1, numColumns + 1)
+    else:
+        data, headers = IO_csv_util.get_csv_data(GUI_util.inputFilename.get(), True)
+        menu_values = headers
+else:
+    numColumns = 0
+    menu_values = " "
+if numColumns == -1:
+    pass
 
+def changed_filename(tracedInputFile):
+    menu_values = []
+    if tracedInputFile != '':
+        numColumns = IO_csv_util.get_csvfile_numberofColumns(tracedInputFile)
+        if numColumns == 0 or numColumns == None:
+            return False
+        if IO_csv_util.csvFile_has_header(tracedInputFile) == False:
+            menu_values = range(1, numColumns + 1)
+        else:
+            data, headers = IO_csv_util.get_csv_data(tracedInputFile, True)
+            menu_values = headers
+    else:
+        menu_values.clear()
+        return
+    m1 = select_csv_field_menu["menu"]
+    m1.delete(0, "end")
 
-def update_csvFields():
-    csv_field_menu.configure(state="normal")
-    color_var.set(0)
+    for s in menu_values:
+        m1.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
+    clear("<Escape>")
 
+select_csv_field_lb = tk.Label(window, text='Select csv file field')
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+                                               select_csv_field_lb, True)
 
-# def activateCsvField(*args):
-#     if csv_field_var.get()!='':
-#         color_checkbox.configure(state='normal')
-#         state = str(csv_field_menu['state'])
-#         if state != 'disabled':
-#             if csv_field_var.get() in csvField_color_list:
-#                 mb.showwarning(title='Warning', message='The selected csv field value, ' + csv_field_var.get() + ', has already been selected.\n\nPlease, select a different value. You can display all selected values by clicking on SHOW.')
-#                 return
-#             add_button.configure(state="normal")
-#             reset_button.configure(state="normal")
-#             show_columns_button.configure(state='normal')
-#             csvField_color_list.append(csv_field_var.get())
-#             csv_field_menu.configure(state='disabled')
-#         else:
-#             add_button.configure(state="normal")
-#             reset_button.configure(state="normal")
-#             show_columns_button.configure(state='normal')
-#             csv_field_menu.configure(state='normal')
-#     else:
-#         add_button.configure(state="disabled")
-#         reset_button.configure(state="disabled")
-#         show_columns_button.configure(state='disabled')
-#         color_checkbox.configure(state='disabled')
-# csv_field_var.trace('w',activateCsvField)
+csv_field_var = tk.StringVar()
+select_csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
+select_csv_field_menu.configure(state='disabled', width=12)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+150, y_multiplier_integer,
+                                               select_csv_field_menu, True)
 
+GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
-# def changed_filename(*args):
-#     # menu_values is the number of headers in the csv dictionary file
-#     menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
-#     m = csv_field_menu["menu"]
-#     m.delete(0,"end")
-#     for s in menu_values:
-#         m.add_command(label=s,command=lambda value=s:csv_field_var.set(value))
-# inputFilename.trace('w',changed_filename)
-# input_main_dir_path.trace('w',changed_filename)
-#
-# changed_filename()
+changed_filename(GUI_util.inputFilename.get())
 
-# doNotCreateIntermediateFiles_var.set(1)
-# doNotCreateIntermediateFiles_checkbox = tk.Checkbutton(window, variable=doNotCreateIntermediateFiles_var, onvalue=1, offvalue=0)
-# doNotCreateIntermediateFiles_checkbox.config(text="Do NOT produce intermediate word cloud files when processing all txt files in a directory")
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,doNotCreateIntermediateFiles_checkbox)
+def activate_csv_fields_selection(comingFrom_Plus, comingFrom_OK):
+
+    select_csv_field_menu.config(state='normal')
+    if csv_field_var.get() != '':
+        select_csv_field_menu.config(state='disabled')
+        add_options.config(state='normal')
+        OK_button.config(state='normal')
+        reset_button.config(state='normal')
+        if comingFrom_Plus == True:
+            select_csv_field_menu.configure(state='normal')
+        if comingFrom_OK == True:
+            select_csv_field_menu.configure(state='disabled')
+            add_options.config(state='disabled')
+            OK_button.config(state='disabled')
+
+    # clear content of current variables when selecting a different main option
+    # csv_file_field_list.clear()
+
+Gephi_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection(False,False))
+csv_field_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection(True,False))
+
+add_options_var = tk.IntVar()
+add_options = tk.Button(window, text='+', width=2, height=1, state='disabled',
+                              command=lambda: add_field_to_list(selected_csv_file_fields_var.get()))
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 500, y_multiplier_integer,
+                                               add_options, True)
+
+OK_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
+                            command=lambda: display_selected_csv_fields())
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 550, y_multiplier_integer,
+                                               OK_button,True)
+
+reset_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset())
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 600,y_multiplier_integer,reset_button)
+
+csv_file_fields=tk.Entry(window, width=150,textvariable=selected_csv_file_fields_var)
+csv_file_fields.config(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,csv_file_fields)
+
+def add_field_to_list(m):
+    if not csv_field_var.get() in csv_file_field_list:
+        csv_file_field_list.append(csv_field_var.get())
+
+def display_selected_csv_fields():
+    if not csv_field_var.get() in csv_file_field_list:
+        csv_file_field_list.append(csv_field_var.get())
+    selected_csv_file_fields_var.set(str(csv_file_field_list))
+    reset_button.config(state="normal")
+
+def reset():
+    csv_field_var.set('')
+    csv_file_field_list.clear()
+    selected_csv_file_fields_var.set('')
 
 TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf", "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf","Wordle":"TIPS_NLP_Wordclouds Wordle.pdf","Tagxedo":"TIPS_NLP_Wordclouds Tagxedo.pdf","Tagcrowd":"TIPS_NLP_Wordclouds Tagcrowd.pdf"}
 TIPS_options='Lemmas & stopwords', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle'
@@ -187,6 +232,9 @@ TIPS_options='Lemmas & stopwords', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
+    resetAll = "\n\nPress the RESET button to clear all selected values, and start fresh."
+    plusButton = "\n\nPress the + buttons, when available, to add a new field."
+    OKButton = "\n\nPress the OK button, when available, to accept the selections made, then press the RUN button to process the query."
     if not IO_setup_display_brief:
         GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",GUI_IO_util.msg_CoNLL)
         GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_corpusData)
@@ -195,10 +243,14 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help","Please, using the dropdown menu, select the word cloud service you want to use to generate a worldcloud.\n\nFor 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle' you must be connected to the internet. You will also need to copy/paste text or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file.\n\nThe Python algorithm uses Andreas Mueller's Python package WordCloud (https://amueller.github.io/word_cloud/) can be run without internet connection.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files or a csv CoNLL table file.\n\nIn OUTPUT the algorithm creates word cloud image file(s).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","\n\nThe filter options are only available when selecting Python as the wordcloud service to use. When available,\n\n   1. tick the 'Horizonal' checkbox if you wish to display words in the wordcloud horizonally only;\n   2. tick the 'Lemmas' checkbox if you wish to lemmatize the words in the input file(s);\n   3. tick the 'Stopwords' checkbox if you wish to exclude from processing stopwords present in the input file(s);\n   4. tick the 'Punctuation' checkbox if you wish to exclude from processing punctuation symbols present in the input file(s);\n   5. tick the 'Lowercase' checkbox if you wish to convert all words to lowercase to avoid having some words capitalized simly because they are the first words in a sentence;\n   6. tick the 'Collocation' checkbox if you wish to keep together common combinations of words (South Carolina; White House);\n   7. tick the 'Different colors for different POS tags' checkbox if you wish to display different POSTAG values (namely, nouns, verbs, adjectives, and adverbs) in different colors (RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, and GREY for ADVERBS; YELLOW for any other POS tags). For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values).\n\nStanford CoreNLP STANZA will be used to tokenize sentences, lemmatize words, and compute POS tags. Depending upon the number of files processed and length of files, the process can be time consuming. Please, be patient.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help","Please, select a png image file to be used to dislay the word cloud in the image.\n\nThe image must be a completely black image set in a white background.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help",GUI_IO_util.msg_openOutputFiles)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help","Please, click on the button to open the Excel GUI.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","Please, click on the button to open the GIS GUI.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help","Please, click on the button to open the HTML annotator GUI.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help","Please, click on the button to open the wordcloud GUI.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help","Please, tick the checkbox if you wish to visualize a network graph in Gephi.\n\nOptions become available in succession.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help","\n\nOptions become available in succession." + plusButton + OKButton + resetAll)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+7),"Help","\n\nThe widget is always disabled; it is for display only. When pressing OK, the selected csv fields will be displayed." + plusButton + OKButton + resetAll)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+8),"Help",GUI_IO_util.msg_openOutputFiles)
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message

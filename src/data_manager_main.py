@@ -1,6 +1,4 @@
-import os.path
 import sys
-import IO_files_util
 import GUI_util
 import IO_libraries_util
 
@@ -12,7 +10,10 @@ import pandas as pd
 from functools import reduce
 import tkinter.messagebox as mb
 from pandas import DataFrame
+import os.path
 
+import IO_files_util
+import GUI_util
 import GUI_IO_util
 import IO_csv_util
 import statistics_csv_util
