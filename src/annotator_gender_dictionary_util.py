@@ -13,12 +13,13 @@ from tkinter import messagebox as mb
 from stanfordcorenlp import StanfordCoreNLP
 from nltk import tokenize
 IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
+import csv
 
 import GUI_IO_util
 import IO_files_util
 import IO_csv_util
 import IO_csv_util
-
+import Stanford_CoreNLP_annotator_util
 
 # put the script of generate two big csvs into this file
 
@@ -51,20 +52,50 @@ def text_generate(inputFilename, inputDir):
     return articles, inputDir
 
 
-def dictionary_annotate(inputFilename, inputDir, outputDir, dictionary_file, personal_pronouns_var):
+def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, memory_var, dictionary_file, personal_pronouns_var):
     fileToOpen=[]
-    p = subprocess.Popen(
-        ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-         'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
-    time.sleep(5)
-    # nlp = StanfordCoreNLP('http://localhost', port=9000)
-    nlp = StanfordCoreNLP('http://point.dd.works:9000')
+
+    document_length_var = 90000
+    limit_sentence_length_var = 100
+    extract_date_from_text_var = False
+    extract_date_from_filename_var = False
+    date_format = ''
+    date_separator_var = ''
+    date_position_var = ''
+
+    tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
+                                                        openOutputFiles, createExcelCharts,
+                                                        'NER',
+                                                        NERs=['PERSON'],
+                                                        DoCleanXML=False,
+                                                        memory_var=memory_var,
+                                                        document_length=document_length_var,
+                                                        sentence_length=limit_sentence_length_var,
+                                                        dateExtractedFromFileContent=extract_date_from_text_var,
+                                                        filename_embeds_date_var=extract_date_from_filename_var,
+                                                        date_format=date_format,
+                                                        date_separator_var=date_separator_var,
+                                                        date_position_var=date_position_var)
+
+    if len(tempOutputFiles)==0:
+        return
+    else:
+        NER_fileName = tempOutputFiles[0]
+        with open(NER_fileName,encoding='utf-8',errors='ignore') as infile:
+            reader = csv.reader(x.replace('\0', '') for x in infile)
+            headers = next(reader)
+        header_indices = [i for i, item in enumerate(headers) if item]
+        data = pd.read_csv(NER_fileName, usecols=[1],encoding='utf-8')
+
+        # must get all ners values - NER Value column -  used later FROM NER header where NER=PERSON)"
+        print("data ",data)
+
     articles, inputDir = text_generate(inputFilename, inputDir)
 
     people = []
     for article_num, article in enumerate(articles):
         for sentence_num, sentence in enumerate(article[0]):
-                ners = nlp.ner(sentence)
+                # ners = nlp.ner(sentence)
                 for ner in ners:
                     if ner[1] == 'PERSON':
                         people.append([ner[0], sentence, sentence_num + 1, article_num + 1, article[1]])
@@ -89,10 +120,7 @@ def dictionary_annotate(inputFilename, inputDir, outputDir, dictionary_file, per
     annotated = pd.DataFrame(people,columns=['Name','Gender','Sentence','SentenceID','DocumentID','Document'])
     output_dir = IO_files_util.generate_output_file_name('',inputDir, outputDir, '.csv', 'gender', 'annotated')
     annotated.to_csv(output_dir)
-    p.kill()
     return fileToOpen
-
-
 
 
 def SSA_annotate(year_state_var,firstName_entry_var,outputDir):

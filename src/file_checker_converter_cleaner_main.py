@@ -60,7 +60,7 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
         if IO_libraries_util.inputProgramFileCheck(script_to_run + ".py") == False:
             return
         outputFile=[]
-        if 'predict_encoding' in function_to_run:
+        if 'predict_encoding' in function_to_run or 'empty_file' in function_to_run:
             # use default first 20 lines
             func(inputFilename,input_main_dir_path)
         elif 'sentence_length' in function_to_run:
@@ -152,9 +152,10 @@ pydict["Document converter (csv --> txt)"] = ["file_type_converter_util.csv_conv
 pydict["Document converter (docx --> txt)"] = ["file_type_converter_util.docx_converter"]
 pydict["Document converter (pdf --> txt)"] = ["file_type_converter_util.pdf_converter"]
 pydict["Document converter (rtf --> txt)"] = ["file_type_converter_util.rtf_converter"]
-pydict["Check utf-8 encoding compliance"] = ["file_utf8_compliance_util.check_utf8_compliance"]
-pydict["Extract sentences computing sentence length"] = ["sentence_analysis_util.extract_sentence_length"]
-pydict["Predict encoding (via chardet)"] = ["file_utf8_compliance_util.predict_encoding"]
+pydict["Check utf-8 encoding compliance"] = ["file_checker_util.check_utf8_compliance"]
+pydict["Check empty file"] = ["file_checker_util.check_empty_file"]
+pydict["Check sentence length (extracting sentences)"] = ["sentence_analysis_util.extract_sentence_length"]
+pydict["Predict encoding (via chardet)"] = ["file_checker_util.predict_encoding"]
 pydict["Spelling checker/Unusual words (via nltk)"] = ["file_spell_checker_util.nltk_unusual_words"]
 pydict["Spelling checker (via SpellChecker)"] = ["file_spell_checker_util.check_for_typo"]
 pydict["Change to ASCII non-ASCII apostrophes & quotes and % to percent"] = ["file_cleaner_util.convert_quotes"]
@@ -162,7 +163,7 @@ pydict["Remove blank lines from text file(s)"] = ["file_cleaner_util.remove_blan
 pydict["Find & Replace string"] = ["file_cleaner_util.find_replace_string"]
 pydict["Find & Replace string (via csv file)"] = ["file_spell_checker_util.spelling_checker_cleaner"]
 pydict["Separate titles from documents (newspaper articles)"] = ["file_cleaner_util.newspaper_titles"]
-pydict["Add full stop (.) at the end of lines without end-of-line marker"] = ["file_cleaner_util.add_full_stop_to_sentence"]
+pydict["Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation"] = ["file_cleaner_util.add_full_stop_to_paragraph"]
 # pydict["Vocabulary richness (Yule\'s K)"] = ["style_analysis_main.Vocabulary richness"]
 # pydict["Short words"] = ["style_analysis_main.Short words"]
 # pydict["Vowel words"] = ["style_analysis_main.Vowel words"]
@@ -190,7 +191,8 @@ check_lb = tk.Label(window, text='Check Files')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,check_lb,True)
 check_menu = tk.OptionMenu(window,check_tools_var,
                     'Check utf-8 encoding compliance',
-                    'Extract sentences computing sentence length',
+                    'Check empty file',
+                    'Check sentence length (extracting sentences)',
                     'Predict encoding (via chardet)',
                     'Spelling checker/Unusual words (via nltk)',
                     'Spelling checker (via SpellChecker)')
@@ -227,7 +229,7 @@ clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Find & Replace string',
                     'Find & Replace string (via csv file)',
                     'Remove blank lines from text file(s)',
-                    'Add full stop (.) at the end of lines without end-of-line marker',
+                    'Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation',
                     'Separate titles from documents (newspaper articles)')
 
 clean_menu.configure(width=70)

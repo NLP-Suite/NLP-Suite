@@ -76,7 +76,7 @@ def prepend_env_pathext(values):
 if __name__ == '__main__':
     path = Path(os.path.dirname(os.path.abspath(__file__))).parent
     path_setup = path / 'setup_Windows'
-    print(get_env('Path'))
+    print("\n\nUPDATED SYSTEM ENVIRONMENT VARIABLES:\n\n",get_env('Path'),"\n\n")
     prepend_env('Path', [
         os.path.abspath(path_setup)
     ])

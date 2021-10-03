@@ -7,6 +7,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window,"Statistics",['csv','tkinter','os','collections','pandas','numpy','scipy','itertools'])==False:
     sys.exit(0)
 
+import os
 import tkinter as tk
 import tkinter.messagebox as mb
 from collections import Counter
@@ -338,3 +339,30 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
         filesToOpen=[] # empty list not to display twice
 
     return filesToOpen #2 files
+
+def export_csv_to_text(inputFilename, outputDir, column = None):
+    filename, file_extension = os.path.splitext(inputFilename)
+    if inputFilename =='' or file_extension!='.csv':
+        mb.showwarning(title='File type error', message='The file\n\n' + inputFilename + '\n\nis not an expected csv file. Please, check the file and try again.')
+        return
+    if column == None:
+        # reading csv file
+        text = open(inputFilename, "r", encoding="utf-8", errors='ignore')
+
+        # joining with space content of text
+        text = ' '.join([i for i in text])
+        # replacing ',' by space
+        text = text.replace(",", " ")
+        with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w") as text_file:
+            text_file.write(text)
+    else:
+        df = pd.read_csv(inputFilename)
+        if not column in df.columns:
+            mb.showwarning(title='csv file error',
+                           message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + column)
+            return
+        a = list(df[column])
+        # converting list into string and then joining it with space
+        text = '\n'.join(str(e) for e in a)
+        with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w") as text_file:
+            text_file.write(text)

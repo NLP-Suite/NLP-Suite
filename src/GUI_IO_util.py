@@ -10,7 +10,8 @@ import tkinter.messagebox as mb
 from subprocess import call
 
 import config_util
-import IO_files_util
+import IO_internet_util
+import webbrowser
 
 # HELP messages
 text_msg=''
@@ -144,50 +145,30 @@ def get_entry_box_x_coordinate():
 def get_open_file_directory_coordinate():
     return open_file_directory_coordinate
 
-def about(Window, configFilename=''):
-    mb.showinfo(title='About the NLP Suite', message='The NLP Suite is a package designed for text data analytics and visualization.\n\n\
-The bulk of the package consists of over 120 (and growing) Python 3 scripts plus a handful of Java scripts.\n\n\
-The target user of the NLP Suite is a humanist or social scientist with ZERO computer science background working with small data (from a single document to thousands of documents).\n\n\
-Graphical User Interface (GUI) provide user friendly access to sophisticated computational tools.\n\n\
-Each GUI comes with HELP? buttons with minimal explanation on each widget on the GUI, a ReadMe button with minimal explanation of the overall GUI and the tools invoked, short videos on the most important GUIs, on what they do and how they work, pdf TIPS files with more in-depth explanations of the computational tools behind the GUI, and Reminders that the user can turn ON and OFF.\n\n\
-Over 100 (and growing) pdf TIPS files provide in-depth help to users on a large number of topics.\n\n\
-The NLP Suite package relies on a large number of freeware, mostly open source, data analytics and visualization packages. The core text analytics (parsing and a variety of annotators - gender, quote, coreference, NER, sentiment, OpenIE - are carried out via Stanford CoreNLP. Frequencies are visualized in Excel charts with hover-over effects; netoworks are visualized via Gephi; GIS maps via Google Earth Pro and Google Maps. WordNet, Gensim, Mallet, NLTK are also used for a variety of specialized text analysis tasks.')
+def about():
+    # check internet connection
+    if not IO_internet_util.check_internet_availability_warning("Check on GitHub what the NLP Suite is all about"):
+        return
+    webbrowser.open_new("https://github.com/NLP-Suite/NLP-Suite/wiki/About")
+
+def release_history():
+    # check internet connection
+    if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite release history"):
+        return
+    webbrowser.open_new("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
 
 # The function displays the contributors to the development of the NLP Suite
-def list_team(Window, configFilename=''):
-    mb.showinfo(title='NLP Suite Contributors', message='The NLP Suite was conceived and designed by Roberto Franzosi at Emory University.\n\n\
-Several Emory undergraduate students have contributed over the years to the development of NLP algorithms:\n\n\
-        Matthew Chau\n\
-        Jian Chen\n\
-        Wei Dai\n\
-        Wenqin Dong\n\
-        Yilin Dong\n\
-        Yuhang Feng\n\
-        Jack Hester\n\
-        Ziyang Hu\n\
-        Hang Jiang\n\
-        Josh Karol\n\
-        Brett Landau\n\
-        Rafael Piloto\n\
-        Ishan Saran\n\
-        Gabriel Wang\n\
-        Yi Wang\n\
-        Catherine Xiao\n\
-        Angel Xie\n\
-        Doris Zhou\n\n\
-JOIN THE TEAM: If you want to contribute to the continued development of the NLP Suite, please write to Roberto Franzosi at rfranzo@emory.edu or join directly via GitHub at https://github.com/NLP-Suite/NLP-Suite\n\n\
-LICENSE: The NLP Suite is freely distributed under a GNU License Agreement.\n\n\
-ACKNOWLEDGMENT: Acknowledgment of the use of the package in the form of citation would be greatly appreciated (click on the button How to cite).\n\n\
-BUGS: If you find and fix bugs, keeping us informed would also be greatly appreciated.')
+def list_team():
+    # check internet connection
+    if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite team"):
+        return
+    webbrowser.open_new("https://github.com/NLP-Suite/NLP-Suite/wiki/The-NLP-Suite-Team")
 
-def cite_NLP(Window, configFilename=''):
-    mb.showinfo(title='How to cite NLP Suite', message='Franzosi, Roberto. 2020. NLP Suite: A collection of natural language processing tools.\n\nGitHub: https://github.com/NLP-Suite/NLP-Suite\n\n\
-The following papers are based on the NLP Suite tools:\n\n\
-Franzosi, Roberto. 2020. "What’s in a Text? Bridging the Gap Between Quality and Quantity in the Digital Era." Quality & Quantity. DOI: https://doi.org/10.1007/s11135-020-01067-6\n\n\
-Franzosi, Roberto, Wenqin Dong, Yilin Dong. 2021. "Qualitative and Quantitative Research in the Humanities and Social Sciences: How Natural Language Processing (NLP) Can Help." Quality & Quantity. In press.\n\n\
-Unpublished papers:\n\n\
-Franzosi, Roberto, Wenqin Dong, Yuhang Feng, Gabriel Wang. 2020. "Automatic Information Extraction of the Narrative Elements Who, What, When, and Where." Unpublished manuscript.\n\n\
-Franzosi, Roberto, Wenqin Dong, Alberto Purpura. 2020. "The Shape of Stories." Unpublished manuscript.')
+def cite_NLP():
+    # check internet connection
+    if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite newest release version"):
+        return
+    webbrowser.open_new("https://github.com/NLP-Suite/NLP-Suite/wiki/About#How-to-Cite-the-NLP-Suite")
 
 #configFilename with no path;
 #configArray contains all the IO files and paths

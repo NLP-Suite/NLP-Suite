@@ -140,3 +140,47 @@ def check_utf8_compliance(window,inputFilename,inputDir,outputDir,openOutputFile
             else:
                 tk.messagebox.showinfo("Warning", "All " + str(numberOfDocs) + " files in the directory\n\n" + inputDir + "\n\nare utf-8 compliant.")
 
+def check_empty_file(inputFilename, inputDir):
+    # collecting input txt files
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    nDocs = len(inputDocs)
+    docID = 0
+    if nDocs == 0:
+        return
+
+    # DOCUMENTS WITH FULL STOPS ADDED
+    count = 0
+    docID = 0
+
+    emptyFiles = 0
+    for filename in inputDocs:
+        docID = docID + 1
+        _, tail = os.path.split(filename)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        edited = False
+        with open(filename, 'r', encoding='utf-8', errors='ignore') as myfile:
+            # read file into string
+            fulltext = myfile.read()
+            # end method if file is empty
+            if len(fulltext) < 1:
+                emptyFiles = emptyFiles + 1
+                # mb.showerror(title='File empty',
+                #              message='The file ' + filename + ' is empty.')
+                print('   Empty file', tail)
+            myfile.close()
+    if nDocs==1:
+        if emptyFiles == 0:
+            msg='The file "' + tail + '" is not empty'
+        else:
+            msg = 'The file "' + tail + '" is empty'
+    else:
+        if emptyFiles == 0:
+            msg = 'There are no empty files in the directory\n\n'+inputDir
+        else:
+            if emptyFiles == 1:
+                msg = '1 file is empty in the directory\n\n' + inputDir + '\n\nPlease, check the command line/prompt searching for the word "empty."'
+            else:
+                msg = str(emptyFiles) + 'files are empty in the directory\n\n' + inputDir + '\n\nPlease, check the command line/prompt searching for the word "empty."'
+    mb.showerror(title='File empty',
+                         message=msg)
+    return
