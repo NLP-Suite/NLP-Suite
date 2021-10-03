@@ -171,11 +171,11 @@ pydict = {}
 pydict[""] = ["", 0]  # not available
 # https://stanfordnlp.github.io/CoreNLP/quote.html
 pydict["Stanford CoreNLP"] = ["annotator_main.py", 1]
-pydict["Annotator extractor"] = ["annotator_main.py", 1]
-pydict["Annotator - date (NER normalized date, via CoreNLP)"] = ["Stanford_CoreNLP_main.py", 1]
-pydict["Annotator - gender (male & female names; via CoreNLP and dictionaries)"] = ["annotator_gender_main.py", 1]
-pydict["Annotator - quote (via CoreNLP)"] = ["Stanford_CoreNLP_main.py", 1]
-pydict["Annotator - dictionary, gender, DBpedia, YAGO"] = ["annotator_main.py", 1]
+pydict["CoreNLP annotator - date (NER normalized date)"] = ["Stanford_CoreNLP_main.py", 1]
+pydict["CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)"] = ["annotator_gender_main.py", 1]
+pydict["CoreNLP annotator - quote"] = ["Stanford_CoreNLP_main.py", 1]
+pydict["HTML annotator - dictionary, gender, DBpedia, YAGO"] = ["annotator_main.py", 1]
+pydict["HTML annotator extractor"] = ["annotator_main.py", 1]
 pydict["Annotator - hedge/uncertainty"] = ["", 0]
 pydict["CoNLL table analyzer - Search the CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["CoNLL table analyzer - Clause, noun, verb, function words frequencies"] = ["CoNLL_table_analyzer_main.py", 1]
@@ -382,10 +382,10 @@ pre_processing_menu = tk.OptionMenu(window, pre_processing_tools_var,
                                     'File-type converter (csv, docx, pdf, rtf --> txt)',
                                     'File merger (file content)',
                                     'File splitter (file content)',
-                                    'Annotator - date (NER normalized date, via CoreNLP)',
-                                    'Annotator - gender (male & female names; via CoreNLP and dictionaries)',
-                                    'Annotator - quote (via CoreNLP)',
-                                    'Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)',
+                                    'CoreNLP annotator - date (NER normalized date)',
+                                    'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)',
+                                    'CoreNLP annotator - quote',
+                                    'CoreNLP Co-Reference PRONOMINAL resolution',
                                     'Find non-related documents',
                                     'Language detection',
                                     'Newspaper article/Document titles',
@@ -422,7 +422,7 @@ visualization_menu = tk.OptionMenu(window, visualization_tools_var,
                                    'Geographic maps: Geocoding & maps',
                                    'Geographic maps: Google Earth Pro',
                                    'Geographic distances between locations',
-                                   'Annotator - dictionary, gender, DBpedia, YAGO',
+                                   'HTML annotator - dictionary, gender, DBpedia, YAGO',
                                    'Network graphs (Gephi)',
                                    'Sentence visualization: Dependency tree viewer (png graphs)',
                                    'Word clouds')
@@ -473,12 +473,12 @@ corpus_document_tools_menu = tk.OptionMenu(window, corpus_document_tools_var,
                                            'Stanford CoreNLP',
                                            'CoNLL table analyzer - Search the CoNLL table',
                                            'CoNLL table analyzer - Clause, noun, verb, function words frequencies',
-                                           'Annotator - date (NER normalized date, via CoreNLP)',
-                                           'Annotator - gender (male & female names; via CoreNLP and dictionaries)',
-                                           'Annotator - quote (via CoreNLP)',
-                                           'Annotator - dictionary, gender, DBpedia, YAGO',
+                                           'CoreNLP annotator - date (NER normalized date)',
+                                           'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)',
+                                           'CoreNLP annotator - quote',
+                                           'HTML annotator - dictionary, gender, DBpedia, YAGO',
+                                           'HTML annotator extractor',
                                            'Annotator - hedge/uncertainty',
-                                           'Annotator extractor',
                                            'Narrative analysis',
                                            'Style analysis',
                                            'Sentiment analysis',
