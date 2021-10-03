@@ -55,7 +55,7 @@ def validate(date_text):
         raise ValueError("Incorrect data format, should be YYYY-MM-DD")
 
 
-def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         n_grams_var,
         n_grams_menu_var,
         n_grams_list,
@@ -81,6 +81,11 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
         mb.showwarning(title='Warning',
                        message='There are no options selected.\n\nPlease, select one of the available options and try again.')
         return
+    if inputDir=='' and (n_grams_viewer_var==True or CoOcc_Viewer_var==True):
+        mb.showwarning(title='Warning',
+                       message='You have selected to run the Viewer option but... this option requires a directory of txt files in input. Your configuration specifies a single txt file in input.\n\nPlease, select a directory in input or deselect the Viewer option and try again.')
+        return
+
     if date_options:
         new_date_format = date_format.replace('yyyy', '%Y').replace('mm', '%m').replace('dd', '%d')
         for folder, subs, files in os.walk(inputDir):
@@ -122,7 +127,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
         n_grams_word_var = False
         n_grams_character_var = False
         normalize = False
-        n_grams_size = 4  # default number of n_grams
+        n_grams_size = 3  # default number of n_grams
         excludePunctuation = False
         bySentenceIndex_word_var = False
         bySentenceIndex_character_var = False
@@ -141,12 +146,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
             else:
                 bySentenceIndex_character_var=True
 
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
-                                           'Started running ' + n_grams_menu_var + ' n-grams at', True,
-                                           'You can follow the script in command line.')
-
         if n_grams_word_var or n_grams_character_var or bySentenceIndex_word_var or bySentenceIndex_character_var:
-            inputFilename = ''  # for now we only process a whole directory
             if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py') == False:
                 return
 
@@ -158,8 +158,6 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, n_grams_size, normalize, excludePunctuation, 0, openOutputFiles, createExcelCharts,
                                                               bySentenceIndex_character_var)
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams end',
-                            'Finished running ' + n_grams_menu_var + ' n-grams at', True)
 
 # VIEWER ____________________________________________________________________________________________
 
@@ -344,7 +342,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts,
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command = lambda: run(GUI_util.input_main_dir_path.get(), GUI_util.output_dir_path.get(),
+run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get(), GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),
                                  n_grams_var.get(),
@@ -396,7 +394,7 @@ config_filename = 'n-grams-co-occurrences-viewer-config.txt'
 #   input secondary dir
 #   output file
 #   output dir
-config_option = [0, 0, 1, 0, 0, 1]
+config_option = [0, 2, 1, 0, 0, 1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 window=GUI_util.window
@@ -664,8 +662,8 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 1),"Help", 'Please, tick the \'Compute n-grams\' checkbox if you wish to compute n-grams.\n\nN-grams can be computed for characters, words, POSTAG and DEPREL values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word n-grams between 1 and 4.\n\nWhen n-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 2),"Help", 'Please, use the dropdown menu to select various options that can be applied to n-grams. You can make multiple selections by clicking on the + button.\n\nThe default number of n-grams computed is 4, unless you select the Hapax legomena option for unigrams (and then select once-occurring words).\n\nN-grams can be normalized, i.e., their frequency values are divided by the number of words or POSTAG-DEPREL values in a document.\n\nPunctuation can be excluded when computing n-grams (Google, for instance, exclude punctuation from its Ngram Viewer (https://books.google.com/ngrams).\n\nN-grams can be computed by sentence index.\n\nFinally, you can run a special type of n-grams that computes the last 2 words in a sentence and the first 2 words of the next sentence, a rhetorical figure of repetition for the analysis of style.')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 1),"Help", 'Please, tick the \'Compute n-grams\' checkbox if you wish to compute n-grams.\n\nN-grams can be computed for characters, words, POSTAG and DEPREL values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word n-grams between 1 and 3.\n\nWhen n-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 2),"Help", 'Please, use the dropdown menu to select various options that can be applied to n-grams. You can make multiple selections by clicking on the + button.\n\nThe default number of n-grams computed is 3, unless you select the Hapax legomena option for unigrams (and then select once-occurring words).\n\nN-grams can be normalized, i.e., their frequency values are divided by the number of words or POSTAG-DEPREL values in a document.\n\nPunctuation can be excluded when computing n-grams (Google, for instance, exclude punctuation from its Ngram Viewer (https://books.google.com/ngrams).\n\nN-grams can be computed by sentence index.\n\nFinally, you can run a special type of n-grams that computes the last 2 words in a sentence and the first 2 words of the next sentence, a rhetorical figure of repetition for the analysis of style.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 3),"Help", 'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer Java script.\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer Java script.\n\nYou can run both Viewers at the same time.\n\nThe NGrams part of the NGrams_CoOccurrences.jar routine requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872).\n\nFor both viewers, results will be visualized in Excel line plots.\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 4),"Help", 'Please, enter the blank-separated list of words for which you want to know N-Gram statistics (e.g., woman man job). bi-grams, 3-grams, ... must include words inside "", like "child care""). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 5),"Help", 'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences.\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: year, quarter, month, day.\n\nPlease, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2).')

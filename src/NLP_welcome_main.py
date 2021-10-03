@@ -142,17 +142,17 @@ def display_text():
 def display_buttons():
     # display about button
     about_button = tk.Button(window, text='About', width=15, height=1, foreground="red",
-                            command=lambda: GUI_IO_util.about(window))
+                            command=lambda: GUI_IO_util.about())
     about_button.grid(row=5, column=0, columnspan=2, pady=10, padx=10, sticky=tk.E)
 
     # display team button
     team_button = tk.Button(window, text='NLP Suite team', width=15, height=1, foreground="red",
-                            command=lambda: GUI_IO_util.list_team(window))
+                            command=lambda: GUI_IO_util.list_team())
     team_button.grid(row=5, column=2, columnspan=2, pady=10, padx=10)
 
     # display cite button
     cite_button = tk.Button(window, text='How to cite', width=15, height=1, foreground="red",
-                            command=lambda: GUI_IO_util.cite_NLP(window))
+                            command=lambda: GUI_IO_util.cite_NLP())
     cite_button.grid(row=5, column=4, columnspan=2, pady=10, padx=10, sticky=tk.W)
 
 

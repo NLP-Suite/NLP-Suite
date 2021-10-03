@@ -232,7 +232,7 @@ def run(inputFilename,
     if GIS_package_var=='Google Maps':
         if IO_libraries_util.inputProgramFileCheck('GIS_Google_Maps_util.py') == False:
             return
-        heatMapoutputFilename = IO_files_util.generate_output_file_name(NER_oututFilename, inputDir, outputDir, '.html', 'GIS',
+        heatMapoutputFilename = IO_files_util.generate_output_file_name(NER_outputFilename, inputDir, outputDir, '.html', 'GIS',
                                                                         geoName, locationColumnName, '', '',
                                                                         False, True)
         coordList = []

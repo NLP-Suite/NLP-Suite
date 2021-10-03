@@ -573,13 +573,17 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
 
         if ScriptName == 'NLP_menu_main':
 
+            release_history_button = tk.Button(window, text='Release history', width=13, height=1, foreground="red",
+                                    command=lambda: GUI_IO_util.release_history())
+            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100, 0,
+                                                           release_history_button, True)
             team_button = tk.Button(window, text='NLP Suite team', width=13, height=1, foreground="red",
-                                    command=lambda: GUI_IO_util.list_team(window, config_filename))
-            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), 0,
+                                    command=lambda: GUI_IO_util.list_team())
+            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350, 0,
                                                            team_button, True)
             cite_button = tk.Button(window, text='How to cite', width=13, height=1, foreground="red",
-                                    command=lambda: GUI_IO_util.cite_NLP(window, config_filename))
-            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 150, 0,
+                                    command=lambda: GUI_IO_util.cite_NLP())
+            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+600, 0,
                                                            cite_button)
 
     y_multiplier_integer=0

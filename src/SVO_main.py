@@ -32,7 +32,7 @@ import Gephi_util
 import GIS_pipeline_util
 import wordclouds_util
 import GUI_util
-import file_utf8_compliance_util
+import file_checker_util
 import file_cleaner_util
 import IO_csv_util
 import Stanford_CoreNLP_coreference_util

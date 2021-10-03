@@ -15,12 +15,24 @@ from datetime import datetime, date
 import csv
 import shutil
 import platform
+import tkinter.messagebox as mb
 
 import IO_csv_util
 import IO_files_util
+import IO_user_interface_util
 
-def backup_files (filename,inputDir,outputDir,fileType='.txt'):
-    inputDocs = IO_files_util.getFileList(filename, inputDir, fileType='.txt')
+def backup_files (inputFilename,inputDir,fileType='.txt',silent=False):
+    if inputFilename != "":
+        temp_inputDir, tail = os.path.split(inputFilename)
+    else:
+        temp_inputDir = inputDir
+    backup_path = os.path.join(temp_inputDir, 'backup')
+    answer=mb.askyesno("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
+    if answer:
+        IO_files_util.make_directory(backup_path)
+    else:
+        return True
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType)
     nDocs = len(inputDocs)
     docID=0
     for doc in inputDocs:
@@ -28,12 +40,20 @@ def backup_files (filename,inputDir,outputDir,fileType='.txt'):
         head, tail = os.path.split(doc)
         print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
         try:
-            shutil.copy(doc, outputDir + os.sep + os.path.split(doc)[1])
+            shutil.copy(doc, backup_path + os.sep + os.path.split(doc)[1])
         except:
             print(
                 'The file ' + doc + ' was skipped from processing. An unexpected error occurred when processing the file.')
             fileFound = False
         fileFound = True
+    if nDocs!=docID:
+        # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
+        #                                    str(nDocs-docID) + ' could not be backed up. Check files and try again.)
+        mb.warning('Warning',str(nDocs-docID) + ' could not be backed up. Check files and try again.')
+        return False
+    else:
+        return True
+
 
 def dateGreater(d1, d2):
     # This function returns True if d1 is a more recent date than d2, False otherwise

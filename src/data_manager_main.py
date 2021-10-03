@@ -11,10 +11,11 @@ import tkinter as tk
 import pandas as pd
 from functools import reduce
 import tkinter.messagebox as mb
+from pandas import DataFrame
 
 import GUI_IO_util
 import IO_csv_util
-from pandas import DataFrame
+import statistics_csv_util
 
 # RUN section ________________________________________________________________________________________________________
 
@@ -80,8 +81,8 @@ def get_cols(dfs: list, headers: list):
 filesToOpen = []  # Store all files that are to be opened once finished
 
 
-def extract_from_csv(path, output_path, data_files, csv_file_field_list):
-    outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv',
+def extract_from_csv(path, outputDir, data_files, csv_file_field_list):
+    outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), outputDir, '.csv',
                                                              'extract',
                                                              'stats', '', '', '', False, True)
     sign_var = [s.split(',')[2] for s in csv_file_field_list]
@@ -142,7 +143,7 @@ def run(inputFilename,
         merge_var, concatenate_var,
         append_var, extract_var,
         purge_row_var, select_csv_field_purge_var, keep_most_recent_var, keep_most_fields_var, select_csv_field2_purge_var,
-        openOutputFiles, output_path):
+        output_to_csv_var, openOutputFiles, outputDir):
 
     path = [s.split(',')[0] for s in csv_file_field_list]  # file path
     data_files = [file for file in select_csv(path)]  # dataframes
@@ -150,7 +151,7 @@ def run(inputFilename,
     data_cols = [file for file in get_cols(data_files, headers)]  # selected cols
 
     if merge_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv',
+        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), outputDir, '.csv',
                                                                  'merge',
                                                                  'stats', '', '', '', False, True)
         # processed_params: [(field1, field2..., dataframe1), (field1', field2'..., dataframe2)]
@@ -184,7 +185,7 @@ def run(inputFilename,
         filesToOpen.append(outputFilename)
 
     if concatenate_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv', 'concatenate',
+        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), outputDir, '.csv', 'concatenate',
                                                            'stats', '', '', '', False, True)
         for s in csv_file_field_list:
             if s[-1] == ',':
@@ -198,21 +199,24 @@ def run(inputFilename,
         df_concat.to_csv(outputFilename, header=[listToString(headers, sep)])
         filesToOpen.append(outputFilename)
     if append_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), output_path, '.csv', 'append',
+        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), outputDir, '.csv', 'append',
                                                            'stats', '', '', '', False, True)
         sep = ','
         df_append = pd.concat(data_cols, axis=0)
         df_append.to_csv(outputFilename, header=[listToString(headers, sep)])
         filesToOpen.append(outputFilename)
     if extract_var:
-        extract_from_csv(path=path, output_path=output_path,
-                         data_files=data_files, csv_file_field_list=csv_file_field_list)
+        if output_to_csv_var==True:
+            extract_from_csv(path=path, outputDir=outputDir,
+                             data_files=data_files, csv_file_field_list=csv_file_field_list)
+        else:
+            statistics_csv_util.export_csv_to_text(inputFilename, outputDir, csv_file_field_list)
     if purge_row_var:
         import file_filename_util
         if keep_most_recent_var:
-            file_filename_util.purge_duplicate_rows_byFilename(GUI_util.window,inputFilename, output_path, openOutputFiles, select_csv_field_purge_var)
+            file_filename_util.purge_duplicate_rows_byFilename(GUI_util.window,inputFilename, outputDir, openOutputFiles, select_csv_field_purge_var)
         if keep_most_fields_var:
-            file_filename_util.purge_partial_matches(GUI_util.window,inputFilename, output_path, openOutputFiles, select_csv_field_purge_var, select_csv_field2_purge_var)
+            file_filename_util.purge_partial_matches(GUI_util.window,inputFilename, outputDir, openOutputFiles, select_csv_field_purge_var, select_csv_field2_purge_var)
 
 
     if openOutputFiles:
@@ -228,6 +232,7 @@ if __name__ == '__main__':
                                      append_var.get(), extract_var.get(),
                                      purge_row_var.get(), select_csv_field_purge_var.get(), keep_most_recent_var.get(),
                                      keep_most_fields_var.get(), select_csv_field2_purge_var.get(),
+                                     output_to_csv_var.get(),
                                      GUI_util.open_csv_output_checkbox.get(), GUI_util.output_dir_path.get()
                                      )
 
@@ -295,6 +300,7 @@ if __name__ == '__main__':
     character_separator_var = tk.StringVar()
     append_var = tk.IntVar()
     extract_var = tk.IntVar()
+    output_to_csv_var = tk.IntVar()
     purge_row_var = tk.IntVar()
 
     keep_most_recent_var = tk.IntVar()
@@ -666,14 +672,22 @@ if __name__ == '__main__':
     # TODO from a GUI, how can you select a specific value of selected field,
     # rather than entering the value?
 
-    comparator_var = tk.StringVar()
-    comparator_menu = tk.OptionMenu(window, comparator_var, 'not equals', 'equals', 'greater than',
-                                    'greater than or equals', 'less than', 'less than or equals')
+    output_to_csv_var.set(1)
+    output_to_csv_checkbox = tk.Checkbutton(window, text='csv output', variable=output_to_csv_var, onvalue=1,
+                                      offvalue=0)
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 450, y_multiplier_integer,
+                                                   output_to_csv_checkbox, True)
+
+    comparator_var = tk.StringVar()
+    # comparator_menu = tk.OptionMenu(window, comparator_var, 'not equals', 'equals', 'greater than',
+    #                                 'greater than or equals', 'less than', 'less than or equals')
+    comparator_menu = tk.OptionMenu(window, comparator_var, '<>', '=', '>',
+                                    '>=', '<', '<=')
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 540, y_multiplier_integer,
                                                    comparator_menu, True)
 
     where_lb = tk.Label(window, text='WHERE')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 590, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
                                                    where_lb, True)
 
     where_entry_var = tk.StringVar()
@@ -1136,7 +1150,7 @@ if __name__ == '__main__':
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
                                       "The APPEND option allows you to select a specific field from a csv file and append its values at the bottom of the values of another field, and save the output as a new file." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+9), "Help",
-                                      "The EXTRACT option allows you to select specific fields, even by specific values, from one or more csv files and save the output as a new file.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value, and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
+                                      "The EXTRACT option allows you to select specific fields, even by specific values, from one or more csv files and save the output as a new file.\n\nYOU CAN SAVE THE OUTPUT TO CSV FILE OR TO A TEXT FILE. Just tick the Output csv checkbox as desired.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value, and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+10), "Help",
                                       "The PURGE DUPLICATE ROWS option allows you to delete duplicate records in a csv file.\n\n" + GUI_IO_util.msg_Esc)
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+11), "Help",

@@ -14,7 +14,7 @@ import tkinter.messagebox as mb
 import GUI_IO_util
 import IO_files_util
 import IO_user_interface_util
-import file_utf8_compliance_util
+import file_checker_util
 import file_cleaner_util
 # import several splitter util scripts under various if statements under Run
 
@@ -57,7 +57,7 @@ def run(inputFilename,inputDir, outputDir,
     if utf8_var==True:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                             'Started running utf8 compliance test at', True)
-        file_utf8_compliance_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
+        file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
 
     if ASCII_var==True:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',

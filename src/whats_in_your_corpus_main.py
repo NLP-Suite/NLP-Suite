@@ -21,7 +21,7 @@ import Stanford_CoreNLP_annotator_util
 import topic_modeling_gensim_util
 import topic_modeling_mallet_util
 import reminders_util
-import file_utf8_compliance_util
+import file_checker_util
 import file_cleaner_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -74,7 +74,7 @@ def run(inputFilename,inputDir, outputDir,
     if utf8_var==True:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                             'Started running utf8 compliance test at', True)
-        file_utf8_compliance_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
+        file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
 
     if ASCII_var==True:
         IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
@@ -456,10 +456,10 @@ what_else_var.set(1)
 what_else_checkbox = tk.Checkbutton(window,text="What else is in your corpus? (via Stanford CoreNLP and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,what_else_checkbox,True)
 what_else_menu_var.set('*')
-what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues','Noun and verb classes', 'People & organizations', 'Females & males',
-                               'References to date & time',
-                               'References to geographical locations',
-                               'References to nature')
+what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues (CoreNLP Neural Network)','Noun and verb classes (CoreNLP NER & WordNet)', 'People & organizations (CoreNLP NER)', 'Females & males (CoreNLP Neural Network)',
+                               'References to date & time (CoreNLP normalized NER dates)',
+                               'References to geographical locations (CoreNLP NER)',
+                               'References to nature (CoreNLP & WordNet)')
 what_else_menu.config(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 440, y_multiplier_integer,
                                                what_else_menu, True)
