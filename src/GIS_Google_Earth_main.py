@@ -40,13 +40,16 @@ import reminders_util
 # import iso3166 #pip install
 # from iso3166 import countries
 
-def run(inputFilename, outputDir,
-            encoding_var, date_var, date_format_var,
+
+def run(inputFilename, outputDir, openOutputFiles,
+            encoding_var,
             locationColumnName,
-            openOutputFiles, group_number_var, italic_var, bold_var, italic_var_list, bold_var_list, location_var,
-            group_var, group_values_entry_var_list, group_label_entry_var_list, icon_var_list, specific_icon_var_list,
-            name_var_list, scale_var_list, color_var_list, color_style_var_list, description_var_list,
-            description_csv_field_var_list):
+            date_var, date_format_var,
+            group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
+            icon_var_list, specific_icon_var_list,
+            name_var_list, scale_var_list, color_var_list, color_style_var_list,
+            description_csv_field_var, bold_var, italic_var,  bold_var_list, italic_var_list,
+            description_var_list, description_csv_field_var_list):
 
     filesToOpen = []
 
@@ -96,7 +99,7 @@ def run(inputFilename, outputDir,
                                                                        locationColumnNumber,locationColumnName,
                                                                        encodingValue,
                                                                        group_number_var, italic_var, bold_var, italic_var_list, bold_var_list,
-                                                                       location_var,
+                                                                       description_csv_field_var,
                                                                        group_var, group_values_entry_var_list, group_label_entry_var_list, icon_var_list, specific_icon_var_list, name_var_list, scale_var_list, color_var_list, color_style_var_list,
                                                                        description_var_list,
                                                                        description_csv_field_var_list)
@@ -109,31 +112,18 @@ def run(inputFilename, outputDir,
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
+run_script_command=lambda: run(GUI_util.inputFilename.get(),GUI_util.output_dir_path.get(),GUI_util.open_csv_output_checkbox.get(),
+                encoding_var.get(),
+                location_var.get(),
+                date_var.get(),date_format_var.get(),
+                group_var.get(), group_number_var.get(), group_values_entry_var_list,group_label_entry_var_list,
+                icon_var_list, specific_icon_var_list,
+                name_var_list, scale_var_list, color_var_list, color_style_var_list,
+                description_csv_field_var.get(), bold_var.get(), italic_var.get(),italic_var_list, bold_var_list,
+                description_var_list, description_csv_field_var_list)
+
+
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(GUI_util.inputFilename.get(),
-                            GUI_util.output_dir_path.get(),
-                            location_var.get(),
-                            GUI_util.open_csv_output_checkbox.get(),
-                            group_number_var.get(),
-                            italic_var.get(),
-                            bold_var.get(),
-                            italic_var_list,
-                            bold_var_list,
-                            encoding_var.get(),
-                            date_var.get(),
-                            date_format_var.get(),
-                            location_var.get(),
-                            group_var.get(),
-                            group_values_entry_var_list,
-                            group_label_entry_var_list,
-                            icon_var_list,
-                            specific_icon_var_list,
-                            name_var_list,
-                            scale_var_list,
-                            color_var_list,
-                            color_style_var_list,
-                            description_var_list,
-                            description_csv_field_var_list)
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -204,6 +194,8 @@ internetAvailable = False
 
 encoding_var = tk.StringVar()
 
+location_var = tk.StringVar()
+
 date_var = tk.StringVar()
 date_format_var = tk.StringVar()
 
@@ -227,7 +219,6 @@ group_number_var = tk.IntVar()
 group_label_entry_var = tk.StringVar()
 group_values_entry_var = tk.StringVar()
 
-location_var = tk.StringVar()
 icon_var = tk.StringVar()
 specific_icon_var = tk.StringVar()
 icon_csv_field_var = tk.StringVar()
@@ -319,7 +310,7 @@ def reset_all_values():
     color_style_var.set("")
 
     description_var.set(0)
-    description_csv_field_var.set("")
+    description_csv_field_var.set("") # location
     bold_var.set(1)
     italic_var.set(1)
 
