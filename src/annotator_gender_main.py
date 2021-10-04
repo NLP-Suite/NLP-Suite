@@ -51,7 +51,10 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
             return
         import annotator_gender_dictionary_util
         # csvValue_color_list, bold_var, tagAnnotations, '.txt'
-        filesToOpen= [annotator_gender_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, memory_var, annotator_dictionary_file_var,personal_pronouns_var)]
+        output= annotator_gender_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, memory_var, annotator_dictionary_file_var,personal_pronouns_var)
+        if len(output)>0:
+            # output=output[0]
+            filesToOpen.extend(output)
 
     #plot annotate
     elif plot_var==True:
@@ -68,7 +71,10 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
             mb.showwarning(title='Warning', message="The plot option requires both 'By year/state' value and first name(s) in the 'Enter firt name(s)' widget.\n\nPlease, enter the required information and try again.")
             return
         else:
-            filesToOpen = annotator_gender_dictionary_util.SSA_annotate(year_state_var,firstName_entry_var,output_dir_path)
+            output = annotator_gender_dictionary_util.SSA_annotate(year_state_var,firstName_entry_var,output_dir_path)
+            if len(output)>0:
+                # output=output[0]
+                filesToOpen.extend(output)
 
     if openOutputFiles==True:
         nFile=len(filesToOpen)

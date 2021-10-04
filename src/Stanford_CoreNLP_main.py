@@ -108,8 +108,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             if len(tempOutputFiles) > 0:
                 filesToOpen.extend(tempOutputFiles)
                 reminders_util.checkReminder(config_filename,
-                                             title_options_CoreNLP_NER_tags,
-                                             reminders_util.CoreNLP_NER_tags,
+                                             reminders_util.title_options_CoreNLP_NER_tags,
+                                             reminders_util.message_CoreNLP_NER_tags,
                                              True)
                 # if compute_sentence_var:
                 #     tempOutputFile = IO_CoNLL_util.compute_sentence_table(tempOutputFiles[0], outputDir)
@@ -496,7 +496,7 @@ parser_checkbox = tk.Checkbutton(window, text='CoreNLP parser', variable=parser_
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                parser_checkbox, True)
 
-parser_menu_var.set("Neural Network")
+parser_menu_var.set("Probabilistic Context Free Grammar (PCFG)")
 parser_menu = tk.OptionMenu(window, parser_menu_var, 'Neural Network', 'Probabilistic Context Free Grammar (PCFG)')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                parser_menu)
