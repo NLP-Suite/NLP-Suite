@@ -12,6 +12,7 @@ import pandas as pd
 from tkinter import messagebox as mb
 from stanfordcorenlp import StanfordCoreNLP
 from nltk import tokenize
+from nltk.tokenize import word_tokenize
 IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
 import csv
 
@@ -53,7 +54,6 @@ def text_generate(inputFilename, inputDir):
 
 
 def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, memory_var, dictionary_file, personal_pronouns_var):
-    fileToOpen=[]
 
     document_length_var = 90000
     limit_sentence_length_var = 100
@@ -78,29 +78,25 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
                                                         date_position_var=date_position_var)
 
     if len(tempOutputFiles)==0:
-        return
+        return tempOutputFiles
     else:
         NER_fileName = tempOutputFiles[0]
         with open(NER_fileName,encoding='utf-8',errors='ignore') as infile:
             reader = csv.reader(x.replace('\0', '') for x in infile)
             headers = next(reader)
         header_indices = [i for i, item in enumerate(headers) if item]
-        data = pd.read_csv(NER_fileName, usecols=[1],encoding='utf-8')
-
-        # must get all ners values - NER Value column -  used later FROM NER header where NER=PERSON)"
-        print("data ",data)
+        ners = pd.read_csv(NER_fileName, usecols=[0,1],encoding='utf-8')
 
     articles, inputDir = text_generate(inputFilename, inputDir)
 
     people = []
     for article_num, article in enumerate(articles):
         for sentence_num, sentence in enumerate(article[0]):
-                # ners = nlp.ner(sentence)
                 for ner in ners:
                     if ner[1] == 'PERSON':
                         people.append([ner[0], sentence, sentence_num + 1, article_num + 1, article[1]])
                 if personal_pronouns_var:
-                    tokens = nlp.word_tokenize(sentence)
+                    tokens = word_tokenize(sentence)
                     for token in tokens:
                         if token in ['his','His','He','he','Him','him']:
                             people.append([token, 'Male', sentence, sentence_num+1,article_num+1,article[1]])
@@ -120,7 +116,7 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
     annotated = pd.DataFrame(people,columns=['Name','Gender','Sentence','SentenceID','DocumentID','Document'])
     output_dir = IO_files_util.generate_output_file_name('',inputDir, outputDir, '.csv', 'gender', 'annotated')
     annotated.to_csv(output_dir)
-    return fileToOpen
+    return tempOutputFiles
 
 
 def SSA_annotate(year_state_var,firstName_entry_var,outputDir):

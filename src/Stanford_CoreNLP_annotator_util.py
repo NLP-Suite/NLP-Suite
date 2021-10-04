@@ -280,6 +280,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
     time.sleep(5)
 
+    if 'POS' in str(annotator_params) or 'NER' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+            reminders_util.title_options_CoreNLP_POS_NER_maxlen,
+            reminders_util.message_CoreNLP_POS_NER_maxlen,
+            True)
+
     # annotating each input file
     docID=0
     recordID = 0
