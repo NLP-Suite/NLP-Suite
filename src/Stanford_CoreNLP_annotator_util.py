@@ -736,6 +736,7 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                     complete_sent = complete_sent + token['originalText']
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
+        # TODO to be checked; formerly commented out but then the Sentence ID field was always displayed as 0
         sentenceID = sentence['index'] + 1
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
