@@ -97,29 +97,29 @@ def extract_CoreNLP_SVO(svo_triplets, svo_CoreNLP_single_file, svo_CoreNLP_merge
                     svo_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
                                          'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'S': svo[2],
                                          'V': svo[3], 'O/A': svo[4],
-                                         'TIME': svo[6], 'LOCATION': each_location, 'PERSON': svo[7],
-                                         'TIME_STAMP': svo[8], field_names[10]: svo[1]
+                                         'Time': svo[6], 'Location': each_location, 'Person': svo[7],
+                                         'Time stamp': svo[8], field_names[10]: svo[1]
                                          })
                     if svo_CoreNLP_merged_file:
                         svo_CoreNLP_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
                                                     'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document),
                                                     'S': svo[2], 'V': svo[3], 'O/A': svo[4],
-                                                    'TIME': svo[6], 'LOCATION': each_location, 'PERSON': svo[7],
-                                                    'TIME_STAMP': svo[8], field_names[10]: svo[1]
+                                                    'Time': svo[6], 'Location': each_location, 'Person': svo[7],
+                                                    'Time stamp': svo[8], field_names[10]: svo[1]
                                                     })
             else:
                 svo_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
                                      'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'S': svo[2],
                                      'V': svo[3], 'O/A': svo[4],
-                                     'TIME': svo[6], 'LOCATION': svo[5], 'PERSON': svo[7], 'TIME_STAMP': svo[8],
+                                     'Time': svo[6], 'Location': svo[5], 'Person': svo[7], 'Time stamp': svo[8],
                                      field_names[10]: svo[1]
                                      })
                 if svo_CoreNLP_merged_file:
                     svo_CoreNLP_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
                                                 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document),
                                                 'S': svo[2], 'V': svo[3], 'O/A': svo[4],
-                                                'TIME': svo[6], 'LOCATION': svo[5], 'PERSON': svo[7],
-                                                'TIME_STAMP': svo[8],
+                                                'Time': svo[6], 'Location': svo[5], 'Person': svo[7],
+                                                'Time stamp': svo[8],
                                                 field_names[10]: svo[1]
                                                 })
             added.add((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
@@ -171,7 +171,7 @@ def run(inputFilename, inputDir, outputDir,
     elif inputFilename[-4:] == '.csv':
         if not 'SVO_' in inputFilename:
             mb.showerror(title='Inputfile error',
-                         message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or a txt file) and try again.")
+                         message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or txt file(s)) and try again.")
             return
         if (
                 utf8_var == True or Coref == True or Coref_Option == True or memory_var == True or Manual_Coref_var == True or date_extractor_var == True or CoreNLP_SVO_extractor_var == True):
@@ -287,8 +287,8 @@ def run(inputFilename, inputDir, outputDir,
             svo_result_list.append(tempOutputFiles[0])
 
         toProcess_list = []
-        field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'PERSON', 'TIME',
-                       'TIME_STAMP', 'Sentence']
+        field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'Location', 'Person', 'Time',
+                       'Time stamp', 'Sentence']
         if isFile & Coref:
             # ANY CHANGES IN THE COREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
             # NLP_CoreNLP_coref_The Three Little Pigs-svoResult-woFilter.txt
@@ -472,23 +472,17 @@ def run(inputFilename, inputDir, outputDir,
                     reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
                                                  reminders_util.message_geocoder, True)
                     # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
-                    locationColumnNumber=7
-                    out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window, f,
-                                                                                 outputDir,
-                                                                                 'Nominatim', 'Google Earth Pro',
-                                                                                 True, False,
-                                                                                 "south, north, west, east, los, new, san, las, la, hong",
-                                                                                 "city, island",
-                                                                                 False, False,
-                                                                                 0, locationColumnNumber,
-                                                                                 "LOCATION",
-                                                                                 'utf-8',
-                                                                                 1, 1, 1, [1], [1],
-                                                                                 'LOCATION',
-                                                                                 0, [''], [''],
-                                                                                 ['Pushpins'], ['red'],
-                                                                                 [0], ['1'], [0], [''],
-                                                                                 [1], ['Sentence'])
+                    out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
+                                 config_filename, f,
+                                 outputDir,
+                                 'Nominatim', 'Google Earth Pro & Google Maps',
+                                 False,
+                                 'Location',
+                                 'utf-8',
+                                 0, 1, [''], [''], # group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
+                                 ['Pushpins'], ['red'], # icon_var_list, specific_icon_var_list,
+                                 [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
+                                 [1], [1]) # bold_var_list, italic_var_list
 
                     if len(out_file) > 0:
                         # since out_file produced by KML is a list cannot use append
@@ -845,7 +839,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column, y_mul
                                                True)
 
 google_earth_var.set(1)
-google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where in GIS maps (via Google Earth Pro) ',
+google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where in maps (via Google Maps & Google Earth Pro)',
                                        variable=google_earth_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
                                                google_earth_checkbox)

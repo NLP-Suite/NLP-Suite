@@ -577,7 +577,13 @@ def pin_icon_select(icon_type, icon_style):
 
 # customize pins for Google Earth Pro
 # called from GIS_KML_util
-def pin_customizer(inputFilename, pnt, geo_index, index_list, location_var_name, group_var, group_values, group_labels, icon_type_list, icon_style_list, name_var_list, scale_var_list, color_var_list, color_style_var_list, description_var_list, description_csv_field_var_list, italic_var_list, bold_var_list, group_count, j):
+def pin_customizer(inputFilename, pnt, geo_index, index_list, locationColumnName,
+				   group_var, group_number_var, group_values, group_labels,
+				   icon_type_list, icon_style_list,
+				   name_var_list, scale_var_list, color_var_list, color_style_var_list,
+				   bold_var_list, italic_var_list, description_var_list, description_csv_field_var_list,
+				   j):
+
 	withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
 	data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
 
@@ -596,10 +602,10 @@ def pin_customizer(inputFilename, pnt, geo_index, index_list, location_var_name,
 				mb.showwarning(title='No Group Labels Specified for Group No.'+str(j+1), message='There is no group label specified for Group No.'+str(j+1)+'.\n\nThe program will automatically set a group label for this group as "Group '+str(j+1)+'".')
 				new_label = "Group " + str(j+1)
 				group_labels[j] = new_label
-		pnt = pin_description(inputFilename,pnt, data, headers, geo_index, index_list, location_var_name, group_var, group_values, group_labels, j, name_var_list[j], description_csv_field_var_list[j], italic_var_list[j], bold_var_list[j])
+		pnt = pin_description(inputFilename,pnt, data, headers, geo_index, index_list, locationColumnName, group_var, group_values, group_labels, j, name_var_list[j], description_csv_field_var_list[j], italic_var_list[j], bold_var_list[j])
 	# Assign name
 	if name_var_list[j] == 1:
-		pnt = pin_name(pnt, data, headers, geo_index, location_var_name, scale_var_list[j], color_var_list[j], color_style_var_list[j])
+		pnt = pin_name(pnt, data, headers, geo_index, description_location_var_name, scale_var_list[j], color_var_list[j], color_style_var_list[j])
 	return pnt
 
 # Add description to each point
@@ -611,7 +617,7 @@ def pin_customizer(inputFilename, pnt, geo_index, index_list, location_var_name,
 #	For example, from the example above, Atlanta will be 1, Boston will be 2....
 # Column_name is the description_var (passed from GUI, the drop down menu, which column we want to put as description)
 #	Expected format: column_name ==  "State"
-def pin_description(inputFilename,pnt, data, headers, geo_index, index_list, location_var_name, group_var, group_values, group_labels, j, name_var, description_csv_field_var, italic_var, bold_var):
+def pin_description(inputFilename,pnt, data, headers, geo_index, index_list, description_location_var_name, group_var, group_values, group_labels, j, name_var, description_csv_field_var, italic_var, bold_var):
 
 	# TODO if the inputFilename contains more than one document then the document name should be listed in descriptions
 	if 'Document ID' in headers:
@@ -645,7 +651,7 @@ def pin_description(inputFilename,pnt, data, headers, geo_index, index_list, loc
 	names = []
 
 	for m in range(len(headers)):
-		if location_var_name == headers[m]:
+		if description_location_var_name == headers[m]:
 			location_num = m
 			break
 
@@ -658,7 +664,7 @@ def pin_description(inputFilename,pnt, data, headers, geo_index, index_list, loc
 		group_value = group_values[j]
 		group_label = group_labels[j]
 		if name_var == 0:
-			if location_var_name == description_csv_field_var:
+			if description_location_var_name == description_csv_field_var:
 				if italic_var == 1 and bold_var == 1:
 					pnt.description = "<i><b>Location</b></i>: " + names[index-1] + "<br/><br/><i><b>Group Label</b></i>: " + group_label +  "<br/><br/><i><b>Group Value</b></i>: " + group_value
 				elif bold_var == 1:
@@ -685,7 +691,7 @@ def pin_description(inputFilename,pnt, data, headers, geo_index, index_list, loc
 									  description_csv_field_var + ": " + description[index-1] + "<br/><br/>" + \
 									  'Document' + ": " + documents[index - 1]
 		else:
-			if location_var_name == description_csv_field_var:
+			if description_location_var_name == description_csv_field_var:
 				if italic_var == 1 and bold_var == 1:
 					pnt.description = "<i><b>Group Label</b></i>: " + group_label + "<br/><br/><i><b>Group Value</b></i>: " + group_value
 				elif bold_var == 1:
@@ -714,7 +720,7 @@ def pin_description(inputFilename,pnt, data, headers, geo_index, index_list, loc
 
 	elif group_var == 0:
 		if name_var == 0:
-			if location_var_name == description_csv_field_var:
+			if description_location_var_name == description_csv_field_var:
 				if italic_var == 1 and bold_var == 1:
 					pnt.description = "<i><b>Location</b></i>: " + names[index-1]
 				elif bold_var == 1:
@@ -770,7 +776,7 @@ def pin_description(inputFilename,pnt, data, headers, geo_index, index_list, loc
 #	Expected format: [City, latitute, longitude, State, .....]
 # Index is the number of the city we are currently plotting the point
 #	For example, from the example above, Atlanta will be 1, Boston will be 2....
-# location_var_name is got from GUI_util, as the column where the locations' names at
+# description_location_var_name is got from GUI_util, as the column where the locations' names at
 #	Expected format: location_var == "Name"
 # scale_var is the variable for the scale of the name label
 #	Expected format: scale_var == 2 (it is an integer)
@@ -780,11 +786,11 @@ def pin_description(inputFilename,pnt, data, headers, geo_index, index_list, loc
 # color_style_var is a string of rgb color code for the name
 #	Expected format: color_style_var = (255, 255, 255) is white
 
-def pin_name(pnt, data, headers, geo_index, location_var_name, scale_var, color_var, color_style_var):
+def pin_name(pnt, data, headers, geo_index, description_location_var_name, scale_var, color_var, color_style_var):
 	names = []
 
 	for i in range(len(headers)):
-		if location_var_name == headers[i]:
+		if description_location_var_name == headers[i]:
 			location_num = i
 	for j in range(len(data)):
 		names.append(data[j][location_num])

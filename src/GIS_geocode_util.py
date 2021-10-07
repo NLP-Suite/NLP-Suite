@@ -17,9 +17,10 @@ from geopy.exc import GeocoderTimedOut
 import GIS_location_util
 import GIS_file_check_util
 import IO_internet_util
+import IO_csv_util
+import GIS_pipeline_util
 
 filesToOpen = []
-
 
 # TODO
 # geocode(query, exactly_one=True, timeout=DEFAULT_SENTINEL, limit=None, addressdetails=False, language=False, geometry=None, extratags=False, country_codes=None, viewbox=None, bounded=None)
@@ -93,7 +94,7 @@ def google_geocode(geolocator,loc,region=None,timeout=10):
 
 def geocode(window,locations, inputFilename, outputDir,
 			locationColumnName,
-			geocoder,Google_API,country_bias,
+			geocoder,country_bias,
 			encodingValue,
 			split_locations_prefix='',
 			split_locations_suffix=''):
@@ -105,6 +106,11 @@ def geocode(window,locations, inputFilename, outputDir,
 	distinctGeocodedList=[]
 	locationsNotFound=0
 	index=0
+
+	if "Google" in geocoder:
+		Google_API = GIS_pipeline_util.getGoogleAPIkey('Google-geocode-API-config.txt')
+	else:
+		Google_API=''
 
 	geolocator = get_geolocator(geocoder,Google_API)
 
@@ -148,13 +154,13 @@ def geocode(window,locations, inputFilename, outputDir,
 	if inputIsCoNLL==True: #the filename, sentence, date were exported
 		if datePresent==True:
 			# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
-			geowriter.writerow([locationColumnName,'Latitude','Longitude','Address','SentenceID','Sentence','DocumentID','Filename','Date'])
+			geowriter.writerow(['Location','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document','Date'])
 		else:
 			# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
-			geowriter.writerow([locationColumnName,'Latitude','Longitude','Address','SentenceID','Sentence','DocumentID','Filename'])
+			geowriter.writerow(['Location','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document'])
 	else:
 		# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
-		geowriter.writerow([locationColumnName,'Latitude','Longitude','Address'])
+		geowriter.writerow(['Location','Latitude','Longitude','Address'])
 	for item in locations:
 		index=index+1 #items in locations are NOT DISTINCT
 		if str(item)!='nan' and str(item)!='':
@@ -162,11 +168,11 @@ def geocode(window,locations, inputFilename, outputDir,
 			#for CoNLL tables as input rows & columns 
 			#   refer to the four fields exported by the NER locator
 			if inputIsCoNLL==True: #the filename was exported in GIS_location_util
-				filename = item[0]
-				itemToGeocode = item[1] # location
-				sentenceID = item[2]
+				itemToGeocode = item[0] # location in FORM
+				sentenceID = item[1]
+				sentence = item[2]
 				documentID = item[3]
-				sentence = item[4]
+				filename = item[4]
 				if datePresent==True:
 					date = item[5]
 			else:
@@ -223,10 +229,10 @@ def geocode(window,locations, inputFilename, outputDir,
 			# this warning is already given 
 			# IO_util.timed_alert(window,3000,"GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at",True,str(locationsNotFound) + " locations were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nNo Google Earth Pro kml map file can be produced.")
 		else:
-			IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " locations were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nnA Google Earth Pro kml map file will now be produced for all successfuly geocoded locations.")
+			IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.")
 	return geocodedLocationsoutputFilename, locationsNotFoundoutputFilename
 
-# called from GI_main when computing distances for non-geocoded files
+# called from GIS_pipeline_util when computing distances for non-geocoded files
 def geocode_distance(window,inputFilename,locationColumnNumber,locationColumnName,locationColumnName2,geolocator,geocoder,inputIsCoNLL,datePresent,numColumns,encodingValue,outputDir):
 	if not IO_internet_util.check_internet_availability_warning('GIS distance geocoder'):
 		return

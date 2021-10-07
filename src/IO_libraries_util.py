@@ -214,7 +214,6 @@ def inputExternalProgramFileCheck(software_dir, programName):
                            message="The selected software directory\n  " + software_dir + "'\nis NOT the expected WordNet directory. The directory should contain, among other things, the directories \'dict\' and \'src\'. DO MAKE SURE THAT WHEN YOU UNZIP THE WORDNET ARCHIVE YOU DO NOT END UP WITH A WORDNET DIRECTORY INSIDE A WORDENET DIRECTORY.\n\nPlease, select the appropriate WordNet directory and try again!\n\nYou can download WordNet at https://wordnet.princeton.edu/download/current-version.\n\nPlease, read the TIPS_NLP_WordNet.pdf.")
             return False
 
-
 def update_csv_fields(existing_csv: list) -> list:
     """
 

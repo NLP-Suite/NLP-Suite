@@ -4,7 +4,7 @@ import sys
 
 import requests
 
-import GUI_util
+# import GUI_util
 import IO_libraries_util
 
 # Creates a circular dependent imports
@@ -151,7 +151,7 @@ def trace_checkbox_NoLabel(checkbox_var, checkbox_text, onText, offText):
 def display_logo():
     # Necessary to avoid creating a circular dependent import
     from IO_libraries_util import install_all_packages
-    if install_all_packages(GUI_util.window, "GUI_util", ['tkinter', 'os', 'subprocess', 'PIL']) == False:
+    if install_all_packages(window, "GUI_util", ['tkinter', 'os', 'subprocess', 'PIL']) == False:
         sys.exit(0)
 
     from PIL import Image, ImageTk
@@ -526,7 +526,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
         openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer4)
 
 def setup_IO_configuration_options(IO_setup_display_brief,y_multiplier_integer,ScriptName):
-    if 'Default' in GUI_util.IO_setup_menu_var.get():
+    if 'Default' in IO_setup_menu_var.get(): # GUI_util.GUI_util.IO_setup_menu_var.get()
         temp_config_filename = 'default-config.txt'
     else:
         temp_config_filename=config_filename
@@ -776,7 +776,7 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
                                          select_output_file_button, outputFilename, select_output_dir_button,
                                          output_dir_path)[0]
 
-        if 'Default' in GUI_util.IO_setup_menu_var.get():
+        if 'Default' in IO_setup_menu_var.get(): #GUI_util.IO_setup_menu_var.get()
             temp_config_filename = 'default-config.txt'
         else:
             temp_config_filename = config_filename

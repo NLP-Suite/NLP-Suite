@@ -1,5 +1,3 @@
-import IO_files_util
-import tkinter as tk
 import tkinter.messagebox as mb
 import IO_csv_util
 import IO_CoNLL_util
@@ -130,7 +128,7 @@ def CoNLL_checker(inputFilename):
         datePresent = True
     else:
         datePresent = False
-    if 'Latitude' in headers or 'Longitude' in headers:
+    if 'Latitude' in headers and 'Longitude' in headers:
         inputIsGeocoded = True
     else:
         inputIsGeocoded = False

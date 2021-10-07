@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"word2vec_main.py",['os','tkinter', 'gensim', 'spacy'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"word2vec_main_1.py",['os','tkinter'])==False:
     sys.exit(0)
 
 import os
@@ -11,7 +11,6 @@ import tkinter.messagebox as mb
 
 import GUI_IO_util
 import IO_files_util
-import word2vec_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -19,8 +18,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
         remove_stopwords_var, lemmatize_var, vector_size_var, window_var, min_count_var):
 
     ## if statements for any requirements
-    filesToOpen = []
-    filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
+
+    word2vec_util_1.run_Gensim(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
                              remove_stopwords_var, lemmatize_var, vector_size_var, window_var, min_count_var)
 
     if openOutputFiles==True:
@@ -61,6 +60,19 @@ else: # full display
 
 GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 
+if IO_setup_display_brief:
+    GUI_height = GUI_height - 80
+    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
+    increment=0 # used in the display of HELP messages
+else: # full display
+    # GUI CHANGES add following lines to every special GUI
+    # +3 is the number of lines starting at 1 of IO widgets
+    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
+    y_multiplier_integer = GUI_util.y_multiplier_integer + 2  # IO FULL display
+    increment=2
+
+# GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
 GUI_label='Graphical User Interface (GUI) for Word2Vec with Gensim'
 config_filename='word2vec-gensim-config.txt'
 # The 6 values of config_option refer to:
@@ -91,7 +103,7 @@ lemmatize_var=tk.IntVar()
 vector_size_var=tk.IntVar()
 window_var=tk.IntVar()
 min_count_var=tk.IntVar()
-
+#sg_var = tk.IntVar() ## to be added
 
 ##
 remove_stopwords_var.set(1)
@@ -101,26 +113,25 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 lemmatize_var.set(1)
 lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,lemmatize_checkbox)
-
 ##
 vector_size_lb = tk.Label(window,text='Vector size')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,vector_size_lb,True)
 
-vector_size_var.set(100)
+vector_size_var.set(50)
 vector_size_entry = tk.Entry(window,width=5,textvariable=vector_size_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,vector_size_entry)
 ##
 window_lb = tk.Label(window,text='Window size')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,window_lb,True)
 
-window_var.set(5)
+window_var.set(4)
 window_entry = tk.Entry(window,width=5,textvariable=window_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,window_entry)
 ##
 min_count_lb = tk.Label(window,text='Minimum count')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,min_count_lb,True)
 
-min_count_var.set(5)
+min_count_var.set(2)
 min_count_entry = tk.Entry(window,width=5,textvariable=min_count_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,min_count_entry)
 
@@ -140,9 +151,9 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
 
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help", "Please, tick the checkbox to exclude stopwords from the analyzes (e.g, determiners, personal and possessive pronouns, auxiliaries).")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help", "Please, tick the checkbox to lemmatize nouns (using the singular version instead of plural, e.g., ox iinstead of oxen, child instead of children) and verbs (using the infinitive form instead of any verb forms, e.g., go gor going, went, goes).")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 3), "Help", "It refers to the dimensionality of the word vectors. If you have a large corpus (> billions of tokens), you can go up to 100-300 dimensions. Generally word vectors with more dimensions give better results")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 4), "Help", "It refers to the maximum distance between the current and predicted word within a sentence. In other words, how many words come before and after your given word.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 5), "Help", "It refers to the minimum frequency threshold. The words with total frequency lower than this will be ignored.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 3), "Help", "need to be added")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 4), "Help", "need to be added")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 5), "Help", "need to be added")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help",GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
