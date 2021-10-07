@@ -177,7 +177,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
         #  Document ID, Sentence ID, Document, S, V, O/A, Sentence
         # Dec. 21
-        'SVO':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', "NEGATION","LOCATION",'PERSON','TIME','TIME_STAMP','Sentence'],
+        'SVO':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', "Negation","Location",'Person','Time','Time stamp','Sentence'],
         'OpenIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'Sentence'],
         'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
         'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
@@ -279,6 +279,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
 
     time.sleep(5)
+
+    if 'POS' in str(annotator_params) or 'NER' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+            reminders_util.title_options_CoreNLP_POS_NER_maxlen,
+            reminders_util.message_CoreNLP_POS_NER_maxlen,
+            True)
 
     # annotating each input file
     docID=0
@@ -957,6 +963,7 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
                 speakers[sent] = [quote['speaker']]
     # iterate over those sentence indexes and find its complete sentence
     for quoted_sent_id, number_of_quotes in quoted_sentences.items():
+        sentenceID = quoted_sent_id+1
         sentence_data = json['sentences'][quoted_sent_id]
         # for sentence in CoreNLP_output['sentences']:
         complete_sent = ''
@@ -971,16 +978,12 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
             
         check_sentence_length(len(sentence_data['tokens']), sentenceID, config_filename)
 
-        # leave out the filename for now
-        # path, file_name = os.path.split(document)
-        # temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentenceID,
-        #         complete_sent, number_of_quotes]
         if extract_date_from_filename_var:
             temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentenceID,
-                    complete_sent, number_of_quotes, speakers[quoted_sent_id],date_str]
+                    complete_sent, number_of_quotes, str(speakers[quoted_sent_id][0]),date_str]
         else:
             temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentenceID,
-                    complete_sent, number_of_quotes, speakers[quoted_sent_id]]
+                    complete_sent, number_of_quotes, str(speakers[quoted_sent_id][0])]
         result.append(temp)
     return result
 
@@ -1009,7 +1012,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
                     complete_sent = complete_sent + token['originalText']
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
-
+        sentenceID = sentenceID + 1
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         SVO, L, T, T_S, P, N = SVO_enhanced_dependencies_util.SVO_extraction(sent_data)# main function

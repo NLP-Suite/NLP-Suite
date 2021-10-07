@@ -11,6 +11,7 @@ import os
 import tkinter.messagebox as mb
 import pandas as pd
 import csv
+import GUI_util
 from csv import writer
 
 # reminders content for specific GUIs are set in the csv file reminders
@@ -46,8 +47,8 @@ message_Excel_Charts = 'The Excel chart to be displayed has hover-over effects (
 title_options_GIS_Nominatim = ['GIS Nominatim geocoder']
 message_GIS_Nominatim = "If the Nominatim geocoder service exits with the error 'too many requests', you can break up the csv location file and process each subfile for geocoding as normal csv files."
 
-title_options_Google_Earth_Pro_download = ['Google Earth Pro download']
-message_Google_Earth_Pro_download = 'The GIS pipeline requires a copy of the FREEWARE Google Earth Pro installed on your machine.\n\nYou can download and install the FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro'
+title_options_Google_Earth_Pro_download = ['Google Earth Pro']
+message_Google_Earth_Pro_download = 'The GIS pipeline requires a copy of the FREEWARE Google Earth Pro installed on your machine in order to visualize the kml files produced for Google Earth Pro.\n\nYou can download and install the FREEWARE GOOGLE EARTH PRO for desktop at https://www.google.com/earth/versions/'
 
 title_options_VADER = ['VADER']
 message_VADER = 'VADER heavily relies on a number of NLTK libraries. If VADER fails to run, make sure that in command line you run\n\npython -m nltk.downloader all'
@@ -81,7 +82,10 @@ title_options_CoreNLP_shutting_down = ['CoreNLP Server is shutting down']
 message_CoreNLP_shutting_down = "The Stanford CoreNLP, after firing up, will display on command line/prompt the message: CoreNLP Server is shutting down.\n\nIt is NOT a problem. The process will continue..."
 
 title_options_CoreNLP_NER_tags = ['CoreNLP NER tags']
-message_CoreNLP_NER_tags = "If you are planning to produce frequency distributions of NER tags directly from the CoNLL table, you need to remember that the tag 'Date' may be grossly overestimated. For instance, in the expression 'the day before Christmas' each word 'the,' 'day,' 'before,' 'Christmas' will be tagged as NER date. The same is true for NER CITY tags such as 'New York City.'\n\nA better way to obtain frquency distrinbutions of NER values is to run the NER annotators from the 'Stanford_CoreNLP_NER_main.py.'"
+message_CoreNLP_NER_tags = "The CoNLL table produced by the CoreNLP parser has a record for each token in the document(s) processed.\n\nIf you are planning to produce frequency distributions of NER tags directly from the CoNLL table, you need to remember that tags such as 'Date' or 'City' may be grossly overestimated. For instance, in the expression 'the day before Christmas' each word 'the,' 'day,' 'before,' 'Christmas' will be tagged as NER date. The same is true for NER CITY tags such as 'New York City.'\n\nA better way to obtain frequency distributions of NER values is to run the NER annotators from the 'Stanford_CoreNLP_NER_main.py.'"
+
+title_options_CoreNLP_POS_NER_maxlen = ['CoreNLP POS/NER max sentence length']
+message_CoreNLP_POS_NER_maxlen = "The CoreNLP POS/NER annotators set a maximum sentence length for processing.\n\nSentences longer that your selected max length will be cut and some POS/NER tags in those long sentences may be be lost."
 
 title_options_memory = ['Available memory']
 message_memory = 'Your computer may not have enough memory to run some of the more resource-intensive algorithms of Stanford CoreNLP (e.g., coreference or some neural network models)\n\nStill, there are several options you may take (e.g., splitting up long documents into shorter parts and feeding tem to CoreNLP; checking your sentence length statistics - anything above 70 will most likely give you troubles, cnsidering that the average sentence length in modern English is 20 words). On Stanford Core NLP and memory issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.'
@@ -119,14 +123,14 @@ message_SVO_corpus = 'You have selected to work with a set of txt files in a dir
 title_options_shape_of_stories_CoreNLP = ['Stanford CoreNLP Neural Network']
 message_shape_of_stories_CoreNLP = 'The Stanford CoreNLP Neural Network approach to Sentiment analysis, like all neural network algorithms, is VERY slow. On a few hundred stories it may take hours to run.\n\nAlso, neural network algorithms are memory hogs. MAKE SURE TO ALLOCATE AS MUCH MEMORY AS YOU CAN AFFORD ON YOUR MACHINE.'
 
+title_options_CoNLL_analyzer = ['CoNLL table analyzer']
+message_CoNLL_analyzer = "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' where you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words)."
+
 title_options_shape_of_stories_best_topic = ['Best topic estimation']
 message_shape_of_stories_best_topic = 'The function that estimates the best topics is VERY slow and may take an hour or longer. You can follow its progress in command line.'
 
 title_options_language_detection = ['Language detection']
 message_language_detection = 'Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.\n\nPlease, arm yourself with patience, depennding upon the number and size of documents processed.'
-
-title_options_CoNLL_analyzer = ['CoNLL table analyzer']
-message_CoNLL_analyzer = "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' where you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words)."
 
 title_options_SSdata = ['Time to download new US SS data']
 message_SSdata = 'It has been more than two years since the US Social Security gender data have been downloaded to your machine.\n\nCheck on the US Social Security website whether more current data are available at US Social Security website\n\nhttps://www.ssa.gov/oact/babynames/limits.html'
@@ -162,8 +166,11 @@ message_GIS_GUI = 'The options available on the GUI have been automatically set 
 title_options_Google_Earth=['Open Google Earth GUI']
 message_Google_Earth = 'You should tick the Open GUI checkbox ONLY if you wish to open the GUI.\n\nThe Google Earth Pro GUI will provide a number of options to personalize a Google Earth Pro map. Press Run after selecting the Open GUI option.'
 
+title_options_Google_Earth_CoNLL = ['Google Earth Pro with CoNLL input']
+message_Google_Earth_CoNLL = "You are using Google Earth Pro with a CoNLL table in input. The algorithm will geocode every instance of NER location tags (CITY, STATE_OR_PROVINCE, COUNTRY). But... The CoNLL table produced by the CoreNLP parser has a record for each token in the document(s) processed.\n\nThus, each word in 'New York City' would have a separate NER CITY tag.\n\nAs input, you should use the csv file of NER values produced by 'Stanford_CoreNLP_NER_main.py.'"
+
 title_options_Google_API=['Google Maps API']
-message_Google_API = 'If the heatmap produced by Google Maps is displayed correctly for a split second and then displays "Oops! Something went wrong" you probably:\n  1. pasted incorrectly into the API key widget the Google API key;\n  2. you may not have entered billing information when applying for an API key; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale;\n  3. you may not have enabled the Maps JavaScript API (and if you use Google for geocoding, you also need to enable the Geocoding API.\n\nPlease, check the API key, your billing information, and tthe API enabled and try again.'
+message_Google_API = 'If the heatmap produced by Google Maps is displayed correctly for a split second and then displays "Oops! Something went wrong" you probably:\n\n   1. pasted incorrectly into the API key widget the Google API key;\n   2. you may not have entered billing information when applying for an API key; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale;\n   3. you may not have enabled the Maps JavaScript API (and if you use Google for geocoding, you also need to enable the Geocoding API).\n\nPlease, check the API key, your billing information, and the API enabled and try again.'
 
 title_options_Excel = ['Excel Charts']
 message_Excel = 'The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).\n\nFirst, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).\n\nSecond, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.'
@@ -173,6 +180,9 @@ message_gensim = 'The Gensim topic modeling routine run from here is a reduced v
 
 title_options_gensim_release = ['Gensim 4.0']
 message_gensim_release = 'Gensim release 4.0 removed the wrappers of other library algorithms. The algorithms running Mallet through Gensim cannot be run. Please, run Mallet using the Mallet topic modelling script to run Mallet. If your work depends on any of the Gensim modules based on wrappers (e.g., the computation of the coherence value for each topic or of the optimal number of topics), uninstall Gensim 4.0 and install Gensim 3.8.3, the last release when wrappers was supported.\n\nFor more information, please, visit the Gensim GitHub page https://github.com/RaRe-Technologies/gensim/wiki/Migrating-from-Gensim-3.x-to-4#15-removed-third-party-wrappers.'
+
+title_options_input_csv_file = ["Input csv file"]
+message_input_csv_file = "You have a csv file in the 'Select INPUT CSV file' widget. The RUN coommand would process this file in input rather than the file stored in the I/O configuration.\n\nPress ESC if you want to clear the INPUT CSV file widget."
 
 title_options_geocoder = ["GIS geocoder"]
 message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.'
@@ -388,6 +398,7 @@ def saveReminder(df,row_num, message, event, status):
     df.at[row_num, "Event"] = event # change it to yes or no
     df.at[row_num, "Status"] = status # change it to yes or no
     df.to_csv(remindersFile, index=False, header=True)
+    getReminders_list(config_filename)
 
 def insertReminder(routine,title, message, event, status):
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
