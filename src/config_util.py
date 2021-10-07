@@ -35,16 +35,21 @@ emptyConfigString = "EMPTY LINEEMPTY LINEEMPTY LINEEMPTY LINE"
 
 # used in GIS_GUI and GIS_geocode_GUI
 
-def Google_API_Config_Save(Google_API):
+# Google_config: 'Google-geocode_API-config.txt' or 'Google-Maps_API-config.txt'
+def Google_API_Config_Save(Google_config,Google_API_key):
     # save the API key is not blank and not already there
-    if Google_API != '':
-        GoogleConfigFilename = os.path.join(GUI_IO_util.configPath, 'Google-API-config.txt')
-        if not os.path.isfile(GoogleConfigFilename):
-            with open(GoogleConfigFilename, "w+", newline='', encoding='utf-8', errors='ignore') as file1:
-                file1.write(Google_API)
-                mb.showwarning(title='Warning',
-                               message='The Google API key\n\n' + Google_API + '\n\nhas been saved to ' + GoogleConfigFilename + '."\n\nIt will read in automatically every time you select the Google geocoder.')
-            file1.close()
+    if Google_API_key != '':
+        GoogleConfigFilename = os.path.join(GUI_IO_util.configPath, Google_config)
+        # if not os.path.isfile(GoogleConfigFilename):
+        with open(GoogleConfigFilename, "w+", newline='', encoding='utf-8', errors='ignore') as file1:
+            file1.write(Google_API_key)
+            if 'Maps' in Google_config:
+                msg='Maps'
+            else:
+                msg = 'geocoder'
+            mb.showwarning(title='Warning',
+                           message='The Google API key\n\n' + Google_API_key + '\n\nhas been saved to ' + GoogleConfigFilename + '."\n\nIt will read in automatically every time you select the Google ' + msg)
+        file1.close()
 
 # fileName with path
 def checkConfigFileExists(configFile, fileName, IO):

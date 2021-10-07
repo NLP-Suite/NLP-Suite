@@ -48,10 +48,11 @@ def run(inputFilename, outputDir, openOutputFiles,
             group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
             icon_var_list, specific_icon_var_list,
             name_var_list, scale_var_list, color_var_list, color_style_var_list,
-            description_csv_field_var, bold_var, italic_var,  bold_var_list, italic_var_list,
+            description_csv_field_var, bold_var_list, italic_var_list,
             description_var_list, description_csv_field_var_list):
 
     filesToOpen = []
+    inputIsCoNLL = False
 
     if locationColumnName=='':
         mb.showwarning(title='No location column selected', message='No csv column containing location names has been selected.\n\nPlease, select a column and try again.')
@@ -75,34 +76,25 @@ def run(inputFilename, outputDir, openOutputFiles,
         mb.showwarning(title='No CSV field for Group Split Criterion Found', message='The group box is ticked for multiple groups mapping but no csv field is specified for group splitting criterion.\n\nPlease, check your input and try again.')
         return
 
-    if 'latitude' in str(headers).lower() and 'longitude' in str(headers).lower():
-        inputIsGeocoded = True
-    else:
-        inputIsGeocoded = False
-
     datePresent=False
     geocoder='Nominatim'
-    split_locations_prefix="South, North, West, East, Los, New, San, Las, La, Hong"
-    split_locations_suffix="City, Island"
     encodingValue='utf-8'
 
     reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
                                  reminders_util.message_geocoder, True)
 
-    filesToOpen, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,inputFilename,outputDir,
-                                                                       geocoder, 'Google Earth Pro',
-                                                                       withHeader,inputIsCoNLL,
-                                                                       split_locations_prefix,
-                                                                       split_locations_suffix,
-                                                                       datePresent, inputIsGeocoded,
-                                                                       filenamePositionInCoNLLTable,
-                                                                       locationColumnNumber,locationColumnName,
-                                                                       encodingValue,
-                                                                       group_number_var, italic_var, bold_var, italic_var_list, bold_var_list,
-                                                                       description_csv_field_var,
-                                                                       group_var, group_values_entry_var_list, group_label_entry_var_list, icon_var_list, specific_icon_var_list, name_var_list, scale_var_list, color_var_list, color_style_var_list,
-                                                                       description_var_list,
-                                                                       description_csv_field_var_list)
+    filesToOpen, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,config_filename,
+                                       inputFilename, outputDir,
+                                       geocoder, 'Google Earth Pro',
+                                       datePresent,
+                                       locationColumnName,
+                                       encodingValue,
+                                       group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
+                                       icon_var_list, specific_icon_var_list,
+                                       name_var_list, scale_var_list, color_var_list, color_style_var_list,
+                                       bold_var_list, italic_var_list,
+                                       description_var_list, description_csv_field_var_list)
+
     filesToOpen.append(kmloutputFilename)
     if len(filesToOpen) == 0:
             return
@@ -119,7 +111,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),GUI_util.output_dir_
                 group_var.get(), group_number_var.get(), group_values_entry_var_list,group_label_entry_var_list,
                 icon_var_list, specific_icon_var_list,
                 name_var_list, scale_var_list, color_var_list, color_style_var_list,
-                description_csv_field_var.get(), bold_var.get(), italic_var.get(),italic_var_list, bold_var_list,
+                description_csv_field_var.get(), italic_var_list, bold_var_list,
                 description_var_list, description_csv_field_var_list)
 
 
@@ -184,11 +176,11 @@ http://maps.google.com/mapfiles/kml/pal1,pal2, pal3, pal4, pal5
 http://maps.google.com/mapfiles
 """
 
-window = GUI_util.window
-config_input_output_options = GUI_util.config_input_output_options
-config_filename = GUI_util.config_filename
-inputFilename = GUI_util.inputFilename
-input_main_dir_path = GUI_util.input_main_dir_path
+# window = GUI_util.window
+# config_input_output_options = GUI_util.config_input_output_options
+# config_filename = GUI_util.config_filename
+# inputFilename = GUI_util.inputFilename
+# input_main_dir_path = GUI_util.input_main_dir_path
 
 internetAvailable = False
 
@@ -238,8 +230,16 @@ def clear(e):
     date_var.set('')
     date_format_var.set('')
     location_var.set('')
+    group_var.set(0)
+    name_var.set(0)
+    description_var.set(0)
+    description_csv_field_menu.configure(state='normal')
+    description_csv_field_var_list.clear
+    description_csv_field_menu.configure(state='disabled')
+    description_csv_field_var.set('')
+    bold_checkbox.configure(state='disabled')
+    italic_checkbox.configure(state='disabled')
     GUI_util.clear("Escape")
-
 
 window.bind("<Escape>", clear)
 
@@ -335,8 +335,8 @@ def add_group_to_list():
         selected_group.append([group_values_entry_var.get()])
         group_number_var.set(group_number_var.get() + 1)
 
-        group_values_entry_var_list.append("")
-        group_label_entry_var_list.append("")
+        group_values_entry_var_list.clear() # .append("")
+        group_label_entry_var_list.clear() # .append("")
         group_values_entry_var.set("")
         group_label_entry_var.set("")
 
@@ -346,32 +346,29 @@ def add_group_to_list():
         specific_icon_var.set('red')
 
         name_var_list.append(0)
-        scale_var_list.append("")
-        color_var_list.append("")
-        color_style_var_list.append("")
+        scale_var_list.clear() # .append("")
+        color_var_list.clear() # .append("")
+        color_style_var_list.clear() # .append("")
 
         name_var.set(0)
         scale_var.set(2)
         color_var.set(0)
         color_style_var.set("")
 
-        description_var_list.append(0)
-        description_csv_field_var_list.append("")
-        italic_var_list.append("")
-        bold_var_list.append("")
+        description_var_list.clear()
+        description_csv_field_var_list.clear()
+        italic_var_list.clear()
+        bold_var_list.clear() # append("")
 
         description_var.set(0)
-        description_csv_field_var.set("")
+        description_csv_field_var.clear()
         bold_var.set(1)
         italic_var.set(1)
-
-
     else:
         selected_group.clear()
         selected_group.append([group_values_entry_var.get()])
         group_label_entry_var_list.append(group_label_entry_var.get())
         group_values_entry_var_list.append(group_values_entry_var.get())
-
 
 group_checkbox = tk.Checkbutton(window, text='Icon for group of values', variable=group_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -649,12 +646,12 @@ name_var.trace('w', activate_name_options)
 activate_name_options()
 
 description_var.set(0)
-description_var_list.append(0)
+description_var_list.clear()
 description_checkbox = tk.Checkbutton(window, text='DESCRIPTION ', variable=description_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                description_checkbox, True)
 
-description_csv_field_var_list.append("")
+description_csv_field_var_list.clear()
 field_lb = tk.Label(window, text='Select csv field ')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                field_lb, True)
@@ -667,17 +664,23 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_c
 
 
 def changed_GIS_filename(*args):
+    global errorDisplayed, inputError
+    errorDisplayed=True
     # check that input file is a CoNLL table;
     #	many options are NOT available when working with a CoNLL table
-    isCoNLL = IO_CoNLL_util.check_CoNLL(inputFilename.get(), True)
-    if isCoNLL == True:
+    if inputFilename.get().endswith('.txt'):
+        inputError=True
+        # return
+
+    inputIsCoNLL = IO_CoNLL_util.check_CoNLL(inputFilename.get(), True)
+    if inputIsCoNLL == True:
         # location_var.set('NER') #moved at the end or it gets reset below
         location_field.config(state='disabled')
         icon_csv_field_var.set('')
         description_csv_field_var.set('')
         csv_field_forGroups_menu.config(state='disabled')
-        name_checkbox.config(state='disabled')
-        description_checkbox.config(state='disabled')
+        # name_checkbox.config(state='disabled')
+        # description_checkbox.config(state='disabled')
         description_csv_field_menu.config(state='disabled')
     else:
         location_var.set('')
@@ -710,6 +713,8 @@ def changed_GIS_filename(*args):
     m = description_csv_field_menu["menu"]
     m.delete(0, "end")
     for s in menu_values:
+        if 'Sentence' == s:
+            description_csv_field_var.set('Sentence')
         m.add_command(label=s, command=lambda value=s: description_csv_field_var.set(value))
 
     if 'date' in str(menu_values).lower():
@@ -722,32 +727,18 @@ def changed_GIS_filename(*args):
     else:
         location_var.set('')
 
-    if 'sentence' in str(menu_values).lower():
-        description_var.set(1)
-        description_csv_field_var.set('Sentence')
-    else:
+    if description_csv_field_var.get()=='':
         if 'location' in str(menu_values).lower():
             description_var.set(1)
             description_csv_field_var.set('Location')
         else:
             description_var.set(0)
             description_csv_field_var.set('')
-    if isCoNLL == True:
+    if inputIsCoNLL == True:
         location_var.set('NER')
 inputFilename.trace('w', changed_GIS_filename)
 
-
 # changed_GIS_filename() added at the end after all widgets have been displayed
-
-def activate_description_options(*args):
-    if description_var.get() == 1:
-        description_csv_field_menu.configure(state='normal')
-    else:
-        description_csv_field_menu.configure(state='disabled')
-
-
-description_var.trace('w', activate_description_options)
-activate_description_options()
 
 italic_var_list.append(1)
 bold_var_list.append(1)
@@ -764,6 +755,20 @@ italic_checkbox.config(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate+400, y_multiplier_integer,
                                                italic_checkbox)
 
+def activate_description_options(*args):
+    if description_var.get() == 1:
+        description_csv_field_menu.configure(state='normal')
+        bold_checkbox.configure(state='normal')
+        italic_checkbox.configure(state='normal')
+    else:
+        description_csv_field_var_list.clear
+        description_csv_field_menu.configure(state='disabled')
+        description_csv_field_var.set('')
+        bold_checkbox.configure(state='disabled')
+        italic_checkbox.configure(state='disabled')
+
+description_var.trace('w', activate_description_options)
+activate_description_options()
 
 def activate_description(*args):
     if len(description_csv_field_var.get()) > 0:
@@ -772,7 +777,6 @@ def activate_description(*args):
     else:
         bold_checkbox.config(state='disabled')
         italic_checkbox.config(state='disabled')
-
 
 description_csv_field_var.trace('w', activate_description)
 activate_description()
@@ -911,7 +915,8 @@ color_style_var_list_update()
 def description_var_list_update(*args):
     if len(description_var_list) >= int(group_number_var.get()):
         del description_var_list[-1]  # delete the last selected if there is a new currently selected chart
-    description_var_list.append(description_var.get())
+    if description_var.get()!=0:
+        description_var_list.append(description_var.get())
 
 
 # print("description_var_list",description_var_list)
@@ -1000,7 +1005,14 @@ readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
 GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
-changed_GIS_filename()
+if errorDisplayed==False:
+    changed_GIS_filename()
+
+if inputError==True:
+    mb.showwarning(title='Input file error',
+                   message='The GIS Google Earth Pro algorithm expects in input a csv type file of locations or of geocoded locations.\n\nPlease, select a csv input file and try again.')
+    inputError=False
+
 import IO_internet_util
 
 if IO_internet_util.check_internet_availability_warning("Goole Earth Pro") == False:
