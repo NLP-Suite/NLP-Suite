@@ -60,6 +60,7 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
         if IO_libraries_util.inputProgramFileCheck(script_to_run + ".py") == False:
             return
         outputFile=[]
+
         if 'predict_encoding' in function_to_run or 'empty_file' in function_to_run:
             # use default first 20 lines
             func(inputFilename,input_main_dir_path)

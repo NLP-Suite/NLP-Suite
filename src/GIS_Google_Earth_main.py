@@ -674,6 +674,9 @@ def changed_GIS_filename(*args):
 
     inputIsCoNLL = IO_CoNLL_util.check_CoNLL(inputFilename.get(), True)
     if inputIsCoNLL == True:
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_Google_Earth_CoNLL,
+                                         reminders_util.message_Google_Earth_CoNLL, True)
+
         # location_var.set('NER') #moved at the end or it gets reset below
         location_field.config(state='disabled')
         icon_csv_field_var.set('')
