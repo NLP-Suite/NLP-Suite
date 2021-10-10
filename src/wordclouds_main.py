@@ -163,6 +163,7 @@ def clear(e):
     punctuation_var.set(0)
     lowercase_var.set(0)
     collocation_var.set(0)
+    differentPOS_differentColors_var.set(0)
     color_var.set(0)
     color_style_var.set('')
     csvField_color_list.clear()
