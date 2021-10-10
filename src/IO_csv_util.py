@@ -10,6 +10,7 @@ import csv
 import tkinter.messagebox as mb
 import pandas as pd
 import os
+import IO_csv_util
 
 #if any column header contains just numbers the function will return FALSE
 def csvFile_has_header(file_path):
@@ -239,4 +240,27 @@ def undressFilenameForCSVHyperlink(fileName):
     fileName=fileName.replace('=hyperlink("','')
     fileName=fileName.replace('")','')
     return fileName
+
+
+# If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location' in GIS files
+def rename_header(inputFilename, header1, header2):
+    headerFound=False
+    if not inputFilename.endswith('.csv'):
+        return True
+    headers = IO_csv_util.get_csvfile_headers(inputFilename)
+    for header in headers:
+        if header2 == header:  # the file already contains the header2
+            return True
+        if header1 == header:
+            ID=get_columnNumber_from_headerValue(headers, header1)
+            # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
+            temp = pd.read_csv(inputFilename)
+            if temp.columns[ID] == header1:
+                temp = temp.rename(columns={header1: header2})
+                temp.to_csv(inputFilename, index=False)
+                headerFound = True
+                break
+    if headerFound==False:
+        mb.showwarning(title="File type error", message='The file\n\n' + inputFilename + "\n\ndoes not contain a header '" + header1 + "' to be converted to '" + header2 + "'.\n\nPlease, check the file and try again.")
+    return headerFound
 
