@@ -96,28 +96,28 @@ def extract_CoreNLP_SVO(svo_triplets, svo_CoreNLP_single_file, svo_CoreNLP_merge
                 for each_location in location_list:
                     svo_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
                                          'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'S': svo[2],
-                                         'V': svo[3], 'O/A': svo[4],
+                                         'V': svo[3], 'O': svo[4],
                                          'Time': svo[6], 'Location': each_location, 'Person': svo[7],
                                          'Time stamp': svo[8], field_names[10]: svo[1]
                                          })
                     if svo_CoreNLP_merged_file:
                         svo_CoreNLP_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
                                                     'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document),
-                                                    'S': svo[2], 'V': svo[3], 'O/A': svo[4],
+                                                    'S': svo[2], 'V': svo[3], 'O': svo[4],
                                                     'Time': svo[6], 'Location': each_location, 'Person': svo[7],
                                                     'Time stamp': svo[8], field_names[10]: svo[1]
                                                     })
             else:
                 svo_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
                                      'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'S': svo[2],
-                                     'V': svo[3], 'O/A': svo[4],
+                                     'V': svo[3], 'O': svo[4],
                                      'Time': svo[6], 'Location': svo[5], 'Person': svo[7], 'Time stamp': svo[8],
                                      field_names[10]: svo[1]
                                      })
                 if svo_CoreNLP_merged_file:
                     svo_CoreNLP_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
                                                 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document),
-                                                'S': svo[2], 'V': svo[3], 'O/A': svo[4],
+                                                'S': svo[2], 'V': svo[3], 'O': svo[4],
                                                 'Time': svo[6], 'Location': svo[5], 'Person': svo[7],
                                                 'Time stamp': svo[8],
                                                 field_names[10]: svo[1]
@@ -200,7 +200,7 @@ def run(inputFilename, inputDir, outputDir,
 
     # CoRef _____________________________________________________
 
-    # field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'PERSON', 'TIME', 'TIME_STAMP', 'Sentence']
+    # field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'LOCATION', 'PERSON', 'TIME', 'TIME_STAMP', 'Sentence']
 
     if Coref:
         # field_names[10] = "Corefed Sentence"
@@ -287,7 +287,7 @@ def run(inputFilename, inputDir, outputDir,
             svo_result_list.append(tempOutputFiles[0])
 
         toProcess_list = []
-        field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'Location', 'Person', 'Time',
+        field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Location', 'Person', 'Time',
                        'Time stamp', 'Sentence']
         if isFile & Coref:
             # ANY CHANGES IN THE COREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
@@ -422,7 +422,7 @@ def run(inputFilename, inputDir, outputDir,
                     myfile = IO_files_util.openCSVFile(inputFilename, 'r')
                     currenttext, color_to_words = wordclouds_util.processColorList("", defaultdict(list),
                                                                                    ['S', '(255, 0, 0)', '|', 'V',
-                                                                                    '(0, 0, 255)', '|', 'O/A',
+                                                                                    '(0, 0, 255)', '|', 'O',
                                                                                     '(0, 128, 0)', '|'], myfile)
                     out_file = wordclouds_util.display_wordCloud_sep_color(inputFilename, outputDir, currenttext,
                                                                            color_to_words, "", collocation,prefer_horizontal=.9)
@@ -434,7 +434,7 @@ def run(inputFilename, inputDir, outputDir,
                         myfile = IO_files_util.openCSVFile(f, "r")
                         currenttext, color_to_words = wordclouds_util.processColorList("", defaultdict(list),
                                                                                        ['S', '(255, 0, 0)', '|', 'V',
-                                                                                        '(0, 0, 255)', '|', 'O/A',
+                                                                                        '(0, 0, 255)', '|', 'O',
                                                                                         '(0, 128, 0)', '|'], myfile)
                         out_file = wordclouds_util.display_wordCloud_sep_color(f, outputDir, currenttext,
                                                                                color_to_words,

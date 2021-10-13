@@ -333,7 +333,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
 
     df = input_df
     new_df = pd.DataFrame(
-        columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'S(NP)', 'O(NP)', 'PERSON', 'LOCATION',
+        columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'S(NP)', 'O(NP)', 'PERSON', 'LOCATION',
                  'TIME', 'NEGATION', 'Sentence'])
     document_id, sent_id = 0, 0
     sentence_start_index = extract_sentence_index(df)
@@ -393,7 +393,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
                 new_row = pd.DataFrame(
                     [[document_id, sent_id, formatted_input_file_name, SVO['S'], SVO['V'], SVO['O'], SVO['S(NP)'],
                       SVO['O(NP)'], SVO['PERSON'], SVO['LOCATION'], SVO['TIME'], SVO['NEGATION'], sentence]],
-                    columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'S(NP)', 'O(NP)', 'PERSON',
+                    columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'S(NP)', 'O(NP)', 'PERSON',
                              'LOCATION', 'TIME', 'NEGATION', 'Sentence'])
                 new_df = new_df.append(new_row, ignore_index=True)
         sent_id += 1

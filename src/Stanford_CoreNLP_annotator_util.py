@@ -175,10 +175,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'coref': 'text',
         'gender':['Word', 'Gender', 'Sentence','Sentence ID', 'Document ID', 'Document'],
         'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
-        #  Document ID, Sentence ID, Document, S, V, O/A, Sentence
+        #  Document ID, Sentence ID, Document, S, V, O, Sentence
         # Dec. 21
-        'SVO':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', "Negation","Location",'Person','Time','Time stamp','Sentence'],
-        'OpenIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'Sentence'],
+        'SVO':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Negation","Location",'Person','Time','Time stamp','Sentence'],
+        'OpenIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Sentence'],
         'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
         'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
     }
@@ -1055,7 +1055,7 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
 
         SVOs = []
         for openie in sentence['openie']:
-            # Document ID, Sentence ID, Document, S, V, O/A, Sentence
+            # Document ID, Sentence ID, Document, S, V, O, Sentence
             SVOs.append([openie['subject'],openie['relation'],openie['object']])
         container = []
         for SVO_value in SVOs:
