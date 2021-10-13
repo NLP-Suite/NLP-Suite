@@ -130,7 +130,6 @@ def run(inputFilename, inputDir, outputDir,
         document_length_var,
         limit_sentence_length_var,
         Coref,
-        Coref_Option,
         Manual_Coref_var,
         date_extractor_var,
         CoreNLP_SVO_extractor_var,
@@ -174,12 +173,12 @@ def run(inputFilename, inputDir, outputDir,
                          message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or txt file(s)) and try again.")
             return
         if (
-                utf8_var == True or Coref == True or Coref_Option == True or memory_var == True or Manual_Coref_var == True or date_extractor_var == True or CoreNLP_SVO_extractor_var == True):
+                utf8_var == True or Coref == True or memory_var == True or Manual_Coref_var == True or date_extractor_var == True or CoreNLP_SVO_extractor_var == True):
             mb.showerror(title='Inputfile/option error',
                          message="The data analysis option(s) you have selected require in input a txt file, rather than a csv file.\n\nPlease, check your input file and/or algorithm selections and try again.")
             return
 
-    Coref_Option = Coref_Option.lower()
+    # Coref_Option = Coref_Option.lower()
 
     isFile = True
     inputFileBase = ""
@@ -224,7 +223,7 @@ def run(inputFilename, inputDir, outputDir,
         # 2 items are returned: filename string and true/False for error
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir, outputCorefedDir,
                                        openOutputFiles, createExcelCharts,
-                                       memory_var, Coref_Option,
+                                       memory_var,
                                        Manual_Coref_var)
         if error_indicator != 0:
             return
@@ -241,7 +240,7 @@ def run(inputFilename, inputDir, outputDir,
             filesToOpen.extend(file_open)
 
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
-                                               'Finished running Stanford CoreNLP Co-Reference Resolution using the ' + Coref_Option + ' approach at',
+                                               'Finished running Stanford CoreNLP Co-Reference Resolution using the Neural Network approach at',
                                                True)
 
     # Date extractor _____________________________________________________
@@ -517,7 +516,6 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  document_length_var.get(),
                                  limit_sentence_length_var.get(),
                                  CoRef_var.get(),
-                                 CoRef_menu_var.get(),
                                  manual_Coref_var.get(),
                                  date_extractor_var.get(),
                                  CoreNLP_SVO_extractor_var.get(),
@@ -603,7 +601,6 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 CoRef_var = tk.IntVar()
-CoRef_menu_var = tk.StringVar()
 memory_var = tk.StringVar()
 manual_Coref_var = tk.IntVar()
 date_extractor_var = tk.IntVar()
@@ -661,11 +658,11 @@ CoRef_var.set(0)
 CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP)',
                                 variable=CoRef_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               CoRef_checkbox, True)
+                                               CoRef_checkbox)
 
-CoRef_menu_var.set("Neural Network")
-CoRef_menu = tk.OptionMenu(window, CoRef_menu_var, 'Deterministic', 'Statistical', 'Neural Network')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column, y_multiplier_integer, CoRef_menu)
+# CoRef_menu_var.set("Neural Network")
+# CoRef_menu = tk.OptionMenu(window, CoRef_menu_var, 'Deterministic', 'Statistical', 'Neural Network')
+# y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column, y_multiplier_integer, CoRef_menu)
 
 manual_Coref_var.set(0)
 manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_Coref_var,
@@ -676,13 +673,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented
 
 def activateCoRefOptions(*args):
     if CoRef_var.get() == 1:
-        CoRef_menu.configure(state='normal')
+        # CoRef_menu.configure(state='normal')
         memory_var.configure(state='normal')
         manual_Coref_checkbox.configure(state='normal')
         # manual_Coref_checkbox.configure(state='disabled')
         manual_Coref_var.set(1)
     else:
-        CoRef_menu.configure(state='disabled')
+        # CoRef_menu.configure(state='disabled')
         # memory_var.configure(state='disabled')
         manual_Coref_checkbox.configure(state='disabled')
         manual_Coref_var.set(0)
@@ -879,7 +876,7 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
                                   "The Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
-                                  "Please, using the dropdown menu, select the type of Stanford coreference you wish to use for coreference Resolution (Deterministic is fastest but less accurate; Neural Network is slowest but most accurate; recommended!\n\nThe co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nWhile CoreNLP can resolve different coreference types (e.g., nominal, pronominal), the SVO script filters only pronominal types. Pronominal coreference refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'.\n\nPlease, select the memory size Stanford CoreNLP will use to resolve coreference. Default = 6. Lower this value if CoreNLP runs out of resources. Increase the value for larger files.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.")
+                                  "Please, tick the checkbox to run the Stanford CoreNLP coreference resolution annotator using the Neural Network approach.\n\n\Please, BE PATIENT. Depending upon size and number of documents to be coreferenced the algorithm may take a long a time.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
                                   "Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",

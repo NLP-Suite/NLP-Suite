@@ -92,7 +92,7 @@ def run(inputFilename,inputDir, outputDir,
                                           split_mergedFile_separator_entry_end,
                                           outputDir)
             mb.showwarning(title='Exported files',
-                           message=str(nFiles) + ' were created in the subdirectory of the output directory\n\n' + subDir)
+                           message=str(nFiles) + ' split files were created in the subdirectory of the output directory\n\n' + subDir)
             return
         # split file length --------------------------------------------------------------------------------------
         elif splitByFileLength:

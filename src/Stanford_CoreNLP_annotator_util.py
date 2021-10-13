@@ -398,7 +398,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     outputFilename = IO_files_util.generate_output_file_name(docName, inputDir, outputDir, '.txt', 'CoreNLP_'+annotator_chosen)
                     with open(outputFilename, "a+", encoding='utf-8', errors='ignore') as text_file:
                         if processing_doc != docTitle:
-                            text_file.write("\n<@#" + docTitle + "@#>\n")
+                            text_file.write("\n<@#" + docTitle + "#@>\n")
                             processing_doc = docTitle
                         text_file.write(sub_result)
                     if outputFilename not in filesToOpen: 

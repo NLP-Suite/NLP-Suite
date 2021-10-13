@@ -148,8 +148,8 @@ def split_into_sentences(text):
 
 def compare_results(origin_text,corefed_text):
 
-    if '<@#' in corefed_text and '@#>' in corefed_text:
-        # remove '<@# @#> first two lines in corefed_text; introduced in the CoreNLP_annotator
+    if '<@#' in corefed_text and '#@>' in corefed_text:
+        # remove '<@# #@> first two lines in corefed_text; introduced in the CoreNLP_annotator
         corefed_text = "\n".join(corefed_text.split("\n")[2:])
 
     origin_sentences = split_into_sentences(origin_text)
@@ -234,16 +234,17 @@ def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, ope
         memory_var, manual_Coref):
 
     corefed_file = []
+    errorFound = False
 
     # check that the CoreNLPdir as been setup
     CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_coreference_util', 'Stanford CoreNLP')
     if CoreNLPdir==None:
         return filesToOpen
 
-    errorFound, error_code, system_output=IO_libraries_util.check_java_installation('CoreNLP coreference')
-    if errorFound:
-        return filesToOpen, errorFound
-
+    # errorFound, error_code, system_output=IO_libraries_util.check_java_installation('CoreNLP coreference')
+    # if errorFound:
+    #     return filesToOpen, errorFound
+    #
     if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
         return
     # with only one input file

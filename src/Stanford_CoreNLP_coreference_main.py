@@ -25,6 +25,7 @@ import IO_files_util
 import IO_user_interface_util
 import GUI_util
 import Stanford_CoreNLP_coreference_util
+import file_splitter_merged_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -65,6 +66,11 @@ def run(inputFilename, inputDir, outputDir,
     inputFileBase = ""
     inputDirBase = ""
 
+
+    if  Coref==False and split_coreferenced_files_var==False and continue_manual_Coref_var==False:
+        mb.showerror(title='Missing required information', message="No options have been selected.\n\nPlease, tick one of the available options and try again.")
+        return False
+
     # CoRef _____________________________________________________
 
     if Coref:
@@ -104,6 +110,23 @@ def run(inputFilename, inputDir, outputDir,
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
                                                'Finished running Stanford CoreNLP Co-Reference Resolution using the Neural Network approach at',
                                                True)
+
+    # split merged coreferenced file  --------------------------------------------------------------------------------------------------------
+    # split <@# #@> --------------------------------------------------------------------------------------
+
+    if split_coreferenced_files_var:
+        subDir = ''
+        nFiles = 0
+        subDir, nFiles = file_splitter_merged_util.run(corefed_txt_file_var.get(),
+                                                       '<@#',
+                                                       '#@>',
+                                                       outputDir)
+        mb.showwarning(title='Exported files',
+                       message=str(nFiles) + ' split files were created in the subdirectory of the output directory\n\n' + subDir)
+        return
+
+    # continue manual resolution --------------------------------------------------------------------------------------------------------
+
     if continue_manual_Coref_var:
             error = Stanford_CoreNLP_coreference_util.manualCoref(inputFilename, corefed_txt_file, corefed_txt_file)
 
@@ -179,6 +202,15 @@ GUI_util.GUI_top(config_input_output_options, config_filename,IO_setup_display_b
 
 
 def clear(e):
+    CoRef_var.set(0)
+    CoRef_checkbox.configure(state='normal')
+    manual_Coref_var.set(0)
+    manual_Coref_checkbox.configure(state='disabled')
+    corefed_txt_file_var.set('')
+    continue_manual_Coref_var.set(0)
+    split_coreferenced_files_var.set(0)
+    continue_manual_Coref_var_checkbox.configure(state='disabled')
+    split_coreferenced_files_checkbox.configure(state='disabled')
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -244,18 +276,6 @@ manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced 
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
                                                manual_Coref_checkbox)
 
-split_coreferenced_files_var.set(0)
-split_coreferenced_files_checkbox = tk.Checkbutton(window, text='Split coreferenced files for manual editing to fit memory', variable=split_coreferenced_files_var,
-                                       onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
-                                               split_coreferenced_files_checkbox)
-split_coreferenced_files_checkbox.config(state='disabled')
-
-continue_manual_Coref_var.set(0)
-continue_manual_Coref_var_checkbox = tk.Checkbutton(window, text='Continue manual coreferencing of previously coreferenced document', variable=continue_manual_Coref_var,
-                                       onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               continue_manual_Coref_var_checkbox)
 
 def get_corefed_txt_file(window,title,fileType,annotate):
     if corefed_txt_file!='':
@@ -266,40 +286,69 @@ def get_corefed_txt_file(window,title,fileType,annotate):
 
     if len(filePath)>0:
         corefed_txt_file_var.set(filePath)
-        # display_corefed_txt_file_options()
+        split_coreferenced_files_checkbox.configure(state='normal')
+        continue_manual_Coref_var_checkbox.configure(state='normal')
+    else:
+        split_coreferenced_files_checkbox.configure(state='disabled')
+        continue_manual_Coref_var_checkbox.configure(state='disabled')
     return filePath
 
 corefed_txt_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT corefed TXT file',command=lambda: get_corefed_txt_file(window,'Select INPUT csv file', [("coreferenced file", "*.txt")],True))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20, y_multiplier_integer,corefed_txt_file_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,corefed_txt_file_button,True)
 
 #setup a button to open Windows Explorer on the selected input directory
 # current_y_multiplier_integer2=y_multiplier_integer-1
 # openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, corefed_txt_file_var.get()))
-openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+20, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
 corefed_txt_file=tk.Entry(window, width=130,textvariable=corefed_txt_file_var)
 corefed_txt_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+20, y_multiplier_integer,corefed_txt_file)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,corefed_txt_file)
+
+split_coreferenced_files_var.set(0)
+split_coreferenced_files_checkbox = tk.Checkbutton(window, text='Split merged coreferenced file (with filenames embedded in <@# #@>) for manual editing to fit memory', variable=split_coreferenced_files_var,
+                                       onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+                                               split_coreferenced_files_checkbox)
+split_coreferenced_files_checkbox.config(state='disabled')
+
+continue_manual_Coref_var.set(0)
+continue_manual_Coref_var_checkbox = tk.Checkbutton(window, text='Continue manual coreferencing of previously coreferenced document', variable=continue_manual_Coref_var,
+                                       onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+                                               continue_manual_Coref_var_checkbox)
+
+continue_manual_Coref_var_checkbox.configure(state='disabled')
+
 
 def activateCoRefOptions(*args):
     if CoRef_var.get() == 1:
-        # CoRef_menu.configure(state='normal')
         memory_var.configure(state='normal')
-        manual_Coref_checkbox.configure(state='normal')
-        # split_coreferenced_files_checkbox.configure(state='normal')
-        # manual_Coref_checkbox.configure(state='disabled')
-        manual_Coref_var.set(1)
+        if input_main_dir_path.get()!='':
+            manual_Coref_checkbox.configure(state='disabled')
+            manual_Coref_var.set(0)
+        else:
+            manual_Coref_checkbox.configure(state='normal')
+            manual_Coref_var.set(1)
     else:
-        # CoRef_menu.configure(state='disabled')
-        # memory_var.configure(state='disabled')
         manual_Coref_checkbox.configure(state='disabled')
-        split_coreferenced_files_checkbox.configure(state='disabled')
         manual_Coref_var.set(0)
-
 CoRef_var.trace('w', activateCoRefOptions)
 
 activateCoRefOptions()
+
+
+# def activateTxtFileOptions(*args):
+#     if corefed_txt_file.get()!='':
+#         split_coreferenced_files_checkbox.configure(state='normal')
+#         continue_manual_Coref_var_checkbox.configure(state='normal')
+#     else:
+#         split_coreferenced_files_checkbox.configure(state='disabled')
+#         continue_manual_Coref_var_checkbox.configure(state='disabled')
+# corefed_txt_file_var.trace('w', activateTxtFileOptions)
+#
+# activateTxtFileOptions()
 
 
 TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
@@ -333,19 +382,19 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
                                       GUI_IO_util.msg_IO_setup)
 
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+1), "Help",
-                                  "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
+                                  "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+ GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
-                                  "The Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
+                                  "The Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+ GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
-                                  "Please, tick the checkbox if you wish to run the Stanford CoreNLP neural network annotator for pronominal coreference resolution.\n\nPlease, BE PATIENT. Depending upon number and size of processed files, the algorithm can be very slow.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.")
+                                  "Please, tick the checkbox if you wish to run the Stanford CoreNLP neural network annotator for pronominal coreference resolution.\n\nPlease, BE PATIENT. Depending upon number and size of processed files, the algorithm can be very slow.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced." + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
-                                  "Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.")
+                                  "Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nThe option is not available with a directory in input.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP." + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
-                                  "Please, tick the checkbox if you wish to automatically split files that may be too long to bring in memory for original vs. coreferenced files and then automatically combine the coreferenced split output files into a single file.")
+                                  "Please, use the 'Select INPUT corefed TXT file' button to select a previosuly coreferenced file for further manual coreference.\n\nYou can use the little square widget to the right of the button to open the selected input coref txt file for inspection."+ GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
-                                  "Please, tick the checkboxes if you wish to run manually corefence a previously coreferenced file.\n\nIn INPUT the algorithm expects the original txt file(s) (selected in either the 'Default I/O configuration' or the 'Alternative I/O configuration') and the previously coreferenced file (selected via the button 'Select INPUT corefed txt file').\n\nIn OUTPUT the algorithm will save the same newly manually coreferenced file.")
+                                  "Please, tick the checkbox if you wish to automatically split files that may be too long to bring in memory for original vs. coreferenced files.\n\nIn INPUT the algorithm expects the coreferenced merged file (selected via the button 'Select INPUT corefed txt file').\n\nIn OUTPUT the algorithm will save the split individual files into a subfolder of the the output directory."+ GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
-                                  "Please, use the 'Select INPUT corefed TXT file' button to select a previosuly coreferenced file for further manual coreference.\n\nYou can use the little square widget to the right of the button to open the selected input coref txt file for inspection.")
+                                  "Please, tick the checkboxes if you wish to run manually corefence a previously coreferenced file.\n\nIn INPUT the algorithm expects the original txt file(s) (selected in either the 'Default I/O configuration' or the 'Alternative I/O configuration') and the previously coreferenced file (selected via the button 'Select INPUT corefed txt file').\n\nIn OUTPUT the algorithm will save the same newly manually coreferenced file."+ GUI_IO_util.msg_Esc)
 
 help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
              GUI_IO_util.get_y_step())
