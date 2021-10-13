@@ -39,11 +39,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         memory_var,
         document_length_var,
         limit_sentence_length_var,
-        manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat,
+        manual_Coref, open_GUI, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat,
         CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var):
 
     filesToOpen = []
     outputCoNLLfilePath = ''
+
+    if open_GUI:
+        call("python Stanford_CoreNLP_coreference_main.py", shell=True)
+        return
 
     # check internet connection
     if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
@@ -75,6 +79,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
 
     if parser or (CoreNLP_annotators_var and CoreNLP_annotators_menu_var != ''):
+
         if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
             return
 
@@ -152,6 +157,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  document_length_var.get(),
                                  limit_sentence_length_var.get(),
                                  manual_Coref_var.get(),
+                                 open_GUI_var.get(),
                                  parser_var.get(),
                                  parser_menu_var.get(),
                                  fileName_embeds_date.get(),
@@ -214,6 +220,7 @@ def clear(e):
     CoreNLP_annotators_var.set(0)
     CoreNLP_annotators_menu_var.set('')
     manual_Coref_checkbox.place_forget()  # invisible
+    open_GUI_checkbox.place_forget()  # invisible
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -223,6 +230,7 @@ CoreNLP_gender_annotator_var = tk.IntVar()
 split_files_var = tk.IntVar()
 quote_extractor_var = tk.IntVar()
 manual_Coref_var = tk.IntVar()
+open_GUI_var = tk.IntVar()
 parser_var = tk.IntVar()
 parser_menu_var = tk.StringVar()
 fileName_embeds_date = tk.IntVar()
@@ -428,8 +436,12 @@ CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var,
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                CoreNLP_annotators_menu)
 
-manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ',
+manual_Coref_checkbox = tk.Checkbutton(window, text='Manual edit',
                                        variable=manual_Coref_var,
+                                       onvalue=1, offvalue=0)
+
+open_GUI_checkbox = tk.Checkbutton(window, text='Open coreference GUI',
+                                       variable=open_GUI_var,
                                        onvalue=1, offvalue=0)
 
 def activate_CoreNLP_annotators_menu(*args):
@@ -447,15 +459,24 @@ def activate_CoreNLP_annotators_menu(*args):
             manual_Coref_var.set(0)
             y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 400,
                                                            y_multiplier_integer,
-                                                           manual_Coref_checkbox)
+                                                           manual_Coref_checkbox,True)
+
+            open_GUI_var.set(0)
+            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 550,
+                                                           y_multiplier_integer,
+                                                           open_GUI_checkbox)
             if input_main_dir_path.get()!='':
                 manual_Coref_checkbox.configure(state='disabled')
+                open_GUI_checkbox.configure(state='disabled')
             else:
                 manual_Coref_checkbox.configure(state='normal')
+                open_GUI_checkbox.configure(state='normal')
         else:
             manual_Coref_checkbox.place_forget()  # invisible
+            open_GUI_checkbox.place_forget()  # invisible
     else:
         manual_Coref_checkbox.place_forget()  # invisible
+        open_GUI_checkbox.place_forget()  # invisible
         CoreNLP_annotators_menu_var.set('')
         CoreNLP_annotators_menu.configure(state='disabled')
 CoreNLP_annotators_var.trace('w', activate_CoreNLP_annotators_menu)
@@ -507,7 +528,7 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
                                   "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the CoreNLP parser results contained in the CoNLL table.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
-                                  "Please, using the dropdown menu, select one of the many other annotators available through Stanford CoreNLP: Coreference pronominal resolution, DepRel, POS, NER (Named Entity Recognition), NER normalized date. gender, quote, and sentiment analysis.\n\nANNOTATORS MARKED AS NEURAL NETWORK ARE MORE ACCURATE, BUT SLOW AND REQUIRE A GREAT DEAL OF MEMORY.\n\n1.  PRONOMINAL co-reference resolution refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'. CoreNLP can resolve other cases but the algorithm here is restricted to pronominal resolution.\n\nThe co-reference resolution checkbox is disabled when selected an entire directory in input. The co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nDeterministic Coreference Resolution is fastest but less accurate; Neural Network is slowest but most accurate; recommended!\n\nTick the checkbox Manually edit coreferenced document if you wish to resolve manually cases of unresolved or wrongly resolved coreferences. MANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\n2.  The CoreNLP NER annotator recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\n3.  The NER NORMALIZED DATE annotator extracts standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\n4.  The CoreNLP coref GENDER annotator extracts the gender of both first names and personal pronouns (he, him, his, she, her, hers) using a neural network approach. This annotator requires a great deal of memory. So, please, adjust the memory allowing as much memory as you can afford.\n\n5.  The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker.\n\n6.  The SENTIMENT ANALYSIS annotator computes the sentiment values (negative, neutral, positive) of each sentence in a text.\n\n6.  The OpenIE (Open Information Extraction) annotator extracts  open-domain relation triples, representing a subject, a relation, and the object of the relation.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files annd Excel charts. The Gender annotator will also produce an html file with male tags displayed in blue and female tags displayed in red. The Coreference annotator will produce txt-format copies of the same input txt files but co-referenced.\n\Select * to run Gender annotator (Neural Network), Normalized NER date, and Quote/dialogue annotator (Neural Network).")
+                                  "Please, using the dropdown menu, select one of the many other annotators available through Stanford CoreNLP: Coreference pronominal resolution, DepRel, POS, NER (Named Entity Recognition), NER normalized date. gender, quote, and sentiment analysis.\n\nANNOTATORS MARKED AS NEURAL NETWORK ARE MORE ACCURATE, BUT SLOW AND REQUIRE A GREAT DEAL OF MEMORY.\n\n1.  PRONOMINAL co-reference resolution refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'. CoreNLP can resolve other cases but the algorithm here is restricted to pronominal resolution.\n\nThe co-reference resolution checkbox is disabled when selected an entire directory in input. The co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nTick the checkbox Manually edit coreferenced document if you wish to resolve manually cases of unresolved or wrongly resolved coreferences. MANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\nTick the Open GUI checkbox to open the specialized GUI for pronominal coreference resolution.\n\n2.  The CoreNLP NER annotator recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\n3.  The NER NORMALIZED DATE annotator extracts standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\n4.  The CoreNLP coref GENDER annotator extracts the gender of both first names and personal pronouns (he, him, his, she, her, hers) using a neural network approach. This annotator requires a great deal of memory. So, please, adjust the memory allowing as much memory as you can afford.\n\n5.  The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker.\n\n6.  The SENTIMENT ANALYSIS annotator computes the sentiment values (negative, neutral, positive) of each sentence in a text.\n\n6.  The OpenIE (Open Information Extraction) annotator extracts  open-domain relation triples, representing a subject, a relation, and the object of the relation.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files annd Excel charts. The Gender annotator will also produce an html file with male tags displayed in blue and female tags displayed in red. The Coreference annotator will produce txt-format copies of the same input txt files but co-referenced.\n\Select * to run Gender annotator (Neural Network), Normalized NER date, and Quote/dialogue annotator (Neural Network).")
     # GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
     #                               "Please, using the dropdown menu, select the type of Stanford coreference you wish to use for coreference Resolution (Neural Network is slowest but most accurate; recommended!\n\nThe co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nWhile CoreNLP can resolve different coreference types (e.g., nominal, pronominal), the SVO script filters only pronominal types. Pronominal coreference refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'.\n\nPlease, select the memory size Stanford CoreNLP will use to resolve coreference. Default = 6. Lower this value if CoreNLP runs out of resources. Increase the value for larger files.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",

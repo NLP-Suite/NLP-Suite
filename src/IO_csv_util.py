@@ -248,6 +248,7 @@ def rename_header(inputFilename, header1, header2):
     if not inputFilename.endswith('.csv'):
         return True
     headers = IO_csv_util.get_csvfile_headers(inputFilename)
+    # temp=None
     for header in headers:
         if header2 == header:  # the file already contains the header2
             return True
@@ -262,5 +263,5 @@ def rename_header(inputFilename, header1, header2):
                 break
     if headerFound==False:
         mb.showwarning(title="File type error", message='The file\n\n' + inputFilename + "\n\ndoes not contain a header '" + header1 + "' to be converted to '" + header2 + "'.\n\nPlease, check the file and try again.")
-    return headerFound
+    return temp
 

@@ -1,7 +1,7 @@
 # Written by Gabriel Wang 2018
-##########################################
 # Modified by Cynthia Dong (Fall 2019-Spring 2020)
-##########################################
+# Modified by Matthew Chau (Spring 2021)
+# Modified by Roberto Franzosi (Spring-Fall 2021)
 
 import sys
 import GUI_util

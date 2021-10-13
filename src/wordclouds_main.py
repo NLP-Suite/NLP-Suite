@@ -151,7 +151,6 @@ color_style_var=tk.StringVar()
 
 csvField_color_list=[]
 
-
 def clear(e):
     wordclouds_var.set('')
     differentColumns_differentColors_var.set(0)
