@@ -3,7 +3,7 @@
 import sys
 import GUI_util
 import IO_libraries_util
-import IO_user_interface_util
+
 if IO_libraries_util.install_all_packages(GUI_util.window,"CoReference Resolution",['os','tkinter','re'])==False:
     sys.exit(0)
 
@@ -14,14 +14,15 @@ import tkinter as tk
 from tkinter import *
 import re
 
+import IO_user_interface_util
 import Stanford_CoreNLP_annotator_util
 import reminders_util
 
 # part of the code about search text function is adapted from 
 # https://www.geeksforgeeks.org/create-find-and-replace-features-in-tkinter-text-widget/
-def createCompareWindow(origin_display, coref_display, coref_method, root, result):
+def createCompareWindow(origin_display, coref_display, root, result):
     top = Toplevel(root)
-    top.title("Comparing result from {0} (Edit text on the right hand side and Save)".format(coref_method))
+    top.title("Comparing result from {0} (Edit text on the right hand side and Save)".format('Neural Network'))
 
     # adding of single line text box
     topFrame = tk.Frame(top)
@@ -146,8 +147,10 @@ def split_into_sentences(text):
     return sentences
 
 def compare_results(origin_text,corefed_text):
-    # remove first two lines in corefed_text
-    corefed_text = "\n".join(corefed_text.split("\n")[2:])
+
+    if '<@#' in corefed_text and '@#>' in corefed_text:
+        # remove '<@# @#> first two lines in corefed_text; introduced in the CoreNLP_annotator
+        corefed_text = "\n".join(corefed_text.split("\n")[2:])
 
     origin_sentences = split_into_sentences(origin_text)
     corefed_sentences = split_into_sentences(corefed_text)
@@ -198,9 +201,8 @@ def compare_results(origin_text,corefed_text):
     return origin_display, corefed_display
 
 
-    
 # return error indicator: 1 error; 0 no error
-def manualCoref(original_file, corefed_file, outputFile, coRefOptions):
+def manualCoref(original_file, corefed_file, outputFile):
     f = open(original_file, "r", encoding='utf-8', errors='ignore')
     original_text = f.read()
     f.close()
@@ -214,7 +216,7 @@ def manualCoref(original_file, corefed_file, outputFile, coRefOptions):
         return 1
     result = []
     result.append("\n".join(corefed_text.split("\n")[2:])) 
-    createCompareWindow(origin_display, corefed_display, coRefOptions, GUI_util.window, result)
+    createCompareWindow(origin_display, corefed_display, GUI_util.window, result)
     f = open(outputFile, "w", encoding='utf-8', errors='ignore')
     try:
         f.write(result[0])
@@ -229,7 +231,7 @@ def manualCoref(original_file, corefed_file, outputFile, coRefOptions):
 
 # return file_to_open
 def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts,
-        memory_var,coRefOptions, manual_Coref):
+        memory_var, manual_Coref):
 
     corefed_file = []
 
@@ -238,24 +240,22 @@ def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, ope
     if CoreNLPdir==None:
         return filesToOpen
 
-    errorFound, error_code, system_output=IO_libraries_util.check_java_installation('SVO extractor')
+    errorFound, error_code, system_output=IO_libraries_util.check_java_installation('CoreNLP coreference')
     if errorFound:
         return filesToOpen, errorFound
 
+    if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+        return
     # with only one input file
     if len(inputFilename)>0:
         base = os.path.basename(inputFilename)
         fileName = os.path.splitext(base)[0]
 
-        if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py')==False:
-            return
-        corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename,input_main_dir_path,
-                                                                        output_dir_path, openOutputFiles, createExcelCharts,'coref',False,
-                                                                        memory_var)
     else: # dir input
         reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
                                      reminders_util.message_CoreNLP_coref, True)
-        corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
+
+    corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
                                                                    output_dir_path, openOutputFiles, createExcelCharts,'coref', False,
                                                                    memory_var)
     
@@ -263,10 +263,9 @@ def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, ope
         if len(input_main_dir_path) == 0 and len(inputFilename) > 0:
             for file in corefed_file:
                 if file[-4:] == ".txt":
-                    error = manualCoref(inputFilename, file, file, coRefOptions)
+                    error = manualCoref(inputFilename, file, file)
                     # return the corefed_file
         else:
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Feature Not Available', 'Manual Coreference is only available when processing single file, not input directory.')
-            # input_main_dir_path = os.path.split(inputFilename)[0]
-   
+
     return corefed_file, errorFound

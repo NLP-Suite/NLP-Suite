@@ -194,10 +194,13 @@ def writeOutput(inputPath, input_filename, outputPath, output_filename, fieldnam
 
                 fileName_embeds_date,
                 date,
-                dateStr):
-    printLine = {}
+                dateStr,
+                split_string):
+
     if not os.path.isdir(os.path.join(inputPath, input_filename)):
+        printLine = {}
         with open(outputPath + os.sep + output_filename, 'a', errors='ignore', newline='') as csvfile:
+            # write file headers
             writer = csv.DictWriter(csvfile, fieldnames)
             head, tail = os.path.split(input_filename)
             printLine = {'File_Name': tail, 'Path_To_File': IO_csv_util.dressFilenameForCSVHyperlink(inputPath),
@@ -207,13 +210,18 @@ def writeOutput(inputPath, input_filename, outputPath, output_filename, fieldnam
                 printLine['Modification_date'] = modification_date
             if by_author_var == 1:
                 printLine['Author'] = author
-            if by_embedded_items_var == 1:
+            if by_embedded_items_var == 1 and number_of_items_var>0:
                 printLine['Embedded items count (' + embedded_item_character_value + ')'] = str(number_of_items_var)
             if character_count_var == 1:
                 printLine['Character count (' + character_entry_var + ')'] = str(characterCount)
             if fileName_embeds_date == 1:
-                # print("date,dateStr",date,dateStr)
                 printLine['Date'] = dateStr
+            if split_string!='':
+                split_items = split_string.split(',')
+                ID = 1
+                for item in split_items:
+                    printLine['Split item' + str(ID)] = str(item)
+                    ID = ID + 1
             writer.writerow(printLine)
     else:
         fileFound = False
@@ -230,6 +238,7 @@ def processFile(inputPath, outputPath, filename, output_filename,
                 copy_var,
                 move_var,
                 delete_var,
+                split_var,
                 rename_new_entry,
                 file_type_menu_var,
                 by_creation_date_var,
@@ -374,6 +383,7 @@ def processFile(inputPath, outputPath, filename, output_filename,
                     print(
                         'The file ' + filename + ' was skipped from processing. An unexpected error occurred when processing the file.')
                     fileFound = False
+
     if move_var == 1:
         if hasFullPath:
             try:
@@ -408,12 +418,22 @@ def processFile(inputPath, outputPath, filename, output_filename,
                         'The file ' + filename + ' was skipped from processing. An unexpected error occurred when processing the file.')
                     fileFound = False
 
+    if split_var == 1:
+        split_string=''
+        filename=filename[:-4]  #remove file extension
+        filename_items=filename.split(embedded_item_character_value)
+        for item in filename_items:
+            if split_string =='':
+                split_string = item
+            else:
+                split_string = split_string + ',' + item
+
     if (fileFound == True):
 
         writeOutput(inputPath, filename, outputPath, output_filename, fieldnames, by_creation_date_var, creation_date,
                     modification_date, by_author_var, author, string_entry_var, by_embedded_items_var,
                     number_of_items_var, embedded_item_character_value, character_count_var, character_entry_var,
-                    characterCount, fileName_embeds_date, date, dateStr)
+                    characterCount, fileName_embeds_date, date, dateStr, split_string)
 
     return fileFound, characterCount, creation_date, modification_date, author, date, dateStr
 

@@ -478,19 +478,10 @@ def link_verb_LVC_extraction(token, gov_dict, sent_data):
                                 negation = negation or content_negation(gov_dict["nsubj"], sent_data)
                             return s, v, o, negation
     return "", "", "", negation
-                            
-                            
-                            
-                            
-                    
-                    
-                    
-                        
-            
-    
-    
-        
-def SVO_extraction (sent_data): #returns columns of the final output
+
+# CYNTHIA
+def SVO_extraction (sent_data, entitymentions): #returns columns of the final output
+# def SVO_extraction (sent_data): #returns columns of the final output
 
     CollectedVs = []#list of processed verbs
     SVO = []#list that store the subject-verb-object triplets
@@ -503,7 +494,12 @@ def SVO_extraction (sent_data): #returns columns of the final output
     s = "Someone?"#default subject
     v = ""
     o = ""
-    
+
+    # CYNTHIA: get locations from entitymentions
+    for item in entitymentions:
+        if item["ner"] is not None and item["ner"] in ['STATE_OR_PROVINCE', 'COUNTRY', "CITY"]:
+            L.append(item["text"])
+
     link_verb_LVC_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "verb_obj_obl_json.txt"
     for key in sent_data.keys():#traverse each token token in that sentence
         negation = False 
@@ -517,11 +513,10 @@ def SVO_extraction (sent_data): #returns columns of the final output
 
         if token["ner"] == "PERSON": 
             P.append(token["word"])
-        if token["ner"] == "CITY" or  token["ner"] == 'STATE_OR_PROVINCE' or token["ner"] == 'COUNTRY': 
-            L.append(token["word"])
-        
-        
-        
+        #CYNTHIA: process location separately
+        # if token["ner"] == "CITY" or  token["ner"] == 'STATE_OR_PROVINCE' or token["ner"] == 'COUNTRY':
+        #     L.append(token["word"])
+
         gov_dict = token["govern_dict"]#the dictionary that contains information of the dep and index of tokens whose syntactical head is the corrent token
         if ("VB" in token["pos"]) and ("advcl" not in token['deprel']) and ("xcomp" not in token['deprel'])and (token['deprel'] != "dep") and (token['deprel'] != "acl"):#if the verb has not been processed and its dep is not a special dep that will be processed independently
             # If the current token is a verb
