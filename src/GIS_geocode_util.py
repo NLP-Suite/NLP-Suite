@@ -161,6 +161,14 @@ def geocode(window,locations, inputFilename, outputDir,
 	else:
 		# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
 		geowriter.writerow(['Location','Latitude','Longitude','Address'])
+
+	# CYNTHIA
+	# ; added in SVO list of locations in SVO output (e.g., Los Angeles; New York; Washington)
+	tmp_loc = []
+	for item in locations:
+		tmp_loc = tmp_loc + item.split(";")
+	locations = tmp_loc
+
 	for item in locations:
 		index=index+1 #items in locations are NOT DISTINCT
 		if str(item)!='nan' and str(item)!='':

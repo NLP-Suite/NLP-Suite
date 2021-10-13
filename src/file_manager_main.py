@@ -30,6 +30,7 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
         move_var,
         delete_var,
         count_file_manager_var,
+        split_var,
         rename_new_entry,
         by_file_type_var,
         file_type_menu_var,
@@ -104,6 +105,12 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
         operation = 'counted'
         output_filename = "Count_files_" + currentSubfolder + ".csv"
 
+    if split_var==1:
+        i=1
+        options=options+1
+        operation = 'split'
+        output_filename = "split_files_" + currentSubfolder + ".csv"
+
     if options==0:
         mb.showwarning(title='File manager', message='No file manager option has been selected.\n\nPlease, select one option (rename, copy, move, delete) and try again.')
         return
@@ -118,6 +125,8 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
         mb.showwarning(title='File manager', message='Only one option at a time can be selected. You have selected ' + str(options) + ' options.\n\nPlease, deselect some options and try again.')
         return
 
+    # -------------------------------------------------------------------------------------------------
+    # setup the field names of the output csv file
     fieldnames = ['File_Name', 'Path_To_File', 'File_Name_With_Path']
 
     if by_creation_date_var==1:
@@ -133,13 +142,27 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
             fieldnames = fieldnames + ['Author']
 
     if by_embedded_items_var==1:
-        fieldnames = fieldnames + ['Embedded items count ('+embedded_item_character_value_var+')']
+        if number_of_items_var>0:
+            fieldnames = fieldnames + ['Embedded items count ('+embedded_item_character_value_var+')']
 
     if fileName_embeds_date==1:
         fieldnames = fieldnames + ['Date']
 
     if character_count_file_manager_var==1:
         fieldnames = fieldnames + ['Character count ('+character_entry_var+')']
+
+    if split_var == 1:
+        # must get the first file in order to compute the number of headers to be displayed in the output csv file
+        for inputDir, subdirs, files in os.walk(inputDir):
+            ID = 1
+            for filename in files:
+                if ID==1:
+                    break
+        filename_items = filename.split(embedded_item_character_value_var)
+        ID = 1
+        for item in filename_items:
+            fieldnames = fieldnames + ['Split item' + str(ID)]
+            ID = ID + 1
 
     # ------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -237,6 +260,7 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
                 if head != '':
                     hasFullPath = True
                 fileList.append(f)
+
     # _________________________________________________________________________________________________________________________________________________
 
     # processFile returns: fileFound, characterCount,creation_date,modification_date,author,date, dateStr
@@ -244,7 +268,10 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
         for inputDir, subdirs, files in os.walk(inputDir):
             for filename in files:
                 print ("Processing file: {}".format(filename))
-                fileFound, characterCount,creation_date,modification_date,author,date, dateStr = file_filename_util.processFile(inputDir,outputDir,filename,output_filename,
+                fileFound, characterCount,\
+                creation_date,modification_date,\
+                author,date, \
+                dateStr = file_filename_util.processFile(inputDir,outputDir,filename,output_filename,
 							fieldnames,
 							selectedCsvFile_var,
 							hasFullPath,
@@ -254,6 +281,7 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
 							copy_var,
 							move_var,
 							delete_var,
+                            split_var,
 							rename_new_entry,
 							file_type_menu_var,
 							by_creation_date_var,
@@ -285,7 +313,7 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
                     inputDir, outputDir, filename, output_filename, fieldnames, selectedCsvFile_var, hasFullPath,
 					utf8_var, ASCII_var,
 					list_var, rename_var,
-                    copy_var, move_var, delete_var, rename_new_entry, file_type_menu_var, by_creation_date_var,
+                    copy_var, move_var, delete_var, split_var, rename_new_entry, file_type_menu_var, by_creation_date_var,
                     by_author_var, by_prefix_var, by_substring_var, string_entry_var, by_foldername_var,
                     folder_character_separator_var, by_embedded_items_var, comparison_var, number_of_items_var, embedded_item_character_value_var,
                     include_exclude_var, character_count_file_manager_var, character_entry_var, include_subdir_var,
@@ -304,13 +332,14 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
                     else:
                         processFile = True
                     if processFile:
-                        fileFound, characterCount,creation_date,modification_date,author,date, dateStr = file_filename_util.processFile(inputDir,outputDir,filename,output_filename,
+                        fileFound, characterCount,creation_date,modification_date,author,date, \
+                            dateStr = file_filename_util.processFile(inputDir,outputDir,filename,output_filename,
                                 fieldnames,
                                 selectedCsvFile_var,
                                 hasFullPath,
                                 utf8_var,
                                 ASCII_var,
-                                list_var,rename_var,copy_var,move_var,delete_var,rename_new_entry,file_type_menu_var,by_creation_date_var,by_author_var,by_prefix_var,by_substring_var,string_entry_var,by_foldername_var,folder_character_separator_var,by_embedded_items_var,comparison_var, number_of_items_var,embedded_item_character_value_var,include_exclude_var,character_count_file_manager_var,character_entry_var,include_subdir_var,fileName_embeds_date,date_format,date_separator,date_position)
+                                list_var,rename_var,copy_var,move_var,delete_var, split_var, rename_new_entry,file_type_menu_var,by_creation_date_var,by_author_var,by_prefix_var,by_substring_var,string_entry_var,by_foldername_var,folder_character_separator_var,by_embedded_items_var,comparison_var, number_of_items_var,embedded_item_character_value_var,include_exclude_var,character_count_file_manager_var,character_entry_var,include_subdir_var,fileName_embeds_date,date_format,date_separator,date_position)
                         if fileFound:
                             i=i+1
 
@@ -342,6 +371,7 @@ run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
                                 move_var.get(),
                                 delete_var.get(),
                                 count_file_manager_var.get(),
+                                split_file_manager_var.get(),
                                 rename_new_entry_var.get(),
                                 by_file_type_var.get(),
                                 file_type_menu_var.get(),
@@ -373,7 +403,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
-IO_setup_display_brief=False
+IO_setup_display_brief=True
 GUI_width=1200
 GUI_height=710 # height of GUI with full I/O display
 
@@ -430,6 +460,7 @@ move_var=tk.IntVar()
 delete_var=tk.IntVar()
 # renamed from count_var so that the count_var used in Excel charts can be easily found
 count_file_manager_var=tk.IntVar()
+split_file_manager_var=tk.IntVar()
 use_csv_var=tk.IntVar()
 by_file_type_var=tk.IntVar()
 file_type_menu_var=tk.StringVar()
@@ -551,7 +582,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 count_file_manager_var.set(0)
 count_checkbox = tk.Checkbutton(window, text='Count', state="normal", variable=count_file_manager_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+460,y_multiplier_integer,count_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+460,y_multiplier_integer,count_checkbox,True)
+
+split_file_manager_var.set(0)
+split_checkbox = tk.Checkbutton(window, text='Split', state="normal", variable=split_file_manager_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+560,y_multiplier_integer,split_checkbox)
 
 # use_csv_var.set(0)
 # use_csv_checkbox = tk.Checkbutton(window, text='Use csv for Source & Target fields', state="normal", variable=use_csv_var, onvalue=1, offvalue=0)
@@ -564,6 +599,7 @@ def activate_list_options(*args):
         move_checkbox.configure(state="disabled")
         delete_checkbox.configure(state="disabled")
         count_checkbox.configure(state="disabled")
+        split_checkbox.configure(state="disabled")
         character_count_checkbox.configure(state="normal")
         fileName_embeds_date_checkbox.config(state='normal')
         by_creation_date_checkbox.configure(state="normal")
@@ -574,6 +610,7 @@ def activate_list_options(*args):
         move_checkbox.configure(state="normal")
         delete_checkbox.configure(state="normal")
         count_checkbox.configure(state="normal")
+        split_checkbox.configure(state="normal")
         character_count_checkbox.configure(state="disabled")
         fileName_embeds_date.set(0)
         fileName_embeds_date_checkbox.config(state='disabled')
@@ -592,6 +629,7 @@ def activate_rename_options(*args):
         move_checkbox.configure(state="disabled")
         delete_checkbox.configure(state="disabled")
         count_checkbox.configure(state="disabled")
+        split_checkbox.configure(state="disabled")
         rename_new_entry.configure(state="normal")
         by_foldername_checkbox.config(state="normal")
     else:
@@ -600,6 +638,7 @@ def activate_rename_options(*args):
         move_checkbox.configure(state="normal")
         delete_checkbox.configure(state="normal")
         count_checkbox.configure(state="normal")
+        split_checkbox.configure(state="normal")
         rename_new_entry.configure(state="disabled")
         by_foldername_checkbox.config(state="disabled")
     #activate_prefix_options()
@@ -615,12 +654,14 @@ def activate_copy_options(*args):
         move_checkbox.configure(state="disabled")
         delete_checkbox.configure(state="disabled")
         count_checkbox.configure(state="disabled")
+        split_checkbox.configure(state="disabled")
     else:
         list_checkbox.configure(state="normal")
         rename_checkbox.configure(state="normal")
         move_checkbox.configure(state="normal")
         delete_checkbox.configure(state="normal")
         count_checkbox.configure(state="normal")
+        split_checkbox.configure(state="normal")
     character_count_checkbox.configure(state="disabled")
     rename_new_entry.configure(state="disabled")
     by_creation_date_checkbox.configure(state="disabled")
@@ -634,12 +675,14 @@ def activate_move_options(*args):
         copy_checkbox.configure(state="disabled")
         delete_checkbox.configure(state="disabled")
         count_checkbox.configure(state="disabled")
+        split_checkbox.configure(state="disabled")
     else:
         list_checkbox.configure(state="normal")
         rename_checkbox.configure(state="normal")
         copy_checkbox.configure(state="normal")
         delete_checkbox.configure(state="normal")
         count_checkbox.configure(state="normal")
+        split_checkbox.configure(state="normal")
     character_count_checkbox.configure(state="disabled")
     rename_new_entry.configure(state="disabled")
     by_creation_date_checkbox.configure(state="disabled")
@@ -652,11 +695,13 @@ def activate_delete_options(*args):
         rename_checkbox.configure(state="disabled")
         copy_checkbox.configure(state="disabled")
         move_checkbox.configure(state="disabled")
+        split_checkbox.configure(state="disabled")
     else:
         list_checkbox.configure(state="normal")
         rename_checkbox.configure(state="normal")
         copy_checkbox.configure(state="normal")
         move_checkbox.configure(state="normal")
+        split_checkbox.configure(state="normal")
     character_count_checkbox.configure(state="disabled")
     by_creation_date_checkbox.configure(state="disabled")
     by_author_checkbox.configure(state="disabled")
@@ -669,15 +714,51 @@ def activate_count_options(*args):
         copy_checkbox.configure(state="disabled")
         move_checkbox.configure(state="disabled")
         delete_checkbox.configure(state="disabled")
+        split_checkbox.configure(state="disabled")
     else:
         list_checkbox.configure(state="normal")
         rename_checkbox.configure(state="normal")
         copy_checkbox.configure(state="normal")
         move_checkbox.configure(state="normal")
         delete_checkbox.configure(state="normal")
+        split_checkbox.configure(state="normal")
     character_count_checkbox.configure(state="disabled")
     rename_new_entry.configure(state="disabled")
 count_file_manager_var.trace('w',activate_count_options)
+
+def activate_split_options(*args):
+    if split_file_manager_var.get()==1:
+        list_checkbox.configure(state="disabled")
+        rename_checkbox.configure(state="disabled")
+        copy_checkbox.configure(state="disabled")
+        move_checkbox.configure(state="disabled")
+        delete_checkbox.configure(state="disabled")
+        count_checkbox.configure(state="disabled")
+        by_embedded_items_checkbox.configure(state="normal")
+
+        by_creation_date_checkbox.configure(state="disabled")
+        by_author_checkbox.configure(state="disabled")
+        character_count_checkbox.configure(state="disabled")
+        rename_new_entry.configure(state="disabled")
+        by_prefix_checkbox.configure(state="disabled")
+        by_substring_checkbox.configure(state="disabled")
+
+    else:
+        list_checkbox.configure(state="normal")
+        rename_checkbox.configure(state="normal")
+        copy_checkbox.configure(state="normal")
+        move_checkbox.configure(state="normal")
+        delete_checkbox.configure(state="normal")
+        count_checkbox.configure(state="normal")
+
+        by_embedded_items_checkbox.configure(state="normal")
+        by_creation_date_checkbox.configure(state="normal")
+        by_author_checkbox.configure(state="normal")
+        character_count_checkbox.configure(state="normal")
+        rename_new_entry.configure(state="normal")
+        by_prefix_checkbox.configure(state="normal")
+        by_substring_checkbox.configure(state="normal")
+split_file_manager_var.trace('w',activate_split_options)
 
 by_file_type_var.set(0)
 by_file_type_checkbox = tk.Checkbutton(window, text='By file type', variable=by_file_type_var, onvalue=1, offvalue=0)
@@ -813,10 +894,17 @@ def activate_numberEmbeddedItems_options(*args):
     number_of_items_var.set(0)
     embedded_item_character_value_var.set('')
     if by_embedded_items_var.get()==1:
+        if split_file_manager_var.get()==False:
+            comparison_menu.configure(state="normal")
+            number_of_items_value.configure(state="normal")
+            include_exclude_checkbox.config(state="normal")
+        else:
+            comparison_menu.configure(state="disabled")
+            number_of_items_value.configure(state="disabled")
+            include_exclude_checkbox.config(state="disabled")
         embedded_item_character_value.configure(state="normal")
-        number_of_items_value.configure(state="normal")
-        include_exclude_checkbox.config(state="normal")
     else:
+        comparison_menu.configure(state="disabled")
         embedded_item_character_value.configure(state="disabled")
         number_of_items_value.configure(state="disabled")
         include_exclude_checkbox.config(state="disabled")
@@ -905,7 +993,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help", "Please, tick the checkbox to restrict by file creation/modification date and by author the selected file handling option.\n\nThe 'By author' option is available for Windows Office files only (doc, docx, xls, xlsx, xlsm).")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help", "Please, tick the checkbox to restrict the selected file handling option by prefix value (e.g., all filenames starting with ._) or sub-string value (e.g., all filenames that contain the string _NLP_SSR_).\n\nAppropriate prefix and sub-string values will need to be entered.\n\nWhen renaming files, the 'New substring for renaming' will also need to be entered.\n\nThe options 'By prefix value' or 'By sub-string value can be used in conjuction with the 'By file type' option.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+7),"Help", "Please, tick the checkbox to rename files in a folder by embedding the LAST PART of folder path in the renamed filename (e.g., The Boston Globe_19-19-1919 found in the subfolder 'John Willis' of a folder path 'c:\mydata\\newspapers\lynching\John Willis' will be remamed as The Boston Globe_19-19-1919__John Willis if __ is selected as the separator character(s).\n\nThe option is available only when renaming files.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+8),"Help", "Please, tick the checkbox to list, copy, move files in a folder by filtering files by the number of items embedded in a filename and separated by specific character(s).\n\nThe user can choose to exclude or include the selected items.\n\nThus, for instance, given the file The Chicago Tribune_17-22-1922_4_3__Ben Treppard, and the options Separator character(s) __, Number of characters 1, and Exclude would result in th filename The Chicago Tribune_17-22-1922_4_3   items embedding the directory name in the renamed filename (e.g., The Boston Globe_19-19-1919 found in the folder John Willis will be remamed as The Boston Globe_19-19-1919__John Willis if __ is selected as the separator character(s).\n\nThe option is available only when listing, copying, or moving files.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+8),"Help", "Please, tick the checkbox to list, copy, move files in a folder by filtering files by the number of items embedded in a filename and separated by specific character(s).\n\nThe user can choose to exclude or include the selected items.\n\nThus, for instance, given the file The Chicago Tribune_17-22-1922_4_3__Ben Treppard, and the options Separator character(s) __, Number of characters 1, and Exclude would result in th filename The Chicago Tribune_17-22-1922_4_3   items embedding the directory name in the renamed filename (e.g., The Boston Globe_19-19-1919 found in the folder John Willis will be remamed as The Boston Globe_19-19-1919__John Willis if __ is selected as the separator character(s).\n\nThe option is available only when listing, copying, moving, or splitting files.\n\nWhen splitting files, all is needed is the 'Separator character(s)' value.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+9),"Help", "The 'By number of embedded character(s)' checkbox is available only when listing files in a folder.\n\nWhen available, tick the checkbox to provide a list of files with a count of characters embedded in the filename (e.g., the character _ counted).\n\nOnce ticked, you must enter appropriate character value(s) (e.g. _).")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+10),"Help", "The 'Filename embeds date' checkbox is available only when listing files in a folder.\n\nWHEN THE OPTION IS SELECTED, SINCE THE DATE FUNCTION AUTOMATICALLY CHECKS EMBEDDED DATES FOR THE CORRECT FORMAT, THE OPTION CAN BE USED TO CHECK THAT FILENAMES HAVE THE CORRECT DATE FORMAT. FAULTY DATES ARE EXPORTED AS BLANK.\n\nWhen available, tick the checkbox if filenames contain a date (e.g., The New York Time_2-18-1872). Once the checkbox is ticked, date options will become available. The date in the filename will then be exported, along with filename and path, to the output csv file that lists all files in a folder.\n\nThe embedded date will be checked automatically to ensure that the date has the correct date format. Detected incorrect dates will be listed with a BLANK date.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+11),"Help", "Please, tick the checkbox to process all files found in the input directory and all its subdirectories.")

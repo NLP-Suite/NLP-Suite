@@ -1,0 +1,31 @@
+Installation Instructions for Windows
+
+You can find detailed installation instructions at the NLP Suitte GitHub pages https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite.
+
+1. Unzip the downloaded file. The folder should be called NLP-Suite.
+
+2.	Enter the NLP-Suite folder and the setup_Windows subfolder.
+ 
+3. Run STEP1-install_anaconda by double-clicking on it.
+	Running STEP1 will not affect Anaconda if you already have it installed on your machine.
+
+4. Once STEP1 is finished, run STEP2-install_components through right-click -> run using Powershell 
+	STEP2 will install all Python components and may take quite a while. Please, be patient.
+
+Update Instructions
+
+There are two ways of updating to the newest NLP Suite version.
+
+1. Double click update_NLP-Suite.bat on your local machine every time you want to get new/changed files from GitHub.
+2. Double click on update_NLP-Suite_auto.bat and, from then on, when exiting the NLP Suite new/changed files will be automatically pulled from GitHub. You only need to run update_NLP-Suite_auto.bat once.
+
+The update features rely on Git. Please download Git at this link https://git-scm.com/downloads, if it hasn’t been installed already.
+
+Run Instructions
+
+The Windows installation script creates a desktop NLP Suite icon. Double click the NLP_Suite icon on your desktop to run the NLP Suite.
+You can also click on the run_NLP-Suite.bat file directly to run the NLP Suite.
+
+NLP environment shortcuts for Windows
+
+Run the NLP-environment_shortcut_add.bat file by double clicking it. This will add a shortcut to your command prompt that will allow you to type NLP and automatically be placed into your NLP Anaconda environment as well as in your NLP Suite Directory. You can remove the alias this script creates by running the NLP_environmen_shortcut_remove.bat.

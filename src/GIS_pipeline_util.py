@@ -79,8 +79,8 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
 
     if inputIsCoNLL == True:
 
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_Google_Earth_CoNLL,
-                                         reminders_util.message_Google_Earth_CoNLL, True)
+        # reminders_util.checkReminder(config_filename, reminders_util.title_options_Google_Earth_CoNLL,
+        #                                  reminders_util.message_Google_Earth_CoNLL, True)
         outputCsvLocationsOnly = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
                                                                    'NER_locations', '', '', '', False, True)
         locations = GIS_location_util.extract_NER_locations(window, inputFilename, encodingValue,
@@ -118,7 +118,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
         geocodedLocationsoutputFilename, locationsNotFoundoutputFilename = GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
                                                                                     locationColumnName,geocoder,country_bias,encodingValue,split_locations_prefix,split_locations_suffix)
         if geocodedLocationsoutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
-            return '',''
+            return '', ''
     else:
         geocodedLocationsoutputFilename = inputFilename
         locationsNotFoundoutputFilename = ''
