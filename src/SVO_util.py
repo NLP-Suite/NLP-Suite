@@ -125,7 +125,7 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
     :param outputDir: the output directory name; used for generating output file name
     :return: the name of the output csv file
     """
-    columns = ['Tool', 'Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O/A', 'LOCATION', 'TIME', 'Sentence']
+    columns = ['Tool', 'Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'LOCATION', 'TIME', 'Sentence']
     combined_df = pd.DataFrame(columns=columns)
     dfs = [(pd.read_csv(CoreNLP_svo), 'CoreNLP ++'), (pd.read_csv(senna_svo), 'Senna')]
 
@@ -133,7 +133,7 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
         for i in range(len(df)):
             new_row = [df_name, df.loc[i, 'Document ID'], df.loc[i, 'Sentence ID'], df.loc[i, 'Document'],
                        df.loc[i, 'S'],
-                       df.loc[i, 'V'], df.loc[i, 'O/A'], df.loc[i, 'LOCATION'],
+                       df.loc[i, 'V'], df.loc[i, 'O'], df.loc[i, 'LOCATION'],
                        df.loc[i, 'TIME'], df.loc[i, 'Sentence']]
             combined_df = combined_df.append(pd.DataFrame([new_row], columns=columns), ignore_index=True)
 
@@ -175,8 +175,8 @@ def filter_svo(svo_file_name, filter_s, filter_v, filter_o):
             subject = lemmatizer.lemmatize(df.loc[i, 'S'], 'n')
         if pd.notnull(df.loc[i, 'V']):
             verb = lemmatizer.lemmatize(df.loc[i, 'V'], 'v')
-        if pd.notnull(df.loc[i, 'O/A']):
-            object = lemmatizer.lemmatize(df.loc[i, 'O/A'], 'n')
+        if pd.notnull(df.loc[i, 'O']):
+            object = lemmatizer.lemmatize(df.loc[i, 'O'], 'n')
 
         if subject and filter_s and subject not in s_dict:
             continue

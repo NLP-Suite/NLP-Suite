@@ -41,7 +41,13 @@ if __name__ == '__main__':
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_label = 'Graphical User Interface (GUI) for Setting Up Input/Output, I/O, Options (' +config_filename + ")"
+config_file_label=config_filename
+if 'default' in config_file_label:
+    config_file_label='Default I/O configuration, to be saved to: ' + config_file_label
+else:
+    config_file_label='Alternative I/O configuration, to be saved to : ' + config_file_label
+
+GUI_label = 'Graphical User Interface (GUI) for Setting Up Input/Output, I/O, Options (' + config_file_label + ")"
 # The 6 values of config_option refer to:
 #   software directory
 #   input file
