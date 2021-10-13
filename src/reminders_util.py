@@ -76,7 +76,7 @@ title_options_CoreNLP_Java = ['Stanford CoreNLP Java 64-Bits']
 message_CoreNLP_Java = 'The Java call to Stanford CoreNLP script uses the property -d64 for the 64 bits JAVA. Java is normally set to 32 bits Virtual Machine as default on a Windows machine. If you see an error the property -d64 is not recognized, you will need to change the Java default to 64 bits VM.\n\nTo test your VM settings, open  command prompt/terminal and type Java - version. You should see "64-Bit Server VM" in the last line of output.'
 
 title_options_CoreNLP_coref = ['Stanford CoreNLP coref merged files']
-message_CoreNLP_coref = 'The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged coref file in output.'
+message_CoreNLP_coref = "The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged corefed file (with filenames embedded in <@# #@>) in output.\n\nManual coreference resolution will also not be available; depending upon the number of files merged, bringing the files into memory for manual editing may exceed memory capacity. You can always\n   1. manually edit the merged file anyway using the 'Stanford_CoreNLP_coreference_main' GUI;\n   2. split the merged file and then edit the individual coreferenced files, again, using the 'Stanford_CoreNLP_coreference_main' GUI."
 
 title_options_CoreNLP_shutting_down = ['CoreNLP Server is shutting down']
 message_CoreNLP_shutting_down = "The Stanford CoreNLP, after firing up, will display on command line/prompt the message: CoreNLP Server is shutting down.\n\nIt is NOT a problem. The process will continue..."

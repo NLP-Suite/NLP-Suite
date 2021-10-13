@@ -1101,8 +1101,8 @@ def create_gexf(fileName, OutputDir, SVOFile):
                         .strftime("%Y-%m-%d")
                 })
 
-            if row["O/A"] not in graph.nodes:
-                node = Node(graph, row["O/A"], row["O/A"],
+            if row["O"] not in graph.nodes:
+                node = Node(graph, row["O"], row["O"],
                             r=random.randint(0,255), g=random.randint(0,255), b=random.randint(0,255),
                             size="50",
                             spells=[
@@ -1111,20 +1111,20 @@ def create_gexf(fileName, OutputDir, SVOFile):
                                  "end": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"]) + 1))
                                     .strftime("%Y-%m-%d")}
                             ])
-                graph.nodes[row["O/A"]] = node
+                graph.nodes[row["O"]] = node
 
             else:
-                graph.nodes[row["O/A"]].size = str(int(graph.nodes[row["O/A"]].size)+50)
-                graph.nodes[row["O/A"]].spells.append({
+                graph.nodes[row["O"]].size = str(int(graph.nodes[row["O"]].size)+50)
+                graph.nodes[row["O"]].spells.append({
                     "start": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"])))
                         .strftime("%Y-%m-%d"),
                     "end": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"]) + 1))
                         .strftime("%Y-%m-%d")
                 })
 
-            edge_id = row["S"]+" "+row["O/A"]
+            edge_id = row["S"]+" "+row["O"]
             if edge_id not in graph.edges:
-                edge = Edge(graph,edge_id,row["S"],row["O/A"],
+                edge = Edge(graph,edge_id,row["S"],row["O"],
                             spells = [{"start": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"])))
                                     .strftime("%Y-%m-%d"),
                                        "end": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"]) + 1))

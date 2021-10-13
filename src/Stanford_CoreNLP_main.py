@@ -33,7 +33,7 @@ import sentence_analysis_util
 
 # dateInclude indicates whether there is date embedded in the file name. 
 # 1: included 0: not included
-# def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, memory_var, date_extractor, split_files, quote_extractor, CoreNLP_gender_annotator, CoReference, CoRef_Option, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
+# def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, memory_var, date_extractor, split_files, quote_extractor, CoreNLP_gender_annotator, CoReference, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         memory_var,
@@ -59,15 +59,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     if CoreNLP_annotators_var == True and 'Coreference PRONOMINAL resolution' in CoreNLP_annotators_menu_var:
         if IO_libraries_util.inputProgramFileCheck("Stanford_CoreNLP_coReference_util.py") == False:
             return
-        if "Neural" in CoreNLP_annotators_menu_var:
-            CoRef_Option = 'Neural Network'
+        # if "Neural" in CoreNLP_annotators_menu_var:
+        #     CoRef_Option = 'Neural Network'
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
                                                                            outputDir, openOutputFiles, createExcelCharts, memory_var,
-                                                                           CoRef_Option, manual_Coref)
+                                                                           manual_Coref)
 
         if error_indicator == 0:
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
-                                               'Finished running Stanford CoreNLP Co-Reference Resolution using the ' + CoRef_Option + ' approach at',
+                                               "Finished running Stanford CoreNLP Co-Reference Resolution using the 'Neural Network' approach at",
                                                True)
         else:
             mb.showinfo("Coreference Resolution Error",
@@ -465,12 +465,11 @@ def activate_CoreNLP_annotators_menu(*args):
             y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 550,
                                                            y_multiplier_integer,
                                                            open_GUI_checkbox)
+            open_GUI_checkbox.configure(state='normal')
             if input_main_dir_path.get()!='':
                 manual_Coref_checkbox.configure(state='disabled')
-                open_GUI_checkbox.configure(state='disabled')
             else:
                 manual_Coref_checkbox.configure(state='normal')
-                open_GUI_checkbox.configure(state='normal')
         else:
             manual_Coref_checkbox.place_forget()  # invisible
             open_GUI_checkbox.place_forget()  # invisible
@@ -479,6 +478,7 @@ def activate_CoreNLP_annotators_menu(*args):
         open_GUI_checkbox.place_forget()  # invisible
         CoreNLP_annotators_menu_var.set('')
         CoreNLP_annotators_menu.configure(state='disabled')
+
 CoreNLP_annotators_var.trace('w', activate_CoreNLP_annotators_menu)
 CoreNLP_annotators_menu_var.trace('w', activate_CoreNLP_annotators_menu)
 

@@ -199,8 +199,9 @@ def check_newest_release(current_release: str):
         old_version = True
     if int(current_release_parts[1])<int(GitHub_release_parts[1]):
         old_version = True
-    if int(current_release_parts[2])<int(GitHub_release_parts[2]):
-        old_version = True
+    if int(current_release_parts[0])==int(GitHub_release_parts[0]) and int(current_release_parts[1])==int(GitHub_release_parts[1]):
+        if int(current_release_parts[2])<int(GitHub_release_parts[2]):
+            old_version = True
     if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != current_release:
         result = mb.askyesno("NLP Suite Outdated",
                     "You are running NLP Suite release version " + str(current_release) + " an OLD version.\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) +
