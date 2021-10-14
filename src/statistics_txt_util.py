@@ -302,18 +302,38 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running corpus statistics at', True)
 
         if createExcelCharts==True:
-            columns_to_be_plotted=[[1,3],[1,4]]
-            hover_label=['Document','Document']
+
+            columns_to_be_plotted=[[1,3]]
+            hover_label=['Document']
             inputFilename=outputFilenameCSV
             Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='',
                                                       chart_type_list=["bar"],
                                                       # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
-                                                      chart_title='Corpus Statistics: Frequency of Sentences & Words by Document',
+                                                      chart_title='Corpus Statistics: Frequency of Sentences by Document',
                                                       column_xAxis_label_var='Document',
                                                       hover_info_column_list=hover_label)
             if Excel_outputFilename != "":
-                filesToOpen.append(Excel_outputFilename)
+                # rename output file or it will be overwritten by the next chart
+                Excel_outputFilename_new=Excel_outputFilename[:-5]+'_sent.xlsm'
+                os.rename(Excel_outputFilename, Excel_outputFilename_new)
+                filesToOpen.append(Excel_outputFilename_new)
+
+            columns_to_be_plotted=[[1,4]]
+            hover_label=['Document']
+            inputFilename=outputFilenameCSV
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                      outputFileLabel='',
+                                                      chart_type_list=["bar"],
+                                                      # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
+                                                      chart_title='Corpus Statistics: Frequency of Words by Document',
+                                                      column_xAxis_label_var='Document',
+                                                      hover_info_column_list=hover_label)
+            if Excel_outputFilename != "":
+                # rename output file or it will be overwritten by the next chart
+                Excel_outputFilename_new=Excel_outputFilename[:-5]+'_word.xlsm'
+                os.rename(Excel_outputFilename, Excel_outputFilename_new)
+                filesToOpen.append(Excel_outputFilename_new)
 
         # TODO
         #   we should create 10 classes of values by distance to the median of
