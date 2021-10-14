@@ -9,6 +9,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"wordclouds_util",['wo
 # https://amueller.github.io/word_cloud/
 
 import os
+from collections import Counter
 import numpy as np
 from PIL import Image
 import stanza
@@ -73,6 +74,52 @@ class GroupedColorFunc(object):
 
     def __call__(self, word, **kwargs):
         return self.get_color_func(word)
+
+# CYNTHIA: wordcloud function particularly designed for SVO
+def SVOWordCloud(svoFile, doc, outputDir, transformed_image_mask, prefer_horizontal):
+    # read SVO result in
+    svo_df = pd.read_csv(svoFile)
+    svo_df = svo_df.fillna("")
+    words_list = []
+    # red for S, blue for V, green for O
+    red_code = "(250, 0, 0)"
+    blue_code = "(0, 0, 250)"
+    green_code = "(0, 250, 0)"
+    default_code = "(169, 169, 169)" # grey
+    color_list = {
+        red_code: [],
+        blue_code: [],
+        green_code: []
+    }
+    for _, row in svo_df.iterrows():
+        if row["S"] != "":
+            # check if the strings contains special character
+            words_list.append(" ".join(["".join(filter(str.isalnum, s)) for s in row["S"].lower().split(" ")]))
+            color_list[red_code].append(" ".join(["".join(filter(str.isalnum, s)) for s in row["S"].lower().split(" ")]))
+        if row["V"] != "":
+            words_list.append(" ".join(["".join(filter(str.isalnum, s)) for s in row["V"].lower().split(" ")]))
+            color_list[blue_code].append(" ".join(["".join(filter(str.isalnum, s)) for s in row["V"].lower().split(" ")]))
+        if row["O"] != "":
+            words_list.append(" ".join(["".join(filter(str.isalnum, s)) for s in row["O"].lower().split(" ")]))
+            color_list[green_code].append(" ".join(["".join(filter(str.isalnum, s)) for s in row["O"].lower().split(" ")]))
+    words_count_dict = Counter(words_list)
+    print (words_count_dict)
+    if len(transformed_image_mask) != 0:
+        wc = WordCloud(width = 800, height = 800, max_words=1000, prefer_horizontal=prefer_horizontal, mask=transformed_image_mask,
+                       contour_width=3, contour_color='firebrick', background_color ='white').generate_from_frequencies(words_count_dict)
+    else:
+        wc = WordCloud(width=800, height=800, max_words=1000, prefer_horizontal=prefer_horizontal, contour_width=3,
+                        background_color='white').generate_from_frequencies(words_count_dict)
+    grouped_color_func = GroupedColorFunc(color_list, default_code)
+    wc.recolor(color_func=grouped_color_func)
+    plt.figure(figsize = (8, 8), facecolor = None)
+    plt.imshow(wc, interpolation="bilinear")
+    plt.axis("off")
+    output_file_name = IO_files_util.generate_output_file_name(doc, '', outputDir, '.png', 'WC', 'img')
+    wc.to_file(output_file_name)
+    return output_file_name
+
+
 
 # for label separate column with separate color only
 def processColorList(currenttext, color_to_words, csvField_color_list, myfile):

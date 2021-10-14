@@ -456,6 +456,7 @@ def check_IO_requirements(inputFilename, inputDir):
                            message=DirErr_txt_file)
             Error = True
             return Error
+
         if corpus_analysis == True:
             mb.showwarning(title='Input folder error',
                            message=DirErr_txt)
@@ -525,15 +526,14 @@ def check_IO_requirements(inputFilename, inputDir):
                                  message=csv_fileWarning)
             Error = True
             return Error
+
     # check that there is inputDir value if sentiment analysis and/or corpus are checked
-    if inputDir=='' and sentimentAnalysis == True or corpus_analysis_var.get() == True:
+    if inputDir=='' and (sentimentAnalysis == True or corpus_analysis_var.get() == True):
         mb.showwarning(title='Input folder error',
                        message=DirErr_txt)
         Error = True
         return Error
-
-    # check inputDir files that must be txt if sentiment analysis and/or corpus are checked
-    if inputDir!='' and sentiment_analysis_var.get() == True or corpus_analysis_var.get() == True:
+        # check inputDir files that must be txt if sentiment analysis and/or corpus are checked
         nSAscoreFiles=IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
         if nSAscoreFiles==0:
             mb.showwarning(title="Input folder error",
