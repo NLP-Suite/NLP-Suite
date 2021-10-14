@@ -48,6 +48,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     if len(tempOutputFiles)>0:
         filesToOpen.extend(tempOutputFiles)
 
+    # TODO Excel charts
+
     # # TODO date
     # if extract_date_from_text_var or extract_date_from_filename_var:
     # 	df = pd.DataFrame(data, columns=['Word', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date'])

@@ -324,8 +324,12 @@ def saveConfig(window, configFilename, configArray, silent=False):
             if silent == True:
                 saveGUIconfig = True
             else:
-                saveGUIconfig = mb.askyesno("Save I/O values to " + configFilename,
-                                            'The selected Input/Output options are different from the I/O values previously saved in "' + configFilename + '"' + ' listed below in succinct form for readability:\n\n' + IO_setup_display_string + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
+                if 'default' in configFilename:
+                    saveGUIconfig = mb.askyesno("Save I/O values to 'Default I/O configuration': " + configFilename,
+                                                'The selected Input/Output options are different from the I/O values previously saved in "' + configFilename + '"' + ' listed below in succinct form for readability:\n\n' + IO_setup_display_string + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
+                else:
+                    saveGUIconfig = mb.askyesno("Save I/O values to 'Alternative I/O configuration': " + configFilename,
+                                                'The selected Input/Output options are different from the I/O values previously saved in "' + configFilename + '"' + ' listed below in succinct form for readability:\n\n' + IO_setup_display_string + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
             if saveGUIconfig == True:
                 configFileWritten = writeConfigFile(configFilename, configArray)
     else:  # no GUI config available
