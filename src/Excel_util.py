@@ -638,7 +638,7 @@ def prepare_hover_data(inputFilename, hover_info_column, index):
 #data_to_be_plotted contains the values to be plotted
 #   the variable has this format:
 #   this includes both headers AND data
-#   one serie: [[['Name1','Frequency'], ['A', 7]]]
+#   one series: [[['Name1','Frequency'], ['A', 7]]]
 #   two series: [[['Name1','Frequency'], ['A', 7]], [['Name2','Frequency'], ['B', 4]]]
 #   three series: [[['Name1','Frequency'], ['A', 7]], [['Name2','Frequency'], ['B', 4]], [['Name3','Frequency'], ['C', 9]]]
 #   more series: ..........
@@ -654,12 +654,6 @@ def prepare_hover_data(inputFilename, hover_info_column, index):
 
 # when NO hover-over data are displayed the Excel filename extension MUST be xlsx and NOT xlsm (becauuse no macro VBA is enabled in this case)
 
-# PREVIOUS
-# def create_excel_chart(window,data_to_be_plotted,output_file_name,
-#                       chartTitle,
-#                       chart_type_list,
-#                       column_xAxis_label='',column_yAxis_label='',
-#                       reverse_column_position_for_series_label=False,series_label_list=[],second_y_var=0,second_yAxis_label='',inputFilename='',hover_var=0,hover_info_column_list=[]):
 def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptType,
                        chartTitle,
                        chart_type_list,
@@ -941,7 +935,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
                     # https://stackoverflow.com/questions/35010050/setting-x-axis-label-to-bottom-in-openpyxl
                     chartName.x_axis.tickLblPos = "low"
-                    chartName.x_axis.tickLblSkip = 2 #
+                    chartName.x_axis.tickLblSkip = 1 # changing to 2 would skip every other label; 3 every 3; etc.
             ws_chart.add_chart(chartName, "A1")
         else: #plotting with 2 y axes because using different scales
             # if there is no chart at all
@@ -1034,7 +1028,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
                 # https://stackoverflow.com/questions/35010050/setting-x-axis-label-to-bottom-in-openpyxl
                 chartName.x_axis.tickLblPos = "low"
-                chartName.x_axis.tickLblSkip = 2 #
+                chartName.x_axis.tickLblSkip = 1  # changing to 2 would skip every other label; 3 every 3; etc.
 
             chartName1 += chartName2
 

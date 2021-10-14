@@ -500,7 +500,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                           'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Date type')
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
                                                       'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type')
-                elif 'NER'  in str(filesToVisualize[j]):
+                elif 'NER' in str(filesToVisualize[j]):
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
                                           'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
 

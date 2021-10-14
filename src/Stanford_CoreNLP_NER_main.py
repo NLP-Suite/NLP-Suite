@@ -48,7 +48,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     if len(tempOutputFiles)>0:
         filesToOpen.extend(tempOutputFiles)
 
-    # TODO Excel charts
+    # TODO Excel charts; the basic bar charts are carried out in the _annotator_util
 
     # # TODO date
     # if extract_date_from_text_var or extract_date_from_filename_var:
