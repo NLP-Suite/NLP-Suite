@@ -99,6 +99,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                     annotator = 'All POS'
                 elif 'Gender' in CoreNLP_annotators_menu_var:
                     annotator = 'gender'
+                elif 'Quote' in CoreNLP_annotators_menu_var:
+                    annotator = 'quote'
                 elif 'Normalized' in CoreNLP_annotators_menu_var:
                     annotator = 'normalized-date'
                 elif '*' in CoreNLP_annotators_menu_var:

@@ -145,22 +145,22 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
             postag = str(postag).split(' - ')[0]
             postag = postag.strip()
         else:
-            postag = '' #*
+            postag = '*'
         if deprel != '*':
             deprel = str(deprel).split(' - ')[0]
             deprel = deprel.strip()
         else:
-            deprel = '' #*
+            deprel = '*'
         if co_postag != '*':
             co_postag = str(co_postag).split(' - ')[0]
             co_postag = co_postag.strip()
         else:
-            co_postag = '' #*
+            co_postag = '*'
         if co_deprel != '*':
             co_deprel = str(co_deprel).split(' - ')[0]
             co_deprel = co_deprel.strip()
         else:
-            co_deprel = '' #*
+            co_deprel = '*'
 
         POS_tags = ['*', 'JJ*', 'NN*', 'VB*'] + [k for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()]
         POS_descriptions = [v for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()]
@@ -169,17 +169,17 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         DEPREL_descriptions = [v for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()]
 
         if postag != '*' and postag not in POS_tags:
-            postag = ''  #*
+            postag = '*'
         if deprel != '*' and deprel not in DEPREL_tags:  # dict_DEPREL:
             print("The routine cannot recognize your input. The default value\'*\'(i.e. ANY VALUE) will be used.")
-            deprel = '' #*
+            deprel = '*'
 
         if co_postag != '*' and co_postag not in POS_tags:  # set_POSTAG: #search_CoNLL_table:
-            co_postag = '' #*
+            co_postag = '*'
 
         if co_deprel != '*' and co_deprel not in DEPREL_tags:  # set_DEPREL: #dict_DEPREL:
             print("The routine cannot recognize your input. The default value\'*\'(i.e. ANY VALUE) will be used.")
-            co_deprel = '' #*
+            co_deprel = '*'
 
         if (not os.path.isfile(inputFilename.strip())) and (not inputFilename.strip()[-6:] == '.conll') and (
                 not inputFilename.strip()[-4:] == '.csv'):
@@ -428,11 +428,11 @@ menu_values = []
 
 def clear(e):
     searchField_kw.set('e.g.: father')
-    postag_field.set('') #*
-    deprel_field.set('') #*
-    searchField_co_postag.set('') #*
-    co_postag_field.set('') #*
-    co_deprel_field.set('') #*
+    postag_field.set('*')
+    deprel_field.set('*')
+    searchField_co_postag.set('*')
+    co_postag_field.set('*')
+    co_deprel_field.set('*')
     activate_options()
     activate_csv_fields_selection(extract_var.get(), False, False)
     reset_all_values()
@@ -478,7 +478,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 
 # POSTAG variable
 
-postag_field.set('')  #*
+postag_field.set('*')
 tk.Label(window, text='POSTAG of searched token').place(x=GUI_IO_util.get_labels_x_coordinate(),
                                                         y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step() * y_multiplier_integer)
 postag_description_csv_field_menu_lb = tk.Label(window, text='POSTAG')
@@ -492,7 +492,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 
 # DEPREL variable
 
-deprel_field.set('') #*
+deprel_field.set('*')
 tk.Label(window, text='DEPREL of searched token').place(x=GUI_IO_util.get_labels_x_coordinate(),
                                                         y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step() * y_multiplier_integer)
 # deprel_description_csv_field_menu_lb = tk.OptionMenu(window,deprel_field,'*','acl - clausal modifier of noun (adjectival clause)', 'acl:relcl - relative clause modifier', 'acomp - adjectival complement', 'advcl - adverbial clause modifier', 'advmod - adverbial modifier', 'agent - agent', 'amod - adjectival modifier', 'appos - appositional modifier', 'arg - argument', 'aux - auxiliary', 'auxpass - passive auxiliary', 'case - case marking', 'cc - coordinating conjunction', 'ccomp - clausal complement with internal subject', 'cc:preconj - preconjunct','compound - compound','compound:prt - phrasal verb particle','conj - conjunct','cop - copula conjunction','csubj - clausal subject','csubjpass - clausal passive subject','dep - unspecified dependency','det - determiner','det:predet - predeterminer','discourse - discourse element','dislocated - dislocated element','dobj - direct object','expl - expletive','foreign - foreign words','goeswith - goes with','iobj - indirect object','list - list','mark - marker','mod - modifier','mwe - multi-word expression','name - name','neg - negation modifier','nn - noun compound modifier','nmod - nominal modifier','nmod:npmod - noun phrase as adverbial modifier','nmod:poss - possessive nominal modifier','nmod:tmod - temporal modifier','nummod - numeric modifier','npadvmod - noun phrase adverbial modifier','nsubj - nominal subject','nsubjpass - passive nominal subject','num - numeric modifier','number - element of compound number','parataxis - parataxis','pcomp - prepositional complement','pobj - object of a preposition','poss - possession modifier', 'possessive - possessive modifier','preconj - preconjunct','predet - predeterminer','prep - prepositional modifier','prepc - prepositional clausal modifier','prt - phrasal verb particle','punct - punctuation','quantmod - quantifier phrase modifier','rcmod - relative clause modifier','ref - referent','remnant - remnant in ellipsis','reparandum - overridden disfluency','ROOT - root','sdep - semantic dependent','subj - subject','tmod - temporal modifier','vmod - reduced non-finite verbal modifier','vocative - vocative','xcomp - clausal complement with external subject','xsubj - controlling subject','# - #')
@@ -504,9 +504,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 
 # Co-Occurring POSTAG menu
 
-searchField_co_postag.set('') #*
+searchField_co_postag.set('*')
 
-co_postag_field.set('') #*
+co_postag_field.set('*')
 tk.Label(window, text='POSTAG of co-occurring tokens').place(x=GUI_IO_util.get_labels_x_coordinate(),
                                                              y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step() * y_multiplier_integer)
 # co_postag_description_csv_field_menu_lb = tk.OptionMenu(window,co_postag_field,'*','CC - Coordinating conjunction','CD - Cardinal number', 'DT - Determinant', 'EX - Existential there', 'FW - Foreign word', 'IN - Preposition or subordinating conjunction', 'JJ* - Any adjective', 'JJ - Adjective', 'JJR - Adjective, comparative', 'JJS - Adjective, superlative', 'LS - List marker','MD - Modal verb', 'NN* - Any noun', 'NN - Noun, singular or mass', 'NNS - Noun, plural', 'NNP - Proper noun, singluar', 'NNPS - Proper noun, plural', 'PDT - Predeterminer', 'POS - Possessive ending', 'PRP - Personal pronoun', 'RB* - Any adverb','RB - Adverb', 'RBR - Adverb, comparative', 'RBS - Adverb, superlative','RP - Particle', 'SYM - Symbol', 'TO - To', 'UH - Interjection', 'VB* - Any verb', 'VB - Verb, base form', 'VBD - Verb, past tense', 'VBG - Verb, gerundive or present participle', 'VBN - Verb, past participle', 'VBP - Verb, non-3rd person singular present', 'VBZ - Verb, 3rd person singular present','WDT - Wh-determiner (what, which, whose)', 'WP - Wh-pronoun (how, what, which, where, when, who, whom, whose, whether', 'WP - Possessive wh-pronoun', 'WRB - Wh-adverb (when, where, how, and why)','( - (',') - )','. - .',', - ,',': - :','\' - \'','\" - \"','# - #')
@@ -519,7 +519,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
                                                co_postag_description_csv_field_menu_lb)
 
 # Co-Occurring DEPREL menu
-co_deprel_field.set('')  #*
+co_deprel_field.set('*')
 tk.Label(window, text='DEPREL of co-occurring tokens').place(x=GUI_IO_util.get_labels_x_coordinate(),
                                                              y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step() * y_multiplier_integer)
 # co_deprel_description_csv_field_menu_lb = tk.OptionMenu(window,co_deprel_field,'*','acl - clausal modifier of noun (adjectival clause)', 'acl:relcl - relative clause modifier', 'acomp - adjectival complement', 'advcl - adverbial clause modifier', 'advmod - adverbial modifier', 'agent - agent', 'amod - adjectival modifier', 'appos - appositional modifier', 'arg - argument', 'aux - auxiliary', 'auxpass - passive auxiliary', 'case - case marking', 'cc - coordinating conjunction', 'ccomp - clausal complement with internal subject', 'cc:preconj - preconjunct','compound - compound','compound:prt - phrasal verb particle','conj - conjunct','cop - copula conjunction','csubj - clausal subject','csubjpass - clausal passive subject','dep - unspecified dependency','det - determiner','det:predet - predeterminer','discourse - discourse element','dislocated - dislocated element','dobj - direct object','expl - expletive','foreign - foreign words','goeswith - goes with','iobj - indirect object','list - list','mark - marker','mod - modifier','mwe - multi-word expression','name - name','neg - negation modifier','nn - noun compound modifier','nmod - nominal modifier','nmod:npmod - noun phrase as adverbial modifier','nmod:poss - possessive nominal modifier','nmod:tmod - temporal modifier','nummod - numeric modifier','npadvmod - noun phrase adverbial modifier','nsubj - nominal subject','nsubjpass - passive nominal subject','num - numeric modifier','number - element of compound number','parataxis - parataxis','pcomp - prepositional complement','pobj - object of a preposition','poss - possession modifier', 'possessive - possessive modifier','preconj - preconjunct','predet - predeterminer','prep - prepositional modifier','prepc - prepositional clausal modifier','prt - phrasal verb particle','punct - punctuation','quantmod - quantifier phrase modifier','rcmod - relative clause modifier','ref - referent','remnant - remnant in ellipsis','reparandum - overridden disfluency','ROOT - root','sdep - semantic dependent','subj - subject','tmod - temporal modifier','vmod - reduced non-finite verbal modifier','vocative - vocative','xcomp - clausal complement with external subject','xsubj - controlling subject','# - #')

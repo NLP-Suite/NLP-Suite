@@ -733,8 +733,10 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
 
     IO_user_interface_util.timed_alert(window, 2000, 'Warning', 'Preparing Excel chart ' + tail + '\n\nPlease wait...', False)
 
-    # lenghts is the list of the number of values for each series (e.g. 5 for series 1, 18 for series 2......)
+    # lengths is the list of the number of values for each series (e.g. 5 for series 1, 18 for series 2......)
     # lengths = [5, 18, ......]
+    # adding extra lines to series titles to be displayed under the x-axis
+    # with 1 series len(lengths) = 1
     lengths = [len(x) for x in
                data_to_be_plotted]  # create a list of length for each list inside in the list data_to_be_plotted(a list contain several lists, each list is a row of output we write in excel)
     if len(lengths) > 3:
@@ -828,7 +830,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                     else:
                         row += stats_list[i] # then we append the data
                 else: # else means the length of current series is smaller than the largest length of all series
-                    # Below lines are for the situation: in an excel chart, we have multiple series, but they are not the same length. 
+                    # lines below are for the situation: in an excel chart, we have multiple series, but they are not the same length.
                     # We append pairs of blank values("") for name, frequency for each row of the series with shorter length
                     # Since we always have two columns for each series (e.g., name, freuency), so there are two append("").
                     row += [""]
@@ -874,7 +876,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 if i < len(stats_list): # if i is smaller than the length of the current series
                     row += stats_list[i] # then we append the data
                 else: # else means the length of current series is smaller than the largest length of all series
-                    # Below lines are for the situation: in an excel chart, we have multiple series, but they are not the same length. 
+                    # lines below are for the situation: in an excel chart, we have multiple series, but they are not the same length.
                     # We append pairs of blank values("") for name, frequency for each row of the series with shorter length
                     # Since we always have two columns for each series (e.g., name, freuency), so there are two append("").
                     row += [""]
@@ -907,7 +909,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 #     chartName.x_axis.title = " X_AXIS"
                 
                 if len(column_yAxis_label)>0:
-                    chartName.y_axis.title = column_yAxis_label
+                    chartName.y_axis.title = column_yAxis_label # displayed on the y-axis
                 # else:
                 #     chartName.y_axis.title = " Y_AXIS"
 
@@ -922,10 +924,20 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                     if len(series_label_list) > 0 and len(series_label_list[i]) > 0:
                         chartName.series.append(Series(data, title=series_label_list[i]))
                     else:
+                        # the title_series is displayed to the right of the chart as the title of the series
+                        # should NOT be displayed when you have only one series
+                        # for multiple series the series_titles are displayed under the x-axis
                         if reverse_column_position_for_series_label == False:
                             title_series = [t[1] for t in data_to_be_plotted[i]]
                         else:
                             title_series = [t[0] for t in data_to_be_plotted[i]]
+                        # title_series is a list [] with two values: title [0] and frequency
+                        # title_series[0] will be displayed to the right of the chart as the series name
+                        #   e.t., Frequencies of NER values
+                        # setting title='' will still display a blue little square button w/w series name
+                        # chartName.series.append(Series(data)) will still display Series 1
+                        # LEGEND
+                        # chartName.legend(legendEntry=())
                         chartName.series.append(Series(data, title=title_series[0]))
                     chartName.set_categories(labels)
                 else:

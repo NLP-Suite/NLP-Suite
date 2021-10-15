@@ -64,6 +64,7 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
     output_filename=''
     options=0
     i=0
+    itemCount=0
     msg=''
     operation=''
     fieldnames = []
@@ -144,7 +145,7 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
     if by_embedded_items_var==1:
         if number_of_items_var>0:
             fieldnames = fieldnames + ['Embedded items count ('+embedded_item_character_value_var+')']
-
+            fieldnames = fieldnames + ['Count by document']
     if fileName_embeds_date==1:
         fieldnames = fieldnames + ['Date']
 

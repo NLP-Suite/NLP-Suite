@@ -487,23 +487,50 @@ def CoreNLP_annotate(config_filename,inputFilename,
         if filesToVisualize[j][-4:] == ".csv":
             file_df = pd.read_csv(filesToVisualize[j])
             if not file_df.empty:
-                if 'gender' in str(filesToVisualize[j]):
+                if 'Lemma' in str(filesToVisualize[j]):
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
+                                          'Frequency Distribution of Lemmas', 1, [], 'lemma_bar','Lemma')
+                elif 'All POS' in str(filesToVisualize[j]):
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
+                                          'Frequency Distribution of POS Tag Values', 1, [], 'POS_bar','POS tag')
+                elif 'gender' in str(filesToVisualize[j]):
                     filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j], filesToOpen)
     
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
                                                         [[1, 1]], 'bar',
                                                         'Frequency Distribution of Gender Types', 1, [],
                                                         'gender_bar','Gender')
+
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
+                                          'Frequency Distribution of Words by Gender Type', 1, ['Gender'], 'gender_word_bar','')
+                elif 'quote' in str(filesToVisualize[j]):
+                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
+                                                        [[5, 5]], 'bar',
+                                                        'Frequency Distribution of Speakers', 1, [],
+                                                        'quote_bar', 'Speaker')
                 elif 'date' in str(filesToVisualize[j]):
                     # TODO put values hover-over values to pass to Excel chart as a list []
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
-                                          'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Date type')
+                                          'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Normalized date type')
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
                                                       'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type')
                 elif 'NER' in str(filesToVisualize[j]):
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
                                           'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
-
+                    # ner tags are _ separated; individual NER tags at most have 2 _ (e.g., STATE_OR_PROVINCE)
+                    if ner.count('_')>2:
+                        ner_tags = 'Multi-Tags'
+                    else:
+                        ner_tags = ner
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
+                                          'Frequency Distribution of Words by NER ' +ner_tags, 1, ['NER Value'], 'NER_word_bar','') #NER ' +ner_tags+ ' Word
+                elif 'SVO' in str(filesToVisualize[j]):
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
+                                          'Frequency Distribution of Subjects', 1, [], 'S_bar','Subjects')
+                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[4, 4]], 'bar',
+                                                        'Frequency Distribution of Verbs', 1, [], 'V_bar', 'Verbs')
+                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[5, 5]], 'bar',
+                                                        'Frequency Distribution of Objects', 1, [], 'O_bar', 'Objects')
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))
     if len(filesError)>0:
