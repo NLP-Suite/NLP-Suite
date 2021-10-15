@@ -52,6 +52,7 @@ stanza
 # stanfordnlp is used by SVO
 stanfordnlp
 # stanza and stanfordnlp requite torch and torchvision
+# pip install torch===1.7.1 torchvision===0.8.2 -f https://download.pytorch.org/whl/torch_stable.html
 # torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
 # later versions such as torch===1.6.0 torchvision===0.7.0 seem to fail
 

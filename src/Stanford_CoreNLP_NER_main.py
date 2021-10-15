@@ -48,7 +48,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     if len(tempOutputFiles)>0:
         filesToOpen.extend(tempOutputFiles)
 
-    # TODO Excel charts
+    # TODO Excel charts; the basic bar charts are carried out in the _annotator_util
 
     # # TODO date
     # if extract_date_from_text_var or extract_date_from_filename_var:
@@ -263,7 +263,7 @@ NER_tag_var.set('')
 NER_menu_lb = tk.Label(window, text='NER tags')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,NER_menu_lb,True)
 
-NER_menu = tk.OptionMenu(window,NER_tag_var,'--- All NER tags', '--- All quantitative expressions','NUMBER', 'ORDINAL', 'PERCENT', '--- All social actors', 'PERSON', 'ORGANIZATION', '--- All spatial expressions', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', '--- All temporal expressions', 'DATE', 'TIME', 'DURATION', 'SET',  '--- All other expressions', 'MISC', 'CAUSE_OF_DEATH', 'CRIMINAL_CHARGE', 'EMAIL',  'IDEOLOGY', 'LOCATION', 'MONEY',  'NATIONALITY', 'RELIGION', 'TITLE','URL')
+NER_menu = tk.OptionMenu(window,NER_tag_var,'--- All NER tags', '--- All quantitative expressions','NUMBER', 'ORDINAL', 'PERCENT', '--- All social actors', 'PERSON', 'ORGANIZATION', '--- All spatial expressions', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', '--- All temporal expressions', 'DATE', 'TIME', 'DURATION', 'SET',  '--- All other expressions', 'MISC', 'CAUSE_OF_DEATH', 'CRIMINAL_CHARGE', 'EMAIL',  'IDEOLOGY', 'MONEY',  'NATIONALITY', 'RELIGION', 'TITLE','URL')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+70,y_multiplier_integer,NER_menu,True)
 
 add_NER_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_NER_Options())
@@ -322,10 +322,10 @@ def add_NER_tag(*args):
 
     if NER_tag_var.get() == '--- All NER tags':
         NER_list = ['PERSON', 'ORGANIZATION', 'MISC', 'MONEY', 'NUMBER', 'ORDINAL',
-                    'PERCENT', 'DATE', 'TIME', 'DURATION', 'SET', 'EMAIL', 'URL', 'LOCATION', 'CITY',
-                    'STATE_OR_PROVINCE', 'COUNTRY', 'NATIONALITY', 'RELIGION', 'TITLE', 'IDEOLOGY', 'CRIMINAL_CHARGE',
+                    'PERCENT', 'DATE', 'TIME', 'DURATION', 'SET', 'EMAIL', 'URL', 'CITY',
+                    'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', 'NATIONALITY', 'RELIGION', 'TITLE', 'IDEOLOGY', 'CRIMINAL_CHARGE',
                     'CAUSE_OF_DEATH']
-        NER_entry_var.set('PERSON, ORGANIZATION, MISC, MONEY, NUMBER, ORDINAL, PERCENT, DATE, TIME, DURATION, SET, EMAIL, URL, LOCATION, CITY,STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, TITLE, IDEOLOGY, CRIMINAL_CHARGE,CAUSE_OF_DEATH')
+        NER_entry_var.set('PERSON, ORGANIZATION, MISC, MONEY, NUMBER, ORDINAL, PERCENT, DATE, TIME, DURATION, SET, EMAIL, URL, CITY,STATE_OR_PROVINCE, COUNTRY, LOCATION, NATIONALITY, RELIGION, TITLE, IDEOLOGY, CRIMINAL_CHARGE,CAUSE_OF_DEATH')
     elif NER_tag_var.get() == '--- All quantitative expressions':
         NER_list = ['NUMBER', 'ORDINAL', 'PERCENT']
         NER_entry_var.set('NUMBER, ORDINAL, PERCENT')
@@ -333,8 +333,8 @@ def add_NER_tag(*args):
         NER_list = ['PERSON', 'ORGANIZATION']
         NER_entry_var.set('PERSON, ORGANIZATION')
     elif NER_tag_var.get() == '--- All spatial expressions':
-        NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY']
-        NER_entry_var.set('CITY, STATE_OR_PROVINCE, COUNTRY')
+        NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
+        NER_entry_var.set('CITY, STATE_OR_PROVINCE, COUNTRY, LOCATION')
     elif NER_tag_var.get() == '--- All temporal expressions':
         NER_list = ['DATE', 'TIME', 'DURATION', 'SET']
         NER_entry_var.set('DATE, TIME, DURATION, SET')

@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"wordclouds_util",['wordcloud','numpy','matplotlib','ntpath','PIL','csv'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"wordclouds_util",['wordcloud','numpy','matplotlib','ntpath','PIL','stanza','csv'])==False:
     sys.exit(0)
 
 # The script uses Andreas Christian Mueller WordCloud package
@@ -13,6 +13,7 @@ from collections import Counter
 import numpy as np
 from PIL import Image
 import stanza
+stanza.download('en')
 import pandas as pd
 from collections import defaultdict
 import tkinter.messagebox as mb
@@ -167,7 +168,6 @@ def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transforme
     return output_file_name
 
 def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation, prefer_horizontal):
-# def display_wordCloud(doc, outputDir,textToProcess,transformed_image_mask):
 
     comment_words = ' '
     # stopwords = set(STOPWORDS)

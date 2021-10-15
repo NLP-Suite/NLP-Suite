@@ -75,7 +75,7 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
     head, tail = os.path.split(inputFilename)
     error = None
     if isinstance(CoreNLP_output, str):
-        logger.warning("[Warning] Stanford CoreNLP is not JSON. Trying to convert output to JSON.. ")
+        logger.warning("[Warning] Stanford CoreNLP is not JSON. Trying to convert output to JSON... ")
 
         if text and not CoreNLP_output:
             error = 'Bad Response from Stanford Core NLP Server. This might be due to various reasons. The server might' \

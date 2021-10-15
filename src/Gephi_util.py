@@ -21,7 +21,7 @@ from lxml import etree
 from datetime import date
 import itertools
 import traceback
-
+import IO_libraries_util
 
 def msg_unexpected_tag(expected, got):
     print("Error : incorrect xml. Expected tag {expected}, not {got}.".format(expected=expected, got=got))
@@ -1071,6 +1071,10 @@ def create_gexf(fileName, OutputDir, SVOFile):
     :param corpus: A Corpus Object
     :return: gexf file path.
     """
+    GephiDir, missing_external_software = IO_libraries_util.get_external_software_dir('','Gephi')
+    if GephiDir == None:
+        return
+
     EPOCH = datetime.datetime.today()
     graph_name = fileName +".gexf"
     gexf = Gexf(fileName,"Author")

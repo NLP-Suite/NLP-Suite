@@ -304,7 +304,9 @@ software_setup_menu = tk.OptionMenu(window, software_setup_var,
                                    'Stanford CoreNLP',
                                    'WordNet',
                                    'Mallet',
-                                   'SENNA')
+                                   'SENNA',
+                                   'Gephi',
+                                   'Google Earth Pro')
 
 software_setup_menu.configure(width=70)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
@@ -593,7 +595,7 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
                                   "Please, click on the button to the right to open the GUI that will allow you to setup default I/O options:\n   INPUT file and or directory of files (your corpus)and\n   OUTPUT directory where all files (csv, txt, html, kml, jpg) produced by the NLP-Suite tools will be saved.\n\nThese default I/O options will be used for all GUIs.\n\nThe checkbox at the end of the line is set to OK if all INPUT/OUTPUT options have been successfully selected and saved in the default-config.txt file under the subdirecory config.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
-                                  "The NLP-Suite relies for some of its operations on external software that needs to be downloaded and installed (Stanford CoreNLP, WordNet, Mallet, SENNA). When using any of these software, the NLP-Suite needs to know where they have been installed on your computer (e.g., C:\Program Files (x86)\WordNet).\n\nPlease, using the dropdown menu, select the software option that you want to link to its installation directory. YOUR SELECTION WILL BE SAVED IN THE software_config.csv FILE UNDER THE SUBDIRECTORY config.\n\nThe checkbox at the end of the line is set to OK if all external software packages have been successfully installed.")
+                                  "The NLP-Suite relies for some of its operations on external software that needs to be downloaded and installed (Stanford CoreNLP, WordNet, Mallet, SENNA, Gephi, Google Earth Pro). When using any of these software, the NLP-Suite needs to know where they have been installed on your computer (e.g., C:\Program Files (x86)\WordNet).\n\nPlease, using the dropdown menu, select the software option that you want to link to its installation directory. YOUR SELECTION WILL BE SAVED IN THE software_config.csv FILE UNDER THE SUBDIRECTORY config.\n\nThe checkbox at the end of the line is set to OK if all external software packages have been successfully installed.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 4, "Help",
                                   "Please, using the dropdown menu, select one of the many options available for data and file handling." + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 5, "Help",
