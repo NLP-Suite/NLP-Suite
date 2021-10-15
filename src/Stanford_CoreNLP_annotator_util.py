@@ -525,6 +525,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
                                           'Frequency Distribution of Words by NER ' +ner_tags, 1, ['NER Value'], 'NER_word_bar','') #NER ' +ner_tags+ ' Word
                 elif 'SVO' in str(filesToVisualize[j]):
+                    # pie chart of SVO
+                    # filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3],[4,4],[5,5]], 'pie',
+                    #                       'Frequency Distribution of SVOs', 1, [], 'SVO_pie','SVOs')
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
                                           'Frequency Distribution of Subjects', 1, [], 'S_bar','Subjects')
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[4, 4]], 'bar',

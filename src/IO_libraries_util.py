@@ -214,6 +214,27 @@ def inputExternalProgramFileCheck(software_dir, programName):
             mb.showwarning(title='Software error',
                            message="The selected software directory\n  " + software_dir + "'\nis NOT the expected WordNet directory. The directory should contain, among other things, the directories \'dict\' and \'src\'. DO MAKE SURE THAT WHEN YOU UNZIP THE WORDNET ARCHIVE YOU DO NOT END UP WITH A WORDNET DIRECTORY INSIDE A WORDENET DIRECTORY.\n\nPlease, select the appropriate WordNet directory and try again!\n\nYou can download WordNet at https://wordnet.princeton.edu/download/current-version.\n\nPlease, read the TIPS_NLP_WordNet.pdf.")
             return False
+    if programName == 'Gephi':
+        if 'gephi' in fileList and 'platform' in fileList:
+            return True
+        else:
+            mb.showwarning(title='Software error',
+                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Gephi directory. The directory should contain, among other things, the directories \'gephi\' and \'platform\'.\n\nPlease, select the appropriate Gephi directory and try again!\n\nYou can download Gephi at https://gephi.org/users/download/.\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
+            return False
+    if programName == 'Google Earth Pro':
+        if platform == "win32":
+            if 'client' in fileList:
+                return True
+            else:
+                expected_GEP_files = "The directory should contain the subdirectory \'client'\n\nMOST LIKELY THE EXECUTABLE FILE WILL AUTOMATICALLY INSTALL GOOGLE EARTH PRO UNDER A FOLDER GOOGLE IN C:\Program Files."
+        else:
+            if 'Contents' in fileList:
+                return True
+            else:
+                expected_GEP_files = "The directory should contain the subdirectory \'Contents'."
+        mb.showwarning(title='Software error',
+                       message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Google Earth Pro directory." + expected_GEP_files + "\n\nPlease, select the appropriate Google Earth Pro directory and try again!\n\nYou can download Google Earth Pro at https://www.google.com/earth/download/gep/agree.html?hl=en-GB.\n\nPlease, read the TIPS_NLP_Google Earth Pro.pdf.")
+        return False
 
 def update_csv_fields(existing_csv: list) -> list:
     """
@@ -226,7 +247,8 @@ def update_csv_fields(existing_csv: list) -> list:
                   ['Mallet', '', 'http://mallet.cs.umass.edu/download.php'],
                   ['SENNA', '', 'https://ronan.collobert.com/senna/download.html'],
                   ['WordNet', '', 'https://wordnet.princeton.edu/download/current-version'],
-                  ['Gephi', '', 'https://gephi.org/users/download/']]
+                  ['Gephi', '', 'https://gephi.org/users/download/'],
+                  ['Google Earth Pro', '', 'https://www.google.com/earth/download/gep/agree.html?hl=en-GB']]
     fields = [x[0].lower() for x in existing_csv]
     for (index, row) in enumerate(sample_csv):
         if row[0].lower() not in fields:
@@ -358,6 +380,8 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                             software_name = 'WordNet'
                         elif 'gephi' in software_name.lower():
                             software_name = 'Gephi'
+                        elif 'google earth pro' in software_name.lower():
+                            software_name = 'Google Earth Pro'
                         # check that the selected folder for the external program is correct; if so save
                         if not inputExternalProgramFileCheck(software_dir, software_name):
                             software_dir = ''
