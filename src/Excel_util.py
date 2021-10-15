@@ -931,7 +931,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                             title_series = [t[1] for t in data_to_be_plotted[i]]
                         else:
                             title_series = [t[0] for t in data_to_be_plotted[i]]
-                        # title_series is a list [] with two values: title [0] and frequency
+                        # title_series is a list [] with two values: title [0] of series and frequency
                         # title_series[0] will be displayed to the right of the chart as the series name
                         #   e.t., Frequencies of NER values
                         # setting title='' will still display a blue little square button w/w series name
