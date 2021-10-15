@@ -177,24 +177,12 @@ def purge_partial_matches(window, inputFilename, output_path, openOutputFiles, n
 
 
 def writeOutput(inputPath, input_filename, outputPath, output_filename, fieldnames,
-                by_creation_date_var,
-                creation_date,
-                modification_date,
-                by_author_var,
-                author,
+                by_creation_date_var, creation_date, modification_date,
+                by_author_var, author,
                 string_entry_var,
-
-                by_embedded_items_var,
-                number_of_items_var,
-                embedded_item_character_value,
-
-                character_count_var,
-                character_entry_var,
-                characterCount,
-
-                fileName_embeds_date,
-                date,
-                dateStr,
+                by_embedded_items_var, comparison_var, embedded_item_character_value, number_of_items_var, itemCount,
+                character_count_var, character_entry_var, characterCount,
+                fileName_embeds_date, date, dateStr,
                 split_string):
 
     if not os.path.isdir(os.path.join(inputPath, input_filename)):
@@ -212,6 +200,7 @@ def writeOutput(inputPath, input_filename, outputPath, output_filename, fieldnam
                 printLine['Author'] = author
             if by_embedded_items_var == 1 and number_of_items_var>0:
                 printLine['Embedded items count (' + embedded_item_character_value + ')'] = str(number_of_items_var)
+                printLine['Count by document'] = str(itemCount)
             if character_count_var == 1:
                 printLine['Character count (' + character_entry_var + ')'] = str(characterCount)
             if fileName_embeds_date == 1:
@@ -222,7 +211,11 @@ def writeOutput(inputPath, input_filename, outputPath, output_filename, fieldnam
                 for item in split_items:
                     printLine['Split item' + str(ID)] = str(item)
                     ID = ID + 1
-            writer.writerow(printLine)
+            try:
+                writer.writerow(printLine)
+            except:
+                mb.showwarning(title="Filename error",
+                               message=split_string + "\n\nERROR! The current file has more embedded items than the expected number (" + str(ID) + ").\n\nPlease, check the filename and edit it.")
     else:
         fileFound = False
 
@@ -264,11 +257,13 @@ def processFile(inputPath, outputPath, filename, output_filename,
     #	if selectedCsvFile_var.get()!='' if whatever filename is passed to processFile is in the csv file then we do something
 
     characterCount = 0
+    itemCount = 0
     creation_date = ''
     modification_date = ''
     author = ''
     date = ''
     dateStr = ''
+    split_string = ''
     fileFound = True
 
     if character_count_var == 1:
@@ -331,8 +326,9 @@ def processFile(inputPath, outputPath, filename, output_filename,
             date, dateStr = IO_files_util.getDateFromFileName(filename, date_separator, date_position, date_format, False)
 
         if by_embedded_items_var == 1:
+            itemCount = 0
             # old_file = filename
-            filename = get_spec_num_files(filename, comparison_var, number_of_items_var, embedded_item_character_value)
+            filename, itemCount = get_spec_num_files(filename, comparison_var, number_of_items_var, embedded_item_character_value)
             # filename = numEmbedded(filename, comparison_var,  embedded_item_character_value, include_exclude_var)
             if filename == '':
                 fileFound = False
@@ -430,10 +426,14 @@ def processFile(inputPath, outputPath, filename, output_filename,
 
     if (fileFound == True):
 
-        writeOutput(inputPath, filename, outputPath, output_filename, fieldnames, by_creation_date_var, creation_date,
-                    modification_date, by_author_var, author, string_entry_var, by_embedded_items_var,
-                    number_of_items_var, embedded_item_character_value, character_count_var, character_entry_var,
-                    characterCount, fileName_embeds_date, date, dateStr, split_string)
+        writeOutput(inputPath, filename, outputPath, output_filename, fieldnames,
+                    by_creation_date_var, creation_date, modification_date,
+                    by_author_var, author,
+                    string_entry_var,
+                    by_embedded_items_var, comparison_var, embedded_item_character_value, number_of_items_var, itemCount,
+                    character_count_var, character_entry_var, characterCount,
+                    fileName_embeds_date, date, dateStr,
+                    split_string)
 
     return fileFound, characterCount, creation_date, modification_date, author, date, dateStr
 
@@ -581,7 +581,7 @@ def get_spec_num_files(filename, comparator, number_of_items_var, embedded_item_
         if itemCount <= number_of_items_var:
             # outputList.append([filename])
             result = filename
-    return result
+    return result, itemCount
 
     # print(outputList)
     # filesToOpen = [outputCSV]

@@ -15,6 +15,7 @@ import GIS_location_util
 import GIS_geocode_util
 import GIS_KML_util
 import GIS_Google_Maps_util
+import IO_libraries_util
 
 # The script is used by SVO_main and by Google_Earth_main to run a csv file that 1. needs geocoding; 2. mapping geocoded location onto Google Earth Pro.
 import IO_user_interface_util
@@ -68,6 +69,11 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
     filesToOpen=[]
 
     outputCsvLocationsOnly = ''
+
+    software=config_filename.replace('-config.txt','')
+    GoogleEarthProDir, missing_external_software = IO_libraries_util.get_external_software_dir(software + ', with the option of mappping locations,','Google Earth Pro')
+    if GoogleEarthProDir == None:
+        return '', ''
 
     IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS pipeline at', True,
                                        'You can follow the pipeline in command line.')

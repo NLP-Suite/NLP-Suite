@@ -660,7 +660,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented
 def activateCoRefOptions(*args):
     if CoRef_var.get() == 1:
         # CoRef_menu.configure(state='normal')
-        if input_main_dir_path!='':
+        if input_main_dir_path.get()!='':
             manual_Coref_checkbox.configure(state='disabled')
         else:
             manual_Coref_checkbox.configure(state='normal')
