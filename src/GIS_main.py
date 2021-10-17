@@ -274,16 +274,10 @@ location_menu_var=tk.StringVar()
 NER_extractor_var=tk.IntVar()
 geocode_locations_var=tk.IntVar()
 geocoder_var=tk.StringVar()
-Google_API_Google_geocode_var = tk.StringVar()
 country_bias_var=tk.StringVar()
 GIS_package_var=tk.StringVar()
 GIS_package2_var=tk.IntVar()
-Google_API_Google_maps_var=tk.StringVar()
-Google_API_Google_geocode_var=tk.StringVar()
 map_locations_var=tk.IntVar()
-
-Google_Maps_API=''
-Google_geocode_API=''
 
 def clear(e):
     csv_file_var.set('')
@@ -296,11 +290,7 @@ def clear(e):
     map_locations_var.set(1)
     GIS_package_var.set('Google Earth Pro & Google Maps')
     geocoder_var.set('Nominatim')
-    Google_API_Google_geocode_var.set('')
     country_bias_var.set('')
-    Google_API_geocode_lb.place_forget()  # invisible
-    Google_API_geocode.place_forget()  # invisible
-    save_APIkey_button_Google_geocode.place_forget()  # invisible
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -580,35 +570,20 @@ geocoder = tk.OptionMenu(window,geocoder_var,'Nominatim','Google')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+80, y_multiplier_integer,geocoder,True)
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
-Google_API_geocode_lb = tk.Label(window, text='API key')
-Google_API_geocode = tk.Entry(window, width=40, textvariable=Google_API_Google_geocode_var)
+# Google_API_geocode_lb = tk.Label(window, text='API key')
+# Google_API_geocode = tk.Entry(window, width=40, textvariable=Google_API_Google_geocode_var)
 
-save_APIkey_button_Google_geocode = tk.Button(window, text='OK', width=2,height=1,command=lambda: config_util.Google_API_Config_Save('Google-geocode-API-config.txt',Google_API_Google_geocode_var.get()))
+# save_APIkey_button_Google_geocode = tk.Button(window, text='OK', width=2,height=1,command=lambda: config_util.Google_API_Config_Save('Google-geocode-API-config.txt',Google_API_Google_geocode_var.get()))
 
-def activate_Google_API_geocode(y_multiplier_integer_save_one,Google_API_geocode_lb,Google_API_geocode,*args):
+def activate_Google_API_geocode(*args):
     if geocoder_var.get()=='Google':
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer_save_one,Google_API_geocode_lb,True)
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+560,y_multiplier_integer,Google_API_geocode,True)
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+840,y_multiplier_integer,save_APIkey_button_Google_geocode)
-
-
-        key=GIS_pipeline_util.getGoogleAPIkey('Google-geocode-API-config.txt')
-        if key=='':
-            return
-        else:
-            Google_API_Google_geocode_var.set(key)
-            Google_geocode_API = key
-
-    else:
-        # hide the Google API label and entry widgets until Google is selected
-        # pack and place have their own _forget options
-        Google_API_geocode_lb.place_forget() #invisible
-        Google_API_geocode.place_forget() #invisible
-        save_APIkey_button_Google_geocode.place_forget() #invisible
-
-geocoder_var.trace('w',callback = lambda x,y,z: activate_Google_API_geocode(y_multiplier_integer_save_one,Google_API_geocode_lb,Google_API_geocode))
-
-activate_Google_API_geocode(y_multiplier_integer_save_one,Google_API_geocode_lb,Google_API_geocode)
+        key = GIS_pipeline_util.getGoogleAPIkey('Google-geocode-API-config.txt')
+        if key=='' or key==None:
+            mb.showwarning(title='Warning',
+                           message="No Google geocoder API key was entered. The geocoder option has been reset to 'Nominatim.'")
+            geocoder_var.set('Nominatim')
+            geocoder='Nominatim'
+geocoder_var.trace('w',activate_Google_API_geocode)
 
 country_menu = constants_util.ISO_GIS_country_menu
 
@@ -620,8 +595,6 @@ country_bias['values'] = country_menu
 country_bias.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+970, y_multiplier_integer,country_bias)
 
-y_multiplier_integer_save_two=y_multiplier_integer
-
 map_locations_var.set(0)
 map_locations_checkbox = tk.Checkbutton(window, variable=map_locations_var, onvalue=1, offvalue=0)
 map_locations_checkbox.config(text="MAP locations")
@@ -629,7 +602,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 def call_reminders(*args):
     if map_locations_var.get()==True:
-        GIS_package_var.set('Google Earth Pro & Google Maps')
+        if GIS_package_var.get()!='':
+            GIS_package_var.set('Google Earth Pro & Google Maps')
     else:
         GIS_package_var.set('')
     if display_csv_file_options():
@@ -643,50 +617,29 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordin
 GIS_package = tk.OptionMenu(window,GIS_package_var,'Google Earth Pro & Google Maps','Google Earth Pro','Google Maps','QGIS','Tableau','TimeMapper')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+80, y_multiplier_integer,GIS_package,True)
 
-y_multiplier_integer_save_two=y_multiplier_integer
-
 GIS_package2_var.set(0)
 GIS_package2_checkbox = tk.Checkbutton(window, variable=GIS_package2_var, onvalue=1, offvalue=0)
 GIS_package2_checkbox.config(text="GIS package - Open GUI")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700, y_multiplier_integer,GIS_package2_checkbox)
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
-Google_API_Google_maps_lb = tk.Label(window, text='API key')
-Google_API_Google_maps = tk.Entry(window, width=40, textvariable=Google_API_Google_maps_var)
+# Google_API_Google_maps_lb = tk.Label(window, text='API key')
+# Google_API_Google_maps = tk.Entry(window, width=40, textvariable=Google_API_Google_maps_var)
 
-save_APIkey_button_Google_maps = tk.Button(window, text='OK', width=2,height=1,command=lambda: config_util.Google_API_Config_Save('Google-Maps-API-config.txt',Google_API_Google_maps_var.get()))
-
-def activate_Google_API_Google_Maps(y_multiplier_integer_save_two,Google_API_lb,Google_Maps_API,*args):
+def activate_Google_API_Google_Maps(*args):
     global GIS_package2_checkbox
     if not 'Google' in GIS_package_var.get() and len(GIS_package_var.get())>0:
         GIS_package_var.set('')
         mb.showwarning(title='Warning',
                        message="The selected software option is not available yet. Sorry!\n\nSelect any of the Google options and try again.")
         return
-    if 'Google Maps' in GIS_package_var.get():
-        # hide the widget
-        # pack and place have their own _forget options
-        GIS_package2_checkbox.place_forget()  #invisible
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+600,y_multiplier_integer_save_two,Google_API_Google_maps_lb,True)
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+660,y_multiplier_integer,Google_API_Google_maps,True)
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+940,y_multiplier_integer,save_APIkey_button_Google_maps)
-
-        key=GIS_pipeline_util.getGoogleAPIkey('Google-Maps-API-config.txt')
-        if key=='':
-            return
-        else:
-            Google_API_Google_maps_var.set(key)
-            Google_Maps_API = key
-    else: # nominatim
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer_save_two,GIS_package2_checkbox)
-        # hide the Google API label and entry widgets until Google is selected
-        # pack and place have their own _forget options
-        Google_API_Google_maps_lb.place_forget() #invisible
-        Google_API_Google_maps.place_forget() #invisible
-        save_APIkey_button_Google_maps.place_forget() #invisible
-GIS_package_var.trace('w',callback = lambda x,y,z: activate_Google_API_Google_Maps(y_multiplier_integer_save_two,Google_API_Google_maps_lb,Google_API_Google_maps))
-
-activate_Google_API_Google_Maps(y_multiplier_integer_save_two,Google_API_Google_maps_lb,Google_API_Google_maps)
+    if 'Maps' in GIS_package_var.get():
+        key = GIS_pipeline_util.getGoogleAPIkey('Google-Maps-API-config.txt')
+        if key == '' or key == None:
+            GIS_package_var.set('Google Earth Pro')
+            mb.showwarning(title='Warning',
+                           message="No Google Maps API key was entered. The software package option has been reset to 'Google Earth Pro.'")
+GIS_package_var.trace('w',activate_Google_API_Google_Maps)
 
 def display_reminder(*args):
     if GIS_package2_var.get():
@@ -737,5 +690,8 @@ result = reminders_util.checkReminder(config_filename,
                               reminders_util.message_GIS_GUI)
 if result!=None:
     routine_options = reminders_util.getReminders_list(config_filename)
+
+activate_Google_API_geocode()
+activate_Google_API_Google_Maps()
 
 GUI_util.window.mainloop()

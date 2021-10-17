@@ -265,3 +265,53 @@ def rename_header(inputFilename, header1, header2):
         mb.showwarning(title="File type error", message='The file\n\n' + inputFilename + "\n\ndoes not contain a header '" + header1 + "' to be converted to '" + header2 + "'.\n\nPlease, check the file and try again.")
     return temp
 
+
+def export_csv_to_text(inputFilename, outputDir, column=None, column_list=[]):
+    filename, file_extension = os.path.splitext(inputFilename)
+
+    if inputFilename == '' or file_extension != '.csv':
+        mb.showwarning(title='File type error',
+                       message='The file\n\n' + inputFilename + '\n\nis not an expected csv file. Please, check the file and try again.')
+        return
+    if column != None and len(column_list) != 0:
+        mb.showwarning(title='Field(s) input error',
+                       message='Cannot have field and field_list as filter at the same time.\n\nPlease, select one and try again.')
+        return
+    if column == None and len(column_list) == 0:
+
+        # reading csv file
+        text = open(inputFilename, "r", encoding="utf-8", errors='ignore')
+
+        # joining with space content of text
+        text = ' '.join([i for i in text])
+        # replacing ',' by space
+        text = text.replace(",", " ")
+        with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w") as text_file:
+            text_file.write(text)
+
+    elif len(column_list) == 0:
+        df = pd.read_csv(inputFilename)
+        if not column in df.columns:
+            mb.showwarning(title='csv file error',
+                           message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + column)
+            return
+
+        a = list(df[column])
+        # converting list into string and then joining it with space
+        text = '\n'.join(str(e) for e in a)
+        with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w") as text_file:
+            text_file.write(text)
+    else:
+        df = pd.read_csv(inputFilename)
+
+        for column in column_list:
+            if not column in df.columns:
+                mb.showwarning(title='csv file error',
+                               message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + column)
+                return
+
+        text = df[column_list].to_csv(index=False)
+        # replacing ',' by space
+        text = text.replace(",", " ")
+        with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w") as text_file:
+            text_file.write(text)

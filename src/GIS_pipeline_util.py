@@ -16,6 +16,7 @@ import GIS_geocode_util
 import GIS_KML_util
 import GIS_Google_Maps_util
 import IO_libraries_util
+import config_util
 
 # The script is used by SVO_main and by Google_Earth_main to run a csv file that 1. needs geocoding; 2. mapping geocoded location onto Google Earth Pro.
 import IO_user_interface_util
@@ -35,9 +36,18 @@ def getGoogleAPIkey(Google_config):
         mb.showwarning('Warning',
                        'Google ' + msg + ' requires an API key.\n\nTwo separate API keys are required for Google geocoder and Google Maps.\n\nYou can get the keys free of charge at the Google website console.developers.google.com/apis. Then, paste the API key in the Google API box, save it by pressing OK, and try again.')
         key=''
+        if 'Maps' in Google_config:
+            config_type='Maps'
+        else:
+            config_type = 'geocoder'
+        key, string_out = GUI_IO_util.enter_value_widget("Enter the Google " + config_type + " API key",
+                                                               'Enter', 1, '', 'API key', '')
+        # save the API key
+        if key!='':
+            config_util.Google_API_Config_Save(Google_config, key)
     else:
         key = configAPIKey[0]
-    return key
+        return key
 
 # the list of arguments reflect the order of widgets in the Google_Earth_main GUI
 def GIS_pipeline(window, config_filename, inputFilename, outputDir,

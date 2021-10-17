@@ -164,7 +164,7 @@ title_options_GIS_GUI = ['GIS GUI options']
 message_GIS_GUI = 'The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv.\n\nWith a TXT file, NER extraction via Stanford CoreNLP must be first performed.\n\nWith a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.'
 
 title_options_Google_Earth=['Open Google Earth GUI']
-message_Google_Earth = 'You should tick the Open GUI checkbox ONLY if you wish to open the GUI.\n\nThe Google Earth Pro GUI will provide a number of options to personalize a Google Earth Pro map. Press Run after selecting the Open GUI option.'
+message_Google_Earth = 'You should tick the Open GUI checkbox ONLY if you wish to open the Google Earth Pro GUI.\n\nThe Google Earth Pro GUI will provide a number of options to personalize a Google Earth Pro map. Press Run if you wish to open the Google Earth Pro GUI.'
 
 title_options_Google_Earth_CoNLL = ['GIS/Google Earth Pro with CoNLL input']
 message_Google_Earth_CoNLL = "You are using a GIS visualization tool with a CoNLL table in input. The algorithm will geocode every instance of NER location tags (CITY, STATE_OR_PROVINCE, COUNTRY). But... The CoNLL table produced by the CoreNLP parser has a record for each token in the document(s) processed.\n\nThus, each word in 'New York City' would have a separate NER CITY tag.\n\nAs input, you should use the csv file of NER values produced by 'Stanford_CoreNLP_NER_main.py.'"

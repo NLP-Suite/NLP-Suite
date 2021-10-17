@@ -360,7 +360,8 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 
 # group_col and hover_col are lists with multiple items, if so wished
 # select_col is also a list BUT with one item only
-# called from WordNet.py, CoNLL_*, Stanford_CoreNLP_date_annotator
+# called from WordNet.py, CoNLL_*, Stanford_CoreNLP_date_annotator;
+#   these scripts all call compute_csv_column_frequencies but should go through this one?
 def compute_csv_column_frequencies_NEW(window, inputFileName, inputDataFrame, output_dir, columns_to_be_plotted,
                                        select_col, hover_col, group_col, openOutputFiles, createExcelCharts=False,
                                        fileNameType='CSV', chartType='line', count_var=0):
@@ -413,6 +414,7 @@ def compute_csv_column_frequencies_NEW(window, inputFileName, inputDataFrame, ou
 # group_col and hover_col are lists with multiple items, if so wished
 # select_col is also a list BUT with one item only
 # called from WordNet.py, CoNLL_*, Stanford_CoreNLP_date_annotator
+# the function exits immediately because it no longer works
 def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createExcelCharts,
                                         columns_to_be_plotted,
                                         select_col, hover_col, group_col,
