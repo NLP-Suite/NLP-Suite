@@ -1164,6 +1164,6 @@ if __name__ == '__main__':
     readMe_message = "The Python 3 scripts provide several ways of handling data from csv files.\n\nIn INPUT, the script takes one or more csv files depending upon the selected operation.\n\nIn OUTPUT, the script creates a new csv file.\n\nThe following operation are possible.\n\n   1. MERGE different csv files using one overalpping common field as a way to JOIN the files together, with the option of selecting only certain fields for the output file;\n   2. CONCATENATE into a single field the values of different fields from one or more csv files;\n   3. APPEND the content of different fields from one or more csv files after the content of the target field;\n   4. EXTRACT fields from one or more csv files, perhaps by specific field values (the equivalent of an SQL WHERE clause)."
     readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                        GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-    GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+    GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
     GUI_util.window.mainloop()

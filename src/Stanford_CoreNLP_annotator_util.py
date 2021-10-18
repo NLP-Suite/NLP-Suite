@@ -79,7 +79,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     speed_assessment_format = ['Document ID', 'Document','Time', 'Tokens to Annotate', 'Params', 'Number of Params']#the column titles of the csv output of speed assessment
     # start_time = time.time()#start time
     filesToOpen = []
-    # check that the CoreNLPdir as been setup
+    # check that the CoreNLPdir has been setup
     CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_annotator', 'Stanford CoreNLP')
     if CoreNLPdir== None:
         return filesToOpen

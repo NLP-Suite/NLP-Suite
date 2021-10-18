@@ -184,6 +184,8 @@ def exit_window(window,configFilename, ScriptName, config_input_output_options, 
 
 # missingIO is called from GUI_util
 def check_missingIO(window,missingIO,config_filename,IO_setup_display_brief,ScriptName,silent=False):
+    if config_filename=='NLP-config.txt':
+        config_filename = 'default-config.txt'
     # the IO_button_name error message changes depending upon the call
     button = "button"
     # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
