@@ -543,8 +543,6 @@ else:
     location_field = tk.OptionMenu(window,location_menu_var,menu_values)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,location_field)
 
-y_multiplier_integer_save_one=y_multiplier_integer
-
 geocode_locations_var.set(0)
 geocode_locations_checkbox = tk.Checkbutton(window, variable=geocode_locations_var, onvalue=1, offvalue=0)
 geocode_locations_checkbox.config(text="GEOCODE locations")

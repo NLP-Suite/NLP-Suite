@@ -19,6 +19,7 @@ import IO_csv_util
 #		http://kml4earth.appspot.com/icons.html#pushpin
 
 # called from GIS_GUI
+# must be connected to the internet
 def pin_icon_select(icon_type, icon_style):
 	icon_url = "http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png"
 	if icon_type == "Directions":
@@ -579,18 +580,13 @@ def pin_icon_select(icon_type, icon_style):
 # called from GIS_KML_util
 def pin_customizer(inputFilename, pnt, geo_index, index_list, locationColumnName,
 				   group_var, group_number_var, group_values, group_labels,
-				   icon_type_list, icon_style_list,
+				   icon_type_list, icon_style_list, icon_url,
 				   name_var_list, scale_var_list, color_var_list, color_style_var_list,
 				   bold_var_list, italic_var_list, description_var_list, description_csv_field_var_list,
 				   j):
 
 	withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
 	data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
-
-	# Icon selection
-	icon_url = pin_icon_select(icon_type_list[j], icon_style_list[j])
-
-	pnt.style.iconstyle.icon.href = icon_url
 
 	# Assign description
 	if description_var_list[j] == 1:
@@ -619,7 +615,7 @@ def pin_customizer(inputFilename, pnt, geo_index, index_list, locationColumnName
 #	Expected format: column_name ==  "State"
 def pin_description(inputFilename,pnt, data, headers, geo_index, index_list, description_location_var_name, group_var, group_values, group_labels, j, name_var, description_csv_field_var, italic_var, bold_var):
 
-	# TODO if the inputFilename contains more than one document then the document name should be listed in descriptions
+	# # TODO if the inputFilename contains more than one document then the document name should be listed in descriptions
 	if 'Document ID' in headers:
 		nDocs=IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename, 'GIS_Google_pin', 'Document ID')
 

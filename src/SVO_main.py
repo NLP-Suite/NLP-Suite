@@ -398,13 +398,13 @@ def run(inputFilename, inputDir, outputDir,
                 for f in svo_result_list:
                     if IO_csv_util.GetNumberOfRecordInCSVFile(f) > 1:  # including headers; file is empty
                         gexf_file = Gephi_util.create_gexf(os.path.basename(f)[:-4], outputDir, f)
-                        if "CoreNLP++" in f or "SENNA_SVO" in f:
+                        if "CoreNLP" in f or "SENNA_SVO" in f:
                             filesToOpen.append(gexf_file)
                         if not save_intermediate_file:
                             gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if
                                           f.endswith('.gexf')]
                             for f in gexf_files:
-                                if "CoreNLP++" not in f and "SENNA_SVO" not in f:
+                                if "CoreNLP" not in f and "SENNA_SVO" not in f:
                                     os.remove(f)
 
         # wordcloud  _________________________________________________

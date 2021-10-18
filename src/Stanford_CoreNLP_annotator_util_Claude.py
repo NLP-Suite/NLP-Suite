@@ -124,8 +124,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
     produce_split_files=False
 
     params_option = {
-        'Sentence': {'annotators':['ssplit']},
         'tokenize': {'annotators':['tokenize']},
+        'ssplit': {'annotators':['tokenize', 'ssplit']},
         'MWT': {'annotators': ['tokenize','ssplit','mwt']},
         'Lemma': {'annotators': ['lemma']},
         'POS': {'annotators': ['tokenize','ssplit','pos','lemma']},
@@ -134,6 +134,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'NER': {'annotators':['tokenize','ssplit','pos','lemma','ner']},
         'quote': {'annotators': ['tokenize','ssplit','pos','lemma','ner','depparse','coref','quote']},
         'coref': {'annotators':['coref']},
+        'Sentence': {'annotators':['ssplit']},
         #'gender': {'annotators': ['']},
         'gender': {'annotators': ['coref']},
         'sentiment': {'annotators':['sentiment']},
@@ -145,15 +146,15 @@ def CoreNLP_annotate(config_filename,inputFilename,
     }
 
     routine_option = {
-        'Sentence': process_json_sentence,
         'sentiment': process_json_sentiment,
-        'Lemma': process_json_lemma,
+        'Lemma': process_json_single_annotation,
         'POS':process_json_postag,
-        'All POS':process_json_all_postag,
+        'All POS':process_json_single_annotation,
         'NER': process_json_ner,
         'DepRel':process_json_deprel,
         'quote': process_json_quote,
         'coref': process_json_coref,
+        'Sentence': process_json_sentence, 
         'gender': process_json_gender,
         'normalized-date':process_json_normalized_date,
         # Dec. 21
@@ -164,7 +165,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
     }
     #@ change coref-text to coref, change coref-spreadsheet to gender@
     output_format_option = {
-        'Sentence': ['Sentence ID', 'Sentence','Sentence Length (Number of Tokens)','Number of Intra-Sentence Punctuation Symbols (),;-', 'Document ID', 'Document'],
         'Lemma': ["ID", "Form", "Lemma", "Record ID", "Sentence ID", "Document ID", "Document"],
         'POS':[['Verbs'],['Nouns']],
         'All POS':["ID", "Form", "POStag", "Record ID", "Sentence ID", "Document ID", "Document"],
@@ -175,6 +175,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
         'quote': ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of Quotes', 'Speakers'],
         'coref': 'text',
+        'Sentence': [ 'Sentence ID', 'Sentence','Document ID', 'Document'],
         'gender':['Word', 'Gender', 'Sentence','Sentence ID', 'Document ID', 'Document'],
         'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
         #  Document ID, Sentence ID, Document, S, V, O, Sentence
@@ -341,9 +342,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      param_string, param_number])
                 #print out the json output of CoreNLP to a txt file
                 if print_json:
-                    jsonFilename = IO_files_util.generate_output_file_name(docName, inputDir, outputDir, '.txt',
-                                                                           'CoreNLP_' + str(
-                                                                               annotator_params) + '_json_output_NN')
+                    jsonFilename = IO_files_util.generate_output_file_name(docName, inputDir, outputDir, '.txt', 'CoreNLP_json_output')
                     with open(jsonFilename, "a+", encoding='utf-8', errors='ignore') as json_out:
                         json.dump(CoreNLP_output, json_out, indent=4)
                     # no need to open the Json file
@@ -378,9 +377,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                          param_string_NN, param_number_NN])
                     #print out the json output of CoreNLP (model: neural network) to a txt file
                     if print_json:
-                        jsonFilename = IO_files_util.generate_output_file_name(docName, inputDir, outputDir, '.txt',
-                                                                               'CoreNLP_' + str(
-                                                                                   annotator_params) + '_json_output_NN')
+                        jsonFilename = IO_files_util.generate_output_file_name(docName, inputDir, outputDir, '.txt', 'CoreNLP_json_output_NN')
                         with open(jsonFilename, "a+", encoding='utf-8', errors='ignore') as json_out_nn:
                             json.dump(CoreNLP_output, json_out_nn, indent=4)
                         # no need to open the Json file
@@ -395,8 +392,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         sub_result, recordID = routine(config_filename, docID, docName, sentenceID, recordID, False,CoreNLP_output, **kwargs)
                 elif "All POS" in annotator_chosen or "Lemma" in annotator_chosen:
                     sub_result, recordID = routine(config_filename,docID, docName, sentenceID, recordID, annotator_chosen, CoreNLP_output, **kwargs)
-                # elif "DepRel" in annotator_chosen or "All POS" in annotator_chosen or "Lemma" in annotator_chosen:
-                #      sub_result, recordID = routine(config_filename,docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
+                elif "DepRel" in annotator_chosen:
+                    sub_result, recordID = routine(config_filename,docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
                 else:
                     sub_result = routine(config_filename,docID, docName, sentenceID, CoreNLP_output, **kwargs)
                 
@@ -489,20 +486,21 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # print("Length of Files to Open after generating files: ", len(filesToOpen))
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
+
     #generate visualization output
     for j in range(len(filesToVisualize)):
         #02/27/2021; eliminate the value error when there's no information from certain annotators
         if filesToVisualize[j][-4:] == ".csv":
             file_df = pd.read_csv(filesToVisualize[j])
-            file_df_name = os.path.split(filesToVisualize[j])[1]
             if not file_df.empty:
-                if 'Lemma' in str(file_df_name):
+                file_df_name = os.path.split(filesToVisualize[j])[1]
+                if 'Lemma' in file_df_name:
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
                                           'Frequency Distribution of Lemmas', 1, [], 'lemma_bar','Lemma')
-                elif 'All POS' in str(file_df_name):
+                elif 'All POS' in file_df_name:
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
                                           'Frequency Distribution of POS Tag Values', 1, [], 'POS_bar','POS tag')
-                elif 'gender' in str(file_df_name):
+                elif 'gender' in file_df_name:
                     filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j], filesToOpen)
     
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
@@ -512,18 +510,18 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
                                           'Frequency Distribution of Words by Gender Type', 1, ['Gender'], 'gender_word_bar','')
-                elif 'quote' in str(file_df_name):
+                elif 'quote' in file_df_name:
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
                                                         [[5, 5]], 'bar',
                                                         'Frequency Distribution of Speakers', 1, [],
                                                         'quote_bar', 'Speaker')
-                elif 'date' in str(file_df_name):
+                elif 'date' in file_df_name:
                     # TODO put values hover-over values to pass to Excel chart as a list []
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
                                           'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Normalized date type')
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
                                                       'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type')
-                elif 'NER' in str(file_df_name):
+                elif 'NER' in file_df_name:
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
                                           'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
                     # ner tags are _ separated; individual NER tags at most have 2 _ (e.g., STATE_OR_PROVINCE)
@@ -533,10 +531,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         ner_tags = ner
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
                                           'Frequency Distribution of Words by NER ' +ner_tags, 1, ['NER Value'], 'NER_word_bar','') #NER ' +ner_tags+ ' Word
-                elif 'SVO' in str(file_df_name):
-                    # pie chart of SVO
-                    # filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3],[4,4],[5,5]], 'pie',
-                    #                       'Frequency Distribution of SVOs', 1, [], 'SVO_pie','SVOs')
+                elif 'SVO' in file_df_name:
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
                                           'Frequency Distribution of Subjects', 1, [], 'S_bar','Subjects')
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[4, 4]], 'bar',
@@ -579,7 +574,7 @@ def check_sentence_length(sentence_length, sentenceID, config_filename):
             order = "nd"
         elif sentenceID % 10 == 3:
             order = "rd"
-        print("   Warning: The", str(sentenceID) + order, "sentence has " + str(sentence_length) + " words, more than the 100 max recommended by CoreNLP for best performance.")
+        print("Warning: The", sentenceID, order, "sentence has " + str(sentence_length) + " words, more than the 100 max recommended by CoreNLP for best performance.")
         reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
                                      reminders_util.message_CoreNLP_sentence_length, True)
 
@@ -1026,17 +1021,13 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
         result.append(temp)
     return result
 
-def process_json_sentence(config_filename, documentID, document, sentenceID, json, **kwargs):
+def process_json_sentence(config_filename,documentID, document, sentenceID, json, **kwargs):
     temp = []
-    # ['Document ID', 'Document', 'Sentence ID', 'Sentence'],
-    for sentence in json['sentences']:  # traverse output of each sentence
-        sentence_length=0
-        number_punctuations = 0
-        complete_sent = ''  # build sentence string
+    #['Document ID', 'Document', 'Sentence ID', 'Sentence'],
+    for sentence in json['sentences']:#traverse output of each sentence 
+        
+        complete_sent = ''#build sentence string
         for token in sentence['tokens']:
-            # check for basic symbols that make long sentences
-            if token['word']==',' or token['word']==';' or token['word']=='(' or token['word']==')' or token['word']=='-':
-                number_punctuations=number_punctuations+1
             if token['originalText'] in string.punctuation:
                 complete_sent = complete_sent + token['originalText']
             else:
@@ -1044,12 +1035,9 @@ def process_json_sentence(config_filename, documentID, document, sentenceID, jso
                     complete_sent = complete_sent + token['originalText']
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
-            sentence_length=sentence_length+1
         sentenceID = sentenceID + 1
-        temp.append([sentenceID, complete_sent, sentence_length, number_punctuations, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+        temp.append([sentenceID, complete_sent, documentID,IO_csv_util.dressFilenameForCSVHyperlink(document)])
     return temp
-
-
 # Dec. 21
 def process_json_SVO_enhanced_dependencies(config_filename,documentID, document, sentenceID, json, **kwargs):
     #extract date from file name
@@ -1143,49 +1131,7 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
 
     return openIE
 
-def process_json_lemma(config_filename, documentID, document, sentenceID, recordID, json, **kwargs):
-    print("   Processing Json output file for Lemma")
-    extract_date_from_filename_var = False
-    for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
 
-    # get date string of this sub file
-    date_str = date_in_filename(document, **kwargs)
-    result = []
-
-    for i in range(len(json["sentences"])):
-        # print("*************")
-        # print("The ", i, "th Sentence in ", document)
-        # print("OutputSentenceID: ", )
-        sentenceID += 1
-        # print("OutputSentenceID: ", sentenceID)
-        #result = []
-
-        clauseID = 0
-        tokens = json["sentences"][i]["tokens"]
-
-        for row in tokens:
-            recordID += 1
-            # if row["ner"]=="DATE":
-            #     print("NER normalized DATE ",row["normalizedNER"])
-            temp = []
-            temp.append(row["index"])
-            temp.append(row["word"])
-            temp.append(row["lemma"])
-            # temp.append(" ")
-            clauseID += 1
-            temp.append(str(recordID))
-            temp.append(str(sentenceID))
-            temp.append(str(documentID))
-            # temp.append(file)
-            temp.append(IO_csv_util.dressFilenameForCSVHyperlink(document))
-            if extract_date_from_filename_var:
-                temp.append(date_str)
-            result.append(temp)
-
-        check_sentence_length(len(tokens), sentenceID, config_filename)
-    return result, recordID
 
 def process_json_postag(config_filename,documentID, document, sentenceID, json, **kwargs):
     # only processes verbs and nouns
@@ -1210,57 +1156,7 @@ def process_json_postag(config_filename,documentID, document, sentenceID, json, 
 # (round-up average length of one English word, check this reference:
 # https://wolfgarbe.medium.com/the-average-word-length-in-english-language-is-4-7-35750344870f)
 # return True, which means the two strings are very similar
-def process_json_all_postag(config_filename,documentID, document, sentenceID, recordID,json, **kwargs):
-    print("   Processing Json output file for All Postags")
-    extract_date_from_filename_var = False
-    for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
 
-    # get date string of this sub file
-    date_str = date_in_filename(document, **kwargs)
-    result = []
-
-    for i in range(len(json["sentences"])):
-        # print("*************")
-        # print("The ", i, "th Sentence in ", document)
-        # print("OutputSentenceID: ", )
-        sentenceID += 1
-        # print("OutputSentenceID: ", sentenceID)
-        #result = []
-
-        clauseID = 0
-        tokens = json["sentences"][i]["tokens"]
-
-        for row in tokens:
-            recordID += 1
-            # if row["ner"]=="DATE":
-            #     print("NER normalized DATE ",row["normalizedNER"])
-            temp = []
-            temp.append(row["index"])
-            temp.append(row["word"])
-            temp.append(row["pos"])
-            # temp.append(" ")
-            clauseID += 1
-            temp.append(str(recordID))
-            temp.append(str(sentenceID))
-            temp.append(str(documentID))
-            # temp.append(file)
-            temp.append(IO_csv_util.dressFilenameForCSVHyperlink(document))
-            if extract_date_from_filename_var:
-                temp.append(date_str)
-            result.append(temp)
-            # print("Row in the CSV: ")
-            # print(temp)
-            # if dateInclude == 1 and dateStr!='DATE ERROR!!!':
-            #     temp.append(dateStr)
-
-        # print("The result after adding the ", sentenceID, "th sentence: ")
-        # pprint.pprint(result)
-
-        check_sentence_length(len(tokens), sentenceID, config_filename)
-
-    return result, recordID
 
 def process_json_deprel(config_filename,documentID, document, sentenceID, recordID,json, **kwargs):
     print("   Processing Json output file for DepRel")
@@ -1317,7 +1213,7 @@ def process_json_deprel(config_filename,documentID, document, sentenceID, record
 
     return result, recordID
 
-# processes both lemma and POS
+
 def process_json_single_annotation(config_filename, documentID, document, sentenceID, recordID, annotation, json, **kwargs):
     print("   Processing Json output file for All Postags and Lemma")
     extract_date_from_filename_var = False
@@ -1346,9 +1242,9 @@ def process_json_single_annotation(config_filename, documentID, document, senten
             temp = []
             temp.append(row["index"])
             temp.append(row["word"])
-            if "All POS" in annotation:
+            if "All POS" in annotation: 
                 temp.append(row["pos"])
-            elif "Lemma" in annotation:
+            elif "Lemma" in annotation: 
                 temp.append(row["lemma"])
             temp.append(str(recordID))
             temp.append(str(sentenceID))
@@ -1363,6 +1259,7 @@ def process_json_single_annotation(config_filename, documentID, document, senten
         check_sentence_length(len(tokens), sentenceID, config_filename)
 
     return result, recordID
+
 
 def process_json_parser(config_filename, documentID, document, sentenceID, recordID, pcfg, json, **kwargs):
     print("   Processing Json output file for Parser")
