@@ -286,6 +286,7 @@ def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
 # called by
 def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue='',textCaption2='',defaultValue2=''):
     value1=defaultValue
+    value2=defaultValue2
 
     # TODO should not restrict to 2; should have a loop
     if numberOfWidgets==2:
@@ -304,6 +305,8 @@ def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue=''
     #   MUST be entered
     #   + 30 to add room for - [] and X in a widget window
     e1 = tk.Entry(master,width=len(masterTitle)+30)
+    e1.focus_force()
+
     # TODO 2 could be a larger number; should have a loop
     if numberOfWidgets==2:
         e2 = tk.Entry(master,width=len(masterTitle)+30)

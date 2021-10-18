@@ -21,7 +21,7 @@ import GIS_pipeline_util
 # then saves a new file that contains the html/js to display the heatmap
 def create_google_heatmap(output_filename, gmaps_list):
     api_key = GIS_pipeline_util.getGoogleAPIkey('Google-Maps-API-config.txt')
-    if api_key == '':
+    if api_key == '' or api_key == None :
         return
 
     js_template_loc = GUI_IO_util.Google_heatmaps_libPath + os.sep + "heatmap_template.html"

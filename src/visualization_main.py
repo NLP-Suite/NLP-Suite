@@ -24,6 +24,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles):
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
         return
 
+    filesToOpen=[]
+
     inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .csv
 
     gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, inputFilename)
