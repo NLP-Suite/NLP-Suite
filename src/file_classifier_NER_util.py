@@ -169,8 +169,8 @@ def find(doc_dir, soc_acts, nlp, compare, sim_base, f, terminal_output):
 def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createExcelCharts, relativity_threshold):
 
     filesToOpen = []
-    # check that the CoreNLPdir as been setup
-    CoreNLPdir, missing_external_software, missing_external_software=IO_libraries_util.get_external_software_dir('file_classifier_NER_util', 'Stanford CoreNLP')
+    # check that the CoreNLPdir has been setup
+    CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('file_classifier_NER_util', 'Stanford CoreNLP')
     if CoreNLPdir==None:
         return filesToOpen
 
