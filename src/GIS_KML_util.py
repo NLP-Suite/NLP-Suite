@@ -88,9 +88,13 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 	prev_filename = 'EMPTY'
 	first_row = next(inputfile)  # skip header
 	index = 0
-
+	j = 0
 	# index_list = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile, encodingValue, locationColumnName)
 	index_list = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile, encodingValue, locationColumnName)
+
+	# Icon selection
+	icon_url = GIS_Google_pin_util.pin_icon_select(icon_var_list[j], specific_icon_var_list[j])
+
 	if len(index_list)==0:
 		return ''
 	if group_number_var <= 1:
@@ -155,9 +159,10 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 			# print(currRecord,row[0]) #document name
 			if row[2] != 0 and row[1] != 0:
 				pnt = kml.newpoint(coords=[(row[2], row[1])])  # wants to be read in in lng, lat order
+				pnt.style.iconstyle.icon.href = icon_url
 				pnt = GIS_Google_pin_util.pin_customizer(inputFilename, pnt, index, index_list, locationColumnName,
 														 group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
-														 icon_var_list, specific_icon_var_list,
+														 icon_var_list, specific_icon_var_list, icon_url,
 														 name_var_list, scale_var_list, color_var_list, color_style_var_list,
 														 bold_var_list, italic_var_list,
 														 description_var_list, description_csv_field_var_list,
@@ -240,9 +245,10 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 						# print(currRecord,row[0]) #document name
 						pnt = kml.newpoint(coords=[(row[locationColumnNumber + 2], row[
 							locationColumnNumber + 1])])  # wants to be read in in lng, lat order
+						pnt.style.iconstyle.icon.href = icon_url
 						pnt = GIS_Google_pin_util.pin_customizer(inputFilename, pnt, index, index_list,
 													 group_var, group_values_entry_var_list, group_label_entry_var_list,
-													 icon_var_list, specific_icon_var_list,
+													 icon_var_list, specific_icon_var_list, icon_url,
 													 name_var_list, scale_var_list,
 													 color_var_list, color_style_var_list,
 													 description_location_var_name, description_var_list, description_csv_field_var_list,

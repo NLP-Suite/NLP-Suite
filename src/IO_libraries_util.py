@@ -176,6 +176,12 @@ def inputProgramFileCheck(programName, subdirectory='src'):
 
 def inputExternalProgramFileCheck(software_dir, programName):
     fileList = []
+    if platform == 'darwin':
+        for file in os.listdir('/Applications'):
+            if 'Gephi' in file:
+                fileList.append('gephi')
+            if 'Google Earth Pro' in file:
+                fileList.append('google earth pro')
     for file in os.listdir(software_dir):
         # if file.endswith(".txt"):
         # print(os.path.join(software_dir, file))
@@ -215,26 +221,33 @@ def inputExternalProgramFileCheck(software_dir, programName):
                            message="The selected software directory\n  " + software_dir + "'\nis NOT the expected WordNet directory. The directory should contain, among other things, the directories \'dict\' and \'src\'. DO MAKE SURE THAT WHEN YOU UNZIP THE WORDNET ARCHIVE YOU DO NOT END UP WITH A WORDNET DIRECTORY INSIDE A WORDENET DIRECTORY.\n\nPlease, select the appropriate WordNet directory and try again!\n\nYou can download WordNet at https://wordnet.princeton.edu/download/current-version.\n\nPlease, read the TIPS_NLP_WordNet.pdf.")
             return False
     if programName == 'Gephi':
-        if 'gephi' in fileList and 'platform' in fileList:
-            return True
-        else:
-            mb.showwarning(title='Software error',
-                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Gephi directory. The directory should contain, among other things, the directories \'gephi\' and \'platform\'.\n\nPlease, select the appropriate Gephi directory and try again!\n\nYou can download Gephi at https://gephi.org/users/download/.\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
-            return False
+        if platform == 'win32':
+            if 'gephi' in fileList and 'gephi' in fileList and 'platform' in fileList:
+                return True
+            else:
+                mb.showwarning(title='Software error',
+                               message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Gephi directory. The directory should contain, among other things, the directories \'gephi\' and \'platform\'.\n\nPlease, select the appropriate Gephi directory and try again!\n\nYou can download Gephi at https://gephi.org/users/download/.\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
+                return False
+        if platform == 'darwin':
+            if 'gephi' in fileList:
+                return True
+            else:
+                mb.showwarning(title='Software error',
+                               message="Gephi was not found among Mac applications.\n\nYou can download Gephi at https://gephi.org/users/download/.\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
+                return False
+
     if programName == 'Google Earth Pro':
-        if platform == "win32":
+        if platform == 'win32':
             if 'client' in fileList:
                 return True
             else:
                 expected_GEP_files = "The directory should contain the subdirectory \'client'\n\nMOST LIKELY THE EXECUTABLE FILE WILL AUTOMATICALLY INSTALL GOOGLE EARTH PRO UNDER A FOLDER GOOGLE IN C:\Program Files."
-        else:
-            if 'Contents' in fileList:
+        if platform == 'darwin':
+            if 'google earth pro' in fileList:
                 return True
-            else:
-                expected_GEP_files = "The directory should contain the subdirectory \'Contents'."
-        mb.showwarning(title='Software error',
-                       message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Google Earth Pro directory." + expected_GEP_files + "\n\nPlease, select the appropriate Google Earth Pro directory and try again!\n\nYou can download Google Earth Pro at https://www.google.com/earth/download/gep/agree.html?hl=en-GB.\n\nPlease, read the TIPS_NLP_Google Earth Pro.pdf.")
-        return False
+            mb.showwarning(title='Software error',
+                           message = "Google Earth Pro was not found among Mac applications.\n\nYou can download Google Earth Pro at https://www.google.com/earth/download/gep/agree.html?hl=en-GB.\n\nPlease, read the TIPS_NLP_Google Earth Pro.pdf.")
+            return False
 
 def update_csv_fields(existing_csv: list) -> list:
     """
@@ -266,7 +279,8 @@ def get_existing_software_config():
     update_csv_fields(existing_csv)
     return existing_csv
 
-def get_missing_software_list(existing_csv):
+# gets a list of the external software: CoreNLP, SENNA, WordNet, MALLET, Google Earth Pro, Gephi
+def get_missing_external_software_list(existing_csv):
     if existing_csv=='':
         existing_csv=get_existing_software_config()
     index = 0
@@ -311,6 +325,14 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             errorFound=False
             # the software directory is stored in config file but...
             #   check that the software directory still exists and the package has not been moved
+            if platform=='darwin' and software_dir == '/Applications':
+                if (package.lower()!='') and (package.lower() in software_name.lower()) and (calling_script!='NLP_menu'):
+                    return software_dir, missing_software
+                # continue
+                # if software_dir == '/Applications':
+                #     errorFound = True
+                #     silent = True
+            # if platform == 'win32':
             if os.path.isdir(software_dir) == False or inputExternalProgramFileCheck(software_dir, software_name) == False:
                 mb.showwarning(title='Directory error',
                                message='The directory\n  ' + software_dir + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-select the ' +
@@ -322,6 +344,18 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                 # unless called from NLP_menu_main
                 if (package.lower()!='') and (package.lower() in software_name.lower()) and (calling_script!='NLP_menu'):
                     return software_dir, missing_software
+
+            # if os.path.isdir(software_dir) == False or inputExternalProgramFileCheck(software_dir, software_name) == False:
+            #     mb.showwarning(title='Directory error',
+            #                    message='The directory\n  ' + software_dir + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-select the ' +
+            #                            software_name.upper() + ' directory.')
+            #     errorFound=True
+            #     silent = True
+            # else:
+            #     # if you are checking for a specific package and that is found return the appropriate directory
+            #     # unless called from NLP_menu_main
+            #     if (package.lower()!='') and (package.lower() in software_name.lower()) and (calling_script!='NLP_menu'):
+            #         return software_dir, missing_software
 
         if errorFound:
             software_dir = ''
@@ -343,7 +377,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             if (package!=''):
                 return software_dir, missing_software
 
-    # check for missing software
+    # check for missing external software
     if len(missing_software) > 0:
         if only_check_missing==True:
             return None, missing_software
@@ -366,6 +400,9 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                 software_dir = None
                 while software_dir == None:
                     initialFolder = os.path.dirname(os.path.abspath(__file__))
+                    if platform == 'darwin':
+                        mb.showwarning(title='Warning',
+                                            message = "You will be asked next to select the directory where you installled " + software_name.upper() + ".")
                     software_dir = tk.filedialog.askdirectory(initialdir=initialFolder,
                                                               title=title + '. Please, select the directory where the software was installed; or press CANCEL or ESC if you have not downloaded the software yet.')
                     if software_dir != '':

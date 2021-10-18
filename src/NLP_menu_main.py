@@ -334,12 +334,11 @@ def setup_software(*args):
     setup_software_checkbox()
 
 def setup_software_checkbox():
-    missing_external_software=IO_libraries_util.get_missing_software_list('')
+    missing_external_software=IO_libraries_util.get_missing_external_software_list('')
     if len(missing_external_software)>0:
         setup_software_OK_checkbox_var.set(0)
     else:
         setup_software_OK_checkbox_var.set(1)
-
 software_setup_var.trace('w',setup_software)
 
 general_tools_lb = tk.Label(window, text='General tools', foreground="red",font=("Courier", 12, "bold"))

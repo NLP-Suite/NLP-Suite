@@ -93,12 +93,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                     if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_NER_main.py') == False:
                         return
                     call("python Stanford_CoreNLP_NER_main.py", shell=True)
-                elif 'Sentence splitter (with sentence length)' in CoreNLP_annotators_menu_var:
-                    annotator = 'Sentence'
                 elif 'Lemma annotator' in CoreNLP_annotators_menu_var:
                     annotator = 'Lemma'
                 elif 'POS annotator' in CoreNLP_annotators_menu_var:
                     annotator = 'All POS'
+                elif 'Sentence Table' in CoreNLP_annotators_menu_var:
+                    annotator = 'Sentence'
                 elif 'Gender' in CoreNLP_annotators_menu_var:
                     annotator = 'gender'
                 elif 'Quote' in CoreNLP_annotators_menu_var:
@@ -425,10 +425,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 
 CoreNLP_annotators_menu_var.set("")
 CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var,
-        'Sentence splitter (with sentence length)',
         'Lemma annotator',
         'POS annotator',
         'NER (GUI)',
+        'Sentence Table',
         'Coreference PRONOMINAL resolution (Neural Network)',
         'Sentiment analysis (Neural Network)',
         'OpenIE - Relation triples extractor (Neural Network)',
