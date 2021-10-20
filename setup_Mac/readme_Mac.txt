@@ -6,11 +6,11 @@ You can find detailed installation instructions at the NLP Suitte GitHub pages h
 
 2.	Enter the NLP-Suite folder and the setup_Mac subfolder.
  
-3. Run STEP1-install_anaconda by double-clicking on it. Click "install" if prompted.
+3. Run STEP1-install_anaconda by double-clicking on it to install Anaconda and Python. Click "install" if prompted.
 	Running STEP1 will not affect Anaconda if you already have it installed on your machine.
 
 4. Once STEP1 is finished, run STEP2-install_components through right-click -> run using Powershell 
-	STEP2 will install all Python components and may take quite a while. Please, be patient.
+	STEP2 will install all Python components via requirements.txt and Java files and may take quite a while. STEP2 will also install torch and torchvision, nltk, and spaCy en language pack. Please, be patient.
 
 Update Instructions
 

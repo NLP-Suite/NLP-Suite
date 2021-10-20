@@ -21,6 +21,7 @@ import Excel_util
 import statistics_txt_util
 import reminders_util
 import IO_csv_util
+import NGrams_CoOccurrences_Viewer_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -28,7 +29,7 @@ def processSearchWords(inputStr):
     word_list = []
     if inputStr.find("\"") == -1:
         # no quotation mark
-        word_list += inputStr.split(" ")
+        word_list += inputStr.split(",")
     else:
         # contains quotation mark
         curWord = ""
@@ -187,10 +188,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         # if errorFound:
         #     return
 
-    if ',' in search_words:
-        mb.showwarning(title='Warning',
-                       message='Values entered in the search bar should not be comma-separated, but blank-separated (e.g., woman man, and not woman, man).\n\nPlease, check your search bar values and try again.')
-        return
+    # if ' ' in search_words and not "\"" in search_words:
+    #     mb.showwarning(title='Warning',
+    #                    message='Values entered in the search bar should be comma-separated, not blank-separated (e.g., woman, man, and not woman man).\n\nPlease, check your search bar values and try again.')
+    #     return
 
     if search_words != '' and n_grams_viewer_var == False and CoOcc_Viewer_var == False:
         mb.showwarning(title='Warning',
@@ -215,14 +216,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     if 'full information' in str(viewer_list):
         fullInfo = True
 
-
-    cmd = ['java', '-jar', 'NGrams_CoOccurrences_Viewer.jar', '-inputFolder', inputDir, '-outputFolder',
-           outputDir]
-
-    if (n_grams_viewer_var == 1 or CoOcc_Viewer_var == 1) and len(search_words) == 0:
-        mb.showwarning(title='Warning',
-                       message='No search words have been entered for either N-Grams or words co-occurrences.\n\nPlease, enter the search words and try again.')
-        return
+    # cmd = ['java', '-jar', 'NGrams_CoOccurrences_Viewer.jar', '-inputFolder', inputDir, '-outputFolder',
+    #        outputDir]
+    #
+    # if (n_grams_viewer_var == 1 or CoOcc_Viewer_var == 1) and len(search_words) == 0:
+    #     mb.showwarning(title='Warning',
+    #                    message='No search words have been entered for either N-Grams or words co-occurrences.\n\nPlease, enter the search words and try again.')
+    #     return
 
     if n_grams_viewer_var == 1 and len(search_words) > 0:
         if date_options == 0:
@@ -231,23 +231,23 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             return
         ngram_list = processSearchWords(search_words)
         ngram_list = ['-checkNGrams'] + ngram_list
-        cmd.extend(ngram_list)
+        # cmd.extend(ngram_list)
 
-    if date_options == 1:
-        cmd.extend(
-            ['-AggregateBy', temporal_aggregation, '-dateFormat', date_format, '-datePos', str(date_position_var),
-             '-itemsDelim', date_separator_var])
+    # if date_options == 1:
+    #     cmd.extend(
+    #         ['-AggregateBy', temporal_aggregation, '-dateFormat', date_format, '-datePos', str(date_position_var),
+    #          '-itemsDelim', date_separator_var])
 
-    if CoOcc_Viewer_var == 1 and len(search_words) > 0:
-        co_occurrences_list = processSearchWords(search_words)
-        co_occurrences_list = ["-checkCoOccurrences"] + co_occurrences_list
-        cmd.extend(co_occurrences_list)
+    # if CoOcc_Viewer_var == 1 and len(search_words) > 0:
+    #     co_occurrences_list = processSearchWords(search_words)
+    #     co_occurrences_list = ["-checkCoOccurrences"] + co_occurrences_list
+    #     cmd.extend(co_occurrences_list)
 
-    if normalize == 1 and n_grams_viewer_var == 1 and len(search_words) > 0: cmd.append(
-        '-normalize')  # only available for Ngrams
-    if scaleData == 1: cmd.append('-scaledata')
-    if useLemma == 1: cmd.append('-lemma')
-    if fullInfo == 1: cmd.append('-fullInfo')
+    # if normalize == 1 and n_grams_viewer_var == 1 and len(search_words) > 0: cmd.append(
+    #     '-normalize')  # only available for Ngrams
+    # if scaleData == 1: cmd.append('-scaledata')
+    # if useLemma == 1: cmd.append('-lemma')
+    # if fullInfo == 1: cmd.append('-fullInfo')
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences start',
                         'Started running N-Grams Word Co-Occurrences Viewer at', True,
@@ -257,29 +257,35 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                  reminders_util.title_options_NGrams,
                                  reminders_util.message_NGrams,
                                  True)
-    print(cmd)
-    try:
-        subprocess.run(cmd, shell=True)
-    except:
-        mb.showwarning(title='Warning',
-                       message="The Java viewer script exited with errors. Please, check your command line for a possible error 'Java' is not recognized as an internal or external command. If that's the case, please install Java JDK. Please, check the TIPS on Java download and installation and try again.")
-        return
 
-    if n_grams_viewer_var == 1 and len(search_words) > 0:
-        # this is the output filename generated by the Java script
-        n_grams_outputFile = os.path.join(outputDir, 'Searched_N-Grams.csv')
-        if IO_files_util.checkFile(n_grams_outputFile,'.csv',True)==False:
-            mb.showwarning(title='Warning',
-                           message="The Java viewer script did not produce an N-grams output file.\n\nPlease, check your command line for possible Java errors and try again.")
-            return
+    # search_words,
+    # date_options,
+    # temporal_aggregation,
+    # date_format,
+    # date_separator_var,
+    # date_position_var,
+    # viewer_list):
 
-    if CoOcc_Viewer_var == 1 and len(search_words) > 0:
-        # this is the output filename generated by the Java script
-        co_occurrences_outputFile = os.path.join(outputDir, 'Searched_CoOccurrences.csv')
-        if IO_files_util.checkFile(co_occurrences_outputFile,'.csv',True)==False:
-            mb.showwarning(title='Warning',
-                           message="The Java viewer script did not produce a Co-occurrences output file.\n\nPlease, check your command line for possible Java errors and try again.")
-            return
+    # run VIEWER ------------------------------------------------------------------------------------
+    n_grams_outputFile = NGrams_CoOccurrences_Viewer_util.run(inputDir,
+            outputDir,
+            n_grams_viewer_var,
+            CoOcc_Viewer_var,
+            search_words,
+            date_options,
+            date_position_var,
+            date_format,
+            date_separator_var,
+            temporal_aggregation,
+            # docPCIDCouplesFilePath,
+            scaleData,
+            useLemma,
+            fullInfo,
+            # considerAsSeparateGroups,
+            normalize)
+
+    return
+
 
     # plot co-occurrences
     if createExcelCharts == True and CoOcc_Viewer_var == 1 and len(search_words) > 0:
@@ -665,7 +671,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 1),"Help", 'Please, tick the \'Compute n-grams\' checkbox if you wish to compute n-grams.\n\nN-grams can be computed for characters, words, POSTAG and DEPREL values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word n-grams between 1 and 3.\n\nWhen n-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 2),"Help", 'Please, use the dropdown menu to select various options that can be applied to n-grams. You can make multiple selections by clicking on the + button.\n\nThe default number of n-grams computed is 3, unless you select the Hapax legomena option for unigrams (and then select once-occurring words).\n\nN-grams can be normalized, i.e., their frequency values are divided by the number of words or POSTAG-DEPREL values in a document.\n\nPunctuation can be excluded when computing n-grams (Google, for instance, exclude punctuation from its Ngram Viewer (https://books.google.com/ngrams).\n\nN-grams can be computed by sentence index.\n\nFinally, you can run a special type of n-grams that computes the last 2 words in a sentence and the first 2 words of the next sentence, a rhetorical figure of repetition for the analysis of style.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 3),"Help", 'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer Java script.\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer Java script.\n\nYou can run both Viewers at the same time.\n\nThe NGrams part of the NGrams_CoOccurrences.jar routine requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872).\n\nFor both viewers, results will be visualized in Excel line plots.\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 4),"Help", 'Please, enter the blank-separated list of words for which you want to know N-Gram statistics (e.g., woman man job). bi-grams, 3-grams, ... must include words inside "", like "child care""). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 4),"Help", 'Please, enter the comma-separated list of words for which you want to know N-Gram statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 5),"Help", 'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences.\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: year, quarter, month, day.\n\nPlease, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2).')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 6),"Help", 'Please, use the dropdown menu to select various options that can be applied to the VIEWER. You can make multiple selections by clicking on the + button.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 7),"Help",GUI_IO_util.msg_openOutputFiles)

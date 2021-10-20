@@ -217,6 +217,7 @@ pydict["Newspaper article/Document titles"] = ["file_checker_converter_cleaner_m
 pydict["N-grams (word & character)"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["N-grams viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Nominalization"] = ["nominalization_main.py", 1]
+pydict["Search CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Search text file(s) for n-grams & co-occurrences"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Search text file(s) for words/collocations"] = ["file_finder_byWord_main.py", 1]
 pydict["Sentence analysis (An overall GUI)"] = ["sentence_analysis_main.py", 1]
@@ -498,6 +499,7 @@ corpus_document_tools_menu = tk.OptionMenu(window, corpus_document_tools_var,
                                            'NER (Named Entity Recognition) extractor',
                                            'N-grams (word & character)',
                                            'Nominalization',
+                                            'Search CoNLL table',
                                            'Search text file(s) for n-grams & co-occurrences',
                                            'Search text file(s) for words/collocations',
                                            'Sentence complexity',

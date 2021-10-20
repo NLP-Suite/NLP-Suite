@@ -28,6 +28,7 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
 
     lemmatize_var = False
     within_sentence_var = False
+    filesToOpen = []
 
     if search_options_menu_var=='*':
         lemmatize_var=True
@@ -41,9 +42,11 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
             mb.showwarning(title='Input error', message='No search options have been selected.\n\nPlease, select a search option and try again.')
             return
 
+    outputFile = file_finder_byWord_util.run(inputFilename, input_main_dir_path, output_dir_path, search_by_dictionary_var, search_by_keyword_var, keyword_value_var, lemmatize_var, within_sentence_var)
 
-    file_finder_byWord_util.run(inputFilename, input_main_dir_path, output_dir_path, search_by_dictionary_var, search_by_keyword_var, keyword_value_var, lemmatize_var, within_sentence_var)
-
+    filesToOpen.append(outputFile)
+    if openOutputFiles == True:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),

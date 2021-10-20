@@ -7,7 +7,7 @@ conda install pytorch torchvision cudatoolkit -c pytorch
 python -m pip install -r requirements.txt
 
 conda activate NLP
-python src\download_nltk.py
+python src\download_nltk_stanza.py
 python src\download_jars.py
 
 conda activate NLP
