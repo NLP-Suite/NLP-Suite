@@ -23,6 +23,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles):
         mb.showwarning("Warning",
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
         return
+    else:
+        mb.showwarning("Warning",
+                       "The option is not available yet. Sorry!\n\nPlease, check back soon.")
+        return
 
     filesToOpen=[]
 

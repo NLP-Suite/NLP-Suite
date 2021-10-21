@@ -402,9 +402,11 @@ def generate_output_file_name(inputfilePath, inputDir, outputDir, outputExtensio
                     break  # file name found, end loop
     outFilename = os.path.join(outputDir, default_outputFilename_str)
 
-    # rename a filename coreferenced by CoreNLP to obtain better filename
+    # rename a filename coreferenced by CoreNLP to obtain better filename; NLP_CoreNLP_coref should only be once n the filename
     if 'NLP_CoreNLP_coref' in outFilename:
-        outFilename = outFilename.replace('NLP_CoreNLP_coref','_coref')
+        if outFilename.count('NLP_CoreNLP_coref')>1:
+            outFilename = outFilename.replace('NLP_CoreNLP_coref','_coref')
+            outFilename = 'NLP_CoreNLP_coref'+outFilename
     if 'CoreNLP_SENNA_SVO_coref' in outFilename:
         outFilename = outFilename.replace('CoreNLP_SENNA_SVO_coref','_coref')
 

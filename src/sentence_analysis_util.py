@@ -340,7 +340,10 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
     if Ndocs == 0:
         return
     if IO_libraries_util.inputProgramFileCheck('Sentence_Complexity.Jar') == False:
+        mb.showwarning("Warning",
+                       "The java algorithm for sentence cmplexity is no longer available. Taking up over 1.5 GB of disk space it was not easy to download.\n\nThe algorithms will be rewritten in Python as soon as possible. Sorry!\n\nPlease, check back soon.")
         return
+
     errorFound, error_code, system_output = IO_libraries_util.check_java_installation('Sentence complexity')
     if errorFound:
         return
