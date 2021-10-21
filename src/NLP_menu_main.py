@@ -195,7 +195,7 @@ pydict["File cleaner (Add full stop (.) at the end of paragraphs without end-of-
 pydict["File cleaner (Pronominal resolution via CoreNLP)"] = ["Stanford_CoreNLP_coreference_main.py", 1]
 pydict["File classifier (dumb classifier via embedded date) (file name)"] = ["file_filename_checker_main.py", 1]
 pydict["File finder (file name)"] = ["file_manager_main.py", 1]
-pydict["File finder (file content for words/collocations)"] = ["file_finder_byWord_main.py", 1]
+pydict["File finder/search (file content for words/collocations)"] = ["file_search_byWord_main.py", 1]
 pydict["File-type converter (csv, docx, pdf, rtf --> txt)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File matcher (file name)"] = ["file_matcher_main.py", 1]
 pydict["File merger (file content)"] = ["file_merger_main.py", 1]
@@ -387,7 +387,7 @@ pre_processing_menu = tk.OptionMenu(window, pre_processing_tools_var,
                                     'File cleaner (Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation)',
                                     'File cleaner (Pronominal resolution via CoreNLP)',
                                     'File finder (file name)',
-                                    'File finder (file content for words/collocations)',
+                                    'File finder/search (file content for words/collocations)',
                                     'File-type converter (csv, docx, pdf, rtf --> txt)',
                                     'File merger (file content)',
                                     'File splitter (file content)',
