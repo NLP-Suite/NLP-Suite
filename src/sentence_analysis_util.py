@@ -848,9 +848,12 @@ def sentence_structure_tree(inputFilename, outputDir):
 
     if inputFilename=='':
         sentences = GUI_IO_util.enter_value_widget('Enter sentence                                                                               ','Enter',1)
-        sent=str(sentences[0])
-        if sent=='':
+        sent=[sentences[0]]
+        if len(sent)==0:
             return
+        else:
+            sentences=sent
+        maxNum=1
     else:
         # split into sentences
         text = (open(inputFilename, "r", encoding="utf-8", errors='ignore').read())
