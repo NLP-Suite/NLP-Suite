@@ -845,7 +845,6 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 
 
 def sentence_structure_tree(inputFilename, outputDir):
-    maxNum=5
 
     if inputFilename=='':
         sentences = GUI_IO_util.enter_value_widget('Enter sentence                                                                               ','Enter',1)
@@ -856,9 +855,16 @@ def sentence_structure_tree(inputFilename, outputDir):
         # split into sentences
         text = (open(inputFilename, "r", encoding="utf-8", errors='ignore').read())
         sentences = nltk.sent_tokenize(text)
-        if len(sentences) >= maxNum:
-            mb.showwarning(title='Warning',
-                           message='The number of sentences in the selected text is larger than '+str(maxNum) +'. The trees of only the first '+str(maxNum) + ' sentences will be visualized.')
+        maxNum = GUI_IO_util.enter_value_widget('Enter number of sentences to be visualized','Enter',1)
+        maxNum=str(maxNum[0])
+        if maxNum=='':
+            return
+        maxNum=int(maxNum)
+        if maxNum >= 10:
+            result = mb.askyesno('Warning',
+                                 "The number of sentences entered is quite large. The tree graph algorithm will produce a png file for every sentence.\n\nAre you sure you want to continue?")
+            if result == False:  # yes no False
+                return
 
     sentenceID = 0  # to store sentence index
 
