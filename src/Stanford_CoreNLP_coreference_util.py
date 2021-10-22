@@ -257,9 +257,10 @@ def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, ope
                                      reminders_util.message_CoreNLP_coref, True)
 
     corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
-                                                                   output_dir_path, openOutputFiles, createExcelCharts,'coref', False,
-                                                                   memory_var)
-    
+                                                                    output_dir_path, openOutputFiles, createExcelCharts,
+                                                                    ['coref', 'coref table'], False,
+                                                                    memory_var)
+
     if manual_Coref:
         if len(input_main_dir_path) == 0 and len(inputFilename) > 0:
             for file in corefed_file:

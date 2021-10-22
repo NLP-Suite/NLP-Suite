@@ -25,6 +25,7 @@ from pathlib import Path
 import reminders_util
 import IO_CoNLL_util
 import IO_user_interface_util
+import GUI_IO_util
 
 # There are 3 methods and a 2 constants present:
 # abspath returns absolute path of a path
@@ -121,8 +122,14 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False):
 def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outputFileVar=None,
                initialFolder=''):
     filePath = ""
+    # print(fileType, extension, GUI_util.output_dir_path.get())
     if initialFolder == '':
-        initialFolder = os.path.dirname(os.path.abspath(__file__))
+        # initialFolder = os.path.dirname(os.path.abspath(__file__)) # this sets itself on NLP\src
+        if extension == '.txt':
+            initialFolder = GUI_IO_util.sampleData_libPath
+        else:
+            if GUI_util.output_dir_path.get()!='' and extension == '.csv':
+                initialFolder = GUI_util.output_dir_path.get()
     if IsInputFile == True:  # as opposed to output file
         # when the file string is blank, the directory option should always also be available
         filePath = tk.filedialog.askopenfilename(initialdir=initialFolder, title=title, filetypes=fileType)
@@ -149,7 +156,8 @@ def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outp
 
 def selectDirectory(title, initialFolder=''):
     if initialFolder == '':
-        initialFolder = os.path.dirname(os.path.abspath(__file__))
+        # initialFolder = os.path.dirname(os.path.abspath(__file__)) NLP\src
+        initialFolder = GUI_IO_util.sampleData_libPath
     path = tk.filedialog.askdirectory(initialdir=initialFolder, title=title)
     return path
 
@@ -402,9 +410,11 @@ def generate_output_file_name(inputfilePath, inputDir, outputDir, outputExtensio
                     break  # file name found, end loop
     outFilename = os.path.join(outputDir, default_outputFilename_str)
 
-    # rename a filename coreferenced by CoreNLP to obtain better filename
+    # rename a filename coreferenced by CoreNLP to obtain better filename; NLP_CoreNLP_coref should only be once n the filename
     if 'NLP_CoreNLP_coref' in outFilename:
-        outFilename = outFilename.replace('NLP_CoreNLP_coref','_coref')
+        if outFilename.count('NLP_CoreNLP_coref')>1:
+            outFilename = outFilename.replace('NLP_CoreNLP_coref','_coref')
+            outFilename = 'NLP_CoreNLP_coref'+outFilename
     if 'CoreNLP_SENNA_SVO_coref' in outFilename:
         outFilename = outFilename.replace('CoreNLP_SENNA_SVO_coref','_coref')
 

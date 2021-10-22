@@ -20,6 +20,10 @@ import pandas as pd
 import ast
 import textstat
 import subprocess
+import spacy
+from nltk.tree import Tree
+from nltk.draw import TreeView
+from PIL import Image
 
 import Excel_util
 import IO_csv_util
@@ -28,6 +32,7 @@ import IO_user_interface_util
 import Excel_util
 import statistics_csv_util
 import TIPS_util
+import GUI_IO_util
 
 def Extract(lst):
     return [item[0] for item in lst]
@@ -340,7 +345,10 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
     if Ndocs == 0:
         return
     if IO_libraries_util.inputProgramFileCheck('Sentence_Complexity.Jar') == False:
+        mb.showwarning("Warning",
+                       "The java algorithm for sentence cmplexity is no longer available. Taking up over 1.5 GB of disk space it was not easy to download.\n\nThe algorithms will be rewritten in Python as soon as possible. Sorry!\n\nPlease, check back soon.")
         return
+
     errorFound, error_code, system_output = IO_libraries_util.check_java_installation('Sentence complexity')
     if errorFound:
         return
@@ -834,3 +842,64 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                            nFile) + ' files in the input directory processed by Textstat.')
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen)
+
+# written by Siyan Pu October 2021
+# edited by Roberto Franzosi October 2021
+def sentence_structure_tree(inputFilename, outputDir):
+
+    if inputFilename=='':
+        sentences = GUI_IO_util.enter_value_widget('Enter sentence                                                                               ','Enter',1)
+        sent=[sentences[0]]
+        if len(sent)==0:
+            return
+        else:
+            sentences=sent
+        maxNum=1
+    else:
+        # split into sentences
+        text = (open(inputFilename, "r", encoding="utf-8", errors='ignore').read())
+        sentences = nltk.sent_tokenize(text)
+        maxNum = GUI_IO_util.enter_value_widget('Enter number of sentences to be visualized','Enter',1)
+        maxNum=str(maxNum[0])
+        if maxNum=='':
+            return
+        maxNum=int(maxNum)
+        if maxNum >= 10:
+            result = mb.askyesno('Warning',
+                                 "The number of sentences entered is quite large. The tree graph algorithm will produce a png file for every sentence.\n\nAre you sure you want to continue?")
+            if result == False:  # yes no False
+                return
+
+    sentenceID = 0  # to store sentence index
+
+    spacy_nlp = spacy.load("en_core_web_sm")
+
+    for sent in sentences:
+        sentenceID = sentenceID + 1
+        if sentenceID == maxNum+1:
+            return
+
+        doc = spacy_nlp(sent)
+
+        def token_format(token):
+            return "_".join([token.orth_, token.tag_, token.dep_])
+
+        def to_nltk_tree(node):
+            if node.n_lefts + node.n_rights > 0:
+                return Tree(token_format(node),
+                            [to_nltk_tree(child)
+                             for child in node.children]
+                            )
+            else:
+                return token_format(node)
+
+        tree = [to_nltk_tree(sent.root) for sent in doc.sents]
+
+        cf = TreeView(tree[0])._cframe
+
+        if inputFilename == '':
+            cf.print_to_file(outputDir + 'NLP_sentence_tree.ps')
+        else:
+            cf.print_to_file(outputDir + '/' + os.path.basename(inputFilename) + '_' + str(sentenceID) + '_tree.ps')
+
+

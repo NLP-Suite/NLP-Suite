@@ -550,7 +550,26 @@ def IO_config_setup_brief(window, y_multiplier_integer,ScriptName):
     IO_setup_menu_var.set("Default I/O configuration")
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(),
                                                    y_multiplier_integer,
-                                                   IO_setup_menu)
+                                                   IO_setup_menu,True)
+
+    # setup a button to open Windows Explorer on the selected input file
+    if inputFilename.get()!='':
+        openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                         command=lambda: IO_files_util.openFile(window, inputFilename.get()))
+        openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+750,
+                                   y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+    else:
+        # setup a button to open Windows Explorer on the selected input directory
+        openDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                         command=lambda: IO_files_util.openExplorer(window, input_main_dir_path.get()))
+        openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+750,
+                                   y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+
+    # setup a button to open Windows Explorer on the selected output directory
+    openDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                     command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
+    openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+800,
+                               y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
 # ScriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main
 #   it can be used for handling GUIs with special treatment (e.g., IO_setup_main which does not have a RUN button)

@@ -150,16 +150,19 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
             sentence_analysis_util.sentence_text_readability(GUI_util.window, inputFilename, inputDir,
                                                              outputDir, openOutputFiles, createExcelCharts)
         elif 'tree' in complexity_readability_analysis_menu_var:
-            if inputFilename == '' and inputFilename.strip()[-4:] != '.txt':
-                mb.showwarning(title='Input file error',
-                               message='The Sentence tree viewer script requires a single txt file in input.\n\nPlease, select a txt file and try again.')
-                return
-            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                               'Started running Sentence visualization: Dependency tree viewer (png graphs) at',
-                                               True, '\n\nYou can follow Sentence Complexity in command line.')
-            subprocess.call(['java', '-jar', 'DependenSee.Jar', inputFilename, outputDir])
-            mb.showwarning(title='Analysis end',
-                           message='Finished running the Dependency tree viewer (png graphs).\n\nMake sure to open the png files in output, one graph for each sentence.')
+            # if inputFilename == '' and inputFilename.strip()[-4:] != '.txt':
+            #     mb.showwarning(title='Input file error',
+            #                    message='The Sentence tree viewer script requires a single txt file in input.\n\nPlease, select a txt file and try again.')
+            #     return
+            # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+            #                                    'Started running Sentence visualization: Dependency tree viewer (png graphs) at',
+            #                                    True, '\n\nYou can follow Sentence Complexity in command line.')
+            # subprocess.call(['java', '-jar', 'DependenSee.Jar', inputFilename, outputDir])
+
+            sentence_analysis_util.sentence_structure_tree(inputFilename, outputDir)
+
+            # mb.showwarning(title='Analysis end',
+            #                message='Finished running the Dependency tree viewer (png graphs).\n\nMake sure to open the png files in output, one graph for each sentence.')
 
         else:
             mb.showwarning('Warning', 'No option has been selected for Complex/readability analysis.\n\nPlease, select an option and try again.')
@@ -525,7 +528,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
 
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help",'Please, tick the \'By sentence index\' checkbox if you wish to analyze any selected option with sentence information.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help",'Please, tick the \'CoNLL table analysis\' checkbox if you wish to analyze various items in the CoNLL table.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Clause\n   2. Noun\n   3. Verb\n   4. Function word\n   5. DEPREL\n   6. POSTAG\n   7. NER.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help",'Please, tick the \'Complex\\readability analysis\' checkbox if you wish to analyze the complexity or readability of sentences and documents.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Sentence complexity to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure. The Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\n   2. Text readability to compute various measures of text readability.\n 12 readability score requires HIGHSCHOOL education;\n 16 readability score requires COLLEGE education;\n 18 readability score requires MASTER education;\n 24 readability score requires DOCTORAL education;\n >24 readability score requires POSTDOC education.\n\n   3. Visualize the sentence tree as a png image.')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help",'Please, tick the \'Complex\\readability analysis\' checkbox if you wish to analyze the complexity or readability of sentences and documents.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Sentence complexity to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure. The Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\n   2. Text readability to compute various measures of text readability.\n 12 readability score requires HIGHSCHOOL education;\n 16 readability score requires COLLEGE education;\n 18 readability score requires MASTER education;\n 24 readability score requires DOCTORAL education;\n >24 readability score requires POSTDOC education.\n\n   3. Visualize the sentence tree as a png image, using spacy and nltk.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help",'Please, tick the \'Vocabulary analysis\' checkbox if you wish to analyze the vocabulary used in your corpus.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Abstract/concrete vocabulary, The script uses the concreteness ratings by Brysbaert, Warriner, Kuperman, Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas, Behavioral Research (2014) 46:904–911.\nMean/median Concreteness values are calculated for each sentence on a 5-point scale going from abstract (0) to concrete (5).\n\n   2. Vocabulary richness (word type/token ratio or Yule’s K). C.U. Yule. 1944. The statistical study of literary vocabulary. Cambridge: Cambridge University Press.\n\n   3. Short words to compute the number of short words (<4 characters) and list them.\n\n   4. Vowel words to compute the number of words that start with a vowel (vowel words) and list them.\n\n   5. Unusual, or misspelled, words (via NLTK).\n\n   6. Language detection. Language detection is carried out via LANGDETECT, LANGID, SPACY. Languages are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages (check here for the list https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help",'Please, tick the \'N-grams analysis\' checkbox if you wish to compute various types of n-grams.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Characters\n   2. Words\n   3. Hapax legomena (once-occurring words)\n   4. DEPREL\n   5. POSTAG\n   6. NER.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help",'Please, tick the \'Who wrote the text\' checkbox if you wish to run the Gender Guesser algorithm to determine an author\'s gender based on the words used.\n\nYou will need to copy and paste a document content to the website http://www.hackerfactor.com/GenderGuesser.php#About\n\nYou need to be connnected to the internet.')

@@ -17,7 +17,7 @@ import IO_user_interface_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, input_main_dir_path, output_dir_path,openOutputFiles,createExcelCharts,
+def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
     visualize_bySentenceIndex_var,
     script_to_run,
     IO_values,
@@ -39,46 +39,48 @@ def run(inputFilename, input_main_dir_path, output_dir_path,openOutputFiles,crea
 
     if visualize_bySentenceIndex_var:
         IO_files_util.runScript_fromMenu_option(script_to_run, IO_values,
-                                                inputFilename, input_main_dir_path,output_dir_path,
+                                                inputFilename, inputDir,outputDir,
                                                 openOutputFiles, createExcelCharts)
         return
 
     if sentence_complexity_var==True:
         if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py')==False:
             return
-        filesToOpen=sentence_analysis_util.sentence_complexity(GUI_util.window,inputFilename, input_main_dir_path, output_dir_path,openOutputFiles,createExcelCharts)
+        filesToOpen=sentence_analysis_util.sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts)
         if filesToOpen==None:
             return
 
     if text_readability_var==True:
         if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py')==False:
             return
-        sentence_analysis_util.sentence_text_readability(GUI_util.window,inputFilename, input_main_dir_path, output_dir_path,openOutputFiles,createExcelCharts)
+        sentence_analysis_util.sentence_text_readability(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts)
 
     if visualize_sentence_structure_var==True:
-        if IO_libraries_util.inputProgramFileCheck('DependenSee.Jar')==False:
-            return
-        errorFound, error_code, system_output = IO_libraries_util.check_java_installation('Sentence structure visualization')
-        if errorFound:
-            return
-        if inputFilename=='' and inputFilename.strip()[-4:]!='.txt':
-            mb.showwarning(title='Input file error', message='The Sentence tree viewer script requires a single txt file in input.\n\nPlease, select a txt file and try again.')
-            return
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Sentence visualization: Dependency tree viewer (png graphs) at', True, '\n\nYou can follow Sentence Complexity in command line.')
-        subprocess.call(['java', '-jar', 'DependenSee.Jar', inputFilename, output_dir_path])
-        mb.showwarning(title='Analysis end',message='Finished running the Dependency tree viewer (png graphs).\n\nMake sure to open the png files in output, one graph for each sentence.')
+        # if IO_libraries_util.inputProgramFileCheck('DependenSee.Jar')==False:
+        #     return
+        # errorFound, error_code, system_output = IO_libraries_util.check_java_installation('Sentence structure visualization')
+        # if errorFound:
+        #     return
+        # if inputFilename=='' and inputFilename.strip()[-4:]!='.txt':
+        #     mb.showwarning(title='Input file error', message='The Sentence tree viewer script requires a single txt file in input.\n\nPlease, select a txt file and try again.')
+        #     return
+        # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Sentence visualization: Dependency tree viewer (png graphs) at', True, '\n\nYou can follow Sentence Complexity in command line.')
+        # subprocess.call(['java', '-jar', 'DependenSee.Jar', inputFilename, outputDir])
+        # mb.showwarning(title='Analysis end',message='Finished running the Dependency tree viewer (png graphs).\n\nMake sure to open the png files in output, one graph for each sentence.')
+
+        sentence_analysis_util.sentence_structure_tree(inputFilename, outputDir)
 
     if extract_sentences_var:
         if search_words_var=='':
             mb.showwarning(title='No search words entered', message='You have selected to extract sentences from input file(s). You MUST enter specific words to be used to extract the sentences from input.\n\nPlease enter the word(s) and try again.')
             return
 
-        outputFile=sentence_analysis_util.extract_sentences(inputFilename, input_main_dir_path, output_dir_path, search_words_var)
+        outputFile=sentence_analysis_util.extract_sentences(inputFilename, inputDir, outputDir, search_words_var)
 
         if len(outputFile)>0:
             filesToOpen.append(outputFile)
 
-    IO_files_util.runScript_fromMenu_option(script_to_run,IO_values,inputFilename,input_main_dir_path, output_dir_path, openOutputFiles,createExcelCharts)
+    IO_files_util.runScript_fromMenu_option(script_to_run,IO_values,inputFilename,inputDir, outputDir, openOutputFiles,createExcelCharts)
 
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -188,7 +190,7 @@ pydict["Function words analysis by sentence index (via CoNLL)"] = ["CoNLL_table_
 pydict["Concreteness analysis by sentence index"] = ["sentiment_concreteness_analysis_main.py", 1]
 pydict["Dictionary items by sentence index"] = ["dictionary_items_sentenceID_util.dictionary_items_bySentenceID", 0, 3, 'txt']
 pydict["N-grams (word & character) by sentence index"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
-pydict["Search words/collocations by sentence index"] = ["file_finder_byWord_main.py",1]
+pydict["Search words/collocations by sentence index"] = ["file_search_byWord_main.py",1]
 pydict["Sentence complexity by sentence index"] = ["sentence_analysis_util.sentence_complexity", 0, 3, 'txt']
 pydict["Sentence/text readability by sentence index (via textstat)"] = ["sentence_analysis_util.sentence_text_readability", 0, 3, 'txt']
 pydict["Sentiment analysis by sentence index"] = ["sentiment_concreteness_analysis_main.py", 1]

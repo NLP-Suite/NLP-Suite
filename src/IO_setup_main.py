@@ -95,6 +95,10 @@ GUI_util.GUI_top(config_input_output_options, config_filename, False)
 # check the GUI specific IO options against the default options in default-config.txt
 #	warning the user for any discrepancy
 
+# the selection of files and directories is done in GUI_util, which in turn calls
+#   selectFile or selectDirectory in IO_files_util
+# initial folders are setup in IO_files_util
+
 msg = ""
 default_IO_options = config_util.get_IO_options(config_filename, config_input_output_options)
 if config_filename == 'default-config.txt':
@@ -126,6 +130,8 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     # 4 for any type of file
     # 5 for txt or html
     # 6 for txt or csv
+
+    # INPUT file by type
     if config_option[1]==1:
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
                                       GUI_IO_util.msg_CoNLL)

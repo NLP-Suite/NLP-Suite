@@ -4,46 +4,47 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"file_finder_byWord_main.py",['os','tkinter'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"file_search_byWord_main.py",['os','tkinter'])==False:
     sys.exit(0)
 
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
+from subprocess import call
 
 import GUI_IO_util
 import IO_files_util
-import file_finder_byWord_util
+import file_search_byWord_util
+import IO_user_interface_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,input_main_dir_path, output_dir_path,
+def run(inputFilename,inputDir, outputDir,
     openOutputFiles,
     createExcelCharts,
-    search_options_menu_var,
-    search_by_dictionary_var,
-    selectedCsvFile_var,
-    search_by_keyword_var,
-    keyword_value_var):
+    search_options,
+    search_by_dictionary,
+    selectedCsvFile,
+    search_by_keyword,
+    search_keyword_values):
 
-    lemmatize_var = False
-    within_sentence_var = False
+    filesToOpen = []
 
-    if search_options_menu_var=='*':
-        lemmatize_var=True
-        within_sentence=True
-    elif search_options_menu_var == "Lemmatize":
-        lemmatize_var = True
-    elif search_options_menu_var == "Search within sentence":
-        within_sentence=True
-
-    if search_by_dictionary_var==False and search_by_keyword_var==False:
+    if search_by_dictionary==False and search_by_keyword==False:
             mb.showwarning(title='Input error', message='No search options have been selected.\n\nPlease, select a search option and try again.')
             return
 
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word/collocation search start',
+                        'Started running Word/collocation search at', True,
+                        'SEARCH options: ' + str(search_options_list)+'\nSEARCH words: '+search_keyword_values+'\n\nYou can follow the script in command line.')
 
-    file_finder_byWord_util.run(inputFilename, input_main_dir_path, output_dir_path, search_by_dictionary_var, search_by_keyword_var, keyword_value_var, lemmatize_var, within_sentence_var)
 
+    outputFile = file_search_byWord_util.run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_keyword, search_keyword_values, search_options_list)
+
+    if outputFile!='':
+        filesToOpen.append(outputFile)
+    if openOutputFiles == True:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -55,7 +56,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             search_by_dictionary_var.get(),
                             selectedCsvFile_var.get(),
                             search_by_keyword_var.get(),
-                            keyword_value_var.get())
+                            keyword_value_var.get(),
+                               )
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -65,7 +67,7 @@ GUI_util.run_button.configure(command=run_script_command)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
 GUI_width=1100
-GUI_height=470 # height of GUI with full I/O display
+GUI_height=510 # height of GUI with full I/O display
 
 if IO_setup_display_brief:
     GUI_height = GUI_height - 80
@@ -102,8 +104,8 @@ GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 window=GUI_util.window
 config_input_output_options=GUI_util.config_input_output_options
 config_filename=GUI_util.config_filename
-input_main_dir_path =GUI_util.input_main_dir_path
-output_dir_path =GUI_util.output_dir_path
+inputDir =GUI_util.input_main_dir_path
+outputDir =GUI_util.output_dir_path
 
 GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
 
@@ -112,21 +114,82 @@ search_by_dictionary_var=tk.IntVar()
 selectedCsvFile_var=tk.StringVar()
 search_by_keyword_var=tk.IntVar()
 keyword_value_var=tk.StringVar()
+search_options_list=[]
 
 def clear(e):
     GUI_util.clear("Escape")
-    search_options_menu_var.set('*')
+    search_options_list.clear()
+    search_options_menu_var.set('Case sensitive')
     keyword_value_var.set('')
 window.bind("<Escape>", clear)
 
 
 #setup GUI widgets
 
-search_options_menu_var.set('*')
+search_options_menu_var.set('Case sensitive')
 search_options_menu_lb = tk.Label(window, text='Search options')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,search_options_menu_lb,True)
-search_options_menu = tk.OptionMenu(window, search_options_menu_var, '*','Lemmatize', 'Search within sentences')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,search_options_menu)
+search_options_menu = tk.OptionMenu(window, search_options_menu_var, 'Case sensitive','Case insensitive','Lemmatize', 'Search within sentence')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,search_options_menu, True)
+
+add_search_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_search_var())
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+300,y_multiplier_integer,add_search_button, True)
+
+reset_search_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_search_options_list())
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+340,y_multiplier_integer,reset_search_button,True)
+
+show_search_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_search_options_list())
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+400,y_multiplier_integer,show_search_button)
+
+def reset_search_options_list():
+    search_options_list.clear()
+    search_options_menu_var.set('Case sensitive')
+    search_options_menu.configure(state='normal')
+
+def show_search_options_list():
+    if len(search_options_list)==0:
+        mb.showwarning(title='Warning', message='There are no currently selected SEARCH options.')
+    else:
+        mb.showwarning(title='Warning', message='The currently selected SEARCH options are:\n\n' + ','.join(search_options_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+
+def activate_search_var():
+    # Disable the + after clicking on it and enable the menu
+    add_search_button.configure(state='disabled')
+    search_options_menu.configure(state='normal')
+
+def activate_search_options(*args):
+    if search_options_menu_var.get()!='':
+        if search_options_menu_var.get() in search_options_list:
+            mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
+            return
+        # remove the case option, when a different one is selected
+        if 'insensitive' in search_options_menu_var.get() and 'sensitive' in str(search_options_list):
+            search_options_list.remove('Case sensitive')
+        if 'sensitive' in search_options_menu_var.get() and 'insensitive' in str(search_options_list):
+            search_options_list.remove('Case insensitive')
+        if search_options_menu_var.get()=='Lemmatize':
+            mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
+            # search_options_menu_var.set('')
+            if len(search_options_list) > 0:
+                add_search_button.configure(state='normal')
+                reset_search_button.configure(state='normal')
+                show_search_button.configure(state='normal')
+                return
+        search_options_list.append(search_options_menu_var.get())
+        search_options_menu.configure(state="disabled")
+        add_search_button.configure(state='normal')
+        reset_search_button.configure(state='normal')
+        show_search_button.configure(state='normal')
+    else:
+        add_search_button.configure(state='disabled')
+        reset_search_button.configure(state='disabled')
+        show_search_button.configure(state='disabled')
+        # for now... always disabled
+        # search_options_menu.configure(state="disabled")
+        search_options_menu.configure(state="normal")
+search_options_menu_var.trace('w',activate_search_options)
+
+activate_search_options()
 
 # lemmatize_var.set(0)
 # lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
@@ -167,6 +230,10 @@ keyword_value_var.set('')
 keyword_value = tk.Entry(window,width=100,textvariable=keyword_value_var)
 keyword_value.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,keyword_value)
+
+open_GUI_button = tk.Button(window, text='Open GUI for N-grams/co-occurrences VIEWER',command=lambda: call("python NGrams_CoOccurrences_Viewer_main.py", shell=True))
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_GUI_button)
+
 
 def activate_allOptions(*args):
     selectedCsvFile.configure(state='disabled')
@@ -209,11 +276,11 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 1),"Help", "Please, use the dropdown menu to set up the search criteria:\n    1. lemmatize words/collocations searched\n   2. search occurrences within SENTENCES (default, within DOCUMENTS).\n\nWhen lemmatizing, the scripts would search 'coming out' in all its lemmatized forms: 'coming out', 'come out', 'comes out', 'came out'.\n\nWhen searching 'Within sentence' combinations of words or collocations will be searched and displayed within SENTENCE otherwise within DOCUMENT.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 1),"Help", "Please, use the dropdown menu to set up the search criteria. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nWhen lemmatizing, the scripts would search 'coming out' in all its lemmatized forms: 'coming out', 'come out', 'comes out', 'came out'.\n\nWhen searching 'Within sentence' combinations of words or collocations will be searched and displayed within SENTENCE otherwise within DOCUMENT.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 2),"Help", "Please, tick the checkbox to search input txt file(s) using the values contained in a csv dictionary file.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 3),"Help", "Please, click to select a csv file containing a list of values to be used as a dictionary for searching the file(s).\n\nEntries in the file, one per line, can be single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 4),"Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nSeveral words/collocations can be entered, comma separated (e.g, coming out, gay, boyfriend).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 5),"Help","Please, tick the checkbox to activate the search entry widget.\n\nAfter the data entry widget becomes available, please enter words/collocations to be searched. Several words/collocations can be entered, comma separated (e.g, coming out, gay, boyfriend).")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 4),"Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nSeveral words/collocations can also be entered, comma separated (e.g, coming out, gay, boyfriend).")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 5),"Help","Please, click on the button to open a GUI with more options for an N-grams/Co_occurrences VIEWER similar to Google Ngrams Viewer (https://books.google.com/ngrams) but applied to your own corpus.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 6),"Help",GUI_IO_util.msg_openOutputFiles)
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
