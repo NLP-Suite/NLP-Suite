@@ -205,6 +205,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     fullInfo=False
     if 'sensitive' in str(viewer_options_list):
         case_sensitive = True
+    if 'insensitive' in str(viewer_options_list):
+        case_sensitive = False
     if 'Normalize' in str(viewer_options_list):
         normalize = True
     if 'Scale' in str(viewer_options_list):
@@ -223,7 +225,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences start',
                         'Started running N-Grams Word Co-Occurrences Viewer at', True,
-                        'You can follow the script in command line.')
+                        'VIEWER options: ' + str(viewer_options_list)+'\nSEARCH words: '+search_words+'\n\nYou can follow the script in command line.')
 
     reminders_util.checkReminder(config_filename,
                                  reminders_util.title_options_NGrams,
@@ -460,6 +462,8 @@ n_grams_viewer_var.set(0)
 Ngrams_checkbox = tk.Checkbutton(window, text='N-grams VIEWER', variable=n_grams_viewer_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,Ngrams_checkbox,True)
 
+Ngrams_checkbox.configure(state='disabled') # for now
+
 CoOcc_Viewer_var.set(0)
 CoOcc_checkbox = tk.Checkbutton(window, text='Co-Occurrences VIEWER', variable=CoOcc_Viewer_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,CoOcc_checkbox)
@@ -475,6 +479,8 @@ date_options.set(0)
 date_options_checkbox = tk.Checkbutton(window, text='Date options', variable=date_options, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,date_options_checkbox,True)
 
+date_options_checkbox.configure(state='disabled')
+
 date_options_msg= tk.Label(window)
 date_options_msg.config(text="Date option OFF")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,date_options_msg,True)
@@ -482,7 +488,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 temporal_aggregation.set('year')
 temporal_aggregation_lb = tk.Label(window,text='Aggregate by ')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,temporal_aggregation_lb,True)
-temporal_aggregation_menu = tk.OptionMenu(window, temporal_aggregation, 'year', 'quarter','month','day')
+temporal_aggregation_menu = tk.OptionMenu(window, temporal_aggregation, 'Group of years', 'year', 'quarter','month','day')
 temporal_aggregation_menu.configure(width=5,state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+80,y_multiplier_integer,temporal_aggregation_menu,True)
 
@@ -532,8 +538,9 @@ show_viewer_button = tk.Button(window, text='Show', width=5,height=1,state='disa
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+400,y_multiplier_integer,show_viewer_button,True)
 
 viewer_menu_lb = tk.Label(window, text='VIEWER options')
+viewer_options_menu_var.set('Case sensitive')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,viewer_menu_lb,True)
-viewer_options_menu = tk.OptionMenu(window, viewer_options_menu_var, 'Case sensitive', 'Normalize results','Scale results', 'Lemmatize words')
+viewer_options_menu = tk.OptionMenu(window, viewer_options_menu_var, 'Case sensitive', 'Case insensitive', 'Normalize results','Scale results', 'Lemmatize words')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,viewer_options_menu)
 
 open_GUI_button = tk.Button(window, text='Open GUI for word/collocation searches',command=lambda: call("python file_search_byWord_main.py", shell=True))
@@ -541,7 +548,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 def reset_viewer_options_list():
     viewer_options_list.clear()
-    viewer_options_menu_var.set('')
+    viewer_options_menu_var.set('Case sensitive')
     viewer_options_menu.configure(state='normal')
 
 def show_viewer_options_list():
@@ -560,13 +567,19 @@ def activate_viewer_options(*args):
         if viewer_options_menu_var.get() in viewer_options_list:
             mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
             return
-        if viewer_options_menu_var.get()!='Case sensitive':
-            mb.showwarning(title='Warning', message='The option is not available yet. The only available option is for case sensitive searches.\n\nSorry!')
-            if len(viewer_options_list) > 0:
-                add_search_button.configure(state='normal')
-                reset_search_button.configure(state='normal')
-                show_search_button.configure(state='normal')
+        if 'Lemmatize' in viewer_options_menu_var.get() or 'Normalize' in viewer_options_menu_var.get() or 'Scale' in viewer_options_menu_var.get():
+                mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
                 return
+        # remove the case option, when a different one is selected
+        if 'insensitive' in viewer_options_menu_var.get() and 'sensitive' in str(viewer_options_list):
+            viewer_options_list.remove('Case sensitive')
+        if 'sensitive' in viewer_options_menu_var.get() and 'insensitive' in str(viewer_options_list):
+            viewer_options_list.remove('Case insensitive')
+        if len(viewer_options_list) > 0:
+            add_viewer_button.configure(state='normal')
+            reset_viewer_button.configure(state='normal')
+            show_viewer_button.configure(state='normal')
+            return
         viewer_options_list.append(viewer_options_menu_var.get())
         viewer_options_menu.configure(state="disabled")
         add_viewer_button.configure(state='normal')
@@ -592,7 +605,8 @@ def clear(e):
     n_grams_menu_var.set('Word')
     n_grams_options_menu_var.set('')
     search_words_var.set('')
-    viewer_options_menu_var.set('')
+    viewer_options_list.clear()
+    viewer_options_menu_var.set('Case sensitive')
     temporal_aggregation.set('year')
     date_format.set('mm-dd-yyyy')
     date_separator_var.set('_')
@@ -613,14 +627,17 @@ def activate_allOptions():
     else:
         n_grams_menu.configure(state='disabled')
         n_grams_options_menu.configure(state='disabled')
-        Ngrams_checkbox.configure(state='normal')
+        Ngrams_checkbox.configure(state='disabled') # for now
+        # Ngrams_checkbox.configure(state='normal')
         CoOcc_checkbox.configure(state='normal')
         search_words_entry.configure(state='normal')
-        date_options_checkbox.config(state='normal')
+        date_options_checkbox.configure(state='disabled') # for now
+        # date_options_checkbox.config(state='normal')
     if n_grams_viewer_var.get() or CoOcc_Viewer_var.get():
         n_grams_checkbox.configure(state='disabled')
         search_words_entry.configure(state='normal')
-        date_options_checkbox.config(state='normal')
+        date_options_checkbox.configure(state='disabled') # for now
+        # date_options_checkbox.config(state='normal')
         # for now... always disabled
         # viewer_options_menu.configure(state="disabled")
         viewer_options_menu.config(state='normal')
@@ -651,7 +668,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
 
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 1),"Help", 'Please, tick the \'Compute n-grams\' checkbox if you wish to compute n-grams.\n\nN-grams can be computed for characters, words, POSTAG and DEPREL values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word n-grams between 1 and 3.\n\nWhen n-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 2),"Help", 'Please, use the dropdown menu to select various options that can be applied to n-grams. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nThe default number of n-grams computed is 3, unless you select the Hapax legomena option for unigrams (and then select once-occurring words).\n\nN-grams can be normalized, i.e., their frequency values are divided by the number of words or POSTAG-DEPREL values in a document.\n\nPunctuation can be excluded when computing n-grams (Google, for instance, exclude punctuation from its Ngram Viewer (https://books.google.com/ngrams).\n\nN-grams can be computed by sentence index.\n\nFinally, you can run a special type of n-grams that computes the last 2 words in a sentence and the first 2 words of the next sentence, a rhetorical figure of repetition for the analysis of style.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 3),"Help", 'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer Java script.\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer Java script.\n\nYou can run both Viewers at the same time.\n\nThe NGrams part of the NGrams_CoOccurrences.jar routine requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872).\n\nFor both viewers, results will be visualized in Excel line plots.\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 3),"Help", 'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer Java script.\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer Java script.\n\nYou can run both Viewers at the same time.\n\nThe NGrams part of the algorithm requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872).\n\nFor both viewers, results will be visualized in Excel line plots.\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 4),"Help", 'Please, enter the comma-separated list of words for which you want to know N-Gram statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 5),"Help", 'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences.\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: year, quarter, month, day.\n\nPlease, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2).')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 6),"Help", 'Please, use the dropdown menu to select various options that can be applied to the VIEWER. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nYou can make your searches CASE SENSITIVE.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')

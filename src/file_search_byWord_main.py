@@ -15,6 +15,7 @@ from subprocess import call
 import GUI_IO_util
 import IO_files_util
 import file_search_byWord_util
+import IO_user_interface_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -32,6 +33,11 @@ def run(inputFilename,inputDir, outputDir,
     if search_by_dictionary==False and search_by_keyword==False:
             mb.showwarning(title='Input error', message='No search options have been selected.\n\nPlease, select a search option and try again.')
             return
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word/collocation search start',
+                        'Started running Word/collocation search at', True,
+                        'SEARCH options: ' + str(search_options_list)+'\nSEARCH words: '+search_keyword_values+'\n\nYou can follow the script in command line.')
+
 
     outputFile = file_search_byWord_util.run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_keyword, search_keyword_values, search_options_list)
 
@@ -112,17 +118,18 @@ search_options_list=[]
 
 def clear(e):
     GUI_util.clear("Escape")
-    search_options_menu_var.set('')
+    search_options_list.clear()
+    search_options_menu_var.set('Case sensitive')
     keyword_value_var.set('')
 window.bind("<Escape>", clear)
 
 
 #setup GUI widgets
 
-search_options_menu_var.set('')
+search_options_menu_var.set('Case sensitive')
 search_options_menu_lb = tk.Label(window, text='Search options')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,search_options_menu_lb,True)
-search_options_menu = tk.OptionMenu(window, search_options_menu_var, 'Case sensitive','Lemmatize', 'Search within sentence')
+search_options_menu = tk.OptionMenu(window, search_options_menu_var, 'Case sensitive','Case insensitive','Lemmatize', 'Search within sentence')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,search_options_menu, True)
 
 add_search_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_search_var())
@@ -136,14 +143,14 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory
 
 def reset_search_options_list():
     search_options_list.clear()
-    search_options_menu_var.set('')
+    search_options_menu_var.set('Case sensitive')
     search_options_menu.configure(state='normal')
 
 def show_search_options_list():
     if len(search_options_list)==0:
-        mb.showwarning(title='Warning', message='There are no currently selected VIEWER options.')
+        mb.showwarning(title='Warning', message='There are no currently selected SEARCH options.')
     else:
-        mb.showwarning(title='Warning', message='The currently selected VIEWER options are:\n\n' + ','.join(search_options_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+        mb.showwarning(title='Warning', message='The currently selected SEARCH options are:\n\n' + ','.join(search_options_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
 def activate_search_var():
     # Disable the + after clicking on it and enable the menu
@@ -155,6 +162,11 @@ def activate_search_options(*args):
         if search_options_menu_var.get() in search_options_list:
             mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
             return
+        # remove the case option, when a different one is selected
+        if 'insensitive' in search_options_menu_var.get() and 'sensitive' in str(search_options_list):
+            search_options_list.remove('Case sensitive')
+        if 'sensitive' in search_options_menu_var.get() and 'insensitive' in str(search_options_list):
+            search_options_list.remove('Case insensitive')
         if search_options_menu_var.get()=='Lemmatize':
             mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
             # search_options_menu_var.set('')
@@ -219,7 +231,7 @@ keyword_value = tk.Entry(window,width=100,textvariable=keyword_value_var)
 keyword_value.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,keyword_value)
 
-open_GUI_button = tk.Button(window, text='Open GUI for N-grams/co-occurrences VIEWER',command=lambda: call("python NGrams_CoOccurrences_search_main.py", shell=True))
+open_GUI_button = tk.Button(window, text='Open GUI for N-grams/co-occurrences VIEWER',command=lambda: call("python NGrams_CoOccurrences_Viewer_main.py", shell=True))
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_GUI_button)
 
 

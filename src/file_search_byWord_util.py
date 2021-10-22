@@ -13,8 +13,8 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "file_splitter_Bysearch_keywords_txt",
-                                          ['os', 'tkinter', 'nltk', 'mlconjug']) == False:
+if IO_libraries_util.install_all_packages(GUI_util.window, "file_search_byWord_util.py",
+                                          ['os', 'tkinter', 'nltk']) == False:
     sys.exit(0)
 
 import os
@@ -57,6 +57,8 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
     for search_option in search_options_list:
         if search_option == 'Case sensitive':
             case_sensitive = True
+        if search_option == 'Case insensitive':
+                case_sensitive = False
         elif search_option == "Search within sentence":
             search_within_sentence = True
         elif search_option == "Lemmatize":  # not available yet
@@ -69,10 +71,10 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
         writer = csv.writer(csvFile)
         if csvExist:
             csvFile.truncate(0)
-            writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Relative position",
+            writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position",
                              "Frequency of occurrence", "Document ID", "Document", "Sentence ID", "Sentence"])
         else:
-            writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Relative position",
+            writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position",
                              "Frequency of occurrence", "Document ID", "Document", "Sentence ID", "Sentence"])
         csvFile.close()
     for file in files:
@@ -155,14 +157,14 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                             if lemmatize:
                                 form = search_keywords_list
                                 writer.writerow(
-                                    [keyword, form, first_occurrence_index, percent_position, frequency,
+                                    [keyword, form, first_occurrence_index, len(sentences_), percent_position, frequency,
                                      docIndex,
-                                     IO_csv_util.dressFilenameForCSVHyperlink(file), sentence_index, sent])
+                                     IO_csv_util.dressFilenameForCSVHyperlink(file), sentence_index, len(sentences_), sent])
                             else:
                                 writer.writerow(
-                                    [keyword, '', first_occurrence_index, percent_position, frequency,
+                                    [keyword, '', first_occurrence_index, len(sentences_), percent_position, frequency,
                                      docIndex,
-                                     IO_csv_util.dressFilenameForCSVHyperlink(file), sentence_index, sent])
+                                     IO_csv_util.dressFilenameForCSVHyperlink(file), sentence_index, len(sentences_), sent])
                     else:
                         break
 

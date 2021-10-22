@@ -143,7 +143,7 @@ def run(inputFilename,
         # Clean dataframe, remove any 'DATE' or non-location rows
         del_list = []
         for index, row in df.iterrows():
-            if df['NER Value'][index] not in ['COUNTRY','STATE_OR_PROVINCE','CITY']:
+            if df['NER Value'][index] not in ['COUNTRY','STATE_OR_PROVINCE','CITY','LOCATION']:
                 del_list.append(index)
         df = df.drop(del_list)
         df.to_csv(NER_outputFilename, index=False)
@@ -177,7 +177,7 @@ def run(inputFilename,
                         [1],[1]) # bold_var_list, italic_var_list)
 
         if len(out_file)>0:
-            filesToOpen=out_file
+            filesToOpen.extend(out_file)
         if kmloutputFilename!='':
             filesToOpen.append(kmloutputFilename)
         if len(filesToOpen)>0:

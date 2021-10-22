@@ -6,8 +6,8 @@ import os
 import IO_files_util
 import IO_csv_util
 import csv
-import pprint
-from nltk.tokenize import word_tokenize
+# import pprint
+from nltk.tokenize import sent_tokenize, word_tokenize
 
 """
 NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences data
@@ -20,53 +20,62 @@ def run(inputDir="relative_path_here",
         CoOcc_Viewer=True,
         search_wordsLists=None,
         dateOption=False,
-        datePos=4,
+        datePos=2,
         dateFormat="mm-dd-yyyy",
         itemsDelimiter="_",
-        groupingOption="",
+        temporalAggregation="",
         viewer_options_list=[]):
 
-    case_sensitive = False
-    normalize = True
-    scaleData = False
-    lemma = False
+    if search_wordsLists is None:
+        search_wordsLists = []
+    checkCoOccList = False
 
-    for viewer_option in viewer_options_list:
-        if viewer_option == 'Case sensitive':
-            case_sensitive = True
-        elif viewer_option == "Normalize results":  # not available yet
-            normalize = True
-        elif viewer_option == "Scale results":   # not available yet
-            scaleData = True
-        elif viewer_option == "Lemmatize words":  # not available yet
-            lemmatize = True
+    case_sensitive = False
+    normalize=False
+    scaleData=False
+    useLemma=False
+    fullInfo=False
+    # print(str(viewer_options_list))
+    if 'sensitive' in str(viewer_options_list):
+        case_sensitive = True
+    if 'insensitive' in str(viewer_options_list):
+        case_sensitive = False
+    if 'Normalize' in str(viewer_options_list):
+        normalize = True
+    if 'Scale' in str(viewer_options_list):
+        scaleData = True
+    if 'Lemmatize' in str(viewer_options_list):
+        useLemma = True
+
 
     files = IO_files_util.getFileList('', inputDir, ".txt")  # get all input files
-    nFile = len(files)
-    if nFile == 0:
-        return
-
     original_search_word = search_wordsLists + ""
     search_word_list = search_wordsLists.split(',')
+
     for i in range(len(search_word_list)):
-        search_word_list[i] = search_word_list[i].lstrip()
-    if n_grams_viewer == False:
+        if not case_sensitive:
+            search_word_list[i] = search_word_list[i].lstrip().lower()
+        else:
+            search_word_list[i] = search_word_list[i].lstrip()
+
+    if not n_grams_viewer:
         ngram_results = None
     else:
         ngram_results = {}  # prepare ngram results
         # preparation
         for word in search_word_list:
             ngram_results[word] = []
-    if CoOcc_Viewer == False:
+    if not CoOcc_Viewer:
         coOcc_results = None  # prepare co-occurrences results
     else:
         coOcc_results = {}
     docIndex = 1
     coOcc_results_binary = {}
     for file in files:  # iterate over each file
+        coOcc_results_binary[file] = {"Search Word(s)": original_search_word, "CO-Occurrence": "NO",
+                                      "Document ID": docIndex,
+                                      "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
         docIndex += 1
-        print("Processing file " + str(docIndex) + "/" + str(nFile) + " " + file)
-        coOcc_results_binary[file] = {"Search Word(s)": original_search_word, "CO-Occurrence": "NO", "Document ID": docIndex, "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
         collocation = ''
         collocation_found = False
         index = 0
@@ -74,26 +83,27 @@ def run(inputDir="relative_path_here",
         if dateOption:
             date, dateStr = IO_files_util.getDateFromFileName(file, itemsDelimiter, datePos, dateFormat)
             if date == '':
-                continue
+                continue  # TODO: Warn user this file has a bad date; done in getDate
         else:
             date = ''
             f = open(file, "r", encoding='utf-8', errors='ignore')
             docText = f.read()
             f.close()
+            if not case_sensitive:
+                docText = docText.lower()
             tokens_ = word_tokenize(docText)
             coOcc_results = {}
             for collocationIndex in range(len(tokens_)):
                 if coOcc_results_binary[file]["CO-Occurrence"] == "YES":
                     break
                 token = tokens_[collocationIndex]
-                token = token.lower()
                 if n_grams_viewer:
                     if token in search_word_list:  # add word if in search list
                         ngram_results[token].append([token, date, os.path.join(inputDir, file)])
                 # check if generating co-occurrences
                 if CoOcc_Viewer:
+
                     for search_word in search_word_list:
-                        search_word = search_word.lower()
                         iterations = search_word.count(' ')
                         split_search_word = search_word.split(' ')
                         # split_search_word=str(split_search_word).
@@ -115,20 +125,22 @@ def run(inputDir="relative_path_here",
                             if checker:
                                 coOcc_results[search_word] = 2
                         else:
-                            if search_word == token or collocation_found:
+                            if search_word == token:
                                 # print(search_word, 'FOUND!!!!!', file)
                                 coOcc_results[search_word] = 1
                     co_occurrence_checker = True
                     for word in search_word_list:
-                        if word not in coOcc_results.keys():
+                        if word not in list(coOcc_results.keys()):
                             co_occurrence_checker = False
                             break
                     if co_occurrence_checker:
                         coOcc_results_binary[file]["CO-Occurrence"] = "YES"
                         break
+
     # pprint.pprint(coOcc_results_binary)
     NgramsFileName, coOccFileName = save(inputDir, outputDir, ngram_results, coOcc_results_binary)
     return NgramsFileName, coOccFileName
+
 
 """
     Saves the data passed in the expected format of `NGramsCoOccurrences.run()`
@@ -138,7 +150,6 @@ def run(inputDir="relative_path_here",
         coOcc_results: dict
             The co-occurrence results in the following format: {combination : [combination, date, file] }
 """
-
 
 def save(inputDir, outputDir, ngram_results, coOcc_results):
     NgramsFileName=''
@@ -160,7 +171,7 @@ def save(inputDir, outputDir, ngram_results, coOcc_results):
             writer = csv.writer(f)
             writer.writerow(["Search Word(s)", "CO-Occurrence", "Document ID", "Document"])
             for label, res in coOcc_results.items():
-                writer.writerow([res["Search Word(s)"], res["CO-Occurrence"], res["Document ID"], res["Document"]])
+                writer.writerow([res["Search Word(s)"], res["CO-Occurrence"], res["Document ID"], IO_csv_util.dressFilenameForCSVHyperlink(res["Document"])])
 
     return NgramsFileName, coOccFileName
 
@@ -171,9 +182,12 @@ def save(inputDir, outputDir, ngram_results, coOcc_results):
 #     dateFormat = "mm-dd-yyyy"
 #     datePos = 4
 #     wordsLists = []
+#     checkCoOccList = False
 #     groupingOption = ""
 #     itemsDelimiter = "_"
+#     docPCIDCouplesFilePath = ""
 #     scaleData = False
+#     normalizeByPCID = False
 #     lemma = False
 #     fullInfo = False
 #     considerAsSeparateGroups = True
