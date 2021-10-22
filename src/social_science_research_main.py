@@ -762,6 +762,6 @@ help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for a set of NLP tools, written in Java and Python 3, that can be of use in a variety of social science research projects based on documents.\n\nIn INPUT the scripts expect a main drectory where txt files to be analyzed are stored and, depending upon the type of tools run, a secondary directory where further txt files are stored.\n\nIn OUTPUT, the scripts will save the csv files and Excel charts written by the various scripts."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
 												   GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()

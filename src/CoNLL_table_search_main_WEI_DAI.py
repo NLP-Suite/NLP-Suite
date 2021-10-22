@@ -277,6 +277,6 @@ searchedCoNLLField.trace('w', on_searched_field_change)
 readMe_message = "This Python 3 script allows you to search in the CoNLL table."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer + 5, readMe_command, {'None': 'None'}, 'None')
+GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer + 5, readMe_command, {'None': 'None'}, 'None')
 
 GUI_util.window.mainloop()

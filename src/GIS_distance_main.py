@@ -227,7 +227,7 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 # change the value of the readMe_message
 readMe_message="This Python 3 script computes geographic distances between locations, in both kilometers and miles, by either geodesic distance or by great circle distance. Distances will be visualized in Excel charts.\n\nBoth GEODESIC and GREAT CIRCLE distances, in miles and kilometers, will be computed.\n\nIn INPUT the script expects geocoded data with Latitude and Longitude values for two sets of locations whose distances you want to compute. The input file must have a column with the FIRST selected location name, followed by its latitude and longitude; followed by the SECOND selected location name, followed by its latitude and longitude.\n\nThe input csv file may contain other fields but the location and geocoded fields MUST be in this order.\n\nEnter a location name (e.g., New York) in the 'Enter baseline location' field, if you wish to compute distances of all locations listed in your input file from a specific location (again, e.g., New York)."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
+GUI_util.GUI_bottom(config_filename, config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options)
 
 GUI_util.window.mainloop()
 

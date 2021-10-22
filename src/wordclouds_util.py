@@ -104,7 +104,7 @@ def SVOWordCloud(svoFile, doc, outputDir, transformed_image_mask, prefer_horizon
             words_list.append(" ".join(["".join(filter(str.isalnum, s)) for s in row["O"].lower().split(" ")]))
             color_list[green_code].append(" ".join(["".join(filter(str.isalnum, s)) for s in row["O"].lower().split(" ")]))
     words_count_dict = Counter(words_list)
-    print (words_count_dict)
+    # print (words_count_dict)
     if len(transformed_image_mask) != 0:
         wc = WordCloud(width = 800, height = 800, max_words=1000, prefer_horizontal=prefer_horizontal, mask=transformed_image_mask,
                        contour_width=3, contour_color='firebrick', background_color ='white').generate_from_frequencies(words_count_dict)

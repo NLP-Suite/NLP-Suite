@@ -114,7 +114,7 @@ offText = None
 # tracer when the checkbox has a separate label widget (label_local) attached to the checkbox widget (checkbox_local)
 #For the labels to change the text with the ON/OFF value of the checkbox the command=lambda must be included in the definition of the tk.button
 #	For example (see the example in this script):
-#	create_Excel_chart_output_label = tk.Checkbutton(window, variable=create_Excel_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label, create_Excel_chart_output_checkbox, "Automatically compute and open Excel charts", "NOT automatically compute and open Excel charts"))
+#	create_Excel_chart_output_label = tk.Checkbutton(window, variable=create_Excel_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label, create_Excel_chart_output_checkbox, "Automatically compute Excel charts", "NOT automatically compute Excel charts"))
 #	The next line must always be included to dsplay te label the first time the GUI is opened 
 #	create_Excel_chart_output_label.configure(text="Automatically open output Excel charts for inspection")
 
@@ -420,7 +420,8 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,Sc
 def activateRunButton(IO_setup_display_brief,ScriptName):
     # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
     silent = False
-    # # global config_filename, config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path
+    # readConfig
+    # global config_filename, config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path
     configArray, missingIO=config_util.setup_IO_configArray(window,config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path)
     # last parameter True: do not continue/repeat to warn the user about missing options when entering all IOs
     run_button_state=GUI_IO_util.check_missingIO(window,missingIO,config_filename,IO_setup_display_brief,ScriptName,silent)
@@ -549,7 +550,26 @@ def IO_config_setup_brief(window, y_multiplier_integer,ScriptName):
     IO_setup_menu_var.set("Default I/O configuration")
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(),
                                                    y_multiplier_integer,
-                                                   IO_setup_menu)
+                                                   IO_setup_menu,True)
+
+    # setup a button to open Windows Explorer on the selected input file
+    if inputFilename.get()!='':
+        openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                         command=lambda: IO_files_util.openFile(window, inputFilename.get()))
+        openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+750,
+                                   y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+    else:
+        # setup a button to open Windows Explorer on the selected input directory
+        openDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                         command=lambda: IO_files_util.openExplorer(window, input_main_dir_path.get()))
+        openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+750,
+                                   y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+
+    # setup a button to open Windows Explorer on the selected output directory
+    openDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                     command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
+    openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+800,
+                               y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
 # ScriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main
 #   it can be used for handling GUIs with special treatment (e.g., IO_setup_main which does not have a RUN button)
@@ -654,7 +674,7 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
 
 # ScriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main
 #   it can be used for handling GUIs with special treatment (e.g., IO_setup_main which does not have a RUN button)
-def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
+def GUI_bottom(config_filename, config_input_output_options,y_multiplier_integer,readMe_command,
                TIPS_lookup,TIPS_options, IO_setup_display_brief,ScriptName=''):
 
     """
@@ -684,13 +704,13 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
             ScriptName != "Stanford_CoreNLP_coreference_main":
         #open out csv files widget defined above since it is used earlier
         open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Automatically open ALL output files", "Do NOT automatically open ALL output files"))
-        open_csv_output_label.configure(text="Automatically open output csv file(s)")
+        open_csv_output_label.configure(text="Automatically open ALL output files")
         open_csv_output_label.place(x=GUI_IO_util.get_labels_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
         open_csv_output_checkbox.set(1)
 
         #creat Excel chart files widget defined above since it is used earlier
-        create_Excel_chart_output_label = tk.Checkbutton(window, variable=create_Excel_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label, create_Excel_chart_output_checkbox, "Automatically compute and open Excel charts", "Do NOT automatically compute and open Excel charts"))
-        create_Excel_chart_output_label.configure(text="Automatically compute and open Excel chart(s)")
+        create_Excel_chart_output_label = tk.Checkbutton(window, variable=create_Excel_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label, create_Excel_chart_output_checkbox, "Automatically compute Excel charts", "Do NOT automatically compute Excel charts"))
+        create_Excel_chart_output_label.configure(text="Automatically compute Excel chart(s)")
         create_Excel_chart_output_label.place(x=GUI_IO_util.get_labels_x_coordinate()+380, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
         create_Excel_chart_output_checkbox.set(1)
         y_multiplier_integer=y_multiplier_integer+1
@@ -737,7 +757,11 @@ def GUI_bottom(config_input_output_options,y_multiplier_integer,readMe_command,
 
     routine = config_filename[:-len('-config.txt')]
     # get the list of titles available for a given GUI
+    if ScriptName=='NLP_menu_main':
+        config_filename='NLP-config.txt'
     reminder_options = reminders_util.getReminders_list(config_filename, True)
+    if ScriptName == 'NLP_menu_main':
+        config_filename = 'default-config.txt'
     # None returned for a faulty reminders.csv
     reminders_error = False
     if reminder_options==None:

@@ -79,7 +79,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     speed_assessment_format = ['Document ID', 'Document','Time', 'Tokens to Annotate', 'Params', 'Number of Params']#the column titles of the csv output of speed assessment
     # start_time = time.time()#start time
     filesToOpen = []
-    # check that the CoreNLPdir as been setup
+    # check that the CoreNLPdir has been setup
     CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_annotator', 'Stanford CoreNLP')
     if CoreNLPdir== None:
         return filesToOpen
@@ -133,8 +133,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'DepRel': {'annotators': ['parse']},
         'NER': {'annotators':['tokenize','ssplit','pos','lemma','ner']},
         'quote': {'annotators': ['tokenize','ssplit','pos','lemma','ner','depparse','coref','quote']},
-        'coref': {'annotators':['coref']},
-        #'gender': {'annotators': ['']},
+        'coref': {'annotators': ['coref']},
+        'coref table': {'annotators': ['coref']},
         'gender': {'annotators': ['coref']},
         'sentiment': {'annotators':['sentiment']},
         'normalized-date': {'annotators': ['tokenize','ssplit','ner']},
@@ -154,9 +154,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'DepRel':process_json_deprel,
         'quote': process_json_quote,
         'coref': process_json_coref,
+        'coref table': process_json_coref_table,
         'gender': process_json_gender,
         'normalized-date':process_json_normalized_date,
-        # Dec. 21
         'OpenIE':process_json_openIE,
         'SVO':process_json_SVO_enhanced_dependencies,
         'parser (pcfg)': process_json_parser,
@@ -175,10 +175,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
         'quote': ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of Quotes', 'Speakers'],
         'coref': 'text',
+        'coref table': ["Pronoun", "Reference", "Reference Start ID in Sentence",
+                        "First Reference Sentence ID", "First Reference Sentence", "Pronoun Start ID in Reference Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
         'gender':['Word', 'Gender', 'Sentence','Sentence ID', 'Document ID', 'Document'],
         'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
-        #  Document ID, Sentence ID, Document, S, V, O, Sentence
-        # Dec. 21
         'SVO':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Negation","Location",'Person','Time','Time stamp','Sentence'],
         'OpenIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Sentence'],
         'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
@@ -234,6 +234,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     if param_string_NN == '':
                         param_string_NN = param
                     else:
+                        param_string_NN = param_string_NN + ", " + param
                         param_string_NN = param_string_NN + ", " + param
             routine_list.append([annotator, routine,output_format,[],parse_model])
         else:
@@ -341,7 +342,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      param_string, param_number])
                 #print out the json output of CoreNLP to a txt file
                 if print_json:
-                    jsonFilename = IO_files_util.generate_output_file_name(docName, inputDir, outputDir, '.txt',
+                    jsonFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
                                                                            'CoreNLP_' + str(
                                                                                annotator_params) + '_json_output_NN')
                     with open(jsonFilename, "a+", encoding='utf-8', errors='ignore') as json_out:
@@ -378,7 +379,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                          param_string_NN, param_number_NN])
                     #print out the json output of CoreNLP (model: neural network) to a txt file
                     if print_json:
-                        jsonFilename = IO_files_util.generate_output_file_name(docName, inputDir, outputDir, '.txt',
+                        jsonFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
                                                                                'CoreNLP_' + str(
                                                                                    annotator_params) + '_json_output_NN')
                         with open(jsonFilename, "a+", encoding='utf-8', errors='ignore') as json_out_nn:
@@ -403,7 +404,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 # sentenceID = new_sentenceID
                 
                 if output_format == 'text':
-                    outputFilename = IO_files_util.generate_output_file_name(docName, inputDir, outputDir, '.txt', 'CoreNLP_'+annotator_chosen)
+                    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
+                                                                             'CoreNLP_'+ str(annotator_chosen))
                     with open(outputFilename, "a+", encoding='utf-8', errors='ignore') as text_file:
                         if processing_doc != docTitle:
                             text_file.write("\n<@#" + docTitle + "#@>\n")
@@ -533,7 +535,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         ner_tags = ner
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
                                           'Frequency Distribution of Words by NER ' +ner_tags, 1, ['NER Value'], 'NER_word_bar','') #NER ' +ner_tags+ ' Word
-                elif 'SVO' in str(file_df_name):
+                elif 'SVO' in str(file_df_name) or 'OpenIE' in str(file_df_name):
                     # pie chart of SVO
                     # filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3],[4,4],[5,5]], 'pie',
                     #                       'Frequency Distribution of SVOs', 1, [], 'SVO_pie','SVOs')
@@ -583,6 +585,18 @@ def check_sentence_length(sentence_length, sentenceID, config_filename):
         reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
                                      reminders_util.message_CoreNLP_sentence_length, True)
 
+
+def build_sentence_string (sentence):
+    complete_sent = ''
+    for token in sentence['tokens']:
+        if token['originalText'] in string.punctuation:
+            complete_sent = complete_sent + token['originalText']
+        else:
+            if token['index'] == 1:
+                complete_sent = complete_sent + token['originalText']
+            else:
+                complete_sent = complete_sent + ' ' + token['originalText']
+    return complete_sent
 
 def date_in_filename(document, **kwargs):
     extract_date_from_filename_var = False
@@ -921,10 +935,37 @@ def process_json_coref(config_filename,documentID, document, sentenceID, json, *
             check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         return result
+
     resolve(json)
     output_text = get_resolved(json, sentenceID)
     return output_text
 
+
+def process_json_coref_table(config_filename, documentID, document, sentenceID, json, **kwargs):
+    result = []  # the collection of information of each coreference
+    for coref in json['corefs']:
+        mentions = json['corefs'][coref]
+        reference = mentions[0]  # First Reference in context
+
+        ref_sent = json['sentences'][reference["sentNum"] - 1]
+        ref_sent_ID = reference["sentNum"]  # First Reference Sentence ID
+        ref_sent_string = build_sentence_string(ref_sent)  # First Reference Sentence
+        ref_start_ID = reference["startIndex"]  # Reference Start ID in Sentence
+        ref_text = reference["text"]  # first reference
+        for j in range(1, len(mentions)):
+
+            mention = mentions[j]
+
+            if mention["type"] == "PRONOMINAL":  # extract only pronouns
+                ment_text = mention["text"]
+                ment_sent = json['sentences'][mention["sentNum"] - 1]
+                ment_sent_ID = mention["sentNum"]  # sentence ID
+                ment_sent_string = build_sentence_string(ment_sent)  # sentence
+                ment_start_ID = mention["startIndex"]  # start ID in sentence
+                result.append([ment_text, ref_text, ref_start_ID, ref_sent_ID, ref_sent_string,
+                               ment_start_ID, ment_sent_ID, ment_sent_string,
+                               documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+    return result
 
 # December.10 Yi: Modify process_json_gender to provide one more column(complete sentence)
 def process_json_gender(config_filename,documentID, document, start_sentenceID, json, **kwargs):
@@ -1098,7 +1139,6 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
             extract_date_from_filename_var = True
     date_str = date_in_filename(document, **kwargs)
     
-    IO_user_interface_util.timed_alert(GUI_util.window,3000,'Analysis start','Started running OpenIE annotator at',True)
     openIE = []
     for sentence in json['sentences']:
         complete_sent = ''
@@ -1136,9 +1176,9 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
             for row in container:
                 # openIE.append([documentID, sentenceID, document, row[0], row[1], row[2], complete_sent])
                 if extract_date_from_filename_var:
-                    openIE.append([documentID, sentenceID, document, row[0], row[1], row[2],complete_sent, date_str])
+                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],complete_sent, date_str])
                 else:
-                    openIE.append([documentID, sentenceID, document, row[0], row[1], row[2],complete_sent])
+                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],complete_sent])
     # print(openIE)
 
     return openIE

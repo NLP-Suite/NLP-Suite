@@ -15,9 +15,7 @@ def download_file(url, file_name):
 
 
 def download_jars():
-    names = ['DependenSee.jar', 'Lucene.jar',
-             'NGrams_CoOccurrences_Viewer.jar', 'Sentence_Complexity.jar',
-             'WordNet_Search_DOWN.jar', 'WordNet_Search_UP.jar']
+    names = ['Lucene.jar','WordNet_Search_DOWN.jar', 'WordNet_Search_UP.jar']
     for name in names:
         full_url = prefix + name
         print(f'Downloading {name}...')

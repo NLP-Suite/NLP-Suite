@@ -54,9 +54,10 @@ IO_setup_display_brief=False
 
 GUI_size='1150x670'
 GUI_label='Graphical User Interface (GUI) for a suite of tools of Natural Language Processing (NLP) & Data Visualization'
-# config_filename='NLP-config.txt'
 # there is now now way to setup a specific I/O config for the NLP_menu_main; it can only have the default setup
+# config_filename='NLP-config.txt'
 config_filename='default-config.txt'
+
 # The 6 values of config_option refer to:
 #   software directory
 #   input file 1 for CoNLL file 2 for TXT file 3 for csv file 4 for any type of file
@@ -194,7 +195,7 @@ pydict["File cleaner (Add full stop (.) at the end of paragraphs without end-of-
 pydict["File cleaner (Pronominal resolution via CoreNLP)"] = ["Stanford_CoreNLP_coreference_main.py", 1]
 pydict["File classifier (dumb classifier via embedded date) (file name)"] = ["file_filename_checker_main.py", 1]
 pydict["File finder (file name)"] = ["file_manager_main.py", 1]
-pydict["File finder (file content for words/collocations)"] = ["file_finder_byWord_main.py", 1]
+pydict["File finder/search (file content for words/collocations)"] = ["file_search_byWord_main.py", 1]
 pydict["File-type converter (csv, docx, pdf, rtf --> txt)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File matcher (file name)"] = ["file_matcher_main.py", 1]
 pydict["File merger (file content)"] = ["file_merger_main.py", 1]
@@ -216,6 +217,7 @@ pydict["Newspaper article/Document titles"] = ["file_checker_converter_cleaner_m
 pydict["N-grams (word & character)"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["N-grams viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Nominalization"] = ["nominalization_main.py", 1]
+pydict["Search CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Search text file(s) for n-grams & co-occurrences"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Search text file(s) for words/collocations"] = ["file_finder_byWord_main.py", 1]
 pydict["Sentence analysis (An overall GUI)"] = ["sentence_analysis_main.py", 1]
@@ -328,7 +330,8 @@ def setup_software(*args):
     # else:
     #     silent = True
     #     only_check_missing = True
-    output, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software_setup_var.get(),silent,only_check_missing)
+    # output, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software_setup_var.get(),silent,only_check_missing)
+    output, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software_setup_var.get())
     # must be recomputed because the return variable missing_external_software will STILL contain the missing software
     # that could have been updated
     setup_software_checkbox()
@@ -384,7 +387,7 @@ pre_processing_menu = tk.OptionMenu(window, pre_processing_tools_var,
                                     'File cleaner (Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation)',
                                     'File cleaner (Pronominal resolution via CoreNLP)',
                                     'File finder (file name)',
-                                    'File finder (file content for words/collocations)',
+                                    'File finder/search (file content for words/collocations)',
                                     'File-type converter (csv, docx, pdf, rtf --> txt)',
                                     'File merger (file content)',
                                     'File splitter (file content)',
@@ -496,6 +499,7 @@ corpus_document_tools_menu = tk.OptionMenu(window, corpus_document_tools_var,
                                            'NER (Named Entity Recognition) extractor',
                                            'N-grams (word & character)',
                                            'Nominalization',
+                                            'Search CoNLL table',
                                            'Search text file(s) for n-grams & co-occurrences',
                                            'Search text file(s) for words/collocations',
                                            'Sentence complexity',
@@ -619,21 +623,21 @@ help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get
 readMe_message = "This Python 3 script is the front end for a wide collection of Java and Python Natural Language Processing (NLP) tools.\n\nThe set of tools are divided into GENERAL TOOLS (data and file handling, pre-processing, statistical, visualization) and LINGUISTIC ANALYSIS TOOLS.\n\nLINGUISTIC ANALYSIS TOOLS are divided into tools that expect in input CORPUS DATA (i.e., multiple documents stored in a directory), CORPUS and/or SINGLE DOCUMENT, and SENTENCE.\n\nWhile some linguistic tools are specific for one of these three categories (e.g., topic modeling cannot be performed on a single document), MANY TOOLS OVERLAP. As a result, you may find the same tool under BOTH corpus and corpus/document. SENTENCE TOOLS still require either a corpus or a single document in input; but they also provide in output sentence-level information for more in-grained linguistic analyses.\n\nAll tools are open source freeware software released under the GNU LGPLv2.1 license (http://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html).\n\nYou can cite the NLP Suite as:\n\nR. Franzosi. 2020. NLP Suite: A  set of tools of Natural Language Processing (NLP) & Data Visualization."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-GUI_util.GUI_bottom(config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief, ScriptName)
+GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief, ScriptName)
 
-routine_options = reminders_util.getReminders_list('NLP')
+routine_options = reminders_util.getReminders_list('NLP-config.txt')
 
-reminders_util.checkReminder('NLP',
+reminders_util.checkReminder('NLP-config.txt',
                              reminders_util.title_options_NLP_Suite_welcome,
                              reminders_util.message_NLP_Suite_welcome,
                              True)
 
-reminders_util.checkReminder('NLP',
+reminders_util.checkReminder('NLP-config.txt',
                              reminders_util.title_options_NLP_Suite_architecture,
                              reminders_util.message_NLP_Suite_architecture,
                              True)
 
-routine_options = reminders_util.getReminders_list('NLP')
+routine_options = reminders_util.getReminders_list('NLP-config.txt')
 
 # this problem seems to have been fixed by tkinter
 # if platform == "darwin":

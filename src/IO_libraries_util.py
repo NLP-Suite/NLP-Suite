@@ -309,6 +309,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
     download_software = ''
     missing_software = ''
     software_dir = None
+    # software_dir = ''
     software_name = ''
     index = 0
     errorFound = False
@@ -383,55 +384,58 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             return None, missing_software
         if calling_script == 'NLP_menu':  # called from NLP_main GUI. We just need to warn the user to download and install options
             title = 'NLP Suite external software ' + str(package.upper())
-            message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\n' + missing_software + 'If you have already downloaded the software, please, select next the directory where you installed it; ESC or CANCEL to exit, if you haven\'t installed it yet.'
+            message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\n' + missing_software + 'If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDo you want to install software now?'
         else:
             title = package.upper() + ' software'
             message = 'WARNING!\n\nThe script ' + calling_script.upper() + ' requires the external software ' + package.upper() + \
-                      ' to run.\n\nIf you have not downloaded and installed ' + package + ' yet, you can do that at ' + download_software + '\n\nIf you have already downloaded ' + package + ', please, select next the directory where you installed it; ESC or CANCEL to exit, if you haven\'t installed it yet.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.'
+                      ' to run.\n\nIf you have not downloaded and installed ' + package + ' yet, you can do that at ' + download_software + '\n\nIf you have already downloaded ' + package + ', you meed to select the directory where you installed it; you will only have to do this once.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\nDo you want to install this software now?'
+        # already downloaded the software, you meed to select the directory where you installed it; ESC or CANCEL to exit if you haven\'t installed it yet.
         if not silent:
-            mb.showwarning(title=title, message=message)
-        for (index, row) in enumerate(existing_csv[1:]): # skip header row
-            index = index + 1
-            software_name = row[0]
-            software_dir = row[1]
-            if software_dir == '' and package.lower() in software_name.lower():
-                # get software directory
-                title = software_name.upper() + ' software'
-                software_dir = None
-                while software_dir == None:
-                    initialFolder = os.path.dirname(os.path.abspath(__file__))
-                    if platform == 'darwin':
-                        mb.showwarning(title='Warning',
-                                            message = "You will be asked next to select the directory where you installled " + software_name.upper() + ".")
-                    software_dir = tk.filedialog.askdirectory(initialdir=initialFolder,
-                                                              title=title + '. Please, select the directory where the software was installed; or press CANCEL or ESC if you have not downloaded the software yet.')
-                    if software_dir != '':
-                        # check that it is the correct software directory
-                        if 'corenlp' in software_name.lower():
-                            software_name = 'Stanford CoreNLP'
-                        elif 'mallet' in software_name.lower():
-                            software_name = 'Mallet'
-                        elif 'senna' in software_name.lower():
-                            software_name = 'SENNA'
-                        elif 'wordnet' in software_name.lower():
-                            software_name = 'WordNet'
-                        elif 'gephi' in software_name.lower():
-                            software_name = 'Gephi'
-                        elif 'google earth pro' in software_name.lower():
-                            software_name = 'Google Earth Pro'
-                        # check that the selected folder for the external program is correct; if so save
-                        if not inputExternalProgramFileCheck(software_dir, software_name):
-                            software_dir = ''
-                    # update the array existing_csv with the value of software_dir
-                    if software_dir != '':
-                        existing_csv[index][1] = software_dir
-                        save_software_config(existing_csv, software_name)
-                    # exit when you are considering a specific software (package)
-                    if package.lower()!='':
-                        if package.lower() in software_name.lower():
-                            # exit loop: while software_dir == None
-                            break
+            answer = tk.messagebox.askyesno(title, message)
+            # mb.showwarning(title=title, message=message)
+            if answer:
+                for (index, row) in enumerate(existing_csv[1:]): # skip header row
+                    index = index + 1
+                    software_name = row[0]
+                    software_dir = row[1]
+                    if software_dir == '' and package.lower() in software_name.lower():
+                        # get software directory
+                        title = software_name.upper() + ' software'
+                        software_dir = None
+                        while software_dir == None:
+                            initialFolder = os.path.dirname(os.path.abspath(__file__))
+                            if platform == 'darwin':
+                                mb.showwarning(title='Warning',
+                                                    message = "You will be asked next to select the directory where " + software_name.upper() + " the software was installed ; or press CANCEL or ESC if you have not downloaded the software yet.")
+                            software_dir = tk.filedialog.askdirectory(initialdir=initialFolder,
+                                                                      title=title + '. Please, select the directory where the software was installed; or press CANCEL or ESC if you have not downloaded the software yet.')
+                            if software_dir != '':
+                                # check that it is the correct software directory
+                                if 'corenlp' in software_name.lower():
+                                    software_name = 'Stanford CoreNLP'
+                                elif 'mallet' in software_name.lower():
+                                    software_name = 'Mallet'
+                                elif 'senna' in software_name.lower():
+                                    software_name = 'SENNA'
+                                elif 'wordnet' in software_name.lower():
+                                    software_name = 'WordNet'
+                                elif 'gephi' in software_name.lower():
+                                    software_name = 'Gephi'
+                                elif 'google earth pro' in software_name.lower():
+                                    software_name = 'Google Earth Pro'
+                                # check that the selected folder for the external program is correct; if so save
+                                if not inputExternalProgramFileCheck(software_dir, software_name):
+                                    software_dir = ''
+                            # update the array existing_csv with the value of software_dir
+                            if software_dir != '':
+                                existing_csv[index][1] = software_dir
+                                save_software_config(existing_csv, software_name)
+                            # exit when you are considering a specific software (package)
+                            if package.lower()!='':
+                                if package.lower() in software_name.lower():
+                                    # exit loop: while software_dir == None
+                                    break
 
-    if software_dir == '':
-        software_dir = None
+            if software_dir == '':
+                software_dir = None
     return software_dir, missing_software
