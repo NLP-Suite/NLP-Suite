@@ -158,7 +158,7 @@ def run(inputFilename, inputDir, outputDir,
         return
 
     if inputFilename[-4:] == '.txt':
-        if (CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False) and (
+        if (CoreNLP_SVO_extractor_var == False and SENNA_SVO_extractor_var == False and CoreNLP_OpenIE_var==False) and (
                 gephi_var == True or wordcloud_var == True or google_earth_var == True):
             mb.showerror(title='Input file/option error',
                          message="The data visualization option(s) you have selected require either an _svo.csv/_SVO_Result file in input or CoreNLP OpenIE and/or SENNA selected.\n\nPlease, check your input file and/or algorithm selections and try again.")
@@ -375,6 +375,7 @@ def run(inputFilename, inputDir, outputDir,
         
         if len(tempOutputFiles)>0:
             filesToOpen.extend(tempOutputFiles)
+            svo_result_list.append(tempOutputFiles[0])
 
     # the SVO script can take in input a csv SVO file previously computed: inputFilename
     # results currently produced are in svo_result_list
@@ -408,6 +409,7 @@ def run(inputFilename, inputDir, outputDir,
                                     os.remove(f)
 
         # wordcloud  _________________________________________________
+
         if wordcloud_var:
             IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                'Started running Wordclouds at', True)
@@ -425,7 +427,7 @@ def run(inputFilename, inputDir, outputDir,
                         #CYNTHIA
                         out_file = wordclouds_util.SVOWordCloud(myfile, f, outputDir, "", prefer_horizontal=.9)
                         myfile.close()
-                        if "SVO" in f or "SENNA_SVO" in f:
+                        if "CoreNLP" in f or "SENNA_SVO" in f:
                             filesToOpen.append(out_file)
                         # if not merge_txt_file_option and not save_intermediate_file:
                         #     png_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if
@@ -448,7 +450,8 @@ def run(inputFilename, inputDir, outputDir,
                 #                                    'Started running Geocoding at', True)
 
             for f in svo_result_list:
-                if (not 'SENNA' in f) and IO_csv_util.GetNumberOfRecordInCSVFile(
+                # SENNA and OpenIE do not have a location field
+                if (not 'SENNA' in f) and (not 'OpenIE' in f) and IO_csv_util.GetNumberOfRecordInCSVFile(
                         f) > 1:  # including headers; file is empty
                     # out_file is a list []
                     #   containing several csv files of geocoded locations and non geocoded locations
@@ -706,25 +709,27 @@ def activateFilters(*args):
     gephi_checkbox.configure(state='normal')
     wordcloud_checkbox.configure(state='normal')
     google_earth_checkbox.configure(state='normal')
-    if CoreNLP_SVO_extractor_var.get() == True or SENNA_SVO_extractor_var.get() == True:
+    if CoreNLP_SVO_extractor_var.get() == True or SENNA_SVO_extractor_var.get() == True or \
+            CoreNLP_OpenIE_var.get() == True:
         # SVO_extractor_checkbox.configure(state='normal')
         # SENNA_SVO_extractor_checkbox.configure(state='normal')
         subjects_checkbox.configure(state='normal')
         verbs_checkbox.configure(state='normal')
         objects_checkbox.configure(state='normal')
-    if CoreNLP_SVO_extractor_var.get() == True and SENNA_SVO_extractor_var.get() == False:
+    if CoreNLP_SVO_extractor_var.get() == True or SENNA_SVO_extractor_var.get() == True or CoreNLP_OpenIE_var.get()==True:
         # CoreNLP_SVO_extractor_checkbox.configure(state='normal')
         # SENNA_SVO_extractor_checkbox.configure(state='disabled')
         subjects_checkbox.configure(state='normal')
         verbs_checkbox.configure(state='normal')
         objects_checkbox.configure(state='normal')
-    if CoreNLP_SVO_extractor_var.get() == False and SENNA_SVO_extractor_var.get() == True:
-        # CoreNLP_SVO_extractor_checkbox.configure(state='disabled')
-        # SENNA_SVO_extractor_checkbox.configure(state='normal')
-        subjects_checkbox.configure(state='normal')
-        verbs_checkbox.configure(state='normal')
-        objects_checkbox.configure(state='normal')
-    if CoreNLP_SVO_extractor_var.get() == False and SENNA_SVO_extractor_var.get() == False:
+    # if CoreNLP_SVO_extractor_var.get() == False and SENNA_SVO_extractor_var.get() == True:
+    #     # CoreNLP_SVO_extractor_checkbox.configure(state='disabled')
+    #     # SENNA_SVO_extractor_checkbox.configure(state='normal')
+    #     subjects_checkbox.configure(state='normal')
+    #     verbs_checkbox.configure(state='normal')
+    #     objects_checkbox.configure(state='normal')
+    if CoreNLP_SVO_extractor_var.get() == False and SENNA_SVO_extractor_var.get() == False and \
+            CoreNLP_OpenIE_var.get()==False:
         CoreNLP_SVO_extractor_checkbox.configure(state='normal')
         SENNA_SVO_extractor_checkbox.configure(state='normal')
         subjects_var.set(0)
@@ -739,11 +744,13 @@ def activateFilters(*args):
         gephi_checkbox.configure(state='disabled')
         wordcloud_checkbox.configure(state='disabled')
         google_earth_checkbox.configure(state='disabled')
-
+    if CoreNLP_SVO_extractor_var.get()==False and (SENNA_SVO_extractor_var.get()==True or CoreNLP_OpenIE_var.get()==True):
+        google_earth_checkbox.configure(state='disabled')
+        google_earth_var.set(0)
 
 CoreNLP_SVO_extractor_var.trace('w', activateFilters)
 SENNA_SVO_extractor_var.trace('w', activateFilters)
-
+CoreNLP_OpenIE_var.trace('w', activateFilters)
 
 def getDictFile(checkbox_var, dict_var, checkbox_value, dictFile):
     filePath = ''
@@ -876,7 +883,7 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
                                   "The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that).\n\nThe filter file social-actor-list, created via WordNet with person as keyword and saved in the \'lib/wordLists\' subfolder, will be automatically set as the DEFAULT filter for subjects (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly set as the DEFAULT dictionary file for verbs.\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be prompted to select a new file."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+9), "Help",
-                                  "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;;\n\n  2. to visualize SVO relations in a wordcloud;\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script."+GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;;\n\n  2. to visualize SVO relations in a wordcloud;\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe GIS mapping option is not available for SENNA or CoreNLP OpenIE."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+10), "Help",
                                   GUI_IO_util.msg_openOutputFiles)
 
