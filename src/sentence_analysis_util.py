@@ -843,7 +843,8 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen)
 
-
+# written by Siyan Pu October 2021
+# edited by Roberto Franzosi October 2021
 def sentence_structure_tree(inputFilename, outputDir):
 
     if inputFilename=='':

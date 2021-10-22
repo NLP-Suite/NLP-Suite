@@ -5,6 +5,7 @@ Created on Wed Jun 10 21:37:40 2020
 
 @author: claude
 rewritten by Roberto October 2021
+complted by Austin Cai October 2021
 
 """
 
@@ -12,6 +13,7 @@ rewritten by Roberto October 2021
 import sys
 import GUI_util
 import IO_libraries_util
+import collections
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "file_search_byWord_util.py",
                                           ['os', 'tkinter', 'nltk']) == False:
@@ -19,14 +21,11 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "file_search_byWord_u
 
 import os
 import csv
-import pandas as pd
 import tkinter.messagebox as mb
 from nltk.tokenize import sent_tokenize, word_tokenize
 
-from nltk.corpus import wordnet  # lemmatization
 # https://wordnet.princeton.edu/documentation/morphy7wn
 # https://stackoverflow.com/questions/31016540/lemmatize-plural-nouns-using-nltk-and-wordnet
-
 # import mlconjug #conjugation of verbs
 # https://readthedocs.org/projects/mlconjug/downloads/pdf/latest/
 # https://pypi.org/project/mlconjug/
@@ -102,71 +101,151 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
 
         with open(outputFileName, "a", newline="", encoding='utf-8', errors='ignore') as csvFile:
             writer = csv.writer(csvFile)
-            head, docname = os.path.split(inputFilename)
-            title = docname.partition('.')[0]
             f = open(file, "r", encoding='utf-8', errors='ignore')
             docText = f.read()
             f.close()
-            sentences_ = sent_tokenize(docText)  # the list of sentences in corpus
-            sentence_index = 0
-            for sent in sentences_:
-                if len(sent) == 0:
+            if search_within_sentence:
+                sentences_ = sent_tokenize(docText)  # the list of sentences in corpus
+                sentence_index = 0
+                for sent in sentences_:
+                    if len(sent) == 0:
+                        sentence_index += 1
+                        continue
                     sentence_index += 1
-                    continue
-                sentence_index += 1
-                if not case_sensitive:
-                    sent = sent.lower()
-                tokens_ = word_tokenize(sent)
-                for keyword in search_keyword:
-                    if keyword in sent:
-                        if isFirstOcc:
-                            first_occurrence_index = sentence_index
-                            isFirstOcc = False
-                        iterations = keyword.count(' ')
-                        tokenIndex = 0
-                        frequency = 0
-                        for token in tokens_:
-                            tokenIndex += 1
-                            checker = False
-                            if iterations > 0:
-                                partsOfWord = keyword.split(' ')
-                                for i in range(iterations + 1):
-                                    if i == 0:
-                                        if partsOfWord[i] == token:
-                                            # print("yes")
-                                            checker = True
-                                    else:
-                                        if checker and (tokenIndex - 1 + i) < len(tokens_):
-                                            if partsOfWord[i] == tokens_[tokenIndex - 1 + i]:
+                    if not case_sensitive:
+                        sent = sent.lower()
+                    tokens_ = word_tokenize(sent)
+                    for keyword in search_keyword:
+                        if keyword in sent:
+                            if isFirstOcc:
+                                first_occurrence_index = sentence_index
+                                isFirstOcc = False
+                            iterations = keyword.count(' ')
+                            tokenIndex = 0
+                            frequency = 0
+                            for token in tokens_:
+                                tokenIndex += 1
+                                checker = False
+                                if iterations > 0:
+                                    partsOfWord = keyword.split(' ')
+                                    for i in range(iterations + 1):
+                                        if i == 0:
+                                            if partsOfWord[i] == token:
                                                 # print("yes")
                                                 checker = True
-                                            else:
-                                                checker = False
-                                if checker:
-                                    frequency += 1
-                            else:
-                                if keyword == token:
-                                    frequency += 1
+                                        else:
+                                            if checker and (tokenIndex - 1 + i) < len(tokens_):
+                                                if partsOfWord[i] == tokens_[tokenIndex - 1 + i]:
+                                                    # print("yes")
+                                                    checker = True
+                                                else:
+                                                    checker = False
+                                    if checker:
+                                        frequency += 1
+                                else:
+                                    if keyword == token:
+                                        frequency += 1
 
-                        if frequency == 0:
-                            percent_position = 0
-                            continue
+                            if frequency == 0:
+                                percent_position = 0
+                                continue
+                            else:
+                                search_keywords_found = True
+                                percent_position = round((sentence_index / len(sentences_)), 2)
+                                if lemmatize:
+                                    form = search_keywords_list
+                                    writer.writerow(
+                                        [keyword, form, first_occurrence_index, len(sentences_), percent_position, frequency,
+                                         docIndex,
+                                         IO_csv_util.dressFilenameForCSVHyperlink(file), sentence_index, len(sentences_), sent])
+                                else:
+                                    writer.writerow(
+                                        [keyword, '', first_occurrence_index, len(sentences_), percent_position, frequency,
+                                         docIndex,
+                                         IO_csv_util.dressFilenameForCSVHyperlink(file), sentence_index, len(sentences_), sent])
                         else:
-                            search_keywords_found = True
-                            percent_position = round((sentence_index / len(sentences_)), 2)
+                            continue
+            else:
+                if not case_sensitive:
+                    docText = docText.lower()
+                words_ = word_tokenize(docText)  # the list of sentences in corpus
+                wordCounter = collections.Counter(words_)
+                # print("this is word counter!!!! \n", wordCounter)
+                for keyword in search_keyword:
+                    # print("this is the key word", keyword)
+
+                    iterations = keyword.count(' ')
+                    tokenIndex = 0
+                    frequency = 0
+                    if iterations > 0:
+                        wordIndex = 0
+                        for word in words_:
+                            wordIndex += 1
+                            checker = False
+                            partsOfWord = keyword.split(' ')
+                            for i in range(iterations + 1):
+                                if i == 0:
+                                    if partsOfWord[i] == word:
+                                        checker = True
+                                else:
+                                    if checker and (wordIndex - 1 + i) < len(words_):
+                                        if partsOfWord[i] == words_[wordIndex - 1 + i]:
+                                            # print("yes")
+                                            checker = True
+                                        else:
+                                            checker = False
+                            if checker:
+                                search_keywords_found = True
+                                frequency += 1
+                        if frequency > 0:
                             if lemmatize:
                                 form = search_keywords_list
                                 writer.writerow(
-                                    [keyword, form, first_occurrence_index, len(sentences_), percent_position, frequency,
+                                    [keyword, form, "N/A", "N/A", "N/A", frequency,
                                      docIndex,
-                                     IO_csv_util.dressFilenameForCSVHyperlink(file), sentence_index, len(sentences_), sent])
+                                     IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
                             else:
                                 writer.writerow(
-                                    [keyword, '', first_occurrence_index, len(sentences_), percent_position, frequency,
+                                    [keyword, '', "N/A", "N/A", "N/A", frequency,
                                      docIndex,
-                                     IO_csv_util.dressFilenameForCSVHyperlink(file), sentence_index, len(sentences_), sent])
+                                     IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
+                        else:
+                            if lemmatize:
+                                form = search_keywords_list
+                                writer.writerow(
+                                    [keyword, form, "N/A", "N/A", "N/A", "NOT FOUND",
+                                     docIndex,
+                                     IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
+                            else:
+                                writer.writerow(
+                                    [keyword, '', "N/A", "N/A", "N/A", "NOT FOUND",
+                                     docIndex,
+                                     IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
+                    elif keyword in list(wordCounter.keys()):
+                        search_keywords_found = True
+                        if lemmatize:
+                            form = search_keywords_list
+                            writer.writerow(
+                                [keyword, form, "N/A", "N/A", "N/A", wordCounter[keyword],
+                                 docIndex,
+                                 IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
+                        else:
+                            writer.writerow(
+                                [keyword, '', "N/A", "N/A", "N/A", wordCounter[keyword],
+                                 docIndex,
+                                 IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
                     else:
-                        break
+                        if lemmatize:
+                            form = search_keywords_list
+                            writer.writerow(
+                                [keyword, form, "N/A", "N/A", "N/A", "NOT FOUND",
+                                 docIndex,
+                                 IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
+                        else:
+                            writer.writerow(
+                                [keyword, '', "N/A", "N/A", "N/A", "NOT FOUND",
+                                 docIndex,
+                                 IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
 
     if search_keywords_found == False:
         mb.showwarning(title='Search string(s) not found',
@@ -176,3 +255,5 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end",
                                        "Finished running the file search script at", True)
     return outputFileName
+
+

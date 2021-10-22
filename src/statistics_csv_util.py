@@ -340,6 +340,7 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
 
     return filesToOpen #2 files
 
+# written by Siyan Pu October 2021
 def export_csv_to_text(inputFilename, outputDir, column = None):
     filename, file_extension = os.path.splitext(inputFilename)
     if inputFilename =='' or file_extension!='.csv':
