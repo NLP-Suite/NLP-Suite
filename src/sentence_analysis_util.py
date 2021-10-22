@@ -20,6 +20,10 @@ import pandas as pd
 import ast
 import textstat
 import subprocess
+import spacy
+from nltk.tree import Tree
+from nltk.draw import TreeView
+from PIL import Image
 
 import Excel_util
 import IO_csv_util
@@ -28,6 +32,7 @@ import IO_user_interface_util
 import Excel_util
 import statistics_csv_util
 import TIPS_util
+import GUI_IO_util
 
 def Extract(lst):
     return [item[0] for item in lst]
@@ -837,3 +842,54 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                            nFile) + ' files in the input directory processed by Textstat.')
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen)
+
+
+def sentence_structure_tree(inputFilename, outputDir):
+    maxNum=5
+
+    if inputFilename=='':
+        sentences = GUI_IO_util.enter_value_widget('Enter sentence                                                                               ','Enter',1)
+        sent=str(sentences[0])
+        if sent=='':
+            return
+    else:
+        # split into sentences
+        text = (open(inputFilename, "r", encoding="utf-8", errors='ignore').read())
+        sentences = nltk.sent_tokenize(text)
+        if len(sentences) >= maxNum:
+            mb.showwarning(title='Warning',
+                           message='The number of sentences in the selected text is larger than '+str(maxNum) +'. The trees of only the first '+str(maxNum) + ' sentences will be visualized.')
+
+    sentenceID = 0  # to store sentence index
+
+    spacy_nlp = spacy.load("en_core_web_sm")
+
+    for sent in sentences:
+        sentenceID = sentenceID + 1
+        if sentenceID == maxNum+1:
+            return
+
+        doc = spacy_nlp(sent)
+
+        def token_format(token):
+            return "_".join([token.orth_, token.tag_, token.dep_])
+
+        def to_nltk_tree(node):
+            if node.n_lefts + node.n_rights > 0:
+                return Tree(token_format(node),
+                            [to_nltk_tree(child)
+                             for child in node.children]
+                            )
+            else:
+                return token_format(node)
+
+        tree = [to_nltk_tree(sent.root) for sent in doc.sents]
+
+        cf = TreeView(tree[0])._cframe
+
+        if inputFilename == '':
+            cf.print_to_file(outputDir + 'NLP_sentence_tree.ps')
+        else:
+            cf.print_to_file(outputDir + '/' + os.path.basename(inputFilename) + '_' + str(sentenceID) + '_tree.ps')
+
+
