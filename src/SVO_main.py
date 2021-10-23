@@ -405,7 +405,7 @@ def run(inputFilename, inputDir, outputDir,
                             gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if
                                           f.endswith('.gexf')]
                             for f in gexf_files:
-                                if "CoreNLP" not in f and "SENNA_SVO" not in f:
+                                if "CoreNLP" not in f and "SENNA_SVO" not in f: #CoreNLP accounts for both ++ and OpenIE
                                     os.remove(f)
 
         # wordcloud  _________________________________________________

@@ -151,6 +151,11 @@ def run(inputFilename,
     headers = [s.split(',')[1] for s in csv_file_field_list]  # headers
     data_cols = [file for file in get_cols(data_files, headers)]  # selected cols
 
+    if operation_text_var.get()=='':
+        mb.showwarning(title='Warning',
+                       message='You must click the OK button to approve the selections made before running the algorithm.\n\nUpon clicking OK, your current selection will be displayed above in the large text box. If the selections is OK, click RUN; otherwise, click the Reset all button and start over.')
+        return
+
     if merge_var:
         outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), outputDir, '.csv',
                                                                  'merge',
@@ -210,7 +215,9 @@ def run(inputFilename,
         if output_to_csv_var==True:
             extract_from_csv(path=path, outputDir=outputDir,
                              data_files=data_files, csv_file_field_list=csv_file_field_list)
-        else:
+        else: # export to txt file
+            # del csv_file_field_list[0]
+            # csv_file_field_list=csv_file_field_list.remove([0])
             statistics_csv_util.export_csv_to_text(inputFilename, outputDir, csv_file_field_list)
     if purge_row_var:
         import file_filename_util
@@ -243,7 +250,7 @@ if __name__ == '__main__':
 
     # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
     #   just change the next statement to True or False IO_setup_display_brief=True
-    IO_setup_display_brief = False
+    IO_setup_display_brief = True
     GUI_width = 1250
     GUI_height = 680  # height of GUI with full I/O display
 
@@ -445,7 +452,7 @@ if __name__ == '__main__':
         menu_values = " "
     if numColumns == -1:
         pass
-    # eturn
+    # return
 
     reset_field_button = tk.Button(window, width=15, text='Reset csv field(s)', state='disabled',
                                    command=lambda: reset_csv_field_values())
