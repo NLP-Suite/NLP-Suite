@@ -22,9 +22,15 @@ IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
 
 from nltk import tokenize
-# MUST use this  version or code wll break pywsd~=1.2.4 pip install pywsd~=1.2.4
+# MUST use this  version or code will break pywsd~=1.2.4 pip install pywsd~=1.2.4; even try pip install pywsd=1.2.2
+#   or this version pip install pywsd==1.0.2
+# https://github.com/alvations/pywsd/issues/65
+# pywsd depends upon wn below; if the code breaks reinstall wn
+# pywsd Python word sense disambiguation
+#   https://pypi.org/project/pywsd/
 from pywsd import disambiguate
 from nltk.corpus import wordnet as wn
+# pip install wn==0.0.23
 import string
 import re
 from collections import Counter
@@ -366,7 +372,7 @@ GUI_util.run_button.configure(command=run_script_command)
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
-GUI_width=1100
+GUI_width=1200
 GUI_height=360 # height of GUI with full I/O display
 
 if IO_setup_display_brief:

@@ -1084,6 +1084,8 @@ def create_gexf(fileName, OutputDir, SVOFile):
         reader = csv.DictReader(result)
 
         for row in reader:
+            if row["O"] == '':
+                continue
             if row["S"] not in graph.nodes:
                 node = Node(graph,row["S"],row["S"],
                             r = random.randint(0,255),g = random.randint(0,255),b = random.randint(0,255),

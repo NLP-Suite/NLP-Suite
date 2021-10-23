@@ -284,11 +284,6 @@ def run(inputFilename, inputDir, outputDir,
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
-        # Filtering SVO
-        if subjects_dict_var or verbs_dict_var or objects_dict_var:
-            for file in [tempOutputFiles[0]]:
-                SVO_util.filter_svo(file, subjects_dict_var, verbs_dict_var, objects_dict_var)
-
         toProcess_list = []
         field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Location', 'Person', 'Time',
                        'Time stamp', 'Sentence']
@@ -382,13 +377,10 @@ def run(inputFilename, inputDir, outputDir,
                                                                            date_position_var=0)
         
         if len(tempOutputFiles)>0:
+            if subjects_dict_var or verbs_dict_var or objects_dict_var:
+                SVO_util.filter_svo(tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var)
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
-
-        # Filtering SVO
-        if subjects_dict_var or verbs_dict_var or objects_dict_var:
-            for file in [tempOutputFiles[0]]:
-                SVO_util.filter_svo(file, subjects_dict_var, verbs_dict_var, objects_dict_var)
 
     # the SVO script can take in input a csv SVO file previously computed: inputFilename
     # results currently produced are in svo_result_list
