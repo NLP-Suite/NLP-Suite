@@ -1084,6 +1084,7 @@ def create_gexf(fileName, OutputDir, SVOFile):
         reader = csv.DictReader(result)
 
         for row in reader:
+            # skip processing blank Os or you will not have two required edges
             if row["O"] == '':
                 continue
             if row["S"] not in graph.nodes:
