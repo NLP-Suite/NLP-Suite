@@ -144,7 +144,7 @@ def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,creat
 # ConnlTable is the inputFilename
 def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_verb,openOutputFiles,createExcelCharts):
     filesToOpen=[]
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running WordNet charts by sentence index at', True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running WordNet charts by sentence index at', True)
     if noun_verb=='NOUN':
         checklist = ['NN','NNP','NNPS','NNS']
     else:
@@ -209,7 +209,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_v
                                                 )
         if len(outputFiles) > 0:
             filesToOpen.extend(outputFiles)
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet charts by sentence index at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet charts by sentence index at', True, '', True, startTime)
 
     return filesToOpen
 
@@ -218,7 +218,7 @@ def extract_sentence_length(inputFilename, inputDir, outputDir):
     Ndocs = len(inputDocs)
     if Ndocs==0:
         return
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        'Started running sentence length computation at', True, 'You can follow Geocoder in command line.')
 
     fileID=0
@@ -353,7 +353,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
     if errorFound:
         return
 
-    IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running Sentence Complexity at', True,
+    startTime=IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running Sentence Complexity at', True,
                                        '\n\nYou can follow Sentence Complexity in command line.')
 
     index = 0
@@ -406,7 +406,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
                            Ndocs) + ' files processed since this would produce too many files in output.')
         return filesToOpen
 
-    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running Sentence Complexity at', True)
+    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running Sentence Complexity at', True, '', True, startTime)
 
     if createExcelCharts:
         hover_label = ['Sentence']
@@ -517,7 +517,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
     if nFile == 0:
         return
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Text Readability at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Text Readability at',
                                        True, '\n\nYou can follow Text Readability in command line.')
 
     if nFile > 1:
@@ -834,7 +834,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
             #     filesToOpen.append(outputFilenameXLSM_3)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Text Readability at',
-                                       True)
+                                       True, '', True, startTime)
 
     if len(inputDir) != 0:
         mb.showwarning(title='Warning',

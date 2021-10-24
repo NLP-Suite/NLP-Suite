@@ -66,7 +66,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     nFile = len(files)
     if nFile == 0:
         return
-    IO_files_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running YAGO annotator at', True,
+    startTime=IO_files_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running YAGO annotator at', True,
                         '\nAnnotating types: ' + str(categories) + " with associated colors: " + str(colorls))
     i=0
     docID=1
@@ -134,7 +134,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     csvname = os.path.join(outputDir,csvname)
     df.to_csv((csvname),index=False)
     filesToOpen.append(csvname)
-    IO_files_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running YAGO annotator at', True)
+    IO_files_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running YAGO annotator at', True, '', True, startTime)
     return filesToOpen
 
 def estimate_time(parsed_doc,num_cats,word_bag):

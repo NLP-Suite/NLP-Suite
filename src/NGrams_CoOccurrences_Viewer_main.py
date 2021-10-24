@@ -223,7 +223,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         ngram_list = ['-checkNGrams'] + ngram_list
         # cmd.extend(ngram_list)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences start',
                         'Started running N-Grams Word Co-Occurrences Viewer at', True,
                         'VIEWER options: ' + str(viewer_options_list)+'\nSEARCH words: '+search_words+'\n\nYou can follow the script in command line.')
 
@@ -302,7 +302,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         chartTitle = ''
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences end',
-                        'Finished running N-Grams Word Co-Occurrences Viewer at', True)
+                        'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)

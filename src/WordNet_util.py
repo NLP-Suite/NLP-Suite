@@ -25,7 +25,7 @@ filesToOpen=[]
 # written by Yi Wang April 2020
 # ConnlTable is the inputFilename
 def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_verb,openOutputFiles,createExcelCharts):
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running WordNet charts by sentence index at', True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running WordNet charts by sentence index at', True)
     if noun_verb=='NOUN':
         checklist = ['NN','NNP','NNPS','NNS']
     else:
@@ -84,7 +84,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_v
         if len(outputFiles) > 0:
             filesToOpen.extend(outputFiles)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet charts by sentence index at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet charts by sentence index at', True, '', True, startTime)
 
 def process_keyword(wordNet_keyword_list, noun_verb):
     for keyword in wordNet_keyword_list:
@@ -121,7 +121,7 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
     call_list = ['java', '-jar', 'WordNet_Search_DOWN.jar', outputDir, os.path.join(WordNetDir, "dict"), fileName, noun_verb]
     for each in wordNet_keyword_list:
         call_list.append(each)
-    IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started running WordNet (Zoom IN/DOWN) at', True, 'Running WordNet with the ' + noun_verb + ' option with following keywords:\n\n' + str(wordNet_keyword_list))
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started running WordNet (Zoom IN/DOWN) at', True, 'Running WordNet with the ' + noun_verb + ' option with following keywords:\n\n' + str(wordNet_keyword_list))
     warning = subprocess.call(call_list)
     if warning == 1:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',
@@ -135,7 +135,7 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
                        # message="Some keyword(s) in your search list do not exist in Wordnet for " + noun_verb + ".\n\nPlease, edit your keyword list and try again.\n\nPlease, check the terminal/command line prompt to see the details.")
     filesToOpen.append(os.path.join(outputDir, "NLP_WordNet_DOWN_" + fileName + ".csv"))
     filesToOpen.append(os.path.join(outputDir, "NLP_WordNet_DOWN_" + fileName + "-verbose.csv"))
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet (Zoom IN/DOWN) at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet (Zoom IN/DOWN) at', True, '', True, startTime)
     return filesToOpen
 
 # the header does not matter, it can be NUN or VERB or anything else
@@ -148,7 +148,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, noun_verb,openOutputFile
     errorFound, error_code, system_output = IO_libraries_util.check_java_installation('WordNet upward search')
     if errorFound:
         return
-    IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started running WordNet (Zoom OUT/UP) at', True, '\n\nRunning WordNet with the ' + noun_verb + ' option.')
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started running WordNet (Zoom OUT/UP) at', True, '\n\nRunning WordNet with the ' + noun_verb + ' option.')
     # the java script produces two files:a list and a frequency
     warning = subprocess.call(['java', '-jar', 'WordNet_Search_UP.jar', '-wordNetPath', os.path.join(WordNetDir, "dict"), '-wordList', inputFile, "-pos" , noun_verb, '-outputDir', outputDir])
     if warning == 1:
@@ -184,7 +184,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, noun_verb,openOutputFile
             filesToOpen.append(Excel_outputFilename)
 
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet (Zoom OUT/UP) at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet (Zoom OUT/UP) at', True, '', True, startTime)
     return filesToOpen
 
 def get_case_initial_row(inputFilename,outputDir,check_column, firstLetterCapitalized=True):

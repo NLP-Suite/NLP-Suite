@@ -60,7 +60,7 @@ def run(input_main_dir_path, input_secondary_dir_path, output_dir_path,
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running the File Classifier at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running the File Classifier at', True, '', True, startTime)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),

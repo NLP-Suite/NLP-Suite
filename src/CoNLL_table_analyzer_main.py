@@ -195,7 +195,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
             mb.showwarning(title='Searched Token Input Error', message=msg)
             return  # breaks loop
 
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CoNLL search at', True)
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CoNLL search at', True)
 
         withHeader = True
         documentId_position = 10
@@ -317,7 +317,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                                                                       ["pie"])
                 filesToOpen.append(output_file_name_xlsx)
                 IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-                                                   'Finished running CoNLL search at', True)
+                                                   'Finished running CoNLL search at', True, '', True, startTime)
 
             # if openOutputFiles:
             #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)

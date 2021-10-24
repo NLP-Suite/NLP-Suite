@@ -110,7 +110,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running NOUN ANALYSES at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running NOUN ANALYSES at',
                                        True)  # TODO: fix
 
     postag_list, postag_counter, deprel_list, deprel_counter, ner_list, ner_counter = compute_stats(data)
@@ -251,6 +251,6 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running NOUN ANALYSES at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running NOUN ANALYSES at', True, '', True, startTime)
 
     return filesToOpen

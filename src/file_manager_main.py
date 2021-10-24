@@ -167,7 +167,7 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
 
     # ------------------------------------------------------------------------------------------------------------------------------------------------
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Manager at', True, 'You can follow the script in command line.')
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Manager at', True, 'You can follow the script in command line.')
 
     if list_var==1:
         # extract the last subfolder of the path to be displayed as part of the output filename
@@ -344,7 +344,7 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
                         if fileFound:
                             i=i+1
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File manager at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File manager at', True, '', True, startTime)
 
     if i > 0:
         if rename_var==1:

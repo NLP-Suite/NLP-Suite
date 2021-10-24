@@ -571,11 +571,11 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
                        createExcelCharts)
     else:  # with NO GUI; does not end with py
         if input_main_dir_path != '':
-            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                'Started running ' + script_to_run + ' at', True,
                                                'You can follow ' + script_to_run + ' in command line.')
         else:
-            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                'Started running ' + script_to_run + ' at', True)
         script = script_to_run.split(".", 1)
         import importlib
@@ -595,7 +595,7 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
                  openOutputFiles,createExcelCharts)
 
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                           'Finished running ' + script_to_run + ' at', True)
+                                           'Finished running ' + script_to_run + ' at', True, '', True, startTime)
 
 
 """

@@ -160,10 +160,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
             # subprocess.call(['java', '-jar', 'DependenSee.Jar', inputFilename, outputDir])
 
             sentence_analysis_util.sentence_structure_tree(inputFilename, outputDir)
-
-            # mb.showwarning(title='Analysis end',
-            #                message='Finished running the Dependency tree viewer (png graphs).\n\nMake sure to open the png files in output, one graph for each sentence.')
-
         else:
             mb.showwarning('Warning', 'No option has been selected for Complex/readability analysis.\n\nPlease, select an option and try again.')
             return
@@ -258,7 +254,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                 #     filesToOpen.append(outputFilename)
 
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-                                                   'Finished running CONCRETENESS Analysis at', True)
+                                                   'Finished running CONCRETENESS Analysis at', True, '', True, startTime)
 
     if ngrams_analysis_var == True:
         if 'Character' in ngrams_analysis_menu_var or 'Word' in ngrams_analysis_menu_var:
@@ -281,7 +277,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                                                               createExcelCharts,
                                                               bySentenceIndex_var)
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams analysis end',
-                                               'Finished running Word/Characters N-Grams at', True)
+                                               'Finished running Word/Characters N-Grams at', True, '', True, startTime)
         elif 'Hapax' in ngrams_analysis_menu_var:
             ngramsNumber=1
             ngramType = 1

@@ -108,7 +108,7 @@ y_main_buttons = 530 #read me, quit...
 #outputName: output kwic table name
 #def generate_kwic(inputCoNLL, windowSize, outputName, ranWithCLAs=False):
 def generate_kwic(inputCoNLL, outputName, ranWithCLAs=False):
-    IO_user_interface_util.timed_alert(window, 3000, 'Generating KWIC Table', 'Started running KWIC at', True)
+    startTime=IO_user_interface_util.timed_alert(window, 3000, 'Generating KWIC Table', 'Started running KWIC at', True)
     windowSize = 10
     if IO_files_util.check_merged_CoNLL(inputCoNLL)==False:
         return
@@ -323,7 +323,7 @@ def search(searchWord, searchSize, position, inputKWICfile, within, outFile, ran
             IO_user_interface_util.timed_alert(window, 3000, 'Searching KWIC Table', 'There are no right-hand words for the searched keyword: ' + searchWord)
 
     if ranWithCLAs == False:
-        IO_user_interface_util.timed_alert(window, 3000, 'Searching KWIC Table', 'Finished running KWIC at', True)
+        IO_user_interface_util.timed_alert(window, 3000, 'Searching KWIC Table', 'Finished running KWIC at', True, '', True, startTime)
 
 def checkKWIC (csvFile):
     KWICfile=False
@@ -372,8 +372,6 @@ def search_KWIC():
         print('error with input/output files')
         tk.messagebox.showinfo("ERROR", "You did not provide a valid input and/or output file! Please try again.")
         return 'error'
-
-    IO_user_interface_util.timed_alert(window, 3000, 'Searching KWIC Table', 'Started running KWIC at', True)
 
     search(searchWord, searchSize, position, inputKWICfile, within, KWIC_search_output_filename)
 

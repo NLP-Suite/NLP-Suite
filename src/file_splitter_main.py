@@ -55,12 +55,12 @@ def run(inputFilename,inputDir, outputDir,
         return
 
     if utf8_var==True:
-        IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                             'Started running utf8 compliance test at', True)
         file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
 
     if ASCII_var==True:
-        IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
                             'Started running characters conversion at', True)
         file_cleaner_util.convert_quotes(GUI_util.window,inputFilename, inputDir)
 

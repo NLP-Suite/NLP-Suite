@@ -65,7 +65,7 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 # called by GIS_Google_Earth_util
 def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,split_locations_suffix,datePresent):
 	filenamePositionInCoNLLTable=11
-	IO_user_interface_util.timed_alert(window, 2000, 'NER locations extraction', "Started extracting NER locations from CoNLL table at", True)
+	startTime=IO_user_interface_util.timed_alert(window, 2000, 'NER locations extraction', "Started extracting NER locations from CoNLL table at", True)
 	print("NER location extractions from CoNLL table started.")
 
 	# re.sub(pattern, repl, string, count=0, flags=0)
@@ -150,7 +150,7 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 	if len(locList)==0:
 		mb.showwarning(title='NER locations', message="There are no NER tags for 'LOCATION','STATE_OR_PROVINCE','CITY','COUNTRY' in your CoNLL file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.")
 	else:
-		IO_user_interface_util.timed_alert(window, 2000, 'NER locations extraction', "Finished extracting NER locations from CoNLL table at", True)
+		IO_user_interface_util.timed_alert(window, 2000, 'NER locations extraction', "Finished extracting NER locations from CoNLL table at", True, '', True, startTime)
 		print("NER locations extraction from CoNLL table finished.")
 	# returns filename, location, sentence, date (if present)
 	# return sorted(locList)

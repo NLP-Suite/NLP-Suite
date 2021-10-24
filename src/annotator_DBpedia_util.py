@@ -85,7 +85,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
     if nFile==0:
         return
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running DBpedia annotator at', True, '\nAnnotating types: ' + str(annotationTypes) + '\nConfidence level: ' + str(confidence_level))
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running DBpedia annotator at', True, '\nAnnotating types: ' + str(annotationTypes) + '\nConfidence level: ' + str(confidence_level))
     print('\n\nAnnotating types: ', annotationTypes, 'with confidence level', str(confidence_level))
 
     i=0
@@ -180,6 +180,6 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
                     os.remove(htmlDoc) # delete temporary split html file from output directory
         filesToOpen.append(outFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running DBpedia annotator at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running DBpedia annotator at', True, '', True, startTime)
 
     return filesToOpen

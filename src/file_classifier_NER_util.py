@@ -174,7 +174,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createExc
     if CoreNLPdir==None:
         return filesToOpen
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        'Started running the File Classifier by NER values at', True,
                                        'You can follow the Classifier in command line.\n\nThe script will first build a dictionary of NER values for the documents in each subfolder, then process each unclassified document.  Please, be patient.')
 

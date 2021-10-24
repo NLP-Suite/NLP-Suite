@@ -240,7 +240,7 @@ def run(inputFilename, inputDir, outputDir,
         if len(file_open) > 0:
             filesToOpen.extend(file_open)
 
-            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
+            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
                                                'Finished running Stanford CoreNLP Co-Reference Resolution using the Neural Network approach at',
                                                True)
 
@@ -303,6 +303,7 @@ def run(inputFilename, inputDir, outputDir,
                     if output != None:
                         filesToOpen.extend(output)
 
+            filesToOpen.extend(tempOutputFiles)
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
@@ -376,7 +377,7 @@ def run(inputFilename, inputDir, outputDir,
             svo_SENNA_files = [svo_SENNA_file]
 
         # Filtering SVO
-        if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects, lemmatize_verbs, lemmatize_objects:
+        if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_SENNA_files:
                 SVO_util.filter_svo(file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
@@ -410,7 +411,7 @@ def run(inputFilename, inputDir, outputDir,
                                                                            date_position_var=0)
         
         if len(tempOutputFiles)>0:
-            if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects, lemmatize_verbs, lemmatize_objects:
+            if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
                 SVO_util.filter_svo(tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
             filesToOpen.extend(tempOutputFiles)
@@ -422,7 +423,7 @@ def run(inputFilename, inputDir, outputDir,
 
         # Gephi network graphs _________________________________________________
         if gephi_var:
-            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                'Started running Gephi network graphs at', True)
             # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
             if inputFilename[-4:] == ".csv":
@@ -450,7 +451,7 @@ def run(inputFilename, inputDir, outputDir,
 # wordcloud  _________________________________________________
 
         if wordcloud_var:
-            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                'Started running Wordclouds at', True)
             if inputFilename[-4:] == ".csv":
                 if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1:  # including headers; file is empty

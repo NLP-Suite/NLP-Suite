@@ -175,7 +175,7 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             return
         if IO_libraries_util.inputProgramFileCheck('sentiment_analysis_hedonometer_util.py')==False:
             return
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running HEDONOMETER Sentiment Analysis at', True)
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running HEDONOMETER Sentiment Analysis at', True)
         if len(inputFilename)>0:
             fileNamesToPass = []  # LINE ADDED
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SC', 'Hedonometer', '', '', '', False, True)
@@ -223,13 +223,13 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running HEDONOMETER Sentiment Analysis at', True)
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running HEDONOMETER Sentiment Analysis at', True, '', True, startTime)
 
     #SentiWordNet _______________________________________________________
     if SentiWordNet_var==1:
         if IO_libraries_util.inputProgramFileCheck('sentiment_analysis_SentiWordNet_util.py')==False:
             return
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running SentiWordNet Sentiment Analysis at', True)
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running SentiWordNet Sentiment Analysis at', True)
 
         if len(inputFilename)>0:
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SC', 'SentiWordNet', '', '', '', False, True)
@@ -270,7 +270,7 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running SentiWordNet Sentiment Analysis at', True)
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running SentiWordNet Sentiment Analysis at', True, '', True, startTime)
 
     #VADER _______________________________________________________
     if vader_var==1:
@@ -278,7 +278,7 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             return
         if IO_libraries_util.inputProgramFileCheck('sentiment_analysis_VADER_util.py')==False:
             return
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VADER Sentiment Analysis at', True)
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VADER Sentiment Analysis at', True)
         if len(inputFilename)>0:
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,  outputDir, '.csv', 'SC', 'VADER', '', '', '', False, True)
         else:
@@ -318,7 +318,7 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
 
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VADER Sentiment Analysis at', True)
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VADER Sentiment Analysis at', True, '', True, startTime)
 
     #ANEW _______________________________________________________
     if anew_var==1:
@@ -326,7 +326,7 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             return
         if IO_libraries_util.inputProgramFileCheck('sentiment_analysis_ANEW_util.py')==False:
             return
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running ANEW Sentiment Analysis at', True)
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running ANEW Sentiment Analysis at', True)
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SC', 'ANEW', '', '', '', False, True)
 
         sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, outputFilename, mode)
@@ -408,7 +408,7 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running ANEW Sentiment Analysis at', True)
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running ANEW Sentiment Analysis at', True, '', True, startTime)
 
     if openOutputFiles==True:
         # IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Warning', 'All csv output files have been saved to ' + outputDir)

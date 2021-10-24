@@ -19,10 +19,18 @@ def script_under_construction(script):
 def script_under_development(script):
     mb.showwarning(title='Script under development', message='The "' + script + '" script is still under development. Take the results with a grain of salt and revisit this option soon.')
 
-def timed_alert(window, timeout, message_title, message_text, time_needed=False, extraLine='', printInCommandLine=True):
+def timed_alert(window, timeout, message_title, message_text, time_needed=False, extraLine='', printInCommandLine=True, startTime=''):
     if time_needed == True:
+        # time has year [0], month [1], dat [2], hour [3], minute [4], second [5] & more
         time_report = time.localtime()
-        message_text = message_text + ' ' + str(time_report[3]) + ':' + str(time_report[4]) + '.'
+        message_text = message_text + ' ' + str(time_report[3]) + ':' + str(time_report[4])
+        if startTime != '':
+            endTime = time.time()
+            totalTime = endTime - startTime # in number of seconds
+            totalTime= ((endTime - startTime)/60)/60 # convert to hours and minutes
+            # needs to convert to a message: 32 hours (if there are hours), 12 minutes and 45 seconds.
+            message_text = message_text + ' taking ' + str(totalTime) + ' hours'
+        message_text = message_text + '.'
     if len(extraLine) > 0:
         message_text = message_text + '\n\n' + extraLine
     top_message = tk.Toplevel(window)
@@ -44,7 +52,7 @@ def timed_alert(window, timeout, message_title, message_text, time_needed=False,
     if printInCommandLine:
         print('\n' + message_text + '\n')
     window.focus_force()
-
+    return time.time()
 
 def input_output_save(script):
     result = mb.askyesno(script,

@@ -244,7 +244,7 @@ def geocode(window,locations, inputFilename, outputDir,
 def geocode_distance(window,inputFilename,locationColumnNumber,locationColumnName,locationColumnName2,geolocator,geocoder,inputIsCoNLL,datePresent,numColumns,encodingValue,outputDir):
 	if not IO_internet_util.check_internet_availability_warning('GIS distance geocoder'):
 		return
-	IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS geocoder at', True, 'You can follow Geocoder in command line.')
+	startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS geocoder at', True, 'You can follow Geocoder in command line.')
 	geoName='geo-'+str(geocoder[:3])
 	geocodedLocationsoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', geoName, locationColumnName, '', '', False, True)
 	locationsNotFoundoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', geoName, 'Not-Found', locationColumnName, '', False, True)

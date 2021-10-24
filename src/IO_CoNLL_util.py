@@ -184,14 +184,9 @@ def compute_sentence(CoNLL_table, recordID, sentenceID, documentID):
 # TODO must check for old and new CoNLL
 def compute_sentence_table(CoNLL_table, output_path):
     RunningCoreNLPFromCommandLine = False
-    startTime = time.localtime()
-    # print ("")
-    # print("Started computing the Sentence table at " + str(startTime[3]) + ':' + str(startTime[4]))  #Time when merge started, for future reference
-    # print ("")
+    startTime = ''
     if RunningCoreNLPFromCommandLine != True:
-        IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started computing the Sentence table at', True)
-    # tk.messagebox.showinfo("Stanford CoreNLP has finished", "Started computing the Sentence table at " + str(startTime[3]) + ':' + str(startTime[4]))
-    # df = pd.read_csv(io.open(os.path.join(output_path,CoNLL_table), 'rb'), sep='\t', header=None, index_col=False) # Open ConLL
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started computing the Sentence table at', True)
     df = pd.read_csv(io.open(os.path.join(output_path, CoNLL_table), 'rb'), sep=',', index_col=False)  # Open ConLL
     rows = []  # Store data
     sent_str = ""  # Build string
@@ -228,9 +223,7 @@ def compute_sentence_table(CoNLL_table, output_path):
     df2.to_csv(output_fileName, encoding='utf-8', 
                index=False)  # os.path.join(output_path,output_fileName), sep='\t', encoding='utf-8')
     if RunningCoreNLPFromCommandLine != True:
-        IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis end', 'Finished computing the Sentence table at', True)
-    # tk.messagebox.showinfo("Stanford CoreNLP has finished", "Finished computing the Sentence table at " + str(endTime[3]) + ':' + str(endTime[4])  + ". \n\nSentence table exported as: " + output_fileName) #os.path.join(output_path,output_fileName))
-    endTime = time.localtime()
+        IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis end', 'Finished computing the Sentence table at', True, '', True, startTime)
     print ("\nSentence table output written to: " + output_fileName)  # os.path.join(output_path,output_fileName))     #Time when compute sentence table finished, for future reference
     return output_fileName
 

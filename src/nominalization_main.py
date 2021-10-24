@@ -351,7 +351,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
                 if len(Excel_outputFilename) > 0:
                     filesToOpen.append(Excel_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Nominalization at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Nominalization at', True, '', True, startTime)
 
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)

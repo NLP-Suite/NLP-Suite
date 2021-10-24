@@ -150,7 +150,7 @@ def run(inputDir, outputDir,openOutputFiles,createExcelCharts,OptimizeInterval, 
     #     Keys_FileName + "\n" +
     #     Compressed_FileName)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Mallet Topic modeling at ', True, "Depending upon corpus size, computations may take a while... Please, be patient...\n\nYou can follow Mallet in command line.")
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Mallet Topic modeling at ', True, "Depending upon corpus size, computations may take a while... Please, be patient...\n\nYou can follow Mallet in command line.")
 
     #FIRST STEP
 
@@ -182,7 +182,7 @@ def run(inputDir, outputDir,openOutputFiles,createExcelCharts,OptimizeInterval, 
         else:
             subprocess.call([MalletDir + os.sep + 'mallet', 'train-topics', '--input', TXTFiles_MalletFormatted_FileName, '--num-topics', str(numTopics), '--output-state', Compressed_FileName, '--output-topic-keys', Keys_FileName, '--output-doc-topics', Composition_FileName])
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Mallet Topic modeling at ', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Mallet Topic modeling at ', True, '', True, startTime)
 
     # https://stackoverflow.com/questions/29759305/how-do-i-convert-a-tsv-to-csv
 

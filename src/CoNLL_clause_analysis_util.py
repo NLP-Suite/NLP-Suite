@@ -43,7 +43,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CLAUSE ANALYSES at', True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CLAUSE ANALYSES at', True)
     
     #output file names
     #clausal_analysis_file_name contains all the CoNLL table records that have a clausal tag
@@ -115,7 +115,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
                 filesToOpen.append(Excel_outputFilename)
 
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CLAUSE ANALYSES at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime)
     return filesToOpen
 
 #stats_clauses_output contains a list of records 

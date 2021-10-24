@@ -17,7 +17,7 @@ import GUI_IO_util
 
 def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, create_Excel_chart_output, find_var, source_extension_var, target_extension_var, matching_var, copy_var, move_var, character_value, number_of_items):
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Matcher at', True, 'You can follow the script in command line.')
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Matcher at', True, 'You can follow the script in command line.')
 
     file_matcher_util.run_default(GUI_util.window, [inputPath], outputPath, selectedCsvFile_var, openOutputFiles, matching_var, source_extension_var, target_extension_var, copy_var, move_var, character_value, number_of_items)
 
@@ -36,7 +36,7 @@ def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, create_Exce
     # subdirs: Files in root of type directory
     # files: Files in current root (not in subdirs) of type other than directory
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File matcher at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File matcher at', True, '', True, startTime)
 
     # if i > 0:
     # 	mb.showwarning(title='File matcher', message=str(i) + ' files have been matched.')
