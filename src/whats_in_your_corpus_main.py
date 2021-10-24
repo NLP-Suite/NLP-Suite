@@ -207,7 +207,7 @@ def run(inputFilename,inputDir, outputDir,
                             noun_verb='VERB'
                         else:
                             return
-                        output = WordNet_util.ancestor_GoingUP(WordNetDir,inputFilename, outputDir, noun_verb,
+                        output = WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, noun_verb,
                                                                     openOutputFiles, createExcelCharts)
                         if output!=None:
                             filesToOpen.extend(output)
@@ -218,7 +218,7 @@ def run(inputFilename,inputDir, outputDir,
                             noun_verb='NOUN'
                         else:
                             return
-                        output = WordNet_util.ancestor_GoingUP(WordNetDir,inputFilename, outputDir, noun_verb,
+                        output = WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, noun_verb,
                                                                     openOutputFiles, createExcelCharts)
                         if output!=None:
                             filesToOpen.extend(output)

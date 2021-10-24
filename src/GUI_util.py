@@ -439,7 +439,8 @@ def IO_config_setup_full (window, y_multiplier_integer):
         IO_options=config_util.get_IO_options(config_filename,config_input_output_options)
 
     # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
-    global select_softwareDir_button, select_input_file_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_file_button, select_output_dir_button
+    global select_softwareDir_button, select_input_file_button, select_input_main_dir_button, \
+        select_input_secondary_dir_button, select_output_file_button, select_output_dir_button
     if config_input_output_options[1]>0:
         # buttons are set to normal or disabled in selectFile_set_options
         # openInputFile_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, inputFilename.get()))
@@ -542,6 +543,7 @@ def setup_IO_configuration_options(IO_setup_display_brief,y_multiplier_integer,S
     display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options, ScriptName)
 
 def IO_config_setup_brief(window, y_multiplier_integer,ScriptName):
+
     IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,y_multiplier_integer,ScriptName))
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer,
@@ -552,23 +554,24 @@ def IO_config_setup_brief(window, y_multiplier_integer,ScriptName):
                                                    y_multiplier_integer,
                                                    IO_setup_menu,True)
 
-    # setup a button to open Windows Explorer on the selected input file
-    if inputFilename.get()!='':
-        openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                         command=lambda: IO_files_util.openFile(window, inputFilename.get()))
-        openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+750,
-                                   y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
-    else:
-        # setup a button to open Windows Explorer on the selected input directory
-        openDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                         command=lambda: IO_files_util.openExplorer(window, input_main_dir_path.get()))
-        openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+750,
-                                   y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+    # setup buttons to open an input file, an input directory and an output directory
 
-    # setup a button to open Windows Explorer on the selected output directory
-    openDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+    # setup a button to open an input file
+    openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                     command=lambda: IO_files_util.openFile(window, inputFilename.get()))
+    openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+740,
+                               y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+
+    # setup a button to open Windows Explorer on the selected INPUT directory
+    openInputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                     command=lambda: IO_files_util.openExplorer(window, input_main_dir_path.get()))
+    openInputDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+780,
+                               y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+
+    # setup a button to open Windows Explorer on the selected OUTPUT directory
+    openOutputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
-    openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+800,
+    openOutputDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+820,
                                y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
 # ScriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main

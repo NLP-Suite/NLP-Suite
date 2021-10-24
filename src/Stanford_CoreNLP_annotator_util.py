@@ -540,11 +540,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3],[4,4],[5,5]], 'pie',
                     #                       'Frequency Distribution of SVOs', 1, [], 'SVO_pie','SVOs')
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
-                                          'Frequency Distribution of Subjects', 1, [], 'S_bar','Subjects')
+                                          'Frequency Distribution of Subjects (FORM)', 1, [], 'S_bar','Subjects (FORM)')
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[4, 4]], 'bar',
-                                                        'Frequency Distribution of Verbs', 1, [], 'V_bar', 'Verbs')
+                                                        'Frequency Distribution of Verbs (FORM)', 1, [], 'V_bar', 'Verbs (FORM)')
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[5, 5]], 'bar',
-                                                        'Frequency Distribution of Objects', 1, [], 'O_bar', 'Objects')
+                                                        'Frequency Distribution of Objects (FORM)', 1, [], 'O_bar', 'Objects (FORM)')
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))
     if len(filesError)>0:

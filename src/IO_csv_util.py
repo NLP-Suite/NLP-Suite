@@ -10,7 +10,7 @@ import csv
 import tkinter.messagebox as mb
 import pandas as pd
 import os
-import IO_csv_util
+
 
 #if any column header contains just numbers the function will return FALSE
 def csvFile_has_header(file_path):
@@ -79,8 +79,7 @@ def get_columnNumber_from_headerValue(headers,header_value):
 
 # convert header alphabetic value for CSV files with or without headers to its numeric column value
 # column numbers start at 0
-def get_headerValue_fromcolumnNumber(headers,column_number):
-    column_number = 0
+def get_headerValue_fromcolumnNumber(headers,column_number=0):
     for i in range(len(headers)):
         if i==column_number:
             header_value= headers[i]
@@ -208,13 +207,45 @@ def openCSVOutputFile(outputCSVFilename, IO='w', encoding='utf-8',errors='ignore
         return True
 
 # triggered by a df.to_csv
-def df_to_csv(window,data_frame, outputFilename, index=False):
+def df_to_csv(window,data_frame, outputFilename, headers=None, index=False):
     try:
-        data_frame.to_csv(outputFilename,index)
-        return False
+        data_frame.to_csv(outputFilename, columns=headers, index=False)
+        return outputFilename
     except IOError:
         mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and try again!")
-        return True
+        return ''
+
+
+def extract_from_csv(inputFilename, outputDir, data_files, columns_to_exported=None):
+    import IO_files_util
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
+                                                             'extract',
+                                                             '', '', '', '', False, True)
+
+    df = pd.DataFrame(pd.read_csv(inputFilename))
+    df.to_csv(outputFilename, columns=columns_to_exported, index=False)
+    return outputFilename
+
+
+# convert an xlsx file to csv
+def convert_Excel_to_csv(inputFilename,outputDir, headers=None):
+    # importing pandas as pd
+    # Read and store content of an excel file
+    read_file = pd.read_excel(inputFilename)
+
+    # Write the dataframe object
+    # into csv file
+    outputFilename=outputDir + os.sep + "Test.csv"
+    read_file.to_csv(outputFilename,
+                     index=None,
+                     header=True)
+
+    # read csv file and convert into a dataframe object
+    df = pd.DataFrame(pd.read_csv(outputFilename))
+    df.to_csv(outputFilename, columns=headers, index=False)
+    return outputFilename
+
+    # show the dataframe
 
 # sort a csv file by a set of columns
 # headers_tobe_sorted is a list of type ['Document ID','Sort order']
@@ -247,7 +278,7 @@ def rename_header(inputFilename, header1, header2):
     headerFound=False
     if not inputFilename.endswith('.csv'):
         return True
-    headers = IO_csv_util.get_csvfile_headers(inputFilename)
+    headers = get_csvfile_headers(inputFilename)
     # temp=None
     for header in headers:
         if header2 == header:  # the file already contains the header2

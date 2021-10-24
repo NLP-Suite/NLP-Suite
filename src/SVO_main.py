@@ -36,6 +36,7 @@ import Stanford_CoreNLP_coreference_util
 import Stanford_CoreNLP_annotator_util
 import semantic_role_labeling_senna
 import reminders_util
+import WordNet_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -135,6 +136,9 @@ def run(inputFilename, inputDir, outputDir,
         subjects_dict_var,
         verbs_dict_var,
         objects_dict_var,
+        lemmatize_subjects,
+        lemmatize_verbs,
+        lemmatize_objects,
         gephi_var,
         wordcloud_var,
         google_earth_var,
@@ -194,7 +198,7 @@ def run(inputFilename, inputDir, outputDir,
         save_intermediate_file = False
         isFile = False
 
-    # CoRef _____________________________________________________
+# CoRef _____________________________________________________
 
     # field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'LOCATION', 'PERSON', 'TIME', 'TIME_STAMP', 'Sentence']
 
@@ -240,7 +244,7 @@ def run(inputFilename, inputDir, outputDir,
                                                'Finished running Stanford CoreNLP Co-Reference Resolution using the Neural Network approach at',
                                                True)
 
-    # Date extractor _____________________________________________________
+# Date extractor _____________________________________________________
 
     if date_extractor_var:
         files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
@@ -263,7 +267,14 @@ def run(inputFilename, inputDir, outputDir,
         if not IO_files_util.make_directory(outputSVODir):
             return
 
-      # CoreNLP _____________________________________________________
+    if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
+        WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('SVO_main',
+                                                                                            'WordNet')
+        if WordNetDir == None:
+            return
+
+# CoreNLP Dependencies ++ _____________________________________________________
+
     if CoreNLP_SVO_extractor_var:
 
         if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
@@ -279,10 +290,29 @@ def run(inputFilename, inputDir, outputDir,
                                                                        date_separator_var='',
                                                                        date_position_var=0)
         if len(tempOutputFiles)>0:
-            if subjects_dict_var or verbs_dict_var or objects_dict_var:
-                SVO_util.filter_svo(tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var)
+            if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
+                SVO_util.filter_svo(tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
+
+                if lemmatize_verbs:
+                    # tempOutputFiles[0] is the filename with lemmatized SVO values
+                    # we want to aggregate with WordNet the verbs in column 'V'
+                    outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0],outputDir,'',['V'])
+                    output = WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, 'VERB',
+                                                           openOutputFiles, createExcelCharts)
+                    if output != None:
+                        filesToOpen.extend(output)
+
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
+
+        # ask Do you want to display the distribution of verbs by WordNet top synset categories for the n most frequent Subjects?
+        #   ask how many subjects they want to consider (n)
+        #   compute the frequencies of subjects
+        #   get the lemmatized verbs for each of the top n selected subjects
+        #   provide a bar chart of verb categories by subject; for each of these subjects display the bars of the 5 most frequent verb classes
+        # ask Do you want to display the distribution of verbs by WordNet top synset categories for a specific Subject?
+        #   provide a bar chart of WordNet verb categories for the subject
 
         toProcess_list = []
         field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Location', 'Person', 'Time',
@@ -324,7 +354,7 @@ def run(inputFilename, inputDir, outputDir,
                     original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
             svo_CoreNLP_merged_file = os.path.join(outputSVODir, "NLP_CoreNLP_SVO_Dir_" + inputDirBase + ".csv")
 
-    # SENNA _____________________________________________________
+# SENNA _____________________________________________________
 
     if SENNA_SVO_extractor_var:
         # TODO must filter SVO results by social actors if the user selected that option
@@ -346,9 +376,10 @@ def run(inputFilename, inputDir, outputDir,
             svo_SENNA_files = [svo_SENNA_file]
 
         # Filtering SVO
-        if subjects_dict_var or verbs_dict_var or objects_dict_var:
+        if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects, lemmatize_verbs, lemmatize_objects:
             for file in svo_SENNA_files:
-                SVO_util.filter_svo(file, subjects_dict_var, verbs_dict_var, objects_dict_var)
+                SVO_util.filter_svo(file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
         filesToOpen.extend(svo_SENNA_files)
 
         for file in svo_SENNA_files:
@@ -363,7 +394,9 @@ def run(inputFilename, inputDir, outputDir,
             filesToOpen.extend(freq_csv)
             filesToOpen.append(combined_csv)
 
-    # CoreNLP OpenIE _____________________________________________________
+
+# CoreNLP OpenIE _____________________________________________________
+
     if CoreNLP_OpenIE_var:
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir, openOutputFiles,
@@ -377,8 +410,9 @@ def run(inputFilename, inputDir, outputDir,
                                                                            date_position_var=0)
         
         if len(tempOutputFiles)>0:
-            if subjects_dict_var or verbs_dict_var or objects_dict_var:
-                SVO_util.filter_svo(tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var)
+            if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects, lemmatize_verbs, lemmatize_objects:
+                SVO_util.filter_svo(tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
@@ -413,7 +447,7 @@ def run(inputFilename, inputDir, outputDir,
                                 if "CoreNLP" not in f and "SENNA_SVO" not in f: #CoreNLP accounts for both ++ and OpenIE
                                     os.remove(f)
 
-        # wordcloud  _________________________________________________
+# wordcloud  _________________________________________________
 
         if wordcloud_var:
             IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
@@ -440,7 +474,8 @@ def run(inputFilename, inputDir, outputDir,
                         #     for f in png_files:
                         #         if "CoreNLP_SVO" not in f and "SENNA_SVO" not in f:
                         #             os.remove(f)
-        # GIS maps _____________________________________________________
+
+# GIS maps _____________________________________________________
 
         # SENNA locations are not really geocodable locations
         if google_earth_var:
@@ -519,6 +554,9 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  subjects_dict_var.get(),
                                  verbs_dict_var.get(),
                                  objects_dict_var.get(),
+                                 lemmatize_subjects_var.get(),
+                                 lemmatize_verbs_var.get(),
+                                 lemmatize_objects_var.get(),
                                  gephi_var.get(),
                                  wordcloud_var.get(),
                                  google_earth_var.get(),
@@ -587,12 +625,15 @@ def clear(e):
     CoRef_var.set(0)
     manual_Coref_checkbox.configure(state='disabled')
     manual_Coref_var.set(0)
-    subjects_var.set(0)
-    verbs_var.set(0)
-    objects_var.set(0)
+    filter_subjects_var.set(0)
+    filter_verbs_var.set(0)
+    filter_objects_var.set(0)
     subjects_dict_var.set('')
     verbs_dict_var.set('')
     objects_dict_var.set('')
+    lemmatize_subjects_var.set(0)
+    lemmatize_verbs_var.set(0)
+    lemmatize_objects_var.set(0)
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -604,12 +645,15 @@ SRL_var = tk.IntVar()
 CoreNLP_SVO_extractor_var = tk.IntVar()
 SENNA_SVO_extractor_var = tk.IntVar()
 CoreNLP_OpenIE_var = tk.IntVar()
-subjects_var = tk.IntVar()
-objects_var = tk.IntVar()
-verbs_var = tk.IntVar()
+filter_subjects_var = tk.IntVar()
+filter_objects_var = tk.IntVar()
+filter_verbs_var = tk.IntVar()
 subjects_dict_var = tk.StringVar()
 verbs_dict_var = tk.StringVar()
 objects_dict_var = tk.StringVar()
+lemmatize_subjects_var = tk.IntVar()
+lemmatize_objects_var = tk.IntVar()
+lemmatize_verbs_var = tk.IntVar()
 gephi_var = tk.IntVar()
 wordcloud_var = tk.IntVar()
 google_earth_var = tk.IntVar()
@@ -746,9 +790,9 @@ def activateFilters(*args):
             CoreNLP_OpenIE_var.get()==False:
         CoreNLP_SVO_extractor_checkbox.configure(state='normal')
         SENNA_SVO_extractor_checkbox.configure(state='normal')
-        subjects_var.set(0)
-        verbs_var.set(0)
-        objects_var.set(0)
+        filter_subjects_var.set(0)
+        filter_verbs_var.set(0)
+        filter_objects_var.set(0)
         subjects_checkbox.configure(state='disabled')
         verbs_checkbox.configure(state='disabled')
         objects_checkbox.configure(state='disabled')
@@ -781,9 +825,9 @@ def getDictFile(checkbox_var, dict_var, checkbox_value, dictFile):
     dict_var.set(filePath)
 
 
-subjects_var.set(1)
-subjects_checkbox = tk.Checkbutton(window, text='Filter Subject', variable=subjects_var, onvalue=1, offvalue=0,
-                                   command=lambda: getDictFile(subjects_var, subjects_dict_var, subjects_var.get(),
+filter_subjects_var.set(1)
+subjects_checkbox = tk.Checkbutton(window, text='Filter Subject', variable=filter_subjects_var, onvalue=1, offvalue=0,
+                                   command=lambda: getDictFile(filter_subjects_var, subjects_dict_var, filter_subjects_var.get(),
                                                                'Subject'))
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                subjects_checkbox, True)
@@ -794,9 +838,14 @@ openInputFile_subjects_button = tk.Button(window, width=3, text='',
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 140, y_multiplier_integer,
                                                openInputFile_subjects_button, True)
 
-verbs_var.set(1)
-verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=verbs_var, onvalue=1, offvalue=0,
-                                command=lambda: getDictFile(verbs_var, verbs_dict_var, verbs_var.get(), 'Verb'))
+lemmatize_subjects_checkbox = tk.Checkbutton(window, text='Lemmatize Subject', variable=lemmatize_subjects_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+200, y_multiplier_integer,
+                                               lemmatize_subjects_checkbox, True)
+
+
+filter_verbs_var.set(1)
+verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=filter_verbs_var, onvalue=1, offvalue=0,
+                                command=lambda: getDictFile(filter_verbs_var, verbs_dict_var, filter_verbs_var.get(), 'Verb'))
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column, y_multiplier_integer, verbs_checkbox, True)
 
 # setup a button to open Windows Explorer on the verbs file
@@ -805,9 +854,14 @@ openInputFile_verbs_button = tk.Button(window, width=3, text='',
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 520, y_multiplier_integer,
                                                openInputFile_verbs_button, True)
 
-objects_var.set(0)
-objects_checkbox = tk.Checkbutton(window, text='Filter Object', variable=objects_var, onvalue=1, offvalue=0,
-                                  command=lambda: getDictFile(objects_var, objects_dict_var, objects_var.get(),
+lemmatize_verbs_var.set(1)
+lemmatize_verbs_checkbox = tk.Checkbutton(window, text='Lemmatize Verb', variable=lemmatize_verbs_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+580, y_multiplier_integer,
+                                               lemmatize_verbs_checkbox, True)
+
+filter_objects_var.set(0)
+objects_checkbox = tk.Checkbutton(window, text='Filter Object', variable=filter_objects_var, onvalue=1, offvalue=0,
+                                  command=lambda: getDictFile(filter_objects_var, objects_dict_var, filter_objects_var.get(),
                                                               'Object'))
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
                                                objects_checkbox, True)
@@ -816,7 +870,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 openInputFile_objects_button = tk.Button(window, width=3, text='',
                                          command=lambda: IO_files_util.openFile(window, objects_dict_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 930, y_multiplier_integer,
-                                               openInputFile_objects_button)
+                                               openInputFile_objects_button,True)
+
+lemmatize_objects_checkbox = tk.Checkbutton(window, text='Lemmatize Object', variable=lemmatize_objects_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+990, y_multiplier_integer,
+                                               lemmatize_objects_checkbox)
 
 subjects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
 subjects_dict_entry = tk.Entry(window, width=60, state="disabled", textvariable=subjects_dict_var)
@@ -895,7 +953,7 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
                                   "Please, tick the checkboxes if you wish to run the Stanford CoreNLP neural network Enhanced++ Dependencies parser and/or SENNA to extract SVO triplets and SV pairs. Tick the checkbox 'Extract relation triples (via OpenIE)' if you wish to run the Stanford CoreNLP OpenIE annotator to extract any relation triples (not just SVOs).\n\nSENNA can be downloaded at https://ronan.collobert.com/senna/download.html\n\nIn INPUT CoreNLP and/or SENNA can process a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT CoreNLP and/or SENNA will produce a csv file of SVO results and, if the appropriate visualization options are selected, a Gephi gexf network file, png word cloud file, and Google Earth Pro kml file (GIS maps are not produced when running SVO with SENNA; SENNA, by and large, does not produce geocodable locations.\n\nWHEN PROCESSING A DIRECTORY, ALL OUTPUT FILES WILL BE SAVED IN A SUBDIRECTORY OF THE SELECTED OUTPUT DIRECTORY WITH THE NAME OF THE INPUT DIRECTORY."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
-                                  "Please, tick the checkbox to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file \'social-actor-list.csv\', created via WordNet with keyword person and saved in the \'lib/wordLists\' subfolder, will be automatically loaded as the DEFAULT dictionary file (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly automatically loaded as the DEFAULT dictionary file for verbs.\n\nDictionary filter files can be created via WordNet and saved in the \'lib/wordLists\' subfolder. You can edit that list, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries."+GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file \'social-actor-list.csv\', created via WordNet with keyword person and saved in the \'lib/wordLists\' subfolder, will be automatically loaded as the DEFAULT dictionary file (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly automatically loaded as the DEFAULT dictionary file for verbs.\n\nDictionary filter files can be created via WordNet and saved in the \'lib/wordLists\' subfolder. You can edit that list, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries.\n\nThe Lemmatize options will produce lemmatized subjects, verbs, or objects. When verbs are lemmatized, the algorithm will aggregate the verbs into WordNet top synset verb categories."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+9), "Help",
                                   "The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that).\n\nThe filter file social-actor-list, created via WordNet with person as keyword and saved in the \'lib/wordLists\' subfolder, will be automatically set as the DEFAULT filter for subjects (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly set as the DEFAULT dictionary file for verbs.\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be prompted to select a new file."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+10), "Help",
