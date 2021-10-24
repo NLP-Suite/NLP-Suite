@@ -5,7 +5,7 @@ from nltk.stem import WordNetLemmatizer
 # stannlp = stanza.Pipeline(lang='en', processors='tokenize,ner,mwt,pos,lemma')
 
 import IO_files_util
-
+import IO_user_interface_util
 
 def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, outputDir) -> list:
     """
@@ -148,7 +148,7 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
     return output_name
 
 
-def filter_svo(svo_file_name, filter_s_fileName, filter_v_fileName, filter_o_fileName, lemmatize_s, lemmatize_v,lemmatize_o):
+def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filter_o_fileName, lemmatize_s, lemmatize_v,lemmatize_o):
     """
     Filters a svo csv file based on the dictionaries given, and replaces the original output csv file
     :param svo_file_name: the name of the svo csv file
@@ -156,6 +156,9 @@ def filter_svo(svo_file_name, filter_s_fileName, filter_v_fileName, filter_o_fil
     :param filter_v_fileName: the verb dict file path
     :param filter_o_fileName: the object dict file path
     """
+
+    startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
+                                                   'Started running the SVO filter algorithm at', True)
 
     df = pd.read_csv(svo_file_name)
     filtered_df = pd.DataFrame(columns=df.columns)
@@ -203,9 +206,11 @@ def filter_svo(svo_file_name, filter_s_fileName, filter_v_fileName, filter_o_fil
 
         filtered_df = filtered_df.append(df.loc[i, :], ignore_index=True)
 
+    IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running SVO filter algorithm at', True, '', True,
+                                       startTime)
+
     # Replacing the original csv file
     filtered_df.to_csv(svo_file_name, index=False)
-
 
 if __name__ == '__main__':
     senna_csv = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/test_output/SVO_Result/NLP_SENNA_SVO_Dir_test.csv'

@@ -79,9 +79,6 @@ def get_cols(dfs: list, headers: list):
             yield (dfs[i])[headers[i]]
 
 
-filesToOpen = []  # Store all files that are to be opened once finished
-
-
 def extract_from_csv(filePath, outputDir, data_files, csv_file_field_list):
     outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv',
                                                              'extract',
@@ -145,6 +142,8 @@ def run(inputFilename,
         append_var, extract_var,
         purge_row_var, select_csv_field_purge_var, keep_most_recent_var, keep_most_fields_var, select_csv_field2_purge_var,
         output_to_csv_var, openOutputFiles, outputDir):
+
+    filesToOpen = []  # Store all files that are to be opened once finished
 
     filePath = [s.split(',')[0] for s in csv_file_field_list]  # file filePath
     data_files = [file for file in select_csv(filePath)]  # dataframes
@@ -213,7 +212,7 @@ def run(inputFilename,
         filesToOpen.append(outputFilename)
     if extract_var:
         if output_to_csv_var==True:
-            extract_from_csv(path=filePath, outputDir=outputDir,
+            extract_from_csv(filePath=filePath, outputDir=outputDir,
                              data_files=data_files, csv_file_field_list=csv_file_field_list)
         else: # export to txt file
             # del csv_file_field_list[0]

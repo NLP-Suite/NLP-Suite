@@ -240,11 +240,7 @@ def run(inputFilename, inputDir, outputDir,
         if len(file_open) > 0:
             filesToOpen.extend(file_open)
 
-            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
-                                               'Finished running Stanford CoreNLP Co-Reference Resolution using the Neural Network approach at',
-                                               True)
-
-# Date extractor _____________________________________________________
+ # Date extractor _____________________________________________________
 
     if date_extractor_var:
         files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
@@ -291,7 +287,7 @@ def run(inputFilename, inputDir, outputDir,
                                                                        date_position_var=0)
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                SVO_util.filter_svo(tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
 
                 if lemmatize_verbs:
@@ -379,7 +375,7 @@ def run(inputFilename, inputDir, outputDir,
         # Filtering SVO
         if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_SENNA_files:
-                SVO_util.filter_svo(file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+                SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
         filesToOpen.extend(svo_SENNA_files)
 
@@ -412,7 +408,7 @@ def run(inputFilename, inputDir, outputDir,
         
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                SVO_util.filter_svo(tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
@@ -423,22 +419,20 @@ def run(inputFilename, inputDir, outputDir,
 
         # Gephi network graphs _________________________________________________
         if gephi_var:
-            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                               'Started running Gephi network graphs at', True)
             # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
             if inputFilename[-4:] == ".csv":
                 if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1:  # including headers; file is empty
-                    gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, inputFilename)
+                    gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputDir, inputFilename)
                     filesToOpen.append(gexf_file)
                 else:
                     if IO_csv_util.GetNumberOfRecordInCSVFile(
                             svo_result_list[0]) > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(inputFileBase, outputDir, svo_result_list[0])
+                        gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputDir, svo_result_list[0])
                         filesToOpen.append(gexf_file)
             else:  # txt input file
                 for f in svo_result_list:
                     if IO_csv_util.GetNumberOfRecordInCSVFile(f) > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(os.path.basename(f)[:-4], outputDir, f)
+                        gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], outputDir, f)
                         if "CoreNLP" in f or "SENNA_SVO" in f:
                             filesToOpen.append(gexf_file)
                         if not save_intermediate_file:
@@ -451,8 +445,6 @@ def run(inputFilename, inputDir, outputDir,
 # wordcloud  _________________________________________________
 
         if wordcloud_var:
-            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                               'Started running Wordclouds at', True)
             if inputFilename[-4:] == ".csv":
                 if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1:  # including headers; file is empty
                     myfile = IO_files_util.openCSVFile(inputFilename, 'r')

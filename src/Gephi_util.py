@@ -22,6 +22,7 @@ from datetime import date
 import itertools
 import traceback
 import IO_libraries_util
+import IO_user_interface_util
 
 def msg_unexpected_tag(expected, got):
     print("Error : incorrect xml. Expected tag {expected}, not {got}.".format(expected=expected, got=got))
@@ -1065,7 +1066,7 @@ class GexfImport:
 #  generalize function beyond SVO
 #   passing the three headers that need to be displayed
 #   processing Sentence ID optional with a Dynamic boolean
-def create_gexf(fileName, OutputDir, SVOFile):
+def create_gexf(window,fileName, OutputDir, SVOFile):
     """
     Create gexf format file that can be used in Gephi to visualize result dynamically.
     :param corpus: A Corpus Object
@@ -1074,6 +1075,9 @@ def create_gexf(fileName, OutputDir, SVOFile):
     GephiDir, missing_external_software = IO_libraries_util.get_external_software_dir('','Gephi')
     if GephiDir == None:
         return
+
+    startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
+                                                   'Started running Gephi network graphs at', True)
 
     EPOCH = datetime.datetime.today()
     graph_name = fileName +".gexf"
