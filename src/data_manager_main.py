@@ -79,11 +79,8 @@ def get_cols(dfs: list, headers: list):
             yield (dfs[i])[headers[i]]
 
 
-filesToOpen = []  # Store all files that are to be opened once finished
-
-
-def extract_from_csv(path, outputDir, data_files, csv_file_field_list):
-    outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), outputDir, '.csv',
+def extract_from_csv(filePath, outputDir, data_files, csv_file_field_list):
+    outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv',
                                                              'extract',
                                                              'stats', '', '', '', False, True)
     sign_var = [s.split(',')[2] for s in csv_file_field_list]
@@ -146,13 +143,20 @@ def run(inputFilename,
         purge_row_var, select_csv_field_purge_var, keep_most_recent_var, keep_most_fields_var, select_csv_field2_purge_var,
         output_to_csv_var, openOutputFiles, outputDir):
 
-    path = [s.split(',')[0] for s in csv_file_field_list]  # file path
-    data_files = [file for file in select_csv(path)]  # dataframes
+    filesToOpen = []  # Store all files that are to be opened once finished
+
+    filePath = [s.split(',')[0] for s in csv_file_field_list]  # file filePath
+    data_files = [file for file in select_csv(filePath)]  # dataframes
     headers = [s.split(',')[1] for s in csv_file_field_list]  # headers
     data_cols = [file for file in get_cols(data_files, headers)]  # selected cols
 
+    if operation_text_var.get()=='':
+        mb.showwarning(title='Warning',
+                       message='You must click the OK button to approve the selections made before running the algorithm.\n\nUpon clicking OK, your current selection will be displayed above in the large text box. If the selections is OK, click RUN; otherwise, click the Reset all button and start over.')
+        return
+
     if merge_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), outputDir, '.csv',
+        outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv',
                                                                  'merge',
                                                                  'stats', '', '', '', False, True)
         # processed_params: [(field1, field2..., dataframe1), (field1', field2'..., dataframe2)]
@@ -186,7 +190,7 @@ def run(inputFilename,
         filesToOpen.append(outputFilename)
 
     if concatenate_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), outputDir, '.csv', 'concatenate',
+        outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv', 'concatenate',
                                                            'stats', '', '', '', False, True)
         for s in csv_file_field_list:
             if s[-1] == ',':
@@ -200,7 +204,7 @@ def run(inputFilename,
         df_concat.to_csv(outputFilename, header=[listToString(headers, sep)])
         filesToOpen.append(outputFilename)
     if append_var:
-        outputFilename = IO_files_util.generate_output_file_name(path[0], os.path.dirname(path[0]), outputDir, '.csv', 'append',
+        outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv', 'append',
                                                            'stats', '', '', '', False, True)
         sep = ','
         df_append = pd.concat(data_cols, axis=0)
@@ -208,9 +212,11 @@ def run(inputFilename,
         filesToOpen.append(outputFilename)
     if extract_var:
         if output_to_csv_var==True:
-            extract_from_csv(path=path, outputDir=outputDir,
+            extract_from_csv(filePath=filePath, outputDir=outputDir,
                              data_files=data_files, csv_file_field_list=csv_file_field_list)
-        else:
+        else: # export to txt file
+            # del csv_file_field_list[0]
+            # csv_file_field_list=csv_file_field_list.remove([0])
             statistics_csv_util.export_csv_to_text(inputFilename, outputDir, csv_file_field_list)
     if purge_row_var:
         import file_filename_util
@@ -243,8 +249,8 @@ if __name__ == '__main__':
 
     # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
     #   just change the next statement to True or False IO_setup_display_brief=True
-    IO_setup_display_brief = False
-    GUI_width = 1250
+    IO_setup_display_brief = True
+    GUI_width=1250
     GUI_height = 680  # height of GUI with full I/O display
 
     if IO_setup_display_brief:
@@ -445,7 +451,7 @@ if __name__ == '__main__':
         menu_values = " "
     if numColumns == -1:
         pass
-    # eturn
+    # return
 
     reset_field_button = tk.Button(window, width=15, text='Reset csv field(s)', state='disabled',
                                    command=lambda: reset_csv_field_values())

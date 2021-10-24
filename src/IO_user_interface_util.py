@@ -19,10 +19,55 @@ def script_under_construction(script):
 def script_under_development(script):
     mb.showwarning(title='Script under development', message='The "' + script + '" script is still under development. Take the results with a grain of salt and revisit this option soon.')
 
-def timed_alert(window, timeout, message_title, message_text, time_needed=False, extraLine='', printInCommandLine=True):
+def convert_time(time):
+    hours = int(time / 3600)
+    minutes = int((time - hours * 3600) / 60)
+    seconds = int(time - hours * 3600 - minutes * 60)
+    message=''
+    if seconds == 0:
+        second_label = ''
+    if seconds == 1:
+        second_label = ' second'
+    else:
+        second_label = ' seconds'
+    if minutes == 0:
+        minute_label = ''
+    elif minutes == 1:
+        minute_label = ' minute '
+    else:
+        minute_label = ' minutes '
+    if hours == 0:
+        hour_label = ''
+    elif hours == 1:
+        hour_label = ' hours '
+    else:
+        hour_label = ' hours '
+
+    if hours>0:
+        message=str(hours) + hour_label + ', '
+    if minutes>0:
+        if hours == 0:
+            message=message+str(minutes) + minute_label + ' and '
+        else:
+            message = message + str(minutes) + minute_label + ', and '
+    if seconds>0:
+        message=message+str(seconds) + second_label
+
+    return hours, minutes, seconds, message
+
+def timed_alert(window, timeout, message_title, message_text, time_needed=False, extraLine='', printInCommandLine=True, startTime=''):
     if time_needed == True:
+        # time has year [0], month [1], dat [2], hour [3], minute [4], second [5] & more
         time_report = time.localtime()
-        message_text = message_text + ' ' + str(time_report[3]) + ':' + str(time_report[4]) + '.'
+        message_text = message_text + ' ' + str(time_report[3]) + ':' + str(time_report[4])
+        if startTime != '':
+            endTime = time.time()
+            totalTime = endTime - startTime # in number of seconds
+            hours, minutes, seconds, time_message = convert_time(totalTime)
+            # totalTime= ((endTime - startTime)/60)/60 # convert to hours and minutes
+            # needs to convert to a message: 32 hours (if there are hours), 12 minutes and 45 seconds.
+            message_text = message_text + ' taking ' + time_message # + str(hours) + ' hours, ' + str(minutes) + ' minutes, and ' + str(seconds) + ' seconds'
+        message_text = message_text + '.'
     if len(extraLine) > 0:
         message_text = message_text + '\n\n' + extraLine
     top_message = tk.Toplevel(window)
@@ -44,7 +89,7 @@ def timed_alert(window, timeout, message_title, message_text, time_needed=False,
     if printInCommandLine:
         print('\n' + message_text + '\n')
     window.focus_force()
-
+    return time.time()
 
 def input_output_save(script):
     result = mb.askyesno(script,

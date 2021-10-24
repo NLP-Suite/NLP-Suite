@@ -73,7 +73,7 @@ def missing_character(CoreNLPdir, input_main_dir_path, input_secondary_dir_path,
 def intruder(CoreNLPdir,input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, similarityIndex_Intruder_var):
 	if IO_libraries_util.inputProgramFileCheck('file_find_non_related_documents_util.py') == False:
 		return
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running INTRUDER at', True,
+	startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running INTRUDER at', True,
 									   'You can follow INTRUDER in command line.')
 	# Windows...
 	outputFiles=file_find_non_related_documents_util.main(CoreNLPdir, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, similarityIndex_Intruder_var)
@@ -81,7 +81,7 @@ def intruder(CoreNLPdir,input_main_dir_path, output_dir_path, openOutputFiles, c
 	if outputFiles!='':
 		filesToOpen.extend(outputFiles)
 	# Nothing to plot; only one line in the output csv file
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running INTRUDER at', True)
+	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running INTRUDER at', True, '', True, startTime)
 
 
 def ancestor(input_main_dir_path, output_dir_path):
@@ -158,7 +158,7 @@ def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, c
 	lib_stopwords = lib_util.check_lib_stopwords()
 
 	if len(lib_stopwords) != 0:
-		IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running PLAGIARIST at',
+		startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running PLAGIARIST at',
 										   True)
 		errorFound, error_code, system_output = IO_libraries_util.check_java_installation('Lucene')
 		if errorFound:
@@ -234,7 +234,7 @@ def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, c
 		if Excel_outputFilename != "":
 			filesToOpen.append(Excel_outputFilename)
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running PLAGIARIST at', True)
+	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running PLAGIARIST at', True, '', True, startTime)
 
 def Levenshtein():
 	if IO_libraries_util.inputProgramFileCheck('file_spell_checker_main.py') == False:

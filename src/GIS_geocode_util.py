@@ -116,7 +116,7 @@ def geocode(window,locations, inputFilename, outputDir,
 
 	inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
 
-	# IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Started geocoding locations via the online service '" + geocoder + "' at", True, 'You can follow geocoding in command line.')
+	startTime=IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Started geocoding locations via the online service '" + geocoder + "' at", True, 'You can follow geocoding in command line.', True)
 	# if geocoder=='Nominatim':
 	# 	config_filename='GIS-geocode-config.txt'
 	# 	reminders_util.checkReminder(config_filename,["GIS Nominatim geocoder"],'',True)
@@ -230,21 +230,18 @@ def geocode(window,locations, inputFilename, outputDir,
 	
 	if locationsNotFound==0:
 		locationsNotFoundoutputFilename='' #used NOT to open the file since there are NO errors
-		# IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at", True, str(index) + " locations were geocoded.")
 	else:
 		if locationsNotFound==index:
 			geocodedLocationsoutputFilename='' #used NOT to open the file since there are no records
 			# this warning is already given 
-			# IO_util.timed_alert(window,3000,"GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at",True,str(locationsNotFound) + " locations were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nNo Google Earth Pro kml map file can be produced.")
-		else:
-			IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.")
+	IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime)
 	return geocodedLocationsoutputFilename, locationsNotFoundoutputFilename
 
 # called from GIS_pipeline_util when computing distances for non-geocoded files
 def geocode_distance(window,inputFilename,locationColumnNumber,locationColumnName,locationColumnName2,geolocator,geocoder,inputIsCoNLL,datePresent,numColumns,encodingValue,outputDir):
 	if not IO_internet_util.check_internet_availability_warning('GIS distance geocoder'):
 		return
-	IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS geocoder at', True, 'You can follow Geocoder in command line.')
+	startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS geocoder at', True, 'You can follow Geocoder in command line.')
 	geoName='geo-'+str(geocoder[:3])
 	geocodedLocationsoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', geoName, locationColumnName, '', '', False, True)
 	locationsNotFoundoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', geoName, 'Not-Found', locationColumnName, '', False, True)

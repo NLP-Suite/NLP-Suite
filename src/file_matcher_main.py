@@ -17,7 +17,7 @@ import GUI_IO_util
 
 def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, create_Excel_chart_output, find_var, source_extension_var, target_extension_var, matching_var, copy_var, move_var, character_value, number_of_items):
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Matcher at', True, 'You can follow the script in command line.')
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Matcher at', True, 'You can follow the script in command line.')
 
     file_matcher_util.run_default(GUI_util.window, [inputPath], outputPath, selectedCsvFile_var, openOutputFiles, matching_var, source_extension_var, target_extension_var, copy_var, move_var, character_value, number_of_items)
 
@@ -36,7 +36,7 @@ def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, create_Exce
     # subdirs: Files in root of type directory
     # files: Files in current root (not in subdirs) of type other than directory
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File matcher at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File matcher at', True, '', True, startTime)
 
     # if i > 0:
     # 	mb.showwarning(title='File matcher', message=str(i) + ' files have been matched.')
@@ -71,7 +71,7 @@ GUI_util.run_button.configure(command=run_script_command)
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
-GUI_width=1200
+GUI_width=1220
 GUI_height=430 # height of GUI with full I/O display
 
 if IO_setup_display_brief:

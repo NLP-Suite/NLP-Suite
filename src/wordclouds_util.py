@@ -357,7 +357,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, prefer_h
         # stannlp = stanza.Pipeline(lang='en', processors='tokenize,ner,mwt,pos,lemma')
 
     if runStanza:
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Running STANZA & wordcloud',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Running STANZA & wordcloud',
                                            'Started running STANZA and wordcloud at', True,
                                            'Please, be patient. Depending upon the number of documents processed this may take a few minutes.\n\nYou can follow the script in command line.')
     for doc in inputDocs:

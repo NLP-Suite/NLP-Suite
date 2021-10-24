@@ -40,7 +40,7 @@ import IO_csv_util
 
 def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_search_keywords, search_keywords_list,
         search_options_list):
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        "Started running the file search script at", True)
 
     # loop through every txt file and annotate via request to YAGO

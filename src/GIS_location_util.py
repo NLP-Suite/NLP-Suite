@@ -65,7 +65,7 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 # called by GIS_Google_Earth_util
 def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,split_locations_suffix,datePresent):
 	filenamePositionInCoNLLTable=11
-	IO_user_interface_util.timed_alert(window, 2000, 'NER locations extraction', "Started extracting NER locations from CoNLL table at", True)
+	startTime=IO_user_interface_util.timed_alert(window, 2000, 'NER locations extraction', "Started extracting NER locations from CoNLL table at", True)
 	print("NER location extractions from CoNLL table started.")
 
 	# re.sub(pattern, repl, string, count=0, flags=0)
@@ -150,7 +150,7 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 	if len(locList)==0:
 		mb.showwarning(title='NER locations', message="There are no NER tags for 'LOCATION','STATE_OR_PROVINCE','CITY','COUNTRY' in your CoNLL file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.")
 	else:
-		IO_user_interface_util.timed_alert(window, 2000, 'NER locations extraction', "Finished extracting NER locations from CoNLL table at", True)
+		IO_user_interface_util.timed_alert(window, 2000, 'NER locations extraction', "Finished extracting NER locations from CoNLL table at", True, '', True, startTime)
 		print("NER locations extraction from CoNLL table finished.")
 	# returns filename, location, sentence, date (if present)
 	# return sorted(locList)
@@ -159,8 +159,7 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 # called from GIS_Google_util
 #locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
 def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumber,encodingValue):
-	# IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Started extracting locations from csv file at", True)
-	print("Started extracting locations from csv file")
+	startTime=IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Started extracting locations from csv file at", True)
 	locList = []
 	#latin-1 for the Italian or the code will break
 	try:
@@ -173,14 +172,12 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 	if withHeader==True:
 		index=1 #skip header
 		for index, row in dt.iterrows():
-			print("Processing record " + str(index)+"/"+str(count_row)+ " in csv file; location: " + str(row[locationColumnNumber])+ "\n")
+			print("Processing record " + str(index)+"/"+str(count_row)+ " in csv file; location: " + str(row[locationColumnNumber]))
 			if str(row[locationColumnNumber])!='' and str(row[locationColumnNumber])!='nan':
 				locList.append(row[locationColumnNumber])
 	if len(locList)==0:
 		mb.showwarning(title='Locations', message="There are no locations in your input file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.\n\nNo map via Google Earth Pro can be done.")
 		return
-	else:
-		# IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Finished extracting locations from csv file at", True)
-		print("Finished extracting locations from csv file")
+	IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Finished extracting locations from csv file at", True, '', True, startTime)
 	return sorted(locList)
 

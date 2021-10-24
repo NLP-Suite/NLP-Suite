@@ -167,7 +167,7 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
 
     # ------------------------------------------------------------------------------------------------------------------------------------------------
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Manager at', True, 'You can follow the script in command line.')
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Manager at', True, 'You can follow the script in command line.')
 
     if list_var==1:
         # extract the last subfolder of the path to be displayed as part of the output filename
@@ -344,7 +344,7 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
                         if fileFound:
                             i=i+1
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File manager at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File manager at', True, '', True, startTime)
 
     if i > 0:
         if rename_var==1:
@@ -405,7 +405,7 @@ GUI_util.run_button.configure(command=run_script_command)
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
-GUI_width=1200
+GUI_width=1220
 GUI_height=710 # height of GUI with full I/O display
 
 if IO_setup_display_brief:

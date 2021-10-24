@@ -130,11 +130,9 @@ def run(inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelC
             tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_main_dir_path,outputDir,n_grams_size, normalize, excludePunctuation,  0, openOutputFiles, createExcelCharts,
                                                               bySentenceIndex_character_var)
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams end',
-                                           'Finished running ' + n_grams_menu_var + ' n-grams at', True)
+                                           'Finished running ' + n_grams_menu_var + ' n-grams at', True, '', True, startTime)
 
-        # statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_main_dir_path,outputDir,4, normalize, excludePunctuation,  1,openOutputFiles,createExcelCharts,bySentenceIndex_word)
-    # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running ' + script_to_run + ' at', True)
-
+        # statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_mai
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
@@ -167,7 +165,7 @@ GUI_util.run_button.configure(command=run_script_command)
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
-GUI_width=1100
+GUI_width=1220
 GUI_height=550 # height of GUI with full I/O display
 
 if IO_setup_display_brief:

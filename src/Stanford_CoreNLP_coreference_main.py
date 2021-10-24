@@ -107,10 +107,6 @@ def run(inputFilename, inputDir, outputDir,
         if len(file_open) > 0:
             filesToOpen.extend(file_open)
 
-            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
-                                               'Finished running Stanford CoreNLP Co-Reference Resolution using the Neural Network approach at',
-                                               True)
-
     # split merged coreferenced file  --------------------------------------------------------------------------------------------------------
     # split <@# #@> --------------------------------------------------------------------------------------
 

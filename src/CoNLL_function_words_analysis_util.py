@@ -48,8 +48,7 @@ def compute_stats(data):
 
 def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputFiles,createExcelCharts):
     filesToOpen = []  # Store all files that are to be opened once finished
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running PRONOUN Analysis at', True)
-    
+
     #output file names
     function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Pronouns', 'list')
     function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename,'',  outputDir, '.csv', 'FW', 'Pronouns', 'stats')
@@ -103,12 +102,11 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
             if len(outputFiles) > 0:
                 filesToOpen.extend(outputFiles)
 
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running PRONOUN Analysis at', True)
+    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running PRONOUN Analysis at', True, '', True, startTime)
     return filesToOpen
 
 def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createExcelCharts):
     filesToOpen = []  # Store all files that are to be opened once finished
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running PREPOSITION Analysis at', True)
 
     #output file names
     function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Prepositions', 'list')
@@ -123,7 +121,6 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
     
     if 0:
         stats_prepositions(data)
-        # IO_util.timed_alert(GUI_util.window,3000,'Analysis start','Started running PRONOUN Analysis at',True)
     else:
         if not os.path.isdir(outputDir):
             mb.showwarning(title='output file path error', message='Please check OUTPUT DIRECTORY PATH and try again')
@@ -164,13 +161,11 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
             if len(outputFiles) > 0:
                 filesToOpen.extend(outputFiles)
 
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running PREPOSITION Analysis at', True)
     return filesToOpen
 
 def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createExcelCharts):
     filesToOpen = []  # Store all files that are to be opened once finished
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running ARTICLE Analysis at', True)
-    
+
     #output file names
     function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Articles', 'list')
     function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Articles', 'stats')
@@ -230,12 +225,10 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
             if len(outputFiles) > 0:
                 filesToOpen.extend(outputFiles)
 
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running ARTICLE Analysis at', True)
     return filesToOpen
 
 def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutputFiles,createExcelCharts):
     filesToOpen = []  # Store all files that are to be opened once finished
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CONJUNCTION Analysis at', True)
 
     #output file names
     function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Conjunctions', 'list')
@@ -293,13 +286,11 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
             if len(outputFiles) > 0:
                 filesToOpen.extend(outputFiles)
 
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CONJUNCTION Analysis at', True)
     return filesToOpen
 
 def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createExcelCharts):
     filesToOpen = []  # Store all files that are to be opened once finished
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running AUXILIARY Analysis at', True)
-    
+
     #output file names
     function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Auxiliaries', 'list')
     function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Auxiliaries', 'stats')
@@ -353,8 +344,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
             if len(outputFiles) > 0:
                 filesToOpen.extend(outputFiles)
 
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running AUXILIARY Analysis at', True)
-    return filesToOpen
+   return filesToOpen
 
 #for verb auxiliaries analysis
 def verb_data_preparation_auxiliary(data):
@@ -492,7 +482,7 @@ def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openO
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running FUNCTION WORDS ANALYSES at', True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running FUNCTION WORDS ANALYSES at', True)
 
     outputFiles = article_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                    openOutputFiles, createExcelCharts)
@@ -521,7 +511,7 @@ def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openO
     if outputFiles != None:
         filesToOpen.extend(outputFiles)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running FUNCTION WORDS ANALYSES at', True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running FUNCTION WORDS ANALYSES at', True, '', True, startTime)
 
     return filesToOpen
 

@@ -43,7 +43,7 @@ filesToOpen=[]
 
 def computeDistance(window,inputFilename,headers,locationColumnNumber,locationColumnNumber2,locationColumnName,locationColumnName2,distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue,outputDir):
 	currList=[]
-	IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS distance at', True, 'You can follow Geocoder in command line.')
+	startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS distance at', True, 'You can follow Geocoder in command line.')
 	if distinctValues==True:
 		distanceoutputFilename=IO_files_util.generate_output_file_name(inputFilename, outputDir, '.csv', 'GIS', 'distance', locationColumnName, locationColumnName2, 'DISTINCT', False, True)
 	else:
@@ -112,7 +112,7 @@ def computeDistance(window,inputFilename,headers,locationColumnNumber,locationCo
 						# geowriter.writerow([row[locationColumnNumber], row[locationColumnNumber2],row[locationColumnNumber+1],row[locationColumnNumber+2],row[locationColumnNumber2+1],row[locationColumnNumber2+2],distMiles,distKm,GCdistMiles,GCdistKm])
 						geowriter.writerow([row[locationColumnNumber],str(waypoints1[0]),str(waypoints1[1]),row[locationColumnNumber2],str(waypoints2[0]),str(waypoints2[1]),distMiles,distKm,GCdistMiles,GCdistKm])
 	outputFile.close()
-	IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running GIS distance at', True)
+	IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime)
 	return filesToOpen
 
 # The function computes the distance between a pre-selected city and all cities in a list
@@ -122,7 +122,7 @@ def computeDistance(window,inputFilename,headers,locationColumnNumber,locationCo
 
 def computeDistanceFromSpecificLocation(window,geolocator,geocoder,InputIsGeocoded,baselineLocation,inputFilename,headers,locationColumnNumber,locationColumnName,distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue,outputDir):
 	currList=[]
-	IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS distance from ' + baselineLocation + ' at', True, 'You can follow Geocoder in command line.')
+	startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS distance from ' + baselineLocation + ' at', True, 'You can follow Geocoder in command line.')
 	if distinctValues==True:
 		distanceoutputFilename=IO_files_util.generate_output_file_name(inputFilename, outputDir, '.csv', 'GIS', 'distance', baselineLocation, locationColumnName, 'DISTINCT', False, True)
 	else:
@@ -138,7 +138,7 @@ def computeDistanceFromSpecificLocation(window,geolocator,geocoder,InputIsGeocod
 		import IO_internet_util
 		if not IO_internet_util.check_internet_availability_warning('GIS geocoder'):
 			return
-		IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS geocoder at', True, 'You can follow Geocoder in command line.')
+		startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS geocoder at', True, 'You can follow Geocoder in command line.')
 		geoName='geo-'+str(geocoder[:3])
 		geocodedLocationsoutputFilename=IO_files_util.generate_output_file_name(inputFilename, outputDir, '.csv', 'GIS', geoName, locationColumnName, '', '', False, True)
 		locationsNotFoundFilename=IO_files_util.generate_output_file_name(inputFilename, outputDir, '.csv', 'GIS', geoName, 'Not-Found', locationColumnName, '', False, True)
@@ -230,5 +230,5 @@ def computeDistanceFromSpecificLocation(window,geolocator,geocoder,InputIsGeocod
 					GCdistKm=great_circle(waypoints1, waypoints2).km
 					geowriter.writerow([baselineLocation,str(waypoints1[0]),str(waypoints1[1]),currentLocation,str(waypoints2[0]),str(waypoints2[1]),distMiles,distKm,GCdistMiles,GCdistKm])
 	outputFile.close()
-	IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running GIS distance at', True)
+	IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime)
 	return filesToOpen

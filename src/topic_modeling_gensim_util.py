@@ -76,11 +76,11 @@ except:
 
 # find the optimal number of topics for LDA
 def compute_coherence_values(MalletDir, dictionary, corpus, texts, start, limit, step):
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started computing the coherence value for each topic')
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started computing the coherence value for each topic')
     coherence_values = []
     model_list = []
     for num_topics in range(start, limit, step):
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                            'Computing coherence value for topic number ' + str(num_topics))
         model = gensim.models.wrappers.LdaMallet(MalletDir,corpus=corpus, num_topics=num_topics, id2word=dictionary)
         model_list.append(model)
@@ -114,7 +114,7 @@ def format_topics_sentences(ldamodel, corpus, texts):
     return sent_topics_df
 
 def malletModelling(MalletDir, outputDir, createExcelCharts, corpus,num_topics, id2word,data_lemmatized, lda_model, data):
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Mallet LDA topic modeling at',True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Mallet LDA topic modeling at',True)
     config_filename='topic-modeling-gensim-config.txt'
     try:
         ldamallet = gensim.models.wrappers.LdaMallet(MalletDir, corpus=corpus, num_topics=num_topics, id2word=id2word)
@@ -137,11 +137,11 @@ def malletModelling(MalletDir, outputDir, createExcelCharts, corpus,num_topics, 
 
     # Compute Coherence value
     coherence_model_ldamallet = CoherenceModel(model=ldamallet, texts=data_lemmatized, dictionary=id2word, coherence='c_v')
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Compute Mallet LDA coherence values for each topic.\n\nPlease, be patient...')
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Compute Mallet LDA coherence values for each topic.\n\nPlease, be patient...')
     coherence_ldamallet = coherence_model_ldamallet.get_coherence()
     print('\nCoherence value: ', coherence_ldamallet)
     model_list, coherence_values = compute_coherence_values(MalletDir, dictionary=id2word, corpus=corpus, texts=data_lemmatized, start=2, limit=limit, step=6)
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Compute graph of optimal topics number.')
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Compute graph of optimal topics number.')
     limit=limit; start=2; step=6;
     x = range(start, limit, step)
     plt.plot(x, coherence_values)
@@ -303,7 +303,7 @@ def malletModelling(MalletDir, outputDir, createExcelCharts, corpus,num_topics, 
     #     filesToOpen.append(Excel_outputFilename)
 
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Mallet LDA topic modeling at',True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Mallet LDA topic modeling at',True, '', True, startTime)
 
 def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
                                       lemmatize, nounsOnly, run_Mallet, openOutputFiles,createExcelCharts):
@@ -326,7 +326,7 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
         if result == False:
             return
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start',
                                        'Started running Gensim Topic modeling at ', True,
                                        "Depending upon corpus size, computations may take a while... Please, be patient...")
 

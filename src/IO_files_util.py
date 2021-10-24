@@ -121,7 +121,7 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False):
 
 def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outputFileVar=None,
                initialFolder=''):
-    filePath = ""
+    inputFilename = ""
     # print(fileType, extension, GUI_util.output_dir_path.get())
     if initialFolder == '':
         # initialFolder = os.path.dirname(os.path.abspath(__file__)) # this sets itself on NLP\src
@@ -132,26 +132,26 @@ def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outp
                 initialFolder = GUI_util.output_dir_path.get()
     if IsInputFile == True:  # as opposed to output file
         # when the file string is blank, the directory option should always also be available
-        filePath = tk.filedialog.askopenfilename(initialdir=initialFolder, title=title, filetypes=fileType)
+        inputFilename = tk.filedialog.askopenfilename(initialdir=initialFolder, title=title, filetypes=fileType)
         from os.path import splitext
-        file_name, extension = splitext(filePath)
+        file_name, extension = splitext(inputFilename)
     else:
         if outputFileVar != None:
             outputFilename = outputFileVar
-            filePath = tk.filedialog.asksaveasfile(initialdir=initialFolder, initialfile=outputFilename.get(),
+            inputFilename = tk.filedialog.asksaveasfile(initialdir=initialFolder, initialfile=outputFilename.get(),
                                                    title=title, filetypes=fileType)
         else:
             print('Error in output file name creation')
     # when the file string is blank, the directory option should always also be available
-    if filePath is None:
-        filePath = ""
-    filePath = str(filePath)
-    if len(filePath) < 3:
-        filePath = ""
-    if (checkCoNLL == True) and (IsInputFile == 1) and (extension == ".csv") and (len(filePath) > 3):
-        if IO_CoNLL_util.check_CoNLL(filePath, False) == False:
-            filePath = ""
-    return filePath
+    if inputFilename is None:
+        inputFilename = ""
+    inputFilename = str(inputFilename)
+    if len(inputFilename) < 3:
+        inputFilename = ""
+    if (checkCoNLL == True) and (IsInputFile == 1) and (extension == ".csv") and (len(inputFilename) > 3):
+        if IO_CoNLL_util.check_CoNLL(inputFilename, False) == False:
+            inputFilename = ""
+    return inputFilename
 
 
 def selectDirectory(title, initialFolder=''):
@@ -248,67 +248,67 @@ def checkDirectory(path, message=True):
 
 # check to make sure the file exists, and optionally that the desired extension matches the file's
 # also gives user the option to generate a message box warning of why
-def checkFile(filePath, extension=None, silent=False):
-    if 'reminders.csv' in filePath:
-        head, tail = os.path.split(filePath)
+def checkFile(inputFilename, extension=None, silent=False):
+    if 'reminders.csv' in inputFilename:
+        head, tail = os.path.split(inputFilename)
         reminders_util.generate_reminder_list(head)
-    if not os.path.isfile(filePath):
+    if not os.path.isfile(inputFilename):
         if not silent:
-            print("The file " + filePath + " could not be found.")
+            print("The file " + inputFilename + " could not be found.")
             mb.showwarning(title='Input file not found',
-                           message='Error in input filename and path.\n\nThe file ' + filePath + ' could not be found.\n\nPlease, check the INPUT FILE PATH and try again.')
+                           message='Error in input filename and path.\n\nThe file ' + inputFilename + ' could not be found.\n\nPlease, check the INPUT FILE PATH and try again.')
         return False
-    if extension != None and not '.' + filePath.rsplit('.', 1)[1] == extension:
+    if extension != None and not '.' + inputFilename.rsplit('.', 1)[1] == extension:
         if not silent:
             print('File has the wrong extension.')
             mb.showwarning(title='Input file extension error',
-                           message='Error in input filename and path.\n\nThe file ' + filePath + ' does not have the expected extension ' + extension + '\n\nPlease, check the INPUT FILE and try again.')
+                           message='Error in input filename and path.\n\nThe file ' + inputFilename + ' does not have the expected extension ' + extension + '\n\nPlease, check the INPUT FILE and try again.')
         return False
     else:
         return True
 
 
-# filePath contains filename with path
-def open_kmlFile(window,filePath):
+# inputFilename contains filename with path
+def open_kmlFile(window,inputFilename):
     if sys.platform == 'win32':
         # https://stackoverflow.com/questions/26498302/how-to-load-the-kml-file-into-google-earth-using-python
-        os.startfile(filePath)
-        # also webbrowser.open(filePath) will open the kml file in GEP
+        os.startfile(inputFilename)
+        # also webbrowser.open(inputFilename) will open the kml file in GEP
     elif sys.platform == 'darwin':
-        subprocess.Popen(['open', filePath])
+        subprocess.Popen(['open', inputFilename])
     else:
         try:
-            subprocess.Popen(['xdg-open', filePath])
+            subprocess.Popen(['xdg-open', inputFilename])
         except OSError:
-            print("OS error in opening file " + filePath)
+            print("OS error in opening file " + inputFilename)
 
 
 # opens a filename with its path
 # if a file with the same name is already open, it throws an error 
-def openFile(window, filePath):
-    if len(filePath) == 0:
+def openFile(window, inputFilename):
+    if len(inputFilename) == 0:
         tk.messagebox.showinfo("Input file error", "The filename is blank. No file can be opened.")
         return
-    if os.path.isfile(filePath):
+    if os.path.isfile(inputFilename):
         # windows
         if platform in ['win32', 'cygwin']:
             try:
-                os.system('start "" "' + filePath + '"')
+                os.system('start "" "' + inputFilename + '"')
             except IOError:
                 mb.showwarning(title='Input file error',
-                               message="Could not open the file " + filePath + "\n\nA file with the same name is already open. Please, close the Excel file and try again!")
+                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and try again!")
                 return True
         # macOS and other unix
         else:
             try:
-                call(['open', filePath])
+                call(['open', inputFilename])
             except IOError:
                 mb.showwarning(title='Input file error',
-                               message="Could not open the file " + filePath + "\n\nA file with the same name is already open. Please, close the Excel file and try again!")
+                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and try again!")
                 return True
     else:
-        tk.messagebox.showinfo("Error", "The file " + filePath + " could not be found.")
-        print("The file " + filePath + " could not be found.")
+        tk.messagebox.showinfo("Error", "The file " + inputFilename + " could not be found.")
+        print("The file " + inputFilename + " could not be found.")
 
 
 # open a set of output files (csv, txt,...) stored as a list in filesToOpen
@@ -342,32 +342,32 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen):
         #     filesToOpen.clear()
 
 
-def getFileExtension(inputfilePath):
-    path, inputfile = ntpath.split(inputfilePath)  # remove/take out path
+def getFileExtension(inputFilename):
+    path, inputfile = ntpath.split(inputFilename)  # remove/take out path
     inputfile, extension = os.path.splitext(inputfile)  # remove/take out the extension
     return extension
 
 
-def getFilename(inputfilePath):
-    path, inputfile = ntpath.split(inputfilePath)  # remove/take out path
+def getFilename(inputFilename):
+    path, inputfile = ntpath.split(inputFilename)  # remove/take out path
     inputfile, extension = os.path.splitext(inputfile)  # remove/take out the extension
     return inputfile
 
 
-# inputfilePath is the input filename with path
+# inputFilename is the input filename with path
 # returns outFilename with path
 # label1 (SCNLP, QC, NVA,...)
 #  in label1 the following labels are passed by the calling script: SCNLP (Stanford CoreNLP), QC (query conll), NVA (noun verb analysis), FW (function words), TC (tpic modeling), SA (sentiment analysis), CA (concretenss analysis)
 # label2 (sub-field, e.g., pigs_Lemma, or hedonometer)
 # label3,label4,label5 are available options
-def generate_output_file_name(inputfilePath, inputDir, outputDir, outputExtension, label1='', label2='', label3='', label4='',
+def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtension, label1='', label2='', label3='', label4='',
                               label5='', useTime=True, disable_suffix=False):
     useTime = False  # files become too long with the addition of datetime
     if inputDir!='':
         Dir = os.path.basename(os.path.normpath(inputDir))
         inputfile='Dir_' + Dir
     else:
-        inputfile = getFilename(inputfilePath)
+        inputfile = getFilename(inputFilename)
     default_outputFilename_str =''
     # do not add the NLP_ prefix if processing a file previously processed and with the prefix already added
     if "NLP_" not in inputfile:
@@ -538,8 +538,8 @@ def run_jar_script(scriptName, inputFilename, input_main_dir_path, output_dir_pa
         """
         Error in input parameters
         Usage Example:
-        args1 = "inputFilePath"
-        args2 = "outputFilePath.gexf"
+        args1 = "inputFilename"
+        args2 = "outputinputFilename.gexf"
         args3 = true or false
         args4 = $$$
         # if checkIO_Filename_InputDir ("Sentence Visualization: Dynamic Sentence Network Viewer (Gephi graphs)",inputFilename, input_main_dir_path, output_dir_path):
@@ -571,11 +571,11 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
                        createExcelCharts)
     else:  # with NO GUI; does not end with py
         if input_main_dir_path != '':
-            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                'Started running ' + script_to_run + ' at', True,
                                                'You can follow ' + script_to_run + ' in command line.')
         else:
-            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                'Started running ' + script_to_run + ' at', True)
         script = script_to_run.split(".", 1)
         import importlib
@@ -595,7 +595,7 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
                  openOutputFiles,createExcelCharts)
 
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                           'Finished running ' + script_to_run + ' at', True)
+                                           'Finished running ' + script_to_run + ' at', True, '', True, startTime)
 
 
 """

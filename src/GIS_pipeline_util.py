@@ -85,7 +85,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
     if GoogleEarthProDir == None:
         return '', ''
 
-    IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS pipeline at', True,
+    startTime = IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS pipeline at', True,
                                        'You can follow the pipeline in command line.')
 
     #
@@ -219,5 +219,5 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
         GIS_Google_Maps_util.create_js(heatMapoutputFilename, coordList, geocoder, True)
         filesToOpen.append(heatMapoutputFilename)
 
-    IO_user_interface_util.timed_alert(window, 5000, 'Analysis end', 'Finished running GIS pipeline at', True)
+    IO_user_interface_util.timed_alert(window, 5000, 'Analysis end', 'Finished running GIS pipeline at', True, '', True, startTime)
     return filesToOpen, kmloutputFilename
