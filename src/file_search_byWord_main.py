@@ -259,6 +259,8 @@ search_by_keyword_var.trace('w',activate_allOptions)
 
 activate_allOptions()
 
+videos_lookup = {'No videos available':''}
+videos_options='No videos available'
 
 TIPS_lookup = {'No TIPS available':''}
 TIPS_options='No TIPS available'
@@ -287,7 +289,7 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 # change the value of the readMe_message
 readMe_message="These Python 3 scripts search txt files by single words or collocations (e.g., a set of multiple words, such as 'coming out' or 'standing in line'). Search words can be entered in a csv dictionary or manually in the GUI enter widget.\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in the text."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 # a reminder is in file_manager_merger_splitter_main
 #	reminders_util.checkReminder("Split output files")

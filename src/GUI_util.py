@@ -682,8 +682,8 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
 
 #__________________________________________________________________________________________________________________
 #GUI bottom buttons widgets (ReadMe, TIPS, RUN, CLOSE)
-def GUI_bottom(config_filename, config_input_output_options,y_multiplier_integer,readMe_command,
-               videos_lookup,videos_options, TIPS_lookup,TIPS_options, IO_setup_display_brief,ScriptName=''):
+def GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command,
+               videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,ScriptName=''):
 
     """
     :type TIPS_options: object
@@ -741,7 +741,6 @@ def GUI_bottom(config_filename, config_input_output_options,y_multiplier_integer
     else:
         videos_menu_lb = tk.OptionMenu(window,videos_dropdown_field,*videos_options)
         videos_menu_lb.configure(foreground="red")
-
     videos_menu_lb.place(x=GUI_IO_util.watch_videos_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     videos_util.trace_open_videos(videos_dropdown_field, videos_menu_lb, videos_lookup)

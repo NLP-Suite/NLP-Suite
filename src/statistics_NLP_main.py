@@ -567,6 +567,9 @@ def changed_filename(*args):
 # inputFilename.trace('w',changed_filename)
 # changed_filename()
 
+videos_lookup = {'No videos available':''}
+videos_options='No videos available'
+
 TIPS_lookup = {'Statistical tools in the NLP Suite': 'TIPS_NLP_Statistical tools.pdf',
                'Statistical descriptive measures': "TIPS_NLP_Statistical measures.pdf",
                'Lemmas & stopwords':'TIPS_NLP_NLP Basic Language.pdf',
@@ -613,7 +616,7 @@ help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get
 readMe_message = "The Python 3 scripts provide ways of building ditionaries and of using these dictionary entries to annotate documents for matching terms found in a dictionary file and in DBpedia."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 changed_filename()
 inputFilename.trace('w', changed_filename)

@@ -58,7 +58,7 @@ def videos_Tracer(*args):
         mb.showinfo(title='videos Warning', message="There are no videos available for this script.")
         return
     foundvideos = checkvideosDir(menu)
-    if foundvideos and field.get()!='Open videos files':
+    if foundvideos and field.get()!='Watch videos':
         get_videos(field.get(),lookup, menu, field)
 
 """
@@ -80,7 +80,7 @@ def trace_open_videos(field_local,menu_local,lookup_local):
 def open_videos(selected_videos):
     if os.path.isfile(os.path.join(GUI_IO_util.videosPath, selected_videos)) == False:
         videosFile_Exists = False
-        mb.showinfo(title='videos Warning', message="The videos file\n\n" + lookup[
+        mb.showinfo(title='videos Warning', message="The video file\n\n" + lookup[
             selected_videos] + "\n\ncould not be found in your videos directory.")
         return False
     else:

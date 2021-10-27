@@ -38,7 +38,7 @@ import GIS_geocode_util
 def run(inputFilename,outputDir, openOutputFiles, createExcelCharts,
         encoding, geocoder,
         # geocode,
-        compute_pairwise_distances, baselineLocation,locationColumn,locationColumn2):
+        compute_pairwise_distances, compute_baseline_distances, baselineLocation,locationColumn,locationColumn2):
 
 
     filesToOpen = []
@@ -57,32 +57,46 @@ def run(inputFilename,outputDir, openOutputFiles, createExcelCharts,
 
     inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable=GIS_file_check_util.CoNLL_checker(inputFilename)
 
-    if inputFilename == '' or inputFilename.endswith('.csv') == False:
-        mb.showwarning(title='File type error',
-                       message='The input file\n\n' + inputFilename + '\n\nis not an expected csv file. Please, check the file and try again.')
-        return
+    # if input_main_dir_path.get()!='':
+    #     mb.showwarning(title='File type error',
+    #                    message='The GIS distance scripts expects in input a csv file. Please, select a csv file and try again.')
+    #     return
+    # if inputFilename.endswith('.csv') == False:
+    #     mb.showwarning(title='File type error',
+    #                    message='The input file\n\n' + inputFilename + '\n\nis not an expected csv file. Please, check the file and try again.')
+    #     return
 
-    if baselineLocation != '' and locationColumn=="":
+    if compute_pairwise_distances== False and compute_baseline_distances==False:
         mb.showwarning(title='Warning',
-                       message='You are running the GIS distance algorithm from the baseline location ' + baselineLocation + '. You must select the column containing the First location name.\n\nPlease, using the dropdown menu, select the column of the FIRST location names and try again.')
+                       message="No options have been selected.\n\nPlease, select an option and try again.")
         return
 
-    if compute_pairwise_distances== False and (locationColumn==""):
+    if compute_pairwise_distances== True and inputIsGeocoded==False:
+        mb.showwarning(title='Warning',
+                       message='You are running the GIS algorithm for pairwise distances with an input file that seems to be non-geocoded. You cannot run this option with non-geocoded data. You can only run the option "Compute distances from baseline location."\n\nPlease, select a different option or a geocoded file with six columns and try again.')
+        return
+
+    if compute_pairwise_distances and (locationColumn==""):
         mb.showwarning(title='Warning',
                        message='You are running the GIS algorithm for pairwise distances. You must select the column containing the First location names.\n\nPlease, using the dropdown menu, select the column of the FIRST location names and try again.')
         return
 
-    if compute_pairwise_distances== True and len(headers)<6:
+    if compute_pairwise_distances== True and inputIsGeocoded and len(headers)<6:
         mb.showwarning(title='Warning',
                        message='You are running the GIS algorithm for pairwise distances. But your input file has fewer than the expected 6 headers (Location1, Latitude1, Longitude1, Location2, Latitude2, Longitude2):\n\n' + str(headers) + '\n\nPlease, select a different file and try again.')
         return
 
-    if baselineLocation == '' and compute_pairwise_distances== False and (locationColumn=="" or locationColumn2==""):
+    if compute_pairwise_distances== False and inputIsGeocoded and (locationColumn=="" or locationColumn2==""):
         mb.showwarning(title='Warning',
                        message='You are running the GIS distance algorithm using two sets of locations. You must select the columns containing the First and Second location names.\n\nPlease, using the dropdown menu, select the column of the FIRST and SECOND location names and try again.')
         return
 
-    geocoder = 'Nominatim'
+    if compute_baseline_distances and baselineLocation != '' and locationColumn=="":
+        mb.showwarning(title='Warning',
+                       message='You are running the GIS distance algorithm from the baseline location ' + baselineLocation + '. You must select the column containing the First location name.\n\nPlease, using the dropdown menu, select the column of the FIRST location names and try again.')
+        return
+
+
     locationColumnNumber = 0
     locationColumnNumber2 = 0
 
@@ -107,26 +121,16 @@ def run(inputFilename,outputDir, openOutputFiles, createExcelCharts,
     numColumns=len(headers)
     split_locations=''
 
-    if len(baselineLocation)>0:
-        filesToOpen=GIS_distance_util.computeDistanceFromSpecificLocation(GUI_util.window,inputFilename, outputDir, createExcelCharts, geolocator,geocoder,inputIsGeocoded,baselineLocation, headers,locationColumnNumber,locationColumn, distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue)
+    if compute_baseline_distances and baselineLocation!='':
+        filesToOpen=GIS_distance_util.computeDistancesFromSpecificLocation(GUI_util.window,inputFilename, outputDir, createExcelCharts, geolocator,geocoder,inputIsGeocoded,baselineLocation, headers,locationColumnNumber,locationColumn, distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue)
         if len(filesToOpen)==0:
             return
-    else:
-        if compute_pairwise_distances:
-            if inputIsGeocoded==True:
-                filesToOpen=GIS_distance_util.computeDistance(GUI_util.window,inputFilename,outputDir,createExcelCharts,headers,locationColumnNumber,locationColumnNumber2,locationColumn,locationColumn2, distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue)
-                if len(filesToOpen)==0:
-                    return
-            else:
-                inputFilename = GIS_distance_util.geocode_baseline_location_distance(GUI_util.window,inputFilename,outputDir, locationColumnNumber,locationColumnNumber2,locationColumn,locationColumn2,
-                                                                  geolocator,geocoder,inputIsCoNLL,datePresent,numColumns,encodingValue)
-                if numColumns > 2:
-                    locationColumnNumber = 0
-                    locationColumnNumber2 = 1
-                locationColumnNumber2 = locationColumnNumber2+2
-                filesToOpen=GIS_distance_util.computeDistance(GUI_util.window,inputFilename,outputDir,createExcelCharts,headers,locationColumnNumber,locationColumnNumber2,locationColumn,locationColumn2, distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue)
-                if len(filesToOpen)==0:
-                    return
+    if compute_pairwise_distances:
+        filesToOpen=GIS_distance_util.computePairwiseDistances(GUI_util.window,inputFilename,outputDir,createExcelCharts,headers,locationColumnNumber,locationColumnNumber2,locationColumn,locationColumn2, distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue)
+        if len(filesToOpen)==0:
+            return
+        if len(filesToOpen) == 0:
+            return
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -140,6 +144,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             geocoder_var.get(),
                             # geocode_var.get(),
                             compute_pairwise_distances_var.get(),
+                            compute_baseline_distances_var.get(),
                             baselineLocation_entry_var.get(),
                             location_var.get(),
                             location_var2.get())
@@ -268,6 +273,7 @@ def activate_options(*args):
         compute_baseline_distances_checkbox.configure(state='disabled')
         baselineLocation_entry.configure(state='disabled')
         location_field2.configure(state='normal')
+        baselineLocation_entry_var.set('')
     else:
         compute_baseline_distances_checkbox.configure(state='normal')
         baselineLocation_entry.configure(state='normal')
@@ -281,6 +287,7 @@ def activate_options(*args):
         compute_pairwise_distances_checkbox.configure(state='normal')
         baselineLocation_entry.configure(state='disabled')
         location_field2.configure(state='normal')
+        baselineLocation_entry_var.set('')
 
 compute_pairwise_distances_var.trace('w',activate_options)
 compute_baseline_distances_var.trace('w',activate_options)
@@ -312,6 +319,9 @@ inputFilename.trace('w', changed_GIS_filename)
 
 changed_GIS_filename()
 
+videos_lookup = {'No videos available':''}
+videos_options='No videos available'
+
 TIPS_lookup = {"Geocoding":"TIPS_NLP_Geocoding.pdf","Geographic distances":"TIPS_NLP_GIS distances.pdf"}
 TIPS_options='Geocoding', 'Geographic distances'
 
@@ -329,21 +339,24 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
 
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","Please, using the dropdown menu, select the type of geocoding service you wish to use, Google or Nominatim. For Google you need an API key."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help","Please, tick the checkbox if you wish to geocode a list of locations."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help","Please, tick the checkbox if you wish to compute distances of all locations listed in your input file.\n\nIn INPUT the script expects geocoded data with Latitude and Longitude values for two sets of locations whose distances you want to compute. The input file must have a column with the FIRST selected location name, followed by its latitude and longitude; followed by the SECOND selected location name, followed by its latitude and longitude.\n\nSix columns in input are expected (e.g., Location1, Latitude1, Longitude1, Location2, Latitude2, Longitude2, in this order). The input csv file may contain other fields but the location and geocoded fields MUST be in this order."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help","Please, tick the checkbox if you wish to compute distances of all locations listed in your input file from a specific location (e.g., Atlanta). You will need to enter the location name (e.g., again, Atlanta).\n\nIn INPUT the script expects geocoded data with Latitude and Longitude values for a set of locations whose distances from a baseline location you want to compute. The input file must have a column with the FIRST selected location name, followed by its latitude and longitude.\n\nThree columns in input are expected (e.g., Location, Latitude, Longitude, in this order). The input csv file may contain other fields but the location and geocoded fields MUST be in this order."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help","Please, using the dropdown menu, select the column containing the FIRST set of location names (e.g., Location1)."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+7),"Help","Please, using the dropdown menu, select the column containing the SECOND set of location names (e.g., Location2)."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+8),"Help",GUI_IO_util.msg_openOutputFiles)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help","Please, tick the checkbox if you wish to compute distances of all locations listed in your input file.\n\nIn INPUT the script expects geocoded data with Latitude and Longitude values for two sets of locations whose distances you want to compute. The input file must have a column with the FIRST selected location name, followed by its latitude and longitude; followed by the SECOND selected location name, followed by its latitude and longitude.\n\nSix columns in input are expected (e.g., Location1, Latitude1, Longitude1, Location2, Latitude2, Longitude2, in this order). The input csv file may contain other fields but the location and geocoded fields MUST be in this order."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help","Please, tick the checkbox if you wish to compute distances of all locations listed in your input file from a specific location (e.g., Atlanta). You will need to enter the location name (e.g., again, Atlanta).\n\nIn INPUT the script expects either\n   1. a list of locations that will be geocoded before computing distances from a baseline location. The input file must have a column of locations (selected in the FIRST selected location names).\n   2. geocoded data with Latitude and Longitude values for a set of locations whose distances from a baseline location you want to compute. The input file must have a column with the FIRST selected location name, followed by its latitude and longitude."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help","Please, using the dropdown menu, select the column containing the FIRST set of location names (e.g., Location1)."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help","Please, using the dropdown menu, select the column containing the SECOND set of location names (e.g., Location2)."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+7),"Help",GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script computes geographic distances between locations, in both kilometers and miles, by either geodesic distance or by great circle distance. Distances will be visualized in Excel charts.\n\nBoth GEODESIC and GREAT CIRCLE distances, in miles and kilometers, will be computed.\n\nIn INPUT the script expects geocoded data with Latitude and Longitude values for one or two sets of locations, depending upon whether distances are computed from a specific baseline location or between two sets of locations listed in a csv input file. The input file must have a column with the FIRST selected location name, followed by its latitude and longitude; when computing pairwise distances, these first three columns must be followed by the SECOND selected location name, followed by its latitude and longitude.\n\nThe input csv file may contain other fields but the location and geocoded fields MUST be in this order.\n\nEnter a location name (e.g., New York) in the 'Enter baseline location' field, if you wish to compute distances of all locations listed in your input file from a specific location (again, e.g., New York)."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options,IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 def checkFile(*args):
+    if input_main_dir_path.get()!='':
+        mb.showwarning(title='File type error',
+                       message='The GIS distance scripts expects in input a csv file. Please, select a csv file and try again.')
+        return
     if not inputFilename.get().endswith('.csv'):
         mb.showwarning(title='File type error',
                        message='The input file\n\n' + inputFilename.get() + '\n\nis not an expected csv file. Please, check the file and try again.')

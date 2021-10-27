@@ -24,34 +24,37 @@ def convert_time(time):
     minutes = int((time - hours * 3600) / 60)
     seconds = int(time - hours * 3600 - minutes * 60)
     message=''
-    if seconds == 0:
-        second_label = ''
     if seconds == 1:
         second_label = ' second'
     else:
         second_label = ' seconds'
-    if minutes == 0:
-        minute_label = ''
-    elif minutes == 1:
-        minute_label = ' minute '
+    if minutes == 1:
+        minute_label = ' minute'
     else:
-        minute_label = ' minutes '
-    if hours == 0:
-        hour_label = ''
-    elif hours == 1:
+        minute_label = ' minutes'
+    if hours == 1:
         hour_label = ' hour, '
     else:
         hour_label = ' hours, '
 
-    if hours>0:
-        message=str(hours) + hour_label
-    if minutes>0:
-        if hours == 0:
-            message=message+str(minutes) + minute_label + 'and '
+    # compose message
+    if hours > 0:
+        message = str(hours) + hours_label
+    if minutes >= 0:
+        if hours > 0:
+            message = message + ', '
+            message=message+str(minutes) + minute_label
         else:
-            message = message + str(minutes) + minute_label + ', and '
-    if seconds>0:
-        message=message+str(seconds) + second_label
+            if minutes>0:
+                message=message+str(minutes) + minute_label
+    if seconds>=0:
+        if hours>0:
+            message=message+ ', and ' + str(seconds) + second_label
+        else:
+            if minutes>0:
+                message = message + ' and ' + str(seconds) + second_label
+            else:
+                message = message + str(seconds) + second_label
     return hours, minutes, seconds, message
 
 def timed_alert(window, timeout, message_title, message_text, time_needed=False, extraLine='', printInCommandLine=True, startTime=''):
