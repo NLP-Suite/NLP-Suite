@@ -79,7 +79,6 @@ def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_
         data_to_be_plotted = get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,data)
     return data_to_be_plotted
 
-# called, for instance, from NLP.py
 # best approach when all the columns to be plotted are already in the file
 #   otherwise, use Excel_util.compute_csv_column_frequencies
 # only one hover-over column per series can be selected

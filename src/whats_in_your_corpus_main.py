@@ -207,7 +207,7 @@ def run(inputFilename,inputDir, outputDir,
                             noun_verb='VERB'
                         else:
                             return
-                        output = WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, noun_verb,
+                        output = WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, config_filename, noun_verb,
                                                                     openOutputFiles, createExcelCharts)
                         if output!=None:
                             filesToOpen.extend(output)
@@ -218,7 +218,7 @@ def run(inputFilename,inputDir, outputDir,
                             noun_verb='NOUN'
                         else:
                             return
-                        output = WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, noun_verb,
+                        output = WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, config_filename, noun_verb,
                                                                     openOutputFiles, createExcelCharts)
                         if output!=None:
                             filesToOpen.extend(output)
@@ -229,7 +229,7 @@ def run(inputFilename,inputDir, outputDir,
 
         if what_else_var and what_else_menu_var == '*':
             annotator_list = ['NER', 'gender', 'quote', 'normalized-date']
-            NER_list=['PERSON','ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY']
+            NER_list=['PERSON','ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir, openOutputFiles, createExcelCharts,
                                                                       annotator_list, False, memory_var,
@@ -274,7 +274,7 @@ def run(inputFilename,inputDir, outputDir,
 
         if locations_var == True:
             annotator = 'NER'
-            NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY']
+            NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
 
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir, openOutputFiles, createExcelCharts,

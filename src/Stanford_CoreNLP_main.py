@@ -1,5 +1,4 @@
-# Written by Cynthia Dong October 2019
-# Edited Roberto Franzosi
+# Written by Roberto Franzosi
 
 import sys
 import GUI_util

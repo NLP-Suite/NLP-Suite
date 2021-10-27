@@ -311,7 +311,7 @@ def openFile(window, inputFilename):
         print("The file " + inputFilename + " could not be found.")
 
 
-# open a set of output files (csv, txt,...) stored as a list in filesToOpen
+# open a set of output files (csv, txt,...) stored as a list in filesToOpen []
 def OpenOutputFiles(window, openOutputFiles, filesToOpen):
     if filesToOpen == None:
         return

@@ -6,6 +6,8 @@ from nltk.stem import WordNetLemmatizer
 
 import IO_files_util
 import IO_user_interface_util
+import Excel_util
+import IO_csv_util
 
 def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, outputDir) -> list:
     """
@@ -147,8 +149,18 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
 
     return output_name
 
+def visualize_Excel_chart(createExcelCharts, inputFilename, outputDir, filesToOpen, columns_to_be_plotted,
+                              chartType, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label):
+        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                  outputFileLabel=outputFileNameType,
+                                                  chart_type_list=[chartType],
+                                                  chart_title=chartTitle,
+                                                  column_xAxis_label_var=column_xAxis_label,
+                                                  hover_info_column_list=hover_label,
+                                                  count_var=count_var)
+        return Excel_outputFilename
 
-def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filter_o_fileName, lemmatize_s, lemmatize_v,lemmatize_o):
+def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filter_o_fileName, lemmatize_s, lemmatize_v,lemmatize_o, outputDir, createExcelCharts=True):
     """
     Filters a svo csv file based on the dictionaries given, and replaces the original output csv file
     :param svo_file_name: the name of the svo csv file
@@ -166,14 +178,14 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
     # Generating filter dicts
     if filter_s_fileName:
-        s_dict = open(filter_s_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')
-        s_dict = set(s_dict)
+        s_set = open(filter_s_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')
+        s_set = set(s_set)
     if filter_v_fileName:
-        v_dict = open(filter_v_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')
-        v_dict = set(v_dict)
+        v_set = open(filter_v_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')
+        v_set = set(v_set)
     if filter_o_fileName:
-        o_dict = open(filter_o_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')
-        o_dict = set(o_dict)
+        o_set = open(filter_o_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')
+        o_set = set(o_set)
 
     # Adding rows to filtered df
     for i in range(len(df)):
@@ -188,11 +200,12 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
         if pd.notnull(df.loc[i, 'O']):
             object = lemmatizer.lemmatize(df.loc[i, 'O'], 'n')
 
-        if subject and filter_s_fileName and subject not in s_dict:
+        # The s_set, v_set, and o_set are sets. The “in” in set is equivalent to “==” in string.
+        if subject and filter_s_fileName and subject not in s_set:
             continue
-        if verb and filter_v_fileName and verb not in v_dict:
+        if verb and filter_v_fileName and verb not in v_set:
             continue
-        if object and filter_o_fileName and object not in o_dict:
+        if object and filter_o_fileName and object not in o_set:
             continue
 
         # the next line does NOT replace the original SVO;
@@ -211,6 +224,30 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
     # Replacing the original csv file
     filtered_df.to_csv(svo_file_name, index=False)
+
+    filesToOpen = []
+
+    if IO_csv_util.GetNumberOfRecordInCSVFile(svo_file_name,encodingValue='utf-8')>1:
+
+        Excel_outputFilename = visualize_Excel_chart(createExcelCharts, svo_file_name, outputDir, filesToOpen, [[3, 3]], 'bar',
+                                            'Frequency Distribution of Subjects (filtered)', 1, [], 'S_bar',
+                                            'Subjects (filtered)')
+        if len(Excel_outputFilename) > 0:
+            filesToOpen.append(Excel_outputFilename)
+
+        Excel_outputFilename = visualize_Excel_chart(createExcelCharts, svo_file_name, outputDir, filesToOpen, [[4, 4]], 'bar',
+                                            'Frequency Distribution of Verbs (filtered)', 1, [], 'V_bar',
+                                            'Verbs (filtered)')
+        if len(Excel_outputFilename) > 0:
+            filesToOpen.append(Excel_outputFilename)
+
+        Excel_outputFilename = visualize_Excel_chart(createExcelCharts, svo_file_name, outputDir, filesToOpen, [[5, 5]], 'bar',
+                                            'Frequency Distribution of Objects (filtered)', 1, [], 'O_bar',
+                                            'Objects (filtered)')
+        if len(Excel_outputFilename) > 0:
+            filesToOpen.append(Excel_outputFilename)
+
+    return filesToOpen
 
 if __name__ == '__main__':
     senna_csv = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/test_output/SVO_Result/NLP_SENNA_SVO_Dir_test.csv'

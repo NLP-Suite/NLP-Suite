@@ -16,6 +16,7 @@ from nltk.corpus import wordnet as wn
 import pandas as pd
 import csv
 
+import reminders_util
 import Excel_util
 import IO_files_util
 import IO_user_interface_util
@@ -139,8 +140,18 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
     return filesToOpen
 
 # the header does not matter, it can be NUN or VERB or anything else
-# what mattes is the first column; and there can be multiple columns tha will not be processed
-def aggregate_GoingUP(WordNetDir, inputFile, outputDir, noun_verb,openOutputFiles,createExcelCharts):
+# what matters is the first column; and there can be multiple columns tha will not be processed
+def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb,openOutputFiles,createExcelCharts):
+
+    if noun_verb == 'VERB':
+        reminders_util.checkReminder(
+            config_filename,
+            reminders_util.title_options_WordNet_verb_aggregation,
+            reminders_util.message_WordNet_verb_aggregation,
+            True)
+
+    # for noun_verb == 'VERB' we should provide the user with two different outputs; with and without be, have
+    # the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get')
 
     filesToOpen=[]
     if IO_libraries_util.inputProgramFileCheck('WordNet_Search_UP.jar') == False:

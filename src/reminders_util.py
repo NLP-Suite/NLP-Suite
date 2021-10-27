@@ -87,6 +87,9 @@ message_CoreNLP_NER_tags = "The CoNLL table produced by the CoreNLP parser has a
 title_options_CoreNLP_POS_NER_maxlen = ['CoreNLP POS/NER max sentence length']
 message_CoreNLP_POS_NER_maxlen = "The CoreNLP POS/NER annotators set a maximum sentence length for processing.\n\nSentences longer that your selected max length will be cut and some POS/NER tags in those long sentences may be be lost."
 
+title_options_CoreNLP_quote_annotator = ['CoreNLP quote annotator']
+message_CoreNLP_quote_annotator = "The CoreNLP quote annotator works only with double quotes \" rather than with single quotes \'. Do make sure your documents do not use single quotes for dialogues or they would be missed (e.g., The user said: 'This NLP Suite sucks.')."
+
 title_options_memory = ['Available memory']
 message_memory = 'Your computer may not have enough memory to run some of the more resource-intensive algorithms of Stanford CoreNLP (e.g., coreference or some neural network models)\n\nStill, there are several options you may take (e.g., splitting up long documents into shorter parts and feeding tem to CoreNLP; checking your sentence length statistics - anything above 70 will most likely give you troubles, cnsidering that the average sentence length in modern English is 20 words). On Stanford Core NLP and memory issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.'
 

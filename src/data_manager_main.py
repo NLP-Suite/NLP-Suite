@@ -2,12 +2,11 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"data_manager.py", ['os', 'tkinter', 'pandas', 'functools'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"data_manager_main.py", ['os', 'tkinter', 'pandas', 'functools'])==False:
     sys.exit(0)
 
 import tkinter as tk
 import pandas as pd
-from functools import reduce
 import tkinter.messagebox as mb
 from pandas import DataFrame
 import os.path
@@ -17,123 +16,9 @@ import GUI_util
 import GUI_IO_util
 import IO_csv_util
 import statistics_csv_util
+import data_manager_util
 
 # RUN section ________________________________________________________________________________________________________
-
-
-def listToString(s, sep):
-    str1 = ""
-    for ele in s:
-        str1 = str1 + ele + sep
-    return str1[:-1]
-
-
-def get_comparator(phrase: str) -> str:
-    if phrase == 'not equals':
-        return '!='
-    elif phrase == 'equals':
-        return '=='
-    elif phrase == 'greater than':
-        return '>'
-    elif phrase == 'greater than or equals':
-        return '>='
-    elif phrase == 'less than':
-        return '<'
-    elif phrase == 'less than or equals':
-        return '<='
-    else:
-        return ''
-        # assert False, "Invalid comparator phrase"
-
-
-def select_csv(files):
-    for file in files:
-        df = pd.read_csv(file)
-        yield df
-
-
-def select_columns(dfs: list, columns: list):
-    for df in get_cols(dfs, columns):
-        yield df
-
-
-def concat(dfs: list, separator: str):
-    s = pd.DataFrame
-    for i in range(len(dfs)):
-        if i == 0:
-            s = dfs[i].astype(str) + separator
-        else:
-            if i != len(dfs) - 1:
-                s = s + dfs[i].astype(str) + separator
-            else:
-                s = s + dfs[i].astype(str)
-    return s
-
-
-# helper method
-def get_cols(dfs: list, headers: list):
-    if len(headers) != len(dfs):
-        return 'Unmatching number of dataframes and headers'
-    else:
-        for i in range(len(dfs)):
-            yield (dfs[i])[headers[i]]
-
-
-def extract_from_csv(filePath, outputDir, data_files, csv_file_field_list):
-    outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv',
-                                                             'extract',
-                                                             'stats', '', '', '', False, True)
-    sign_var = [s.split(',')[2] for s in csv_file_field_list]
-    value_var = [s.split(',')[3] for s in csv_file_field_list]
-    headers = [s.split(',')[1] for s in csv_file_field_list]
-    if len(data_files) <= 1:
-        data_files = data_files * len(headers)
-    df_list = []
-    value: str
-    header: str
-    if len(csv_file_field_list)==0:
-        mb.showwarning(title='Missing field(s)',
-                       message="No field(s) to be extracted have been selected.\n\nPlease, select field(s) and try again.")
-        return
-    for (sign, value, header, df) in zip(sign_var, value_var, headers, data_files):
-        if ' ' in header:
-            header = "`" + header + "`"
-        if sign == "''" and value == "''":
-            df_list.append(df[[header]])
-        else:
-            sign = get_comparator(sign)
-            if sign=='':
-                mb.showwarning(title='Missing sign condition',
-                               message="No condition has been entered for the \'WHERE\' value entered.\n\nPlease, include a condition for the \'WHERE\' value and try again.")
-                return
-            if '\'' not in value and not value.isdigit():
-                value = '\'' + value + '\''
-            query = header + sign + value
-            result = df.query(query, engine='python')
-            df_list.append(result)
-    df_extract = df_list[0]
-    for index, df_ex in enumerate(df_list):
-
-        if csv_file_field_list[index].split(',')[4] in ['and', "''"]:
-            if index == len(df_list) - 1:
-                continue
-            df_extract = df_extract.merge(df_list[index + 1], how='inner',
-                                          right_index=True,
-                                          left_index=True)
-        elif csv_file_field_list[index].split(',')[4] == 'or':
-            if index == len(df_list) - 1:
-                continue
-            df_extract = df_extract.merge(df_list[index + 1], how='outer',
-                                          right_index=True,
-                                          left_index=True)
-        elif csv_file_field_list[index].split(',')[4] == '' and index != len(df_list) - 1:
-            mb.showwarning(title='Missing and/or condition',
-                           message="Please include an and/or condition between each WHERE condition on the column you want to extract!")
-        else:
-            pass
-    df_extract.to_csv(outputFilename,index=False)
-    filesToOpen.append(outputFilename)
-    return filesToOpen
 
 
 def run(inputFilename,
@@ -146,9 +31,9 @@ def run(inputFilename,
     filesToOpen = []  # Store all files that are to be opened once finished
 
     filePath = [s.split(',')[0] for s in csv_file_field_list]  # file filePath
-    data_files = [file for file in select_csv(filePath)]  # dataframes
+    data_files = [file for file in data_manager_util.select_csv(filePath)]  # dataframes
     headers = [s.split(',')[1] for s in csv_file_field_list]  # headers
-    data_cols = [file for file in get_cols(data_files, headers)]  # selected cols
+    data_cols = [file for file in data_manager_util.get_cols(data_files, headers)]  # selected cols
 
     if operation_text_var.get()=='':
         mb.showwarning(title='Warning',
@@ -200,20 +85,25 @@ def run(inputFilename,
                 if len(temp) >= 3:
                     sep = temp[2]
                     break
-        df_concat = concat(data_cols, sep)  # TODO: Could sep potentially be null?
-        df_concat.to_csv(outputFilename, header=[listToString(headers, sep)])
+        df_concat = data_manager_util.concat(data_cols, sep)  # TODO: Could sep potentially be null?
+        df_concat.to_csv(outputFilename, header=[data_manager_util.listToString(headers, sep)])
         filesToOpen.append(outputFilename)
     if append_var:
         outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv', 'append',
                                                            'stats', '', '', '', False, True)
         sep = ','
         df_append = pd.concat(data_cols, axis=0)
-        df_append.to_csv(outputFilename, header=[listToString(headers, sep)])
+        df_append.to_csv(outputFilename, header=[data_manager_util.listToString(headers, sep)])
         filesToOpen.append(outputFilename)
     if extract_var:
+        outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir,
+                                                                 '.csv',
+                                                                 'extract',
+                                                                 'stats', '', '', '', False, True)
         if output_to_csv_var==True:
-            extract_from_csv(filePath=filePath, outputDir=outputDir,
+            outputFilename=data_manager_util.extract_from_csv(filePath=filePath, outputDir=outputDir, outputFilename=outputFilename,
                              data_files=data_files, csv_file_field_list=csv_file_field_list)
+            filesToOpen.append(outputFilename)
         else: # export to txt file
             # del csv_file_field_list[0]
             # csv_file_field_list=csv_file_field_list.remove([0])

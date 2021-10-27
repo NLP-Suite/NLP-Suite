@@ -561,10 +561,18 @@ def IO_config_setup_brief(window, y_multiplier_integer,ScriptName):
                                      command=lambda: IO_files_util.openFile(window, inputFilename.get()))
     openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+740,
                                y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+    def open_directory():
+        open_dir = input_main_dir_path.get()
+        if input_main_dir_path.get()!='':
+            open_dir= input_main_dir_path.get()
+        if inputFilename.get()!='':
+            head, tail = os.path.split(inputFilename.get())
+            open_dir = head
+        IO_files_util.openExplorer(window, open_dir)
 
     # setup a button to open Windows Explorer on the selected INPUT directory
     openInputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                     command=lambda: IO_files_util.openExplorer(window, input_main_dir_path.get()))
+                                     command=lambda: open_directory())
     openInputDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+780,
                                y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 

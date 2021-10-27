@@ -111,14 +111,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 result=mb.askokcancel(title='Missing required information', message="You have selected to run the option 'Zoom OUT/UP to find higher-level aggregates' with the 'VERB' option but the csv file currently selected does not contain the expected subscript 'verbs_lemma'.\n\nIf this an overshigth, click on the Select INPUT CSV file button to select a different csv file and try again.")
                 if result==False:
                     return
-        filesToOpen = WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, noun_verb, openOutputFiles,
+        filesToOpen = WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, config_filename, noun_verb, openOutputFiles,
                                                      createExcelCharts)
-        if len(filesToOpen)>0 and noun_verb=='VERB':
-            reminders_util.checkReminder(
-                    config_filename,
-                    reminders_util.title_options_WordNet_verb_aggregation,
-                    reminders_util.message_WordNet_verb_aggregation,
-                    True)
 
     if extract_nouns_verbs_from_CoNLL_var==True:
         # check that input file is a CoNLL table
@@ -154,7 +148,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                     noun_verb = 'VERB'
                 else:
                     return
-                output = WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, noun_verb,
+                output = WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, createExcelCharts)
                 if output != None:
                     filesToOpen.extend(output)
@@ -165,7 +159,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                     noun_verb = 'NOUN'
                 else:
                     return
-                output = WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, noun_verb,
+                output = WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, createExcelCharts)
                 if output != None:
                     filesToOpen.extend(output)

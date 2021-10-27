@@ -94,7 +94,7 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp):
         for wordNER, pos in nlp.ner(fcontent):
             wordNER = lemmatizer.lemmatize(wordNER.lower())
             # if (pos == 'LOCATION'):
-            if (pos == 'CITY') or (pos == 'STATE_OR_PROVINCE') or (pos == 'COUNTRY'):
+            if (pos == 'CITY') or (pos == 'STATE_OR_PROVINCE') or (pos == 'COUNTRY' or (pos == 'LOCATION')):
                 if (wordNER, fileName) not in art_location and (wordNER, fileName) not in artActors:
                     art_location.add((wordNER, fileName))
             if (pos == 'DATE'):
@@ -146,7 +146,7 @@ def get_comp_soc_actors(id, soc_acts, c_path, nlp, checkNER):
             if (pos == 'ORGANIZATION'):
                 com_ner.add(lemmatizer.lemmatize(word.lower()))
             # if (pos == 'LOCATION' or pos == 'PERSON'):
-            if (pos == 'PERSON') or (pos == 'CITY') or (pos == 'STATE_OR_PROVINCE') or (pos == 'COUNTRY'):
+            if (pos == 'PERSON') or (pos == 'CITY') or (pos == 'STATE_OR_PROVINCE') or (pos == 'COUNTRY') or (pos == 'LOCATION'):
                 com_ner.add(lemmatizer.lemmatize(word.lower()))
             if (pos == 'DATE'):
                 com_date.add(lemmatizer.lemmatize(word.lower()))

@@ -287,19 +287,21 @@ def run(inputFilename, inputDir, outputDir,
                                                                        date_position_var=0)
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
+                output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
+                if output != None:
+                    filesToOpen.extend(output)
 
                 if lemmatize_verbs:
                     # tempOutputFiles[0] is the filename with lemmatized SVO values
                     # we want to aggregate with WordNet the verbs in column 'V'
                     outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0],outputDir,'',['V'])
-                    output = WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, 'VERB',
-                                                           openOutputFiles, createExcelCharts)
-                    if output != None:
-                        filesToOpen.extend(output)
+                    if IO_csv_util.GetNumberOfRecordInCSVFile(tempOutputFiles[0], encodingValue='utf-8') > 1:
+                        output = WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'VERB',
+                                                               openOutputFiles, createExcelCharts)
+                        if output != None:
+                            filesToOpen.extend(output)
 
-            filesToOpen.extend(tempOutputFiles)
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
@@ -375,8 +377,11 @@ def run(inputFilename, inputDir, outputDir,
         # Filtering SVO
         if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_SENNA_files:
-                SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
+                output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
+                if output != None:
+                    filesToOpen.extend(output)
+
         filesToOpen.extend(svo_SENNA_files)
 
         for file in svo_SENNA_files:
@@ -408,8 +413,11 @@ def run(inputFilename, inputDir, outputDir,
         
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
+                output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
+                if output != None:
+                    filesToOpen.extend(output)
+
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
@@ -474,21 +482,15 @@ def run(inputFilename, inputDir, outputDir,
         if google_earth_var:
             out_file = ''
             kmloutputFilename = ''
-            # if (inputFilename[-4:] == ".csv") or (len(svo_result_list) > 0):
-                # out_file is a list []
-                #   containing several csv files of geocoded locations and non geocoded locations
-                # kmloutputFilename is a string; empty when the kml file fails to be created
 
-                # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                #                                    'Started running Geocoding at', True)
+            # out_file is a list []
+            #   containing several csv files of geocoded locations and non geocoded locations
+            # kmloutputFilename is a string; empty when the kml file fails to be created
 
             for f in svo_result_list:
                 # SENNA and OpenIE do not have a location field
                 if (not 'SENNA' in f) and (not 'OpenIE' in f) and IO_csv_util.GetNumberOfRecordInCSVFile(
                         f) > 1:  # including headers; file is empty
-                    # out_file is a list []
-                    #   containing several csv files of geocoded locations and non geocoded locations
-                    # kmloutputFilename is a string; empty when the kml file fails to be created
 
                     reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
                                                  reminders_util.message_geocoder, True)
@@ -539,7 +541,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  limit_sentence_length_var.get(),
                                  CoRef_var.get(),
                                  manual_Coref_var.get(),
-                                 date_extractor_var.get(),
+                                 date_extractor_var.get(),-
                                  SRL_var.get(),
                                  CoreNLP_SVO_extractor_var.get(),
                                  SENNA_SVO_extractor_var.get(),

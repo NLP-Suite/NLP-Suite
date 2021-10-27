@@ -68,8 +68,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running NER extraction at', True, '', True, startTime)
-
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(
                             GUI_util.inputFilename.get(),
