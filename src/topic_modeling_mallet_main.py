@@ -121,6 +121,9 @@ optimize_intervals_var.set(1)
 optimize_intervals_checkbox = tk.Checkbutton(window, text='Optimize topic intervals', variable=optimize_intervals_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,optimize_intervals_checkbox)
 
+videos_lookup = {'No videos available':''}
+videos_options='No videos available'
+
 TIPS_lookup = {"Mallet installation":"TIPS_NLP_Topic modeling Mallet installation.pdf","JAVA installation":"TIPS_NLP_Java download install run.pdf","Topic modeling in Mallet":"TIPS_NLP_Topic modeling Mallet.pdf","Topic modeling in Gensim":"TIPS_NLP_Topic modeling Gensim.pdf",'Topic modeling and corpus size':'TIPS_NLP_Topic modeling and corpus size.pdf'}
 TIPS_options='Topic modeling in Mallet','Mallet installation','JAVA installation','Topic modeling in Gensim','Topic modeling and corpus size'
 
@@ -144,6 +147,6 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 # change the value of the readMe_message
 readMe_message="This Python 3 script analyzes a set of documents for topic modeling with Mallet (http://mallet.cs.umass.edu/topics.php).\n\nMALLET CODE WILL BREAK IF INPUT AND/OR OUTPUT PATHS CONTAIN SPACES (I.E., BLANKS).\n\nIn INPUT the script expects a set of text files stored in a directory.\n\nIn OUTPUT, the script creates a set of four files:\n  MalletFormatted_TXTFiles.mallet\n  NLP-Mallet_Output_Keys.tsv\n  NLP-Mallet_Output_Composition\n  NLP-Mallet_Output_Compressed.gz.\n\nThe 2 files of interest are:\nNLP-Mallet_Output_Keys.tsv\nNLP-Mallet_Output_Composition.\n\nThe KEYS file has as many lines as specified topics and three columns:\n  TOPIC #,\n  WEIGHT OF TOPIC that measures the weight of the topic across all the documents,\n  KEY WORDS IN TOPIC that lists a set of typical words belonging to the topic.\n\nThe COMPOSITION file has as many lines as documents analyzed (one document per line) and several columns:\n  column 1 (Document ID),\n  column 2 (Document with path),\n  as many successive pairs of columns as the number of topics, with column pairs as follow:\n    TOPIC is a number corresponding to the number in column 1 in the Keys file;\n    PROPORTION measures the % of words in the document attributed to that topic (pairs sorted in descending PROPORTION order)."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options,IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()

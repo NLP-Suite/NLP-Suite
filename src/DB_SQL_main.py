@@ -368,6 +368,9 @@ auto_SQL_var.trace('w',display_SQL)
 
 display_SQL()
 
+videos_lookup = {'No videos available':''}
+videos_options='No videos available'
+
 TIPS_lookup = {'No TIPS available':''}
 TIPS_options='No TIPS available'
 
@@ -398,6 +401,6 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 # change the value of the readMe_message
 readMe_message="This Python 3 script can construct an SQLite relational database from a set of input csv files characterized by the presence of overlapping relational fields.\n\nThe script allows to perform SQL queries on any sqlite databases thus constructed."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()

@@ -73,6 +73,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      sentence_length=100,
                      print_json = True,
                      **kwargs):
+
     silent=True
     start_time = time.time()
     speed_assessment = []#storing the information used for speed assessment
@@ -289,6 +290,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
             reminders_util.message_CoreNLP_POS_NER_maxlen,
             True)
 
+    if 'quote' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+            reminders_util.title_options_CoreNLP_quote_annotator,
+            reminders_util.message_CoreNLP_quote_annotator,
+            True)
+
     # annotating each input file
     docID=0
     recordID = 0
@@ -457,16 +464,13 @@ def CoreNLP_annotate(config_filename,inputFilename,
             # generate output file name
             if annotator_chosen == 'NER':
                 print("Stanford CoreNLP annotator: NER")
-                ner = '_'.join(kwargs['NERs'])
-                outputFilename_tag=str(ner)
-                if ner=='CITY_STATE_OR_PROVINCE_COUNTRY':
-                    outputFilename_tag=ner.replace('CITY_STATE_OR_PROVINCE_COUNTRY','LOCATIONS')
-                elif ner=='COUNTRY_STATE_OR_PROVINCE_CITY':
-                    # when called from GIS_main
-                    outputFilename_tag=ner.replace('COUNTRY_STATE_OR_PROVINCE_CITY','LOCATIONS')
-                elif len(ner)>10: # if all NER tags have been selected the filename would become way too long!
-                    outputFilename_tag='tags'
-
+                if len(kwargs['NERs']) == 1:
+                    outputFilename_tag = str(kwargs['NERs'][0])
+                elif len(kwargs['NERs']) > 1:
+                    if 'CITY' in str(kwargs['NERs']) or 'STATE_OR_PROVINCE' in str(kwargs['NERs']) or 'COUNTRY' in str(kwargs['NERs']) or 'LOCATION' in str(kwargs['NERs']):
+                        outputFilename_tag='LOCATIONS'
+                    else:
+                        outputFilename_tag = 'Multi-tags'
                 outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                                  'CoreNLP_NER_'+outputFilename_tag)
             elif "parser" in annotator_chosen:#CoNLL
@@ -491,7 +495,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # print("Length of Files to Open after generating files: ", len(filesToOpen))
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
-    #generate visualization output
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, '', True, startTime)
+
+    # generate visualization output ----------------------------------------------------------------
+
     for j in range(len(filesToVisualize)):
         #02/27/2021; eliminate the value error when there's no information from certain annotators
         if filesToVisualize[j][-4:] == ".csv":
@@ -529,10 +536,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
                                           'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
                     # ner tags are _ separated; individual NER tags at most have 2 _ (e.g., STATE_OR_PROVINCE)
-                    if ner.count('_')>2:
-                        ner_tags = 'Multi-Tags'
+                    if len(kwargs['NERs'])>1:
+                        ner_tags = 'Multi-tags'
                     else:
-                        ner_tags = ner
+                        ner_tags = str(kwargs['NERs'][0])
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
                                           'Frequency Distribution of Words by NER ' +ner_tags, 1, ['NER Value'], 'NER_word_bar','') #NER ' +ner_tags+ ' Word
                 elif 'SVO' in str(file_df_name) or 'OpenIE' in str(file_df_name):
@@ -540,11 +547,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3],[4,4],[5,5]], 'pie',
                     #                       'Frequency Distribution of SVOs', 1, [], 'SVO_pie','SVOs')
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
-                                          'Frequency Distribution of Subjects (FORM)', 1, [], 'S_bar','Subjects (FORM)')
+                                          'Frequency Distribution of Subjects (unfiltered)', 1, [], 'S_bar','Subjects (unfiltered)')
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[4, 4]], 'bar',
-                                                        'Frequency Distribution of Verbs (FORM)', 1, [], 'V_bar', 'Verbs (FORM)')
+                                                        'Frequency Distribution of Verbs (unfiltered)', 1, [], 'V_bar', 'Verbs (unfiltered)')
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[5, 5]], 'bar',
-                                                        'Frequency Distribution of Objects (FORM)', 1, [], 'O_bar', 'Objects (FORM)')
+                                                        'Frequency Distribution of Objects (unfiltered)', 1, [], 'O_bar', 'Objects (unfiltered)')
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))
     if len(filesError)>0:
@@ -567,7 +574,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
     if len(inputDir) != 0:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Output warning', 'The output filename generated by Stanford CoreNLP is the name of the directory processed in input, rather than any individual file in the directory. The output file(s) include all ' + str(nDocs) + ' files in the input directory processed by CoreNLP.\n\nThe different files are listed in the output csv file under the headers \'Document ID\' and \'Document\'.')
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, '', True, startTime)
     return filesToOpen
 
 

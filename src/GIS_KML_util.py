@@ -171,7 +171,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 				pnt.timespan.begin = GGPdateFormat
 				pnt.timespan.end = GGPdateFormat
 
-	# Mapping with multiple group
+	# Mapping with multiple groups
 	else:
 		for j in range(group_number_var):
 			values_raw = []

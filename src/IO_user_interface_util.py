@@ -24,35 +24,37 @@ def convert_time(time):
     minutes = int((time - hours * 3600) / 60)
     seconds = int(time - hours * 3600 - minutes * 60)
     message=''
-    if seconds == 0:
-        second_label = ''
     if seconds == 1:
         second_label = ' second'
     else:
         second_label = ' seconds'
-    if minutes == 0:
-        minute_label = ''
-    elif minutes == 1:
-        minute_label = ' minute '
+    if minutes == 1:
+        minute_label = ' minute'
     else:
-        minute_label = ' minutes '
-    if hours == 0:
-        hour_label = ''
-    elif hours == 1:
-        hour_label = ' hours '
+        minute_label = ' minutes'
+    if hours == 1:
+        hour_label = ' hour, '
     else:
-        hour_label = ' hours '
+        hour_label = ' hours, '
 
-    if hours>0:
-        message=str(hours) + hour_label + ', '
-    if minutes>0:
-        if hours == 0:
-            message=message+str(minutes) + minute_label + ' and '
+    # compose message
+    if hours > 0:
+        message = str(hours) + hours_label
+    if minutes >= 0:
+        if hours > 0:
+            message = message + ', '
+            message=message+str(minutes) + minute_label
         else:
-            message = message + str(minutes) + minute_label + ', and '
-    if seconds>0:
-        message=message+str(seconds) + second_label
-
+            if minutes>0:
+                message=message+str(minutes) + minute_label
+    if seconds>=0:
+        if hours>0:
+            message=message+ ', and ' + str(seconds) + second_label
+        else:
+            if minutes>0:
+                message = message + ' and ' + str(seconds) + second_label
+            else:
+                message = message + str(seconds) + second_label
     return hours, minutes, seconds, message
 
 def timed_alert(window, timeout, message_title, message_text, time_needed=False, extraLine='', printInCommandLine=True, startTime=''):
@@ -66,7 +68,8 @@ def timed_alert(window, timeout, message_title, message_text, time_needed=False,
             hours, minutes, seconds, time_message = convert_time(totalTime)
             # totalTime= ((endTime - startTime)/60)/60 # convert to hours and minutes
             # needs to convert to a message: 32 hours (if there are hours), 12 minutes and 45 seconds.
-            message_text = message_text + ' taking ' + time_message # + str(hours) + ' hours, ' + str(minutes) + ' minutes, and ' + str(seconds) + ' seconds'
+            if time_message!='':
+                message_text = message_text + ' taking ' + time_message # + str(hours) + ' hours, ' + str(minutes) + ' minutes, and ' + str(seconds) + ' seconds'
         message_text = message_text + '.'
     if len(extraLine) > 0:
         message_text = message_text + '\n\n' + extraLine

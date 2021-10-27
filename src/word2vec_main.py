@@ -124,6 +124,9 @@ min_count_var.set(5)
 min_count_entry = tk.Entry(window,width=5,textvariable=min_count_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,min_count_entry)
 
+videos_lookup = {'No videos available':''}
+videos_options='No videos available'
+
 TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf","Word2Vec with Gensim":"TIPS_NLP_Word2Vec.pdf"}
 TIPS_options = 'Lemmas & stopwords', 'Word2Vec with Gensim'
 
@@ -150,6 +153,6 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 # change the value of the readMe_message
 readMe_message="This Python 3 script analyzes a set of documents for Word2Vec with Gensim."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options,IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()

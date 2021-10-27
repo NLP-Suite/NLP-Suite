@@ -579,6 +579,9 @@ GUI_util.inputFilename.trace('w', changed_filename)
 
 changed_filename()
 
+videos_lookup = {'No videos available':''}
+videos_options='No videos available'
+
 TIPS_lookup = {'File manager': 'TIPS_NLP_File manager.pdf',
                'File handling in NLP Suite': "TIPS_NLP_File handling in NLP Suite.pdf",
                'Filename checker': 'TIPS_NLP_Filename checker.pdf', 'Filename matcher': 'TIPS_NLP_Filename matcher.pdf',
@@ -633,7 +636,7 @@ help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get
 readMe_message = "These Python 3 scripts split txt files into separate txt files with a number of processing options."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()
 

@@ -1,5 +1,4 @@
-# Written by Cynthia Dong October 2019
-# Edited Roberto Franzosi
+# Written by Roberto Franzosi
 
 import sys
 import GUI_util
@@ -489,6 +488,9 @@ CoreNLP_annotators_menu_var.trace('w', activate_CoreNLP_annotators_menu)
 
 activate_CoreNLP_annotators_menu()
 
+videos_lookup = {'No videos available':''}
+videos_options='No videos available'
+
 TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download install run.pdf',
                'Stanford CoreNLP parser': 'TIPS_NLP_Stanford CoreNLP parser.pdf',
                'Stanford CoreNLP memory issues': 'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
@@ -547,6 +549,6 @@ readMe_message = "This Python 3 script will perform different types of textual o
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
 
-GUI_util.GUI_bottom(config_filename, config_option, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_option, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 GUI_util.window.mainloop()

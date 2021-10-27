@@ -272,6 +272,8 @@ extract_sentences_var.trace('w',activate_extract_sentences)
 
 activate_extract_sentences()
 
+videos_lookup = {'No videos available':''}
+videos_options='No videos available'
 
 TIPS_lookup = {'Clause analysis':'TIPS_NLP_Clause Analysis.pdf','Sentence complexity':'TIPS_NLP_Sentence complexity.pdf','Text readability':'TIPS_NLP_Text readability.pdf','CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf", 'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf", 'DEPREL (Stanford Dependency Relations)': "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf", 'NLP Searches': "TIPS_NLP_NLP Searches.pdf",'N-Grams (word & character)':"TIPS_NLP_Ngrams (word & character).pdf",'NLP Ngram and Word Co-Occurrence VIEWER':"TIPS_NLP_Ngram and Word Co-Occurrence VIEWER.pdf",'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf'}
 TIPS_options='Clause analysis', 'Sentence complexity', 'Text readability','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer'
@@ -298,7 +300,7 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide a variety of tools for fine-grained analyses of texts by sentence index, visualizing the ebb and flow of writing, the tempo of writing."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options,y_multiplier_integer,readMe_command, TIPS_lookup,TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 # GUI_IO_util.GUI_frontEnd('Sentence Analysis')
 

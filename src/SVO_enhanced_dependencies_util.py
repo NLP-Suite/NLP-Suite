@@ -497,7 +497,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
 
     # CYNTHIA: get locations from entitymentions
     for item in entitymentions:
-        if item["ner"] is not None and item["ner"] in ['STATE_OR_PROVINCE', 'COUNTRY', "CITY"]:
+        if item["ner"] is not None and item["ner"] in ['STATE_OR_PROVINCE', 'COUNTRY', "CITY", "LOCATION"]:
             L.append(item["text"])
 
     link_verb_LVC_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "verb_obj_obl_json.txt"

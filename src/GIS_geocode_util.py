@@ -71,6 +71,8 @@ def nominatim_geocode(geolocator,loc,country_bias='',timeout=10):
 	try:
 		return geolocator.geocode(loc,country_codes=country_bias,timeout=timeout)
 	except GeocoderTimedOut:
+		print("   Nominatim timed out on " + loc + ". Timeout increased by 10 and repeatedly retried.")
+		timeout=timeout+10
 		return nominatim_geocode(geolocator,country_codes=country_bias,timeout=timeout)
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
@@ -237,79 +239,3 @@ def geocode(window,locations, inputFilename, outputDir,
 	IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime)
 	return geocodedLocationsoutputFilename, locationsNotFoundoutputFilename
 
-# called from GIS_pipeline_util when computing distances for non-geocoded files
-def geocode_distance(window,inputFilename,locationColumnNumber,locationColumnName,locationColumnName2,geolocator,geocoder,inputIsCoNLL,datePresent,numColumns,encodingValue,outputDir):
-	if not IO_internet_util.check_internet_availability_warning('GIS distance geocoder'):
-		return
-	startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS geocoder at', True, 'You can follow Geocoder in command line.')
-	geoName='geo-'+str(geocoder[:3])
-	geocodedLocationsoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', geoName, locationColumnName, '', '', False, True)
-	locationsNotFoundoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', geoName, 'Not-Found', locationColumnName, '', False, True)
-	
-	dt = pd.read_csv(inputFilename,encoding = encodingValue)
-	baselineLocation_list = dt[locationColumnName].tolist()
-	baselineLocation_list.sort()
-	targetLocation_list = dt[locationColumnName2].tolist()
-	targetLocation_list.sort()
-
-	if numColumns > 2:
-		dt = dt[[locationColumnName,locationColumnName2]]
-
-	allLocation_list = set(baselineLocation_list) | set(targetLocation_list)
-	geocodedLocationsoutputFilename, locationsNotFoundoutputFilename = geocode(window,geocoder,sorted(allLocation_list),inputIsCoNLL,datePresent,geocodedLocationsoutputFilename,locationsNotFoundoutputFilename,encodingValue)
-	print("\nGeocoding completed\n")
-	if geocodedLocationsoutputFilename=='':
-		return
-	try:
-		geocoded_dt = pd.read_csv(geocodedLocationsoutputFilename,encoding = encodingValue)
-	except:
-		mb.showerror(title='File error', message="There was an error in the function 'Compute GIS distance from specific location' reading the output file\n" + str(geocodedLocationsoutputFilename) + "\nwith non geocoded input. Most likely, the error is due to an encoding error. Your current encoding value is " + encodingValue + ".\n\nSelect a different encoding value and try again.")
-		return False
-	dt["C"] = ""
-	dt["D"] = ""
-	dt["E"] = ""
-	dt["F"] = ""
-	dt.columns = ['Location 1', 'Location 2', 'Latitude 1', 'Longitude 1', 'Latitude 2', 'Longitude 2']
-	cols = dt.columns.tolist()
-	cols.insert(3, cols.pop(cols.index('Location 2')))
-	dt = dt.reindex(columns= cols)
-	total_rows=len(geocoded_dt.axes[0])
-
-	for i, a in dt.iterrows():
-		check_one = 0
-		check_two = 0
-		for j, b in geocoded_dt.iterrows():
-			if check_one == 0:
-				if a['Location 1'] == b['Location']:
-					latitude = geocoded_dt['Latitude'][j]
-					dt.loc[i, 'Latitude 1'] = latitude
-					# dt['Latitude 1'][i] = latitude
-					longitude = geocoded_dt['Longitude'][j]
-					dt.loc[i, 'Longitude 1'] = longitude
-					# dt['Longitude 1'][i] = longitude
-					check_one = 1
-				if geocoded_dt['Latitude'][j] == 0 and geocoded_dt['Longitude'][j] == 0:
-					dt = dt.drop(i)
-		  
-			if check_two == 0:
-				if a['Location 2'] == b['Location']:
-					latitude = geocoded_dt['Latitude'][j]
-					dt.loc[i, 'Latitude 2'] = latitude
-					# dt['Latitude 2'][i] = latitude
-					longitude = geocoded_dt['Longitude'][j]
-					dt.loc[i, 'Longitude 2'] = longitude
-					# dt['Longitude 2'][i] = longitude
-					check_two = 1
-				if geocoded_dt['Latitude'][j] == 0 and geocoded_dt['Longitude'][j] == 0:
-					dt = dt.drop(i)
-			
-			if check_one == 1 and check_two == 1:
-				break
-			elif j == total_rows-1:
-				if check_one == 0 or check_two == 0:
-					dt = dt.drop(i)
-			   
-	dt.csv_path = 'inputfile.csv'
-	dt.to_csv(dt.csv_path, index=False)
-	geocoded_file_name = dt.csv_path
-	return geocoded_file_name

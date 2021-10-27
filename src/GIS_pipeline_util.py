@@ -95,8 +95,6 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
 
     if inputIsCoNLL == True:
 
-        # reminders_util.checkReminder(config_filename, reminders_util.title_options_Google_Earth_CoNLL,
-        #                                  reminders_util.message_Google_Earth_CoNLL, True)
         outputCsvLocationsOnly = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
                                                                    'NER_locations', '', '', '', False, True)
         locations = GIS_location_util.extract_NER_locations(window, inputFilename, encodingValue,

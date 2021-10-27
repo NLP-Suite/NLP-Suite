@@ -153,6 +153,8 @@ if current_process().name == 'MainProcess':
     Mallet_checkbox = tk.Checkbutton(window, text='Run Mallet (Topic coherence values and plot visualization)', variable=Mallet_var, onvalue=1, offvalue=0)
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    Mallet_checkbox)
+    videos_lookup = {'No videos available': ''}
+    videos_options = 'No videos available'
 
     TIPS_lookup = {"Topic modeling": "TIPS_NLP_Topic modeling.pdf",
                    "Topic modeling in Gensim": "TIPS_NLP_Topic modeling Gensim.pdf",
@@ -195,6 +197,6 @@ if current_process().name == 'MainProcess':
     readMe_message = "This Python 3 script analyzes a set of documents for topic modeling with Gensim.\n\nIn INPUT the script expects a set of text files stored in a directory.\n\nIn OUTPUT, the script creates an html file with graphical displays of topic information.\n\nGensim topc modelling requires internet connection to run."
     readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                        GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-    GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+    GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
     GUI_util.window.mainloop()

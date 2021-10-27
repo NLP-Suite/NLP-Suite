@@ -111,14 +111,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 result=mb.askokcancel(title='Missing required information', message="You have selected to run the option 'Zoom OUT/UP to find higher-level aggregates' with the 'VERB' option but the csv file currently selected does not contain the expected subscript 'verbs_lemma'.\n\nIf this an overshigth, click on the Select INPUT CSV file button to select a different csv file and try again.")
                 if result==False:
                     return
-        filesToOpen = WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, noun_verb, openOutputFiles,
+        filesToOpen = WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, config_filename, noun_verb, openOutputFiles,
                                                      createExcelCharts)
-        if len(filesToOpen)>0 and noun_verb=='VERB':
-            reminders_util.checkReminder(
-                    config_filename,
-                    reminders_util.title_options_WordNet_verb_aggregation,
-                    reminders_util.message_WordNet_verb_aggregation,
-                    True)
 
     if extract_nouns_verbs_from_CoNLL_var==True:
         # check that input file is a CoNLL table
@@ -154,7 +148,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                     noun_verb = 'VERB'
                 else:
                     return
-                output = WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, noun_verb,
+                output = WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, createExcelCharts)
                 if output != None:
                     filesToOpen.extend(output)
@@ -165,7 +159,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                     noun_verb = 'NOUN'
                 else:
                     return
-                output = WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, noun_verb,
+                output = WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, createExcelCharts)
                 if output != None:
                     filesToOpen.extend(output)
@@ -676,6 +670,9 @@ noun_verb_menu_var.trace("w", setNounVerbMenu)
 
 setNounVerbMenu()
 
+videos_lookup = {'No videos available':''}
+videos_options='No videos available'
+
 TIPS_lookup = {'WordNet': 'TIPS_NLP_WordNet.pdf', 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
 TIPS_options = 'WordNet', 'Java download install run'
 
@@ -727,7 +724,7 @@ help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get
 readMe_message = "The Python 3 and Java scripts interface with the lexical database WordNet to find word semantically related words.\n\nThe GUI widgets allow you to zoom IN, zoom OUT (or zoom DOWN and UP) in the WordNet database and to display WordNet categories by sentence index. The two IN/DOWN, OUT/UP Java algorithms use the MIT JWI (Java Wordnet Interface) (https://projects.csail.mit.edu/jwi/) to interface with WordNet.\n\nYou will need to download WordNet from https://wordnet.princeton.edu/download/current-version.\n\nWhen zooming IN/DOWN, you basically take a closer look at a term, going down the hierarchy (e.g., 'person' would give a list of words such as 'police', 'woman', ... or anyone who is a member of the group \'person\').\n\nWhen zooming OUT/UP, you find terms'higher-level aggregates (e.g., 'walk', 'run', 'flee'as verbs of a higher-level verb aggregate 'motion')" + webSearch
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 # GUI_util.softwareDir.set(IO_libraries_util.get_software_path_if_available('WordNet'))
 

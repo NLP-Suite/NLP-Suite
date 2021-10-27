@@ -287,19 +287,21 @@ def run(inputFilename, inputDir, outputDir,
                                                                        date_position_var=0)
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
+                output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
+                if output != None:
+                    filesToOpen.extend(output)
 
                 if lemmatize_verbs:
                     # tempOutputFiles[0] is the filename with lemmatized SVO values
                     # we want to aggregate with WordNet the verbs in column 'V'
                     outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0],outputDir,'',['V'])
-                    output = WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, 'VERB',
-                                                           openOutputFiles, createExcelCharts)
-                    if output != None:
-                        filesToOpen.extend(output)
+                    if IO_csv_util.GetNumberOfRecordInCSVFile(tempOutputFiles[0], encodingValue='utf-8') > 1:
+                        output = WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'VERB',
+                                                               openOutputFiles, createExcelCharts)
+                        if output != None:
+                            filesToOpen.extend(output)
 
-            filesToOpen.extend(tempOutputFiles)
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
@@ -375,8 +377,11 @@ def run(inputFilename, inputDir, outputDir,
         # Filtering SVO
         if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_SENNA_files:
-                SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
+                output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
+                if output != None:
+                    filesToOpen.extend(output)
+
         filesToOpen.extend(svo_SENNA_files)
 
         for file in svo_SENNA_files:
@@ -408,8 +413,11 @@ def run(inputFilename, inputDir, outputDir,
         
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects)
+                output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
+                if output != None:
+                    filesToOpen.extend(output)
+
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
@@ -474,21 +482,15 @@ def run(inputFilename, inputDir, outputDir,
         if google_earth_var:
             out_file = ''
             kmloutputFilename = ''
-            # if (inputFilename[-4:] == ".csv") or (len(svo_result_list) > 0):
-                # out_file is a list []
-                #   containing several csv files of geocoded locations and non geocoded locations
-                # kmloutputFilename is a string; empty when the kml file fails to be created
 
-                # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                #                                    'Started running Geocoding at', True)
+            # out_file is a list []
+            #   containing several csv files of geocoded locations and non geocoded locations
+            # kmloutputFilename is a string; empty when the kml file fails to be created
 
             for f in svo_result_list:
                 # SENNA and OpenIE do not have a location field
                 if (not 'SENNA' in f) and (not 'OpenIE' in f) and IO_csv_util.GetNumberOfRecordInCSVFile(
                         f) > 1:  # including headers; file is empty
-                    # out_file is a list []
-                    #   containing several csv files of geocoded locations and non geocoded locations
-                    # kmloutputFilename is a string; empty when the kml file fails to be created
 
                     reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
                                                  reminders_util.message_geocoder, True)
@@ -539,7 +541,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  limit_sentence_length_var.get(),
                                  CoRef_var.get(),
                                  manual_Coref_var.get(),
-                                 date_extractor_var.get(),
+                                 date_extractor_var.get(),-
                                  SRL_var.get(),
                                  CoreNLP_SVO_extractor_var.get(),
                                  SENNA_SVO_extractor_var.get(),
@@ -901,6 +903,9 @@ google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where in maps (vi
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
                                                google_earth_checkbox)
 
+videos_lookup = {'No videos available':''}
+videos_options='No videos available'
+
 TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
                'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'Stanford CoreNLP memory issues':'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
@@ -961,7 +966,7 @@ help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get
 readMe_message = "This set of Python 3 scripts extract automatically most of the elements of a story grammar and visualize the results in network graphs and GIS maps. A story grammar – basically, the 5Ws + H of modern journalism: Who, What, When, Where, Why, and How – provides the basic building blocks of narrative.\n\nThe set of scripts assembled here for this purpose ranges from testing for utf-8 compliance of the input text, to resolution for pronominal coreference, extraction of normalized NER dates (WHEN), visualized in various Excel charts, extraction, geocoding, and mapping in Google Earth Pro of NER locations.\n\nAt the heart of the SVO approach are two scripts, one based on the Stanford CoreNLP enhanced dependencies parser and another script based on SENNA. For passive sentences, the pipeline swaps S and O to transform the triplet into active voice. Thus, the WHO, WHAT (WHOM) are extracted from a text. Each component of the SVO triplet can be filtered via specific dictionaries (e.g., filtering for social actors and social actions, only). The set of SVO triplets are then visualized in dynamic network graphs (via Gephi).\n\nThe WHY and HOW of narrative are still beyond the reach of the current set of SVO scripts.\n\nIn INPUT the scripts expect a txt file to run utf-8 check, coreference resolution, date extraction, and CoreNLP. You can also enter a csv file, the output of a previous run with CoreNLP/SENNA (_svo.csv/_SVO_Result) marked file) if all you want to do is to visualize results.\n\nIn OUTPUT, the scripts will produce several csv files, a png image file, and a KML file depending upon the options selected."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
 
 def warnUser(*args):
