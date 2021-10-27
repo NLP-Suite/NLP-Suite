@@ -68,6 +68,7 @@ wordLists_libPath = os.path.join(NLPPath,'lib'+os.sep+'wordLists')
 namesGender_libPath = os.path.join(NLPPath, 'lib'+os.sep+'namesGender')
 GISLocations_libPath = os.path.join(NLPPath,'lib'+os.sep+'GIS')
 TIPSPath = os.path.join(NLPPath,'TIPS')
+videosPath = os.path.join(NLPPath,'videos')
 remindersPath = os.path.join(NLPPath, 'reminders')
 
 def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, centerX=False, basic_y_coordinate=90):

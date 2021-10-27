@@ -23,6 +23,7 @@ import webbrowser
 
 import config_util
 import reminders_util
+import videos_util
 import TIPS_util
 import GUI_IO_util
 import IO_files_util
@@ -681,12 +682,8 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
 
 #__________________________________________________________________________________________________________________
 #GUI bottom buttons widgets (ReadMe, TIPS, RUN, CLOSE)
-#__________________________________________________________________________________________________________________
-
-# ScriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main
-#   it can be used for handling GUIs with special treatment (e.g., IO_setup_main which does not have a RUN button)
 def GUI_bottom(config_filename, config_input_output_options,y_multiplier_integer,readMe_command,
-               TIPS_lookup,TIPS_options, IO_setup_display_brief,ScriptName=''):
+               videos_lookup,videos_options, TIPS_lookup,TIPS_options, IO_setup_display_brief,ScriptName=''):
 
     """
     :type TIPS_options: object
@@ -696,7 +693,6 @@ def GUI_bottom(config_filename, config_input_output_options,y_multiplier_integer
         return
     # IO_options=[]
     reminder_options=[]
-    video_options=[]
     missingIO=""
 
     # for those GUIs (e.g., style analysis) that simply
@@ -735,17 +731,20 @@ def GUI_bottom(config_filename, config_input_output_options,y_multiplier_integer
     readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
     readme_button.place(x=GUI_IO_util.read_button_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
-    video_options=['No videos available']
     videos_dropdown_field.set('Watch videos')
-    if len(video_options)==0:
-        videos_menu_lb = tk.OptionMenu(window,videos_dropdown_field,video_options)
-    else:
-        if video_options[0] == "No videos available":
-            videos_menu_lb = tk.OptionMenu(window, videos_dropdown_field, "No videos available")
+    if len(videos_lookup)==1:
+        if videos_options == "No videos available":
+            videos_menu_lb = tk.OptionMenu(window,videos_dropdown_field,videos_options)
         else:
-            videos_menu_lb = tk.OptionMenu(window,videos_dropdown_field,*video_options)
+            videos_menu_lb = tk.OptionMenu(window, videos_dropdown_field, videos_options)
             videos_menu_lb.configure(foreground="red")
+    else:
+        videos_menu_lb = tk.OptionMenu(window,videos_dropdown_field,*videos_options)
+        videos_menu_lb.configure(foreground="red")
+
     videos_menu_lb.place(x=GUI_IO_util.watch_videos_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+
+    videos_util.trace_open_videos(videos_dropdown_field, videos_menu_lb, videos_lookup)
 
     tips_dropdown_field.set('Open TIPS files')
     if len(TIPS_lookup)==1:
