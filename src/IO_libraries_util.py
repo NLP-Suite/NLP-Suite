@@ -339,7 +339,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                message='The directory\n  ' + software_dir + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-select the ' +
                                        software_name.upper() + ' directory.')
                 errorFound=True
-                silent = True
+                silent = False
             else:
                 # if you are checking for a specific package and that is found return the appropriate directory
                 # unless called from NLP_menu_main

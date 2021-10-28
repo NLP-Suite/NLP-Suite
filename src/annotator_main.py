@@ -11,6 +11,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_main.py",['
 
 import os
 import tkinter as tk
+from tkinter import ttk
 import tkinter.messagebox as mb
 from subprocess import call
 
@@ -19,7 +20,7 @@ import IO_files_util
 import IO_csv_util
 import reminders_util
 import annotator_dictionary_util
-
+import constants_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -230,7 +231,7 @@ annotator_DBpedia_var=tk.IntVar() # to annotate a document using DBpedia
 annotator_YAGO_var=tk.IntVar() # to annotate a document using YAGO
 confidence_level_var=tk.StringVar()
 databases_var=tk.StringVar()
-class_var = tk.StringVar()
+ontology_class_var = tk.StringVar()
 sub_class_entry_var = tk.StringVar()
 annotator_dictionary_var=tk.IntVar() # to annotate a document using a dictionary
 csv_field1_var=tk.StringVar()
@@ -246,96 +247,92 @@ annotator_extractor_var=tk.IntVar() # to extract annotations in csv format from 
 CoreNLP_gender_annotator_var=tk.IntVar()
 
 # http://mappings.dbpedia.org/server/ontology/classes/
-DBpedia_menu_options=(
-        'Thing',
-        'Activity',
-        'Agent',
-        'Algorithm'
-        'Altitude',
-        'AnatomicalStructure',
-        'Area',
-        'Award',
-        'Biomolecule',
-        'Blazon',
-        'Browser',
-        'ChartsPlacements',
-        'ChemicalSubstance',
-        'Cipher',
-        'Colour',
-        'Currency',
-        'Demographics',
-        'Depth',
-        'Device',
-        'Diploma',
-        'Disease',
-        'ElectionDiagram',
-        'ElectricalSubstation',
-        'EthnicGroup',
-        'Event',
-        'FileSystem',
-        'Flag',
-        'Food',
-        'GeneLocation',
-        'GrossDomesticProduct',
-        'GrossDomesticProductPerCapita',
-        'Holiday',
-        'Identifier',
-        'Language',
-        'List',
-        'MeanOfTransportation',
-        'Media',
-        'MedicalSpecialty',
-        'Medicine',
-        'Name',
-        'Person',
-        'Place',
-        'Population',
-        'Protocol',
-        'PublicService',
-        'Relationship',
-        'Species',
-        'SportCompetitionResult',
-        'SportsSeason',
-        'Spreadsheet',
-        'StarCluster',
-        'Statistic',
-        'Tank',
-        'TimePeriod',
-        'TopicalConcept',
-        'UnitOfWork',
-        'Unknown',
-        'Work')
+# DBpedia_menu_options=(
+#         'Thing',
+#         'Activity',
+#         'Agent',
+#         'Algorithm'
+#         'Altitude',
+#         'AnatomicalStructure',
+#         'Area',
+#         'Award',
+#         'Biomolecule',
+#         'Blazon',
+#         'Browser',
+#         'ChartsPlacements',
+#         'ChemicalSubstance',
+#         'Cipher',
+#         'Colour',
+#         'Currency',
+#         'Demographics',
+#         'Depth',
+#         'Device',
+#         'Diploma',
+#         'Disease',
+#         'ElectionDiagram',
+#         'ElectricalSubstation',
+#         'EthnicGroup',
+#         'Event',
+#         'FileSystem',
+#         'Flag',
+#         'Food',
+#         'GeneLocation',
+#         'GrossDomesticProduct',
+#         'GrossDomesticProductPerCapita',
+#         'Holiday',
+#         'Identifier',
+#         'Language',
+#         'List',
+#         'MeanOfTransportation',
+#         'Media',
+#         'MedicalSpecialty',
+#         'Medicine',
+#         'Name',
+#         'Person',
+#         'Place',
+#         'Population',
+#         'Protocol',
+#         'PublicService',
+#         'Relationship',
+#         'Species',
+#         'SportCompetitionResult',
+#         'SportsSeason',
+#         'Spreadsheet',
+#         'StarCluster',
+#         'Statistic',
+#         'Tank',
+#         'TimePeriod',
+#         'TopicalConcept',
+#         'UnitOfWork',
+#         'Unknown',
+#         'Work')
 
 # These are schema.org classes https://schema.org/docs/full.html
-YAGO_menu_options=(
-        'BioChemEntity', 	# bioschemas
-        'Gene',				# bioschemas
-        'MolecularEntity',	# bioschemas
-        'Taxon',			# bioschemas
-        'Brand',			# schema
-        'BroadcastChannel',	# schema
-        'CreativeWork',		# schema
-        'Emotion',			# yago
-        'MedicalEntity',	# schema
-        'Organization',		# schema
-        'Person',			# schema
-        'Place',			# schema
-        'Product')			# schema
+# YAGO_menu_options=(
+#         'BioChemEntity', 	# bioschemas
+#         'Gene',				# bioschemas
+#         'MolecularEntity',	# bioschemas
+#         'Taxon',			# bioschemas
+#         'Brand',			# schema
+#         'BroadcastChannel',	# schema
+#         'CreativeWork',		# schema
+#         'Emotion',			# yago
+#         'MedicalEntity',	# schema
+#         'Organization',		# schema
+#         'Person',			# schema
+#         'Place',			# schema
+#         'Product')			# schema
 
 # temporarily set DBpedia_YAGO_menu_options to avoid
 #	is not defined error
-DBpedia_YAGO_menu_options=DBpedia_menu_options
+# DBpedia_YAGO_menu_options=DBpedia_menu_options
 
 def activate_DBpedia_YAGO_menu():
     global DBpedia_YAGO_menu_options
     if annotator_DBpedia_var.get():
-        DBpedia_YAGO_menu_options=DBpedia_menu_options
+        DBpedia_YAGO_menu_options=DBpedia_ontology_class_menu
     if annotator_YAGO_var.get():
-        DBpedia_YAGO_menu_options=YAGO_menu_options
-    m = class_menu["menu"]
-    m.delete(0,"end")
-    for s in DBpedia_YAGO_menu_options:
-        m.add_command(label=s,command=lambda value=s:class_var.set(value))
+        DBpedia_YAGO_menu_options=YAGO_ontology_class_menu
 
 y_multiplier_integerSV= y_multiplier_integer
 
@@ -369,7 +366,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 def activate_class_var():
     # Disable the + after clicking on it and enable the class menu
     add_class_button.configure(state='disabled')
-    class_menu.configure(state='normal')
+    ontology_class.configure(state='normal')
 
 add_class_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_class_var())
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,add_class_button, True)
@@ -393,7 +390,7 @@ def clear_DBpedia_YAGO_class_list():
     DBpedia_YAGO_color_list.clear()
     color_palette_DBpedia_YAGO_var.set('')
     confidence_level_var.set('.5')
-    class_var.set('')
+    ontology_class_var.set('')
     sub_class_entry_var.set('')
     reset_class_button.configure(state='disabled')
     activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry)
@@ -413,19 +410,30 @@ def add_DBpedia_sub_class(*args):
         activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry)
 sub_class_entry_var.trace ('w',add_DBpedia_sub_class)
 
-class_var.set('')
-class_menu_lb = tk.Label(window, text='Ontology class')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+85,y_multiplier_integer,class_menu_lb,True)
-class_menu = tk.OptionMenu(window,class_var,*DBpedia_YAGO_menu_options)
-class_menu.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+180,y_multiplier_integer,class_menu,True)
+YAGO_ontology_class_menu = constants_util.YAGO_ontology_class_menu
+DBpedia_ontology_class_menu = constants_util.DBpedia_ontology_class_menu
+
+ontology_class_lb = tk.Label(window, text='Ontology')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+85,y_multiplier_integer,ontology_class_lb,True)
+ontology_class_var.set('')
+# to jump to an item in the list that starts with a specific letter (e.g., without) by pressing that letter (e.g., w)
+# https://stackoverflow.com/questions/32747592/can-you-have-a-tkinter-drop-down-menu-that-can-jump-to-an-entry-by-typing
+# autocomplete
+# https://stackoverflow.com/questions/12298159/tkinter-how-to-create-a-combo-box-with-autocompletion
+# for the code
+#   https://mail.python.org/pipermail/tkinter-discuss/2012-January/003041.html
+
+ontology_class = ttk.Combobox(window, width = 25, textvariable = ontology_class_var)
+ontology_class['values'] = DBpedia_ontology_class_menu
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+160, y_multiplier_integer,ontology_class,True)
+ontology_class.configure(state='disabled')
 
 sub_class_entry_lb = tk.Label(window, text='Sub-class')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 300,y_multiplier_integer,sub_class_entry_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 350,y_multiplier_integer,sub_class_entry_lb,True)
 
-sub_class_entry = tk.Entry(window,width=30,textvariable=sub_class_entry_var)
+sub_class_entry = tk.Entry(window,width=25,textvariable=sub_class_entry_var)
 sub_class_entry.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+ 380,y_multiplier_integer,sub_class_entry,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+ 420,y_multiplier_integer,sub_class_entry,True)
 
 OK_button = tk.Button(window, text='OK', width=3,height=1,state='disabled',command=lambda: accept_DBpedia_YAGO_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+600,y_multiplier_integer,OK_button,True)
@@ -453,12 +461,15 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
     if annotator_DBpedia_var.get()==False and annotator_YAGO_var.get()==False:
         DBpedia_YAGO_class_list.clear()
         DBpedia_YAGO_color_list.clear()
-        class_var.set('') # DBpedia_YAGO_menu_options
+        ontology_class_var.set('') # DBpedia_YAGO_menu_options
         annotator_DBpedia_checkbox.configure(state="normal")
         annotator_YAGO_checkbox.configure(state="normal")
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integerSV,
                                                    annotator_YAGO_checkbox)
+    else:
+        ontology_class.configure(state='normal')
     if annotator_DBpedia_var.get()==True:
+        ontology_class['values'] = DBpedia_ontology_class_menu
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integerSV,
                                                        annotator_YAGO_checkbox, True)
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 270,
@@ -474,6 +485,7 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
     if annotator_DBpedia_var.get()==True:
         annotator_YAGO_checkbox.configure(state="disabled")
     if annotator_YAGO_var.get()==True:
+        ontology_class['values'] = YAGO_ontology_class_menu
         annotator_DBpedia_checkbox.configure(state="disabled")
     if annotator_DBpedia_var.get()==True or annotator_YAGO_var.get()==True:
         # display the reminder only once in the same GUI or the trace will display it many times
@@ -484,25 +496,25 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
                                          True)
         firstTime=True
         databases_menu.configure(state="normal")
-        class_menu.configure(state="normal")
+        ontology_class.configure(state='normal')
         sub_class_entry.configure(state="normal")
     else:
         databases_menu.configure(state="disabled")
-        class_menu.configure(state="disabled")
+        ontology_class.configure(state='disabled')
         sub_class_entry.configure(state="disabled")
 annotator_DBpedia_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
 annotator_YAGO_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
 
 def activate_class_options(*args):
-    if class_var.get() in DBpedia_YAGO_class_list:
-        mb.showwarning(title='Warning', message='The class "'+ class_var.get() + '" is already in your selection list: '+ str(DBpedia_YAGO_class_list) + '.\n\nPlease, select another class.')
+    if ontology_class_var.get() in DBpedia_YAGO_class_list:
+        mb.showwarning(title='Warning', message='The class "'+ ontology_class_var.get() + '" is already in your selection list: '+ str(DBpedia_YAGO_class_list) + '.\n\nPlease, select another class.')
         window.focus_force()
         return
-    state = str(class_menu['state'])
+    state = str(ontology_class['state'])
     if state != 'disabled':
-        if class_var.get() != '':
-            DBpedia_YAGO_class_list.append(class_var.get())
-            class_menu.configure(state="disabled")
+        if ontology_class_var.get() != '':
+            DBpedia_YAGO_class_list.append(ontology_class_var.get())
+            ontology_class.configure(state='disabled')
             sub_class_entry.configure(state="disabled")
             OK_button.configure(state="disabled")
             reset_class_button.configure(state='normal')
@@ -512,21 +524,21 @@ def activate_class_options(*args):
             color_palette_DBpedia_YAGO_menu.configure(state='disabled')
     else:
         if sub_class_entry_var.get() != '':
-            class_menu.configure(state="disabled")
+            ontology_class.configure(state='disabled')
             OK_button.configure(state="normal")
         else:
-            class_menu.configure(state="normal")
+            ontology_class.configure(state='normal')
             OK_button.configure(state="disabled")
-class_var.trace ('w',activate_class_options)
+ontology_class_var.trace ('w',activate_class_options)
 
 def activate_OK_buttton(*args):
     if sub_class_entry_var.get() != '':
-        class_menu.configure(state="disabled")
+        ontology_class.configure(state='disabled')
         OK_button.configure(state="normal")
         color_palette_DBpedia_YAGO_menu.configure(state='normal')
         reset_class_button.configure(state='normal')
     else:
-        class_menu.configure(state="normal")
+        ontology_class.configure(state='normal')
         OK_button.configure(state="disabled")
         color_palette_DBpedia_YAGO_menu.configure(state='disabled')
         reset_class_button.configure(state='disabled')
@@ -541,7 +553,7 @@ def activate_class_color_combo(*args):
             # if color_palette_DBpedia_YAGO_var.get() in DBpedia_YAGO_color_list:
             # 	mb.showwarning(title='Warning', message='The selected color, ' + color_palette_DBpedia_YAGO_var.get() + ', has already been selected.\n\nPlease, select a different value. You can display all selected values by clicking on SHOW.')
             # 	return
-            DBpedia_YAGO_color_list.append(class_var.get())
+            DBpedia_YAGO_color_list.append(ontology_class_var.get())
             DBpedia_YAGO_color_list.append("|")
             DBpedia_YAGO_color_list.append(color_palette_DBpedia_YAGO_var.get())
             DBpedia_YAGO_color_list.append("|")

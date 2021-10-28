@@ -18,3 +18,17 @@ ISO_GIS_country_menu='Afghanistan - af', 'Åland Islands - ax', 'Albania - al', 
 	'Taiwan (Province of China) - tw', 'Tajikistan - tj', 'Tanzania, the United Republic of - tz', 'Thailand - th', 'Timor-Leste - tl', 'Togo - tg', 'Tokelau - tk', 'Tonga - to', 'Trinidad and Tobago - tt', 'Tunisia - tn', 'Turkey - tr', 'Turkmenistan - tm', 'Turks and Caicos Islands  - tc', 'Tuvalu - tv', 'Uganda - ug',\
 	'Ukraine - ua', 'United Arab Emirates  - ae', 'United Kingdom of Great Britain and Northern Ireland  - gb', 'United States Minor Outlying Islands  - um', 'United States of America  - us', 'Uruguay - uy', 'Uzbekistan - uz', 'Vanuatu - vu', 'Venezuela (Bolivarian Republic of) - ve', 'Viet Nam - vn', 'Virgin Islands (British) - vg', 'Virgin Islands (U.S.) - vi', 'Wallis and Futuna - wf',\
 	'Western Sahara - eh', 'Yemen - ye', 'Zambia - zm', 'Zimbabwe - zw'
+
+# http://mappings.dbpedia.org/server/ontology/classes/
+DBpedia_ontology_class_menu='Thing', 'Activity', 'Agent', 'Algorithm' 'Altitude', 'AnatomicalStructure', \
+'Area','Award','Biomolecule', 'Blazon','Browser','ChartsPlacements', 'ChemicalSubstance','Cipher', \
+'Colour', 'Currency', 'Demographics','Depth','Device','Diploma','Disease','ElectionDiagram', \
+'ElectricalSubstation','EthnicGroup','Event','FileSystem','Flag','Food','GeneLocation', \
+'GrossDomesticProduct','GrossDomesticProductPerCapita','Holiday','Identifier','Language','List', \
+'MeanOfTransportation','Media','MedicalSpecialty','Medicine','Name','Person','Place','Population', \
+'Protocol','PublicService','Relationship','Species','SportCompetitionResult','SportsSeason','Spreadsheet', \
+'StarCluster','Statistic','Tank','TimePeriod','TopicalConcept', 'UnitOfWork','Unknown', 'Work'
+
+# These are schema.org classes https://schema.org/docs/full.html
+YAGO_ontology_class_menu= 'BioChemEntity','Gene','MolecularEntity','Taxon','Brand','BroadcastChannel', \
+'CreativeWork', 'Emotion', 'MedicalEntity', 'Organization',	'Person', 'Place', 'Product'
