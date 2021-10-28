@@ -39,7 +39,7 @@ def convert_time(time):
 
     # compose message
     if hours > 0:
-        message = str(hours) + hours_label
+        message = str(hours) + hour_label
     if minutes >= 0:
         if hours > 0:
             message = message + ', '
