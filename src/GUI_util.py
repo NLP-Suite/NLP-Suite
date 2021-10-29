@@ -583,6 +583,33 @@ def IO_config_setup_brief(window, y_multiplier_integer,ScriptName):
     openOutputDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+820,
                                y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
+def display_about_release_team_cite_buttons(ScriptName):
+    # if ScriptName == 'NLP_welcome_main' or ScriptName == 'NLP_menu_main':
+    if ScriptName == 'NLP_menu_main':
+        if ScriptName == 'NLP_welcome_main':
+            y_multiplier_integer = .5
+        else:
+            y_multiplier_integer = 0
+        about_button = tk.Button(window, text='About', width=15, height=1, foreground="red",
+                                command=lambda: GUI_IO_util.about())
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 50, y_multiplier_integer,
+                                                       about_button, True)
+
+        release_history_button = tk.Button(window, text='Release history', width=15, height=1, foreground='red',
+                                           command=lambda: GUI_IO_util.release_history())
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 230, y_multiplier_integer,
+                                                       release_history_button, True)
+
+        team_button = tk.Button(window, text='NLP Suite team', width=13, height=1, foreground="red",
+                                command=lambda: GUI_IO_util.list_team())
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 430, y_multiplier_integer,
+                                                       team_button, True)
+
+        cite_button = tk.Button(window, text='How to cite', width=13, height=1, foreground="red",
+                                command=lambda: GUI_IO_util.cite_NLP())
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 600, y_multiplier_integer,
+                                                       cite_button)
+
 # ScriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main
 #   it can be used for handling GUIs with special treatment (e.g., IO_setup_main which does not have a RUN button)
 #   for consistency, it should also be used for NLP_main that for now relies on a previous approach based on config (i.e., NLP-config.txt)
@@ -604,20 +631,7 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
 
         display_release()
 
-        if ScriptName == 'NLP_menu_main':
-
-            release_history_button = tk.Button(window, text='Release history', width=13, height=1, foreground="red",
-                                    command=lambda: GUI_IO_util.release_history())
-            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100, 0,
-                                                           release_history_button, True)
-            team_button = tk.Button(window, text='NLP Suite team', width=13, height=1, foreground="red",
-                                    command=lambda: GUI_IO_util.list_team())
-            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350, 0,
-                                                           team_button, True)
-            cite_button = tk.Button(window, text='How to cite', width=13, height=1, foreground="red",
-                                    command=lambda: GUI_IO_util.cite_NLP())
-            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+600, 0,
-                                                           cite_button)
+        display_about_release_team_cite_buttons(ScriptName)
 
     y_multiplier_integer=0
     missingIO=""

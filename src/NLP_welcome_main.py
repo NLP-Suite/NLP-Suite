@@ -139,23 +139,6 @@ def display_text():
     welcome_line4.grid(row=2, column=0, columnspan=6)
 
 
-def display_buttons():
-    # display about button
-    about_button = tk.Button(window, text='About', width=15, height=1, foreground="red",
-                            command=lambda: GUI_IO_util.about())
-    about_button.grid(row=5, column=0, columnspan=2, pady=10, padx=10, sticky=tk.E)
-
-    # display team button
-    team_button = tk.Button(window, text='NLP Suite team', width=15, height=1, foreground="red",
-                            command=lambda: GUI_IO_util.list_team())
-    team_button.grid(row=5, column=2, columnspan=2, pady=10, padx=10)
-
-    # display cite button
-    cite_button = tk.Button(window, text='How to cite', width=15, height=1, foreground="red",
-                            command=lambda: GUI_IO_util.cite_NLP())
-    cite_button.grid(row=5, column=4, columnspan=2, pady=10, padx=10, sticky=tk.W)
-
-
 def display_enter_button():
     # display Enter NLP button
     enter_button = tk.Button(window, text='Enter NLP Suite', width=20, height=2, foreground="red",
@@ -206,7 +189,12 @@ update_images()  # this MUST be before  displaying logo, text, and buttons
 
 GUI_util.display_logo()
 display_text()
-display_buttons()
+
+GUI_util.display_release()
+
+ScriptName = 'NLP_welcome_main'
+GUI_util.display_about_release_team_cite_buttons(ScriptName)
+
 place_banner()
 display_enter_button()
 
@@ -214,7 +202,6 @@ window.rowconfigure(6, weight=1)
 window.rowconfigure(7, weight=1)
 for i in range(0, 6):
     window.columnconfigure(i, weight=1)
-
 
 def fit_images(event):
     global photos1, photos2, photos3, canvas1, canvas2, canvas3

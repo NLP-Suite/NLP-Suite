@@ -16,6 +16,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"NLP",['os','tkinter']
     sys.exit(0)
 
 import tkinter as tk
+from tkinter import ttk
 import tkinter.messagebox as mb
 from sys import platform
 from subprocess import call
@@ -24,6 +25,7 @@ import GUI_IO_util
 import IO_files_util
 import reminders_util
 import config_util
+import constants_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -83,7 +85,6 @@ GUI_util.GUI_top(config_input_output_options, config_filename, IO_setup_display_
 
 setup_IO_OK_checkbox_var = tk.IntVar()
 setup_software_OK_checkbox_var = tk.IntVar()
-
 
 script_to_run=''
 IO_values=''
@@ -295,6 +296,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 IO_setup_var.trace('w',setup_IO)
 
 def setup_software_warning():
+    # GUI_IO_util.dropdown_menu_widget(window, "Text caption", 'lower_bound', 'upper_bound', 'default_value')
     mb.showwarning('Software option', 'Please, using the dropdown menu, select the external software that you would like to install.')
     return
 
@@ -353,92 +355,30 @@ data_file_handling_tools_var.set('')
 file_handling_lb = tk.Label(window, text='Data & Files Handling Tools')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                file_handling_lb, True)
-
-file_handling_menu = tk.OptionMenu(window, data_file_handling_tools_var,
-                                   'Data manager (csv files via Pandas)',
-                                   'File checker (file content)',
-                                   'File checker (file content utf-8 encoding)',
-                                   'File checker (file name)',
-                                   'File classifier (dumb classifier via embedded date) (file name)',
-                                   'File-type converter (csv, docx, pdf, rtf --> txt)',
-                                   'File matcher (file name)',
-                                   'File merger (file content)',
-                                   'File splitter (file content)',
-                                   'File splitter (file name)',
-                                   'File manager (List, Rename, Copy, Move, Delete, Count)',
-                                   'SQL database (via SQLite)'
-                                   )
-
-file_handling_menu.configure(width=70)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
-                                               file_handling_menu)
+data_file_handling_tools_menu = ttk.Combobox(window, width = 90, textvariable = data_file_handling_tools_var)
+data_file_handling_tools_menu['values'] = constants_util.NLP_Suite_data_file_handling_tools_menu
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, data_file_handling_tools_menu)
 
 pre_processing_tools_var.set('')
 pre_processing_lb = tk.Label(window, text='Pre-Processing Tools')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                pre_processing_lb, True)
-pre_processing_menu = tk.OptionMenu(window, pre_processing_tools_var,
-                                    'File checker (file content)',
-                                    'File checker (file content utf-8 encoding)',
-                                    'File checker (file name)',
-                                    'File cleaner (Change to ASCII non-ASCII apostrophes & quotes and % to percent)',
-                                    'File cleaner (Find & Replace string)',
-                                    'File cleaner (Remove blank lines from txt file(s))',
-                                    'File cleaner (Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation)',
-                                    'File cleaner (Pronominal resolution via CoreNLP)',
-                                    'File finder (file name)',
-                                    'File finder/search (file content for words/collocations)',
-                                    'File-type converter (csv, docx, pdf, rtf --> txt)',
-                                    'File merger (file content)',
-                                    'File splitter (file content)',
-                                    'File splitter (file name)',
-                                    # 'CoreNLP annotator - date (NER normalized date)',
-                                    # 'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)',
-                                    # 'CoreNLP annotator - quote',
-                                    # 'CoreNLP Co-Reference PRONOMINAL resolution',
-                                    'Find non-related documents',
-                                    'Language detection',
-                                    'Newspaper article/Document titles',
-                                    'Similarities between documents (via Java Lucene)',
-                                    'Similarities between documents (via Python difflib)',
-                                    'Similarities between words (Levenshtein distance)',
-                                    'Spelling checkers',
-                                    'Spelling checker cleaner (Find & Replace string)')
-                                    # 'Spelling checker/Unusual words (via NLTK)',
-                                    # 'Spelling checker (via autocorrect)',
-                                    # 'Spelling checker (via pyspellchecker)',
-                                    # 'Spelling checker (via textblob)')
 
-pre_processing_menu.configure(width=70)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
-                                               pre_processing_menu)
+pre_processing_tools_menu = ttk.Combobox(window, width = 90, textvariable = pre_processing_tools_var)
+pre_processing_tools_menu['values'] = constants_util.NLP_Suite_pre_processing_tools_menu
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, pre_processing_tools_menu)
 
 statistical_tools_var.set('')
 statistical_tools_lb = tk.Label(window, text='Statistical Tools')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                statistical_tools_lb, True)
-statistical_menu = tk.OptionMenu(window, statistical_tools_var,
-                                 'Statistics (csv & txt files)')
-statistical_menu.configure(width=70)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
-                                               statistical_menu)
+statistical_tools_menu = ttk.Combobox(window, width = 90, textvariable = statistical_tools_var)
+statistical_tools_menu['values'] = ['Statistics (csv & txt files)']
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, statistical_tools_menu)
 
-visualization_tools_var.set('')
-visualization_lb = tk.Label(window, text='Visualization Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
-                                               visualization_lb, True)
-visualization_menu = tk.OptionMenu(window, visualization_tools_var,
-                                   'Excel charts',
-                                   'Geographic maps: Geocoding & maps',
-                                   'Geographic maps: Google Earth Pro',
-                                   'Geographic distances between locations',
-                                   'HTML annotator - dictionary, gender, DBpedia, YAGO',
-                                   'Network graphs (Gephi)',
-                                   'Sentence visualization: Dependency tree viewer (png graphs)',
-                                   'Word clouds')
-visualization_menu.configure(width=70)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
-                                               visualization_menu)
+visualization_menu = ttk.Combobox(window, width = 90, textvariable = visualization_tools_var)
+visualization_menu['values'] = constants_util.NLP_Suite_visualization_tools_menu
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, visualization_menu)
 
 # (startX, startY, endX, endY) where endX is the width of window
 # https://stackoverflow.com/questions/40390746/how-to-correctly-use-tkinter-create-line-coordinates
@@ -451,86 +391,32 @@ linguistic_tools_lb = tk.Label(window, text='Tools of linguistic analysis', fore
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                linguistic_tools_lb)
 
-corpus_tools_var.set('')
 corpus_tools_lb = tk.Label(window, text='CORPUS Analysis Tools')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                corpus_tools_lb, True)
 # tools that apply exclusively to a corpus
-corpus_tools_menu = tk.OptionMenu(window, corpus_tools_var,
-                                  'WHAT\'S IN YOUR CORPUS? A SWEEPING VIEW',
-                                  'Corpus statistics (Sentences, words, lines)',
-                                  'Co-Occurrences viewer',
-                                  'N-grams viewer',
-                                  'Shape of stories',
-                                  'Similarities between documents (via Python difflib)',
-                                  'Similarities between documents (via Java Lucene)',
-                                  'Topic modeling (via Gensim)',
-                                  'Topic modeling (via Mallet)',
-                                  'Word2Vec (via Gensim)')
-
-corpus_tools_menu.configure(width=70)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
-                                               corpus_tools_menu)
+corpus_menu = ttk.Combobox(window, width = 90, textvariable = corpus_tools_var)
+corpus_menu['values'] = constants_util.NLP_Suite_corpus_tools_menu
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, corpus_menu)
 
 # 'KWIC (Key Word In Context)')
 
-corpus_document_tools_var.set('')
+# corpus_document_tools_var.set('')
 corpus_document_tools_lb = tk.Label(window, text='CORPUS/DOCUMENT Analysis Tools')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                corpus_document_tools_lb, True)
-# tools that can be applied to either corpus or single document
-corpus_document_tools_menu = tk.OptionMenu(window, corpus_document_tools_var,
-                                           'Stanford CoreNLP',
-                                           'CoNLL table analyzer - Search the CoNLL table',
-                                           'CoNLL table analyzer - Clause, noun, verb, function words frequencies',
-                                           'CoreNLP annotator - date (NER normalized date)',
-                                           'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)',
-                                           'CoreNLP annotator - quote',
-                                           'CoreNLP annotator - coreference (pronominal)',
-                                           'HTML annotator - dictionary, gender, DBpedia, YAGO',
-                                           'HTML annotator extractor',
-                                           'Annotator - hedge/uncertainty',
-                                           'Narrative analysis',
-                                           'Style analysis',
-                                           'Sentiment analysis',
-                                           'Gender guesser',
-                                           'Geographic maps: From texts to maps',
-                                           'Geographic maps: Google Earth Pro',
-                                           'NER (Named Entity Recognition) extractor',
-                                           'N-grams (word & character)',
-                                           'Nominalization',
-                                            'Search CoNLL table',
-                                           'Search text file(s) for n-grams & co-occurrences',
-                                           'Search text file(s) for words/collocations',
-                                           'Sentence complexity',
-                                           'Sentence/text readability (via textstat)',
-                                           'Similarities between words (Levenshtein distance)',
-                                           'Spelling checkers',
-                                           'Spelling checker cleaner (Find & Replace string)',
-                                           # 'Spelling checker/Unusual words (via NLTK)',
-                                           # 'Spelling checker (via autocorrect)',
-                                           # 'Spelling checker (via pyspellchecker)',
-                                           # 'Spelling checker (via textblob)',
-                                           'Semantic analysis (via TensorFlow)',
-                                           'SRL Semantic Role Labeling',
-                                           'SVO extractor & visualization',
-                                           'Word clouds',
-                                           'WordNet')
-
-corpus_document_tools_menu.configure(width=70)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
-                                               corpus_document_tools_menu)
+#tools that can be applied to either corpus or single document
+corpus_documents_menu = ttk.Combobox(window, width = 90, textvariable = corpus_document_tools_var)
+corpus_documents_menu['values'] = constants_util.NLP_Suite_corpus_document_tools_menu
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, corpus_documents_menu)
 
 sentence_tools_var.set('')
 sentence_tools_lb = tk.Label(window, text='SENTENCE Analysis Tools')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                sentence_tools_lb, True)
-sentence_tools_menu = tk.OptionMenu(window, sentence_tools_var,
-                                    'Sentence analysis (An overall GUI)')
-
-sentence_tools_menu.configure(width=70)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
-                                               sentence_tools_menu)
+sentence_tools_menu = ttk.Combobox(window, width = 90, textvariable = sentence_tools_var)
+sentence_tools_menu['values'] = ['Sentence analysis (An overall GUI)']
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, sentence_tools_menu)
 
 
 def getScript(script):
@@ -544,24 +430,6 @@ visualization_tools_var.trace('w', lambda x, y, z: getScript(visualization_tools
 corpus_tools_var.trace('w', lambda x, y, z: getScript(corpus_tools_var.get()))
 corpus_document_tools_var.trace('w', lambda x, y, z: getScript(corpus_document_tools_var.get()))
 sentence_tools_var.trace('w', lambda x, y, z: getScript(sentence_tools_var.get()))
-
-# further_options.set('')
-# further_options_lb = tk.Label(window, text='Further Options (Not Supported)')
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,further_options_lb,True)
-# further_options_menu = tk.OptionMenu(window,further_options,'AntConc',
-# 																'Apache OpenNLP',
-# 																'Automap',
-# 																'CleaNLP',
-# 																'ConText',
-# 																'GATE',
-# 																'Knime',
-# 																'LIWC',
-# 																'NLTK',
-# 																'SEANCE',
-# 																'Tacit',
-# 																'Voyant')
-# further_options_menu.configure(width=70)
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,further_options_menu)
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

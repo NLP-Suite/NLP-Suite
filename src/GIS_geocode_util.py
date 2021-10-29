@@ -188,6 +188,7 @@ def geocode(window,locations, inputFilename, outputDir,
 			else:
 				# itemToGeocode =[item[0]]
 				itemToGeocode =item
+
 			# repetition; location already in list
 			if itemToGeocode in distinctGeocodedList:
 				location = itemToGeocode

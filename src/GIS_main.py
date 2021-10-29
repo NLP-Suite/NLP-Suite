@@ -92,6 +92,10 @@ def run(inputFilename,
 
     # START PROCESSING ---------------------------------------------------------------------------------------------------
 
+    datePresent = False
+    if extract_date_from_text_var or extract_date_from_filename_var:
+        datePresent = True
+
     # ----------------------------------------------------------------------------------------------------------------------------------------------
     # NER extraction via CoreNLP
 
@@ -124,7 +128,7 @@ def run(inputFilename,
             #     return
             location_menu_var.set('Location')
             # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
-            # Fill in empty dates with most recent valid date
+            # Fill in empty dates with most recent valid date and save to the locations file
             saved_date = ""
             for index, row in df.iterrows():
                 if df['Date'][index] != "":
@@ -160,7 +164,6 @@ def run(inputFilename,
     # ----------------------------------------------------------------------------------------------------------------------------------------------
 
     if GIS_package_var == 'Google Earth Pro & Google Maps' or GIS_package_var == 'Google Maps' or GIS_package_var == 'Google Earth Pro':
-        datePresent = False
         # if GIS_package_var=='Google Earth Pro': # check installation
 
         # locationColumnName where locations to be geocoded (or geocoded) are stored in the csv file;

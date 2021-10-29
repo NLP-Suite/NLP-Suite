@@ -32,3 +32,60 @@ DBpedia_ontology_class_menu='Thing', 'Activity', 'Agent', 'Algorithm' 'Altitude'
 # These are schema.org classes https://schema.org/docs/full.html
 YAGO_ontology_class_menu= 'BioChemEntity','Gene','MolecularEntity','Taxon','Brand','BroadcastChannel', \
 'CreativeWork', 'Emotion', 'MedicalEntity', 'Organization',	'Person', 'Place', 'Product'
+
+NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: Geocoding & maps', \
+'Geographic maps: Google Earth Pro', 'Geographic distances between locations', \
+'HTML annotator - dictionary, gender, DBpedia, YAGO', 'Network graphs (Gephi)', \
+'Sentence visualization: Dependency tree viewer (png graphs)', 'Word clouds'
+
+NLP_Suite_data_file_handling_tools_menu = 'Data manager (csv files via Pandas)', 'File checker (file content)', \
+'File checker (file content utf-8 encoding)', 'File checker (file name)', \
+'File classifier (dumb classifier via embedded date) (file name)', \
+'File-type converter (csv, docx, pdf, rtf --> txt)', 'File matcher (file name)', 'File merger (file content)', \
+'File splitter (file content)', 'File splitter (file name)', \
+'File manager (List, Rename, Copy, Move, Delete, Count)', 'SQL database (via SQLite)'
+
+NLP_Suite_pre_processing_tools_menu = 'File checker (file content)', \
+'File checker (file content utf-8 encoding)', 'File checker (file name)', \
+'File cleaner (Change to ASCII non-ASCII apostrophes & quotes and % to percent)', \
+'File cleaner (Find & Replace string)', 'File cleaner (Remove blank lines from txt file(s))', \
+'File cleaner (Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation)', \
+'File cleaner (Pronominal resolution via CoreNLP)', 'File finder (file name)', \
+'File finder/search (file content for words/collocations)', 'File-type converter (csv, docx, pdf, rtf --> txt)', \
+'File merger (file content)', 'File splitter (file content)', 'File splitter (file name)', \
+'Find non-related documents', 'Language detection', 'Newspaper article/Document titles', \
+'Similarities between documents (via Java Lucene)', 'Similarities between documents (via Python difflib)', \
+'Similarities between words (Levenshtein distance)', 'Spelling checkers', 'Spelling checker cleaner (Find & Replace string)'
+
+# 'CoreNLP annotator - date (NER normalized date)',
+# 'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)',
+# 'CoreNLP annotator - quote',
+# 'CoreNLP Co-Reference PRONOMINAL resolution',
+# 'Spelling checker/Unusual words (via NLTK)',
+# 'Spelling checker (via autocorrect)',
+# 'Spelling checker (via pyspellchecker)',
+# 'Spelling checker (via textblob)')
+
+NLP_Suite_corpus_tools_menu = 'WHAT\'S IN YOUR CORPUS? A SWEEPING VIEW', \
+'Corpus statistics (Sentences, words, lines)', 'Co-Occurrences viewer', 'N-grams viewer', \
+'Shape of stories', 'Similarities between documents (via Python difflib)', \
+'Similarities between documents (via Java Lucene)', 'Topic modeling (via Gensim)', \
+'Topic modeling (via Mallet)', 'Word2Vec (via Gensim)'
+
+NLP_Suite_corpus_document_tools_menu = 'Stanford CoreNLP', 'CoNLL table analyzer - Search the CoNLL table', \
+'CoNLL table analyzer - Clause, noun, verb, function words frequencies', 'CoreNLP annotator - date (NER normalized date)', \
+'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)', 'CoreNLP annotator - quote', \
+'CoreNLP annotator - coreference (pronominal)', 'HTML annotator - dictionary, gender, DBpedia, YAGO',\
+'HTML annotator extractor',  'Annotator - hedge/uncertainty', 'Narrative analysis', 'Style analysis', \
+'Sentiment analysis', 'Gender guesser', 'Geographic maps: From texts to maps', 'Geographic maps: Google Earth Pro', \
+'NER (Named Entity Recognition) extractor', 'N-grams (word & character)', 'Nominalization', 'Search CoNLL table', \
+'Search text file(s) for n-grams & co-occurrences', 'Search text file(s) for words/collocations', 'Sentence complexity', \
+'Sentence/text readability (via textstat)', 'Similarities between words (Levenshtein distance)', 'Spelling checkers', \
+'Spelling checker cleaner (Find & Replace string)', 'Semantic analysis (via TensorFlow)', 'SRL Semantic Role Labeling', \
+'SVO extractor & visualization', 'Word clouds', 'WordNet'
+
+# 'Spelling checker/Unusual words (via NLTK)',
+# 'Spelling checker (via autocorrect)',
+# 'Spelling checker (via pyspellchecker)',
+# 'Spelling checker (via textblob)',
+
