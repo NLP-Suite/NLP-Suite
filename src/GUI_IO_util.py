@@ -6,6 +6,7 @@ import sys
 
 import os
 import tkinter as tk
+from tkinter import ttk
 import tkinter.messagebox as mb
 from subprocess import call
 
@@ -242,13 +243,18 @@ def readme_button(Window, xCoord, yCoord, text_title,text_msg):
         text_title='NLP Suite Help'
     mb.showinfo(title=text_title, message=text_msg)
 
-# http://effbot.org/tkinterbook/menu.htm
-def menu_widget(window,textCaption, lower_bound, upper_bound, default_value):
+def dropdown_menu_widget(window,textCaption, lower_bound, upper_bound, default_value):
     master = tk.Tk()
     master.focus_force()
 
+    # https://www.geeksforgeeks.org/popup-menu-in-tkinter/
+
     tk.Label(master,width=len(textCaption),text=textCaption).grid(row=0)
-    master.title(masterTitle)
+    master.title(textCaption)
+
+    # data_file_handling_tools_var = tk.StringVar()
+    # data_file_handling_tools_menu = ttk.Combobox(window, width=90, textvariable=data_file_handling_tools_var)
+    # data_file_handling_tools_menu['values'] = ['test','test2']
 
     def get_value():
         global val

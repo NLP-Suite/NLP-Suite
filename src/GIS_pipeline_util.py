@@ -49,7 +49,9 @@ def getGoogleAPIkey(Google_config):
         key = configAPIKey[0]
     return key
 
+
 # the list of arguments reflect the order of widgets in the Google_Earth_main GUI
+# processes one file at a time
 def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                         geocoder, mapping_package,
                         datePresent,
@@ -71,6 +73,12 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
 
     split_locations_prefix="south, north, west, east, los, new, san, las, la, hong"
     split_locations_suffix="city, island"
+
+    # if datePresent:
+    #     date, dateStr = IO_files_util.getDateFromFileName(inputFilename, dateFormat, dateDelimiter, int(datePosition))
+        # if date == '':
+        #     continue  # TODO: Warn user this file has a bad date; done in getDate
+        # else:
 
     inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
 
