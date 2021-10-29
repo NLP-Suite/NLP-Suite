@@ -243,13 +243,6 @@ def readme_button(Window, xCoord, yCoord, text_title,text_msg):
         text_title='NLP Suite Help'
     mb.showinfo(title=text_title, message=text_msg)
 
-software_setup_button = tk.Button(window,
-                                  text='                          Setup external software                         ',
-                                  font=("Courier", 12, "bold"),
-                                  command=lambda: setup_software_warning())
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+220, y_multiplier_integer,
-                                               software_setup_menu, True)
-
 def dropdown_menu_widget(window,textCaption, lower_bound, upper_bound, default_value):
     master = tk.Tk()
     master.focus_force()

@@ -79,7 +79,7 @@ NLP_Suite_corpus_document_tools_menu = 'Stanford CoreNLP', 'CoNLL table analyzer
 'HTML annotator extractor',  'Annotator - hedge/uncertainty', 'Narrative analysis', 'Style analysis', \
 'Sentiment analysis', 'Gender guesser', 'Geographic maps: From texts to maps', 'Geographic maps: Google Earth Pro', \
 'NER (Named Entity Recognition) extractor', 'N-grams (word & character)', 'Nominalization', 'Search CoNLL table', \
-'Search text file(s) for n-grams & co-occurrences', 'Search text file(s) for words/collocations', 'Sentence complexity', \
+'Search text file(s) for n-grams & co-occurrences (N-grams viewer)', 'Search text file(s) for words/collocations', 'Sentence complexity', \
 'Sentence/text readability (via textstat)', 'Similarities between words (Levenshtein distance)', 'Spelling checkers', \
 'Spelling checker cleaner (Find & Replace string)', 'Semantic analysis (via TensorFlow)', 'SRL Semantic Role Labeling', \
 'SVO extractor & visualization', 'Word clouds', 'WordNet'

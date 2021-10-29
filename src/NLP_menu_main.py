@@ -219,8 +219,8 @@ pydict["N-grams (word & character)"] = ["NGrams_CoOccurrences_Viewer_main.py", 1
 pydict["N-grams viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Nominalization"] = ["nominalization_main.py", 1]
 pydict["Search CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
-pydict["Search text file(s) for n-grams & co-occurrences"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
-pydict["Search text file(s) for words/collocations"] = ["file_finder_byWord_main.py", 1]
+pydict["Search text file(s) for n-grams & co-occurrences (N-grams viewer)"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
+pydict["Search text file(s) for words/collocations"] = ["file_search_byWord_main.py", 1]
 pydict["Sentence analysis (An overall GUI)"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence complexity"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence/text readability (via textstat)"] = ["sentence_analysis_main.py", 1]
@@ -376,6 +376,9 @@ statistical_tools_menu = ttk.Combobox(window, width = 90, textvariable = statist
 statistical_tools_menu['values'] = ['Statistics (csv & txt files)']
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, statistical_tools_menu)
 
+visualization_lb = tk.Label(window, text='Visualization Tools')
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+                                               visualization_lb, True)
 visualization_menu = ttk.Combobox(window, width = 90, textvariable = visualization_tools_var)
 visualization_menu['values'] = constants_util.NLP_Suite_visualization_tools_menu
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, visualization_menu)

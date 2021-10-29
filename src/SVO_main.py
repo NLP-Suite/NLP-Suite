@@ -719,6 +719,7 @@ extract_date_from_filename_checkbox = tk.Checkbutton(window, variable=extract_da
 extract_date_from_filename_checkbox.config(text="From filename")
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 190,
                                                y_multiplier_integer, extract_date_from_filename_checkbox, True)
+extract_date_from_filename_checkbox.config(state='disabled')
 
 date_format_lb = tk.Label(window,text='Format ')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 320,
