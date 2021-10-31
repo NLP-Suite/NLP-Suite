@@ -28,7 +28,7 @@ import GUI_util
 
 # Optional routine to clean any places where a duplicate tag emerged on accident
 # Takes in text to check and list of tags to check duplicates/triplicates, etc.
-# Checks up to 10x occuring, allows occuring once
+# Checks up to 10x occurring, allows occurring once
 def cleanMultipleTags(text, tags):
     sorted_tags = sorted(tags, key=len)
     for tag in sorted_tags:

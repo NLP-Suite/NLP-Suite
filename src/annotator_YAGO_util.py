@@ -8,6 +8,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_YAGO_util.p
     sys.exit(0)
 
 import os
+import tkinter.messagebox as mb
 import string
 allpunks = string.punctuation + '1' + '2' + '3' + '4' + '5' + '6' + '7' + '8' + '9' + '0'
 from SPARQLWrapper import SPARQLWrapper, JSON, XML
@@ -374,7 +375,13 @@ def eligible(phrase):
         return False
 
 def obtain_results_df(querystring):
-    sparql.setQuery(querystring)
+    try:
+        # this may occasionally give time out error depending upon server's traffic
+        mb.showwarning(title='Warning',
+                       message='The YAGO server may have timeout. Please, check command line/prompt for "Operation timed out" error\n\nTry running the script later, when the server may be be less busy.')
+        sparql.setQuery(querystring)
+    except:
+        return None
     sparql.setReturnFormat(JSON)
     results=sparql.query().convert()
     results_df = pd.json_normalize(results['results']['bindings'])
