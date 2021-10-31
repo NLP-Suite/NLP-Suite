@@ -131,7 +131,10 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
 
     if openOutputFiles==True:
         if filesToOpen==None:
-            print("\nYAGO exited with error")
+            if annotator_DBpedia_var:
+                print("\nDBpedia exited with error")
+            if annotator_YAGO_var:
+                print("\nYAGO exited with error")
             return
         nFile=len(filesToOpen)
         if nFile > 5:
