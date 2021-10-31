@@ -65,8 +65,6 @@ def gatherAnnotations(inputFile, tags, mustInclude='<p>', cleanMultiples=True):
 
 def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createExcelCharts):
     filesToOpen=[]
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running html annotator extractor at', True, "You can follow html annotation extractor in command line.")
-
     outputFilename=IO_files_util.generate_output_file_name('DBpedia annotations', '', outputDir, '.csv', 'html extractor', '', '')
     filesToOpen.append(outputFilename)
     annotatedHtmlFiles = []
@@ -77,6 +75,8 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createExc
     if nFile==0:
         return
     i=0
+
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running html annotator extractor at', True, "You can follow html annotation extractor in command line.")
 
     csvFile=os.path.join(outputDir, outputFilename)
     writeCSV = IO_files_util.openCSVFile(csvFile, 'w')
