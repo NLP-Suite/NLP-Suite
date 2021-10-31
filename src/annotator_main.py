@@ -426,7 +426,12 @@ ontology_class_var.set('')
 # for the code
 #   https://mail.python.org/pipermail/tkinter-discuss/2012-January/003041.html
 
-ontology_class = ttk.Combobox(window, width = 30, textvariable = ontology_class_var)
+if sys.platform == 'win32':
+    ontology_width = 30
+elif sys.platform == 'darwin':
+    ontology_width = 20
+
+ontology_class = ttk.Combobox(window, width = ontology_width, textvariable = ontology_class_var)
 ontology_class['values'] = DBpedia_ontology_class_menu
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+160, y_multiplier_integer,ontology_class,True)
 ontology_class.configure(state='disabled')
