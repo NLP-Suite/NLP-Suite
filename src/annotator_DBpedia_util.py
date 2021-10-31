@@ -12,17 +12,16 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "annotator_DBpedia.py
 
 import os
 import tkinter.messagebox as mb
-from subprocess import call
-from time import sleep
-import json
 from SPARQLWrapper import SPARQLWrapper, JSON
 import requests
 import urllib
 import urllib.parse
+from urllib.request import urlopen
+import ssl
+import shutil
 
 import IO_user_interface_util
 import file_splitter_ByLength_util
-import GUI_IO_util
 import IO_files_util
 
 """
@@ -87,12 +86,14 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                    'Started running DBpedia annotator at', True,
-                                                   '\nAnnotating types: ' + str(
+                                                   'You can follow the DBpedia annotator in command line.\n\nAnnotating types: ' + str(
                                                        annotationTypes) + '\nConfidence level: ' + str(
                                                        confidence_level))
     print('\n\nAnnotating types: ', annotationTypes, 'with confidence level', str(confidence_level))
 
     sparql = SPARQLWrapper("http://dbpedia.org/sparql")
+
+    url_certificate = ssl.SSLContext()  # Only for url
 
     adjust = '\n\nIf DBpedia fails and returns in command line "The command line is too long", lower the value of the file size using the slider widget and try again.'
     if sys.platform == 'win32':
@@ -108,7 +109,9 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
         message = 'Mac/DBpedia set a limit to the file size that it can process.' + adjust
 
     i = 0
+    sizeErrorDisplayed = False
     for file in files:
+        defaultSize = 7000 # start fresh with every document
         splitHtmlFileList = []
         i = i + 1
         head, tail = os.path.split(file)
@@ -124,6 +127,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
         splitFileValue = defaultSize
         subFile = 0
         listOfFiles=files
+        splitFilesDir=''
         # listOfFiles.remove(file)
         j=0
         while j < len(listOfFiles):
@@ -133,11 +137,13 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
                     # do not process the first large file and process only split files
                     continue
                 head, tail = os.path.split(doc)
-                print('  Processing split file ' + str(j+1) + "/" + str(len(listOfFiles)) + ' ' + tail + ' with DBpedia size ' + str(defaultSize))
+                print('   Processing split file ' + str(j+1) + "/" + str(len(listOfFiles)) + ' ' + tail + ' with DBpedia size ' + str(defaultSize))
                 split_outFilename = os.path.join(outputDir,
                                            "NLP_DBpedia_annotated_" + tail[:-4] + '.html')
-                # splitHtmlFileList.append(split_outFilename)
+                splitHtmlFileList.append(split_outFilename)
             contents = open(doc, 'r', encoding='utf-8', errors='ignore').read()
+            contents = contents.replace('\0', '') # remove null bytes
+            contents = contents.replace("\"", '') # remove quotations
             # for doc in listOfFiles: # processing split subfiles
             BASE_URL = 'http://api.dbpedia-spotlight.org/en/annotate?text={text}&confidence={confidence}&support={support}'
 
@@ -148,31 +154,38 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
                 confidence=CONFIDENCE,
                 support=SUPPORT
             )
-            print('REQUEST',REQUEST) # REQUEST contains the url to the html annotated input file
+            # print('REQUEST',REQUEST) # REQUEST contains the url to the html annotated input file
             HEADERS = {'Accept': 'application/json'}
             all_urls = []
-
             r = requests.get(url=REQUEST, headers=HEADERS)
             # print('RESPONSE r.status_code', r.status_code)
             # 200 = OK
             # 400 bad request
             # 414 line too long
             if r.status_code == requests.codes['ok']:
-                splitHtmlFileList.append(REQUEST)
                 response = r.json()
                 resources = response['Resources']
                 for res in resources:
                     all_urls.append(res['@URI'])
                     # print(all_urls)
                     # print('      DBpedia resource',res['@URI'])
+                # save locally the DBpedia annotated web output file
+                url = REQUEST
+                # url_certificate = ssl.SSLContext()  # Only for url
+                content = urlopen(url, context=url_certificate).read().decode('utf-8')
+                with open(split_outFilename, 'w') as outfile:
+                    outfile.write(content)
+                outfile.close()
             else:
                 if r.status_code == 414: # line too long
-                    if defaultSize == 7000: # avoid repeating message
-                        mb.showwarning(title='Warning',
-                                       message='The DBpedia annotator did not produce any annotated output file for the document\n\n' + doc + '\n\nMost likely, the filesize value of ' + str(
-                                           splitFileValue) + ' is too large for DBpedia to handle.\n\nPlease, check in command line for a possible error \'The command line is too long.\' If so, reduce the filesize value and try again.')
+                    if sizeErrorDisplayed == False: # avoid repeating message
+                        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Warning',
+                                                           'The DBpedia annotator ran into a "line too long" error for document\n\n' + doc + '\n\nThe document will now be split for DBpedia.')
+                        # mb.showwarning(title='Warning',
+                        #                message='The DBpedia annotator ran into a "line too long" error. The DBpedia server has a limit on chunk of text it can process. The document passed\n\n' + doc + '\n\nis too big for the server. The NLP Suite function will now split the document into parts and process each part separately and then put the annotated output back together automatically.')
+                        sizeErrorDisplayed = True
                     # set new default value to avoid repeating warning
-                    print('Line too long ',str(len(contents)),'(current split size', str(defaultSize), ') for document',doc,' Document to be split.')
+                    print('   ERROR: Line too long (current split size', str(defaultSize), '). The document will be split into sub-files.')
                     defaultSize=defaultSize-1000
                     splitFileValue=defaultSize
                 if defaultSize < 2000: # other errors have occurred
@@ -181,20 +194,24 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
                 listOfFiles = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window, 'DBpedia',
                                                                                  doc, outputDir,
                                                                                  splitFileValue)
+                head, tail = os.path.split(listOfFiles[0])
+                splitFilesDir = head
                 subFile=len(listOfFiles)
                 j=-1
             j = j + 1
         if subFile > 0:
             # outFilename here is the combined html file from the split files
             with open(outFilename, 'w', encoding="utf-8", errors='ignore') as outfile:
-                for url in splitHtmlFileList:
-                    import ssl
-                    from urllib.request import urlopen
-                    url = ssl.SSLContext()  # Only for url
-                    content = urllib.request.urlopen(url).read()
-                    outfile.write(content)
+                for htmlDoc in splitHtmlFileList:
+                    with open(htmlDoc,'r', encoding="utf-8",errors='ignore') as infile:
+                        for line in infile:
+                            outfile.write(line)
+                    infile.close()
+                    os.remove(htmlDoc)  # delete temporary split html file from output directory
                 outfile.close()
-                # os.remove(htmlDoc)  # delete temporary split html file from output directory
+                if os.path.exists(splitFilesDir):
+                    shutil.rmtree(splitFilesDir)
+
         j = 0
         subFile=0
         filesToOpen.append(outFilename)
