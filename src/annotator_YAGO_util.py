@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_YAGO_util.py",['os','re','tkinter','subprocess','time','pandas','string','SPARQLWrapper','stanza','fuzzywuzzy'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_YAGO_util.py",['os','re','tkinter','subprocess','time','pandas','string','SPARQLWrapper','stanza','fuzzywuzzy','ssl'])==False:
     sys.exit(0)
 
 import os
@@ -21,6 +21,7 @@ stanza.download('en')
 stannlp = stanza.Pipeline(lang='en', processors='tokenize,ner,mwt,pos,lemma')
 from fuzzywuzzy import fuzz
 import time
+# import ssl
 
 import IO_files_util
 import GUI_util
@@ -47,6 +48,9 @@ ont = []
 
 # This is the main function
 def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls):
+    # this will avoid an SSL certificate error ONLY for a specific url file
+    # query_s_certificate = ssl.SSLContext()  # Only for query_s
+
     filesToOpen = []
     numberOfAnnotations = len(annotationTypes)
     if numberOfAnnotations==0:#when want everything annotated, should not select any classes.
@@ -367,7 +371,6 @@ def form_query_string(phrase, ont_ls):
         query_s = query_s + "}"
         return query_s
 
-
 def eligible(phrase):
     if([x for x in phrase if (not (x in allpunks)) ]!=[] and len(phrase)>2 and phrase.lower()!="not"):
         return True
@@ -375,13 +378,13 @@ def eligible(phrase):
         return False
 
 def obtain_results_df(querystring):
-    try:
-        # this may occasionally give time out error depending upon server's traffic
-        mb.showwarning(title='Warning',
-                       message='The YAGO server may have timeout. Please, check command line/prompt for "Operation timed out" error\n\nTry running the script later, when the server may be be less busy.')
-        sparql.setQuery(querystring)
-    except:
-        return None
+    # try:
+    #     # this may occasionally give time out error depending upon server's traffic
+    #     mb.showwarning(title='Warning',
+    #                    message='The YAGO server may have timeout. Please, check command line/prompt for "Operation timed out" error\n\nTry running the script later, when the server may be be less busy.')
+    #     sparql.setQuery(querystring)
+    # except:
+    #     return None
     sparql.setReturnFormat(JSON)
     results=sparql.query().convert()
     results_df = pd.json_normalize(results['results']['bindings'])
