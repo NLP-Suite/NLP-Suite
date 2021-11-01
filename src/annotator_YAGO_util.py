@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_YAGO_util.py",['os','re','tkinter','subprocess','time','pandas','string','SPARQLWrapper','stanza','fuzzywuzzy','ssl'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_YAGO_util.py",['os','re','tkinter','subprocess','time','pandas','string','SPARQLWrapper','stanza','fuzzywuzzy'])==False:
     sys.exit(0)
 
 import os
@@ -16,12 +16,13 @@ sparql = SPARQLWrapper("https://yago-knowledge.org/sparql/query")
 import pandas as pd
 import re
 from re import split
+from urllib import request, error
 import stanza
 stanza.download('en')
 stannlp = stanza.Pipeline(lang='en', processors='tokenize,ner,mwt,pos,lemma')
 from fuzzywuzzy import fuzz
 import time
-# import ssl
+import ssl
 
 import IO_files_util
 import GUI_util
@@ -48,8 +49,9 @@ ont = []
 
 # This is the main function
 def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls):
+
     # this will avoid an SSL certificate error ONLY for a specific url file
-    # query_s_certificate = ssl.SSLContext()  # Only for query_s
+    ssl._create_default_https_context = ssl._create_unverified_context
 
     filesToOpen = []
     numberOfAnnotations = len(annotationTypes)
@@ -78,7 +80,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     i=0
     docID=1
     for file in files:
-            splittedHtmlFileList = []
+            splitHtmlFileList = []
             i = i + 1
             print("Processing file " + str(i) + "/" + str(nFile) + " " + file)
             listOfFiles=[file]
@@ -86,7 +88,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
             for doc in listOfFiles:
                 subFile = subFile + 1
                 subFilename = os.path.join(outputDir,"NLP_YAGO_annotated_" + str(os.path.split(doc)[1]).split('.txt')[0]+str(subFile) + "_" + str(len(listOfFiles))+ '.html')
-                splittedHtmlFileList.append(subFilename)
+                splitHtmlFileList.append(subFilename)
                 print("   Processing split-file " + str(subFile) + "/" + str(len(listOfFiles)) + " " + doc)
                 contents = open(doc, 'r', encoding='utf-8', errors='ignore').read()
                 contents =' '.join(contents.split()) #reformat content
@@ -96,26 +98,28 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
                 contents = contents.replace("\\", '')
                 contents = contents.replace("/", ' or ')
 
-                IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'YAGO pre-processing and running-time estimation',
-                                                   'The YAGO annotator is pre-processing your file and estimating the time required to annotate your file.\n\nThis may take several minutes. Please, be patient.',
+                if inputDir == '':
+                    IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'YAGO pre-processing and running-time estimation',
+                                                   'The YAGO annotator is pre-processing your file and estimating the time required to annotate your file.\n\nThis may take several minutes. Please, be patient...',
                                                    False,'',True)
-
                 if numberOfAnnotations==0: # default annotation, when no annotation was selected by user
-                    html_content=annotate_default(contents,categories,color1,"blue",doc) # TODO should be colorls
+                    html_content=annotate_default(contents,categories,color1,"blue",doc, inputDir) # TODO should be colorls
                 else:
-                    html_content=annotate_multiple(contents,categories,color1,colorls,doc)
+                    html_content=annotate_multiple(contents,categories,color1,colorls,doc, inputDir)
 
-                time_diff=time.time()-time1[len(time1)-1]
-                print("Annotation for the current document took: " + str(time_diff//60) + " mins and " + str(time_diff%60) + " secs")
+                if inputDir == '':
+                    time_diff=time.time()-time1[len(time1)-1]
+                    print("Annotation for the current document took: " + str(time_diff//60) + " mins and " + str(time_diff%60) + " secs")
+
                 with open(subFilename, 'w+', encoding='utf-8', errors='ignore') as f:
                     f.write(html_content)
                 f.close()
 
             if subFile > 0:
-                # outFilename here is the combined html file from the splitted files
+                # outFilename here is the combined html file from the split files
                 outFilename = os.path.join(outputDir,"NLP_YAGO_annotated_" + str(os.path.split(file)[1]).split('.txt')[0]+ '.html')
                 with open(outFilename, 'w+', encoding="utf-8", errors='ignore') as outfile:
-                    for htmlDoc in splittedHtmlFileList:
+                    for htmlDoc in splitHtmlFileList:
                         with open(htmlDoc, 'r', encoding="utf-8", errors='ignore') as infile:
                             for line in infile:
                                 outfile.write(line)
@@ -124,12 +128,9 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
                 outfile.close()
             filesToOpen.append(outFilename)
 
-
-
             # print(outFilename)
             # TODO Sentence ID must start from1 rather than CS 0
             # TODO in the output csv file the html url one should be able to click on it and open the website
-            #   in IO_csv_util there is a function def dressFilenameForCSVHyperlink(fileName) that does that for a regular file
             #csvname = outFilename.replace(".html","_")+str(annotationTypes).replace("[", "").replace("]", "").replace("'", "").replace(",", "_")
             diff = len(Document) - len(DocumentID)
             if diff>0:DocumentID.extend([docID]*diff)
@@ -144,6 +145,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     IO_files_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running YAGO annotator at', True, '', True, startTime)
     return filesToOpen
 
+# This is very slow; should not be done when processing a folder
 def estimate_time(parsed_doc,num_cats,word_bag):
     print("Computing the estimated time for query...")
     a=[word.lemma for sent in parsed_doc.sentences for word in sent.words]
@@ -154,21 +156,22 @@ def estimate_time(parsed_doc,num_cats,word_bag):
     time1.append(time.time())
 
     IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'YAGO annotator',
-        'Estimated time of YAGO query for the current document is: ' + str(est//60)+' mins and '+str(round(est%60,2))+' secs.\n\n'\
-        '   Number of tokens in document: ' +str(len(a)) +'\n'\
-        '   Number of tokens to be queried: ' +str(num2) +'\n'\
-        '   Number of ontology classes: ' + str(num_cats) +'\n',
+        '   Estimated time of YAGO query for the current document is: ' + str(est//60)+' mins and '+str(round(est%60,2))+' secs.\n'\
+        '      Number of tokens in document: ' +str(len(a)) +'\n'\
+        '      Number of tokens to be queried: ' +str(num2) +'\n'\
+        '      Number of ontology classes: ' + str(num_cats) +'\n',
         False,'',True)
 
     return
 
 # the function processes YAGO in default mode when no combination of ontology class and color have been selected by the user
-def annotate_default(contents,cats,color1,color2,document_name):
+def annotate_default(contents,cats,color1,color2,document_name, inputDir):
     html_str='<html>\n<body>\n<div>\n'
     tA1 = ['<span style=\"color: ' + color1 + '\">', '</span> ']
     tA2 = ['<a style=\"color:' + color2 + '\" href=\"', '\">', '</a> ']
     doc = stannlp(contents)
-    estimate_time(doc, len(cats),word_bag)
+    if inputDir == '':
+        estimate_time(doc, len(cats),word_bag)
     for sent_id in range(len(doc.sentences)):
         sent=doc.sentences[sent_id]
         #sent_ner=nerdoc.sentences[sent_id]
@@ -199,11 +202,12 @@ def annotate_default(contents,cats,color1,color2,document_name):
     return html_str
 
 # the function processes YAGO when the user has selected multiple combinations of ontology class and color
-def annotate_multiple(contents,cats,color1,colorls,document_name):
+def annotate_multiple(contents,cats,color1,colorls,document_name, inputDir):
     html_str = '<html>\n<body>\n<div>\n'
     tA1 = ['<span style=\"color: ' + color1 + '\">', '</span> ']
     doc = stannlp(contents)
-    estimate_time(doc, len(cats),word_bag)
+    if inputDir == '':
+        estimate_time(doc, len(cats),word_bag)
     for sent_id in range(len(doc.sentences)):
         sent = doc.sentences[sent_id]
         prev_og = ""
@@ -235,11 +239,11 @@ def search_dict(phrase_tr,phrase_og,sent_id,curr_html,tA1,documentname,sentence)
         if (values[0] == ""):##searched for, without annotation
             return (curr_html + tA1[0] + phrase_og + tA1[1])
         else:##searched for, without annotation
-            Document.append(documentname)
+            Document.append(IO_csv_util.dressFilenameForCSVHyperlink(documentname))
             Sentence.append(sentence)
             sentID.append(sent_id)
             phrase.append(phrase_og)
-            link.append(values[0])
+            link.append(IO_csv_util.dressFilenameForCSVHyperlink(values[0]))
             ont.append(values[1])
             tA2 = ['<a style=\"color:' + values[2] + '\" href=\"', '\">', '</a> ']
             return (curr_html + tA2[0] + values[0] + tA2[1] + phrase_og + tA2[2])
@@ -260,11 +264,11 @@ def update_html(curr_html,phrase_og,phrase_tr,cats,tA1,tA2,pos,sent_id,color1,co
             if(len(temp)==1 and fuzz.ratio((split("_Q[0-9]+",[str(x).split("/")[-1:][0] for x in temp][0]))[0],phrase_tr)<42):##without annotation
                 updated_html = curr_html + tA1[0] + phrase_og + tA1[1]
             elif(len(temp)==1):##with annotation
-                Document.append(documentname)
+                Document.append(IO_csv_util.dressFilenameForCSVHyperlink(documentname))
                 Sentence.append(sentence)
                 sentID.append(sent_id)
                 phrase.append(phrase_og)
-                link.append(str(temp[0]))
+                link.append(IO_csv_util.dressFilenameForCSVHyperlink(str(temp[0])))
                 ont.append("schema:Thing")
                 dict.update({phrase_tr: [str(temp[0]), "schema:Thing",color2]})
                 return (curr_html + tA2[0] + str(temp[0]) + tA2[1] + phrase_og + tA2[2])
@@ -273,11 +277,11 @@ def update_html(curr_html,phrase_og,phrase_tr,cats,tA1,tA2,pos,sent_id,color1,co
                 if (temp == ""):##without annotation
                     updated_html = curr_html + tA1[0] + phrase_og + tA1[1]
                 else:##with annotation
-                    Document.append(documentname)
+                    Document.append(IO_csv_util.dressFilenameForCSVHyperlink(documentname))
                     sentID.append(sent_id)
                     Sentence.append(sentence)
                     phrase.append(phrase_og)
-                    link.append(str(temp))
+                    link.append(IO_csv_util.dressFilenameForCSVHyperlink(str(temp)))
                     ont.append("schema:Thing")
                     dict.update({phrase_tr: [str(temp), "schema:Thing",color2]})
                     return (curr_html +tA2[0] + str(temp) + tA2[1] + phrase_og + tA2[2])
@@ -305,11 +309,11 @@ def update_html_colorful(curr_html,phrase_og,phrase_tr,cats,tA1,color_ls,pos,sen
                 if(len(temp)==1 and fuzz.ratio((split("_Q[0-9]+",[str(x).split("/")[-1:][0] for x in temp][0]))[0],phrase_tr)<42):##without annotation
                     updated_html = curr_html + tA1[0] + phrase_og + tA1[1]
                 elif(len(temp)==1):##with annotation
-                    Document.append(documentname)
+                    Document.append(IO_csv_util.dressFilenameForCSVHyperlink(documentname))
                     Sentence.append(sentence)
                     sentID.append(sent_id)
                     phrase.append(phrase_og)
-                    link.append(str(temp[0]))
+                    link.append(IO_csv_util.dressFilenameForCSVHyperlink(str(temp[0])))
                     ont.append(str(cats[cat_id]))
                     dict.update({phrase_tr: [str(temp[0]), str(cats[cat_id]),color2]})
                     return (curr_html + tA2[0] + str(temp[0]) + tA2[1] + phrase_og + tA2[2])
@@ -318,11 +322,11 @@ def update_html_colorful(curr_html,phrase_og,phrase_tr,cats,tA1,color_ls,pos,sen
                     if(temp==""):##without annotation
                         updated_html = curr_html + tA1[0] + phrase_og + tA1[1]
                     else:##with annotation
-                        Document.append(documentname)
+                        Document.append(IO_csv_util.dressFilenameForCSVHyperlink(documentname))
                         Sentence.append(sentence)
                         sentID.append(sent_id)
                         phrase.append(phrase_og)
-                        link.append(str(temp))
+                        link.append(IO_csv_util.dressFilenameForCSVHyperlink(str(temp)))
                         ont.append(str(cats[cat_id]))
                         dict.update({phrase_tr: [str(temp), str(cats[cat_id]),color2]})
                         return (curr_html +tA2[0] + str(temp) + tA2[1] + phrase_og + tA2[2])
@@ -378,15 +382,17 @@ def eligible(phrase):
         return False
 
 def obtain_results_df(querystring):
-    # try:
-    #     # this may occasionally give time out error depending upon server's traffic
-    #     mb.showwarning(title='Warning',
-    #                    message='The YAGO server may have timeout. Please, check command line/prompt for "Operation timed out" error\n\nTry running the script later, when the server may be be less busy.')
-    #     sparql.setQuery(querystring)
-    # except:
-    #     return None
+    # https://stackoverflow.com/questions/65115710/sparqlwrapper-endpointinternalerror-endpoint-returned-code-500-and-response
+    # An HTTP error of 500 means the server is failing.
+    sparql.setQuery(querystring)
     sparql.setReturnFormat(JSON)
-    results=sparql.query().convert()
+    try:
+        results=sparql.query().convert()
+    except error.HTTPError:
+        # this may occasionally give time out error depending upon server's traffic
+        mb.showwarning(title='Warning',
+                       message='Take a look at your command liine/prompt. An HTTP error of 500 means that the YAGO server failed. Please, check command line/prompt for "Operation timed out" error\n\nTry running the script later, when the server may be be less busy.')
+        return None
     results_df = pd.json_normalize(results['results']['bindings'])
     cols=[col for col in results_df.columns if col[-5:]!='.type']
     results_df=results_df[cols]

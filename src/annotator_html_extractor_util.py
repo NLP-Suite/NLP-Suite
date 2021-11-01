@@ -24,6 +24,8 @@ import os
 import csv
 import ntpath
 
+import IO_csv_util
+
 
 # Optional routine to clean any places where a duplicate tag emerged on accident
 # Takes in text to check and list of tags to check duplicates/triplicates, etc. of
@@ -83,7 +85,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createExc
     if writeCSV=='':
         return
     writer = csv.writer(writeCSV)
-    writer.writerow(['Filename','Word','Annotation Type'])
+    writer.writerow(['Document','Word','Annotation Type'])
     for file in annotatedHtmlFiles:
         i=i+1
         print("Processing html annotated file " + str(i) + "/" + str(nFile), file)
@@ -91,7 +93,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createExc
         dictionaryWordList = gatherAnnotations(file, ['<span',"</span>"],'',True)
         fileName = ntpath.basename(file)
         for word in DBpediaWordList:
-            writer.writerow([fileName, word,'DBpedia'])
+            writer.writerow([IO_csv_util.dressFilenameForCSVHyperlink(fileName), word,'DBpedia'])
         for word in dictionaryWordList:
             writer.writerow([fileName, word,'Dictionary'])
 
