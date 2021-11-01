@@ -462,8 +462,6 @@ n_grams_viewer_var.set(0)
 Ngrams_checkbox = tk.Checkbutton(window, text='N-grams VIEWER', variable=n_grams_viewer_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,Ngrams_checkbox,True)
 
-Ngrams_checkbox.configure(state='disabled') # for now
-
 CoOcc_Viewer_var.set(0)
 CoOcc_checkbox = tk.Checkbutton(window, text='Co-Occurrences VIEWER', variable=CoOcc_Viewer_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,CoOcc_checkbox)
@@ -479,7 +477,7 @@ date_options.set(0)
 date_options_checkbox = tk.Checkbutton(window, text='Date options', variable=date_options, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,date_options_checkbox,True)
 
-date_options_checkbox.configure(state='disabled')
+# date_options_checkbox.configure(state='disabled')
 
 date_options_msg= tk.Label(window)
 date_options_msg.config(text="Date option OFF")
@@ -589,8 +587,6 @@ def activate_viewer_options(*args):
         add_viewer_button.configure(state='disabled')
         reset_viewer_button.configure(state='disabled')
         show_viewer_button.configure(state='disabled')
-        # for now... always disabled
-        # viewer_options_menu.configure(state="disabled")
         viewer_options_menu.configure(state="normal")
 viewer_options_menu_var.trace('w',activate_viewer_options)
 
@@ -627,19 +623,14 @@ def activate_allOptions():
     else:
         n_grams_menu.configure(state='disabled')
         n_grams_options_menu.configure(state='disabled')
-        Ngrams_checkbox.configure(state='disabled') # for now
-        # Ngrams_checkbox.configure(state='normal')
+        Ngrams_checkbox.configure(state='normal')
         CoOcc_checkbox.configure(state='normal')
         search_words_entry.configure(state='normal')
-        date_options_checkbox.configure(state='disabled') # for now
-        # date_options_checkbox.config(state='normal')
+        date_options_checkbox.config(state='normal')
     if n_grams_viewer_var.get() or CoOcc_Viewer_var.get():
         n_grams_checkbox.configure(state='disabled')
         search_words_entry.configure(state='normal')
-        date_options_checkbox.configure(state='disabled') # for now
-        # date_options_checkbox.config(state='normal')
-        # for now... always disabled
-        # viewer_options_menu.configure(state="disabled")
+        date_options_checkbox.config(state='normal')
         viewer_options_menu.config(state='normal')
     else:
         n_grams_checkbox.configure(state='normal')

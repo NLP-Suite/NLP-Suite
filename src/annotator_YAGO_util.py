@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_YAGO_util.py",['os','re','tkinter','subprocess','time','pandas','string','SPARQLWrapper','stanza','fuzzywuzzy','ssl'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_YAGO_util.py",['os','re','tkinter','subprocess','time','pandas','string','SPARQLWrapper','stanza','fuzzywuzzy'])==False:
     sys.exit(0)
 
 import os
@@ -16,6 +16,7 @@ sparql = SPARQLWrapper("https://yago-knowledge.org/sparql/query")
 import pandas as pd
 import re
 from re import split
+from urllib import request, error
 import stanza
 stanza.download('en')
 stannlp = stanza.Pipeline(lang='en', processors='tokenize,ner,mwt,pos,lemma')
@@ -50,6 +51,9 @@ ont = []
 def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls):
     # this will avoid an SSL certificate error ONLY for a specific url file
     # query_s_certificate = ssl.SSLContext()  # Only for query_s
+
+    import ssl
+    ssl._create_default_https_context = ssl._create_unverified_context
 
     filesToOpen = []
     numberOfAnnotations = len(annotationTypes)
@@ -386,7 +390,16 @@ def obtain_results_df(querystring):
     # except:
     #     return None
     sparql.setReturnFormat(JSON)
-    results=sparql.query().convert()
+    try:
+        results=sparql.query().convert()
+    # try:
+    #     Result = EndPoint.query().convert()
+    except error.HTTPError:
+        time.sleep(2)
+        results = sparql.query().convert()
+    #     results_df = pd.json_normalize(results['results']['bindings'])
+    # except EndPointInternalError:
+    #     print("whatever code needed to handle this case")
     results_df = pd.json_normalize(results['results']['bindings'])
     cols=[col for col in results_df.columns if col[-5:]!='.type']
     results_df=results_df[cols]
