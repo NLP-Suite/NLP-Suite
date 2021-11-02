@@ -177,7 +177,7 @@ GUI_util.run_button.configure(command=run_script_command)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
 
-GUI_width=1300
+GUI_width=GUI_IO_util.get_GUI_width(3)
 GUI_height=600 # height of GUI with full I/O display
 if IO_setup_display_brief:
     GUI_height = GUI_height - 80

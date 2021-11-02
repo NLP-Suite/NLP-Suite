@@ -140,7 +140,7 @@ if __name__ == '__main__':
     # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
     #   just change the next statement to True or False IO_setup_display_brief=True
     IO_setup_display_brief = True
-    GUI_width=1250
+    GUI_width=GUI_IO_util.get_GUI_width(2)
     GUI_height = 680  # height of GUI with full I/O display
 
     if IO_setup_display_brief:
@@ -287,7 +287,8 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 50, y_multiplier_integer,
                                                    file_number, True)
 
-    add_file_button = tk.Button(window, text='+', width=2, height=1, state='disabled',
+# state='disabled',
+    add_file_button = tk.Button(window, text='+', width=2, height=1,
                                 command=lambda: get_additional_csvFile(window, 'Select INPUT csv file',
                                                                        [("csv files", "*.csv")]))
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 100, y_multiplier_integer,

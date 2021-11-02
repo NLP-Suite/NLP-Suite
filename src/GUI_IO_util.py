@@ -8,7 +8,6 @@ import os
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
-from subprocess import call
 
 import config_util
 import IO_internet_util
@@ -83,7 +82,6 @@ def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, cente
         y_multiplier_integer = y_multiplier_integer+1
     return y_multiplier_integer
 
-
 if sys.platform == 'darwin': #Mac OS
     help_button_x_coordinate = 70
     labels_x_coordinate = 150  # start point of all labels in the second column (first column after ? HELP)
@@ -128,6 +126,26 @@ else: #windows and anything else
 
 basic_y_coordinate = 90
 y_step = 40 #the line-by-line increment on the GUI
+
+def get_GUI_width(size_type=1):
+    if sys.platform == 'darwin':  # Mac OS
+        if size_type == 1: # for now we have one basic size
+            return 1400
+        if size_type == 2:
+            return 1400
+        if size_type == 3:
+            return 1400
+        if size_type == 4:
+            return 1400
+    elif sys.platform == 'win32': # for now we have two basic sizes
+        if size_type == 1:
+            return 1250
+        if size_type == 2:
+                return 1300
+        elif size_type==3:
+            return 1300
+        elif size_type==4:
+            return 1300
 
 def get_basic_y_coordinate():
     return basic_y_coordinate
