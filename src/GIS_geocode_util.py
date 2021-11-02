@@ -69,11 +69,15 @@ def nominatim_geocode(geolocator,loc,country_bias='',timeout=10):
 		country_bias=None
 	print("Processing Nominatim location:",loc)
 	try:
-		return geolocator.geocode(loc,country_codes=country_bias,timeout=timeout)
-	except GeocoderTimedOut:
+		if timeout>40:
+			mb.showwarning(title='Nominatim',
+						   message="The maximum number of retries to access the Nominatim server was exceeded in geocoding " + loc + "\n\nGeocoding will exit.")
+			return
+		return geolocator.geocode(loc,country_bias,timeout)
+	except:
 		print("   Nominatim timed out on " + loc + ". Timeout increased by 10 and repeatedly retried.")
 		timeout=timeout+10
-		return nominatim_geocode(geolocator,country_codes=country_bias,timeout=timeout)
+		return nominatim_geocode(geolocator,loc,country_bias,timeout)
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
 # console.developers.google.com/apis

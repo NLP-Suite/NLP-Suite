@@ -33,9 +33,9 @@ def convert_time(time):
     else:
         minute_label = ' minutes'
     if hours == 1:
-        hour_label = ' hour, '
+        hour_label = ' hour'
     else:
-        hour_label = ' hours, '
+        hour_label = ' hours'
 
     # compose message
     if hours > 0:

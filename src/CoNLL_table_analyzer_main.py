@@ -19,7 +19,7 @@ import IO_csv_util
 import IO_user_interface_util
 import Stanford_CoreNLP_tags_util
 import pandas as pd
-from data_manager_main import extract_from_csv
+# from data_manager_main import extract_from_csv
 
 # more imports (e.g., import CoNLL_clause_analysis_util) are called below under separate if statements
 
@@ -361,7 +361,7 @@ GUI_util.run_button.configure(command=run_script_command)
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
-GUI_width=1260
+GUI_width=GUI_IO_util.get_GUI_width(3)
 GUI_height=630 # height of GUI with full I/O display
 
 if IO_setup_display_brief:
