@@ -54,7 +54,12 @@ GUI_util.run_button.configure(command=run_script_command)
 
 IO_setup_display_brief=False
 
-GUI_size='1150x670'
+GUI_width=GUI_IO_util.get_GUI_width(1)
+GUI_height=670 # height of GUI with full I/O display
+
+GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+
+# GUI_size='1150x670'
 GUI_label='Graphical User Interface (GUI) for a suite of tools of Natural Language Processing (NLP) & Data Visualization'
 # there is now now way to setup a specific I/O config for the NLP_menu_main; it can only have the default setup
 # config_filename='NLP-config.txt'

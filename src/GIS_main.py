@@ -590,6 +590,7 @@ country_menu = constants_util.ISO_GIS_country_menu
 
 country_bias_lb = tk.Label(window, text='Country bias')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+600,y_multiplier_integer,country_bias_lb,True)
+
 country_bias_var.set('')
 country_bias = ttk.Combobox(window, width = 25, textvariable = country_bias_var)
 country_bias['values'] = country_menu

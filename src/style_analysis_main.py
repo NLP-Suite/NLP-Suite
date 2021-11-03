@@ -263,8 +263,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
             else:
                 ngramType = 1
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams analysis start',
-                                               'Started running Word/Characters N-Grams at', True,
-                                               'You can follow the script in command line.')
+                                               'Started running Word/Characters N-Grams at',
+                                               True, '', True, '', True)
             # (inputFilename = ''  # for now we only process a whole directory
             if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py') == False:
                 return
@@ -277,7 +277,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                                                               createExcelCharts,
                                                               bySentenceIndex_var)
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams analysis end',
-                                               'Finished running Word/Characters N-Grams at', True, '', True, startTime)
+                                               'Finished running Word/Characters N-Grams at', True, '', True, startTime, True)
         elif 'Hapax' in ngrams_analysis_menu_var:
             ngramsNumber=1
             ngramType = 1

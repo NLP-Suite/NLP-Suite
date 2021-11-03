@@ -76,7 +76,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'NLTK unusual words/spelling checker start',
                                        'Started running NLTK unusual words/spelling checker at', True,
-                                       'You can follow NLTK words/spelling checker in command line.')
+                                       '',True,'',True)
 
     # already shown in NLP.py
     # IO_util.timed_alert(GUI_util.window,3000,'Analysis start','Started running NLTK unusual words at',True,'You can follow NLTK unusual words in command line.')

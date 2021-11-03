@@ -54,8 +54,8 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
 
     # record the time consumption before annotating text in each file
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
-                                       'Started running SENNA to extract SVOs at', True,
-                                       'You can follow SENNA in command line.')
+                                       'Started running SENNA to extract SVOs at',
+                                                 True, '', True)
 
     SENNA_output_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'SENNA_SVO')

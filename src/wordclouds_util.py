@@ -359,7 +359,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, prefer_h
     if runStanza:
         startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Running STANZA & wordcloud',
                                            'Started running STANZA and wordcloud at', True,
-                                           'Please, be patient. Depending upon the number of documents processed this may take a few minutes.\n\nYou can follow the script in command line.')
+                                           'Please, be patient. Depending upon the number of documents processed this may take a few minutes.',True,'',False)
     for doc in inputDocs:
         i = i+1
         head, tail = os.path.split(doc)

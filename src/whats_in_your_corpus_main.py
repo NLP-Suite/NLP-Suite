@@ -100,8 +100,8 @@ def run(inputFilename,inputDir, outputDir,
                 filesToOpen.extend(output)
 
         startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
-                                           'Started running word n-grams at', True,
-                                           'You can follow the script in command line.')
+                                           'Started running word n-grams at',
+                                            True, '', True, '', True)
 
         if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py') == False:
             return

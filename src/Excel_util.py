@@ -732,7 +732,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         for i in range(n-1):
             chart_type_list.append(chart_type_list[0])
 
-    IO_user_interface_util.timed_alert(window, 2000, 'Warning', 'Preparing Excel chart ' + tail + '\n\nPlease wait...', False)
+    IO_user_interface_util.timed_alert(window, 2000, 'Warning', 'Preparing Excel chart ' + tail + '\n\nPlease wait...',
+                                       False,'',True,'',True)
 
     # lengths is the list of the number of values for each series (e.g. 5 for series 1, 18 for series 2......)
     # lengths = [5, 18, ......]

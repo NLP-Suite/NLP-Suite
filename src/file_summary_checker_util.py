@@ -264,8 +264,8 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
     compilations_path = input_secondary_dir_path # summaries folder
     filesToOpen=[]
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running MISSING CHARACTER at',
-                                       True, 'You can follow MISSING CHARACTER in command line.')
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running MISSING CHARACTER at',
+                                       True, '', True, '', True)
 
     if len(articles_path)==0:
         mb.showerror(title='Articles directory not found', message='The summary checker script requires an input files directory.\n\nNo directory entered. Please, select the input files directory and try again.')
@@ -413,7 +413,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
         filesToOpen=[] # avoid opening twice in the calling function
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running MISSING CHARACTER at',
-                                       True)
+                                       True,'',True,startTime,True)
 
     return filesToOpen
 

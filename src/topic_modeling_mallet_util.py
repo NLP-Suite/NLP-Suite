@@ -150,7 +150,7 @@ def run(inputDir, outputDir,openOutputFiles,createExcelCharts,OptimizeInterval, 
     #     Keys_FileName + "\n" +
     #     Compressed_FileName)
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Mallet Topic modeling at ', True, "Depending upon corpus size, computations may take a while... Please, be patient...\n\nYou can follow Mallet in command line.")
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Mallet Topic modeling at ', True, "Depending upon corpus size, computations may take a while... Please, be patient...")
 
     #FIRST STEP
 

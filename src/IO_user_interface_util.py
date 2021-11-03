@@ -57,7 +57,7 @@ def convert_time(time):
                 message = message + str(seconds) + second_label
     return hours, minutes, seconds, message
 
-def timed_alert(window, timeout, message_title, message_text, time_needed=False, extraLine='', printInCommandLine=True, startTime=''):
+def timed_alert(window, timeout, message_title, message_text, time_needed=False, extraLine='', printInCommandLine=True, startTime='', silent=False):
     if time_needed == True:
         # time has year [0], month [1], dat [2], hour [3], minute [4], second [5] & more
         time_report = time.localtime()
@@ -71,27 +71,26 @@ def timed_alert(window, timeout, message_title, message_text, time_needed=False,
             if time_message!='':
                 message_text = message_text + ' taking ' + time_message # + str(hours) + ' hours, ' + str(minutes) + ' minutes, and ' + str(seconds) + ' seconds'
         message_text = message_text + '.'
-    if len(extraLine) > 0:
-        message_text = message_text + '\n\n' + extraLine
-    top_message = tk.Toplevel(window)
-    top_message.title(message_title)
-    # windowHeight=len(message_text)
-    # print("windowHeight",windowHeight)
-    windowHeight = 200
-    windowSize = '400x200'  # +str(windowHeight)
-    top_message.geometry(windowSize)
+    if not silent:
+        message_text = message_text + '.\n\nYou can follow the algorithm in command line.'
+        if len(extraLine) > 0:
+            message_text = message_text + '\n\n' + extraLine
+        top_message = tk.Toplevel(window)
+        top_message.title(message_title)
+        # windowHeight=len(message_text)
+        # print("windowHeight",windowHeight)
+        windowHeight = 200
+        windowSize = '400x200'  # +str(windowHeight)
+        top_message.geometry(windowSize)
 
-    mbox = tk.Message(top_message, text=message_text, padx=20, pady=20, width=260)
-    top_message.attributes('-topmost', 'true')
-    mbox.after(timeout, top_message.destroy)
-    mbox.pack()
-    button = tk.Button(top_message, text="OK", command=top_message.destroy)
-    button.pack()
-    top_message.wait_window()
-    # if ('Started running' in message_text) or ('Finished running' in message_text):
-    if printInCommandLine:
-        print('\n' + message_text + '\n')
-    window.focus_force()
+        mbox = tk.Message(top_message, text=message_text, padx=20, pady=20, width=260)
+        top_message.attributes('-topmost', 'true')
+        mbox.after(timeout, top_message.destroy)
+        mbox.pack()
+        button = tk.Button(top_message, text="OK", command=top_message.destroy)
+        button.pack()
+        top_message.wait_window()
+        window.focus_force()
     return time.time()
 
 def input_output_save(script):

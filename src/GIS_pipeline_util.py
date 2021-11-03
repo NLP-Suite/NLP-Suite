@@ -93,8 +93,8 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
     if GoogleEarthProDir == None:
         return '', ''
 
-    startTime = IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS pipeline at', True,
-                                       'You can follow the pipeline in command line.')
+    startTime = IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS pipeline at',
+                                                   True, '', True, '', False)
 
     #
     # ------------------------------------------------------------------------------------

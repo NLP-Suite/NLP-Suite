@@ -370,8 +370,8 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
         return
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
-                                       'Started running n-grams at', True,
-                                       'You can follow the script in command line.')
+                                       'Started running n-grams at',
+                                       True, '', True, '', True)
 
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
     nFile=len(files)
