@@ -140,7 +140,8 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
         'Line']
     if IO_csv_util.openCSVOutputFile(outputFilenameCSV):
         return
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running line length analysis at', True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running line length analysis at',
+                                                 True, '', True, '', True)
 
     with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -173,7 +174,7 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
                    line = file.readline()
     csvfile.close()
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running line length analysis at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running line length analysis at', True, '', True, startTime, True)
 
     # compute statistics about line length ungrouped
     tempOutputfile=statistics_csv_util.compute_field_statistics_NoGroupBy(window, outputFilenameCSV, outputDir, openOutputFiles, createExcelCharts, 3)
@@ -236,7 +237,8 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
     if IO_csv_util.openCSVOutputFile(outputFilenameCSV):
         return
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running corpus statistics at', True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running corpus statistics at',
+                                                 True, '', True, '', True)
 
     with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -299,7 +301,7 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
         if tempOutputfile != None:
             filesToOpen.extend(tempOutputfile)
 
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running corpus statistics at', True, '', True, startTime)
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running corpus statistics at', True, '', True, startTime, True)
 
         if createExcelCharts==True:
 
@@ -316,6 +318,9 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             if Excel_outputFilename != "":
                 # rename output file or it will be overwritten by the next chart
                 Excel_outputFilename_new=Excel_outputFilename[:-5]+'_sent.xlsm'
+                # the file already exists and must be removed
+                if os.path.isfile(Excel_outputFilename_new):
+                    os.remove(Excel_outputFilename_new)
                 os.rename(Excel_outputFilename, Excel_outputFilename_new)
                 filesToOpen.append(Excel_outputFilename_new)
 
@@ -332,6 +337,9 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             if Excel_outputFilename != "":
                 # rename output file or it will be overwritten by the next chart
                 Excel_outputFilename_new=Excel_outputFilename[:-5]+'_word.xlsm'
+                # the file already exists and must be removed
+                if os.path.isfile(Excel_outputFilename_new):
+                    os.remove(Excel_outputFilename_new)
                 os.rename(Excel_outputFilename, Excel_outputFilename_new)
                 filesToOpen.append(Excel_outputFilename_new)
 
@@ -369,7 +377,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
         mb.showwarning(title='Input error', message='No input file or input directory have been specified.\n\nThe function will exit.\n\nPlease, enter the required input options and try again.')
         return
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
                                        'Started running n-grams at',
                                        True, '', True, '', True)
 
@@ -506,7 +514,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                 #     filesToOpen.append(excel_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams end',
-                        'Finished running n-grams at', True, '', True, startTime)
+                        'Finished running n-grams at', True, '', True, startTime, True)
 
     if len(inputDir) != 0:
         mb.showwarning(title='Warning', message='The output filename generated by N-grams is the name of the directory processed in input, rather than any individual file in the directory.\n\nThe output csv file includes all ' + str(nFile) + ' files in the input directory processed by N-grams.')
@@ -909,7 +917,8 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
 
     Ndocs=str(len(inputDocs))
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running txt conversion (lemmatization & stopwords) at', True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running txt conversion (lemmatization & stopwords) at',
+                                                 True, '', True, '', True)
 
     with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as outfile:
         #print("Number of corpus text documents: ",Ndocs)

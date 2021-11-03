@@ -332,7 +332,8 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
 
     docError = 0
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                       'Started running characters conversion at', True)
+                                       'Started running characters conversion at',
+                                                 True, '', True, '', True)
     for doc in inputDocs:
         index = index + 1
         head, tail = os.path.split(doc)

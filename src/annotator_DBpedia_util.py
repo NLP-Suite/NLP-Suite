@@ -231,6 +231,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
                     except:
                         continue
                 outfile.close()
+                # remove directory of split files
                 if os.path.exists(splitFilesDir):
                     shutil.rmtree(splitFilesDir)
         j = 0

@@ -170,7 +170,8 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
     """
 
     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
-                                                   'Started running the SVO filter algorithm at', True)
+                                                   'Started running the SVO filter algorithm at',
+                                                   True, '', True)
 
     df = pd.read_csv(svo_file_name)
     filtered_df = pd.DataFrame(columns=df.columns)

@@ -66,15 +66,25 @@ def timed_alert(window, timeout, message_title, message_text, time_needed=False,
             endTime = time.time()
             totalTime = endTime - startTime # in number of seconds
             hours, minutes, seconds, time_message = convert_time(totalTime)
-            # totalTime= ((endTime - startTime)/60)/60 # convert to hours and minutes
-            # needs to convert to a message: 32 hours (if there are hours), 12 minutes and 45 seconds.
             if time_message!='':
                 message_text = message_text + ' taking ' + time_message # + str(hours) + ' hours, ' + str(minutes) + ' minutes, and ' + str(seconds) + ' seconds'
         message_text = message_text + '.'
+    if len(extraLine) > 0:
+        message_text = message_text + '\n\n' + extraLine
+    if printInCommandLine:
+        print_message_text = message_text
+        if 'Started' in print_message_text:
+            print_message_text=print_message_text.replace('Started','\nStarted')
+            print_message_text = print_message_text + '\n'
+        if 'Finished' in print_message_text:
+            print_message_text=print_message_text.replace('Finished','\nFinished')
+        print_message_text = '\n' + print_message_text
+        if 'Opening' in print_message_text:
+            print_message_text=print_message_text.replace('Opening','\nOpening')
+        print(print_message_text)
     if not silent:
-        message_text = message_text + '.\n\nYou can follow the algorithm in command line.'
-        if len(extraLine) > 0:
-            message_text = message_text + '\n\n' + extraLine
+        if not 'Finished' in message_text and not 'Opening' in message_text:
+            message_text = message_text + '\n\nYou can follow the algorithm in command line.'
         top_message = tk.Toplevel(window)
         top_message.title(message_title)
         # windowHeight=len(message_text)
