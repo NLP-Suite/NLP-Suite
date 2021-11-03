@@ -330,7 +330,7 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen):
                                      True)
         routine_options = reminders_util.getReminders_list('*')
         timed_alert(window, 2000, 'Warning',
-                    'Opening ' + str(len(filesToOpen)) + ' output ' + singularPlural + '... Please wait...', False)
+                    'Opening ' + str(len(filesToOpen)) + ' output ' + singularPlural + '... Please wait...', False,'',True,'',True)
         for file in filesToOpen:
             if os.path.isfile(file):
                 if file.endswith('.kml'):

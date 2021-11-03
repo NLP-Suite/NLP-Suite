@@ -54,6 +54,12 @@ filesToOpen = []
 # get latitude and longitude via a geocoder service
 def get_geolocator(geocoder,Google_API=''):
 	if geocoder == 'Nominatim':
+		# import ssl
+		# # disable TLS certificate verification completely
+		# ctx = ssl.create_default_context()
+		# ctx.check_hostname = False
+		# ctx.verify_mode = ssl.CERT_NONE
+
 		geolocator = Nominatim(user_agent="NLP Suite")
 		# geolocator = Nominatim(user_agent="NLP Suite", timeout=10)
 
@@ -65,19 +71,31 @@ def get_geolocator(geocoder,Google_API=''):
 
 # Country specification; uses 2-digit lowercase ISO_3166 country codes
 def nominatim_geocode(geolocator,loc,country_bias='',timeout=10):
+	# https://geopy.readthedocs.io/en/stable/#geopy.geocoders.options
+	# import ssl
+	# # disable TLS certificate verification completely
+	# ctx = ssl.create_default_context()
+	# ctx.check_hostname = False
+	# ctx.verify_mode = ssl.CERT_NONE
+	# disable TLS certificate verification
+	# import certifi
+	# import geopy.geocoders
+	# geopy.geocoders.options.default_ssl_context = ctx
+	# ctx = ssl.create_default_context(cafile=certifi.where())
+	# geopy.geocoders.options.default_ssl_context = ctx
 	if country_bias=='':
 		country_bias=None
 	print("Processing Nominatim location:",loc)
 	try:
-		if timeout>40:
-			mb.showwarning(title='Nominatim',
-						   message="The maximum number of retries to access the Nominatim server was exceeded in geocoding " + loc + "\n\nGeocoding will exit.")
-			return
-		return geolocator.geocode(loc,country_bias,timeout)
-	except:
-		print("   Nominatim timed out on " + loc + ". Timeout increased by 10 and repeatedly retried.")
-		timeout=timeout+10
-		return nominatim_geocode(geolocator,loc,country_bias,timeout)
+		return geolocator.geocode(loc,country_codes=country_bias,timeout=timeout)
+		# https: // gis.stackexchange.com / questions / 173569 / avoid - time - out - error - nominatim - geopy - openstreetmap
+	except GeocoderTimedOut:
+		if timeout<40:
+			print("Maximum number of retries to access Nominatim server exceeded in geocoding " + loc)
+			return nominatim_geocode(geolocator,loc,country_bias,timeout + 2)# add 2 second for the next round
+		# print("   Nominatim timed out on " + loc + ". Timeout increased by 10 and repeatedly retried.")
+		raise
+		return None
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
 # console.developers.google.com/apis
@@ -122,7 +140,8 @@ def geocode(window,locations, inputFilename, outputDir,
 
 	inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
 
-	startTime=IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Started geocoding locations via the online service '" + geocoder + "' at", True, 'You can follow geocoding in command line.', True)
+	startTime=IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Started geocoding locations via the online service '" + geocoder + "' at",
+												 True, '', True,'',True)
 	# if geocoder=='Nominatim':
 	# 	config_filename='GIS-geocode-config.txt'
 	# 	reminders_util.checkReminder(config_filename,["GIS Nominatim geocoder"],'',True)
@@ -241,6 +260,6 @@ def geocode(window,locations, inputFilename, outputDir,
 		if locationsNotFound==index:
 			geocodedLocationsoutputFilename='' #used NOT to open the file since there are no records
 			# this warning is already given 
-	IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime)
+	IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime, True)
 	return geocodedLocationsoutputFilename, locationsNotFoundoutputFilename
 

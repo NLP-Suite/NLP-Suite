@@ -115,8 +115,8 @@ def run(inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelC
                 bySentenceIndex_character_var = True
 
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
-                                           'Started running ' + n_grams_menu_var + ' n-grams at', True,
-                                           'You can follow the script in command line.')
+                                           'Started running ' + n_grams_menu_var + ' n-grams at',
+                                           True, '', True, '', True)
 
         if n_grams_word_var or n_grams_character_var or bySentenceIndex_word_var or bySentenceIndex_character_var:
             inputFilename = ''  # for now we only process a whole directory
@@ -130,7 +130,7 @@ def run(inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelC
             tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_main_dir_path,outputDir,n_grams_size, normalize, excludePunctuation,  0, openOutputFiles, createExcelCharts,
                                                               bySentenceIndex_character_var)
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams end',
-                                           'Finished running ' + n_grams_menu_var + ' n-grams at', True, '', True, startTime)
+                                           'Finished running ' + n_grams_menu_var + ' n-grams at', True, '', True, startTime, True)
 
         # statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_mai
     if openOutputFiles == 1:

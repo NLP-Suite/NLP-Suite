@@ -72,13 +72,9 @@ def run(inputFilename,inputDir, outputDir,
             return
 
     if utf8_var==True:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
-                            'Started running utf8 compliance test at', True)
         file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
 
     if ASCII_var==True:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
-                            'Started running characters conversion at', True)
         file_cleaner_util.convert_quotes(GUI_util.window,inputFilename, inputDir)
 
     if corpus_statistics_var==True:
@@ -99,10 +95,6 @@ def run(inputFilename,inputDir, outputDir,
             if output!=None:
                 filesToOpen.extend(output)
 
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
-                                           'Started running word n-grams at', True,
-                                           'You can follow the script in command line.')
-
         if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py') == False:
             return
 
@@ -116,7 +108,7 @@ def run(inputFilename,inputDir, outputDir,
                                                           outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts,
                                                           bySentenceIndex_word_var)
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams end',
-                            'Finished running word n-grams at', True, '', True, startTime)
+                            'Finished running word n-grams at', True, '', True, startTime, True)
 
         if 'lines' in corpus_options_menu_var:
             output = statistics_txt_util.read_line(window, '', inputDir, outputDir, False, createExcelCharts)

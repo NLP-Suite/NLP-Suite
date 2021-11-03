@@ -97,7 +97,9 @@ def check_utf8_compliance(window,inputFilename,inputDir,outputDir,openOutputFile
         mb.showwarning(title='Input error', message='There are no files of type txt in the selected input directory to be checked for utf-8 compliance.\n\nPlease, select a different directory (or file) and try again.')
         return
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                       'Started running utf8 compliance test at', True)
+                                       'Started running utf8 compliance test at',
+                                        True, '', True, '', True)
+
     nonUtf8CompliantNumber=0
     numberOfDocs=len(inputDocs)
     nonUtf8CompliantList=[['Document ID','Document','Line number', 'Line text', 'Non utf-8 Character Position','Non utf-8 Character']]
@@ -136,9 +138,12 @@ def check_utf8_compliance(window,inputFilename,inputDir,outputDir,openOutputFile
                 tk.messagebox.showinfo("Warning","The file\n\n" + inputFilename + "\n\nis utf-8 compliant.")
         else:
             if silent:
-                IO_user_interface_util.timed_alert(window, 700, 'utf-8 compliance ', "All " + str(numberOfDocs) + " files in the directory\n\n" + inputDir + "\n\nare utf-8 compliant.")
+                IO_user_interface_util.timed_alert(window, 700, 'utf-8 compliance ', "All " + str(numberOfDocs) + " files in the directory " + inputDir + " are utf-8 compliant.",False,'',True,'',True)
             else:
-                tk.messagebox.showinfo("Warning", "All " + str(numberOfDocs) + " files in the directory\n\n" + inputDir + "\n\nare utf-8 compliant.")
+                tk.messagebox.showinfo("Warning", "All " + str(numberOfDocs) + " files in the directory\n\n" + inputDir + "\n\nare utf-8 compliant.",False,'',True,'',True)
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running utf-8 compliance test at', True, '', True, startTime, True)
+
 
 def check_empty_file(inputFilename, inputDir):
     # collecting input txt files

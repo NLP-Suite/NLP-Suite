@@ -100,7 +100,8 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
 def computePairwiseDistances(window,inputFilename,outputDir,createExcelCharts, headers,locationColumnNumber,locationColumnNumber2,locationColumnName,locationColumnName2,distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue):
     filesToOpen=[]
     currList=[]
-    startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS distance at', True, 'You can follow Geocoder in command line.')
+    startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS distance at',
+                                                 True, '', True, '', True)
     if distinctValues==True:
         distanceoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', locationColumnName, locationColumnName2, 'DISTINCT', False, True)
     else:
@@ -177,7 +178,7 @@ def computePairwiseDistances(window,inputFilename,outputDir,createExcelCharts, h
         # 	filesToOpen.append(Excel_outputFilename)
 
 
-    IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime, True)
     return filesToOpen
 
 # The function computes the distance between a pre-selected city and all cities in a list
@@ -189,7 +190,8 @@ def computePairwiseDistances(window,inputFilename,outputDir,createExcelCharts, h
 def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createExcelCharts, geolocator,geocoder,InputIsGeocoded,baselineLocation,headers,locationColumnNumber,locationColumnName,distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue):
     currList=[]
     filesToOpen=[]
-    startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS distance from ' + baselineLocation + ' at', True, 'You can follow Geocoder in command line.')
+    startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS distance from ' + baselineLocation + ' at',
+                                                 True, '', True, '', True)
     if distinctValues==True:
         distanceoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', baselineLocation, locationColumnName, 'DISTINCT', False, True)
     else:
@@ -205,7 +207,8 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createEx
         import IO_internet_util
         if not IO_internet_util.check_internet_availability_warning('GIS geocoder'):
             return
-        startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS geocoder at', True, 'You can follow Geocoder in command line.')
+        startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS geocoder at',
+                                                     True, '', True, '', True)
         geoName='geo-'+str(geocoder[:3])
         geocodedLocationsoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', geoName, locationColumnName, '', '', False, True)
         locationsNotFoundFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', geoName, 'Not-Found', locationColumnName, '', False, True)
@@ -305,5 +308,5 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createEx
         # if len(Excel_outputFilename) > 0:
         # 	filesToOpen.append(Excel_outputFilename)
 
-    IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime,True)
     return filesToOpen

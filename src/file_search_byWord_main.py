@@ -36,8 +36,8 @@ def run(inputFilename,inputDir, outputDir,
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word/collocation search start',
                         'Started running Word/collocation search at', True,
-                        'SEARCH options: ' + str(search_options_list)+'\nSEARCH words: '+search_keyword_values+'\n\nYou can follow the script in command line.')
-
+                        'SEARCH options: ' + str(search_options_list)+'\nSEARCH words: '+search_keyword_values,
+                                       True, '', True)
 
     outputFile = file_search_byWord_util.run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_keyword, search_keyword_values, search_options_list)
 

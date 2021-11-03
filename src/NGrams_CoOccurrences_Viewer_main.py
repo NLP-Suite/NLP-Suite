@@ -225,7 +225,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences start',
                         'Started running N-Grams Word Co-Occurrences Viewer at', True,
-                        'VIEWER options: ' + str(viewer_options_list)+'\nSEARCH words: '+search_words+'\n\nYou can follow the script in command line.')
+                        'VIEWER options: ' + str(viewer_options_list)+'\nSEARCH words: '+search_words,True,'',True)
 
     reminders_util.checkReminder(config_filename,
                                  reminders_util.title_options_NGrams,

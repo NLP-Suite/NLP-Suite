@@ -77,8 +77,8 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
     filesToOpen.append(outputFilename)
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'NLTK unusual words/spelling checker start',
-                                       'Started running NLTK unusual words/spelling checker at', True,
-                                       'You can follow NLTK words/spelling checker in command line.')
+                                       'Started running NLTK unusual words/spelling checker at',
+                                                 True, '', True, '', True)
 
     # already shown in NLP.py
     # IO_util.timed_alert(GUI_util.window,3000,'Analysis start','Started running NLTK unusual words at',True,'You can follow NLTK unusual words in command line.')
@@ -263,8 +263,9 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
     #subfolder=[]#angel
     #nFiles = nFolders = 0#angel
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity start', 'Started running Word similarity at', True)
-    
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity start', 'Started running Word similarity at',
+                                                 True, '', True, '', True)
+
     # TODO which annotators is it using? We do not need all annotators! Sentence splitter and tokenizer (and NER)
     p = subprocess.Popen(
         ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
@@ -469,7 +470,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
             filesToOpen.append(outputFileName_complete)
 
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity end',
-                                               'Finished running Word similarity at', True, '', True, startTime)
+                                               'Finished running Word similarity at', True, '', True, startTime, True)
 
             if createExcelCharts:
                 Excel_outputFileName=createChart(outputFileName_simple, outputDir, [[10, 10]], '')
@@ -519,8 +520,8 @@ def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutp
 
 def spellchecking_autocorrect(text: str, inputFilename) -> (str, DataFrame):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Autocorrect spelling checker start',
-                                       'Started running AUTOCORRECT spelling checker on ' + inputFilename + ' at ', True,
-                                       'You can follow Autocorrect spelling checker in command line.')
+                                       'Started running AUTOCORRECT spelling checker on ' + inputFilename + ' at ',
+                                        True, '', True, '', True)
     original_str_list = []
     new_str_list = []
     speller = Speller()
@@ -577,8 +578,8 @@ def spellchecking_autocorrect(text: str, inputFilename) -> (str, DataFrame):
 
 def spellchecking_pyspellchecker(text: str, inputFilename) -> (str, DataFrame):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Pyspellchecker spelling checker start',
-                                       'Started running PYSPELLCHECKER spelling checker on ' + inputFilename + ' at', True,
-                                       'You can follow Pyspellchecker spelling checker in command line.')
+                                       'Started running PYSPELLCHECKER spelling checker on ' + inputFilename + ' at',
+                                                 True, '', True, '', True)
     # :: pyspellchecker seems to remove punctuations.
     new_str_list = []
     original_str_list = []
@@ -602,8 +603,8 @@ def spellchecking_pyspellchecker(text: str, inputFilename) -> (str, DataFrame):
 
 def spellchecking_text_blob(text: str, inputFilename) -> (str, DataFrame):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Textblob spelling checker start',
-                                       'Started running TEXTBLOB spelling checker on ' + inputFilename + ' at', True,
-                                       'You can follow Textblob spelling checker in command line.')
+                                       'Started running TEXTBLOB spelling checker on ' + inputFilename + ' at',
+                                                 True, '', True, '', True)
     new_str_list = []
     new_str_list_for_df = []
     original_str_list = []
@@ -755,9 +756,6 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
 # TODO print all languages and their probabilities in a csv file, with Language, Probability, Document ID, Document (with hyperlink)
 def language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts):
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Analysis start',
-                                       'Started running Language Detection at', True)
-
     folderID = 0
     fileID = 0
     filesToOpen=[]
@@ -791,8 +789,8 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                                  True)
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                       'Started running language detection algorithms at', True,
-                                       'You can follow the algorithms in command line.')
+                                       'Started running language detection algorithms at',
+                                                 True, '', True, '', True)
 
     with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -898,7 +896,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 message=msg+ '\n\nFaulty files are listed in command line/terminal. Please, search for \'File read error\' and inspect each file carefully.')
     filesToOpen.append(outputFilenameCSV)
     IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Analysis end',
-                                       'Finished running Language Detection at', True,'Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.', True, startTime)
+                                       'Finished running Language Detection at', True,'Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.', True, startTime, True)
     print('Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.')
     if createExcelCharts:
         columns_to_be_plotted = [[1, 1],[4,4],[7,7]]

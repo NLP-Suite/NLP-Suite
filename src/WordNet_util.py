@@ -159,7 +159,8 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     errorFound, error_code, system_output = IO_libraries_util.check_java_installation('WordNet upward search')
     if errorFound:
         return
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started running WordNet (Zoom OUT/UP) at', True, '\n\nRunning WordNet with the ' + noun_verb + ' option.')
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started running WordNet (Zoom OUT/UP) with the ' + noun_verb + ' option at', True, '',True,'',True)
+
     # the java script produces two files:a list and a frequency
     warning = subprocess.call(['java', '-jar', 'WordNet_Search_UP.jar', '-wordNetPath', os.path.join(WordNetDir, "dict"), '-wordList', inputFile, "-pos" , noun_verb, '-outputDir', outputDir])
     if warning == 1:
@@ -195,7 +196,8 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
             filesToOpen.append(Excel_outputFilename)
 
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet (Zoom OUT/UP) at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet (Zoom OUT/UP) at', True, '', True, startTime, True)
+
     return filesToOpen
 
 def get_case_initial_row(inputFilename,outputDir,check_column, firstLetterCapitalized=True):

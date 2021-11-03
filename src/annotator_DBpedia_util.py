@@ -86,9 +86,9 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                    'Started running DBpedia annotator at', True,
-                                                   'You can follow the DBpedia annotator in command line.\n\nAnnotating types: ' + str(
+                                                   '\n\nAnnotating types: ' + str(
                                                        annotationTypes) + '\nConfidence level: ' + str(
-                                                       confidence_level))
+                                                       confidence_level),True)
     print('\n\nAnnotating types: ', annotationTypes, 'with confidence level', str(confidence_level))
 
     sparql = SPARQLWrapper("http://dbpedia.org/sparql")
@@ -231,6 +231,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
                     except:
                         continue
                 outfile.close()
+                # remove directory of split files
                 if os.path.exists(splitFilesDir):
                     shutil.rmtree(splitFilesDir)
         j = 0

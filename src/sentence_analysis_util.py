@@ -219,7 +219,8 @@ def extract_sentence_length(inputFilename, inputDir, outputDir):
     if Ndocs==0:
         return
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                       'Started running sentence length computation at', True, 'You can follow Geocoder in command line.')
+                                       'Started running sentence length computation at',
+                                                 True, '', True, '', True)
 
     fileID=0
     long_sentences = 0
@@ -406,7 +407,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
                            Ndocs) + ' files processed since this would produce too many files in output.')
         return filesToOpen
 
-    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running Sentence Complexity at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running Sentence Complexity at', True, '', True, startTime, True)
 
     if createExcelCharts:
         hover_label = ['Sentence']

@@ -1,0 +1,6 @@
+Column header,Document ID,Count,Mean,Mode,Median,Standard deviation,Minimum,Maximum,Skewness,Kurtosis,25% quantile,50% quantile,75% quantile
+Number of Words in Document,1,2202,2202,2202,2202,,2202,2202,0,-3,2202,2202,2202
+Number of Words in Document,2,4406,4406,4406,4406,,4406,4406,0,-3,4406,4406,4406
+Number of Words in Document,3,3360,3360,3360,3360,,3360,3360,0,-3,3360,3360,3360
+Number of Words in Document,4,925,925,925,925,,925,925,0,-3,925,925,925
+Number of Words in Document,5,936,936,936,936,,936,936,0,-3,936,936,936

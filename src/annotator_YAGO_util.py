@@ -76,7 +76,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     if nFile == 0:
         return
     startTime=IO_files_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running YAGO annotator at', True,
-                        '\nAnnotating types: ' + str(categories) + " with associated colors: " + str(colorls))
+                        '\nAnnotating types: ' + str(categories) + " with associated colors: " + str(colorls),True)
     i=0
     docID=1
     for file in files:
@@ -107,10 +107,11 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
                 else:
                     html_content=annotate_multiple(contents,categories,color1,colorls,doc, inputDir)
 
-                if inputDir == '':
-                    time_diff=time.time()-time1[len(time1)-1]
-                    print("Annotation for the current document took: " + str(time_diff//60) + " mins and " + str(time_diff%60) + " secs")
+                if inputDir != '':
+                    #     time_diff=time.time()-time1[len(time1)-1]
+                    #     print("Annotation for the current document took: " + str(time_diff//60) + " mins and " + str(time_diff%60) + " secs")
 
+                    print('  Finished annotating',doc)
                 with open(subFilename, 'w+', encoding='utf-8', errors='ignore') as f:
                     f.write(html_content)
                 f.close()
@@ -118,15 +119,22 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
             if subFile > 0:
                 # outFilename here is the combined html file from the split files
                 outFilename = os.path.join(outputDir,"NLP_YAGO_annotated_" + str(os.path.split(file)[1]).split('.txt')[0]+ '.html')
+                # if the file already exists, remove it, or you may open an old file if YAGO fails
+                if os.path.isfile(outFilename):
+                    os.remove(outFilename)
                 with open(outFilename, 'w+', encoding="utf-8", errors='ignore') as outfile:
                     for htmlDoc in splitHtmlFileList:
                         with open(htmlDoc, 'r', encoding="utf-8", errors='ignore') as infile:
                             for line in infile:
                                 outfile.write(line)
                         infile.close()
-                        os.remove(htmlDoc)  # delete temporary split html file from output directory
+                        try:
+                            os.remove(htmlDoc)  # delete temporary split html file from output directory
+                        except:
+                            continue
                 outfile.close()
-            filesToOpen.append(outFilename)
+            if inputDir=='': # do not open the individual html files when processing a directory
+                filesToOpen.append(outFilename)
 
             # print(outFilename)
             # TODO Sentence ID must start from1 rather than CS 0
@@ -143,6 +151,9 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     df.to_csv((csvname),index=False)
     filesToOpen.append(csvname)
     IO_files_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running YAGO annotator at', True, '', True, startTime)
+    if inputDir!='':
+        mb.showwarning(title='Warning',
+                       message='When processing a directory, only the summary csv output file is automatically opened.\n\nDon\'t forget to look in your output directory for the ' + str(nFile) + ' annotated html files - too many to open automatically.')
     return filesToOpen
 
 # This is very slow; should not be done when processing a folder
@@ -391,7 +402,7 @@ def obtain_results_df(querystring):
     except error.HTTPError:
         # this may occasionally give time out error depending upon server's traffic
         mb.showwarning(title='Warning',
-                       message='Take a look at your command liine/prompt. An HTTP error of 500 means that the YAGO server failed. Please, check command line/prompt for "Operation timed out" error\n\nTry running the script later, when the server may be be less busy.')
+                       message='Take a look at your command line/prompt. An HTTP error of 500 means that the YAGO server failed. Please, check command line/prompt for "Operation timed out" error\n\nTry running the script later, when the server may be be less busy.')
         return None
     results_df = pd.json_normalize(results['results']['bindings'])
     cols=[col for col in results_df.columns if col[-5:]!='.type']
