@@ -98,6 +98,10 @@ if sys.platform == 'darwin': #Mac OS
     run_button_x_coordinate = 850
     close_button_x_coordinate = 980
 
+    open_file_button_brief = 700
+    open_inputDir_button_brief = 740
+    open_outputDir_button_brief = 780
+
     # special internal GUI specific values
     SVO_2nd_column = 570
     SVO_2nd_column_top = 450
@@ -118,6 +122,9 @@ else: #windows and anything else
     open_reminders_x_coordinate = 550
     run_button_x_coordinate = 840
     close_button_x_coordinate = 960
+    open_file_button_brief = 760
+    open_inputDir_button_brief = 800
+    open_outputDir_button_brief = 840
 
     # special internal GUI specific values
     SVO_2nd_column = 520
@@ -261,30 +268,93 @@ def readme_button(Window, xCoord, yCoord, text_title,text_msg):
         text_title='NLP Suite Help'
     mb.showinfo(title=text_title, message=text_msg)
 
-def dropdown_menu_widget(window,textCaption, lower_bound, upper_bound, default_value):
-    master = tk.Tk()
-    master.focus_force()
+
+# creating popup menu in tkinter
+
+def dropdown_menu_widget(window,textCaption, menu_values, default_value):
+# https://stackoverflow.com/questions/51591163/self-made-tkinter-popup-menu-python
+#     root = Tk()
+#     popup = Menu(root, tearoff=0)
+#     popup.add_command(label="Main Product")
+#     popup.add_command(label="Side Product")
+#
+#     def popupm(bt):
+#         try:
+#             x = bt.winfo_rootx()
+#             y = bt.winfo_rooty()
+#             popup.tk_popup(x, y, 0)
+#         finally:
+#             popup.grab_release()
+#
+#     bt = Button(root, text='Menu')
+#     bt.configure(command=lambda: popupm(bt))
+#     bt.place(x=10, y=15)
+#
+#     root.mainloop()
+
+    # master = tk.Tk()
+    # master.focus_force()
+    # tk.Label(master, width=len(textCaption)+30).grid(row=0)
+    # master.title(textCaption)
+    #
+    # # menu_var = tk.StringVar()
+    # # menu = ttk.Combobox(master, width=90, textvariable=menu_var)
+    # menu = ttk.Combobox(master, width=90)
+    # menu['values'] = menu_values
+    # menu.pack()
+    # menu.focus_force()
+    # master.mainloop()
+    # master.destroy()
+
+    # window.wait_window(master)
+    return # must return selected value
 
     # https://www.geeksforgeeks.org/popup-menu-in-tkinter/
-
-    tk.Label(master,width=len(textCaption),text=textCaption).grid(row=0)
-    master.title(textCaption)
-
-    # data_file_handling_tools_var = tk.StringVar()
-    # data_file_handling_tools_menu = ttk.Combobox(window, width=90, textvariable=data_file_handling_tools_var)
-    # data_file_handling_tools_menu['values'] = ['test','test2']
-
-    def get_value():
-        global val
-        val = s.get()
-        top.destroy()
-        top.update()
-
-    def _delete_window():
-        mb.showwarning(title = "Invalid Operation", message = "Please click OK to save your choice of parameter.")
-
-    tk.Button(top, text='OK', command=lambda: get_value()).pack()
-    return val
+    # creates parent window
+    #     def __init__(self):
+    #
+    #         self.root = tkinter.Tk()
+    #         self.root.geometry('400x30')
+    #
+    #         self.frame1 = tkinter.Label(self.root,
+    #                                     width=400,
+    #                                     height=20,
+    #                                     bg='#AAAAAA')
+    #         self.frame1.pack()
+    #
+    #     # create menu
+    #     def popup(self):
+    #         self.popup_menu = tkinter.Menu(self.root,
+    #                                        tearoff=0)
+    #
+    #         self.popup_menu.add_command(label="say hi",
+    #                                     command=lambda: self.hey("hi"))
+    #
+    #         self.popup_menu.add_command(label="say hello",
+    #                                     command=lambda: self.hey("hello"))
+    #         self.popup_menu.add_separator()
+    #         self.popup_menu.add_command(label="say bye",
+    #                                     command=lambda: self.hey("bye"))
+    #
+    #     # display menu on right click
+    #     def do_popup(self, event):
+    #         try:
+    #             self.popup_menu.tk_popup(event.x_root,
+    #                                      event.y_root)
+    #         finally:
+    #             self.popup_menu.grab_release()
+    #
+    #     def hey(self, s):
+    #         self.frame1.configure(text=s)
+    #
+    #     def run(self):
+    #         self.popup()
+    #         self.root.bind("<Button-3>", self.do_popup)
+    #         tkinter.mainloop()
+    #
+    #
+    # a = A()
+    # a.run()
 
 def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
     top = tk.Toplevel(window)

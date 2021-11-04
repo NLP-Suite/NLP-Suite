@@ -66,6 +66,41 @@ def get_cols(dfs: list, headers: list):
         for i in range(len(dfs)):
             yield (dfs[i])[headers[i]]
 
+
+# merge ------------------------------------------------------------------------------------------
+
+def merge(filePath, outputDir, outputFilename, csv_file_field_list):
+    # processed_params: [(field1, field2..., dataframe1), (field1', field2'..., dataframe2)]
+    processed_params = []
+    csv_file_field_list = list(dict.fromkeys(csv_file_field_list))
+    param_str: str
+    for param_str in csv_file_field_list:
+        params = list(param_str.split(','))
+        csv_path = params[0]
+        df = pd.read_csv(csv_path)
+        params.pop(0)
+        params.append(df)
+        processed_params.append(params)
+    indexes = processed_params[0][:-1]
+    data_files_for_merge = [processed_params[0][-1]]
+    for row in processed_params[1:]:
+        # rename different field names to the field name on the first document.
+        # They will be merged anyway so this doesn't change much.
+        column_mapping = dict()
+        for index_int, field in enumerate(indexes):
+            # {original_index1: new_index1, original_index2: new_index2...}
+            column_mapping[row[index_int]] = field
+        df: DataFrame = row[-1]
+        df.rename(columns=column_mapping)
+        data_files_for_merge.append(df)
+
+    df_merged: DataFrame = data_files_for_merge[0]
+    for df in data_files_for_merge[1:]:
+        df_merged = pd.concat([df_merged, df], join='inner', ignore_index=False)
+    df_merged.to_csv(outputFilename)
+
+    return outputFilename
+
 # extract ---------------------------------------------------------------------------------------------
 
 def extract_from_csv(filePath, outputDir, outputFilename, data_files, csv_file_field_list):

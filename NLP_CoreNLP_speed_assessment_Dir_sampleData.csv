@@ -1,7 +1,0 @@
-Document ID,Document,Time,Tokens to Annotate,Params,Number of Params
-1,"=hyperlink(""C:\Program Files (x86)\NLP\lib\sampleData\Bunin - Gentle breath.txt"")",0.3318498134613037,12405,"tokenize, ssplit, pos, lemma",4
-2,"=hyperlink(""C:\Program Files (x86)\NLP\lib\sampleData\Faulkner - Dry September.txt"")",0.6546227931976318,24274,"tokenize, ssplit, pos, lemma",4
-3,"=hyperlink(""C:\Program Files (x86)\NLP\lib\sampleData\Murphy - Miracles thicker than fog.txt"")",0.4187204837799072,18110,"tokenize, ssplit, pos, lemma",4
-4,"=hyperlink(""C:\Program Files (x86)\NLP\lib\sampleData\Professor Dumbass.txt"")",0.0533909797668457,7285,"tokenize, ssplit, pos, lemma",4
-5,"=hyperlink(""C:\Program Files (x86)\NLP\lib\sampleData\The Three Little Pigs.txt"")",0.13631772994995117,4632,"tokenize, ssplit, pos, lemma",4
--1,Total Operation,13.36466383934021,66706,POS,1

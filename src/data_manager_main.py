@@ -22,6 +22,7 @@ import data_manager_util
 
 
 def run(inputFilename,
+        selectedCsvFile,
         csv_file_field_list,
         merge_var, concatenate_var,
         append_var, extract_var,
@@ -41,42 +42,21 @@ def run(inputFilename,
         return
 
     if merge_var:
-        outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv',
+        if selectedCsvFile==inputFilename:
+            mb.showwarning(title='Warning',
+                           message='You have selected the merge operation. This requires two different csv files in input.\n\nPlease, click on the + button next to File, select another csv file, select the field that yu want to use in tis file as the overlaping field(s) with the previous file (the key(s)), click OK and RUN.')
+            return
+        outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir,
+                                                                 '.csv',
                                                                  'merge',
-                                                                 'stats', '', '', '', False, True)
-        # processed_params: [(field1, field2..., dataframe1), (field1', field2'..., dataframe2)]
-        processed_params = []
-        csv_file_field_list = list(dict.fromkeys(csv_file_field_list))
-        param_str: str
-        for param_str in csv_file_field_list:
-            params = list(param_str.split(','))
-            csv_path = params[0]
-            df = pd.read_csv(csv_path)
-            params.pop(0)
-            params.append(df)
-            processed_params.append(params)
-        indexes = processed_params[0][:-1]
-        data_files_for_merge = [processed_params[0][-1]]
-        for row in processed_params[1:]:
-            # rename different field names to the field name on the first document.
-            # They will be merged anyway so this doesn't change much.
-            column_mapping = dict()
-            for index_int, field in enumerate(indexes):
-                # {original_index1: new_index1, original_index2: new_index2...}
-                column_mapping[row[index_int]] = field
-            df: DataFrame = row[-1]
-            df.rename(columns=column_mapping)
-            data_files_for_merge.append(df)
-
-        df_merged: DataFrame = data_files_for_merge[0]
-        for df in data_files_for_merge[1:]:
-            df_merged = pd.concat([df_merged, df], join='inner', ignore_index=True)
-        df_merged.to_csv(outputFilename)
-        filesToOpen.append(outputFilename)
+                                                                 'files', '', '', '', False, True)
+        outputFilename=data_manager_util.merge(filePath[0], os.path.dirname(filePath[0]),outputFilename,csv_file_field_list)
+        if outputFilename!=None:
+            filesToOpen.append(outputFilename)
 
     if concatenate_var:
         outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv', 'concatenate',
-                                                           'stats', '', '', '', False, True)
+                                                           'files', '', '', '', False, True)
         for s in csv_file_field_list:
             if s[-1] == ',':
                 sep = ','
@@ -90,7 +70,7 @@ def run(inputFilename,
         filesToOpen.append(outputFilename)
     if append_var:
         outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv', 'append',
-                                                           'stats', '', '', '', False, True)
+                                                           '', '', '', '', False, True)
         sep = ','
         df_append = pd.concat(data_cols, axis=0)
         df_append.to_csv(outputFilename, header=[data_manager_util.listToString(headers, sep)])
@@ -99,7 +79,7 @@ def run(inputFilename,
         outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir,
                                                                  '.csv',
                                                                  'extract',
-                                                                 'stats', '', '', '', False, True)
+                                                                 '', '', '', '', False, True)
         if output_to_csv_var==True:
             outputFilename=data_manager_util.extract_from_csv(filePath=filePath, outputDir=outputDir, outputFilename=outputFilename,
                              data_files=data_files, csv_file_field_list=csv_file_field_list)
@@ -124,6 +104,7 @@ def run(inputFilename,
 
 if __name__ == '__main__':
     run_script_command = lambda: run(GUI_util.inputFilename.get(),
+                                     selectedCsvFile.get(),
                                      csv_file_field_list,
                                      merge_var.get(), concatenate_var.get(),
                                      append_var.get(), extract_var.get(),
@@ -238,7 +219,7 @@ if __name__ == '__main__':
         selectedCsvFile_var.set(GUI_util.inputFilename.get())
         operation_text_var.set('')
 
-        add_file_button.config(state='disabled')
+        # add_file_button.config(state='disabled')
         merge_checkbox.config(state='normal')
         concatenate_checkbox.config(state='normal')
         append_checkbox.config(state='normal')
@@ -275,7 +256,6 @@ if __name__ == '__main__':
 
     def reset_csv_field_values():
         selected_fields_var.set('')
-
 
     file_number_var = tk.IntVar()
     file_number_var.set(1)
@@ -751,7 +731,7 @@ if __name__ == '__main__':
         keep_most_recent_checkbox.config(state='disabled')
         keep_most_fields_checkbox.config(state='disabled')
         if checkButton == False:
-            add_file_button.config(state='disabled')
+            # add_file_button.config(state='disabled')
             merge_checkbox.config(state='normal')
             concatenate_checkbox.config(state='normal')
             append_checkbox.config(state='normal')
@@ -777,7 +757,7 @@ if __name__ == '__main__':
                         select_csv_field_merge_menu.configure(state='normal')
                     if comingFrom_OK == True:
                         select_csv_field_merge_menu.configure(state='disabled')
-                        add_file_button.config(state='disabled')
+                        # add_file_button.config(state='disabled')
                         add_merge_options.config(state='disabled')
                         OK_merge_button.config(state='disabled')
                 else:
@@ -824,7 +804,7 @@ if __name__ == '__main__':
                     if comingFrom_OK == True:
                         select_csv_field_concatenate_menu.configure(state='disabled')
                         character_separator_entry.config(state='disabled')
-                        add_file_button.config(state='disabled')
+                        # add_file_button.config(state='disabled')
                         add_concatenate_options.config(state='disabled')
                         OK_concatenate_button.config(state='disabled')
             else:
@@ -857,11 +837,11 @@ if __name__ == '__main__':
                         select_csv_field_append_menu.configure(state='normal')
                     if comingFrom_OK == True:
                         select_csv_field_append_menu.configure(state='disabled')
-                        add_file_button.config(state='disabled')
+                        # add_file_button.config(state='disabled')
                         add_append_options.config(state='disabled')
                         OK_append_button.config(state='disabled')
                 else:
-                    add_file_button.config(state='disabled')
+                    # add_file_button.config(state='disabled')
                     add_append_options.config(state='disabled')
                     OK_append_button.config(state='disabled')
             else:
@@ -892,7 +872,7 @@ if __name__ == '__main__':
                         comparator_menu.configure(state="disabled")
                         where_entry.configure(state="disabled")
                         and_or_menu.configure(state='disabled')
-                        add_file_button.config(state='disabled')
+                        # add_file_button.config(state='disabled')
                         add_extract_options.config(state='disabled')
                         OK_extract_button.config(state='disabled')
                     else:
@@ -903,7 +883,7 @@ if __name__ == '__main__':
                         where_entry.configure(state="normal")
                 else:
                     select_csv_field_extract_menu.configure(state='normal')
-                    add_file_button.config(state='disabled')
+                    # add_file_button.config(state='disabled')
                     add_append_options.config(state='disabled')
                     add_file_button.config(state='disabled')
                     OK_append_button.config(state='disabled')
@@ -964,6 +944,8 @@ if __name__ == '__main__':
         # clear content of current variables when selecting a different main option
         if (operation_text_var.get() != '') and (operation_text_var.get() != str(operation).upper()):
             csv_file_field_list.clear()
+            if operation_text_var.get()=='MERGE':
+                return
             reset_csv_field_values()
             file_number_var.set(1)
             operation_text_var.set('')

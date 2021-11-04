@@ -2,6 +2,9 @@
 
 import sys
 
+# this will renew the SSL certificate indefinitely
+# pip install pyOpenSSL
+# pip install requests[security]
 import requests
 
 # import GUI_util
@@ -560,7 +563,7 @@ def IO_config_setup_brief(window, y_multiplier_integer,ScriptName):
     # setup a button to open an input file
     openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.openFile(window, inputFilename.get()))
-    openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+740,
+    openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_file_button_brief,
                                y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
     def open_directory():
         open_dir = input_main_dir_path.get()
@@ -574,13 +577,13 @@ def IO_config_setup_brief(window, y_multiplier_integer,ScriptName):
     # setup a button to open Windows Explorer on the selected INPUT directory
     openInputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: open_directory())
-    openInputDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+780,
+    openInputDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_inputDir_button_brief,
                                y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     # setup a button to open Windows Explorer on the selected OUTPUT directory
     openOutputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
-    openOutputDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+820,
+    openOutputDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_outputDir_button_brief,
                                y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
 def display_about_release_team_cite_buttons(ScriptName):

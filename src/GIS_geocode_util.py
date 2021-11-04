@@ -54,6 +54,9 @@ filesToOpen = []
 # get latitude and longitude via a geocoder service
 def get_geolocator(geocoder,Google_API=''):
 	if geocoder == 'Nominatim':
+		# this will renew the SSL certificate indefinitely
+		# pip install pyOpenSSL
+		# pip install requests[security]
 		# import ssl
 		# # disable TLS certificate verification completely
 		# ctx = ssl.create_default_context()
@@ -72,11 +75,16 @@ def get_geolocator(geocoder,Google_API=''):
 # Country specification; uses 2-digit lowercase ISO_3166 country codes
 def nominatim_geocode(geolocator,loc,country_bias='',timeout=10):
 	# https://geopy.readthedocs.io/en/stable/#geopy.geocoders.options
+	# this will renew the SSL certificate indefinitely
+	# pip install pyOpenSSL
+	# pip install requests[security]
+
 	# import ssl
 	# # disable TLS certificate verification completely
 	# ctx = ssl.create_default_context()
 	# ctx.check_hostname = False
 	# ctx.verify_mode = ssl.CERT_NONE
+
 	# disable TLS certificate verification
 	# import certifi
 	# import geopy.geocoders
@@ -95,7 +103,7 @@ def nominatim_geocode(geolocator,loc,country_bias='',timeout=10):
 			return nominatim_geocode(geolocator,loc,country_bias,timeout + 2)# add 2 second for the next round
 		# print("   Nominatim timed out on " + loc + ". Timeout increased by 10 and repeatedly retried.")
 		raise
-		return None
+		# return None
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
 # console.developers.google.com/apis

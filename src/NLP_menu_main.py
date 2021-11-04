@@ -301,8 +301,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 IO_setup_var.trace('w',setup_IO)
 
 def setup_software_warning():
-    # GUI_IO_util.dropdown_menu_widget(window, "Text caption", 'lower_bound', 'upper_bound', 'default_value')
     mb.showwarning('Software option', 'Please, using the dropdown menu, select the external software that you would like to install.')
+    # GUI_IO_util.dropdown_menu_widget(window, "Select external software to setup", ['Stanford CoreNLP', 'Mallet', 'WordNet', 'SENNA', 'Gephi', 'Google Earth Pro'],'Stanford CoreNLP')
     return
 
 software_setup_button = tk.Button(window, text='Setup external software', font=("Courier", 12, "bold"), command=lambda: setup_software_warning())

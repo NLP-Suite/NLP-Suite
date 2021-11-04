@@ -93,7 +93,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # check available memory
     IO_libraries_util.check_avaialable_memory('Stanford CoreNLP')
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, "You can follow CoreNLP annotator in command line.")
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True)
 
     # decide on directory or single file
     if inputDir != '':
@@ -838,9 +838,9 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
     result = []
     index = 0
     while index < len(NER):
-        if index == len(NER) - 1:
-            break
         if NER[index][1] == 'CITY':
+            if index == len(NER)-1: # NER[index + 1] would break the code
+                break
             if NER[index + 1][1] == 'STATE_OR_PROVINCE' and NER[index][1] == NER[index + 1][1] and abs(
                     NER[index + 1][4] - NER[index][5]) <= 2:
                 temp = NER[index]
@@ -857,6 +857,8 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                 result.append(NER[index])
                 index = index + 1
         elif NER[index][1] == 'STATE_OR_PROVINCE':
+            if index == len(NER)-1: # NER[index + 1] would break the code
+                break
             if NER[index + 1][1] == 'COUNTRY' and NER[index][1] == NER[index + 1][1] and abs(
                     NER[index + 1][4] - NER[index][5]) <= 2:
                 temp = NER[index]
@@ -893,8 +895,6 @@ def process_json_sentiment(config_filename,documentID, document, sentenceID,json
                    text = text + token['originalText']
                else:
                    text = text + ' ' + token['originalText']
-        # text = " ".join([["word"] for token in sentence["tokens"]])
-        # temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentence['index'] + 1, text, sentence["sentimentValue"], sentence["sentiment"].lower()]
 
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
