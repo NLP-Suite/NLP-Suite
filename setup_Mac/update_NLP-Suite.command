@@ -1,5 +1,6 @@
 echo "You are about to update the NLP Suite pulling the newest release from GitHub."
 echo "For this to happen, though, you need to be connected to the internet."
+echo "You will also need the freeware Git installed on your machine. Download Git at https://git-scm.com/downloads, if it has not been installed already."
 echo "You could use the update_NLP Suite_auto.bat to automatically update every time you close the NLP Suite, pulling the newest release directly from GitHub. The advantage is that you will have to run this command only once."
 echo
 

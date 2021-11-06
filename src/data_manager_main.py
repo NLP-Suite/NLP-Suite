@@ -319,12 +319,6 @@ if __name__ == '__main__':
         initialFolder = os.path.dirname(os.path.abspath(__file__))
         filePath = tk.filedialog.askopenfilename(title=title, initialdir=initialFolder, filetypes=fileType)
         if len(filePath) > 0:
-            # if merge_var.get()==False:
-            #     select_csv_field_merge_var.set('')
-            # else:
-            #     # save the current value, cleared otherwise by changed_filename()
-            #     selectedCsvFile_var_SAVE = selectedCsvFile_var.get()
-            #     select_csv_field_merge_var_SAVE=select_csv_field_merge_var.get()
             select_csv_field_merge_var.set('')
             select_csv_field_concatenate_var.set('')
             select_csv_field_append_var.set('')
@@ -336,10 +330,10 @@ if __name__ == '__main__':
 
             changed_filename(selectedCsvFile_var.get())
 
-            # if merge_var.get():
-            #     operation = 'merge'
-            #     # build_merge_string(True,False)
-            #     add_field_to_list(operation, select_csv_field_merge_var_SAVE, selectedCsvFile_var_SAVE, True)
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_data_manager_merge,
+                                         reminders_util.message_data_manager_merge5,
+                                         True)
 
     if GUI_util.inputFilename.get() != '':
         if selectedCsvFile_var.get() == '':
@@ -445,8 +439,15 @@ if __name__ == '__main__':
 
     # _____________________________________________________________________________
 
+    def merge_reminder1():
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_data_manager_merge,
+                                     reminders_util.message_data_manager_merge1,
+                                     True)
+        mergeSelection(False, False)
+
     merge_var.set(0)
-    merge_checkbox = tk.Checkbutton(window, text='Merge files (Join)', variable=merge_var, onvalue=1, offvalue=0)
+    merge_checkbox = tk.Checkbutton(window, text='Merge files (Join)', variable=merge_var, onvalue=1, offvalue=0, command=lambda: merge_reminder1())
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    merge_checkbox, True)
 
@@ -461,6 +462,16 @@ if __name__ == '__main__':
                                                    select_csv_field_merge_menu, True)
 
 
+    def merge_reminder2(*args):
+        if select_csv_field_merge_var.get()!='':
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_data_manager_merge,
+                                         reminders_util.message_data_manager_merge2,
+                                         True)
+        mergeSelection(False, False)
+
+    select_csv_field_merge_var.trace('w',merge_reminder2)
+
     def build_merge_string(comingFrom_Plus, comingFrom_OK):
         add_field_to_list("merge", select_csv_field_merge_var.get(), comingFrom_OK)
         # if comingFrom_Plus == True:
@@ -470,14 +481,51 @@ if __name__ == '__main__':
         activate_csv_fields_selection('merge', merge_var.get(), comingFrom_Plus, comingFrom_OK)
 
 
+    def merge_reminder_OK():
+
+        if file_number_var.get()>1:
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_data_manager_merge,
+                                         reminders_util.message_data_manager_merge7,
+                                         True)
+        else:
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_data_manager_merge,
+                                         reminders_util.message_data_manager_merge4,
+                                         True)
+
+        build_merge_string(False,True)
+
+
+    def merge_reminder_OK():
+
+        if file_number_var.get()>1:
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_data_manager_merge,
+                                         reminders_util.message_data_manager_merge7,
+                                         True)
+        else:
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_data_manager_merge,
+                                         reminders_util.message_data_manager_merge4,
+                                         True)
+
+        build_merge_string(False,True)
+
+    def merge_reminder_plus():
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_data_manager_merge,
+                                     reminders_util.message_data_manager_merge3,
+                                     True)
+        activate_csv_fields_selection('merge', merge_var.get(), True, False)
+
     add_merge_options_var = tk.IntVar()
-    add_merge_options = tk.Button(window, text='+', width=2, height=1, state='disabled',
-                                  command=lambda: build_merge_string(True, False))
+    add_merge_options = tk.Button(window, text='+', width=2, height=1, state='disabled', command=lambda: merge_reminder_plus())
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1000, y_multiplier_integer,
                                                    add_merge_options, True)
 
     OK_merge_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
-                                command=lambda: build_merge_string(False, True))
+                                command=lambda: merge_reminder_OK())
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1050, y_multiplier_integer,
                                                    OK_merge_button)
 
@@ -750,7 +798,6 @@ if __name__ == '__main__':
         reset_csv_field_values()
         clear("<Escape>")
 
-
     GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
     changed_filename(GUI_util.inputFilename.get())
@@ -776,20 +823,12 @@ if __name__ == '__main__':
 
         if operation == "merge":
             if checkButton == True:
-                # reminders_util.checkReminder(config_filename,
-                #                              reminders_util.title_options_data_manager_merge,
-                #                              reminders_util.message_data_manager_merge1,
-                #                              True)
                 select_csv_field_merge_menu.config(state='normal')
                 concatenate_checkbox.config(state='disabled')
                 append_checkbox.config(state='disabled')
                 extract_checkbox.config(state='disabled')
                 purge_checkbox.config(state='disabled')
                 if select_csv_field_merge_var.get() != '':
-                    # reminders_util.checkReminder(config_filename,
-                    #                              reminders_util.title_options_data_manager_merge,
-                    #                              reminders_util.message_data_manager_merge2,
-                    #                              True)
                     select_csv_field_merge_menu.config(state='disabled')
                     add_file_button.config(state='disabled')
                     # you cannot add another field from the same file in merge;
@@ -800,10 +839,6 @@ if __name__ == '__main__':
                     if comingFrom_Plus == True:
                         select_csv_field_merge_menu.configure(state='normal')
                     if comingFrom_OK == True:
-                        # reminders_util.checkReminder(config_filename,
-                        #                              reminders_util.title_options_data_manager_merge,
-                        #                              reminders_util.message_data_manager_merge3,
-                        #                              True)
                         add_file_button.config(state='normal')
                         select_csv_field_merge_menu.configure(state='disabled')
                         add_merge_options.config(state='disabled')
@@ -1005,13 +1040,12 @@ if __name__ == '__main__':
             operation_results_text.delete(0.1, tk.END)
             operation_results_text.configure(state='disabled')
 
-
     def mergeSelection(*args):
         activate_csv_fields_selection('merge', merge_var.get(), False, False)
 
 
-    merge_var.trace('w', mergeSelection)
-    select_csv_field_merge_var.trace('w', mergeSelection)
+    # merge_var.trace('w', mergeSelection)
+    # select_csv_field_merge_var.trace('w', mergeSelection)
 
 
     def concatenateSelection(*args):

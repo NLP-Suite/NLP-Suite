@@ -271,6 +271,41 @@ def readme_button(Window, xCoord, yCoord, text_title,text_msg):
 # creating popup menu in tkinter
 
 def dropdown_menu_widget(window,textCaption, menu_values, default_value):
+    # from tkinter import *
+
+    class App():
+
+        chunks = ['A','B','C']
+
+        def __init__(self,master):
+
+            self.testVariable = StringVar()
+
+            def refresh():
+                # Prints what's in the variable
+                print(self.testVariable.get())
+
+            def testFunc(x):
+                return lambda: self.testVariable.set(x)
+
+            def initSummary():
+                self.dataButton["menu"].delete(0, 'end')
+                for i in self.chunks:
+                    self.dataButton["menu"].add_command(label=i, command = testFunc(i))
+
+            top = self.top = Toplevel()
+            self.sumButton = Button(top, text="Test", width=25, command=lambda: initSummary())
+            self.sumButton.grid(row=0, column=0, sticky=W)
+            self.dataButton = OptionMenu(top, self.testVariable, "Stuff")
+            self.dataButton.grid(row=0, column=1, sticky=W)
+            self.testButton = Button(top, text="Variable", width=25, command = lambda: refresh())
+            self.testButton.grid(row=1, column=0, sticky=W)
+
+    # Call the main app
+    root = Tk()
+    app = App(root)
+    root.mainloop()
+
 # https://stackoverflow.com/questions/51591163/self-made-tkinter-popup-menu-python
 #     root = Tk()
 #     popup = Menu(root, tearoff=0)
