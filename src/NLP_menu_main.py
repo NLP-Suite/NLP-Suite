@@ -289,7 +289,7 @@ def setup_IO_checkbox():
     else:
         setup_IO_OK_checkbox_var.set(0)
 
-IO_setup_button = tk.Button(window, text='Setup default I/O options: INPUT corpus file(s) and OUTPUT files directory', font=("Courier", 12, "bold"), command=lambda: setup_IO())
+IO_setup_button = tk.Button(window, text='Setup default I/O options: INPUT corpus file(s) and OUTPUT files directory', width=95, font=("Courier", 10, "bold"), command=lambda: setup_IO())
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                IO_setup_button,True)
 
@@ -300,45 +300,28 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 
 IO_setup_var.trace('w',setup_IO)
 
+def callback(software: str):
+    software_setup_var.set(software)
+    # setup_software()
+
 def setup_software_warning():
-    mb.showwarning('Software option', 'Please, using the dropdown menu, select the external software that you would like to install.')
-    software = GUI_IO_util.dropdown_menu_widget(window, "Select external software to setup", ['Stanford CoreNLP', 'Mallet', 'WordNet', 'SENNA', 'Gephi', 'Google Earth Pro'],'Stanford CoreNLP')
-    print('software',software)
+    mb.showwarning('Software option', 'Please, select next the external software that you would like to install using the dropdown menu.')
+    software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'Mallet', 'WordNet', 'SENNA', 'Gephi', 'Google Earth Pro'],'Stanford CoreNLP',callback)
     return
 
-software_setup_button = tk.Button(window, text='Setup external software', font=("Courier", 12, "bold"), command=lambda: setup_software_warning())
+software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_software_warning())
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                software_setup_button,True)
-
-software_setup_menu = tk.OptionMenu(window, software_setup_var,
-                                   'Stanford CoreNLP',
-                                   'WordNet',
-                                   'Mallet',
-                                   'SENNA',
-                                   'Gephi',
-                                   'Google Earth Pro')
-
-software_setup_menu.configure(width=70)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
-                                               software_setup_menu,True)
 
 setup_software_checkbox = tk.Checkbutton(window, state='disabled',
                                          variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
                                                setup_software_checkbox)
 
-
 # check for external software installation (Stanford CoreNLP, WordNet, Mallet, SENNA)
 def setup_software(*args):
     silent = False
     only_check_missing = False
-    # if software_setup_var.get()!='':
-    #     silent = False
-    #     only_check_missing = False
-    # else:
-    #     silent = True
-    #     only_check_missing = True
-    # output, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software_setup_var.get(),silent,only_check_missing)
     output, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software_setup_var.get())
     # must be recomputed because the return variable missing_external_software will STILL contain the missing software
     # that could have been updated
@@ -478,7 +461,7 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
                                   "Please, click on the button to the right to open the GUI that will allow you to setup default I/O options:\n   INPUT file and or directory of files (your corpus)and\n   OUTPUT directory where all files (csv, txt, html, kml, jpg) produced by the NLP-Suite tools will be saved.\n\nThese default I/O options will be used for all GUIs.\n\nThe checkbox at the end of the line is set to OK if all INPUT/OUTPUT options have been successfully selected and saved in the default-config.txt file under the subdirecory config.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
-                                  "The NLP-Suite relies for some of its operations on external software that needs to be downloaded and installed (Stanford CoreNLP, WordNet, Mallet, SENNA, Gephi, Google Earth Pro). When using any of these software, the NLP-Suite needs to know where they have been installed on your computer (e.g., C:\Program Files (x86)\WordNet).\n\nPlease, using the dropdown menu, select the software option that you want to link to its installation directory. YOUR SELECTION WILL BE SAVED IN THE software_config.csv FILE UNDER THE SUBDIRECTORY config.\n\nThe checkbox at the end of the line is set to OK if all external software packages have been successfully installed.")
+                                  "The NLP-Suite relies for some of its operations on external software that needs to be downloaded and installed (Stanford CoreNLP, WordNet, Mallet, SENNA, Gephi, Google Earth Pro). When using any of these software, the NLP-Suite needs to know where they have been installed on your computer (e.g., C:\Program Files (x86)\WordNet).\n\nPlease, click on the 'Select external software' button to select the software option that you want to link to its installation directory. YOUR SELECTION WILL BE SAVED IN THE software_config.csv FILE UNDER THE SUBDIRECTORY config.\n\nThe checkbox at the end of the line is set to OK if all external software packages have been successfully installed.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 4, "Help",
                                   "Please, using the dropdown menu, select one of the many options available for data and file handling." + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 5, "Help",

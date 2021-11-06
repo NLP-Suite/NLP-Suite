@@ -595,22 +595,22 @@ def display_about_release_team_cite_buttons(ScriptName):
             y_multiplier_integer = 0
         about_button = tk.Button(window, text='About', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.about())
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 50, y_multiplier_integer,
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 160, y_multiplier_integer,
                                                        about_button, True)
 
         release_history_button = tk.Button(window, text='Release history', width=15, height=1, foreground='red',
                                            command=lambda: GUI_IO_util.release_history())
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 230, y_multiplier_integer,
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 340, y_multiplier_integer,
                                                        release_history_button, True)
 
         team_button = tk.Button(window, text='NLP Suite team', width=13, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.list_team())
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 430, y_multiplier_integer,
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 550, y_multiplier_integer,
                                                        team_button, True)
 
         cite_button = tk.Button(window, text='How to cite', width=13, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.cite_NLP())
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 600, y_multiplier_integer,
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 730, y_multiplier_integer,
                                                        cite_button)
 
 # ScriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main

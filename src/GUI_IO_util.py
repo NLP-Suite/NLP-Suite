@@ -270,26 +270,26 @@ def readme_button(Window, xCoord, yCoord, text_title,text_msg):
 
 # creating popup menu in tkinter
 
-def dropdown_menu_widget(window,textCaption, menu_values, default_value):
+def dropdown_menu_widget(window,textCaption, menu_values, default_value, callback):
 
     class App():
         def __init__(self,master):
             top = self.top = Toplevel()
             top.wm_title(textCaption)
-            self.menuButton = ttk.Combobox(top, width=90)
+            self.menuButton = ttk.Combobox(top, width=len(textCaption)+30)
             self.menuButton['values'] = menu_values
             self.menuButton.pack()
 
             self.menuButton.grid(row=0, column=1) # , sticky=W)
+            self.callback = callback
 
             ok_button = tk.Button(self.top, text='OK', command=self.get_value)
             ok_button.grid(row=0, column=1)
 
-        def get_value():
-            global val
-            val = selfmenuButton.get()
+        def get_value(self):
+            val = self.menuButton.get()
             self.top.destroy()
-            return val
+            callback(val)
 
     App(window)
 
