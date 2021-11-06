@@ -275,118 +275,20 @@ def dropdown_menu_widget(window,textCaption, menu_values, default_value):
     class App():
         def __init__(self,master):
             top = self.top = Toplevel()
-            # self.Label(root, width=len(textCaption) + 30).grid(row=0)
-            # self.title(textCaption)
-            # self.focus_force()
+            top.wm_title(textCaption)
             self.menuButton = ttk.Combobox(top, width=90)
             self.menuButton['values'] = menu_values
             self.menuButton.pack()
 
             self.menuButton.grid(row=0, column=1) # , sticky=W)
 
-    def get_value():
-        global val
-        val = s.get()
-        top.destroy()
-        top.update()
+        def get_value():
+            global val
+            val = selfmenuButton.get()
+            self.top.destroy()
+            return val
 
-        def _delete_window():
-            mb.showwarning(title = "Invalid Operation", message = "Please click OK to save your choice of parameter.")
-
-        top.protocol("WM_DELETE_WINDOW", _delete_window)
-
-        tk.Button(top, text='OK', command=lambda: get_value()).pack()
-        window.wait_window(top)
-        return val
-
-    # Call the main app
-    root = tk.Tk()
-    app = App(root)
-    root.mainloop()
-
-# https://stackoverflow.com/questions/51591163/self-made-tkinter-popup-menu-python
-#     root = Tk()
-#     popup = Menu(root, tearoff=0)
-#     popup.add_command(label="Main Product")
-#     popup.add_command(label="Side Product")
-#
-#     def popupm(bt):
-#         try:
-#             x = bt.winfo_rootx()
-#             y = bt.winfo_rooty()
-#             popup.tk_popup(x, y, 0)
-#         finally:
-#             popup.grab_release()
-#
-#     bt = Button(root, text='Menu')
-#     bt.configure(command=lambda: popupm(bt))
-#     bt.place(x=10, y=15)
-#
-#     root.mainloop()
-
-    # master = tk.Tk()
-    # master.focus_force()
-    # tk.Label(master, width=len(textCaption)+30).grid(row=0)
-    # master.title(textCaption)
-    #
-    # # menu_var = tk.StringVar()
-    # # menu = ttk.Combobox(master, width=90, textvariable=menu_var)
-    # menu = ttk.Combobox(master, width=90)
-    # menu['values'] = menu_values
-    # menu.pack()
-    # menu.focus_force()
-    # master.mainloop()
-    # master.destroy()
-
-    # window.wait_window(master)
-    return # must return selected value
-
-    # https://www.geeksforgeeks.org/popup-menu-in-tkinter/
-    # creates parent window
-    #     def __init__(self):
-    #
-    #         self.root = tkinter.Tk()
-    #         self.root.geometry('400x30')
-    #
-    #         self.frame1 = tkinter.Label(self.root,
-    #                                     width=400,
-    #                                     height=20,
-    #                                     bg='#AAAAAA')
-    #         self.frame1.pack()
-    #
-    #     # create menu
-    #     def popup(self):
-    #         self.popup_menu = tkinter.Menu(self.root,
-    #                                        tearoff=0)
-    #
-    #         self.popup_menu.add_command(label="say hi",
-    #                                     command=lambda: self.hey("hi"))
-    #
-    #         self.popup_menu.add_command(label="say hello",
-    #                                     command=lambda: self.hey("hello"))
-    #         self.popup_menu.add_separator()
-    #         self.popup_menu.add_command(label="say bye",
-    #                                     command=lambda: self.hey("bye"))
-    #
-    #     # display menu on right click
-    #     def do_popup(self, event):
-    #         try:
-    #             self.popup_menu.tk_popup(event.x_root,
-    #                                      event.y_root)
-    #         finally:
-    #             self.popup_menu.grab_release()
-    #
-    #     def hey(self, s):
-    #         self.frame1.configure(text=s)
-    #
-    #     def run(self):
-    #         self.popup()
-    #         self.root.bind("<Button-3>", self.do_popup)
-    #         tkinter.mainloop()
-    #
-    #
-    # a = A()
-    # a.run()
+    App(window)
 
 def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
     top = tk.Toplevel(window)

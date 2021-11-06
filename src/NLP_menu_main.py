@@ -302,7 +302,8 @@ IO_setup_var.trace('w',setup_IO)
 
 def setup_software_warning():
     mb.showwarning('Software option', 'Please, using the dropdown menu, select the external software that you would like to install.')
-    GUI_IO_util.dropdown_menu_widget(window, "Select external software to setup", ['Stanford CoreNLP', 'Mallet', 'WordNet', 'SENNA', 'Gephi', 'Google Earth Pro'],'Stanford CoreNLP')
+    software = GUI_IO_util.dropdown_menu_widget(window, "Select external software to setup", ['Stanford CoreNLP', 'Mallet', 'WordNet', 'SENNA', 'Gephi', 'Google Earth Pro'],'Stanford CoreNLP')
+    print('software',software)
     return
 
 software_setup_button = tk.Button(window, text='Setup external software', font=("Courier", 12, "bold"), command=lambda: setup_software_warning())
