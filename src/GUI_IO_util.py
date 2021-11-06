@@ -207,8 +207,7 @@ def exit_window(window,configFilename, ScriptName, config_input_output_options, 
     if ScriptName!='NLP_menu_main' and config_input_output_options != [0, 0, 0, 0, 0, 0]:
         config_util.saveConfig(window,configFilename, configArray)
     window.destroy()
-    exit(0)
-
+    sys.exit(0)
 
 # missingIO is called from GUI_util
 def check_missingIO(window,missingIO,config_filename,IO_setup_display_brief,ScriptName,silent=False):

@@ -15,26 +15,42 @@ import IO_files_util
 import GUI_util
 import GUI_IO_util
 import IO_csv_util
-import statistics_csv_util
 import data_manager_util
+import reminders_util
 
 # RUN section ________________________________________________________________________________________________________
 
 
 def run(inputFilename,
         selectedCsvFile,
-        csv_file_field_list,
+        operation_results_text_list,
+        operation,
         merge_var, concatenate_var,
         append_var, extract_var,
-        purge_row_var, select_csv_field_purge_var, keep_most_recent_var, keep_most_fields_var, select_csv_field2_purge_var,
+        purge_var, select_csv_field_purge_var, keep_most_recent_var, keep_most_fields_var, select_csv_field2_purge_var,
         output_to_csv_var, openOutputFiles, outputDir):
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    filePath = [s.split(',')[0] for s in csv_file_field_list]  # file filePath
+    filePath = [s.split(',')[0] for s in operation_results_text_list]  # file filePath
     data_files = [file for file in data_manager_util.select_csv(filePath)]  # dataframes
-    headers = [s.split(',')[1] for s in csv_file_field_list]  # headers
+    headers = [s.split(',')[1] for s in operation_results_text_list]  # headers
     data_cols = [file for file in data_manager_util.get_cols(data_files, headers)]  # selected cols
+
+    if (operation=='CONCATENATE' or operation=='APPEND') and selected_fields_var.get().count(',')<1:
+        mb.showwarning(title='Warning',
+                       message='The ' + str(operation).upper() + ' operation requires at least two fields. Please, click on the + button to select a second field and try again.')
+        operation_text_var.set('')
+        # a text widget is read only when disabled
+        operation_results_text.configure(state='normal')
+        operation_results_text.delete(0.1, tk.END)
+        operation_results_text.configure(state='disabled')
+        operation_results_text_list.clear()
+        if operation=='CONCATENATE':
+            add_concatenate_options.configure(state='normal')
+        if operation=='APPEND':
+            add_append_options.configure(state='normal')
+        return
 
     if operation_text_var.get()=='':
         mb.showwarning(title='Warning',
@@ -50,51 +66,57 @@ def run(inputFilename,
                                                                  '.csv',
                                                                  'merge',
                                                                  'files', '', '', '', False, True)
-        outputFilename=data_manager_util.merge(filePath[0], os.path.dirname(filePath[0]),outputFilename,csv_file_field_list)
+        outputFilename=data_manager_util.merge(outputFilename,operation_results_text_list)
         if outputFilename!=None:
             filesToOpen.append(outputFilename)
 
     if concatenate_var:
         outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv', 'concatenate',
                                                            'files', '', '', '', False, True)
-        for s in csv_file_field_list:
-            if s[-1] == ',':
-                sep = ','
-            else:
-                temp = s.split(',')
-                if len(temp) >= 3:
-                    sep = temp[2]
-                    break
-        df_concat = data_manager_util.concat(data_cols, sep)  # TODO: Could sep potentially be null?
-        df_concat.to_csv(outputFilename, header=[data_manager_util.listToString(headers, sep)])
-        filesToOpen.append(outputFilename)
+        outputFilename=data_manager_util.concatenate(outputFilename,data_cols, headers, operation_results_text_list)
+        if outputFilename!=None:
+            filesToOpen.append(outputFilename)
+
     if append_var:
         outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv', 'append',
                                                            '', '', '', '', False, True)
-        sep = ','
-        df_append = pd.concat(data_cols, axis=0)
-        df_append.to_csv(outputFilename, header=[data_manager_util.listToString(headers, sep)])
-        filesToOpen.append(outputFilename)
-    if extract_var:
-        outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir,
-                                                                 '.csv',
-                                                                 'extract',
-                                                                 '', '', '', '', False, True)
-        if output_to_csv_var==True:
-            outputFilename=data_manager_util.extract_from_csv(filePath=filePath, outputDir=outputDir, outputFilename=outputFilename,
-                             data_files=data_files, csv_file_field_list=csv_file_field_list)
+        outputFilename=data_manager_util.append(outputFilename,data_cols, headers, operation_results_text_list)
+        if outputFilename!=None:
             filesToOpen.append(outputFilename)
-        else: # export to txt file
-            # del csv_file_field_list[0]
-            # csv_file_field_list=csv_file_field_list.remove([0])
-            statistics_csv_util.export_csv_to_text(inputFilename, outputDir, csv_file_field_list)
-    if purge_row_var:
+
+    if extract_var:
+        if output_to_csv_var == True:
+            outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]),
+                                                                     outputDir,
+                                                                     '.csv',
+                                                                     'extract',
+                                                                     '', '', '', '', False, True)
+            outputFilename = data_manager_util.extract_from_csv(outputFilename,
+                                                                data_files,
+                                                                operation_results_text_list)
+            if outputFilename != None:
+                filesToOpen.append(outputFilename)
+        else:  # export to txt file
+            outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]),
+                                                                     outputDir,
+                                                                     '.txt',
+                                                                     'extract',
+                                                                     '', '', '', '', False, True)
+            outputFilename = data_manager_util.export_csv_to_text(
+                outputFilename,
+                data_files,
+                operation_results_text_list)
+
+            if outputFilename != None:
+                filesToOpen.append(outputFilename)
+
+
+    if purge_var:
         import file_filename_util
         if keep_most_recent_var:
             file_filename_util.purge_duplicate_rows_byFilename(GUI_util.window,inputFilename, outputDir, openOutputFiles, select_csv_field_purge_var)
         if keep_most_fields_var:
             file_filename_util.purge_partial_matches(GUI_util.window,inputFilename, outputDir, openOutputFiles, select_csv_field_purge_var, select_csv_field2_purge_var)
-
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -105,10 +127,11 @@ def run(inputFilename,
 if __name__ == '__main__':
     run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                      selectedCsvFile.get(),
-                                     csv_file_field_list,
+                                     operation_results_text_list,
+                                     operation_text_var.get(),
                                      merge_var.get(), concatenate_var.get(),
                                      append_var.get(), extract_var.get(),
-                                     purge_row_var.get(), select_csv_field_purge_var.get(), keep_most_recent_var.get(),
+                                     purge_var.get(), select_csv_field_purge_var.get(), keep_most_recent_var.get(),
                                      keep_most_fields_var.get(), select_csv_field2_purge_var.get(),
                                      output_to_csv_var.get(),
                                      GUI_util.open_csv_output_checkbox.get(), GUI_util.output_dir_path.get()
@@ -156,8 +179,8 @@ if __name__ == '__main__':
 
     GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
 
-    # in csv_file_field_list, the script returns a list of comma-separated csv filename + csv field
-    # when using the extract option, csv_file_field_list will also list the where and and/or values
+    # in operation_results_text_list, the script returns a list of comma-separated csv filename + csv field
+    # when using the extract option, operation_results_text_list will also list the where and and/or values
     # repeated csv fields will be skipped
     # for instance
     # ['C:/Program Files (x86)/NLP_backup/Output/EnglishANEW.csv,A.SD.F', 'C:/Program Files (x86)/NLP_backup/Output/EnglishANEW.csv,D.Mean.M']
@@ -172,14 +195,14 @@ if __name__ == '__main__':
     GUI_util.GUI_top(config_input_output_options, config_filename,IO_setup_display_brief)
 
     # GUI CHANGES cut/paste special GUI widgets from GUI_util
-    csv_file_field_list = []
+    operation_results_text_list = []
     merge_var = tk.IntVar()
     concatenate_var = tk.IntVar()
     character_separator_var = tk.StringVar()
     append_var = tk.IntVar()
     extract_var = tk.IntVar()
     output_to_csv_var = tk.IntVar()
-    purge_row_var = tk.IntVar()
+    purge_var = tk.IntVar()
 
     keep_most_recent_var = tk.IntVar()
 
@@ -197,11 +220,12 @@ if __name__ == '__main__':
 
 
     def clear(e):
+        reset_csv_field_values()
         select_csv_field_merge_var.set('')
         select_csv_field_concatenate_var.set('')
         select_csv_field_append_var.set('')
         select_csv_field_extract_var.set('')
-        character_separator_entry_var.set("")
+        character_separator_entry_var.set('')
         comparator_var.set('')
         where_entry_var.set('')
         and_or_var.set('')
@@ -213,7 +237,7 @@ if __name__ == '__main__':
     def reset_all_values():
         clear("<Escape>")
         reset_csv_field_values()
-        csv_file_field_list.clear()
+        operation_results_text_list.clear()
         file_number_var.set(1)
         selected_fields_var.set('')
         selectedCsvFile_var.set(GUI_util.inputFilename.get())
@@ -224,12 +248,12 @@ if __name__ == '__main__':
         concatenate_checkbox.config(state='normal')
         append_checkbox.config(state='normal')
         extract_checkbox.config(state='normal')
-        purge_row_checkbox.config(state='normal')
+        purge_checkbox.config(state='normal')
 
         # a text widget is read only when disabled
-        csv_file_field.configure(state='normal')
-        csv_file_field.delete(0.1, tk.END)
-        csv_file_field.configure(state='disabled')
+        operation_results_text.configure(state='normal')
+        operation_results_text.delete(0.1, tk.END)
+        operation_results_text.configure(state='disabled')
 
         character_separator_entry_var.set("")
 
@@ -267,8 +291,7 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 50, y_multiplier_integer,
                                                    file_number, True)
 
-# state='disabled',
-    add_file_button = tk.Button(window, text='+', width=2, height=1,
+    add_file_button = tk.Button(window, text='+', state='disabled', width=2, height=1,
                                 command=lambda: get_additional_csvFile(window, 'Select INPUT csv file',
                                                                        [("csv files", "*.csv")]))
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 100, y_multiplier_integer,
@@ -296,6 +319,12 @@ if __name__ == '__main__':
         initialFolder = os.path.dirname(os.path.abspath(__file__))
         filePath = tk.filedialog.askopenfilename(title=title, initialdir=initialFolder, filetypes=fileType)
         if len(filePath) > 0:
+            # if merge_var.get()==False:
+            #     select_csv_field_merge_var.set('')
+            # else:
+            #     # save the current value, cleared otherwise by changed_filename()
+            #     selectedCsvFile_var_SAVE = selectedCsvFile_var.get()
+            #     select_csv_field_merge_var_SAVE=select_csv_field_merge_var.get()
             select_csv_field_merge_var.set('')
             select_csv_field_concatenate_var.set('')
             select_csv_field_append_var.set('')
@@ -307,6 +336,10 @@ if __name__ == '__main__':
 
             changed_filename(selectedCsvFile_var.get())
 
+            # if merge_var.get():
+            #     operation = 'merge'
+            #     # build_merge_string(True,False)
+            #     add_field_to_list(operation, select_csv_field_merge_var_SAVE, selectedCsvFile_var_SAVE, True)
 
     if GUI_util.inputFilename.get() != '':
         if selectedCsvFile_var.get() == '':
@@ -341,10 +374,11 @@ if __name__ == '__main__':
                                                    reset_all_button, True)
 
     # a text widget is read only when disabled
-    csv_file_field = tk.Text(window, width=100, height=3, state="disabled")
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, csv_file_field,
+    operation_results_text = tk.Text(window, width=100, height=3, state="disabled")
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, operation_results_text,
                                                    True)
 
+    # after clicking OK, the selected options will be displayed here
     operation_text_var = tk.StringVar()
     operation_text_var.set('')
     operation_text = tk.Entry(window, width=20, textvariable=operation_text_var)
@@ -352,22 +386,24 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 140, y_multiplier_integer,
                                                    operation_text, True)
 
-
-    # operation is a string with values "merge", "concatenate", "append", "extract"
+    # operation is a string with values "merge", "concatenate", "append", "extract", "purge"
     # menu_choice is the menu value of the spcecific csv field selected  (e.g., select_csv_field_concatenate_var.get())
     # it returns a list to be passed to data_handling.py for processing
 
-    def add_field_to_list(operation, menu_choice, visualizeBuildString=True):
+    # visualizeBuildString after clicking OK
+    def add_field_to_list(operation, csv_field_menu_choice, visualizeBuildString=True):
         # skip empty values and csv fields already selected
         if select_csv_field_merge_var.get() == '' and select_csv_field_concatenate_var.get() == '' and select_csv_field_append_var.get() == '' and select_csv_field_extract_var.get() == '':
-            return
+        # if select_csv_field_concatenate_var.get() == '' and select_csv_field_append_var.get() == '' and select_csv_field_extract_var.get() == '':
+                return
 
-        buildString = selectedCsvFile_var.get() + "," + menu_choice
+        buildString = selectedCsvFile_var.get() + "," + csv_field_menu_choice
+        # buildString = csv_fileName + "," + csv_field_menu_choice
 
-        if selected_fields_var.get() != '' and menu_choice not in selected_fields_var.get():
-            selected_fields_var.set(selected_fields_var.get() + "," + str(menu_choice))
+        if selected_fields_var.get() != '' and csv_field_menu_choice not in selected_fields_var.get():
+            selected_fields_var.set(selected_fields_var.get() + "," + str(csv_field_menu_choice))
         else:
-            selected_fields_var.set(menu_choice)
+            selected_fields_var.set(csv_field_menu_choice)
 
         if operation == "concatenate":
             character_separator_entry.get()
@@ -395,21 +431,19 @@ if __name__ == '__main__':
             else:
                 buildString = buildString + "," + "''"
 
-        csv_file_field_list.append(buildString)
+        operation_results_text_list.append(buildString)
         # visualizeBuildString is True when clicking the OK button for the Concatenate and Extract operations
         if visualizeBuildString == True:
             operation_text_var.set(str(operation).upper())  # + " list"
             # a text widget is read only when disabled
-            csv_file_field.configure(state='normal')
-            csv_file_field.insert("end", str(csv_file_field_list))
-            csv_file_field.configure(state='disabled')
+            operation_results_text.configure(state='normal')
+            operation_results_text.insert("end", str(operation_results_text_list))
+            operation_results_text.configure(state='disabled')
             reset_field_button.config(state="normal")
-
 
     y_multiplier_integer = y_multiplier_integer + 2
 
     # _____________________________________________________________________________
-
 
     merge_var.set(0)
     merge_checkbox = tk.Checkbutton(window, text='Merge files (Join)', variable=merge_var, onvalue=1, offvalue=0)
@@ -474,7 +508,6 @@ if __name__ == '__main__':
     character_separator_entry.config(state='disabled')
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 600, y_multiplier_integer,
                                                    character_separator_entry, True)
-
 
     def build_concatenate_string(comingFrom_Plus, comingFrom_OK):
         add_field_to_list("concatenate", select_csv_field_concatenate_var.get(), comingFrom_OK)
@@ -603,12 +636,12 @@ if __name__ == '__main__':
 
     # _____________________________________________________________________________
 
-    purge_row_var.set(0)
-    purge_row_checkbox = tk.Checkbutton(window, text='Purge duplicate rows', variable=purge_row_var, onvalue=1, offvalue=0)
+    purge_var.set(0)
+    purge_checkbox = tk.Checkbutton(window, text='Purge duplicate rows', variable=purge_var, onvalue=1, offvalue=0)
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                                   purge_row_checkbox, True)
+                                                   purge_checkbox, True)
 
-    # purge_row_var
+    # purge_var
 
     select_csv_field_lb = tk.Label(window, text='Select field')
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
@@ -728,36 +761,51 @@ if __name__ == '__main__':
 
 
     def activate_csv_fields_selection(operation, checkButton, comingFrom_Plus, comingFrom_OK):
+        # checkButton whether the specific operation has been selected
+        add_file_button.config(state='disabled')
         keep_most_recent_checkbox.config(state='disabled')
         keep_most_fields_checkbox.config(state='disabled')
         if checkButton == False:
-            # add_file_button.config(state='disabled')
             merge_checkbox.config(state='normal')
             concatenate_checkbox.config(state='normal')
             append_checkbox.config(state='normal')
             extract_checkbox.config(state='normal')
-            purge_row_checkbox.config(state='normal')
+            purge_checkbox.config(state='normal')
         else:
             reset_all_button.config(state='normal')
 
         if operation == "merge":
             if checkButton == True:
+                # reminders_util.checkReminder(config_filename,
+                #                              reminders_util.title_options_data_manager_merge,
+                #                              reminders_util.message_data_manager_merge1,
+                #                              True)
                 select_csv_field_merge_menu.config(state='normal')
                 concatenate_checkbox.config(state='disabled')
                 append_checkbox.config(state='disabled')
                 extract_checkbox.config(state='disabled')
+                purge_checkbox.config(state='disabled')
                 if select_csv_field_merge_var.get() != '':
+                    # reminders_util.checkReminder(config_filename,
+                    #                              reminders_util.title_options_data_manager_merge,
+                    #                              reminders_util.message_data_manager_merge2,
+                    #                              True)
                     select_csv_field_merge_menu.config(state='disabled')
+                    add_file_button.config(state='disabled')
                     # you cannot add another field from the same file in merge;
                     # should always be disabled, but having it enabled allows to display a warning
-                    add_file_button.config(state='normal')
+                    # add_file_button.config(state='normal')
                     add_merge_options.config(state='normal')
                     OK_merge_button.config(state='normal')
                     if comingFrom_Plus == True:
                         select_csv_field_merge_menu.configure(state='normal')
                     if comingFrom_OK == True:
+                        # reminders_util.checkReminder(config_filename,
+                        #                              reminders_util.title_options_data_manager_merge,
+                        #                              reminders_util.message_data_manager_merge3,
+                        #                              True)
+                        add_file_button.config(state='normal')
                         select_csv_field_merge_menu.configure(state='disabled')
-                        # add_file_button.config(state='disabled')
                         add_merge_options.config(state='disabled')
                         OK_merge_button.config(state='disabled')
                 else:
@@ -773,20 +821,21 @@ if __name__ == '__main__':
                 concatenate_checkbox.config(state='normal')
                 append_checkbox.config(state='normal')
                 extract_checkbox.config(state='normal')
-                purge_row_checkbox.config(state='normal')
+                purge_checkbox.config(state='normal')
 
         elif operation == "concatenate":
+            add_file_button.config(state='disabled')
             if checkButton == True:
                 select_csv_field_concatenate_menu.config(state='normal')
 
                 merge_checkbox.config(state='disabled')
                 append_checkbox.config(state='disabled')
                 extract_checkbox.config(state='disabled')
-                purge_row_checkbox.config(state='disabled')
+                purge_checkbox.config(state='disabled')
 
                 if select_csv_field_concatenate_var.get() != '':
                     select_csv_field_concatenate_menu.config(state='disabled')
-                    if character_separator_entry_var.get() != '':
+                    if selected_fields_var.get()!='':
                         character_separator_entry.config(state='disabled')
                     else:
                         character_separator_entry.config(state='normal')
@@ -794,7 +843,7 @@ if __name__ == '__main__':
                     select_csv_field_concatenate_menu.config(state='normal')
                     character_separator_entry.config(state='disabled')
                 if character_separator_entry_var.get() != '':
-                    add_file_button.config(state='normal')
+                    # add_file_button.config(state='normal')
                     add_concatenate_options.config(state='normal')
                     OK_concatenate_button.config(state='normal')
 
@@ -802,7 +851,9 @@ if __name__ == '__main__':
                         select_csv_field_concatenate_menu.configure(state='normal')
                         character_separator_entry.config(state='disabled')
                     if comingFrom_OK == True:
+                        # add_file_button.config(state='normal')
                         select_csv_field_concatenate_menu.configure(state='disabled')
+                        # character_separator_entry_var.set('')
                         character_separator_entry.config(state='disabled')
                         # add_file_button.config(state='disabled')
                         add_concatenate_options.config(state='disabled')
@@ -818,19 +869,20 @@ if __name__ == '__main__':
                 merge_checkbox.config(state='normal')
                 append_checkbox.config(state='normal')
                 extract_checkbox.config(state='normal')
-                purge_row_checkbox.config(state='normal')
+                purge_checkbox.config(state='normal')
 
         elif operation == "append":
+            add_file_button.config(state='disabled')
             if checkButton == True:
                 select_csv_field_append_menu.config(state='normal')
                 merge_checkbox.config(state='disabled')
                 concatenate_checkbox.config(state='disabled')
                 extract_checkbox.config(state='disabled')
-                purge_row_checkbox.config(state='disabled')
+                purge_checkbox.config(state='disabled')
 
                 if select_csv_field_append_var.get() != '':
                     select_csv_field_append_menu.configure(state='disabled')
-                    add_file_button.config(state='normal')
+                    # add_file_button.config(state='normal')
                     add_append_options.config(state='normal')
                     OK_append_button.config(state='normal')
                     if comingFrom_Plus == True:
@@ -852,11 +904,11 @@ if __name__ == '__main__':
                 merge_checkbox.config(state='normal')
                 concatenate_checkbox.config(state='normal')
                 extract_checkbox.config(state='normal')
-                purge_row_checkbox.config(state='normal')
+                purge_checkbox.config(state='normal')
 
         elif operation == "extract":
+            add_file_button.config(state='disabled')
             if checkButton == True:
-
                 if select_csv_field_extract_var.get() != '':
                     if comingFrom_Plus == True:
                         select_csv_field_extract_menu.configure(state='normal')
@@ -876,7 +928,7 @@ if __name__ == '__main__':
                         add_extract_options.config(state='disabled')
                         OK_extract_button.config(state='disabled')
                     else:
-                        add_file_button.config(state='normal')
+                        # add_file_button.config(state='normal')
                         add_extract_options.config(state='normal')
                         OK_extract_button.config(state='normal')
                         comparator_menu.configure(state="normal")
@@ -885,13 +937,12 @@ if __name__ == '__main__':
                     select_csv_field_extract_menu.configure(state='normal')
                     # add_file_button.config(state='disabled')
                     add_append_options.config(state='disabled')
-                    add_file_button.config(state='disabled')
                     OK_append_button.config(state='disabled')
 
                 merge_checkbox.config(state='disabled')
                 concatenate_checkbox.config(state='disabled')
                 append_checkbox.config(state='disabled')
-                purge_row_checkbox.config(state='disabled')
+                purge_checkbox.config(state='disabled')
             else:
                 select_csv_field_extract_var.set('')
                 select_csv_field_extract_menu.config(state='disabled')
@@ -899,7 +950,7 @@ if __name__ == '__main__':
                 merge_checkbox.config(state='normal')
                 concatenate_checkbox.config(state='normal')
                 append_checkbox.config(state='normal')
-                purge_row_checkbox.config(state='normal')
+                purge_checkbox.config(state='normal')
 
                 comparator_menu.configure(state="disabled")
                 where_entry.configure(state="disabled")
@@ -912,6 +963,7 @@ if __name__ == '__main__':
                 and_or_var.set("")
 
         elif operation == "purge":
+            add_file_button.config(state='disabled')
             if checkButton == True:
 
                 if select_csv_field_purge_var.get() != '':
@@ -943,15 +995,15 @@ if __name__ == '__main__':
 
         # clear content of current variables when selecting a different main option
         if (operation_text_var.get() != '') and (operation_text_var.get() != str(operation).upper()):
-            csv_file_field_list.clear()
+            operation_results_text_list.clear()
             if operation_text_var.get()=='MERGE':
                 return
             reset_csv_field_values()
             file_number_var.set(1)
             operation_text_var.set('')
-            csv_file_field.configure(state='normal')
-            csv_file_field.delete(0.1, tk.END)
-            csv_file_field.configure(state='disabled')
+            operation_results_text.configure(state='normal')
+            operation_results_text.delete(0.1, tk.END)
+            operation_results_text.configure(state='disabled')
 
 
     def mergeSelection(*args):
@@ -964,7 +1016,6 @@ if __name__ == '__main__':
 
     def concatenateSelection(*args):
         activate_csv_fields_selection('concatenate', concatenate_var.get(), False, False)
-
 
     concatenate_var.trace('w', concatenateSelection)
     select_csv_field_concatenate_var.trace('w', concatenateSelection)
@@ -990,10 +1041,10 @@ if __name__ == '__main__':
 
 
     def purgeSelection(*args):
-        activate_csv_fields_selection('purge', purge_row_var.get(), False, False)
+        activate_csv_fields_selection('purge', purge_var.get(), False, False)
 
 
-    purge_row_var.trace('w', purgeSelection)
+    purge_var.trace('w', purgeSelection)
 
     videos_lookup = {'No videos available': ''}
     videos_options = 'No videos available'
@@ -1027,15 +1078,15 @@ if __name__ == '__main__':
                                       resetAll + "\n\nThe next two (read-only) widgets display the arguments that will be processed when pressing the RUN button for the selected operation.\n\nThe first (read-only) widget displays the currently selected type of operation.\n\nThe second (read-only) widget displays a list of items:\n   csv filename\n   csv column/field.\n   For the Concatenate option the character separator will also be displayed.\n   For the Extract option, the comparator value (e.g., =, >), the WHERE value, and the selected add/or option will be displayed.")
         # empty line to account for the height of the text widget
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
-                                      "The MERGE option allows you to select several files, merge them together in a single file using the key of overlapping fields (the equivalent of an SQL JOIN operation), and save the output as a new file.\n\nAfter selecting the 'Merge files (Join)' option, press the + button either to add a new csv field or a new csv file (you can add repeatedly more fields and/or files)." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
+                                      "The MERGE option allows you to select several files, merge them together in a single file using the key of overlapping fields (the equivalent of an SQL JOIN operation), and save the output as a new file.\n\nAfter selecting the 'Merge files (Join)' option, press the + button either to add a new csv field or a new csv file (you can add repeatedly more fields and/or files)." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll + "\n\nIn INPUT, the MERGE option takes 2 or more csv files.\n\nIn OUTPUT, the MERGE option creates a csv file containing all the fields from all input files matched on the basis of the same selected overlapping field(s) (e.g., Document ID, Sentence ID).")
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
-                                      "The CONCATENATE option allows you to select specific fields from one or more csv files, concatenate them together in a new field, and save the output as a new file.\n\nThe character(s) separator must be entered for every new csv field selected.\n\nTo select concatenate fields from different csv files, after selecting the first field and the character(s) separator, press the + button to add a new csv file and the RESET button to clear all values and start fresh." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
+                                      "The CONCATENATE option allows you to select specific fields from a csv file, concatenate them together in a new field, and save the output as a new file.\n\nThe character(s) separator must be entered for every new csv field selected.\n\nTo select concatenate fields from different csv files, after selecting the first field and the character(s) separator, press the + button to add a new csv file and the RESET button to clear all values and start fresh." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll + "\n\nIn INPUT, the CONCATENATE option takes 1 csv file.\n\nIn OUTPUT, the CONCATENATE option creates a csv file containing all the same fields as in the input file plus an extra field for the concatenated values.")
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
-                                      "The APPEND option allows you to select a specific field from a csv file and append its values at the bottom of the values of another field, and save the output as a new file." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
+                                      "The APPEND option allows you to select a specific field from a csv file and append its values at the bottom of the values of another field, and save the output as a new file." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll+ "\n\nIn INPUT, the APPEND option takes 1 csv file.\n\nIn OUTPUT, the APPEND option creates a csv file containing all the same input fields but with more rows (the appended rows).")
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+9), "Help",
-                                      "The EXTRACT option allows you to select specific fields, even by specific values, from one or more csv files and save the output as a new file.\n\nYOU CAN SAVE THE OUTPUT TO CSV FILE OR TO A TEXT FILE. Just tick the Output csv checkbox as desired.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value, and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
+                                      "The EXTRACT option allows you to select specific fields, even by specific values, from a csv file and save the output as a new csv or txt file.\n\nYOU CAN SAVE THE OUTPUT TO CSV FILE OR TO A TEXT FILE. Just tick the Output csv checkbox as desired.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value, and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll + "\n\nIn INPUT, the EXTRACT option takes 1 csv file.\n\nIn OUTPUT, the EXTRACT option creates either a csv or a text file containing only the fields selected for extraction from the input file.")
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+10), "Help",
-                                      "The PURGE DUPLICATE ROWS option allows you to delete duplicate records in a csv file.\n\n" + GUI_IO_util.msg_Esc)
+                                      "The PURGE DUPLICATE ROWS option allows you to delete duplicate records in a csv file.\n\n" + GUI_IO_util.msg_Esc + "\n\nIn INPUT, the PURGE option takes 1 csv file.\n\nIn OUTPUT, the PURGE option creates a csv file containing all the same fields of the input file but with fewer rows.")
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+11), "Help",
                                       GUI_IO_util.msg_openOutputFiles)
 
@@ -1043,9 +1094,10 @@ if __name__ == '__main__':
                  GUI_IO_util.get_y_step())
 
     # change the value of the readMe_message
-    readMe_message = "The Python 3 scripts provide several ways of handling data from csv files.\n\nIn INPUT, the script takes one or more csv files depending upon the selected operation.\n\nIn OUTPUT, the script creates a new csv file.\n\nThe following operation are possible.\n\n   1. MERGE different csv files using one overalpping common field as a way to JOIN the files together, with the option of selecting only certain fields for the output file;\n   2. CONCATENATE into a single field the values of different fields from one or more csv files;\n   3. APPEND the content of different fields from one or more csv files after the content of the target field;\n   4. EXTRACT fields from one or more csv files, perhaps by specific field values (the equivalent of an SQL WHERE clause)."
+    readMe_message = "The Python 3 scripts provide several ways of handling data from csv files.\n\nIn INPUT, the script takes one or more csv files depending upon the selected operation.\n\nIn OUTPUT, the script creates a new csv file.\n\nThe following operation are possible.\n\n   1. MERGE different csv files using one or more overlapping common field(s) as a way to JOIN the files together;\n   2. CONCATENATE into a single field the values of different fields from one csv file;\n   3. APPEND the content of different fields from one csv file after the content of a selected target field;\n   4. EXTRACT fields from one csv file, perhaps by specific field values (the equivalent of an SQL WHERE clause);\n   4. PURGE dulicate rows from one csv file."
     readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                        GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
     GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
     GUI_util.window.mainloop()
+

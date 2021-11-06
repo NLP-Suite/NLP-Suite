@@ -193,6 +193,13 @@ message_geocoder = 'After the geocoding and mapping is done, please, check caref
 title_options_wordclouds = ['Web-based word clouds services']
 message_wordclouds = "After the selected web-based word-clouds service opens up on your browser, you will need to either copy/paste the text you want to visualize or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file."
 
+title_options_data_manager_merge = ['Merge option']
+message_data_manager_merge1 = "Please, select next the field to be used as KEY for merging files."
+message_data_manager_merge2 = "Please, click + to select another KEY to be used for merging files."
+message_data_manager_merge3 = "Please, click OK to select another csv file."
+message_data_manager_merge4 = "Please, click OK to accept the merge options then click RUN."
+
+
 def create_remindersFile() -> None:
     """
     Generate The Reminder List with Default Text
