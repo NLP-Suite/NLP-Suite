@@ -282,6 +282,9 @@ def dropdown_menu_widget(window,textCaption, menu_values, default_value):
 
             self.menuButton.grid(row=0, column=1) # , sticky=W)
 
+            ok_button = tk.Button(self.top, text='OK', command=self.get_value)
+            ok_button.grid(row=0, column=1)
+
         def get_value():
             global val
             val = selfmenuButton.get()
