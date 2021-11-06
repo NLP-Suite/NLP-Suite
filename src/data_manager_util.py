@@ -150,6 +150,10 @@ def extract_from_csv(outputFilename, data_files, operation_results_text_list):
                 return
             if '\'' not in value and not value.isdigit():
                 value = '\'' + value + '\''
+            if sign == '=':
+                sign = '=='
+            if sign == '<>': # different
+                sign = '!='
             query = header + sign + value
             result = df.query(query, engine='python')
             df_list.append(result)
@@ -203,6 +207,10 @@ def export_csv_to_text(outputFilename, data_files, operation_results_text_list):
                 return
             if '\'' not in value and not value.isdigit():
                 value = '\'' + value + '\''
+            if sign == '=':
+                sign = '=='
+            if sign == '<>': # different
+                sign = '!='
             query = header + sign + value
             result = df.query(query, engine='python')
             df_list.append(result)
