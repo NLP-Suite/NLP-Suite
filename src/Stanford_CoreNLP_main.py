@@ -322,18 +322,18 @@ date_separator_var.set('_')
 date_separator = tk.Entry(window, textvariable=date_separator_var)
 date_separator.configure(width=2)
 # y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer, date_separator)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 390, y_multiplier_integer,
                                                date_separator, True)
 
 date_position_var.set(2)
 date_position_menu_lb = tk.Label(window, text='Date position ')
 # y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer, date_position_menu_lb,True)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 420, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 440, y_multiplier_integer,
                                                date_position_menu_lb, True)
 date_position_menu = tk.OptionMenu(window, date_position_var, 1, 2, 3, 4, 5)
 date_position_menu.configure(width=2)
 # y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer, date_position_menu)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 510, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 530, y_multiplier_integer,
                                                date_position_menu)
 
 

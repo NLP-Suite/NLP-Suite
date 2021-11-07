@@ -98,6 +98,10 @@ if sys.platform == 'darwin': #Mac OS
     run_button_x_coordinate = 850
     close_button_x_coordinate = 980
 
+    open_file_button_brief = 700
+    open_inputDir_button_brief = 740
+    open_outputDir_button_brief = 780
+
     # special internal GUI specific values
     SVO_2nd_column = 570
     SVO_2nd_column_top = 450
@@ -118,6 +122,9 @@ else: #windows and anything else
     open_reminders_x_coordinate = 550
     run_button_x_coordinate = 840
     close_button_x_coordinate = 960
+    open_file_button_brief = 760
+    open_inputDir_button_brief = 800
+    open_outputDir_button_brief = 840
 
     # special internal GUI specific values
     SVO_2nd_column = 520
@@ -200,8 +207,7 @@ def exit_window(window,configFilename, ScriptName, config_input_output_options, 
     if ScriptName!='NLP_menu_main' and config_input_output_options != [0, 0, 0, 0, 0, 0]:
         config_util.saveConfig(window,configFilename, configArray)
     window.destroy()
-    exit(0)
-
+    sys.exit(0)
 
 # missingIO is called from GUI_util
 def check_missingIO(window,missingIO,config_filename,IO_setup_display_brief,ScriptName,silent=False):
@@ -261,30 +267,31 @@ def readme_button(Window, xCoord, yCoord, text_title,text_msg):
         text_title='NLP Suite Help'
     mb.showinfo(title=text_title, message=text_msg)
 
-def dropdown_menu_widget(window,textCaption, lower_bound, upper_bound, default_value):
-    master = tk.Tk()
-    master.focus_force()
 
-    # https://www.geeksforgeeks.org/popup-menu-in-tkinter/
+# creating popup menu in tkinter
 
-    tk.Label(master,width=len(textCaption),text=textCaption).grid(row=0)
-    master.title(textCaption)
+def dropdown_menu_widget(window,textCaption, menu_values, default_value, callback):
 
-    # data_file_handling_tools_var = tk.StringVar()
-    # data_file_handling_tools_menu = ttk.Combobox(window, width=90, textvariable=data_file_handling_tools_var)
-    # data_file_handling_tools_menu['values'] = ['test','test2']
+    class App():
+        def __init__(self,master):
+            top = self.top = Toplevel()
+            top.wm_title(textCaption)
+            self.menuButton = ttk.Combobox(top, width=len(textCaption)+30)
+            self.menuButton['values'] = menu_values
+            self.menuButton.pack()
 
-    def get_value():
-        global val
-        val = s.get()
-        top.destroy()
-        top.update()
+            self.menuButton.grid(row=0, column=1) # , sticky=W)
+            self.callback = callback
 
-    def _delete_window():
-        mb.showwarning(title = "Invalid Operation", message = "Please click OK to save your choice of parameter.")
+            ok_button = tk.Button(self.top, text='OK', command=self.get_value)
+            ok_button.grid(row=0, column=1)
 
-    tk.Button(top, text='OK', command=lambda: get_value()).pack()
-    return val
+        def get_value(self):
+            val = self.menuButton.get()
+            self.top.destroy()
+            callback(val)
+
+    App(window)
 
 def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
     top = tk.Toplevel(window)

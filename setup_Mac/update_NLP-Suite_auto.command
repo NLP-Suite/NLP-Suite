@@ -1,7 +1,7 @@
 echo "You are about to setup automatic update of the NLP Suite every time you close the NLP Suite, pulling the newest release from GitHub."
 echo "The advantage is that you will have to run this command only once."
 echo "For this to happen, though, you will need to be connected to the internet."
-echo ""
+echo "You will also need the freeware Git installed on your machine. Download Git at https://git-scm.com/downloads, if it has not been installed already."
 
 while true; do
     read -p "Do you wish to continue? [y/n]" yn

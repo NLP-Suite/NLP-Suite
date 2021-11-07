@@ -18,6 +18,8 @@ import urllib
 import urllib.parse
 from urllib.request import urlopen
 import ssl
+# pip install pyOpenSSL
+# pip install requests[security]
 import shutil
 
 import IO_user_interface_util
@@ -95,6 +97,9 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
 
     # this will avoid an SSL certificate error ONLY for a specific url file
     url_certificate = ssl.SSLContext()  # Only for url
+    # this will renew the SSL certificate indefinitely
+    # pip install pyOpenSSL
+    # pip install requests[security]
 
     adjust = '\n\nIf DBpedia fails and returns in command line "The command line is too long", lower the value of the file size using the slider widget and try again.'
     if sys.platform == 'win32':

@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_YAGO_util.py",['os','re','tkinter','subprocess','time','pandas','string','SPARQLWrapper','stanza','fuzzywuzzy'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_YAGO_util.py",['os','re','tkinter','subprocess','time','pandas','string','SPARQLWrapper','ssl','stanza','fuzzywuzzy'])==False:
     sys.exit(0)
 
 import os
@@ -52,6 +52,9 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
 
     # this will avoid an SSL certificate error ONLY for a specific url file
     ssl._create_default_https_context = ssl._create_unverified_context
+    # this will renew the SSL certificate indefinitely
+    # pip install pyOpenSSL
+    # pip install requests[security]
 
     filesToOpen = []
     numberOfAnnotations = len(annotationTypes)

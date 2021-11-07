@@ -3,6 +3,7 @@ setlocal
 ECHO You are about to setup automatic update of the NLP Suite every time you close the NLP Suite, pulling the newest release from GitHub.
 ECHO The advantage is that you will have to run this command only once.
 ECHO For this to happen, though, you will need to be connected to the internet.
+ECHO You will also need the freeware Git installed on your machine. Download Git at https://git-scm.com/downloads, if it has not been installed already.
 echo(
 SET /P AREYOUSURE=Do you wish to continue? [y/n]
 IF /I "%AREYOUSURE%" NEQ "y" GOTO END
