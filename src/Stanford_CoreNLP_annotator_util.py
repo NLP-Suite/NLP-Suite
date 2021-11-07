@@ -70,7 +70,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      memory_var,
                      # print_json = False,
                      document_length=90000,
-                     sentence_length=100,
+                     sentence_length=1000, # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
                      print_json = True,
                      **kwargs):
 
@@ -306,18 +306,24 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # record the time consumption before annotating text in each file
     processing_doc = ''
     for docName in inputDocs:
-        docTitle = os.path.basename(docName)
         docID = docID + 1
+        head, tail = os.path.split(docName)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        docTitle = os.path.basename(docName)
         sentenceID = 0
         # if the file is too long, it needs splitting to allow processing by the Stanford CoreNLP
         #   which has a maximum 100,000 characters doc size limit
         split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName,'',document_length)
+        split_docID = 0
+        nSplitDocs = len(split_file)
         for doc in split_file:
+            split_docID = split_docID + 1
             annotated_length = 0#the number of tokens
             # doc_start_time = time.time()
             model_switch = False
             head, tail = os.path.split(doc)
-            print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+            if docName != doc:
+                print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
             text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
             if "%" in text:
                 reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_percent,
@@ -402,7 +408,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     else:
                         sub_result, recordID = routine(config_filename, docID, docName, sentenceID, recordID, False,CoreNLP_output, **kwargs)
                 elif "All POS" in annotator_chosen or "Lemma" in annotator_chosen:
-                    sub_result, recordID = routine(config_filename,docID, docName, sentenceID, recordID, annotator_chosen, CoreNLP_output, **kwargs)
+                    sub_result, recordID = routine(config_filename, docID, docName, sentenceID, recordID,
+                                               CoreNLP_output, **kwargs)
                 # elif "DepRel" in annotator_chosen or "All POS" in annotator_chosen or "Lemma" in annotator_chosen:
                 #      sub_result, recordID = routine(config_filename,docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
                 else:
@@ -1256,7 +1263,7 @@ def process_json_postag(config_filename,documentID, document, sentenceID, json, 
 # (round-up average length of one English word, check this reference:
 # https://wolfgarbe.medium.com/the-average-word-length-in-english-language-is-4-7-35750344870f)
 # return True, which means the two strings are very similar
-def process_json_all_postag(config_filename,documentID, document, sentenceID, recordID,json, **kwargs):
+def process_json_all_postag(config_filename,documentID, document, sentenceID, recordID, json, **kwargs):
     print("   Processing Json output file for All Postags")
     extract_date_from_filename_var = False
     for key, value in kwargs.items():
@@ -1520,8 +1527,9 @@ def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen,
                                                   column_xAxis_label_var=column_xAxis_label,
                                                   hover_info_column_list=hover_label,
                                                   count_var=count_var)
-        if len(Excel_outputFilename) > 0:
-            filesToOpen.append(Excel_outputFilename)
+        if Excel_outputFilename!=None:
+            if len(Excel_outputFilename) > 0:
+                filesToOpen.append(Excel_outputFilename)
 
         # by sentence index
         #

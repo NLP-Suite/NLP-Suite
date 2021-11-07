@@ -37,7 +37,7 @@ def run(inputFilename,
     headers = [s.split(',')[1] for s in operation_results_text_list]  # headers
     data_cols = [file for file in data_manager_util.get_cols(data_files, headers)]  # selected cols
 
-    if (operation=='CONCATENATE' or operation=='APPEND') and selected_fields_var.get().count(',')<1:
+    if (operation=='CONCATENATE' or operation=='APPEND') and selected_csv_fields_var.get().count(',')<1:
         mb.showwarning(title='Warning',
                        message='The ' + str(operation).upper() + ' operation requires at least two fields. Please, click on the + button to select a second field and try again.')
         operation_name_var.set('')
@@ -239,7 +239,7 @@ if __name__ == '__main__':
         reset_csv_field_values()
         operation_results_text_list.clear()
         file_number_var.set(1)
-        selected_fields_var.set('')
+        selected_csv_fields_var.set('')
         selectedCsvFile_var.set(GUI_util.inputFilename.get())
         operation_name_var.set('')
 
@@ -279,7 +279,7 @@ if __name__ == '__main__':
 
 
     def reset_csv_field_values():
-        selected_fields_var.set('')
+        selected_csv_fields_var.set('')
 
     file_number_var = tk.IntVar()
     file_number_var.set(1)
@@ -323,7 +323,7 @@ if __name__ == '__main__':
             select_csv_field_concatenate_var.set('')
             select_csv_field_append_var.set('')
             select_csv_field_extract_var.set('')
-            selected_fields_var.set('')
+            selected_csv_fields_var.set('')
 
             selectedCsvFile_var.set(filePath)
             file_number_var.set(file_number_var.get() + 1)
@@ -356,9 +356,9 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    reset_field_button, True)
 
-    selected_fields_var = tk.StringVar()
-    selected_fields_var.set('')
-    selected_fields = tk.Entry(window, width=100, textvariable=selected_fields_var)
+    selected_csv_fields_var = tk.StringVar()
+    selected_csv_fields_var.set('')
+    selected_fields = tk.Entry(window, width=100, textvariable=selected_csv_fields_var)
     selected_fields.configure(state="disabled")
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+ 300, y_multiplier_integer,
                                                    selected_fields)
@@ -384,19 +384,26 @@ if __name__ == '__main__':
     # it returns a list to be passed to data_handling.py for processing
 
     # visualizeBuildString after clicking OK
-    def add_field_to_list(operation, csv_field_menu_choice, visualizeBuildString=True):
+    def add_field_to_list(operation, csv_field_menu_choice, comingFrom_Plus, comingFrom_OK):
         # skip empty values and csv fields already selected
         if select_csv_field_merge_var.get() == '' and select_csv_field_concatenate_var.get() == '' and select_csv_field_append_var.get() == '' and select_csv_field_extract_var.get() == '':
         # if select_csv_field_concatenate_var.get() == '' and select_csv_field_append_var.get() == '' and select_csv_field_extract_var.get() == '':
-                return
+                return False  # no error
 
         buildString = selectedCsvFile_var.get() + "," + csv_field_menu_choice
         # buildString = csv_fileName + "," + csv_field_menu_choice
-
-        if selected_fields_var.get() != '' and csv_field_menu_choice not in selected_fields_var.get():
-            selected_fields_var.set(selected_fields_var.get() + "," + str(csv_field_menu_choice))
+        if ((not comingFrom_Plus) and (not comingFrom_OK)) and (csv_field_menu_choice in selected_csv_fields_var.get()):
+            mb.showwarning(title='Warning',
+                           message='You have already selected the field ' + csv_field_menu_choice + '\n\nPlease, select a different field.')
+            select_csv_field_merge_menu.configure(state='normal', width=12)
+            return True # error
+        if selected_csv_fields_var.get() != '' and csv_field_menu_choice not in selected_csv_fields_var.get():
+            selected_csv_fields_var.set(selected_csv_fields_var.get() + "," + str(csv_field_menu_choice))
         else:
-            selected_fields_var.set(csv_field_menu_choice)
+            selected_csv_fields_var.set(csv_field_menu_choice)
+
+        if not comingFrom_Plus and not comingFrom_OK:
+            return False # no error
 
         if operation == "concatenate":
             character_separator_entry.get()
@@ -409,7 +416,7 @@ if __name__ == '__main__':
             if comparator_var.get() != '' and where_entry_var.get() == '':
                 mb.showwarning(title='Warning',
                                message='You have selected the comparator value ' + comparator_var.get() + '\n\nYou MUST enter a WHERE value or press ESC to cancel.')
-                return
+                return True # error
             # always enter the value even if empty to ensure a similarly formatted string
             if comparator_var.get() != '':
                 buildString = buildString + "," + comparator_var.get()
@@ -425,25 +432,28 @@ if __name__ == '__main__':
                 buildString = buildString + "," + "''"
 
         operation_results_text_list.append(buildString)
-        # visualizeBuildString is True when clicking the OK button for the Concatenate and Extract operations
-        if visualizeBuildString == True:
+        # when clicking the OK button for the Concatenate and Extract operations
+        if comingFrom_OK == True:
             operation_name_var.set(str(operation).upper())  # + " list"
             # a text widget is read only when disabled
             operation_results_text.configure(state='normal')
             operation_results_text.insert("end", str(operation_results_text_list))
             operation_results_text.configure(state='disabled')
             reset_field_button.config(state="normal")
+        return False # no error
 
     y_multiplier_integer = y_multiplier_integer + 1
 
     # _____________________________________________________________________________
 
+    # after clicking on he merge checkbox
     def merge_reminder1():
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_data_manager_merge,
                                      reminders_util.message_data_manager_merge1,
                                      True)
-        mergeSelection(False, False)
+        build_merge_string(False, False)
+        # mergeSelection(False, False)
 
     merge_var.set(0)
     merge_checkbox = tk.Checkbutton(window, text='Merge files (Join)', variable=merge_var, onvalue=1, offvalue=0, command=lambda: merge_reminder1())
@@ -461,27 +471,25 @@ if __name__ == '__main__':
                                                    select_csv_field_merge_menu, True)
 
 
+    # after selecting a csv field
     def merge_reminder2(*args):
         if select_csv_field_merge_var.get()!='':
             reminders_util.checkReminder(config_filename,
                                          reminders_util.title_options_data_manager_merge,
                                          reminders_util.message_data_manager_merge2,
                                          True)
-        mergeSelection(False, False)
+        build_merge_string(False, False)
+        # mergeSelection(False, False)
 
     select_csv_field_merge_var.trace('w',merge_reminder2)
 
     def build_merge_string(comingFrom_Plus, comingFrom_OK):
-        add_field_to_list("merge", select_csv_field_merge_var.get(), comingFrom_OK)
-        # if comingFrom_Plus == True:
-        #     mb.showwarning(title='Warning',
-        #                    message='With the MERGE option you cannot select another csv column/field. You can only add another file and a field from that file to serve as match with the already selected field(s).\n\nYou will be redirected to selecting a new csv file.')
-        #     get_additional_csvFile(window, 'Select INPUT csv file', [("csv files", "*.csv")])
-        activate_csv_fields_selection('merge', merge_var.get(), comingFrom_Plus, comingFrom_OK)
+        errorFound = add_field_to_list("merge", select_csv_field_merge_var.get(), comingFrom_Plus, comingFrom_OK)
+        if not errorFound:
+            activate_csv_fields_selection('merge', merge_var.get(), comingFrom_Plus, comingFrom_OK)
 
-
+    # after clicking OK
     def merge_reminder_OK():
-
         if file_number_var.get()>1:
             reminders_util.checkReminder(config_filename,
                                          reminders_util.title_options_data_manager_merge,
@@ -492,31 +500,17 @@ if __name__ == '__main__':
                                          reminders_util.title_options_data_manager_merge,
                                          reminders_util.message_data_manager_merge4,
                                          True)
-
         build_merge_string(False,True)
 
 
-    def merge_reminder_OK():
-
-        if file_number_var.get()>1:
-            reminders_util.checkReminder(config_filename,
-                                         reminders_util.title_options_data_manager_merge,
-                                         reminders_util.message_data_manager_merge7,
-                                         True)
-        else:
-            reminders_util.checkReminder(config_filename,
-                                         reminders_util.title_options_data_manager_merge,
-                                         reminders_util.message_data_manager_merge4,
-                                         True)
-
-        build_merge_string(False,True)
-
+    # after clicking + to add another csv field
     def merge_reminder_plus():
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_data_manager_merge,
                                      reminders_util.message_data_manager_merge3,
                                      True)
-        activate_csv_fields_selection('merge', merge_var.get(), True, False)
+        build_merge_string(True, False)
+        # activate_csv_fields_selection('merge', merge_var.get(), True, False)
 
     add_merge_options_var = tk.IntVar()
     add_merge_options = tk.Button(window, text='+', width=2, height=1, state='disabled', command=lambda: merge_reminder_plus())
@@ -557,8 +551,9 @@ if __name__ == '__main__':
                                                    character_separator_entry, True)
 
     def build_concatenate_string(comingFrom_Plus, comingFrom_OK):
-        add_field_to_list("concatenate", select_csv_field_concatenate_var.get(), comingFrom_OK)
-        activate_csv_fields_selection('concatenate', concatenate_var.get(), comingFrom_Plus, comingFrom_OK)
+        errorFound = add_field_to_list("concatenate", select_csv_field_concatenate_var.get(), comingFrom_Plus, comingFrom_OK)
+        if not errorFound:
+            activate_csv_fields_selection('concatenate', concatenate_var.get(), comingFrom_Plus, comingFrom_OK)
 
 
     add_concatenate_options_var = tk.IntVar()
@@ -591,8 +586,9 @@ if __name__ == '__main__':
 
 
     def build_append_string(comingFrom_Plus, comingFrom_OK):
-        add_field_to_list("append", select_csv_field_append_var.get(), comingFrom_OK)
-        activate_csv_fields_selection('append', append_var.get(), comingFrom_Plus, comingFrom_OK)
+        errorFound = add_field_to_list("append", select_csv_field_append_var.get(), comingFrom_Plus, comingFrom_OK)
+        if not errorFound:
+            activate_csv_fields_selection('append', append_var.get(), comingFrom_Plus, comingFrom_OK)
 
 
     add_append_options_var = tk.IntVar()
@@ -666,8 +662,9 @@ if __name__ == '__main__':
 
 
     def build_extract_string(comingFrom_Plus, comingFrom_OK):
-        add_field_to_list("extract", select_csv_field_extract_var.get(), comingFrom_OK)
-        activate_csv_fields_selection('extract', extract_var.get(), comingFrom_Plus, comingFrom_OK)
+        errorFound = add_field_to_list("extract", select_csv_field_extract_var.get(), comingFrom_Plus, comingFrom_OK)
+        if not errorFound:
+            activate_csv_fields_selection('extract', extract_var.get(), comingFrom_Plus, comingFrom_OK)
 
 
     add_extract_options_var = tk.IntVar()
@@ -743,13 +740,13 @@ if __name__ == '__main__':
 
 
     def activateResetFields(*args):
-        if selected_fields_var.get() != '':
+        if selected_csv_fields_var.get() != '':
             reset_field_button.config(state='normal')
         else:
             reset_field_button.config(state='disabled')
 
 
-    selected_fields_var.trace('w', activateResetFields)
+    selected_csv_fields_var.trace('w', activateResetFields)
 
 
     # _____________________________________________________________________________
@@ -869,7 +866,7 @@ if __name__ == '__main__':
 
                 if select_csv_field_concatenate_var.get() != '':
                     select_csv_field_concatenate_menu.config(state='disabled')
-                    if selected_fields_var.get()!='':
+                    if selected_csv_fields_var.get()!='':
                         character_separator_entry.config(state='disabled')
                     else:
                         character_separator_entry.config(state='normal')

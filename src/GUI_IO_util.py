@@ -83,6 +83,11 @@ def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, cente
     return y_multiplier_integer
 
 if sys.platform == 'darwin': #Mac OS
+    about_button_x_coordinate = 230 # get_labels_x_coordinate() + 100
+    release_history_button_x_coordinate = 400 # get_labels_x_coordinate() + 100
+    team_button_x_coordinate = 570 # get_labels_x_coordinate() + 100
+    cite_button_x_coordinate = 740 # get_labels_x_coordinate() + 100
+
     help_button_x_coordinate = 70
     labels_x_coordinate = 150  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 160
@@ -108,6 +113,11 @@ if sys.platform == 'darwin': #Mac OS
     SVO_3rd_column_top = 850
 
 else: #windows and anything else
+    about_button_x_coordinate = 230 # get_labels_x_coordinate() + 100
+    release_history_button_x_coordinate = 400 # get_labels_x_coordinate() + 100
+    team_button_x_coordinate = 570 # get_labels_x_coordinate() + 100
+    cite_button_x_coordinate = 740 # get_labels_x_coordinate() + 100
+    help_button_x_coordinate = 70
     help_button_x_coordinate = 50
     labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 140
@@ -146,9 +156,9 @@ def get_GUI_width(size_type=1):
             return 1400
     elif sys.platform == 'win32': # for now we have two basic sizes
         if size_type == 1:
-            return 1250
+            return 1100
         if size_type == 2:
-                return 1300
+                return 1200
         elif size_type==3:
             return 1300
         elif size_type==4:

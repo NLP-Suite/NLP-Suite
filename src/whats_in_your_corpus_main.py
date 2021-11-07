@@ -285,7 +285,7 @@ GUI_util.run_button.configure(command=run_script_command)
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
-GUI_width=GUI_IO_util.get_GUI_width(1)
+GUI_width=GUI_IO_util.get_GUI_width(3)
 GUI_height=430 # height of GUI with full I/O display
 
 if IO_setup_display_brief:
@@ -468,13 +468,13 @@ activate_what_else_menu()
 # memory options
 
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 700, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 900, y_multiplier_integer,
                                                memory_var_lb, True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(4)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 750, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 950, y_multiplier_integer,
                                                memory_var)
 
 videos_lookup = {'No videos available':''}
