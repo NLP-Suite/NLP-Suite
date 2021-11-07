@@ -40,7 +40,7 @@ def run(inputFilename,
     if (operation=='CONCATENATE' or operation=='APPEND') and selected_fields_var.get().count(',')<1:
         mb.showwarning(title='Warning',
                        message='The ' + str(operation).upper() + ' operation requires at least two fields. Please, click on the + button to select a second field and try again.')
-        operation_text_var.set('')
+        operation_name_var.set('')
         # a text widget is read only when disabled
         operation_results_text.configure(state='normal')
         operation_results_text.delete(0.1, tk.END)
@@ -52,7 +52,7 @@ def run(inputFilename,
             add_append_options.configure(state='normal')
         return
 
-    if operation_text_var.get()=='':
+    if operation_name_var.get()=='':
         mb.showwarning(title='Warning',
                        message='You must click the OK button to approve the selections made before running the algorithm.\n\nUpon clicking OK, your current selection will be displayed above in the large text box. If the selections is OK, click RUN; otherwise, click the Reset all button and start over.')
         return
@@ -128,7 +128,7 @@ if __name__ == '__main__':
     run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                      selectedCsvFile.get(),
                                      operation_results_text_list,
-                                     operation_text_var.get(),
+                                     operation_name_var.get(),
                                      merge_var.get(), concatenate_var.get(),
                                      append_var.get(), extract_var.get(),
                                      purge_var.get(), select_csv_field_purge_var.get(), keep_most_recent_var.get(),
@@ -241,7 +241,7 @@ if __name__ == '__main__':
         file_number_var.set(1)
         selected_fields_var.set('')
         selectedCsvFile_var.set(GUI_util.inputFilename.get())
-        operation_text_var.set('')
+        operation_name_var.set('')
 
         # add_file_button.config(state='disabled')
         merge_checkbox.config(state='normal')
@@ -310,7 +310,7 @@ if __name__ == '__main__':
     selectedCsvFile_var = tk.StringVar()
     selectedCsvFile = tk.Entry(window, width=100, textvariable=selectedCsvFile_var)
     selectedCsvFile.config(state='disabled')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() +300, y_multiplier_integer,
                                                    selectedCsvFile)
 
 
@@ -360,28 +360,27 @@ if __name__ == '__main__':
     selected_fields_var.set('')
     selected_fields = tk.Entry(window, width=100, textvariable=selected_fields_var)
     selected_fields.configure(state="disabled")
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+ 300, y_multiplier_integer,
                                                    selected_fields)
 
     reset_all_button = tk.Button(window, width=15, text='Reset all', state='normal', command=lambda: reset_all_values())
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    reset_all_button, True)
 
+    # after clicking OK, the selected options will be displayed here
+    operation_name_var = tk.StringVar()
+    operation_name_var.set('')
+    operation_name = tk.Entry(window, width=20, textvariable=operation_name_var)
+    operation_name.configure(state="disabled")
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 140, y_multiplier_integer,
+                                                   operation_name,True)
+
     # a text widget is read only when disabled
     operation_results_text = tk.Text(window, width=100, height=3, state="disabled")
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, operation_results_text,
-                                                   True)
-
-    # after clicking OK, the selected options will be displayed here
-    operation_text_var = tk.StringVar()
-    operation_text_var.set('')
-    operation_text = tk.Entry(window, width=20, textvariable=operation_text_var)
-    operation_text.configure(state="disabled")
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 140, y_multiplier_integer,
-                                                   operation_text, True)
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() +300, y_multiplier_integer, operation_results_text)
 
     # operation is a string with values "merge", "concatenate", "append", "extract", "purge"
-    # menu_choice is the menu value of the spcecific csv field selected  (e.g., select_csv_field_concatenate_var.get())
+    # menu_choice is the menu value of the specific csv field selected  (e.g., select_csv_field_concatenate_var.get())
     # it returns a list to be passed to data_handling.py for processing
 
     # visualizeBuildString after clicking OK
@@ -428,14 +427,14 @@ if __name__ == '__main__':
         operation_results_text_list.append(buildString)
         # visualizeBuildString is True when clicking the OK button for the Concatenate and Extract operations
         if visualizeBuildString == True:
-            operation_text_var.set(str(operation).upper())  # + " list"
+            operation_name_var.set(str(operation).upper())  # + " list"
             # a text widget is read only when disabled
             operation_results_text.configure(state='normal')
             operation_results_text.insert("end", str(operation_results_text_list))
             operation_results_text.configure(state='disabled')
             reset_field_button.config(state="normal")
 
-    y_multiplier_integer = y_multiplier_integer + 2
+    y_multiplier_integer = y_multiplier_integer + 1
 
     # _____________________________________________________________________________
 
@@ -1029,13 +1028,13 @@ if __name__ == '__main__':
                 extract_checkbox.config(state='normal')
 
         # clear content of current variables when selecting a different main option
-        if (operation_text_var.get() != '') and (operation_text_var.get() != str(operation).upper()):
+        if (operation_name_var.get() != '') and (operation_name_var.get() != str(operation).upper()):
             operation_results_text_list.clear()
-            if operation_text_var.get()=='MERGE':
+            if operation_name_var.get()=='MERGE':
                 return
             reset_csv_field_values()
             file_number_var.set(1)
-            operation_text_var.set('')
+            operation_name_var.set('')
             operation_results_text.configure(state='normal')
             operation_results_text.delete(0.1, tk.END)
             operation_results_text.configure(state='disabled')
@@ -1102,13 +1101,13 @@ if __name__ == '__main__':
             GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
                                           GUI_IO_util.msg_IO_setup)
 
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+1), "Help",
                                       "The label groups together the next two widgets that display the currently selected csv filename and fields.")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
                                       "Press the + button to add a new csv file.\n\nThe currently selected csv file is displayed in the next(read-only) widget.")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
                                       "Press the RESET CSV FIELD(S) button to clear all selected csv fields and start fresh.\n\nThe currently selected csv fields are displayed in the second (read-only) widget.")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
                                       resetAll + "\n\nThe next two (read-only) widgets display the arguments that will be processed when pressing the RUN button for the selected operation.\n\nThe first (read-only) widget displays the currently selected type of operation.\n\nThe second (read-only) widget displays a list of items:\n   csv filename\n   csv column/field.\n   For the Concatenate option the character separator will also be displayed.\n   For the Extract option, the comparator value (e.g., =, >), the WHERE value, and the selected add/or option will be displayed.")
         # empty line to account for the height of the text widget
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
