@@ -390,17 +390,18 @@ if __name__ == '__main__':
         # if select_csv_field_concatenate_var.get() == '' and select_csv_field_append_var.get() == '' and select_csv_field_extract_var.get() == '':
                 return False  # no error
 
-        buildString = selectedCsvFile_var.get() + "," + csv_field_menu_choice
         # buildString = csv_fileName + "," + csv_field_menu_choice
         if ((not comingFrom_Plus) and (not comingFrom_OK)) and (csv_field_menu_choice in selected_csv_fields_var.get()):
             mb.showwarning(title='Warning',
                            message='You have already selected the field ' + csv_field_menu_choice + '\n\nPlease, select a different field.')
             select_csv_field_merge_menu.configure(state='normal', width=12)
             return True # error
-        if selected_csv_fields_var.get() != '' and csv_field_menu_choice not in selected_csv_fields_var.get():
-            selected_csv_fields_var.set(selected_csv_fields_var.get() + "," + str(csv_field_menu_choice))
-        else:
+
+        buildString = selectedCsvFile_var.get() + "," + csv_field_menu_choice
+        if selected_csv_fields_var.get() == '':
             selected_csv_fields_var.set(csv_field_menu_choice)
+        if (selected_csv_fields_var.get() != '') and (csv_field_menu_choice not in selected_csv_fields_var.get()):
+            selected_csv_fields_var.set(selected_csv_fields_var.get() + "," + str(csv_field_menu_choice))
 
         if not comingFrom_Plus and not comingFrom_OK:
             return False # no error

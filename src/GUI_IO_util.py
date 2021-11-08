@@ -83,10 +83,10 @@ def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, cente
     return y_multiplier_integer
 
 if sys.platform == 'darwin': #Mac OS
-    about_button_x_coordinate = 230 # get_labels_x_coordinate() + 100
-    release_history_button_x_coordinate = 400 # get_labels_x_coordinate() + 100
-    team_button_x_coordinate = 570 # get_labels_x_coordinate() + 100
-    cite_button_x_coordinate = 740 # get_labels_x_coordinate() + 100
+    about_button_x_coordinate = 330 # get_labels_x_coordinate() + 100
+    release_history_button_x_coordinate = 510 # get_labels_x_coordinate() + 100
+    team_button_x_coordinate = 690 # get_labels_x_coordinate() + 100
+    cite_button_x_coordinate = 870 # get_labels_x_coordinate() + 100
 
     help_button_x_coordinate = 70
     labels_x_coordinate = 150  # start point of all labels in the second column (first column after ? HELP)

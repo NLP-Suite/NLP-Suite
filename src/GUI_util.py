@@ -603,12 +603,12 @@ def display_about_release_team_cite_buttons(ScriptName):
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.release_history_button_x_coordinate, y_multiplier_integer,
                                                        release_history_button, True)
 
-        team_button = tk.Button(window, text='NLP Suite team', width=13, height=1, foreground="red",
+        team_button = tk.Button(window, text='NLP Suite team', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.list_team())
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.team_button_x_coordinate, y_multiplier_integer,
                                                        team_button, True)
 
-        cite_button = tk.Button(window, text='How to cite', width=13, height=1, foreground="red",
+        cite_button = tk.Button(window, text='How to cite', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.cite_NLP())
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.cite_button_x_coordinate, y_multiplier_integer,
                                                        cite_button)
