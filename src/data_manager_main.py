@@ -384,7 +384,7 @@ if __name__ == '__main__':
     # it returns a list to be passed to data_handling.py for processing
 
     # visualizeBuildString after clicking OK
-    def add_field_to_list(operation, csv_field_menu_choice, comingFrom_Plus, comingFrom_OK):
+    def build_string_for_processing(operation, csv_field_menu_choice, comingFrom_Plus, comingFrom_OK):
         # skip empty values and csv fields already selected
         if select_csv_field_merge_var.get() == '' and select_csv_field_concatenate_var.get() == '' and select_csv_field_append_var.get() == '' and select_csv_field_extract_var.get() == '':
         # if select_csv_field_concatenate_var.get() == '' and select_csv_field_append_var.get() == '' and select_csv_field_extract_var.get() == '':
@@ -485,7 +485,7 @@ if __name__ == '__main__':
     select_csv_field_merge_var.trace('w',merge_reminder2)
 
     def build_merge_string(comingFrom_Plus, comingFrom_OK):
-        errorFound = add_field_to_list("merge", select_csv_field_merge_var.get(), comingFrom_Plus, comingFrom_OK)
+        errorFound = build_string_for_processing("merge", select_csv_field_merge_var.get(), comingFrom_Plus, comingFrom_OK)
         if not errorFound:
             activate_csv_fields_selection('merge', merge_var.get(), comingFrom_Plus, comingFrom_OK)
 
@@ -552,7 +552,7 @@ if __name__ == '__main__':
                                                    character_separator_entry, True)
 
     def build_concatenate_string(comingFrom_Plus, comingFrom_OK):
-        errorFound = add_field_to_list("concatenate", select_csv_field_concatenate_var.get(), comingFrom_Plus, comingFrom_OK)
+        errorFound = build_string_for_processing("concatenate", select_csv_field_concatenate_var.get(), comingFrom_Plus, comingFrom_OK)
         if not errorFound:
             activate_csv_fields_selection('concatenate', concatenate_var.get(), comingFrom_Plus, comingFrom_OK)
 
@@ -587,7 +587,7 @@ if __name__ == '__main__':
 
 
     def build_append_string(comingFrom_Plus, comingFrom_OK):
-        errorFound = add_field_to_list("append", select_csv_field_append_var.get(), comingFrom_Plus, comingFrom_OK)
+        errorFound = build_string_for_processing("append", select_csv_field_append_var.get(), comingFrom_Plus, comingFrom_OK)
         if not errorFound:
             activate_csv_fields_selection('append', append_var.get(), comingFrom_Plus, comingFrom_OK)
 
@@ -663,7 +663,7 @@ if __name__ == '__main__':
 
 
     def build_extract_string(comingFrom_Plus, comingFrom_OK):
-        errorFound = add_field_to_list("extract", select_csv_field_extract_var.get(), comingFrom_Plus, comingFrom_OK)
+        errorFound = build_string_for_processing("extract", select_csv_field_extract_var.get(), comingFrom_Plus, comingFrom_OK)
         if not errorFound:
             activate_csv_fields_selection('extract', extract_var.get(), comingFrom_Plus, comingFrom_OK)
 
