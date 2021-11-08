@@ -60,7 +60,7 @@ title_options_WordNet_input_file_button = ['WordNet input file button']
 message_WordNet_input_file_button = 'The Select INPUT file button is disabled (grayed out) when you open WordNet. Different options require either no file or different file types.\n\nPlease, tick a checkbox to activate the button.'
 
 title_options_WordNet_verb_aggregation = ['WordNet VERB aggregation']
-message_WordNet_verb_aggregation = "CAVEAT!\n\nFor VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies."
+message_WordNet_verb_aggregation = "CAVEAT!\n\nFor VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.\n\nThe WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts."
 
 title_options_Mallet_installation = ['Mallet download and installation']
 message_Mallet_installation = 'The Mallet topic modelling tool requires a copy of the FREEWARE Mallet installed on your machine. You can download the FREEWARE Mallet at http://mallet.cs.umass.edu/download.php.\n\nMallet in turn requires a copy of the JAVA development kit installed on your machine.\n\nRead carrefully the Mallet and Java installation TIPS.'

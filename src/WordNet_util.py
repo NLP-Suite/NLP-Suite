@@ -20,6 +20,7 @@ import reminders_util
 import Excel_util
 import IO_files_util
 import IO_user_interface_util
+import data_manager_util
 
 filesToOpen=[]
 
@@ -175,9 +176,11 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         # mb.showwarning(title = "Warning", message = "WordNet " + noun_verb + " aggregation.\n\nSome words in the list to be aggregated do not exist in Wordnet for " + noun_verb + ".\n\nPlease, check in command line the list of words not found in WordNet.")
     fileName = os.path.basename(inputFile).split(".")[0]
     outputFilenameCSV1=os.path.join(outputDir, "NLP_WordNet_UP_" + fileName+"_output.csv")
-    if (not 'VERB' in outputFilenameCSV1) and (not 'NOUN' in outputFilenameCSV1):
-        outputFilenameCSV1_new = outputFilenameCSV1.replace("NLP_WordNet_UP_","NLP_WordNet_UP_"+noun_verb+"_")
-        outputFilenameCSV1_new = outputFilenameCSV1_new.replace("_output","")
+    outputFilenameCSV1_new = outputFilenameCSV1.replace("_output", "")
+    if (not 'VERB' in outputFilenameCSV1_new) and (not 'NOUN' in outputFilenameCSV1_new):
+        # outputFilenameCSV1_new - with output in the filename - is the file with three columns: Word, WordNet Category, Intermediate Synsets
+        outputFilenameCSV1_new = outputFilenameCSV1_new.replace("NLP_WordNet_UP_","NLP_WordNet_UP_"+noun_verb+"_")
+        # outputFilenameCSV1_new = outputFilenameCSV1_new.replace("_output","")
         # the file already exists and must be removed
         if os.path.isfile(outputFilenameCSV1_new):
             os.remove(outputFilenameCSV1_new)
@@ -186,6 +189,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         outputFilenameCSV1_new = outputFilenameCSV1
     filesToOpen.append(outputFilenameCSV1_new)
 
+    # outputFilenameCSV2 - with frequency in the filename - is the file with the handful of WordNett aggregated synsets and their frequency
     outputFilenameCSV2 = os.path.join(outputDir, "NLP_WordNet_UP_" + fileName + "_frequency.csv")
     if (not 'VERB' in outputFilenameCSV2) and (not 'NOUN' in outputFilenameCSV2):
         outputFilenameCSV2_new = outputFilenameCSV1.replace("NLP_WordNet_UP_","NLP_WordNet_UP_"+noun_verb+"_")
@@ -203,7 +207,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         hover_label=['Word']
         inputFilename = outputFilenameCSV1_new
         Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                  outputFileLabel='_bar_chart',
+                                                  outputFileLabel='_WordNet_UP',
                                                   chart_type_list=["bar"],
                                                   chart_title=chart_title,
                                                   column_xAxis_label_var='WordNet ' + noun_verb + ' category',
@@ -213,6 +217,40 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         if Excel_outputFilename != "":
             filesToOpen.append(Excel_outputFilename)
 
+    # from outputFilenameCSV1_new exclude the auxiliary verbs be and have not to bias
+    #   the aggregate categories STATIVE and POSSESSION that include these verbs respectively
+
+    if noun_verb == 'VERB':
+        operation_results_text_list=[]
+        outputFilenameCSV3_new = inputFile.replace("VERB","VERB_no_auxil")
+        # outputFilenameCSV3_new = outputFilenameCSV3_new.replace("_output", "")
+        # # the file already exists and must be removed
+        # if os.path.isfile(outputFilenameCSV3_new):
+        #     os.remove(outputFilenameCSV3_new)
+        # os.rename(outputFilenameCSV1_new, outputFilenameCSV3_new)
+        # Word is the header from the _output file created by the Java WordNet script
+        operation_results_text_list.append(str(outputFilenameCSV1_new) + ',Word,<>,be,and')
+        operation_results_text_list.append(str(outputFilenameCSV1_new) + ',Word,<>,have,and')
+        outputFilenameCSV3_new = data_manager_util.export_csv_to_csv_txt(outputFilenameCSV3_new, operation_results_text_list,'.csv',[0,1])
+
+        if outputFilenameCSV3_new != "":
+            filesToOpen.append(outputFilenameCSV3_new)
+
+        if createExcelCharts:
+            columns_to_be_plotted = [[1, 1]]
+            chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)'
+            hover_label=[]
+            inputFilename = outputFilenameCSV3_new
+            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                      outputFileLabel='_WordNet_UP',
+                                                      chart_type_list=["bar"],
+                                                      chart_title=chart_title,
+                                                      column_xAxis_label_var='WordNet ' + noun_verb + ' category',
+                                                      hover_info_column_list=hover_label,
+                                                      count_var=1)
+
+            if Excel_outputFilename != "":
+                filesToOpen.append(Excel_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet (Zoom OUT/UP) at', True, '', True, startTime, True)
 

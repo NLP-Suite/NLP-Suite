@@ -34,9 +34,12 @@ def get_comparator(phrase: str) -> str:
         # assert False, "Invalid comparator phrase"
 
 
-def select_csv(files):
+def select_csv(files,cols=None):
     for file in files:
-        df = pd.read_csv(file)
+        if cols==None:
+            df = pd.read_csv(file)
+        else:
+            df = pd.read_csv(file,usecols=cols)
         yield df
 
 # not used
@@ -69,11 +72,12 @@ def get_cols(dfs: list, headers: list):
 
 # merge ------------------------------------------------------------------------------------------
 
-# operation_results_text_list is a set of lists [][][]... as many as there are files to be merged
 def merge(outputFilename, operation_results_text_list):
     # processed_params: [(field1, field2..., dataframe1), (field1', field2'..., dataframe2)]
     processed_params = []
     operation_results_text_list = list(operation_results_text_list)
+
+    i = 0
     for text in operation_results_text_list:
         param_str: str
         for param_str in text:
@@ -83,8 +87,9 @@ def merge(outputFilename, operation_results_text_list):
             params.pop(0)
             params.append(df)
             processed_params.append(params)
-        indexes = processed_params[0][:-1]
-        data_files_for_merge = [processed_params[0][-1]]
+        indexes = processed_params[i][:-1]
+        data_files_for_merge = [processed_params[i][-1]]
+        i = i + 1
         for row in processed_params[1:]:
             # rename different field names to the field name on the first document.
             # They will be merged anyway so this doesn't change much.
@@ -98,11 +103,10 @@ def merge(outputFilename, operation_results_text_list):
 
         df_merged: DataFrame = data_files_for_merge[0]
         for df in data_files_for_merge[1:]:
-            df_merged = df_merged.join(df.set_index(indexes), on=indexes, lsuffix='_l', rsuffix='_r')
+            df_merged = df_merged.merge(df, how='left', on=indexes, suffixes=('', '_delme'))
         df_merged.to_csv(outputFilename, index=False)
 
     return outputFilename
-
 # append ----------------------------------------------------------------------------------------------
 
 def append(outputFilename, data_cols, headers, operation_results_text_list):
@@ -126,68 +130,28 @@ def concatenate(outputFilename, data_cols, headers, operation_results_text_list)
     df_concat.to_csv(outputFilename, header=[listToString(headers, sep)],index=False)
     return outputFilename
 
-# extract csv ---------------------------------------------------------------------------------------------
+# extract/export csv/txt ---------------------------------------------------------------------------------------------
 
-def extract_from_csv(outputFilename, data_files, operation_results_text_list):
-    headers = [s.split(',')[1] for s in operation_results_text_list]
-    sign_var = [s.split(',')[2] for s in operation_results_text_list]
-    value_var = [s.split(',')[3] for s in operation_results_text_list]
-    if len(data_files) <= 1:
-        data_files = data_files * len(headers)
-    df_list = []
-    value: str
-    header: str
-    if len(operation_results_text_list)==0:
-        mb.showwarning(title='Missing field(s)',
-                       message="No field(s) to be extracted have been selected.\n\nPlease, select field(s) and try again.")
-        return
-    for (sign, value, header, df) in zip(sign_var, value_var, headers, data_files):
-        if sign == "''" and value == "''":
-            df_list.append(df[[header]])
-        else:
-            # sign = get_comparator(sign)
-            if sign=='':
-                mb.showwarning(title='Missing sign condition',
-                               message="No condition has been entered for the \'WHERE\' value entered.\n\nPlease, include a condition for the \'WHERE\' value and try again.")
-                return
-            if '\'' not in value and not value.isdigit():
-                value = '\'' + value + '\''
-            if sign == '=':
-                sign = '=='
-            if sign == '<>': # different
-                sign = '!='
-            query = header + sign + value
-            result = df.query(query, engine='python')
-            df_list.append(result)
-    df_extract = df_list[0]
-    for index, df_ex in enumerate(df_list):
+# the function can export field contents of a csv file for selected fields (and field values) to either a csv file or text file
+def export_csv_to_csv_txt(outputFilename, operation_results_text_list,export_type='.csv', cols=[0]):
+    files = []
+    headers = []
+    sign_var = []
+    value_var = []
+    and_or = []
+    # operation_results_text_list: the various comma-separated items in the [] list cannot have spaces after each comma
+    #       operation_results_text_list.append(str(outputFilenameCSV1_new) + ',VERB,<>,be,and')
+    #       and not         operation_results_text_list.append(str(outputFilenameCSV1_new) + ', VERB, <>, be, and')
+    for s in operation_results_text_list:
+        files = files + [s.split(',')[0]]
+        headers = headers + [s.split(',')[1]]
+        sign_var = sign_var + [s.split(',')[2]]
+        value_var = value_var + [s.split(',')[3]]
+        and_or = and_or + [s.split(',')[4]]
 
-        if operation_results_text_list[index].split(',')[4] in ['and', "''"]:
-            if index == len(df_list) - 1:
-                continue
-            df_extract = df_extract.merge(df_list[index + 1], how='inner',
-                                          right_index=True,
-                                          left_index=True)
-        elif operation_results_text_list[index].split(',')[4] == 'or':
-            if index == len(df_list) - 1:
-                continue
-            df_extract = df_extract.merge(df_list[index + 1], how='outer',
-                                          right_index=True,
-                                          left_index=True)
-        elif operation_results_text_list[index].split(',')[4] == '' and index != len(df_list) - 1:
-            mb.showwarning(title='Missing and/or condition',
-                           message="Please include an and/or condition between each WHERE condition on the column you want to extract!")
-        else:
-            pass
-    df_extract.to_csv(outputFilename,index=False)
-    return outputFilename
+    data_files = [file for file in select_csv(files,cols)] # dataframes
 
-# extract txt ---------------------------------------------------------------------------------------------
-
-def export_csv_to_text(outputFilename, data_files, operation_results_text_list):
-    headers = [s.split(',')[1] for s in operation_results_text_list]
-    sign_var = [s.split(',')[2] for s in operation_results_text_list]
-    value_var = [s.split(',')[3] for s in operation_results_text_list]
+    queryStr = ''
     if len(data_files) <= 1:
         data_files = data_files * len(headers)
     df_list = []
@@ -197,12 +161,11 @@ def export_csv_to_text(outputFilename, data_files, operation_results_text_list):
         mb.showwarning(title='Missing field(s)',
                        message="No field(s) to be extracted have been selected.\n\nPlease, select field(s) and try again.")
         return
-    for (sign, value, header, df) in zip(sign_var, value_var, headers, data_files):
+    for (sign, value, and_or, header, df) in zip(sign_var, value_var, and_or, headers, data_files):
 
         if sign == "''" and value == "''":
             df_list.append(df[[header]])
         else:
-            # sign = get_comparator(sign)
             if sign == '':
                 mb.showwarning(title='Missing sign condition',
                                message="No condition has been entered for the \'WHERE\' value entered.\n\nPlease, include a condition for the \'WHERE\' value and try again.")
@@ -213,9 +176,12 @@ def export_csv_to_text(outputFilename, data_files, operation_results_text_list):
                 sign = '=='
             if sign == '<>': # different
                 sign = '!='
-            query = header + sign + value
-            result = df.query(query, engine='python')
-            df_list.append(result)
+            if queryStr == '':
+                queryStr = header + sign + value
+            else:
+                queryStr = queryStr + ' ' + and_or + ' ' + header + sign + value
+    result = df.query(queryStr, engine='python')
+    df_list.append(result)
     df_extract = df_list[0]
     for index, df_ex in enumerate(df_list):
 
@@ -236,8 +202,11 @@ def export_csv_to_text(outputFilename, data_files, operation_results_text_list):
                            message="Please include an and/or condition between each WHERE condition on the column you want to extract!")
         else:
             pass
-    text = df_extract.to_csv(index=False)
-    text = text.replace(",", " ")
-    with open(outputFilename, "w", newline='') as text_file:
-        text_file.write(text)
+    if export_type == '.csv':
+        df_extract.to_csv(outputFilename, index=False)
+    else: # .txt
+        text = df_extract.to_csv(index=False)
+        text = text.replace(",", " ")
+        with open(outputFilename, "w", newline='') as text_file:
+            text_file.write(text)
     return outputFilename

@@ -85,31 +85,19 @@ def run(inputFilename,
             filesToOpen.append(outputFilename)
 
     if extract_var:
-        if output_to_csv_var == True:
-            outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]),
-                                                                     outputDir,
-                                                                     '.csv',
-                                                                     'extract',
-                                                                     '', '', '', '', False, True)
-            outputFilename = data_manager_util.extract_from_csv(outputFilename,
-                                                                data_files,
-                                                                operation_results_text_list)
-            if outputFilename != None:
-                filesToOpen.append(outputFilename)
-        else:  # export to txt file
-            outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]),
-                                                                     outputDir,
-                                                                     '.txt',
-                                                                     'extract',
-                                                                     '', '', '', '', False, True)
-            outputFilename = data_manager_util.export_csv_to_text(
-                outputFilename,
-                data_files,
-                operation_results_text_list)
-
-            if outputFilename != None:
-                filesToOpen.append(outputFilename)
-
+        if output_to_csv_var:
+            export_type = '.csv'
+        else:
+            export_type = '.txt'
+        outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]),
+                                                                 outputDir,
+                                                                 export_type,
+                                                                 'extract',
+                                                                 '', '', '', '', False, True)
+        outputFilename = data_manager_util.export_csv_to_csv_txt(outputFilename,
+                                                            operation_results_text_list,export_type)
+        if outputFilename != None:
+            filesToOpen.append(outputFilename)
 
     if purge_var:
         import file_filename_util
@@ -144,7 +132,7 @@ if __name__ == '__main__':
     # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
     #   just change the next statement to True or False IO_setup_display_brief=True
     IO_setup_display_brief = True
-    GUI_width=GUI_IO_util.get_GUI_width(2)
+    GUI_width=GUI_IO_util.get_GUI_width(3)
     GUI_height = 680  # height of GUI with full I/O display
 
     if IO_setup_display_brief:
@@ -627,9 +615,14 @@ if __name__ == '__main__':
     # TODO from a GUI, how can you select a specific value of selected field,
     # rather than entering the value?
 
+    def change_label():
+        if output_to_csv_var.get() == False:
+            output_to_csv_checkbox.configure(text='txt output')
+        else:
+            output_to_csv_checkbox.configure(text='csv output')
     output_to_csv_var.set(1)
     output_to_csv_checkbox = tk.Checkbutton(window, text='csv output', variable=output_to_csv_var, onvalue=1,
-                                      offvalue=0)
+                                      offvalue=0,command=lambda:change_label())
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 450, y_multiplier_integer,
                                                    output_to_csv_checkbox, True)
 
