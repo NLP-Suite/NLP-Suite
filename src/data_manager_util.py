@@ -33,14 +33,22 @@ def get_comparator(phrase: str) -> str:
         return ''
         # assert False, "Invalid comparator phrase"
 
-
 def select_csv(files,cols=None):
     for file in files:
-        if cols==None:
-            df = pd.read_csv(file)
-        else:
-            df = pd.read_csv(file,usecols=cols)
+        try:
+            if cols==None:
+                df = pd.read_csv(file,on_bad_lines='error')
+            else:
+                df = pd.read_csv(file,usecols=cols,on_bad_lines='error')
+        except:
+            # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
+            print("raised error")
         yield df
+
+# def select_csv(files):
+#     for file in files:
+#         df = pd.read_csv(file)
+#         yield df
 
 # not used
 def select_columns(dfs: list, columns: list):
@@ -142,14 +150,21 @@ def export_csv_to_csv_txt(outputFilename, operation_results_text_list,export_typ
     # operation_results_text_list: the various comma-separated items in the [] list cannot have spaces after each comma
     #       operation_results_text_list.append(str(outputFilenameCSV1_new) + ',VERB,<>,be,and')
     #       and not         operation_results_text_list.append(str(outputFilenameCSV1_new) + ', VERB, <>, be, and')
+    i = 0
     for s in operation_results_text_list:
         files = files + [s.split(',')[0]]
         headers = headers + [s.split(',')[1]]
+        tempHeaders=str(headers[i])
+        i = i + 1
+        if ' ' in tempHeaders: # avoid a query error later for a multi-word header
+            tempHeaders = "`" + tempHeaders + "`"
+            headers = headers + [tempHeaders]
         sign_var = sign_var + [s.split(',')[2]]
         value_var = value_var + [s.split(',')[3]]
         and_or = and_or + [s.split(',')[4]]
 
-    data_files = [file for file in select_csv(files,cols)] # dataframes
+    # data_files = [file for file in select_csv(files,cols)] # dataframes
+    data_files = [file for file in select_csv(files)] # dataframes
 
     queryStr = ''
     if len(data_files) <= 1:

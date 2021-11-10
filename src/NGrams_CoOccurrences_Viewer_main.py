@@ -65,12 +65,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         CoOcc_Viewer_var,
         search_words,
         date_options,
-        temporal_aggregation,
+        temporal_aggregation_var,
         date_format,
         date_separator_var,
         date_position_var,
         viewer_options_list):
-    # print(date_options, temporal_aggregation, date_format, date_separator_var, date_position_var)
+    # print(date_options, temporal_aggregation_var, date_format, date_separator_var, date_position_var)
     filesToOpen = []
 
 
@@ -240,17 +240,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             CoOcc_Viewer_var,
             search_words,
             date_options,
+            number_of_years,
             date_position_var,
             date_format,
             date_separator_var,
-            temporal_aggregation,
+            temporal_aggregation_var,
             viewer_options_list)
 
     # plot Ngrams
     if createExcelCharts == True and n_grams_outputFile!='':
         xlsxFilename = n_grams_outputFile
         filesToOpen.append(n_grams_outputFile)
-        xAxis = temporal_aggregation
+        xAxis = temporal_aggregation_var
         chartTitle = 'N-Grams Viewer'
         columns_to_be_plotted = []
         for i in range(len(ngram_list) - 1):  # it will iterate through i = 0, 1, 2, …., n-1
@@ -273,7 +274,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         if date_options == 0:
             xAxis = 'Document'
         else:
-            xAxis = temporal_aggregation
+            xAxis = temporal_aggregation_var
         # hover_label = ['More information']
         hover_label = ['']
         if xAxis == 'Document':
@@ -319,7 +320,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_ma
                                  CoOcc_Viewer_var.get(),
                                  search_words_var.get(),
                                  date_options.get(),
-                                 temporal_aggregation.get(),
+                                 temporal_aggregation_var.get(),
                                  date_format.get(),
                                  date_separator_var.get(),
                                  date_position_var.get(),
@@ -392,7 +393,7 @@ date_format = tk.StringVar()
 date_separator_var = tk.StringVar()
 date_position_var = tk.IntVar()
 
-temporal_aggregation=tk.StringVar()
+temporal_aggregation_var=tk.StringVar()
 
 viewer_options_menu_var=tk.StringVar()
 
@@ -483,12 +484,23 @@ date_options_msg= tk.Label(window)
 date_options_msg.config(text="Date option OFF")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,date_options_msg,True)
 
-temporal_aggregation.set('year')
+temporal_aggregation_var.set('year')
 temporal_aggregation_lb = tk.Label(window,text='Aggregate by ')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,temporal_aggregation_lb,True)
-temporal_aggregation_menu = tk.OptionMenu(window, temporal_aggregation, 'Group of years', 'year', 'quarter','month','day')
+temporal_aggregation_menu = tk.OptionMenu(window, temporal_aggregation_var, 'Group of years', 'year', 'quarter','month') #,'day'
 temporal_aggregation_menu.configure(width=5,state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+80,y_multiplier_integer,temporal_aggregation_menu,True)
+
+number_of_years=0
+
+def get_year_group(*args):
+    # "Enter the FIND & REPLACE strings (CASE SENSITIVE)", 'Find', 2, '', 'Replace', '' , numberOfWidgets=1, defaultValue='', textCaption2='', defaultValue2=''
+    result = GUI_IO_util.enter_value_widget("Enter the number of years (e.g., 10, 23)","Enter value",1)
+    number_of_years=int(result[0])
+    if not isinstance(number_of_years, int):
+        mb.showwarning(title='Warning', message='You must enter an integer value. The value ' + str(number_of_years) + ' is not an integer.')
+        number_of_years = 0
+temporal_aggregation_var.trace('w',get_year_group)
 
 date_format.set('mm-dd-yyyy')
 date_format_lb = tk.Label(window,text='Format ')
@@ -603,7 +615,7 @@ def clear(e):
     search_words_var.set('')
     viewer_options_list.clear()
     viewer_options_menu_var.set('Case sensitive')
-    temporal_aggregation.set('year')
+    temporal_aggregation_var.set('year')
     date_format.set('mm-dd-yyyy')
     date_separator_var.set('_')
     date_position_var.set(2)
@@ -664,7 +676,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 2),"Help", 'Please, use the dropdown menu to select various options that can be applied to n-grams. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nThe default number of n-grams computed is 3, unless you select the Hapax legomena option for unigrams (and then select once-occurring words).\n\nN-grams can be normalized, i.e., their frequency values are divided by the number of words in a document.\n\nPunctuation can be excluded when computing n-grams (Google, for instance, exclude punctuation from its Ngram Viewer (https://books.google.com/ngrams).\n\nN-grams can be computed by sentence index.\n\nFinally, you can run a special type of n-grams that computes the last 2 words in a sentence and the first 2 words of the next sentence, a rhetorical figure of repetition for the analysis of style.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 3),"Help", 'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer Java script.\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer Java script.\n\nYou can run both Viewers at the same time.\n\nThe NGrams part of the algorithm requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872).\n\nFor both viewers, results will be visualized in Excel line plots.\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 4),"Help", 'Please, enter the comma-separated list of words for which you want to know N-Gram statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 5),"Help", 'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences.\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: year, quarter, month, day.\n\nPlease, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2).')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 5),"Help", 'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences.\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: group of years, year, quarter, month.\n\nPlease, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2).')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 6),"Help", 'Please, use the dropdown menu to select various options that can be applied to the VIEWER. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nYou can make your searches CASE SENSITIVE.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 7), "Help",
                               'Please, click on the button to open a GUI with more options for word/collocation searches.')

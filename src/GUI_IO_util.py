@@ -249,9 +249,9 @@ def check_missingIO(window,missingIO,config_filename,IO_setup_display_brief,Scri
         mutually_exclusive_msg='The two I/O options - "Input file" and "Input files directory" - are mutually exclusive. You can only select one or the other. In other words, you can choose to work with a sigle file in input or with many files stored in a directory.\n\n'
 
     if len(missingIO)>0:
+        Run_Button_Off = True
         if not silent:
             mb.showwarning(title='Warning', message='The following required INPUT/OUTPUT information is missing in config file ' + config_filename + ':\n\n' + missingIO + '\n\n' + mutually_exclusive_msg + run_button_disabled_msg + 'Please, click on the "' + IO_button_name + '" ' + button + ' at the top of the GUI and enter the required I/O information.')
-            Run_Button_Off=True
     if Run_Button_Off==True:
         run_button_state="disabled"
     else:
@@ -328,7 +328,7 @@ def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
 
 # TODO
 # 2 widgets max for now; should allow more, dynamically
-# called by
+# return a list; see comment at end of function
 def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue='',textCaption2='',defaultValue2=''):
     value1=defaultValue
     value2=defaultValue2
