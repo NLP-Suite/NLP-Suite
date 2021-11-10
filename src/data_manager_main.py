@@ -691,8 +691,8 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1050, y_multiplier_integer,
                                                    OK_extract_button)
 
-    global pressedPlus
     def activate_extract_options():
+        global pressedPlus
         pressedPlus = True
         activate_extract_fields(True, False)
 
@@ -710,11 +710,11 @@ if __name__ == '__main__':
                     where_entry_var.set('')
                     and_or_var.set('')
                 else:
-                    try:
-                        if pressedPlus==False:
-                            select_csv_field_extract_menu.configure(state='disabled')
-                    except:
-                        pass
+                    # try:
+                    #     if pressedPlus==False:
+                    select_csv_field_extract_menu.configure(state='disabled')
+                    # except:
+                    #     pass
                     comparator_menu.configure(state="disabled")
 
                 if select_csv_field_extract_var.get() != '':

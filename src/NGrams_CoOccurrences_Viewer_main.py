@@ -495,13 +495,16 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordin
 number_of_years=0
 
 def get_year_group(*args):
+    global number_of_years
     if 'group' in temporal_aggregation_var.get():
         # "Enter the FIND & REPLACE strings (CASE SENSITIVE)", 'Find', 2, '', 'Replace', '' , numberOfWidgets=1, defaultValue='', textCaption2='', defaultValue2=''
         result = GUI_IO_util.enter_value_widget("Enter the number of years (e.g., 10, 23)","Enter value",1)
-        number_of_years=int(result[0])
-        if not isinstance(number_of_years, int):
-            mb.showwarning(title='Warning', message='You must enter an integer value. The value ' + str(number_of_years) + ' is not an integer.')
-            number_of_years = 0
+        try:
+            number_of_years=int(result[0])
+            # if not isinstance(result[0], int):
+        except:
+            mb.showwarning(title='Warning', message='You must enter an integer value. The value ' + str(result[0]) + ' is not an integer.')
+            get_year_group()
         return number_of_years
 temporal_aggregation_var.trace('w',get_year_group)
 
