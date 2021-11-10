@@ -240,6 +240,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             CoOcc_Viewer_var,
             search_words,
             date_options,
+            temporal_aggregation_var,
             number_of_years,
             date_position_var,
             date_format,
@@ -487,19 +488,21 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 temporal_aggregation_var.set('year')
 temporal_aggregation_lb = tk.Label(window,text='Aggregate by ')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,temporal_aggregation_lb,True)
-temporal_aggregation_menu = tk.OptionMenu(window, temporal_aggregation_var, 'Group of years', 'year', 'quarter','month') #,'day'
+temporal_aggregation_menu = tk.OptionMenu(window, temporal_aggregation_var, 'group of years', 'year', 'quarter','month') #,'day'
 temporal_aggregation_menu.configure(width=5,state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+80,y_multiplier_integer,temporal_aggregation_menu,True)
 
 number_of_years=0
 
 def get_year_group(*args):
-    # "Enter the FIND & REPLACE strings (CASE SENSITIVE)", 'Find', 2, '', 'Replace', '' , numberOfWidgets=1, defaultValue='', textCaption2='', defaultValue2=''
-    result = GUI_IO_util.enter_value_widget("Enter the number of years (e.g., 10, 23)","Enter value",1)
-    number_of_years=int(result[0])
-    if not isinstance(number_of_years, int):
-        mb.showwarning(title='Warning', message='You must enter an integer value. The value ' + str(number_of_years) + ' is not an integer.')
-        number_of_years = 0
+    if 'group' in temporal_aggregation_var.get():
+        # "Enter the FIND & REPLACE strings (CASE SENSITIVE)", 'Find', 2, '', 'Replace', '' , numberOfWidgets=1, defaultValue='', textCaption2='', defaultValue2=''
+        result = GUI_IO_util.enter_value_widget("Enter the number of years (e.g., 10, 23)","Enter value",1)
+        number_of_years=int(result[0])
+        if not isinstance(number_of_years, int):
+            mb.showwarning(title='Warning', message='You must enter an integer value. The value ' + str(number_of_years) + ' is not an integer.')
+            number_of_years = 0
+        return number_of_years
 temporal_aggregation_var.trace('w',get_year_group)
 
 date_format.set('mm-dd-yyyy')

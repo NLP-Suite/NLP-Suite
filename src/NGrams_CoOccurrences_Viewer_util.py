@@ -21,12 +21,14 @@ def run(inputDir="relative_path_here",
         CoOcc_Viewer=True,
         search_wordsLists=None,
         dateOption=False,
+        temporal_aggregation='year',
         number_of_years=0,
         datePos=2,
         dateFormat="mm-dd-yyyy",
         itemsDelimiter="_",
         temporalAggregation="",
         viewer_options_list=[]):
+
     if search_wordsLists is None:
         search_wordsLists = []
     checkCoOccList = False
@@ -50,14 +52,23 @@ def run(inputDir="relative_path_here",
 
 
     ################################## OPTIONS NEEDED TO BE ADD TO GUI #################################################
-    byYear = False  # set to True if want to aggregate by years
-    byMonth = False  # set to True if want to aggregate by months (set by Year to False)
-    byQuarter = True  # set to True if want to aggregate by Quarter
-    aggregateBy = 'month'  # change to 'year' if byYear is set to True, 'month' if byMonth or byQuarter is set to True
-    aggregateByNumberOfYear = number_of_years  # number of years in one aggregated chunk
-    ################################## OPTIONS NEEDED TO BE ADD TO GUI #################################################
-
-
+    byNumberOfYears = 0
+    byYear = False
+    byQuarter = False
+    byMonth = False
+    if temporal_aggregation=='group of years':
+        byNumberOfYears = number_of_years  # number of years in one aggregated chunk
+        byYear = True  # set to True if want to aggregate by years
+        aggregateBy = 'year'
+    elif temporal_aggregation=='year':
+        byYear = True  # set to True if want to aggregate by years
+        aggregateBy = 'year'
+    elif temporal_aggregation=='quarter':
+        byQuarter = True  # set to True if want to aggregate by years
+        aggregateBy = 'quarter'
+    elif temporal_aggregation=='month':
+        byMonth = True  # set to True if want to aggregate by years
+        aggregateBy = 'month'
     files = IO_files_util.getFileList('', inputDir, ".txt")  # get all input files
     original_search_word = search_wordsLists + ""
     search_word_list = search_wordsLists.split(',')
@@ -123,10 +134,10 @@ def run(inputDir="relative_path_here",
                             # print(search_word, 'FOUND!!!!!', file)
                             ngram_results[search_word][year]["Frequency"] += 1
 
-        if aggregateByNumberOfYear > 1:
+        if byNumberOfYears > 1:
             pprint.pprint(ngram_results)
             curYear = yearList[0]
-            newYear = curYear + aggregateByNumberOfYear - 1
+            newYear = curYear + byNumberOfYears - 1
             newYearStringList = []
             newYearIntList = []
             while curYear < yearList[-1]:
@@ -134,7 +145,7 @@ def run(inputDir="relative_path_here",
                 newYearStringList.append(yearChunk)
                 newYearIntList.append((curYear, newYear))
                 curYear = newYear + 1
-                newYear = curYear + aggregateByNumberOfYear - 1
+                newYear = curYear + byNumberOfYears - 1
             aggregated_ngram_results = {}
             for word in search_word_list:
                 aggregated_ngram_results[word] = {}
@@ -324,12 +335,16 @@ def save(inputDir, outputDir, ngram_results, coOcc_results, aggregateBy):
         with open(NgramsFileName, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
             if aggregateBy == 'year':
-                writer.writerow(["Ngram", "date", "Frequency"])
+                writer.writerow(["Ngram", "Year", "Frequency"])
                 for word, yearDict in ngram_results.items():
                     for year, freqDict in yearDict.items():
                         writer.writerow([word, year, freqDict["Frequency"]])
             else:
-                writer.writerow(["Ngram", "year", "month", "Frequency"])
+                if aggregateBy=='quarter':
+                    label = 'Quarter'
+                elif aggregateBy=='month':
+                    label = 'Month'
+                writer.writerow(["Ngram", "Year", label, "Frequency"])
                 for word, yearDict in ngram_results.items():
                     for year, monthDict in yearDict.items():
                         for month, freqDict in monthDict.items():

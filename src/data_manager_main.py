@@ -32,10 +32,9 @@ def run(inputFilename,
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    filePath = [s.split(',')[0] for s in operation_results_text_list]  # file filePath
-    data_files = [file for file in data_manager_util.select_csv(filePath)]  # dataframes
-    headers = [s.split(',')[1] for s in operation_results_text_list]  # headers
-    data_cols = [file for file in data_manager_util.get_cols(data_files, headers)]  # selected cols
+    # data_files = [file for file in data_manager_util.select_csv(filePath)]  # dataframes
+    # headers = [s.split(',')[1] for s in operation_results_text_list]  # headers
+    # data_cols = [file for file in data_manager_util.get_cols(data_files, headers)]  # selected cols
 
     if (operation=='CONCATENATE' or operation=='APPEND') and selected_csv_fields_var.get().count(',')<1:
         mb.showwarning(title='Warning',
@@ -57,6 +56,8 @@ def run(inputFilename,
                        message='You must click the OK button to approve the selections made before running the algorithm.\n\nUpon clicking OK, your current selection will be displayed above in the large text box. If the selections is OK, click RUN; otherwise, click the Reset all button and start over.')
         return
 
+    # MERGE ______________________________________________________________________________
+
     if merge_var:
         if selectedCsvFile==inputFilename:
             mb.showwarning(title='Warning',
@@ -70,20 +71,23 @@ def run(inputFilename,
         if outputFilename!=None:
             filesToOpen.append(outputFilename)
 
+    # CONCATENATE ______________________________________________________________________________
+
     if concatenate_var:
-        outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv', 'concatenate',
-                                                           'files', '', '', '', False, True)
-        outputFilename=data_manager_util.concatenate(outputFilename,data_cols, headers, operation_results_text_list)
+        outputFilename=data_manager_util.concatenate(operation_results_text_list, outputDir)
         if outputFilename!=None:
             filesToOpen.append(outputFilename)
+
+    # APPEND ______________________________________________________________________________
 
     if append_var:
         outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv', 'append',
                                                            '', '', '', '', False, True)
-        outputFilename=data_manager_util.append(outputFilename,data_cols, headers, operation_results_text_list)
+        outputFilename=data_manager_util.append(outputFilename, operation_results_text_list)
         if outputFilename!=None:
             filesToOpen.append(outputFilename)
 
+    # EXTRACT ______________________________________________________________________________
     if extract_var:
         if output_to_csv_var:
             export_type = '.csv'
@@ -706,8 +710,11 @@ if __name__ == '__main__':
                     where_entry_var.set('')
                     and_or_var.set('')
                 else:
-                    if pressedPlus==False:
-                        select_csv_field_extract_menu.configure(state='disabled')
+                    try:
+                        if pressedPlus==False:
+                            select_csv_field_extract_menu.configure(state='disabled')
+                    except:
+                        pass
                     comparator_menu.configure(state="disabled")
 
                 if select_csv_field_extract_var.get() != '':

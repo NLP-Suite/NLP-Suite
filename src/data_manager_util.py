@@ -9,6 +9,8 @@ import pandas as pd
 import tkinter.messagebox as mb
 import os.path
 
+import IO_files_util
+
 def listToString(s, sep):
     str1 = ""
     for ele in s:
@@ -34,40 +36,24 @@ def get_comparator(phrase: str) -> str:
         # assert False, "Invalid comparator phrase"
 
 def select_csv(files,cols=None):
+    df = []
     for file in files:
         try:
             if cols==None:
-                df = pd.read_csv(file,on_bad_lines='error')
+                df = pd.read_csv(file) # gives error on CoNLL table ,on_bad_lines='error')
             else:
-                df = pd.read_csv(file,usecols=cols,on_bad_lines='error')
+                df = pd.read_csv(file,usecols=cols)
         except:
             # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
-            print("raised error")
+            mb.showwarning(title='Missing field(s)',
+                           message="Processing the file\n\n" + file + "\n\ngenerated an error. Most likely, the file has more columns in some rows that the number of column headers.\n\nPlease, check your input file and try again.")
+            yield df
         yield df
-
-# def select_csv(files):
-#     for file in files:
-#         df = pd.read_csv(file)
-#         yield df
 
 # not used
 def select_columns(dfs: list, columns: list):
     for df in get_cols(dfs, columns):
         yield df
-
-
-def concat(dfs: list, separator: str):
-    s = pd.DataFrame
-    for i in range(len(dfs)):
-        if i == 0:
-            s = dfs[i].astype(str) + separator
-        else:
-            if i != len(dfs) - 1:
-                s = s + dfs[i].astype(str) + separator
-            else:
-                s = s + dfs[i].astype(str)
-    return s
-
 
 # helper method
 def get_cols(dfs: list, headers: list):
@@ -115,18 +101,35 @@ def merge(outputFilename, operation_results_text_list):
         df_merged.to_csv(outputFilename, index=False)
 
     return outputFilename
-# append ----------------------------------------------------------------------------------------------
 
-def append(outputFilename, data_cols, headers, operation_results_text_list):
-    sep = ','
-    df_append = pd.concat(data_cols, axis=0)
-    df_append.to_csv(outputFilename, header=[listToString(headers, sep)],index=False)
-    return outputFilename
 
-# concatenate ------------------------------------------------------------------------------------------
+# CONCATENATE -----------------------------------------------------------------------------------
 
-def concatenate(outputFilename, data_cols, headers, operation_results_text_list):
+def concat(dfs: list, separator: str):
+    s = pd.DataFrame
+    for i in range(len(dfs)):
+        if i == 0:
+            s = dfs[i].astype(str) + separator
+        else:
+            if i != len(dfs) - 1:
+                s = s + dfs[i].astype(str) + separator
+            else:
+                s = s + dfs[i].astype(str)
+    return s
+
+# APPEND ----------------------------------------------------------------------------------------------
+
+def append(outputFilename, operation_results_text_list):
+    files = []
+    headers = []
     for s in operation_results_text_list:
+        files = files + [s.split(',')[0]]
+        headers = headers + [s.split(',')[1]]
+        tempHeaders=str(headers[i])
+        i = i + 1
+        if ' ' in tempHeaders: # avoid a query error later for a multi-word header
+            tempHeaders = "`" + tempHeaders + "`"
+        headers = headers + [tempHeaders]
         if s[-1] == ',':
             sep = ','
         else:
@@ -134,6 +137,57 @@ def concatenate(outputFilename, data_cols, headers, operation_results_text_list)
             if len(temp) >= 3:
                 sep = temp[2]
                 break
+    data_files = [file for file in select_csv(files)] # dataframes
+    if data_files == []:
+        return ''
+    data_cols = [file for file in get_cols(data_files, headers)]  # selected cols
+    if data_files == []:
+        return ''
+    sep = ','
+    df_append = pd.concat(data_cols, axis=0)
+    df_append.to_csv(outputFilename, header=[listToString(headers, sep)],index=False)
+    return outputFilename
+
+# filePath = [s.split(',')[0] for s in operation_results_text_list]  # file filePath
+# data_files = [file for file in data_manager_util.select_csv(filePath)]  # dataframes
+# headers = [s.split(',')[1] for s in operation_results_text_list]  # headers
+# data_cols = [file for file in data_manager_util.get_cols(data_files, headers)]  # selected cols
+
+# CONCATENATE ------------------------------------------------------------------------------------------
+
+def concatenate(operation_results_text_list, outputDir):
+    filePath = [s.split(',')[0] for s in operation_results_text_list]  # file filePath
+    outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir,
+                                                             '.csv', 'concatenate',
+                                                             'files', '', '', '', False, True)
+    files = []
+    headers = []
+    sep = []
+    # data_cols, headers,
+    i=0
+    for s in operation_results_text_list:
+        files = files + [s.split(',')[0]]
+        headers = headers + [s.split(',')[1]]
+        tempHeaders=str(headers[i])
+        i = i + 1
+        if ' ' in tempHeaders: # avoid a query error later for a multi-word header
+            tempHeaders = "`" + tempHeaders + "`"
+            headers = [tempHeaders]
+        sep = sep + [s.split(',')[2]]
+
+        # if s[-1] == ',':
+        #     sep = ','
+        # else:
+        #     temp = s.split(',')
+        #     if len(temp) >= 3:
+        #         sep = temp[2]
+        #         break
+    data_files = [file for file in select_csv(files)] # dataframes
+    if data_files == []:
+        return ''
+    data_cols = [file for file in get_cols(data_files, headers)]  # selected cols
+    if data_cols == []:
+        return ''
     df_concat = concat(data_cols, sep)
     df_concat.to_csv(outputFilename, header=[listToString(headers, sep)],index=False)
     return outputFilename
@@ -141,7 +195,7 @@ def concatenate(outputFilename, data_cols, headers, operation_results_text_list)
 # extract/export csv/txt ---------------------------------------------------------------------------------------------
 
 # the function can export field contents of a csv file for selected fields (and field values) to either a csv file or text file
-def export_csv_to_csv_txt(outputFilename, operation_results_text_list,export_type='.csv', cols=[0]):
+def export_csv_to_csv_txt(outputFilename, operation_results_text_list,export_type='.csv', cols=None):
     files = []
     headers = []
     sign_var = []
@@ -158,14 +212,15 @@ def export_csv_to_csv_txt(outputFilename, operation_results_text_list,export_typ
         i = i + 1
         if ' ' in tempHeaders: # avoid a query error later for a multi-word header
             tempHeaders = "`" + tempHeaders + "`"
-            headers = headers + [tempHeaders]
+        headers = headers + [tempHeaders]
         sign_var = sign_var + [s.split(',')[2]]
         value_var = value_var + [s.split(',')[3]]
         and_or = and_or + [s.split(',')[4]]
 
     # data_files = [file for file in select_csv(files,cols)] # dataframes
-    data_files = [file for file in select_csv(files)] # dataframes
-
+    data_files = [file for file in select_csv(files,cols)] # dataframes
+    if data_files == []:
+        return ''
     queryStr = ''
     if len(data_files) <= 1:
         data_files = data_files * len(headers)
@@ -225,3 +280,4 @@ def export_csv_to_csv_txt(outputFilename, operation_results_text_list,export_typ
         with open(outputFilename, "w", newline='') as text_file:
             text_file.write(text)
     return outputFilename
+

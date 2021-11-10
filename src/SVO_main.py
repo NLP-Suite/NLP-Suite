@@ -590,7 +590,7 @@ else: # full display
 
 GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 
-GUI_label = 'Graphical User Interface (GUI) for Subject-Verb-Object (SVO) Extraction & Visualization Pipeline'
+GUI_label = 'Graphical User Interface (GUI) for Subject-Verb-Object (SVO) Extraction & Visualization Pipeline - Extracting 4 of the 5 Ws of Narrative: Who, What, When, Where'
 config_filename = 'SVO-config.txt'
 # The 6 values of config_option refer to:
 #   software directory
