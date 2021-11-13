@@ -48,12 +48,26 @@ def run(inputFilename,
         NER_extractor,
         location_menu,
         geocode_locations,
+        country_bias_var,
+        area_var,
         map_locations,
         GIS_package_var,
         GIS_package2_var):
 
     filesToOpen = []
     locationColumnName=''
+
+    # get last two characters for ISO country code
+    country_bias = country_bias_var[-2:]
+
+    box_tuple=''
+    if not 'e.g.,' in area_var:
+        if (area_var.count('(') + area_var.count(')') != 4) or (area_var.count(',') != 3):
+            mb.showwarning("Warning",
+                           "The area variable is not set correctly. The expected value should be something like this: (34.98527, -85.59790), (30.770444, -81.521974)\n\nThe two sets of values refer to the upper left-hand and lower right-hand corner latitude and longitude coordinates of the area to wich you wish to restrict geocoding.\n\nPlease, enter the correct value and try again.")
+            area_var.set('(34.98527, -85.59790), (30.770444, -81.521974)')
+            return
+        box_tuple=area_var
 
     if NER_extractor==False and geocode_locations_var==False and GIS_package_var=='':
         mb.showwarning("Warning",
@@ -172,6 +186,8 @@ def run(inputFilename,
                         NER_outputFilename,outputDir,
                         'Nominatim', GIS_package_var,
                         datePresent,
+                        country_bias,
+                        box_tuple,
                         locationColumnName,
                         encoding_var,
                         0, 1, [''], [''],# group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
@@ -208,6 +224,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             NER_extractor_var.get(),
                             location_menu_var.get(),
                             geocode_locations_var.get(),
+                            country_bias_var.get(),
+                            area_var.get(),
                             map_locations_var.get(),
                             GIS_package_var.get(),
                             GIS_package2_var.get())
@@ -278,6 +296,7 @@ NER_extractor_var=tk.IntVar()
 geocode_locations_var=tk.IntVar()
 geocoder_var=tk.StringVar()
 country_bias_var=tk.StringVar()
+area_var=tk.StringVar()
 GIS_package_var=tk.StringVar()
 GIS_package2_var=tk.IntVar()
 map_locations_var=tk.IntVar()
@@ -294,6 +313,7 @@ def clear(e):
     GIS_package_var.set('Google Earth Pro & Google Maps')
     geocoder_var.set('Nominatim')
     country_bias_var.set('')
+    area_var.set('')
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -586,16 +606,24 @@ def activate_Google_API_geocode(*args):
             geocoder='Nominatim'
 geocoder_var.trace('w',activate_Google_API_geocode)
 
-country_menu = constants_util.ISO_GIS_country_menu
-
 country_bias_lb = tk.Label(window, text='Country bias')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+600,y_multiplier_integer,country_bias_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,country_bias_lb,True)
+
+country_menu = constants_util.ISO_GIS_country_menu
 
 country_bias_var.set('')
 country_bias = ttk.Combobox(window, width = 25, textvariable = country_bias_var)
 country_bias['values'] = country_menu
 country_bias.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+970, y_multiplier_integer,country_bias)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+600, y_multiplier_integer,country_bias, True)
+
+area_lb = tk.Label(window, text='Area')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+800,y_multiplier_integer,area_lb,True)
+
+area_var.set('e.g., (34.98527, -85.59790), (30.770444, -81.521974)')
+area=tk.Entry(window, width=50,textvariable=area_var)
+#area.configure(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+850, y_multiplier_integer,area)
 
 map_locations_var.set(0)
 map_locations_checkbox = tk.Checkbutton(window, variable=map_locations_var, onvalue=1, offvalue=0)

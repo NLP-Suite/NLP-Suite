@@ -545,7 +545,7 @@ def setup_IO_configuration_options(IO_setup_display_brief,y_multiplier_integer,S
     call("python IO_setup_main.py --config_option " + str(config_input_output_options).replace('[', '"').replace(']', '"') + " --config_filename " + temp_config_filename, shell=True)
     display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options, ScriptName,silent)
 
-def IO_config_setup_brief(window, y_multiplier_integer,ScriptName):
+def IO_config_setup_brief(window, y_multiplier_integer,ScriptName, silent):
 
     IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,y_multiplier_integer,ScriptName, silent))
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
@@ -615,7 +615,9 @@ def display_about_release_team_cite_buttons(ScriptName):
 # ScriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main
 #   it can be used for handling GUIs with special treatment (e.g., IO_setup_main which does not have a RUN button)
 #   for consistency, it should also be used for NLP_main that for now relies on a previous approach based on config (i.e., NLP-config.txt)
-def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,ScriptName=''):
+# silent is set to True in those GUIs where the selected default I/O configuration does not confirm to the expected input
+#   For example, you need a csv file but the default is a Directory, e.g., data_manager_main
+def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,ScriptName='',silent=False):
     import IO_libraries_util
     from PIL import Image, ImageTk
 
@@ -681,7 +683,7 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
         if not IO_setup_display_brief:
             IO_config_setup_full(window, y_multiplier_integer)
         else:
-            IO_config_setup_brief(window, y_multiplier_integer,ScriptName)
+            IO_config_setup_brief(window, y_multiplier_integer,ScriptName,silent)
 
     old_license_file=os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-1.0.txt')
     if os.path.isfile(old_license_file):

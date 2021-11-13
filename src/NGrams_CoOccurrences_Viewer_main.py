@@ -257,8 +257,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         columns_to_be_plotted = []
         for i in range(len(ngram_list) - 1):  # it will iterate through i = 0, 1, 2, …., n-1
             columns_to_be_plotted.append([0, i + 1])
-        hover_label = ['Total Word Count of This Group', 'Total Word Count of This Group',
-                       'Total Word Count of This Group']
+        # hover_label = ['Total Word Count of This Group', 'Total Word Count of This Group',
+        #                'Total Word Count of This Group']
+        hover_label = []
         Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                                   'n-grams_viewer',
                                                   chart_type_list=["line"],
@@ -277,7 +278,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         else:
             xAxis = temporal_aggregation_var
         # hover_label = ['More information']
-        hover_label = ['']
+        hover_label = []
         if xAxis == 'Document':
             columns_to_be_plotted = [[1, 1]]
             Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,

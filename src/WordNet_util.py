@@ -231,7 +231,8 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         # Word is the header from the _output file created by the Java WordNet script
         operation_results_text_list.append(str(outputFilenameCSV1_new) + ',Word,<>,be,and')
         operation_results_text_list.append(str(outputFilenameCSV1_new) + ',Word,<>,have,and')
-        outputFilenameCSV3_new = data_manager_util.export_csv_to_csv_txt(outputFilenameCSV3_new, operation_results_text_list,'.csv',[0,1])
+        # outputFilenameCSV3_new = data_manager_util.export_csv_to_csv_txt(outputFilenameCSV3_new, operation_results_text_list,'.csv',[0,1])
+        outputFilenameCSV3_new = data_manager_util.export_csv_to_csv_txt(outputDir,operation_results_text_list,'.csv',[0,1])
 
         if outputFilenameCSV3_new != "":
             filesToOpen.append(outputFilenameCSV3_new)

@@ -20,7 +20,6 @@ import reminders_util
 
 # RUN section ________________________________________________________________________________________________________
 
-
 def run(inputFilename,
         selectedCsvFile,
         operation_results_text_list,
@@ -63,27 +62,21 @@ def run(inputFilename,
             mb.showwarning(title='Warning',
                            message='You have selected the merge operation. This requires two different csv files in input.\n\nPlease, click on the + button next to File, select another csv file, select the field that yu want to use in tis file as the overlaping field(s) with the previous file (the key(s)), click OK and RUN.')
             return
-        outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir,
-                                                                 '.csv',
-                                                                 'merge',
-                                                                 'files', '', '', '', False, True)
-        outputFilename=data_manager_util.merge(outputFilename,operation_results_text_list)
+        outputFilename=data_manager_util.merge(outputDir,operation_results_text_list)
         if outputFilename!=None:
             filesToOpen.append(outputFilename)
 
     # CONCATENATE ______________________________________________________________________________
 
     if concatenate_var:
-        outputFilename=data_manager_util.concatenate(operation_results_text_list, outputDir)
+        outputFilename=data_manager_util.concatenate(outputDir, operation_results_text_list)
         if outputFilename!=None:
             filesToOpen.append(outputFilename)
 
-    # APPEND ______________________________________________________________________________
+# APPEND ______________________________________________________________________________
 
     if append_var:
-        outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir, '.csv', 'append',
-                                                           '', '', '', '', False, True)
-        outputFilename=data_manager_util.append(outputFilename, operation_results_text_list)
+        outputFilename=data_manager_util.append(outputDir,operation_results_text_list)
         if outputFilename!=None:
             filesToOpen.append(outputFilename)
 
@@ -93,13 +86,7 @@ def run(inputFilename,
             export_type = '.csv'
         else:
             export_type = '.txt'
-        outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]),
-                                                                 outputDir,
-                                                                 export_type,
-                                                                 'extract',
-                                                                 '', '', '', '', False, True)
-        outputFilename = data_manager_util.export_csv_to_csv_txt(outputFilename,
-                                                            operation_results_text_list,export_type)
+        outputFilename = data_manager_util.export_csv_to_csv_txt(outputDir,operation_results_text_list,export_type)
         if outputFilename != None:
             filesToOpen.append(outputFilename)
 
@@ -184,7 +171,7 @@ if __name__ == '__main__':
     config_filename = GUI_util.config_filename
     inputFilename = GUI_util.inputFilename
 
-    GUI_util.GUI_top(config_input_output_options, config_filename,IO_setup_display_brief)
+    GUI_util.GUI_top(config_input_output_options, config_filename,IO_setup_display_brief,'data_manager_main.py',True)
 
     # GUI CHANGES cut/paste special GUI widgets from GUI_util
     operation_results_text_list = []
@@ -390,7 +377,7 @@ if __name__ == '__main__':
         #         return False  # no error
 
         # buildString = csv_fileName + "," + csv_field_menu_choice
-        if ((not comingFrom_Plus) and (not comingFrom_OK)) and (csv_field_menu_choice in selected_csv_fields_var.get()):
+        if ((not comingFrom_Plus) and (not comingFrom_OK)) and (csv_field_menu_choice!='' and (csv_field_menu_choice in selected_csv_fields_var.get())):
             mb.showwarning(title='Warning',
                            message='You have already selected the field ' + csv_field_menu_choice + '\n\nPlease, select a different field.')
             select_csv_field_merge_menu.configure(state='normal', width=12)
@@ -691,13 +678,16 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1050, y_multiplier_integer,
                                                    OK_extract_button)
 
+    pressedPlus = False
+
     def activate_extract_options():
         global pressedPlus
         pressedPlus = True
         activate_extract_fields(True, False)
+        pressedPlus = False
 
     def activate_extract_fields(comingFrom_Plus, comingFrom_OK):
-        # global pressedPlus
+        global pressedPlus
         merge_checkbox.config(state='disabled')
         concatenate_checkbox.config(state='disabled')
         append_checkbox.config(state='disabled')
@@ -710,11 +700,11 @@ if __name__ == '__main__':
                     where_entry_var.set('')
                     and_or_var.set('')
                 else:
-                    # try:
-                    #     if pressedPlus==False:
-                    select_csv_field_extract_menu.configure(state='disabled')
-                    # except:
-                    #     pass
+                    try:
+                        if pressedPlus==False:
+                            select_csv_field_extract_menu.configure(state='disabled')
+                    except:
+                        pass
                     comparator_menu.configure(state="disabled")
 
                 if select_csv_field_extract_var.get() != '':

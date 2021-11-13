@@ -180,7 +180,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         "First Reference Sentence ID", "First Reference Sentence", "Pronoun Start ID in Reference Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
         'gender':['Word', 'Gender', 'Sentence','Sentence ID', 'Document ID', 'Document'],
         'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
-        'SVO':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Negation","Location",'Person','Time','Time stamp','Sentence'],
+        'SVO':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Negation","Location",'Person','Time','Time normalized NER','Sentence'],
         'OpenIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Sentence'],
         'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
         'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
@@ -447,6 +447,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     #generate output csv files and write output
     output_start_time = time.time()
     # print("Length of Files to Open after generating output: ", len(filesToOpen))
+    outputFilename_tag = ''
     for run in routine_list:
         annotator_chosen = run[0]
         routine = run[1]
@@ -473,11 +474,21 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 print("Stanford CoreNLP annotator: NER")
                 if len(kwargs['NERs']) == 1:
                     outputFilename_tag = str(kwargs['NERs'][0])
-                elif len(kwargs['NERs']) > 1:
-                    if 'CITY' in str(kwargs['NERs']) or 'STATE_OR_PROVINCE' in str(kwargs['NERs']) or 'COUNTRY' in str(kwargs['NERs']) or 'LOCATION' in str(kwargs['NERs']):
+                elif len(kwargs['NERs'])>10 and len(kwargs['NERs'])<20:
+                    outputFilename_tag = 'MISC'
+                elif len(kwargs['NERs'])>20:
+                    outputFilename_tag = 'ALL_NER'
+                else:
+                    if 'CITY' in str(kwargs['NERs']) and 'STATE_OR_PROVINCE' and str(kwargs['NERs']) and 'COUNTRY' in str(kwargs['NERs']) and 'LOCATION' in str(kwargs['NERs']):
                         outputFilename_tag='LOCATIONS'
-                    else:
-                        outputFilename_tag = 'Multi-tags'
+                    elif 'NUMBER' in str(kwargs['NERs']) and 'ORDINAL' and str(kwargs['NERs']) and 'PERCENT' in str(kwargs['NERs']):
+                        outputFilename_tag = 'NUMBERS'
+                    elif 'PERSON' in str(kwargs['NERs']) and 'ORGANIZATION' in str(kwargs['NERs']):
+                        outputFilename_tag = 'ACTORS'
+                    elif 'DATE' in str(kwargs['NERs']) and 'TIME' in str(kwargs['NERs']) and 'DURATION' in str(kwargs['NERs']) and 'SET' in str(kwargs['NERs']):
+                        outputFilename_tag = 'DATES'
+                    # else:
+                    #     outputFilename_tag = 'Multi-tags'
                 outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                                  'CoreNLP_NER_'+outputFilename_tag)
             elif "parser" in annotator_chosen:#CoNLL
@@ -524,10 +535,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
                                                         [[1, 1]], 'bar',
                                                         'Frequency Distribution of Gender Types', 1, [],
-                                                        'gender_bar','Gender')
+                                                        'gender_types','Gender')
 
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
-                                          'Frequency Distribution of Words by Gender Type', 1, ['Gender'], 'gender_word_bar','')
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
+                                                      [[0, 0]], 'bar',
+                                          'Frequency Distribution of Words by Gender Type', 1, ['Gender'], 'gender_words','')
+
                 elif 'quote' in str(file_df_name):
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
                                                         [[5, 5]], 'bar',

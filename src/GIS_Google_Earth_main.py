@@ -89,10 +89,12 @@ def run(inputFilename, outputDir, openOutputFiles,
     reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
                                  reminders_util.message_geocoder, True)
 
+    country_bias = ''
     filesToOpen, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,config_filename,
                                        inputFilename, outputDir,
                                        geocoder, 'Google Earth Pro',
                                        datePresent,
+                                       country_bias,
                                        locationColumnName,
                                        encodingValue,
                                        group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,

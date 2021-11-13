@@ -499,11 +499,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                     reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
                                                  reminders_util.message_geocoder, True)
                     # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
+                    date_present = False
+                    country_bias = ''
                     out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
                                  config_filename, f,
                                  outputDir,
                                  'Nominatim', 'Google Earth Pro & Google Maps',
-                                 False,
+                                 date_present,
+                                 country_bias,
                                  'Location',
                                  'utf-8',
                                  0, 1, [''], [''], # group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,

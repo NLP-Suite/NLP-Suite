@@ -66,7 +66,7 @@ def get_cols(dfs: list, headers: list):
 
 # merge ------------------------------------------------------------------------------------------
 
-def merge(outputFilename, operation_results_text_list):
+def merge(outputDir, operation_results_text_list):
     # processed_params: [(field1, field2..., dataframe1), (field1', field2'..., dataframe2)]
     processed_params = []
     operation_results_text_list = list(operation_results_text_list)
@@ -98,30 +98,21 @@ def merge(outputFilename, operation_results_text_list):
         df_merged: DataFrame = data_files_for_merge[0]
         for df in data_files_for_merge[1:]:
             df_merged = df_merged.merge(df, how='left', on=indexes, suffixes=('', '_delme'))
+
+        outputFilename = IO_files_util.generate_output_file_name(files[0], os.path.dirname(files[0]),
+                                                                 outputDir,
+                                                                 '.csv', 'merge',
+                                                                 '', '', '', '', False, True)
         df_merged.to_csv(outputFilename, index=False)
 
     return outputFilename
 
-
-# CONCATENATE -----------------------------------------------------------------------------------
-
-def concat(dfs: list, separator: str):
-    s = pd.DataFrame
-    for i in range(len(dfs)):
-        if i == 0:
-            s = dfs[i].astype(str) + separator
-        else:
-            if i != len(dfs) - 1:
-                s = s + dfs[i].astype(str) + separator
-            else:
-                s = s + dfs[i].astype(str)
-    return s
-
 # APPEND ----------------------------------------------------------------------------------------------
 
-def append(outputFilename, operation_results_text_list):
+def append(outputDir, operation_results_text_list):
     files = []
     headers = []
+    i = 0
     for s in operation_results_text_list:
         files = files + [s.split(',')[0]]
         headers = headers + [s.split(',')[1]]
@@ -129,14 +120,12 @@ def append(outputFilename, operation_results_text_list):
         i = i + 1
         if ' ' in tempHeaders: # avoid a query error later for a multi-word header
             tempHeaders = "`" + tempHeaders + "`"
-        headers = headers + [tempHeaders]
-        if s[-1] == ',':
-            sep = ','
-        else:
-            temp = s.split(',')
-            if len(temp) >= 3:
-                sep = temp[2]
-                break
+
+    outputFilename = IO_files_util.generate_output_file_name(files[0], os.path.dirname(files[0]),
+                                                             outputDir,
+                                                             '.csv','append',
+                                                             '', '', '', '', False, True)
+
     data_files = [file for file in select_csv(files)] # dataframes
     if data_files == []:
         return ''
@@ -155,16 +144,24 @@ def append(outputFilename, operation_results_text_list):
 
 # CONCATENATE ------------------------------------------------------------------------------------------
 
-def concatenate(operation_results_text_list, outputDir):
-    filePath = [s.split(',')[0] for s in operation_results_text_list]  # file filePath
-    outputFilename = IO_files_util.generate_output_file_name(filePath[0], os.path.dirname(filePath[0]), outputDir,
-                                                             '.csv', 'concatenate',
-                                                             'files', '', '', '', False, True)
+def concat(dfs: list, separator: str):
+    s = pd.DataFrame
+    for i in range(len(dfs)):
+        if i == 0:
+            s = dfs[i].astype(str) + separator
+        else:
+            if i != len(dfs) - 1:
+                s = s + dfs[i].astype(str) + separator
+            else:
+                s = s + dfs[i].astype(str)
+    return s
+
+def concatenate(outputDir,operation_results_text_list):
     files = []
     headers = []
     sep = []
     # data_cols, headers,
-    i=0
+    i = 0
     for s in operation_results_text_list:
         files = files + [s.split(',')[0]]
         headers = headers + [s.split(',')[1]]
@@ -173,15 +170,14 @@ def concatenate(operation_results_text_list, outputDir):
         if ' ' in tempHeaders: # avoid a query error later for a multi-word header
             tempHeaders = "`" + tempHeaders + "`"
             headers = [tempHeaders]
-        sep = sep + [s.split(',')[2]]
+        if i == 1:
+            sep = s.split(',')[2]
 
-        # if s[-1] == ',':
-        #     sep = ','
-        # else:
-        #     temp = s.split(',')
-        #     if len(temp) >= 3:
-        #         sep = temp[2]
-        #         break
+    outputFilename = IO_files_util.generate_output_file_name(files[0], os.path.dirname(files[0]),
+                                                             outputDir,
+                                                             '.csv','concatenate',
+                                                             '', '', '', '', False, True)
+
     data_files = [file for file in select_csv(files)] # dataframes
     if data_files == []:
         return ''
@@ -195,7 +191,7 @@ def concatenate(operation_results_text_list, outputDir):
 # extract/export csv/txt ---------------------------------------------------------------------------------------------
 
 # the function can export field contents of a csv file for selected fields (and field values) to either a csv file or text file
-def export_csv_to_csv_txt(outputFilename, operation_results_text_list,export_type='.csv', cols=None):
+def export_csv_to_csv_txt(outputDir,operation_results_text_list,export_type='.csv', cols=None):
     files = []
     headers = []
     sign_var = []
@@ -216,6 +212,12 @@ def export_csv_to_csv_txt(outputFilename, operation_results_text_list,export_typ
         sign_var = sign_var + [s.split(',')[2]]
         value_var = value_var + [s.split(',')[3]]
         and_or = and_or + [s.split(',')[4]]
+
+    outputFilename = IO_files_util.generate_output_file_name(files[0], os.path.dirname(files[0]),
+                                                             outputDir,
+                                                             export_type,
+                                                             'extract',
+                                                             '', '', '', '', False, True)
 
     # data_files = [file for file in select_csv(files,cols)] # dataframes
     data_files = [file for file in select_csv(files,cols)] # dataframes
