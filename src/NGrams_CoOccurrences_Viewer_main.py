@@ -255,8 +255,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         xAxis = temporal_aggregation_var
         chartTitle = 'N-Grams Viewer'
         columns_to_be_plotted = []
-        for i in range(len(ngram_list) - 1):  # it will iterate through i = 0, 1, 2, …., n-1
-            columns_to_be_plotted.append([0, i + 1])
+        # it will iterate through i = 0, 1, 2, …., n-1
+        # this assumes the data are in this format: temporal_aggregation, frequency of search-word_1, frequency of search-word_2, ...
+        for i in range(len(ngram_list)-1):
+            columns_to_be_plotted.append([0, i+1])
         # hover_label = ['Total Word Count of This Group', 'Total Word Count of This Group',
         #                'Total Word Count of This Group']
         hover_label = []
@@ -305,7 +307,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         chartTitle = ''
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences end',
-                        'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime)
+                        'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime,True)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -490,8 +492,8 @@ temporal_aggregation_var.set('year')
 temporal_aggregation_lb = tk.Label(window,text='Aggregate by ')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,temporal_aggregation_lb,True)
 temporal_aggregation_menu = tk.OptionMenu(window, temporal_aggregation_var, 'group of years', 'year', 'quarter','month') #,'day'
-temporal_aggregation_menu.configure(width=5,state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+80,y_multiplier_integer,temporal_aggregation_menu,True)
+temporal_aggregation_menu.configure(state="disabled")
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+90,y_multiplier_integer,temporal_aggregation_menu,True)
 
 number_of_years=0
 
@@ -511,24 +513,24 @@ temporal_aggregation_var.trace('w',get_year_group)
 
 date_format.set('mm-dd-yyyy')
 date_format_lb = tk.Label(window,text='Format ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+170,y_multiplier_integer,date_format_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+220,y_multiplier_integer,date_format_lb,True)
 date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
-date_format_menu.configure(width=10,state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+220,y_multiplier_integer,date_format_menu,True)
+date_format_menu.configure(state="disabled")
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+280,y_multiplier_integer,date_format_menu,True)
 
 date_separator_var.set('_')
 date_separator_lb = tk.Label(window, text='Character separator ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+340,y_multiplier_integer,date_separator_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+420,y_multiplier_integer,date_separator_lb,True)
 date_separator = tk.Entry(window, textvariable=date_separator_var)
 date_separator.configure(width=2,state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+460,y_multiplier_integer,date_separator,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+550,y_multiplier_integer,date_separator,True)
 
 date_position_var.set(2)
 date_position_menu_lb = tk.Label(window, text='Position ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+490,y_multiplier_integer,date_position_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+580,y_multiplier_integer,date_position_menu_lb,True)
 date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
 date_position_menu.configure(width=1,state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+550,y_multiplier_integer,date_position_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+640,y_multiplier_integer,date_position_menu)
 
 def check_dateFields(*args):
     if date_options.get() == 1:

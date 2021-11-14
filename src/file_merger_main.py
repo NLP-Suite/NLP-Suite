@@ -44,7 +44,7 @@ def run(input_main_dir_path, output_dir_path,
                                 merge_embed_subdir_name,
                                 merge_character_separator)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end", "Finished running 'File Merger' at", True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end", "Finished running 'File Merger' at", True, '', True, startTime, True)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(

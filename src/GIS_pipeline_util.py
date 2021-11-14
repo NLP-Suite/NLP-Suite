@@ -57,6 +57,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                         datePresent,
                         country_bias,
                         area_var,
+                        restrict,
                         locationColumnName,
                         encodingValue,
                         group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
@@ -138,7 +139,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
         kmloutputFilename = geocodedLocationsoutputFilename.replace('.csv', '.kml')
 
         geocodedLocationsoutputFilename, locationsNotFoundoutputFilename = GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
-                                                                                    locationColumnName,geocoder,country_bias,area_var,encodingValue,split_locations_prefix,split_locations_suffix)
+                                                                                    locationColumnName,geocoder,country_bias,area_var,restrict,encodingValue,split_locations_prefix,split_locations_suffix)
         if geocodedLocationsoutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
             return '', ''
     else:

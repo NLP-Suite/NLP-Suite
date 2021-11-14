@@ -154,7 +154,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, output_dir_path,openOutputFiles,cre
     #     if excel_outputFilename_1 != "":
     #         filesToOpen.append(excel_outputFilename_1)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running html annotator extractor at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running html annotator extractor at', True, '', True, startTime, True)
     
     if openOutputFiles==True :
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)

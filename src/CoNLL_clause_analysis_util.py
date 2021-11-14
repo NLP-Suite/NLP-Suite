@@ -115,7 +115,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
                 filesToOpen.append(Excel_outputFilename)
 
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime, True)
     return filesToOpen
 
 #stats_clauses_output contains a list of records 

@@ -3,6 +3,7 @@
 # completed by Austin Cai October 2021
 
 import os
+import pandas as pd
 import IO_files_util
 import IO_csv_util
 import csv
@@ -332,24 +333,43 @@ def save(inputDir, outputDir, ngram_results, coOcc_results, aggregateBy):
     if ngram_results is not None:
         NgramsFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'N-grams')
         # outputFileName='Ngrams'
-        with open(NgramsFileName, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            if aggregateBy == 'year':
-                writer.writerow(["Ngram", "Year", "Frequency"])
-                for word, yearDict in ngram_results.items():
-                    for year, freqDict in yearDict.items():
-                        writer.writerow([word, year, freqDict["Frequency"]])
-            else:
-                if aggregateBy=='quarter':
-                    label = 'Quarter'
-                elif aggregateBy=='month':
-                    label = 'Month'
-                writer.writerow(["Ngram", "Year", label, "Frequency"])
-                for word, yearDict in ngram_results.items():
-                    for year, monthDict in yearDict.items():
-                        for month, freqDict in monthDict.items():
-                            writer.writerow([word, year, month, freqDict["Frequency"]])
+        dfList = []
+        if aggregateBy == 'year':
+            for word, yearDict in ngram_results.items():
+                df = pd.DataFrame(columns=["year", word])
+                for year, freqDict in yearDict.items():
+                    df = df.append({"year": year, word: freqDict["Frequency"]},
+                               ignore_index=True)
+                dfList.append(df)
+            newdfCur = dfList[0].copy()
+            for i in range(1, len(dfList)):
+                newdfNext = dfList[i].copy()
+                newdf = newdfCur.merge(newdfNext, on='year', how="left")
+                newdf.insert(0, 'year_temp', newdf['year'])
+                newdf.drop('year', axis=1, inplace=True)
+                newdf.rename(columns={'year_temp': 'year'}, inplace=True)
+                newdfCur = newdf.copy()
+        else:
+            for word, yearDict in ngram_results.items():
+                df = pd.DataFrame(columns=[word, "year", "month", word])
+                for year, monthDict in yearDict.items():
+                    for month, freqDict in monthDict.items():
+                        df = df.append({word: word, "year": year, "month": month, word: freqDict["Frequency"]}, ignore_index=True)
+                dfList.append(df)
+            newdfCur = dfList[0].copy()
+            for i in range(1, len(dfList)):
+                newdfNext = dfList[i].copy()
+                newdf = newdfCur.merge(newdfNext, on=['year', 'month'], how="left")
+                newdf.insert(0, 'month_temp', newdf['month'])
+                newdf.insert(0, 'year_temp', newdf['year'])
+                newdf.drop('month', axis=1, inplace=True)
+                newdf.drop('year', axis=1, inplace=True)
+                newdf.rename(columns={'month_temp': 'month'}, inplace=True)
+                newdf.rename(columns={'year_temp': 'year'}, inplace=True)
+                newdfCur = newdf.copy()
 
+        print(newdf)
+        newdf.to_csv(NgramsFileName, encoding='utf-8',index=False)
     coOccFileName = ''
     if coOcc_results is not None:
         coOccFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'Co-Occ')

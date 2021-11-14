@@ -892,7 +892,8 @@ if __name__ == '__main__':
         else:
             selectedCsvFile_var.set(GUI_util.inputFilename.get())
         reset_csv_field_values()
-        clear("<Escape>")
+        if not merge_var.get():
+            clear("<Escape>")
 
     selectedCsvFile_var.trace('w', lambda x, y, z: changed_filename(selectedCsvFile_var.get()))
 

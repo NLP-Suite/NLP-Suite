@@ -1151,6 +1151,6 @@ def create_gexf(window,fileName, OutputDir, SVOFile):
     gexf.write(open(os.path.join(OutputDir,graph_name),'wb'))
 
     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running Gephi network graphs at', True,
-                                       '', True, startTime)
+                                       '', True, startTime, True)
 
     return os.path.join(OutputDir,graph_name)

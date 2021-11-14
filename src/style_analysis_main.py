@@ -254,7 +254,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                 #     filesToOpen.append(outputFilename)
 
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-                                                   'Finished running CONCRETENESS Analysis at', True, '', True, startTime)
+                                                   'Finished running CONCRETENESS Analysis at', True, '', True, startTime, True)
 
     if ngrams_analysis_var == True:
         if 'Character' in ngrams_analysis_menu_var or 'Word' in ngrams_analysis_menu_var:

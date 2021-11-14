@@ -251,6 +251,6 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running NOUN ANALYSES at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running NOUN ANALYSES at', True, '', True, startTime, True)
 
     return filesToOpen

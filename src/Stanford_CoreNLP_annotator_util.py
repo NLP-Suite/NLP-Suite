@@ -274,9 +274,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # -d64 to use 64 bits JAVA, normally set to 32 as default; option not recognized in Mac
     if sys.platform == 'darwin':  # Mac OS
         # mx is the same as Xmx and refers to maximum Java heap size
+        # '-props spanish',
         CoreNLP_nlp = subprocess.Popen(
             ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length), '-timeout', '999999'])
+             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer',  '-parse.maxlen' + str(sentence_length), '-timeout', '999999'])
     else:
         CoreNLP_nlp = subprocess.Popen(
             ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp',  os.path.join(CoreNLPdir, '*'),
