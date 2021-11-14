@@ -175,6 +175,7 @@ def checkIO_Filename_InputDir(script, IO_values_local=0, fileExtension=''):
 # set 2 values to null when option is not available:
 #	pydict["Male & female names"] = ["", 0] not available
 
+# all pydict values are grouped together in constants_util.py
 pydict = {}
 pydict[""] = ["", 0]  # not available
 # https://stanfordnlp.github.io/CoreNLP/quote.html
@@ -209,7 +210,7 @@ pydict["File matcher (file name)"] = ["file_matcher_main.py", 1]
 pydict["File merger (file content)"] = ["file_merger_main.py", 1]
 pydict["File splitter (file content)"] = ["file_splitter_main.py", 1]
 pydict["File splitter (file name)"] = ["file_splitter_main.py", 1]
-pydict["File manager (List, Rename, Copy, Move, Delete, Count)"] = ["file_manager_main.py", 1]
+pydict["File manager (List, Rename, Copy, Move, Delete, Count, Split)"] = ["file_manager_main.py", 1]
 pydict["Find non-related documents"] = ["social_science_research_main.py", 1]
 pydict["Excel charts"] = ["Excel_charts_main.py", 1]
 pydict["Network graphs (Gephi)"] = ["visualization_main.py", 1]  # ["", 0] not available
@@ -283,10 +284,11 @@ def setup_IO():
     #   filename, inputDir, outputDir
     call("python IO_setup_main.py --config_option \"0, 2, 1, 0, 0, 1\" --config_filename \"default-config.txt\"",
          shell=True)
+    silent = False
     IO_options = config_util.get_IO_options(config_filename,config_input_output_options)
-    GUI_util.display_IO_setup(window, IO_setup_display_brief, config_filename, IO_options,ScriptName)
+    GUI_util.display_IO_setup(window, IO_setup_display_brief, config_filename, IO_options,ScriptName, silent)
 
-    GUI_util.activateRunButton(False,ScriptName)
+    GUI_util.activateRunButton(False,ScriptName, silent)
     setup_IO_checkbox()
 
 IO_setup_var.trace('w',setup_IO)
