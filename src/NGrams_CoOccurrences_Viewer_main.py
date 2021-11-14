@@ -3,7 +3,7 @@ import GUI_util
 import IO_libraries_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "Ngrams-CoOccurrence_Viewer",
-                                ['subprocess', 'os', 'tkinter', 'datetime','pandas','glob']) == False:
+                                ['subprocess', 'os', 'tkinter', 'datetime','pandas','csv','glob','nltk','numpy']) == False:
     sys.exit(0)
 
 import os
@@ -259,8 +259,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         # this assumes the data are in this format: temporal_aggregation, frequency of search-word_1, frequency of search-word_2, ...
         for i in range(len(ngram_list)-1):
             columns_to_be_plotted.append([0, i+1])
-        # hover_label = ['Total Word Count of This Group', 'Total Word Count of This Group',
-        #                'Total Word Count of This Group']
         hover_label = []
         Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                                   'n-grams_viewer',
@@ -271,15 +269,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             filesToOpen.append(Excel_outputFilename)
 
     # plot co-occurrences
-    if createExcelCharts == True and co_occurrences_outputFile!='':
+    if createExcelCharts and co_occurrences_outputFile!='':
         xlsxFilename = co_occurrences_outputFile
         filesToOpen.append(co_occurrences_outputFile)
-        chartTitle = 'Co-Occurrences Viewer'
+        chartTitle = 'Co-Occurrences Viewer: ' + search_words
         if date_options == 0:
             xAxis = 'Document'
         else:
             xAxis = temporal_aggregation_var
-        # hover_label = ['More information']
         hover_label = []
         if xAxis == 'Document':
             columns_to_be_plotted = [[1, 1]]
@@ -300,11 +297,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             filesToOpen.append(Excel_outputFilename)
 
 
-    # with both Ngrams and co-occurrences
-    if n_grams_viewer_var == 1 and CoOcc_Viewer_var == 1 and CoOcc_Viewer_var == 1 and len(search_words) > 0:
-        n_grams_co_occurrences_outputFile = os.path.join(outputDir, 'N-Grams_CoOccurrences_Statistics.csv')
-        filesToOpen.append(n_grams_co_occurrences_outputFile)
-        chartTitle = ''
+    # # with both Ngrams and co-occurrences
+    # if n_grams_viewer_var == 1 and CoOcc_Viewer_var == 1 and CoOcc_Viewer_var == 1 and len(search_words) > 0:
+    #     n_grams_co_occurrences_outputFile = os.path.join(outputDir, 'N-Grams_CoOccurrences_Statistics.csv')
+    #     filesToOpen.append(n_grams_co_occurrences_outputFile)
+    #     chartTitle = ''
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences end',
                         'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime,True)
@@ -501,7 +498,7 @@ def get_year_group(*args):
     global number_of_years
     if 'group' in temporal_aggregation_var.get():
         # "Enter the FIND & REPLACE strings (CASE SENSITIVE)", 'Find', 2, '', 'Replace', '' , numberOfWidgets=1, defaultValue='', textCaption2='', defaultValue2=''
-        result = GUI_IO_util.enter_value_widget("Enter the number of years (e.g., 10, 23)","Enter value",1)
+        result = GUI_IO_util.enter_value_widget("Enter the number of years to aggregate by (e.g., 10, 23)","Enter value",1)
         try:
             number_of_years=int(result[0])
             # if not isinstance(result[0], int):
@@ -612,7 +609,6 @@ def activate_viewer_options(*args):
 viewer_options_menu_var.trace('w',activate_viewer_options)
 
 activate_viewer_options()
-
 
 def clear_n_grams_list():
     n_grams_list.clear()

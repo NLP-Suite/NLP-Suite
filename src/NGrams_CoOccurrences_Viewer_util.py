@@ -2,14 +2,14 @@
 # re-written by Roberto Franzosi October 2021
 # completed by Austin Cai October 2021
 
-import os
 import pandas as pd
-import IO_files_util
-import IO_csv_util
 import csv
 import numpy as np
 import pprint
 from nltk.tokenize import sent_tokenize, word_tokenize
+
+import IO_files_util
+import IO_csv_util
 
 """
 NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences data
@@ -247,7 +247,7 @@ def run(inputDir="relative_path_here",
             ngram_results = quarter_ngram_results
     if not CoOcc_Viewer:
         # prepare co-occurrences results
-        coOcc_results_binary = None
+        coOcc_results_binary = {}
     else:
         docIndex = 1
         coOcc_results_binary = {}
@@ -313,8 +313,21 @@ def run(inputDir="relative_path_here",
                             coOcc_results_binary[file]["CO-Occurrence"] = "YES"
                             break
 
+    NgramsFileName=''
+    coOccFileName=''
+
+    if n_grams_viewer:
+        if 'group' in temporal_aggregation:
+            label='group_'+str(byNumberOfYears)
+        else:
+            label=temporal_aggregation
+        NgramsFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
+                                                                 'N-grams_' + label)
+    if CoOcc_Viewer:
+        coOccFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'Co-Occ')
+
     # pprint.pprint(coOcc_results_binary)
-    NgramsFileName, coOccFileName = save(inputDir, outputDir, ngram_results, coOcc_results_binary, aggregateBy)
+    NgramsFileName, coOccFileName = save(NgramsFileName, coOccFileName, ngram_results, coOcc_results_binary, aggregateBy, temporal_aggregation)
     return NgramsFileName, coOccFileName
 
 
@@ -327,52 +340,53 @@ def run(inputDir="relative_path_here",
             The co-occurrence results in the following format: {combination : [combination, date, file] }
 """
 
-
-def save(inputDir, outputDir, ngram_results, coOcc_results, aggregateBy):
-    NgramsFileName = ''
-    if ngram_results is not None:
-        NgramsFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'N-grams')
-        # outputFileName='Ngrams'
-        dfList = []
+def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateBy, temporal_aggregation):
+    if len(ngram_results)>0:
+        dfList = []  # create a list of dataframes: one df for one search word
         if aggregateBy == 'year':
             for word, yearDict in ngram_results.items():
-                df = pd.DataFrame(columns=["year", word])
+                df = pd.DataFrame(columns=[word, "year"])
                 for year, freqDict in yearDict.items():
-                    df = df.append({"year": year, word: freqDict["Frequency"]},
-                               ignore_index=True)
+                    df = df.append({word: freqDict["Frequency"], "year": year}, ignore_index=True)
                 dfList.append(df)
-            newdfCur = dfList[0].copy()
-            for i in range(1, len(dfList)):
-                newdfNext = dfList[i].copy()
-                newdf = newdfCur.merge(newdfNext, on='year', how="left")
-                newdf.insert(0, 'year_temp', newdf['year'])
-                newdf.drop('year', axis=1, inplace=True)
-                newdf.rename(columns={'year_temp': 'year'}, inplace=True)
-                newdfCur = newdf.copy()
-        else:
-            for word, yearDict in ngram_results.items():
-                df = pd.DataFrame(columns=[word, "year", "month", word])
-                for year, monthDict in yearDict.items():
-                    for month, freqDict in monthDict.items():
-                        df = df.append({word: word, "year": year, "month": month, word: freqDict["Frequency"]}, ignore_index=True)
-                dfList.append(df)
-            newdfCur = dfList[0].copy()
-            for i in range(1, len(dfList)):
-                newdfNext = dfList[i].copy()
-                newdf = newdfCur.merge(newdfNext, on=['year', 'month'], how="left")
-                newdf.insert(0, 'month_temp', newdf['month'])
-                newdf.insert(0, 'year_temp', newdf['year'])
-                newdf.drop('month', axis=1, inplace=True)
-                newdf.drop('year', axis=1, inplace=True)
-                newdf.rename(columns={'month_temp': 'month'}, inplace=True)
-                newdf.rename(columns={'year_temp': 'year'}, inplace=True)
+            newdfCur = dfList[0].copy()  # let newdfCur be the first df in the dfList
+            newdf = newdfCur.copy()
+            for i in range(1, len(dfList)):  # one by one join next search word's dataframe with the current dataframe
+                newdfNext = dfList[i].copy()  # get the next dataframe
+                newdf = newdfCur.merge(newdfNext, on='year', how="left")  # join on year
                 newdfCur = newdf.copy()
 
+            # these 3 lines will move the 'year' column to position 0, which is the left most position
+            newdf.insert(0, 'year_temp', newdf['year'])
+            newdf.drop('year', axis=1, inplace=True)
+            newdf.rename(columns={'year_temp': temporal_aggregation}, inplace=True)
+        else:
+            for word, yearDict in ngram_results.items():
+                df = pd.DataFrame(columns=[word, "year", label, "year-" + temporal_aggregation])
+                for year, monthDict in yearDict.items():
+                    for month, freqDict in monthDict.items():
+                        df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month, "year-" + label: year + "-" + month}, ignore_index=True)
+                dfList.append(df)
+            newdfCur = dfList[0].copy()
+            newdf = newdfCur.copy()
+            for i in range(1, len(dfList)):
+                newdfNext = dfList[i].copy()
+                newdf = newdfCur.merge(newdfNext, on=['year', label, "year-" + temporal_aggregation], how="left")
+                newdfCur = newdf.copy()
+            # these 9 lines will move the 'year', 'month' or 'quarter', and 'year-month' column to the left most position
+            newdf.insert(0, 'month_temp', newdf[temporal_aggregationl])
+            newdf.insert(0, 'year_temp', newdf['year'])
+            newdf.insert(0, 'yearMonth_temp', newdf["year-" + temporal_aggregation])
+            newdf.drop(label, axis=1, inplace=True)
+            newdf.drop('year', axis=1, inplace=True)
+            newdf.drop("year-" + temporal_aggregation, axis=1, inplace=True)
+            newdf.rename(columns={'month_temp': temporal_aggregation}, inplace=True)
+            newdf.rename(columns={'year_temp': 'year'}, inplace=True)
+            newdf.rename(columns={'yearMonth_temp': 'year-' + temporal_aggregation}, inplace=True)
+
         print(newdf)
-        newdf.to_csv(NgramsFileName, encoding='utf-8',index=False)
-    coOccFileName = ''
-    if coOcc_results is not None:
-        coOccFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'Co-Occ')
+        newdf.to_csv(NgramsFileName, encoding='utf-8', index=False)
+    if len(coOcc_results)>0:
         # with open(os.path.join(WCOFileName, outputDir), 'w', encoding='utf-8') as f:
         with open(coOccFileName, 'w', newline='', encoding='utf-8') as f:
             writer = csv.writer(f)
@@ -382,27 +396,3 @@ def save(inputDir, outputDir, ngram_results, coOcc_results, aggregateBy):
                                  IO_csv_util.dressFilenameForCSVHyperlink(res["Document"])])
 
     return NgramsFileName, coOccFileName
-
-# Test NGramsCoOccurrences logic
-# if __name__ == "__main__":
-#     inputDir = "relative_path_here"
-#     outputDir = "relative_path_here"
-#     dateFormat = "mm-dd-yyyy"
-#     datePos = 4
-#     wordsLists = []
-#     checkCoOccList = False
-#     groupingOption = ""
-#     itemsDelimiter = "_"
-#     docPCIDCouplesFilePath = ""
-#     scaleData = False
-#     normalizeByPCID = False
-#     lemma = False
-#     fullInfo = False
-#     considerAsSeparateGroups = True
-#     normalize = True
-#
-#     ng = NGramsCoOccurrences(outputDir, inputDir, dateFormat, datePos, wordsLists, checkCoOccList,
-#                  groupingOption, itemsDelimiter, docPCIDCouplesFilePath, scaleData, normalizeByPCID,
-#                  lemma, fullInfo, considerAsSeparateGroups, normalize)
-#     ngr, cor = ng.run()
-#     ng.save(ngr, cor)
