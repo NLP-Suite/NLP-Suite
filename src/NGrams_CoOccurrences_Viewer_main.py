@@ -257,8 +257,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         columns_to_be_plotted = []
         # it will iterate through i = 0, 1, 2, …., n-1
         # this assumes the data are in this format: temporal_aggregation, frequency of search-word_1, frequency of search-word_2, ...
-        for i in range(len(ngram_list)-1):
-            columns_to_be_plotted.append([0, i+1])
+        i = 0
+        j = 0
+        while i < (len(ngram_list)-1):
+            if temporal_aggregation_var=="quarter" or temporal_aggregation_var=="month":
+                if i == 0:
+                    j=j+3
+                columns_to_be_plotted.append([0, j])
+            else:
+                columns_to_be_plotted.append([0, i + 1])
+            i += 1
+            j += 1
         hover_label = []
         Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                                   'n-grams_viewer',
@@ -286,15 +295,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                       chart_title=chartTitle, column_xAxis_label_var=xAxis,
                                                       hover_info_column_list=hover_label,
                                                       count_var=1)
-        else:
-            columns_to_be_plotted = [[0, 1]]
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
-                                                      'Co-Occ_viewer',
-                                                      chart_type_list=["line"],
-                                                      chart_title=chartTitle, column_xAxis_label_var=xAxis,
-                                                      hover_info_column_list=hover_label)
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        # else:
+        #     columns_to_be_plotted = [[0, 1]]
+        #     Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+        #                                               'Co-Occ_viewer',
+        #                                               chart_type_list=["line"],
+        #                                               chart_title=chartTitle, column_xAxis_label_var=xAxis,
+        #                                               hover_info_column_list=hover_label)
+        # if Excel_outputFilename != "":
+        #     filesToOpen.append(Excel_outputFilename)
 
 
     # # with both Ngrams and co-occurrences

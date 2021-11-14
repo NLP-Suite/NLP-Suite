@@ -2,14 +2,11 @@
 
 import sys
 import os
-import tkinter as tk
-from tkinter import filedialog
 from subprocess import call
 import subprocess
 import tkinter.messagebox as mb
 
 import GUI_IO_util
-import IO_files_util
 
 def get_videos(selected_videos,lookup,menu_lb, dropdown_field):
     # lookup[selected_videos] would throw a keyError 

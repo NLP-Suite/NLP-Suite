@@ -345,39 +345,45 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
         dfList = []  # create a list of dataframes: one df for one search word
         if aggregateBy == 'year':
             for word, yearDict in ngram_results.items():
-                df = pd.DataFrame(columns=[word, "year"])
+                df = pd.DataFrame(columns=[word, temporal_aggregation])
                 for year, freqDict in yearDict.items():
-                    df = df.append({word: freqDict["Frequency"], "year": year}, ignore_index=True)
+                    df = df.append({word: freqDict["Frequency"], temporal_aggregation: year}, ignore_index=True)
                 dfList.append(df)
             newdfCur = dfList[0].copy()  # let newdfCur be the first df in the dfList
             newdf = newdfCur.copy()
             for i in range(1, len(dfList)):  # one by one join next search word's dataframe with the current dataframe
                 newdfNext = dfList[i].copy()  # get the next dataframe
-                newdf = newdfCur.merge(newdfNext, on='year', how="left")  # join on year
+                newdf = newdfCur.merge(newdfNext, on=temporal_aggregation, how="left")  # join on year
                 newdfCur = newdf.copy()
 
             # these 3 lines will move the 'year' column to position 0, which is the left most position
-            newdf.insert(0, 'year_temp', newdf['year'])
-            newdf.drop('year', axis=1, inplace=True)
+            # inserting headers
+            newdf.insert(0, 'year_temp', newdf[temporal_aggregation])
+            newdf.drop(temporal_aggregation, axis=1, inplace=True)
             newdf.rename(columns={'year_temp': temporal_aggregation}, inplace=True)
         else:
+            # aggregating by quarter or month
             for word, yearDict in ngram_results.items():
-                df = pd.DataFrame(columns=[word, "year", label, "year-" + temporal_aggregation])
+                df = pd.DataFrame(columns=[word, 'year', temporal_aggregation, "year-" + temporal_aggregation])
                 for year, monthDict in yearDict.items():
                     for month, freqDict in monthDict.items():
-                        df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month, "year-" + label: year + "-" + month}, ignore_index=True)
+                        if temporal_aggregation == 'quarter':
+                            df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month, "year-" + temporal_aggregation: year + "-Q" + month[-1]}, ignore_index=True)
+                        else:
+                            df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month, "year-" + temporal_aggregation: year + "-" + month}, ignore_index=True)
                 dfList.append(df)
             newdfCur = dfList[0].copy()
             newdf = newdfCur.copy()
             for i in range(1, len(dfList)):
                 newdfNext = dfList[i].copy()
-                newdf = newdfCur.merge(newdfNext, on=['year', label, "year-" + temporal_aggregation], how="left")
+                newdf = newdfCur.merge(newdfNext, on=['year', temporal_aggregation, "year-" + temporal_aggregation],
+                                       how="left")
                 newdfCur = newdf.copy()
             # these 9 lines will move the 'year', 'month' or 'quarter', and 'year-month' column to the left most position
-            newdf.insert(0, 'month_temp', newdf[temporal_aggregationl])
+            newdf.insert(0, 'month_temp', newdf[temporal_aggregation])
             newdf.insert(0, 'year_temp', newdf['year'])
             newdf.insert(0, 'yearMonth_temp', newdf["year-" + temporal_aggregation])
-            newdf.drop(label, axis=1, inplace=True)
+            newdf.drop(temporal_aggregation, axis=1, inplace=True)
             newdf.drop('year', axis=1, inplace=True)
             newdf.drop("year-" + temporal_aggregation, axis=1, inplace=True)
             newdf.rename(columns={'month_temp': temporal_aggregation}, inplace=True)

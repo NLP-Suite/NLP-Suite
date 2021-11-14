@@ -19,6 +19,7 @@ from PIL import Image, ImageTk
 from subprocess import call
 
 import GUI_IO_util
+import videos_util
 
 GUI_size = '1000x600'
 
@@ -55,12 +56,13 @@ window = GUI_util.window
 '''
 
 
-
 def run_NLP():
     if IO_libraries_util.inputProgramFileCheck('NLP_menu_main.py') == False:
         return
     call("python NLP_menu_main.py", shell=True)
 
+def watch_video(video_button):
+    videos_util.get_videos('File manager', {'File manager': 'NLP_File manager.mp4'}, video_button, '')
 
 images = []
 
@@ -154,6 +156,12 @@ def display_enter_button():
                              text='Emory University',
                              foreground="black", font=("Arial", 12,"italic"))
     emory.grid(row=9, column=0, columnspan=3, sticky=(tk.N,tk.W),padx=30)
+
+    video_button = tk.Button(window, text='Watch video', width=15, height=1, foreground="red",
+                             font=("Arial", 12, "italic"),
+                             command=lambda: watch_video(video_button))
+    video_button.configure(state='disabled')
+    video_button.grid(row=9, column=3, columnspan=3, sticky=(tk.N,tk.W),padx=30)
 
 
 def update_images():
