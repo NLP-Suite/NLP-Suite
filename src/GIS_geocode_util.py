@@ -73,7 +73,7 @@ def get_geolocator(geocoder,Google_API=''):
 	return geolocator
 
 # Country specification; uses 2-digit lowercase ISO_3166 country codes
-def nominatim_geocode(geolocator,loc,country_bias='',timeout=10):
+def nominatim_geocode(geolocator,loc,country_bias='',box_tuple='',restrict=False,timeout=4):
 	# https://geopy.readthedocs.io/en/stable/#geopy.geocoders.options
 	# this will renew the SSL certificate indefinitely
 	# pip install pyOpenSSL
@@ -91,24 +91,51 @@ def nominatim_geocode(geolocator,loc,country_bias='',timeout=10):
 	# geopy.geocoders.options.default_ssl_context = ctx
 	# ctx = ssl.create_default_context(cafile=certifi.where())
 	# geopy.geocoders.options.default_ssl_context = ctx
-	if country_bias=='':
-		country_bias=None
-	print("Processing Nominatim location:",loc)
+	# Limits the search to a specific country or a list of countries. Country codes must be in ISO 3166-1 alpha2.
+	if country_bias == '':
+		country_bias = None
+	# https://github.com/geopy/geopy/issues/261
+	# this gives precedence to Georgia
+	# bounded=1 this restricts to Georgia
+	# https://developer.mapquest.com/documentation/open/nominatim-search/search/ EXPLAINS ALL PARAMS
+	# Preferred area to find search results. viewbox=left,top,right,bottom
+	# although given on some website the following does NOT work
+	# viewbox = 34.98527546066368, -85.59790207354965, 30.770444751951388, -81.5219744485591
+	# bounded can take values 0 (No, do not restrict results) or 1 (Yes, restrict results)
+	# def string_to_tuples(string: str):
+	"""
+	This function converts a string of tuples into a list of tuples
+	:param string: a string of tuples, e.g. '(1,2.3),(4,5.5)'
+	:return: a list of tuples, e.g. [(1,2.3),(4,5.5)]
+	"""
+		# return [tuple(map(float, t.strip('()').split(','))) for t in string.split('),(')]
+
+	if box_tuple == '':
+		box_tuple = None
+	else:
+		box_tuple=box_tuple.replace(" ",'')
+		box_tuple=[tuple(map(float, t.strip('()').split(','))) for t in box_tuple.split('),(')]
+		# box_tuple = tuple([(34.98527546066368, -85.59790207354965), (30.770444751951388, -81.5219744485591)])
+		# georgia viewbox 	34.98527546066368, -85.59790207354965 (upper left);
+		# 					30.770444751951388, -81.5219744485591 (lower right)
+
 	try:
-		return geolocator.geocode(loc,country_codes=country_bias,timeout=timeout)
+		return geolocator.geocode(loc,language='en',country_codes=country_bias,viewbox=box_tuple, bounded=restrict, timeout=timeout)
 		# https: // gis.stackexchange.com / questions / 173569 / avoid - time - out - error - nominatim - geopy - openstreetmap
 	except GeocoderTimedOut:
-		if timeout<40:
+		print("********************************************TIMEOUT",timeout)
+		if timeout<20:
+			# try again, adding timeout
+			return nominatim_geocode(geolocator,loc,country_bias,box_tuple,restrict,timeout + 2)# add 2 second for the next round
+		else:
 			print("Maximum number of retries to access Nominatim server exceeded in geocoding " + loc)
-			return nominatim_geocode(geolocator,loc,country_bias,timeout + 2)# add 2 second for the next round
-		# print("   Nominatim timed out on " + loc + ". Timeout increased by 10 and repeatedly retried.")
 		raise
 		# return None
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
 # console.developers.google.com/apis
 def google_geocode(geolocator,loc,region=None,timeout=10):
-	print("Processing Google location for geocoding:",loc)
+	# print("Processing Google location for geocoding:",loc)
 	region='.US'
 	try:
 		return geolocator.geocode(loc,region=region,timeout=timeout)
@@ -126,7 +153,7 @@ def google_geocode(geolocator,loc,region=None,timeout=10):
 
 def geocode(window,locations, inputFilename, outputDir,
 			locationColumnName,
-			geocoder,country_bias,
+			geocoder,country_bias,area,restrict,
 			encodingValue,
 			split_locations_prefix='',
 			split_locations_suffix=''):
@@ -204,6 +231,7 @@ def geocode(window,locations, inputFilename, outputDir,
 
 	for item in locations:
 		index=index+1 #items in locations are NOT DISTINCT
+		print("Processing location " + str(index) + "/" + str(len(locations)) + ": " + item)
 		if str(item)!='nan' and str(item)!='':
 			currRecord=str(index) + "/" + str(len(locations))
 			#for CoNLL tables as input rows & columns 
@@ -220,13 +248,14 @@ def geocode(window,locations, inputFilename, outputDir,
 				# itemToGeocode =[item[0]]
 				itemToGeocode =item
 
-			# repetition; location already in list
+			# avoid repetition; location already in list
 			if itemToGeocode in distinctGeocodedList:
 				location = itemToGeocode
 			else:
+				print("   Geocoding DISTINCT location: " + itemToGeocode)
 				distinctGeocodedList.append(itemToGeocode)
 				if geocoder=='Nominatim':
-					location = nominatim_geocode(geolocator,itemToGeocode,country_bias)
+					location = nominatim_geocode(geolocator,itemToGeocode,country_bias,area,restrict)
 				else:
 					location = google_geocode(geolocator,itemToGeocode,country_bias)
 				if geocoder=='Nominatim':
@@ -270,4 +299,3 @@ def geocode(window,locations, inputFilename, outputDir,
 			# this warning is already given 
 	IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime, True)
 	return geocodedLocationsoutputFilename, locationsNotFoundoutputFilename
-

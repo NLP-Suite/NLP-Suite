@@ -221,7 +221,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
         filtered_df = filtered_df.append(df.loc[i, :], ignore_index=True)
 
     IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running SVO filter algorithm at', True, '', True,
-                                       startTime)
+                                       startTime, True)
 
     # Replacing the original csv file
     filtered_df.to_csv(svo_file_name, index=False)

@@ -5,14 +5,13 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"shape_of_stories_main.py", ['subprocess', 'os', 'tkinter', 'shutil','matplotlib','csv','numpy','sklearn','tqdm','codecs']) == False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"shape_of_stories_main.py", ['subprocess', 'os', 'tkinter', 'matplotlib','csv','numpy','sklearn','tqdm','codecs']) == False:
     sys.exit(0)
 
 # tqdm, sklearn, and codecs must be installed
 # tqdm provides a progress bar (used in clustering_util)
 
 import os
-import shutil
 import tkinter as tk
 import tkinter.messagebox as mb
 
@@ -39,41 +38,6 @@ import file_checker_util as utf
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
         hierarchical_clustering, SVD, NMF, best_topic_estimation):
-
-    # check all IO options ---------------------------------------------------------------------------
-    # check that the default directory of sentiment scores exists under the new default outputDir
-    # sentiment_scores_folder = os.path.join(outputDir, "sentiment_analysis_scores_" + os.path.basename(inputDir))
-
-    # computeSAScores = False
-    # if os.path.exists(sentiment_scores_input):
-    #     if sentimentAnalysis == True:
-    #         if nSAscoreFiles>0:
-    #             computeSAScores=mb.askyesno("Sentiment Analysis","You have selected to run sentiment analysis on your corpus of stories. But there already exists a set of sentiment scores for this corpus saved in the default output directory:\n\n"+sentiment_scores_input+"\n\nAre you sure you want to recompute the scores?")
-    #             if computeSAScores ==True:
-    #                 # remove current sentiment scores directory and recreate it
-    #                 shutil.rmtree(sentiment_scores_input)
-    #                 os.mkdir(sentiment_scores_input)
-    #             else:
-    #                 if hierarchical_clustering == False and SVD == False and NMF == False:
-    #                     mb.showwarning(title='Option selection error',
-    #                                    message='No data reduction options have been selected.\n\nPlease, select an option and try again.')
-    #                     return
-    #                 else:
-    #                     answer = mb.askyesno("Sentiment Analysis",
-    #                                                   "The 'Shape of Stories' algorithms will not compute sentiment scores and will continue running the data reduction algorithms using the already available scores.\n\nAre you sure you want to continue?")
-    #                     if answer == False:
-    #                         return
-    #         else:
-    #             computeSAScores=True
-    #     else:
-    #         if nSAscoreFiles==0:
-    #             mb.showwarning(title="Folder error",
-    #                            message="There are no csv files of sentiment analysis scores in the directory\n\n" +str(sentiment_scores_input) + \
-    #                                     "\n\nYou will need to run the sentiment analysis algorithm. Please, tick the checkbox to run Sentiment Analysis and try again.")
-    #             return
-    # else:
-    #     os.mkdir(sentiment_scores_input)
-    #     computeSAScores = True
 
     if sentimentAnalysis==False and corpus_analysis==False and hierarchical_clustering==False and SVD==False and NMF==False and best_topic_estimation==False:
         mb.showwarning(title='Option selection error',
@@ -282,7 +246,7 @@ GUI_util.run_button.configure(command=run_script_command)
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
-GUI_width=GUI_IO_util.get_GUI_width(2)
+GUI_width=GUI_IO_util.get_GUI_width(3)
 GUI_height=550 # height of GUI with full I/O display
 
 if IO_setup_display_brief:
@@ -496,8 +460,9 @@ def check_IO_requirements(inputFilename, inputDir):
                 if nSAscoreFiles < 50 and sentimentAnalysis == True:
                     answer = mb.askyesno("Directory error",
                                          message=DirErr_txt)
-                    Error = True
-                    return Error
+                    if answer == False:
+                        Error = True
+                        return Error
 
             if (not sentimentAnalysis) and (hierarchical_clustering or SVD or NMF or best_topic_estimation):
                 nSAscoreFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'csv')
@@ -509,9 +474,9 @@ def check_IO_requirements(inputFilename, inputDir):
                 elif nSAscoreFiles < 50 and sentimentAnalysis == True:
                     answer = mb.askyesno("Data reduction algorithms",
                                          message=csv_fileWarning)
-                if answer == False:
-                    Error = True
-                    return Error
+                    if answer == False:
+                        Error = True
+                        return Error
 
     # check input file that must be a csv file containing sentiment analysis score of any data reduction options are ticked
     if inputFilename!='' and sentiment_analysis_var.get() == False and corpus_analysis_var.get() == False and (

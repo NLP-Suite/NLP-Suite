@@ -311,7 +311,7 @@ def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,titl
 #     return IO_options
 
 # configuration_type is the value displayed on the GUI: Default I/O configuration, Alternative I/O configuration
-def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,ScriptName,*args):
+def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,ScriptName,silent,*args):
     error = False
     fileName = ''
     dirName = ''
@@ -419,11 +419,10 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,Sc
         IO_setup_brief_display_area.insert("end", IO_setup_display_string)
         # IO_setup_brief_display_area.pack(side=tk.LEFT)
         IO_setup_brief_display_area.configure(state='disabled')
-    activateRunButton(IO_setup_display_brief,ScriptName)
+    activateRunButton(IO_setup_display_brief,ScriptName,silent)
 
-def activateRunButton(IO_setup_display_brief,ScriptName):
+def activateRunButton(IO_setup_display_brief,ScriptName,silent = False):
     # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
-    silent = False
     # readConfig
     # global config_filename, config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path
     configArray, missingIO=config_util.setup_IO_configArray(window,config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path)
@@ -532,7 +531,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
         openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
         openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer4)
 
-def setup_IO_configuration_options(IO_setup_display_brief,y_multiplier_integer,ScriptName):
+def setup_IO_configuration_options(IO_setup_display_brief,y_multiplier_integer,ScriptName,silent):
     if 'Default' in IO_setup_menu_var.get(): # GUI_util.GUI_util.IO_setup_menu_var.get()
         temp_config_filename = 'default-config.txt'
     else:
@@ -544,11 +543,11 @@ def setup_IO_configuration_options(IO_setup_display_brief,y_multiplier_integer,S
     #       a warning will be raised
     #   2. temp_config_filename, either as default or calling GUI config
     call("python IO_setup_main.py --config_option " + str(config_input_output_options).replace('[', '"').replace(']', '"') + " --config_filename " + temp_config_filename, shell=True)
-    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options, ScriptName)
+    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options, ScriptName,silent)
 
-def IO_config_setup_brief(window, y_multiplier_integer,ScriptName):
+def IO_config_setup_brief(window, y_multiplier_integer,ScriptName, silent):
 
-    IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,y_multiplier_integer,ScriptName))
+    IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,y_multiplier_integer,ScriptName, silent))
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer,
                                                    IO_setup_button, True)
@@ -595,28 +594,30 @@ def display_about_release_team_cite_buttons(ScriptName):
             y_multiplier_integer = 0
         about_button = tk.Button(window, text='About', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.about())
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 160, y_multiplier_integer,
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.about_button_x_coordinate, y_multiplier_integer,
                                                        about_button, True)
 
         release_history_button = tk.Button(window, text='Release history', width=15, height=1, foreground='red',
                                            command=lambda: GUI_IO_util.release_history())
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 340, y_multiplier_integer,
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.release_history_button_x_coordinate, y_multiplier_integer,
                                                        release_history_button, True)
 
-        team_button = tk.Button(window, text='NLP Suite team', width=13, height=1, foreground="red",
+        team_button = tk.Button(window, text='NLP Suite team', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.list_team())
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 550, y_multiplier_integer,
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.team_button_x_coordinate, y_multiplier_integer,
                                                        team_button, True)
 
-        cite_button = tk.Button(window, text='How to cite', width=13, height=1, foreground="red",
+        cite_button = tk.Button(window, text='How to cite', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.cite_NLP())
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 730, y_multiplier_integer,
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.cite_button_x_coordinate, y_multiplier_integer,
                                                        cite_button)
 
 # ScriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main
 #   it can be used for handling GUIs with special treatment (e.g., IO_setup_main which does not have a RUN button)
 #   for consistency, it should also be used for NLP_main that for now relies on a previous approach based on config (i.e., NLP-config.txt)
-def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,ScriptName=''):
+# silent is set to True in those GUIs where the selected default I/O configuration does not confirm to the expected input
+#   For example, you need a csv file but the default is a Directory, e.g., data_manager_main
+def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,ScriptName='',silent=False):
     import IO_libraries_util
     from PIL import Image, ImageTk
 
@@ -682,7 +683,7 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
         if not IO_setup_display_brief:
             IO_config_setup_full(window, y_multiplier_integer)
         else:
-            IO_config_setup_brief(window, y_multiplier_integer,ScriptName)
+            IO_config_setup_brief(window, y_multiplier_integer,ScriptName,silent)
 
     old_license_file=os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-1.0.txt')
     if os.path.isfile(old_license_file):
@@ -699,8 +700,10 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
 
 #__________________________________________________________________________________________________________________
 #GUI bottom buttons widgets (ReadMe, TIPS, RUN, CLOSE)
+# silent is set to True in those GUIs where the selected default I/O configuration does not confirm to the expected input
+#   For example, you need a csv file but the default is a Directory, e.g., data_manager_main
 def GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command,
-               videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,ScriptName=''):
+               videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,ScriptName='', silent=False):
 
     """
     :type TIPS_options: object
@@ -847,10 +850,10 @@ def GUI_bottom(config_filename, config_input_output_options, y_multiplier_intege
         mb.showwarning(title='Fatal error', message="The licence agreement file 'LICENSE-NLP-1.0.txt' could not be found in the 'lib' subdirectory of your main NLP Suite directory\n" + GUI_IO_util.NLPPath + "\n\nPlease, make sure to copy this file in the 'lib' subdirectory.\n\nThe NLP Suite will now exit.")
         sys.exit()
 
-    IO_setup_menu_var.trace("w",lambda x,y,z: display_IO_setup(window, IO_setup_display_brief,config_filename,config_input_output_options,ScriptName))
+    IO_setup_menu_var.trace("w",lambda x,y,z: display_IO_setup(window, IO_setup_display_brief,config_filename,config_input_output_options,ScriptName,silent))
 
     # this will display the available IO options for the GUI
-    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options,ScriptName)
+    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options,ScriptName,silent)
 
     # GUI front end is used for those GUIs that do not have any code to run functions but the buttons just open other GUIs
     configArray =[]

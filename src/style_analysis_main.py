@@ -254,7 +254,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                 #     filesToOpen.append(outputFilename)
 
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-                                                   'Finished running CONCRETENESS Analysis at', True, '', True, startTime)
+                                                   'Finished running CONCRETENESS Analysis at', True, '', True, startTime, True)
 
     if ngrams_analysis_var == True:
         if 'Character' in ngrams_analysis_menu_var or 'Word' in ngrams_analysis_menu_var:
@@ -332,7 +332,7 @@ GUI_util.run_button.configure(command=run_script_command)
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
-GUI_width=GUI_IO_util.get_GUI_width(2)
+GUI_width=GUI_IO_util.get_GUI_width(3)
 GUI_height=550 # height of GUI with full I/O display
 
 if IO_setup_display_brief:

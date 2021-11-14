@@ -175,6 +175,7 @@ def checkIO_Filename_InputDir(script, IO_values_local=0, fileExtension=''):
 # set 2 values to null when option is not available:
 #	pydict["Male & female names"] = ["", 0] not available
 
+# all pydict values are grouped together in constants_util.py
 pydict = {}
 pydict[""] = ["", 0]  # not available
 # https://stanfordnlp.github.io/CoreNLP/quote.html
@@ -202,13 +203,14 @@ pydict["File cleaner (Add full stop (.) at the end of paragraphs without end-of-
 pydict["File cleaner (Pronominal resolution via CoreNLP)"] = ["Stanford_CoreNLP_coreference_main.py", 1]
 pydict["File classifier (dumb classifier via embedded date) (file name)"] = ["file_filename_checker_main.py", 1]
 pydict["File finder (file name)"] = ["file_manager_main.py", 1]
-pydict["File finder/search (file content for words/collocations)"] = ["file_search_byWord_main.py", 1]
+pydict["File search (file content for words/collocations)"] = ["file_search_byWord_main.py", 1]
+pydict["File search (file content for n-grams & co-occurrences; N-grams viewer)"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["File-type converter (csv, docx, pdf, rtf --> txt)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File matcher (file name)"] = ["file_matcher_main.py", 1]
 pydict["File merger (file content)"] = ["file_merger_main.py", 1]
 pydict["File splitter (file content)"] = ["file_splitter_main.py", 1]
 pydict["File splitter (file name)"] = ["file_splitter_main.py", 1]
-pydict["File manager (List, Rename, Copy, Move, Delete, Count)"] = ["file_manager_main.py", 1]
+pydict["File manager (List, Rename, Copy, Move, Delete, Count, Split)"] = ["file_manager_main.py", 1]
 pydict["Find non-related documents"] = ["social_science_research_main.py", 1]
 pydict["Excel charts"] = ["Excel_charts_main.py", 1]
 pydict["Network graphs (Gephi)"] = ["visualization_main.py", 1]  # ["", 0] not available
@@ -282,10 +284,11 @@ def setup_IO():
     #   filename, inputDir, outputDir
     call("python IO_setup_main.py --config_option \"0, 2, 1, 0, 0, 1\" --config_filename \"default-config.txt\"",
          shell=True)
+    silent = False
     IO_options = config_util.get_IO_options(config_filename,config_input_output_options)
-    GUI_util.display_IO_setup(window, IO_setup_display_brief, config_filename, IO_options,ScriptName)
+    GUI_util.display_IO_setup(window, IO_setup_display_brief, config_filename, IO_options,ScriptName, silent)
 
-    GUI_util.activateRunButton(False,ScriptName)
+    GUI_util.activateRunButton(False,ScriptName, silent)
     setup_IO_checkbox()
 
 IO_setup_var.trace('w',setup_IO)
@@ -485,7 +488,7 @@ help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get
              GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
-readMe_message = "This Python 3 script is the front end for a wide collection of Java and Python Natural Language Processing (NLP) tools.\n\nThe set of tools are divided into GENERAL TOOLS (data and file handling, pre-processing, statistical, visualization) and LINGUISTIC ANALYSIS TOOLS.\n\nLINGUISTIC ANALYSIS TOOLS are divided into tools that expect in input CORPUS DATA (i.e., multiple documents stored in a directory), CORPUS and/or SINGLE DOCUMENT, and SENTENCE.\n\nWhile some linguistic tools are specific for one of these three categories (e.g., topic modeling cannot be performed on a single document), MANY TOOLS OVERLAP. As a result, you may find the same tool under BOTH corpus and corpus/document. SENTENCE TOOLS still require either a corpus or a single document in input; but they also provide in output sentence-level information for more in-grained linguistic analyses.\n\nAll tools are open source freeware software released under the GNU LGPLv2.1 license (http://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html).\n\nYou can cite the NLP Suite as:\n\nR. Franzosi. 2020. NLP Suite: A  set of tools of Natural Language Processing (NLP) & Data Visualization."
+readMe_message = "This Python 3 script is the front end for a wide collection of Java and Python Natural Language Processing (NLP) tools.\n\nThe set of tools are divided into GENERAL TOOLS (data and file handling, pre-processing, statistical, visualization) and LINGUISTIC ANALYSIS TOOLS.\n\nLINGUISTIC ANALYSIS TOOLS are divided into tools that expect in input CORPUS DATA (i.e., multiple documents stored in a directory), CORPUS and/or SINGLE DOCUMENT, and SENTENCE.\n\nWhile some linguistic tools are specific for one of these three categories (e.g., topic modeling cannot be performed on a single document), MANY TOOLS OVERLAP. As a result, you may find the same tool under BOTH corpus and corpus/document. SENTENCE TOOLS still require either a corpus or a single document in input; but they also provide in output sentence-level information for more in-grained linguistic analyses.\n\nAll tools are open source freeware software released under the GNU LGPLv2.1 license (http://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html).\n\nYou can cite the NLP Suite as:\n\nFranzosi, Roberto. 2020. NLP Suite: A collection of natural language processing and visualization tools GitHub: https://github.com/NLP-Suite/NLP-Suite/wiki."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, ScriptName)

@@ -38,14 +38,12 @@ NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: Geocoding
 'HTML annotator - dictionary, gender, DBpedia, YAGO', 'Network graphs (Gephi)', \
 'Sentence visualization: Dependency tree viewer (png graphs)', 'Word clouds'
 
-NLP_Suite_data_file_handling_tools_menu = 'Data manager (csv files via Pandas)', 'File checker (file content)', \
-'File checker (file content utf-8 encoding)', 'File checker (file name)', \
+NLP_Suite_data_file_handling_tools_menu = 'Data manager (csv files via Pandas)', \
+'File checker (file name)', \
 'File classifier (dumb classifier via embedded date) (file name)', \
-'File finder/search text file(s) for n-grams & co-occurrences (N-grams viewer)', \
-'File finder/search text file(s) for words/collocations', \
-'File-type converter (csv, docx, pdf, rtf --> txt)', 'File matcher (file name)', 'File merger (file content)', \
-'File splitter (file content)', 'File splitter (file name)', \
-'File manager (List, Rename, Copy, Move, Delete, Count)', 'SQL database (via SQLite)'
+'File-type converter (csv, docx, pdf, rtf --> txt)', \
+'File matcher (file name)',\
+'File manager (List, Rename, Copy, Move, Delete, Count, Split)', 'SQL database (via SQLite)'
 
 NLP_Suite_pre_processing_tools_menu = 'File checker (file content)', \
 'File checker (file content utf-8 encoding)', 'File checker (file name)', \
@@ -53,12 +51,10 @@ NLP_Suite_pre_processing_tools_menu = 'File checker (file content)', \
 'File cleaner (Find & Replace string)', 'File cleaner (Remove blank lines from txt file(s))', \
 'File cleaner (Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation)', \
 'File cleaner (Pronominal resolution via CoreNLP)', 'File finder (file name)', \
-'File finder/search text file(s) for n-grams & co-occurrences (N-grams viewer)', \
-'File finder/search (file content for words/collocations)', 'File-type converter (csv, docx, pdf, rtf --> txt)', \
 'File merger (file content)', 'File splitter (file content)', 'File splitter (file name)', \
+'File search (file content for n-grams & co-occurrences; N-grams viewer)', \
+'File search (file content for words/collocations)', 'File-type converter (csv, docx, pdf, rtf --> txt)', \
 'Find non-related documents', 'Language detection', 'Newspaper article/Document titles', \
-'Search text file(s) for n-grams & co-occurrences (N-grams viewer)', \
-'Search text file(s) for words/collocations', \
 'Similarities between documents (via Java Lucene)', 'Similarities between documents (via Python difflib)', \
 'Similarities between words (Levenshtein distance)', 'Spelling checkers', 'Spelling checker cleaner (Find & Replace string)'
 

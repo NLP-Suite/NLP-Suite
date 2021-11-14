@@ -434,8 +434,8 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
-IO_setup_display_brief=False
-GUI_width=GUI_IO_util.get_GUI_width(1)
+IO_setup_display_brief=True
+GUI_width=GUI_IO_util.get_GUI_width(3)
 GUI_height=480 # height of GUI with full I/O display
 
 if IO_setup_display_brief:
@@ -567,7 +567,7 @@ sentence_index_checkbox = tk.Checkbutton(window, state='disabled', text='Do sent
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sentence_index_checkbox)
 
 shape_of_stories_var.set(0)
-shape_of_stories_checkbox = tk.Checkbutton(window, text='Do sentiments fluctuate across documents (\'Shape of stories\')', variable=shape_of_stories_var, onvalue=1, offvalue=0)
+shape_of_stories_checkbox = tk.Checkbutton(window, text='Do sentiments fluctuate across documents (Open \'Shape of stories\' GUI)', variable=shape_of_stories_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,shape_of_stories_checkbox)
 
 # doNotCreateIntermediateFiles_var.set(1)

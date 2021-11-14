@@ -83,6 +83,11 @@ def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, cente
     return y_multiplier_integer
 
 if sys.platform == 'darwin': #Mac OS
+    about_button_x_coordinate = 330 # get_labels_x_coordinate() + 100
+    release_history_button_x_coordinate = 510 # get_labels_x_coordinate() + 100
+    team_button_x_coordinate = 690 # get_labels_x_coordinate() + 100
+    cite_button_x_coordinate = 870 # get_labels_x_coordinate() + 100
+
     help_button_x_coordinate = 70
     labels_x_coordinate = 150  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 160
@@ -108,6 +113,11 @@ if sys.platform == 'darwin': #Mac OS
     SVO_3rd_column_top = 850
 
 else: #windows and anything else
+    about_button_x_coordinate = 230 # get_labels_x_coordinate() + 100
+    release_history_button_x_coordinate = 400 # get_labels_x_coordinate() + 100
+    team_button_x_coordinate = 570 # get_labels_x_coordinate() + 100
+    cite_button_x_coordinate = 740 # get_labels_x_coordinate() + 100
+    help_button_x_coordinate = 70
     help_button_x_coordinate = 50
     labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 140
@@ -146,9 +156,9 @@ def get_GUI_width(size_type=1):
             return 1400
     elif sys.platform == 'win32': # for now we have two basic sizes
         if size_type == 1:
-            return 1250
+            return 1100
         if size_type == 2:
-                return 1300
+                return 1200
         elif size_type==3:
             return 1300
         elif size_type==4:
@@ -239,9 +249,9 @@ def check_missingIO(window,missingIO,config_filename,IO_setup_display_brief,Scri
         mutually_exclusive_msg='The two I/O options - "Input file" and "Input files directory" - are mutually exclusive. You can only select one or the other. In other words, you can choose to work with a sigle file in input or with many files stored in a directory.\n\n'
 
     if len(missingIO)>0:
+        Run_Button_Off = True
         if not silent:
             mb.showwarning(title='Warning', message='The following required INPUT/OUTPUT information is missing in config file ' + config_filename + ':\n\n' + missingIO + '\n\n' + mutually_exclusive_msg + run_button_disabled_msg + 'Please, click on the "' + IO_button_name + '" ' + button + ' at the top of the GUI and enter the required I/O information.')
-            Run_Button_Off=True
     if Run_Button_Off==True:
         run_button_state="disabled"
     else:
@@ -318,7 +328,7 @@ def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
 
 # TODO
 # 2 widgets max for now; should allow more, dynamically
-# called by
+# return a list; see comment at end of function
 def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue='',textCaption2='',defaultValue2=''):
     value1=defaultValue
     value2=defaultValue2
