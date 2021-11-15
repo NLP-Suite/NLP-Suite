@@ -205,7 +205,7 @@ def check_newest_release(current_release: str):
         if int(current_release_parts[1])>int(GitHub_release_parts[1]):
             return
         else:
-            if int(current_release_parts[2]) > int(GitHub_release_parts[2]):
+            if int(current_release_parts[2]) >= int(GitHub_release_parts[2]):
                 return
             else:
                 old_version = True
