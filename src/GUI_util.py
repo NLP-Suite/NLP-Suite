@@ -180,7 +180,6 @@ def check_newest_release(current_release: str):
     # check internet connection
     if not IO_internet_util.check_internet_availability_warning("Automatic check for NLP Suite newest release version on GitHub"):
         return
-    # current_release = '1.5.9' # line used for testing
     setup_folder="setup_Windows"
     update_command_auto='update_NLP-Suite_auto.bat'
     update_command='update_NLP-Suite.bat'
@@ -194,18 +193,22 @@ def check_newest_release(current_release: str):
     except:
         mb.showwarning(title='Internet connection error', message="The attempt to connect to GitHub failed.\n\nIt is not possible to check the latest release of the NLP Suite at this time. You can continue run your current release and try again later.")
         return
+    # current_release = '1.9.9' # line used for testing
     # split the text string of release version (e.g., 1.5.9) into three parts separated by .
     current_release_parts=[current_release[i:i + 1] for i in range(0, len(current_release), 2)]
     GitHub_release_parts=[GitHub_newest_release[i:i + 1] for i in range(0, len(GitHub_newest_release), 2)]
     old_version = False
     # check numbers
-    if int(current_release_parts[0])<int(GitHub_release_parts[0]):
-        old_version = True
-    if int(current_release_parts[1])<int(GitHub_release_parts[1]):
-        old_version = True
-    if int(current_release_parts[0])==int(GitHub_release_parts[0]) and int(current_release_parts[1])==int(GitHub_release_parts[1]):
-        if int(current_release_parts[2])<int(GitHub_release_parts[2]):
-            old_version = True
+    if int(current_release_parts[0])>int(GitHub_release_parts[0]):
+        return
+    else:
+        if int(current_release_parts[1])>int(GitHub_release_parts[1]):
+            return
+        else:
+            if int(current_release_parts[2]) > int(GitHub_release_parts[2]):
+                return
+            else:
+                old_version = True
     if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != current_release:
         result = mb.askyesno("NLP Suite Outdated",
                     "You are running NLP Suite release version " + str(current_release) + " an OLD version.\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) +

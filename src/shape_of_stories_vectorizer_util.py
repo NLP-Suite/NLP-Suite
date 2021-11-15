@@ -21,6 +21,9 @@ class Vectorizer:
         self.window_size = window_size
         self.narrative_file_paths = self.parse_input_data()
         self.sentiment_vector_size = 10
+        self.doNotRepeat1 = False
+        self.doNotRepeat2 = False
+        self.result = False
         self.min_doc_len, self.max_doc_len, self.avg_doc_len, self.doc_len = self.compute_min_max_doc_len()
 
         if self.window_size >= self.min_doc_len:
@@ -34,7 +37,6 @@ class Vectorizer:
 
     def compute_min_max_doc_len(self):
         doclengths = []
-        doNotRepeat=False
         filesToDelete = []
         addedFiles = []
 
@@ -58,21 +60,24 @@ class Vectorizer:
                     splitted = [x for _, x in df.groupby(df["Document"])]
                     for index,sub_df in enumerate(splitted):
                         if len(sub_df) == 1:
-                            messagebox.showwarning(title='Sentiment Analysis Score Error',
-                                               message="Document:" + doc_ls[index] + " only contains one sentiment score.\n\n"
-                                                       + "This document will be dropped from the analyses.")
-                            doNotRepeat = messagebox.askyesno("Python","Please, do NOT show this message again for any similar subsequent warning?")
+                            if self.doNotRepeat1 == False:
+                                messagebox.showwarning(title='Sentiment Analysis Score Error',
+                                                   message="Document:" + doc_ls[index] + " only contains one sentiment score.\n\n"
+                                                           + "This document will be dropped from the analyses.")
+                                doNotRepeat1 = messagebox.askyesno("Python","Please, show this message again for any similar subsequent warning")
+                                self.doNotRepeat1 = not(doNotRepeat1)
                             splitted.pop(index)
                             continue #won't add to doclengths list
                         elif len(sub_df) < 10:
-                            if doNotRepeat == False:
+                            if self.doNotRepeat2 == False:
                                 # TODO should export csv file with culprit files
                                 result = messagebox.askyesno("Sentiment Analysis Score Error",
                                                              "Document " + doc_ls[index] +
                                                              " contains less than 10 sentiment scores.\n\n" +
                                                              "The document is too short compared to others in the corpus. It might influence the analysis of shape of stories.\n\n" +
                                                              "Would you like to drop this document from the analyses?")
-                                doNotRepeat = messagebox.askyesno("Python","Please, do NOT show this message again for any similar subsequent warning?")
+                                doNotRepeat2 = messagebox.askyesno("Python","Please, show this message again for any similar subsequent warning")
+                                self.doNotRepeat2 = not(doNotRepeat2)
                             if result:
                                 splitted.pop(index)
                                 continue
