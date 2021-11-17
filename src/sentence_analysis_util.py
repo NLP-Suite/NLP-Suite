@@ -144,7 +144,9 @@ def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,creat
 # ConnlTable is the inputFilename
 def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_verb,openOutputFiles,createExcelCharts):
     filesToOpen=[]
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running WordNet charts by sentence index at', True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running WordNet charts by sentence index at',
+                                                 True, '', True, '', True)
+
     if noun_verb=='NOUN':
         checklist = ['NN','NNP','NNPS','NNS']
     else:
@@ -354,9 +356,8 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
     if errorFound:
         return
 
-    startTime=IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running Sentence Complexity at', True,
-                                       '\n\nYou can follow Sentence Complexity in command line.')
-
+    startTime=IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running Sentence Complexity at',
+                                                 True, '\n\nYou can follow Sentence Complexity in command line.', True, '', True)
     index = 0
     output_csv = []
 

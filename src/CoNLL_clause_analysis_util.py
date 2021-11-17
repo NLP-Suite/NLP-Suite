@@ -24,9 +24,9 @@ import Stanford_CoreNLP_tags_util
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
-global recordID_position, documentId_position  # , data, data_divided_sents
-recordID_position = 8
-documentId_position = 10
+recordID_position = 9 # NEW CoNLL_U
+sentenceID_position = 10 # NEW CoNLL_U
+documentID_position = 11 # NEW CoNLL_U
 
 # Following are used if running all analyses to prevent redundancy
 # filesToOpen = []  # Store all files that are to be opened once finished
@@ -43,8 +43,9 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CLAUSE ANALYSES at', True)
-    
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CLAUSE ANALYSES at',
+                                                 True, '', True, '', True)
+
     #output file names
     #clausal_analysis_file_name contains all the CoNLL table records that have a clausal tag
     clausal_analysis_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clause tags', 'list')
@@ -60,7 +61,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
             return
         clausal_list= stats_clauses_output(data,data_divided_sents)
 
-        IO_csv_util.list_to_csv(GUI_util.window,IO_CoNLL_util.sort_output_list('CLAUSE TAGS',clausal_list,documentId_position), clausal_analysis_file_name)
+        IO_csv_util.list_to_csv(GUI_util.window,IO_CoNLL_util.sort_output_list('CLAUSE TAGS',clausal_list), clausal_analysis_file_name)
         column_stats=statistics_csv_util.compute_stats_CoreNLP_tag(clausal_list,7,"Clause Tags, Frequency","CLAUSALTAG")
 
         clausal_analysis_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clause tags', 'stats')
@@ -128,22 +129,22 @@ def stats_clauses_output(data,data_divided_sents):
     for i in data:
         # print('i[7]',i[7])
         if i[7] == 'VP':
-            list_clauses.append(i+['Verb phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[10],i[9])])
+            list_clauses.append(i+['Verb phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
         elif i[7] == 'NP':
-            list_clauses.append(i+['Noun phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[10],i[9])])
+            list_clauses.append(i+['Noun phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
         elif i[7] == 'ADJP':
-            list_clauses.append(i+['Adjective phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[10],i[9])])
+            list_clauses.append(i+['Adjective phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
         elif i[7] == 'AP':
-            list_clauses.append(i+['Adverb phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[10],i[9])])
+            list_clauses.append(i+['Adverb phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
         elif 'PP' in i[7]: # different types of PPs
-            list_clauses.append(i+['Prepositional phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[10],i[9])])
+            list_clauses.append(i+['Prepositional phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
         elif i[7] == 'S':
-            list_clauses.append(i+['Sentence',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[10],i[9])])
+            list_clauses.append(i+['Sentence',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
         elif i[7] == 'SBAR':
-            list_clauses.append(i+['Subordinate clause',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[10],i[9])])
+            list_clauses.append(i+['Subordinate clause',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
         elif i[7] == 'SBARQ':
-            list_clauses.append(i+['Direct question (wh)',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[10],i[9])])
+            list_clauses.append(i+['Direct question (wh)',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
         else:
-            list_clauses.append(i+['',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[10],i[9])])
+            list_clauses.append(i+['',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
     return list_clauses
 

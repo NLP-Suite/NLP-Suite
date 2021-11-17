@@ -19,7 +19,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
         remove_stopwords_var, lemmatize_var, vector_size_var, window_var, min_count_var):
 
     ## if statements for any requirements
-    filesToOpen = []
+
     filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
                              remove_stopwords_var, lemmatize_var, vector_size_var, window_var, min_count_var)
 
@@ -91,7 +91,7 @@ lemmatize_var=tk.IntVar()
 vector_size_var=tk.IntVar()
 window_var=tk.IntVar()
 min_count_var=tk.IntVar()
-
+#sg_var = tk.IntVar() ## to be added
 
 ##
 remove_stopwords_var.set(1)

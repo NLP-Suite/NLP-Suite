@@ -14,8 +14,6 @@ WE DO NOT USE ANY OF THESE RECOMMENDATIONS
 """
 
 import sys
-from typing import Any, Tuple
-
 import IO_libraries_util
 import GUI_util
 
@@ -184,10 +182,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
         'SVO':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Negation","Location",'Person','Time','Time normalized NER','Sentence'],
         'OpenIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Sentence'],
-        # Chen
-        # added Deps column
-        'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
-        'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps","Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
+        'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
+        'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
     }
     param_number = 0
     param_number_NN = 0
@@ -1461,21 +1457,10 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
         clauseID = 0
         tokens = json["sentences"][i]["tokens"]
         dependencies = json["sentences"][i]["enhancedDependencies"]
-        #try enhancedPlusPlus instead
-        #dependencies = json["sentences"][i]["enhancedPlusPlusDependencies"]
         depLib = {}
-        enhancedDepLib = {}
         keys = []
         for item in dependencies:
             depLib[item['dependent']] = (item['dep'], item['governor'])
-
-            #create an enhanced dependency list
-            if item['dependent'] in enhancedDepLib:
-                enhancedDepLib[item['dependent']].append((item['dep'], item['governor']))
-            else:
-                enhancedDepLib[item['dependent']] = [(item['dep'], item['governor'])]
-
-
             keys.append(item['dependent'])
         depID = 1
         for row in tokens:
@@ -1491,19 +1476,9 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
             if depID not in depLib:
                 temp.append("")
                 temp.append("")
-                temp.append("")
             else:
                 temp.append(depLib[depID][1])
                 temp.append(depLib[depID][0])
-                #Add enhanced dep here
-                depString = ""
-                dep: Tuple[int, str]
-                for dep in enhancedDepLib[depID]:
-                    if len(depString) != 0:
-                        depString = depString + "|"
-                    depString = depString + str(dep[1]) + ":" + str(dep[0])
-                temp.append(depString)
-
             depID += 1
             if pcfg:
                 temp.append(cur_clause[clauseID][0])
@@ -1522,13 +1497,12 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
             # print("Row in the CSV: ")
             # print(temp)
             # if dateInclude == 1 and dateStr!='DATE ERROR!!!':
-            #     temp.append(d
-            #         check_sentence_length(len(tokens), sentenceID, config_filename)
-            #
-            #         # print("The result after adding the ", sentenceID, "th sentence: ")
-            #         # pprint.pprint(result)
-            #
-            #     return result, recordIDateStr)
+            #     temp.append(dateStr)
+
+        check_sentence_length(len(tokens), sentenceID, config_filename)
+
+        # print("The result after adding the ", sentenceID, "th sentence: ")
+        # pprint.pprint(result)
 
     return result, recordID
 

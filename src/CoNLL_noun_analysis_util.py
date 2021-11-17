@@ -24,9 +24,8 @@ import Stanford_CoreNLP_tags_util
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
-global recordID_position, documentId_position  # , data, data_divided_sents
-recordID_position = 8
-documentId_position = 10
+sentenceID_position = 10 # NEW CoNLL_U
+documentID_position = 11 # NEW CoNLL_U
 
 # Following are used if running all analyses to prevent redundancy
 inputFilename = ''
@@ -65,19 +64,19 @@ def noun_POSTAG_DEPREL_compute_frequencies(data, data_divided_sents):
     for i in data:
         if i[3] in ['NN', 'NNS']:
             list_nouns_postag.append(i + ['Improper', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-                                                                                           i[documentId_position],
-                                                                                           i[9])])
+                                                                                           i[documentID_position],
+                                                                                           i[sentenceID_position])])
         elif i[3] in ['NNP', 'NNPS']:
             list_nouns_postag.append(
-                i + ['Proper', IO_CoNLL_util.Sentence_searcher(data_divided_sents, i[documentId_position], i[9])]
+                i + ['Proper', IO_CoNLL_util.Sentence_searcher(data_divided_sents, i[documentID_position], i[sentenceID_position])]
             )
         if i[6] in ['obj', 'iobj', 'nsubj', 'nsubj:pass', 'csubj', 'csubj:pass']:
             list_nouns_deprel.append(
-                i + [i[6], IO_CoNLL_util.Sentence_searcher(data_divided_sents, i[documentId_position], i[9])]
+                i + [i[6], IO_CoNLL_util.Sentence_searcher(data_divided_sents, i[documentID_position], i[sentenceID_position])]
             )
         if i[4] in ['ORGANIZATION', 'PERSON', 'COUNTRY', 'CITY', 'STATE_OR_PROVINCE']:
             list_nouns_ner.append(
-                i + [i[4], IO_CoNLL_util.Sentence_searcher(data_divided_sents, i[documentId_position], i[9])]
+                i + [i[4], IO_CoNLL_util.Sentence_searcher(data_divided_sents, i[documentID_position], i[sentenceID_position])]
             )
 
     noun_postag_stats = [['Noun POS Tags', 'Frequencies'],
@@ -111,7 +110,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     filesToOpen = []  # Store all files that are to be opened once finished
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running NOUN ANALYSES at',
-                                       True)  # TODO: fix
+                                                 True, '', True, '', True)
 
     postag_list, postag_counter, deprel_list, deprel_counter, ner_list, ner_counter = compute_stats(data)
 
@@ -135,24 +134,21 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     # save csv files -------------------------------------------------------------------------------------------------
 
     errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                         IO_CoNLL_util.sort_output_list('Noun POS Tags', noun_postag,
-                                                                        documentId_position),
+                                         IO_CoNLL_util.sort_output_list('Noun POS Tags', noun_postag),
                                          noun_postag_file_name)
     if errorFound == True:
         return filesToOpen
     filesToOpen.append(noun_postag_file_name)
 
     errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                         IO_CoNLL_util.sort_output_list('Noun DEPREL Tags', noun_deprel,
-                                                                        documentId_position),
+                                         IO_CoNLL_util.sort_output_list('Noun DEPREL Tags', noun_deprel),
                                          noun_deprel_file_name)
     if errorFound == True:
         return filesToOpen
     filesToOpen.append(noun_deprel_file_name)
 
     errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                         IO_CoNLL_util.sort_output_list('Noun NER Tags', noun_ner,
-                                                                        documentId_position),
+                                         IO_CoNLL_util.sort_output_list('Noun NER Tags', noun_ner),
                                          noun_ner_file_name)
     if errorFound == True:
         return filesToOpen
