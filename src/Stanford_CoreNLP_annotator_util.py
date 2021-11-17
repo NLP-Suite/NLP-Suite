@@ -651,6 +651,24 @@ def date_in_filename(document, **kwargs):
     return date_str
 
 # ["Word", "Normalized date", "tid","tense","information","Sentence ID", "Sentence", "Document ID", "Document"],
+def date_get_tense(norm_date):
+    tense = ''
+    # print(norm_date)
+    if (len(norm_date) >= 9 and 'OFFSET P-' in norm_date) or "PAST" in norm_date:
+        # print('past')
+        tense = 'PAST'
+    elif len(norm_date) >= 6 and 'OFFSET' in norm_date:
+        # print("future")
+        tense = 'FUTURE'
+    elif 'THIS' in norm_date or 'PRESENT' in norm_date:
+        tense = 'PRESENT'
+        # print('present')
+    else:
+        tense = "OTHER" # TODO separate out days of week, months of year
+    return tense
+
+# def date_get_tense(norm_date):
+
 def process_json_normalized_date(config_filename,documentID, document, sentenceID,json, **kwargs):
     print("   Processing Json output file for NER NORMALIZED DATE annotator")
     extract_date_from_filename_var = False
@@ -739,24 +757,6 @@ def process_json_normalized_date(config_filename,documentID, document, sentenceI
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
     return result
-
-# def date_get_tense(norm_date):
-
-def date_get_tense(norm_date):
-    tense = ''
-    # print(norm_date)
-    if (len(norm_date) >= 9 and 'OFFSET P-' in norm_date) or "PAST" in norm_date:
-        # print('past')
-        tense = 'PAST'
-    elif len(norm_date) >= 6 and 'OFFSET' in norm_date:
-        # print("future")
-        tense = 'FUTURE'
-    elif 'THIS' in norm_date or 'PRESENT' in norm_date:
-        tense = 'PRESENT'
-        # print('present')
-    else:
-        tense = "OTHER" # TODO separate out days of week, months of year
-    return tense
 
 def date_get_info(norm_date):
     norm_date = norm_date.strip()
@@ -863,33 +863,34 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
     result = []
     index = 0
     while index < len(NER):
+        temp=[]
         if NER[index][1] == 'CITY':
-            if index == len(NER)-1: # NER[index + 1] would break the code
-                break
-            if NER[index + 1][1] == 'STATE_OR_PROVINCE' and NER[index][1] == NER[index + 1][1] and abs(
-                    NER[index + 1][4] - NER[index][5]) <= 2:
-                temp = NER[index]
-                temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
-                result.append(temp)
-                index = index + 2
-            elif NER[index + 1][1] == 'COUNTRY' and NER[index][1] == NER[index + 1][1] and abs(
-                    NER[index + 1][4] - NER[index][5]) <= 2:
-                temp = NER[index]
-                temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
-                result.append(temp)
-                index = index + 2
+            if index < len(NER)-1: # NER[index + 1] would break the code
+                if index < len(NER) - 2:
+                    # check if a city is followed by both state/province and country e.g., Atlanta, Georgia, United States
+                    if NER[index + 1][1] == 'STATE_OR_PROVINCE' and NER[index + 2][1] == 'COUNTRY':
+                        temp = NER[index]
+                        temp[0] = NER[index][0] + ', ' + NER[index + 1][0] + ', ' + NER[index + 2][0]
+                        result.append(temp)
+                        index = index + 3
+                        continue # no need to process the next check already checked above
+                # check if a city is followed by either state/province and country e.g., Atlanta, Georgia or Atlanta, United States
+                if NER[index + 1][1] == 'STATE_OR_PROVINCE' or NER[index + 1][1] == 'COUNTRY':
+                    temp = NER[index]
+                    temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
+                    result.append(temp)
+                    index = index + 2
             else:
                 result.append(NER[index])
                 index = index + 1
         elif NER[index][1] == 'STATE_OR_PROVINCE':
-            if index == len(NER)-1: # NER[index + 1] would break the code
-                break
-            if NER[index + 1][1] == 'COUNTRY' and NER[index][1] == NER[index + 1][1] and abs(
-                    NER[index + 1][4] - NER[index][5]) <= 2:
-                temp = NER[index]
-                temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
-                result.append(temp)
-                index = index + 2
+            if index < len(NER)-1: # NER[index + 1] would break the code
+                # check if a state/province  is followed by a country e.g., Georgia, United States
+                if NER[index + 1][1] == 'COUNTRY':
+                    temp = NER[index]
+                    temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
+                    result.append(temp)
+                    index = index + 2
             else:
                 result.append(NER[index])
                 index = index + 1

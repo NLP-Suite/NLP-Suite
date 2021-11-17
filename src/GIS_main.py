@@ -83,6 +83,12 @@ def run(inputFilename,
     if csv_file != '':
         inputFilename=csv_file
 
+    if csv_file!='':
+        result = mb.askokcancel("GIS pipeline input file",
+                       "This is a reminder that you are now running the GIS pipeline with the csv input file\n\n"+csv_file+'\n\nPress Cancel then Esc to clear the csv file widget if you want to run the GIS pipeline from your input txt file(s) and try again.')
+        if result == False:
+            return
+
     geocoder = 'Nominatim'
     geoName = 'geo-' + str(geocoder[:3])
     kmloutputFilename = ''
