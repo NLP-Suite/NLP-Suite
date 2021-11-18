@@ -606,6 +606,6 @@ readMe_message="The Python 3 scripts provide ways of analyzing the emotional arc
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
 
-# check_IO_requirements(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get())
+check_IO_requirements(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get())
 
 GUI_util.window.mainloop()

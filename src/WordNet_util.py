@@ -27,7 +27,9 @@ filesToOpen=[]
 # written by Yi Wang April 2020
 # ConnlTable is the inputFilename
 def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_verb,openOutputFiles,createExcelCharts):
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running WordNet charts by sentence index at', True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running WordNet charts by sentence index at',
+                                                 True, '', True, '', True)
+
     if noun_verb=='NOUN':
         checklist = ['NN','NNP','NNPS','NNS']
     else:

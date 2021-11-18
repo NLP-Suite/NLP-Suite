@@ -34,15 +34,16 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         noun_analysis_var,
         verb_analysis_var,
         function_words_analysis_var):
+
     global recordID_position, documentId_position, data, data_divided_sents
+    recordID_position = 9 # NEW CoNLL_U
+    documentId_position = 11 # NEW CoNLL_U
 
     noResults = "No results found matching your search criteria for your input CoNLL file. Please, try different search criteria.\n\nTypical reasons for this warning are:\n   1.  You are searching for a token/word not found in the FORM or LEMMA fields (e.g., 'child' in FORM when in fact FORM contains 'children', or 'children' in LEMMA when in fact LEMMA contains 'child'; the same would be true for the verbs 'running' in LEMMA instead of 'run');\n   2. you are searching for a token that is a noun (e.g., 'children'), but you select the POS value 'VB', i.e., verb, for the POSTAG of searched token."
     filesToOpen = []  # Store all files that are to be opened once finished
     outputFiles = []
 
     withHeader = True
-    recordID_position = 8
-    documentId_position = 10
     data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
     if len(data) == 0:
         return
@@ -195,15 +196,15 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
             mb.showwarning(title='Searched Token Input Error', message=msg)
             return  # breaks loop
 
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CoNLL search at', True)
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CoNLL search at',
+                                                     True, '', True, '', True)
 
         withHeader = True
-        documentId_position = 10
         data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
 
         if len(data) <= 1000000:
             try:
-                data = sorted(data, key=lambda x: int(x[8]))
+                data = sorted(data, key=lambda x: int(x[recordID_position]))
             except:
                 mb.showwarning(title="CoNLLL table ill formed",
                                message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the Stanford CoreNLP parser since many scripts rely on the CoNLL table.")
@@ -981,5 +982,7 @@ readMe_message = "This Python 3 script will allow you to analyze in depth the co
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+
+IO_CoNLL_util.check_CoNLL(inputFilename.get())
 
 GUI_util.window.mainloop()

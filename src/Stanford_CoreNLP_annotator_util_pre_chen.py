@@ -14,8 +14,6 @@ WE DO NOT USE ANY OF THESE RECOMMENDATIONS
 """
 
 import sys
-from typing import Any, Tuple
-
 import IO_libraries_util
 import GUI_util
 
@@ -184,10 +182,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
         'SVO':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Negation","Location",'Person','Time','Time normalized NER','Sentence'],
         'OpenIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Sentence'],
-        # Chen
-        # added Deps column
-        'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
-        'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps","Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
+        'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
+        'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
     }
     param_number = 0
     param_number_NN = 0
@@ -651,24 +647,6 @@ def date_in_filename(document, **kwargs):
     return date_str
 
 # ["Word", "Normalized date", "tid","tense","information","Sentence ID", "Sentence", "Document ID", "Document"],
-def date_get_tense(norm_date):
-    tense = ''
-    # print(norm_date)
-    if (len(norm_date) >= 9 and 'OFFSET P-' in norm_date) or "PAST" in norm_date:
-        # print('past')
-        tense = 'PAST'
-    elif len(norm_date) >= 6 and 'OFFSET' in norm_date:
-        # print("future")
-        tense = 'FUTURE'
-    elif 'THIS' in norm_date or 'PRESENT' in norm_date:
-        tense = 'PRESENT'
-        # print('present')
-    else:
-        tense = "OTHER" # TODO separate out days of week, months of year
-    return tense
-
-# def date_get_tense(norm_date):
-
 def process_json_normalized_date(config_filename,documentID, document, sentenceID,json, **kwargs):
     print("   Processing Json output file for NER NORMALIZED DATE annotator")
     extract_date_from_filename_var = False
@@ -757,6 +735,24 @@ def process_json_normalized_date(config_filename,documentID, document, sentenceI
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
     return result
+
+# def date_get_tense(norm_date):
+
+def date_get_tense(norm_date):
+    tense = ''
+    # print(norm_date)
+    if (len(norm_date) >= 9 and 'OFFSET P-' in norm_date) or "PAST" in norm_date:
+        # print('past')
+        tense = 'PAST'
+    elif len(norm_date) >= 6 and 'OFFSET' in norm_date:
+        # print("future")
+        tense = 'FUTURE'
+    elif 'THIS' in norm_date or 'PRESENT' in norm_date:
+        tense = 'PRESENT'
+        # print('present')
+    else:
+        tense = "OTHER" # TODO separate out days of week, months of year
+    return tense
 
 def date_get_info(norm_date):
     norm_date = norm_date.strip()
@@ -863,34 +859,33 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
     result = []
     index = 0
     while index < len(NER):
-        temp=[]
         if NER[index][1] == 'CITY':
-            if index < len(NER)-1: # NER[index + 1] would break the code
-                if index < len(NER) - 2:
-                    # check if a city is followed by both state/province and country e.g., Atlanta, Georgia, United States
-                    if NER[index + 1][1] == 'STATE_OR_PROVINCE' and NER[index + 2][1] == 'COUNTRY':
-                        temp = NER[index]
-                        temp[0] = NER[index][0] + ', ' + NER[index + 1][0] + ', ' + NER[index + 2][0]
-                        result.append(temp)
-                        index = index + 3
-                        continue # no need to process the next check already checked above
-                # check if a city is followed by either state/province and country e.g., Atlanta, Georgia or Atlanta, United States
-                if NER[index + 1][1] == 'STATE_OR_PROVINCE' or NER[index + 1][1] == 'COUNTRY':
-                    temp = NER[index]
-                    temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
-                    result.append(temp)
-                    index = index + 2
+            if index == len(NER)-1: # NER[index + 1] would break the code
+                break
+            if NER[index + 1][1] == 'STATE_OR_PROVINCE' and NER[index][1] == NER[index + 1][1] and abs(
+                    NER[index + 1][4] - NER[index][5]) <= 2:
+                temp = NER[index]
+                temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
+                result.append(temp)
+                index = index + 2
+            elif NER[index + 1][1] == 'COUNTRY' and NER[index][1] == NER[index + 1][1] and abs(
+                    NER[index + 1][4] - NER[index][5]) <= 2:
+                temp = NER[index]
+                temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
+                result.append(temp)
+                index = index + 2
             else:
                 result.append(NER[index])
                 index = index + 1
         elif NER[index][1] == 'STATE_OR_PROVINCE':
-            if index < len(NER)-1: # NER[index + 1] would break the code
-                # check if a state/province  is followed by a country e.g., Georgia, United States
-                if NER[index + 1][1] == 'COUNTRY':
-                    temp = NER[index]
-                    temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
-                    result.append(temp)
-                    index = index + 2
+            if index == len(NER)-1: # NER[index + 1] would break the code
+                break
+            if NER[index + 1][1] == 'COUNTRY' and NER[index][1] == NER[index + 1][1] and abs(
+                    NER[index + 1][4] - NER[index][5]) <= 2:
+                temp = NER[index]
+                temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
+                result.append(temp)
+                index = index + 2
             else:
                 result.append(NER[index])
                 index = index + 1
@@ -1462,21 +1457,10 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
         clauseID = 0
         tokens = json["sentences"][i]["tokens"]
         dependencies = json["sentences"][i]["enhancedDependencies"]
-        #try enhancedPlusPlus instead
-        #dependencies = json["sentences"][i]["enhancedPlusPlusDependencies"]
         depLib = {}
-        enhancedDepLib = {}
         keys = []
         for item in dependencies:
             depLib[item['dependent']] = (item['dep'], item['governor'])
-
-            #create an enhanced dependency list
-            if item['dependent'] in enhancedDepLib:
-                enhancedDepLib[item['dependent']].append((item['dep'], item['governor']))
-            else:
-                enhancedDepLib[item['dependent']] = [(item['dep'], item['governor'])]
-
-
             keys.append(item['dependent'])
         depID = 1
         for row in tokens:
@@ -1492,19 +1476,9 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
             if depID not in depLib:
                 temp.append("")
                 temp.append("")
-                temp.append("")
             else:
                 temp.append(depLib[depID][1])
                 temp.append(depLib[depID][0])
-                #Add enhanced dep here
-                depString = ""
-                dep: Tuple[int, str]
-                for dep in enhancedDepLib[depID]:
-                    if len(depString) != 0:
-                        depString = depString + "|"
-                    depString = depString + str(dep[1]) + ":" + str(dep[0])
-                temp.append(depString)
-
             depID += 1
             if pcfg:
                 temp.append(cur_clause[clauseID][0])
@@ -1523,13 +1497,12 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
             # print("Row in the CSV: ")
             # print(temp)
             # if dateInclude == 1 and dateStr!='DATE ERROR!!!':
-            #     temp.append(d
-            #         check_sentence_length(len(tokens), sentenceID, config_filename)
-            #
-            #         # print("The result after adding the ", sentenceID, "th sentence: ")
-            #         # pprint.pprint(result)
-            #
-            #     return result, recordIDateStr)
+            #     temp.append(dateStr)
+
+        check_sentence_length(len(tokens), sentenceID, config_filename)
+
+        # print("The result after adding the ", sentenceID, "th sentence: ")
+        # pprint.pprint(result)
 
     return result, recordID
 

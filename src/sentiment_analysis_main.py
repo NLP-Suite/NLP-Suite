@@ -95,7 +95,7 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
         vader_var=1
 
     #CORENLP  _______________________________________________________
-    if CoreNLP_var==1:
+    if CoreNLP_var==1 and (mean_var or median_var):
         #check internet connection
         import IO_internet_util
         if not IO_internet_util.check_internet_availability_warning('Stanford CoreNLP Sentiment Analysis'):
@@ -170,12 +170,14 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
         # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CoreNLP Sentiment Analysis at', True)
 
     #HEDONOMETER _______________________________________________________
-    if hedonometer_var==1:
+    if hedonometer_var==1 and (mean_var or median_var):
         if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'hedonometer.json', 'sentiment_analysis_hedonometer_util.py')==False:
             return
         if IO_libraries_util.inputProgramFileCheck('sentiment_analysis_hedonometer_util.py')==False:
             return
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running HEDONOMETER Sentiment Analysis at', True)
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running HEDONOMETER Sentiment Analysis at',
+                                                     True, '', True, '', True)
+
         if len(inputFilename)>0:
             fileNamesToPass = []  # LINE ADDED
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SC', 'Hedonometer', '', '', '', False, True)
@@ -226,10 +228,11 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running HEDONOMETER Sentiment Analysis at', True, '', True, startTime)
 
     #SentiWordNet _______________________________________________________
-    if SentiWordNet_var==1:
+    if SentiWordNet_var==1 and (mean_var or median_var):
         if IO_libraries_util.inputProgramFileCheck('sentiment_analysis_SentiWordNet_util.py')==False:
             return
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running SentiWordNet Sentiment Analysis at', True)
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running SentiWordNet Sentiment Analysis at',
+                                                     True, '', True, '', True)
 
         if len(inputFilename)>0:
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SC', 'SentiWordNet', '', '', '', False, True)
@@ -273,12 +276,14 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running SentiWordNet Sentiment Analysis at', True, '', True, startTime)
 
     #VADER _______________________________________________________
-    if vader_var==1:
+    if vader_var==1 and (mean_var or median_var):
         if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'vader_lexicon.txt', 'sentiment_analysis_VADER_util.py')==False:
             return
         if IO_libraries_util.inputProgramFileCheck('sentiment_analysis_VADER_util.py')==False:
             return
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VADER Sentiment Analysis at', True)
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VADER Sentiment Analysis at',
+                                                     True, '', True, '', True)
+
         if len(inputFilename)>0:
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,  outputDir, '.csv', 'SC', 'VADER', '', '', '', False, True)
         else:
@@ -321,12 +326,14 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VADER Sentiment Analysis at', True, '', True, startTime)
 
     #ANEW _______________________________________________________
-    if anew_var==1:
+    if anew_var==1 and (mean_var or median_var):
         if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'EnglishShortenedANEW.csv', 'sentiment_analysis_ANEW')==False:
             return
         if IO_libraries_util.inputProgramFileCheck('sentiment_analysis_ANEW_util.py')==False:
             return
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running ANEW Sentiment Analysis at', True)
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running ANEW Sentiment Analysis at',
+                                                     True, '', True, '', True)
+
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SC', 'ANEW', '', '', '', False, True)
 
         sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, outputFilename, mode)

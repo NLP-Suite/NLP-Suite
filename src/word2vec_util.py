@@ -46,7 +46,7 @@ except:
         '\n\nThis imports the package.')
     sys.exit(0)
 
-nlp = spacy.load('en_core_web_sm', disable=['parser', 'ner'])
+nlp = spacy.load('en_core_web_sm')
 
 def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                              remove_stopwords_var, lemmatize_var, vector_size_var, window_var, min_count_var):
@@ -59,29 +59,68 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                      message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a different directory and try again.')
         return
 
-    all_input_docs = []
+    ## list for csv file
+    word = []
+    lemmatized_word = []
+    vector = []
+    sentenceID = []
+    sentence = []
+    documentID = []
+    document = []
+
+    ## word list for word2vec
+    word_list = []
+
+    all_input_docs = {}
+    dId = 0
     for doc in os.listdir(inputDir):
         if doc.endswith('.txt'):
             with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
+                dId += 1
                 text = file.read()
-                all_input_docs.append(text)
+                documentID.append(dId)
+                document.append(os.path.join(inputDir, doc))
+                all_input_docs[dId] = text
 
-    sentences = make_sentences(all_input_docs)
+    document_df = pd.DataFrame({'documentID': documentID, 'document': document})
+
+    documentID = []
+    for idx, txt in enumerate(all_input_docs.items()):
+        sentences = sent_tokenize(txt[1])
+        sId = 0
+        for sent in sentences:
+            sId += 1
+            words = make_words(sent)
+            word_list.append(words)
+            for w in words:
+                documentID.append(txt[0])
+                sentenceID.append(sId)
+                sentence.append(sent)
+                word.append(w)
+
+    sentence_df = pd.DataFrame({'word': word, 'sentence': sentence, 'sentenceID': sentenceID, 'documentID': documentID})
+
 
     if remove_stopwords_var == True:
-        all_sentences = list(remove_stopwords(sentences))
+        sentence_df = remove_stopwords_df(sentence_df)
+        word_list = list(remove_stopwords(word_list))
+
     else:
-        all_sentences = list(sentences)
+        word_list = list(word_list)
 
     ## lemmatize
-    allowed_postags = ['NOUN', 'ADJ', 'VERB', 'ADV']
+    ## allowed_postags = ['NOUN', 'ADJ', 'VERB', 'ADV']
     sentences_out = []
-    for sent in all_sentences:
-        doc = nlp(" ".join(sent))
+    for word_in_sent in word_list:
+        doc = nlp(" ".join(word_in_sent))
         if lemmatize_var == True:
-            sentences_out.append([token.lemma_ for token in doc if token.pos_ in allowed_postags])
+            sentences_out.append([token.lemma_ for token in doc])
+            lemmatized_word.extend([token.lemma_ for token in doc])
         else:
-            sentences_out.append([token for token in doc if token.pos_ in allowed_postags])
+            sentences_out.append([token for token in doc])
+
+    if (len(lemmatized_word)>0):
+        sentence_df['lemmatized_word'] = lemmatized_word
 
     ## train model
     model = gensim.models.Word2Vec(
@@ -108,13 +147,24 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     plt.savefig(fileName)
     filesToOpen.append(fileName)
 
+
     word_vector_csv = pd.DataFrame()
     for v in words:
         word_vector_csv = word_vector_csv.append(pd.Series([v, word_vectors[v]]), ignore_index=True)
     word_vector_csv.columns = ['word', 'vector']
 
+    '''
     fileName = os.path.join(outputDir, "NLP_Gensim_Word2Vec_list.csv")
     word_vector_csv.to_csv(fileName, index=False)
+    filesToOpen.append(fileName)
+    
+    '''
+
+    combined_df = pd.merge(document_df, sentence_df, on='documentID', how='inner')
+    result_df = pd.merge(combined_df, word_vector_csv, on='word', how='inner')
+
+    fileName = os.path.join(outputDir, "NLP_Gensim_Word2Vec_list.csv")
+    result_df.to_csv(fileName, index=False)
     filesToOpen.append(fileName)
 
     return filesToOpen
@@ -123,6 +173,10 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
 
 ## functions
+
+def make_words(sent):
+    words = list(sent_to_words(sent))
+    return words
 
 def sent_to_words(sent):
     return (gensim.utils.simple_preprocess(sent, deacc=True))
@@ -138,6 +192,12 @@ def make_sentences(all_input_docs):
 def remove_stopwords(sentences):
     for sentence in sentences:
         yield [s for s in sentence if s not in stop_words]
+
+def remove_stopwords_df(sentence_df):
+    for idx, row in sentence_df.iterrows():
+        if row['word'] in stop_words:
+            sentence_df.drop(idx, inplace=True)
+    return sentence_df
 
 def plot_2d_graph(words, xs, ys):
     plt.figure(figsize=(8, 6))
