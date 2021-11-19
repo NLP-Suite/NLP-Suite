@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Nominalization",['tkinter','nltk','pywsd','csv','re','os','collections'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"Nominalization",['tkinter','nltk','pywsd','wn','csv','re','os','collections'])==False:
     sys.exit(0)
 
 import os
@@ -22,7 +22,7 @@ IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
 
 from nltk import tokenize
-# MUST use this  version or code will break pywsd~=1.2.4 pip install pywsd~=1.2.4; even try pip install pywsd=1.2.2
+# MUST use this  version or code will break no longer true; pywsd~=1.2.4 pip install pywsd~=1.2.4; even try pip install pywsd=1.2.2
 #   or this version pip install pywsd==1.0.2
 # https://github.com/alvations/pywsd/issues/65
 # pywsd depends upon wn below; if the code breaks reinstall wn
@@ -192,7 +192,10 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
         else:
             inputDocs = [inputFilename]
 
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Nominalization at', True)
+        nDocs=len(inputDocs)
+
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Nominalization at',
+                                           True, '', True, '', True)
 
         #add all into a sum
         result_dir = []
@@ -207,7 +210,8 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
         for doc in inputDocs:
 
             docID=docID+1
-            print("Processing document", doc, "\n")
+            head, tail = os.path.split(doc)
+            print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
             #open the doc and create the list of result (words, T/F)
             fin = open(doc, 'r',encoding='utf-8',errors='ignore')
             # result1 contains the sentence and nominalized values for a specific document
