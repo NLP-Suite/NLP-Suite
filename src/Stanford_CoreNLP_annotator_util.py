@@ -863,40 +863,26 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
     result = []
     index = 0
     while index < len(NER):
-        temp=[]
+        temp = NER[index]
         if NER[index][1] == 'CITY':
             if index < len(NER)-1: # NER[index + 1] would break the code
-                if index < len(NER) - 2:
-                    # check if a city is followed by both state/province and country e.g., Atlanta, Georgia, United States
-                    if NER[index + 1][1] == 'STATE_OR_PROVINCE' and NER[index + 2][1] == 'COUNTRY':
-                        temp = NER[index]
-                        temp[0] = NER[index][0] + ', ' + NER[index + 1][0] + ', ' + NER[index + 2][0]
-                        result.append(temp)
-                        index = index + 3
-                        continue # no need to process the next check already checked above
-                # check if a city is followed by either state/province and country e.g., Atlanta, Georgia or Atlanta, United States
+                # check if a city is followed by EITHER state/province OR country e.g., Atlanta, Georgia or Atlanta, United States
                 if NER[index + 1][1] == 'STATE_OR_PROVINCE' or NER[index + 1][1] == 'COUNTRY':
-                    temp = NER[index]
                     temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
-                    result.append(temp)
-                    index = index + 2
-            else:
-                result.append(NER[index])
-                index = index + 1
+                    index = index + 1
+                    # check if a city and state/province are also followed by country e.g., Atlanta, Georgia, United States
+                    if index < len(NER) - 1:
+                        if NER[index + 1][1] == 'COUNTRY':
+                            temp[0] = temp[0] + ', ' + NER[index + 1][0]
+                            index = index + 1
         elif NER[index][1] == 'STATE_OR_PROVINCE':
             if index < len(NER)-1: # NER[index + 1] would break the code
                 # check if a state/province  is followed by a country e.g., Georgia, United States
                 if NER[index + 1][1] == 'COUNTRY':
-                    temp = NER[index]
                     temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
-                    result.append(temp)
-                    index = index + 2
-            else:
-                result.append(NER[index])
-                index = index + 1
-        else:
-            result.append(NER[index])
-            index = index + 1
+                    index = index + 1
+        result.append(temp)
+        index = index + 1
     return result
 
 
