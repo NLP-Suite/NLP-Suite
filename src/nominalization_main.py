@@ -55,6 +55,7 @@ def nominalized_verb_detection(docID,doc,sent):
     sentences = tokenize.sent_tokenize(sent)
     result = []
     result1 = []
+    verbs = []
     true_word = []
     false_word = []
     # word count for the sentence
@@ -98,7 +99,8 @@ def nominalized_verb_detection(docID,doc,sent):
             if syns:
                 #look at only nouns
                 if not is_pos(syns.name(), 'n'):
-                    result.append([word, False])
+                    # do not save; leads to huge file
+                    # result.append([word, '', False])
                     false_word.append(word)
                     noun_cnt[word] += 1
                     continue
@@ -116,10 +118,24 @@ def nominalized_verb_detection(docID,doc,sent):
                 found = False
                 for deriv in derivationals:
                     if is_pos(str(deriv), 'v'):
-                        deriv_str = str(deriv)[7:-3].split('.')[3]
-                        if len(word) <= len(deriv_str):
-                            continue
-                        result.append([word, True])
+                        # original deriv_str = str(deriv)[7:-3].split('.')[3]
+                        # deriv is a list with typically one item
+                        #   [Lemma('construct.v.01.construct)
+                        # sometimes the list can have multiple items
+                        #   deriv [Lemma('dramatize.v.02.dramatize), Lemma('dramatize.v.02.dramatise')]
+                        #   when multiple items are given taken the first in the list
+                        #   deriv[0]
+                        try:
+                            deriv_str = str(deriv[0])[7:-2].split('.')[3]
+                            # print('   ',deriv[0])
+                        except:
+                            deriv_str = str([deriv][0])[7:-2].split('.')[3]
+                            # deriv=[deriv]
+                            # print('error')
+                        # deriv_str = str(deriv[0])[7:-2].split('.')[3]
+                        # deriv_str is now the verb that is being lemmatized
+                        result.append([word, deriv_str, True])
+                        verbs.append(deriv_str)
                         true_word.append(word)
                         noun_cnt[word] += 1
                         if nomi_sen_ == "":
@@ -133,7 +149,8 @@ def nominalized_verb_detection(docID,doc,sent):
                     nomi_count[sen_id] += 1
                     continue
                 else:
-                    result.append([word, False]) #includes word='NO NOMINALIZATION'
+                    # do not save; leads too a huge file
+                    # result.append([word, '', False]) #includes word='NO NOMINALIZATION'
                     noun_cnt[word] += 1
         nomi_sen.append(nomi_sen_)
         nomi_sen_ = ""
@@ -195,7 +212,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
         nDocs=len(inputDocs)
 
         startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Nominalization at',
-                                           True, '', True, '', True)
+                                           True, '', True, '', False)
 
         #add all into a sum
         result_dir = []
@@ -221,8 +238,8 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
             fin.close()
 
             # list all verbs as TRUE/FALSE if nominalized
-            for word, boolean in result:
-                result_dir.append([word, boolean, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+            for word, verb, boolean in result:
+                result_dir.append([word, verb, boolean, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
             result_dir2.extend(result_dir)
 
@@ -230,10 +247,6 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
                 fname = os.path.basename(os.path.normpath(inputDir))+"_dir"
             else:
                 fname=doc
-            # used for both individual files and directories
-            output_filename_bySentenceIndex = IO_files_util.generate_output_file_name(fname, '', outputDir,
-                                                            '.csv','NOM', 'sent', '', '', '', False, True)
-
 
             if len(inputDir) == 0 or doNotListIndividualFiles == False:
                 counter_nominalized_list = []
@@ -278,67 +291,74 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
                                                                                '.csv', 'NOM', '', '', '', '', False,
                                                                                      True)
 
-                filesToOpen.append(output_filename_TRUE_FALSE)
-                list_to_csv(output_filename_TRUE_FALSE, result)
+                # TODO this leads to a huge file when processing a directory; comment for now
+                # filesToOpen.append(output_filename_TRUE_FALSE)
+                # list_to_csv(output_filename_TRUE_FALSE, result)
 
-                filesToOpen.append(output_filename_bySentenceIndex)
                 list_to_csv(output_filename_bySentenceIndex, result1)
+                filesToOpen.append(output_filename_bySentenceIndex)
 
-                if createExcelCharts == True:
-                    # line chart
-                    columns_to_be_plotted = [[2,6]]
-                    chartTitle='Nominalized verbs (by Sentence Index)'
-                    xAxis='Sentence index'
-                    yAxis='Number of nominalizations in sentence'
-                    hover_label=''
-                    Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, output_filename_bySentenceIndex, outputDir,
-                                                              '',
-                                                              chart_type_list=["line"],
-                                                              chart_title=chartTitle,
-                                                              column_xAxis_label_var=xAxis,
-                                                              hover_info_column_list=hover_label,
-                                                              column_yAxis_label_var=yAxis)
-                    if len(Excel_outputFilename) > 0:
-                        filesToOpen.append(Excel_outputFilename)
+                # if createExcelCharts == True:
+                #     # line chart
+                #     columns_to_be_plotted = [[2,6]]
+                #     chartTitle='Nominalized verbs (by Sentence Index)'
+                #     xAxis='Sentence index'
+                #     yAxis='Number of nominalizations in sentence'
+                #     hover_label=''
+                #     Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, output_filename_bySentenceIndex, outputDir,
+                #                                               '',
+                #                                               chart_type_list=["line"],
+                #                                               chart_title=chartTitle,
+                #                                               column_xAxis_label_var=xAxis,
+                #                                               hover_info_column_list=hover_label,
+                #                                               column_yAxis_label_var=yAxis)
+                #     if len(Excel_outputFilename) > 0:
+                #         filesToOpen.append(Excel_outputFilename)
+                #
+                #     # pie chart of nominalized verbs
+                #     Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window,[counter_nominalized_list],fname,outputDir,'NOM_Verb',"Nominalized verbs",["pie"])
+                #     if len(Excel_outputFilename) > 0:
+                #         filesToOpen.append(Excel_outputFilename)
+                #
+                #     # pie chart of nouns
+                #     Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window,[counter_noun_list],fname,outputDir,'NOM_noun',"Nouns",["pie"])
+                #     if len(Excel_outputFilename) > 0:
+                #         filesToOpen.append(Excel_outputFilename)
 
-                    # pie chart of nominalized verbs
-                    Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window,[counter_nominalized_list],fname,outputDir,'NOM_Verb',"Nominalized verbs",["pie"])
-                    if len(Excel_outputFilename) > 0:
-                        filesToOpen.append(Excel_outputFilename)
-
-                    # pie chart of nouns
-                    Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window,[counter_noun_list],fname,outputDir,'NOM_noun',"Nouns",["pie"])
-                    if len(Excel_outputFilename) > 0:
-                        filesToOpen.append(Excel_outputFilename)
+        # used for both individual files and directories
+        output_filename_bySentenceIndex = IO_files_util.generate_output_file_name(fname, '', outputDir,
+                                                                                  '.csv', 'NOM', 'sent', '', '',
+                                                                                  '', False, True)
 
         if len(inputDir)>0 and doNotListIndividualFiles == True:
             output_filename_TRUE_FALSE_dir = IO_files_util.generate_output_file_name(fname + '_TRUE_FALSE', '', outputDir, '.csv', 'NOM', '', '', '', '', False, True)
-            filesToOpen.append(output_filename_TRUE_FALSE_dir)
             output_filename_dir_noun_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'noun_freq', '', '', '', False, True)
-            filesToOpen.append(output_filename_dir_noun_frequencies)
             output_filename_dir_nominalized_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'nominal_freq', '', '', '', False, True)
-            filesToOpen.append(output_filename_dir_nominalized_frequencies)
 
             result2.insert(0, ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of words in sentence', 'Nominalized verbs',
                                'Number of nominalizations in sentence', 'Percentage of nominalizations in sentence'])
             list_to_csv(output_filename_bySentenceIndex, result2)
+            filesToOpen.append(output_filename_bySentenceIndex)
 
             # list all verbs as TRUE/FALSE if nominalized
-            result_dir2.insert(0, ["Word", "Is nominalized", "Document ID", "Document"])
-            list_to_csv(output_filename_TRUE_FALSE_dir, result_dir2)
-
+            # TODO  this leads to a huge file when processing a directory; comment for now
+            # result_dir2.insert(0, ["Word", "Verb", "Is nominalized", "Document ID", "Document"])
+            # list_to_csv(output_filename_TRUE_FALSE_dir, result_dir2)
+            # filesToOpen.append(output_filename_TRUE_FALSE_dir)
 
             counter_noun_list = []
             counter_noun_list.append(['Noun','Frequency'])
             for word, freq in noun_cnt.most_common():
                 counter_noun_list.append([word, freq])
             list_to_csv(output_filename_dir_noun_frequencies, counter_noun_list)
+            filesToOpen.append(output_filename_dir_noun_frequencies)
 
             counter_nominalized_list = []
             counter_nominalized_list.append(['Nominalized verb','Frequency'])
             for word, freq in nominalized_cnt.most_common():
                 counter_nominalized_list.append([word, freq])
             list_to_csv(output_filename_dir_nominalized_frequencies, counter_nominalized_list)
+            filesToOpen.append(output_filename_dir_nominalized_frequencies)
 
             if createExcelCharts == True:
                 # pie chart of nominalized verbs
