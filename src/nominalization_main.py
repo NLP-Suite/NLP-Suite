@@ -99,7 +99,7 @@ def nominalized_verb_detection(docID,doc,sent):
             if syns:
                 #look at only nouns
                 if not is_pos(syns.name(), 'n'):
-                    # do not save; leads to huge file
+                    # TODO do not save; leads to huge file
                     # result.append([word, '', False])
                     false_word.append(word)
                     noun_cnt[word] += 1
@@ -127,11 +127,11 @@ def nominalized_verb_detection(docID,doc,sent):
                         #   deriv[0]
                         try:
                             deriv_str = str(deriv[0])[7:-2].split('.')[3]
-                            # print('   ',deriv[0])
                         except:
                             deriv_str = str([deriv][0])[7:-2].split('.')[3]
-                            # deriv=[deriv]
-                            # print('error')
+                        if word=='lights':
+                            print('wrong')
+                        print('   NOUN:', word, ' VERB:',deriv_str)
                         # deriv_str = str(deriv[0])[7:-2].split('.')[3]
                         # deriv_str is now the verb that is being lemmatized
                         result.append([word, deriv_str, True])
@@ -149,7 +149,7 @@ def nominalized_verb_detection(docID,doc,sent):
                     nomi_count[sen_id] += 1
                     continue
                 else:
-                    # do not save; leads too a huge file
+                    # TODO do not save; leads too a huge file
                     # result.append([word, '', False]) #includes word='NO NOMINALIZATION'
                     noun_cnt[word] += 1
         nomi_sen.append(nomi_sen_)
@@ -248,6 +248,11 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
             else:
                 fname=doc
 
+            # used for both individual files and directories
+            output_filename_bySentenceIndex = IO_files_util.generate_output_file_name(fname, '', outputDir,
+                                                                                      '.csv', 'NOM', 'sent', '', '',
+                                                                                      '', False, True)
+
             if len(inputDir) == 0 or doNotListIndividualFiles == False:
                 counter_nominalized_list = []
                 counter_noun_list = []
@@ -324,11 +329,6 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
                 #     Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window,[counter_noun_list],fname,outputDir,'NOM_noun',"Nouns",["pie"])
                 #     if len(Excel_outputFilename) > 0:
                 #         filesToOpen.append(Excel_outputFilename)
-
-        # used for both individual files and directories
-        output_filename_bySentenceIndex = IO_files_util.generate_output_file_name(fname, '', outputDir,
-                                                                                  '.csv', 'NOM', 'sent', '', '',
-                                                                                  '', False, True)
 
         if len(inputDir)>0 and doNotListIndividualFiles == True:
             output_filename_TRUE_FALSE_dir = IO_files_util.generate_output_file_name(fname + '_TRUE_FALSE', '', outputDir, '.csv', 'NOM', '', '', '', '', False, True)
