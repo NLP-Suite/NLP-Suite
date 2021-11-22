@@ -1,7 +1,7 @@
 #The Python 3 routine was written by Jian Chen, 12.12.2018
 # modified by Jian Chen (January 2019)
 # modified by Jack Hester (February 2019)
-# modified by Roberto Franzosi (February 2019-August 2020)
+# modified by Roberto Franzosi (February 2019-August 2020), November 2021
 
 import sys
 import GUI_util
@@ -24,6 +24,7 @@ import Stanford_CoreNLP_tags_util
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
+clause_position = 8 # NEW CoNLL_U
 recordID_position = 9 # NEW CoNLL_U
 sentenceID_position = 10 # NEW CoNLL_U
 documentID_position = 11 # NEW CoNLL_U
@@ -35,9 +36,25 @@ output_dir = ''
 
 def compute_stats(CoNLL_table):
     global clausal_list, clausal_counter
-    clausal_list = [i[7] for i in CoNLL_table]
+    clausal_list = [i[clause_position] for i in CoNLL_table]
     clausal_counter = Counter(clausal_list)
     return clausal_list, clausal_counter
+
+def clause_compute_frequencies(data, data_divided_sents):
+    clause_tags = []
+
+    clause_stats = [['Clause Tags', 'Frequencies'],
+                         ['Clause-level (S - Sentence)', clausal_counter['S']],
+                         ['Clause-level (SBAR - Clause introduced by a (possibly empty) subordinating conjunction)', clausal_counter['SBAR']],
+                         ['Clause-level (SBARQ - Direct question introduced by a wh-word or a wh-phrase)', clausal_counter['SBARQ']],
+                         ['Clause-level (SINV - Inverted declarative sentence, i.e. one in which the subject follows the tensed verb or modal)', clausal_counter['SINV']],
+                         ['Phrase-level (NP - Noun Phrase)', clausal_counter['NP']],
+                         ['Phrase-level (VP - Verb Phrase)', clausal_counter['VP']],
+                         ['Phrase-level (ADJP - Adjective Phrase)', clausal_counter['ADJP']],
+                         ['Phrase-level (ADVP - Adverb Phrase)', clausal_counter['ADVP']],
+                         ['Phrase-level (PP - Prepositional Phrase)', clausal_counter['PP']]]
+
+    return clause_stats
 
 def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,openOutputFiles,createExcelCharts):
 
@@ -59,19 +76,19 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         if not os.path.isdir(outputDir):
             mb.showwarning(title='Output file path error', message='Please check OUTPUT DIRECTORY PATH and try again')
             return
-        clausal_list= stats_clauses_output(data,data_divided_sents)
 
-        IO_csv_util.list_to_csv(GUI_util.window,IO_CoNLL_util.sort_output_list('CLAUSE TAGS',clausal_list), clausal_analysis_file_name)
-        column_stats=statistics_csv_util.compute_stats_CoreNLP_tag(clausal_list,7,"Clause Tags, Frequency","CLAUSALTAG")
+        clausal_list, clausal_counter = compute_stats(data)
+
+        clausal_stats = clause_compute_frequencies(data,data_divided_sents)
 
         clausal_analysis_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clause tags', 'stats')
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,column_stats,clausal_analysis_stats_file_name)
+        errorFound=IO_csv_util.list_to_csv(GUI_util.window,clausal_stats,clausal_analysis_stats_file_name)
         if errorFound==True:
              return
 
         if createExcelCharts==True:
             Excel_outputFilename= Excel_util.create_excel_chart(GUI_util.window,
-                                          data_to_be_plotted=[column_stats],
+                                          data_to_be_plotted=[clausal_stats],
                                           inputFilename=clausal_analysis_stats_file_name,
                                           outputDir=outputDir,
                                           scriptType='CoNLL_Clause',
@@ -81,6 +98,8 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
                                           column_yAxis_label="Frequency")
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
+
+            return filesToOpen # to avoid code breaking in plot by sentence index
 
             # line plot by sentence index
             Excel_outputFilename=Excel_util.compute_csv_column_frequencies(GUI_util.window,
@@ -115,36 +134,6 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
             if Excel_outputFilename!='':
                 filesToOpen.append(Excel_outputFilename)
 
-
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime, True)
     return filesToOpen
-
-#stats_clauses_output contains a list of records 
-#   from the CoNLL table that have valid clausal tags
-def stats_clauses_output(data,data_divided_sents):
-    
-    #list_clauses looks like this in the end: [['1', '``', '``', '``', 'O', '0', 'ROOT'...
-    list_clauses = []
-    
-    for i in data:
-        # print('i[7]',i[7])
-        if i[7] == 'VP':
-            list_clauses.append(i+['Verb phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        elif i[7] == 'NP':
-            list_clauses.append(i+['Noun phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        elif i[7] == 'ADJP':
-            list_clauses.append(i+['Adjective phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        elif i[7] == 'AP':
-            list_clauses.append(i+['Adverb phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        elif 'PP' in i[7]: # different types of PPs
-            list_clauses.append(i+['Prepositional phrase',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        elif i[7] == 'S':
-            list_clauses.append(i+['Sentence',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        elif i[7] == 'SBAR':
-            list_clauses.append(i+['Subordinate clause',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        elif i[7] == 'SBARQ':
-            list_clauses.append(i+['Direct question (wh)',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        else:
-            list_clauses.append(i+['',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-    return list_clauses
 

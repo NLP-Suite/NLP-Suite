@@ -5,7 +5,7 @@
 #The Python 3 routine was written by Jian Chen, 12.12.2018
 # modified by Jian Chen (January 2019)
 # modified by Jack Hester (February 2019)
-# modified by Roberto Franzosi (February 2019)
+# modified by Roberto Franzosi (February 2019), November 2021
 #Function words (or junk words) are: pronouns prepositions articles conjunctions auxiliaries
 
 # Command promp commands
@@ -329,6 +329,8 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
+            return filesToOpen  # to avoid code breaking in plot by sentence index
+
             # line plots by sentence index
 
             outputFiles=Excel_util.compute_csv_column_frequencies(GUI_util.window,
@@ -361,24 +363,6 @@ def stats_pronouns_output(data,data_divided_sents):
     
     list_pronouns_postag = []
     
-    for i in data:
-        if i[3] in ['PRP']:
-            list_pronouns_postag.append(i+['Personal pronoun',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        if i[3] in ['PRP$']:
-            list_pronouns_postag.append(i+['Possessive pronoun',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        elif i[3] in ['WP']:
-            list_pronouns_postag.append(i+['WH-pronoun',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        elif i[3] in ['WP$']:
-            list_pronouns_postag.append(i+['Possessive WH-pronoun',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        
-    #pronouns_postag_stats = [['PRONOUN ANALYSIS'],[],['PRONOUN ANALYSIS'],
-    # pronouns_postag_stats = [['PRONOUN ANALYSIS','FREQUENCY'],
-    #        ['PRP',postag_counter['PRP']],
-    #        ['PRP$',postag_counter['PRP$']],
-    #        ['WP',postag_counter['WP']],
-    #        ['WP$',postag_counter['WP$']]]
-
-    compute_stats(data)
     pronouns_postag_stats = [['PRONOUN ANALYSIS','FREQUENCY'],
            ['Personal pronoun (PRP)',postag_counter['PRP']],
            ['Possessive pronoun (PRP$)',postag_counter['PRP$']],
@@ -391,16 +375,7 @@ def stats_pronouns_output(data,data_divided_sents):
 def stats_prepositions_output(data,data_divided_sents):
         
     list_prepositions_postag = []
-    
-    for i in data:
-        if i[3] in ['IN']:
-            list_prepositions_postag.append(i+['Preposition/subordinating conjunction',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        
-    #prepositions_postag_stats = [['PREPOSITION ANALYSIS'],[],['PREPOSITION ANALYSIS'],
-    # prepositions_postag_stats = [['PREPOSITION ANALYSIS','FREQUENCY'],
-    #        ['IN',postag_counter['IN']]]
 
-    compute_stats(data)
     prepositions_postag_stats = [['PREPOSITION ANALYSIS','FREQUENCY'],
            ['Preposition/subordinating conjunction',postag_counter['IN']]]
 
@@ -412,16 +387,6 @@ def stats_articles_output(data,data_divided_sents):
         
     list_articles_postag = []
     
-    for i in data:
-        if i[3] in ['DT']:
-            list_articles_postag.append(i+['Articles/determinants',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-        
-
-    #articles_postag_stats = [['ARTICLE ANALYSIS'],[],['ARTICLE ANALYSIS'],
-    # articles_postag_stats = [['ARTICLE ANALYSIS','FREQUENCY'],
-    #        ['DT',postag_counter['DT']]]
-
-    compute_stats(data)
     articles_postag_stats = [['ARTICLE ANALYSIS','FREQUENCY'],
            ['Determiner/article (DT)',postag_counter['DT']]]
 
@@ -433,16 +398,6 @@ def stats_conjunctions_output(data,data_divided_sents):
         
     list_conjunctions_postag = []
     
-    for i in data:
-        if i[3] in ['CC','IN']:
-            list_conjunctions_postag.append(i+['Conjunctions',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-
-    #conjunctions_postag_stats = [['CONJUNCTION ANALYSIS'],[],['CONJUNCTION ANALYSIS'],
-    # conjunctions_postag_stats = [['CONJUNCTION ANALYSIS','FREQUENCY'],
-    #        ['CC',postag_counter['CC']],
-    #        ['IN',postag_counter['IN']]]
-
-    compute_stats(data)
     conjunctions_postag_stats = [['CONJUNCTION ANALYSIS','FREQUENCY'],
            ['Coordinating conjunction (CC)',postag_counter['CC']],
            ['Preposition/subordinating conjunction (IN)',postag_counter['IN']]]
@@ -458,18 +413,6 @@ def stats_auxiliaries_output(data,data_divided_sents):
         
     list_auxiliaries_deprel = []
     
-
-    for i in data:
-
-        if i[6] in ['aux','auxpass']:
-
-            list_auxiliaries_deprel.append(i+['Auxiliaries',IO_CoNLL_util.Sentence_searcher(data_divided_sents,i[documentID_position],i[sentenceID_position])])
-
-    # auxiliaries_deprel_stats = [['AUXILIARY ANALYSIS','FREQUENCY'],
-    #        ['AUX',deprel_counter['aux']],
-    #        ['AUXPASS',deprel_counter['auxpass']]]
-
-    compute_stats(data)
     auxiliaries_deprel_stats = [['AUXILIARY ANALYSIS','FREQUENCY'],
            ['Auxiliary (AUX)',deprel_counter['aux']],
            ['Passive auxiliary (AUXPASS)',deprel_counter['auxpass']]]
@@ -482,6 +425,8 @@ def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openO
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running FUNCTION WORDS ANALYSES at',
                                                  True, '', True, '', True)
+
+    compute_stats(data)
 
     outputFiles = article_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                    openOutputFiles, createExcelCharts)

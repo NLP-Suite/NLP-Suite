@@ -19,6 +19,7 @@ import IO_csv_util
 
 global sentenceID_position, documentID_position, document_position
 
+clause_position = 8 # NEW CoNLL_U
 sentenceID_position = 10  # NEW CoNLL_U
 documentID_position = 11  # NEW CoNLL_U
 document_position = 12 # NEW CoNLL_U
@@ -162,14 +163,14 @@ def sort_output_list(label, _voice_sorted_):
 
     try:
         _list_sorted_ = [
-            [i[14], i[0], i[1], i[2], i[3], find_full_postag(i[1],i[3]), i[6], find_full_deprel(i[1],i[6]), i[8],
-                find_full_clausalTag(i[1],i[8]), i[sentenceID_position], i[documentID_position], i[documentID_position], i[15]]
+            [i[14], i[0], i[1], i[2], i[3], find_full_postag(i[1],i[3]), i[6], find_full_deprel(i[1],i[6]), i[clause_position],
+                find_full_clausalTag(i[1],i[clause_position]), i[sentenceID_position], i[documentID_position], i[documentID_position], i[15]]
         for i in _voice_sorted_]
     except:
         try:
             _list_sorted_ = [
-                [i[13], i[0], i[1], i[2], i[3], find_full_postag(i[1],i[3]), i[6], find_full_deprel(i[1],i[6]), i[8],
-                 find_full_clausalTag(i[1],i[8]), i[sentenceID_position], i[documentID_position], i[documentID_position], i[14]] for i in _voice_sorted_]
+                [i[13], i[0], i[1], i[2], i[3], find_full_postag(i[1],i[3]), i[6], find_full_deprel(i[1],i[6]), i[clause_position],
+                 find_full_clausalTag(i[1],i[clause_position]), i[sentenceID_position], i[documentID_position], i[documentID_position], i[14]] for i in _voice_sorted_]
         except:
             mb.showwarning(title="CoNLLL table ill formed",
                            message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the Stanford CoreNLP parser since many scripts rely on the CoNLL table.")
