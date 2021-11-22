@@ -104,8 +104,10 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         # only open the chart files
         if outputFiles != None:
             filesToOpen.append(outputFiles[2])
-            filesToOpen.append(outputFiles[5])
-            filesToOpen.append(outputFiles[7])
+            filesToOpen.append(outputFiles[4])
+            # modality
+            # filesToOpen.append(outputFiles[5])
+            # filesToOpen.append(outputFiles[7])
 
         right_hand_side = True
 
@@ -983,6 +985,11 @@ readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,'CoNLL_table_analyzer.py',True)
 
-IO_CoNLL_util.check_CoNLL(inputFilename.get())
+if GUI_util.input_main_dir_path.get()!='':
+    mb.showwarning(title='Input file',
+                   message="The CoNLL Table Analyzer scripts require in input a csv CoNLL table.\n\nThe RUN button is disabled until the expected CoNLL file is seleted in input.\n\nPlease, select in input a CoNLL file.")
+else:
+    if inputFilename.get()!='':
+        IO_CoNLL_util.check_CoNLL(inputFilename.get())
 
 GUI_util.window.mainloop()
