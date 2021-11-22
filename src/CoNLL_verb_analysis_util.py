@@ -1,7 +1,7 @@
 """
 Python 3 script
 author: Jian Chen, January 2019, based on original vba code by Roberto Franzosi
-modified by Jack Hester and Roberto Franzosi, February, June 2019
+modified by Jack Hester and Roberto Franzosi, February, June 2019, November 2021
 """
 
 import sys
@@ -49,13 +49,15 @@ cla_open_csv = False  # if run from command line, will check if they want to ope
 
 
 def compute_stats(data):
-	global postag_list, postag_counter, deprel_list, deprel_counter
+	global form_list, postag_list, postag_counter, deprel_list, deprel_counter
+	form_list = [i[1] for i in data]
 	postag_list = [i[3] for i in data]
 	deprel_list = [i[6] for i in data]
 	postag_counter = Counter(postag_list)
 	deprel_counter = Counter(deprel_list)
-	return postag_list, postag_counter, deprel_list, deprel_counter
+	return form_list, postag_list, postag_counter, deprel_list, deprel_counter
 
+# VERB VOICE ----------------------------------------------------------------------------------------------
 
 # for voice analysis
 def verb_voice_compute_frequencies(list_all_tok):
@@ -138,8 +140,8 @@ def voice_output(voice_word_list,data_divided_sents):
 	voice_pass, voice_act_aux, voice_act, voice_stats = verb_voice_compute_frequencies(
 		voice_word_list)  # passive active analysis
 	voice = voice_pass + voice_act_aux + voice_act  # join
-	voice = [i + [IO_CoNLL_util.Sentence_searcher(data_divided_sents, i[documentID_position], i[sentenceID_position])] for i in
-			 voice]  # get full sentence
+	# voice = [i + [IO_CoNLL_util.Sentence_searcher(data_divided_sents, i[documentID_position], i[sentenceID_position])] for i in
+	# 		 voice]  # get full sentence
 	voice_sorted = sorted(voice, key=lambda x: int(x[recordID_position]))  # sort in ascending record id order
 	return voice_sorted, voice_stats
 
@@ -157,8 +159,11 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice', 'list')
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice', 'stats')
 
+	# errorFound = IO_csv_util.list_to_csv(GUI_util.window,
+	# 								 IO_CoNLL_util.sort_output_list('Verb Voice', voice_list),
+	# 								 verb_file_name)
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-									 IO_CoNLL_util.sort_output_list('Verb Voice', voice_list),
+									 voice_stats,
 									 verb_file_name)
 	if errorFound == True:
 		return
@@ -201,6 +206,8 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 	return filesToOpen
 
+# VERB MODALITY ----------------------------------------------------------------------------------------------
+
 # modality compute frequencies of modality categories
 def verb_modality_compute_categories(data,data_divided_sents):
 	num_obligation_mod = 0
@@ -212,51 +219,78 @@ def verb_modality_compute_categories(data,data_divided_sents):
 	will_would_keywords = ['will', 'would', 'll', '\'d']
 	can_may_keywords = ['can', 'could', 'may', 'might']
 
-	for i in data:
-		if i[3] != 'MD':
-			continue
-		else:
-			if i[1].lower() in obligation_keywords:
-				num_obligation_mod += 1
-				modality_list.append(i + ['Obligation', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-																							 i[documentID_position],
-																							 i[sentenceID_position])])
-			elif i[1].lower() in will_would_keywords:
-				num_will_would_mod += 1
-				modality_list.append(i + ['Will/Would', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-																							 i[documentID_position],
-																							 i[sentenceID_position])])
-			elif i[1].lower() in can_may_keywords:
-				num_can_may_mod += 1
-				modality_list.append(i + ['Can/May', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-																						  i[documentID_position],
-																						  i[sentenceID_position])])
-			else:
-				num_unclassified += 1
-				modality_list.append(i + ['Non-classified Modal Type',
-										  IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-																			   i[documentID_position], i[sentenceID_position])])
+	try:
+		verb_postags = ['MD']
+		obligation_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in obligation_keywords)]
+		will_would_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in will_would_keywords)]
+		can_may_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in can_may_keywords)]
+		obligation_counter = Counter(obligation_list)
+		will_would_counter = Counter(will_would_list)
+		can_may_counter = Counter(can_may_list)
 
-	modality_stats = [['Verb Modality', 'Frequencies'],
-					  ['Obligation', num_obligation_mod],
-					  ['Will/Would', num_will_would_mod],
-					  ['Can/May', num_can_may_mod],
-					  ['Non-classified modal type', num_unclassified]]
+		# return modality_list, modality_stats
+		return obligation_counter, will_would_counter, can_may_counter
+	except:
+		print("ERROR: INPUT MUST BE THE CoNLL TABLE CONTAINING THE SENTENCE ID. Program will exit.")
+		mb.showinfo("ERROR",
+					"INPUT MUST BE THE MERGED CoNLL TABLE CONTAINING THE SENTENCE ID. Please use the merge option when generating your CoNLL table in the StanfordCoreNLP.py routine. Program will exit.")
+		return
 
-	return modality_list, modality_stats
+	# for i in data:
+	# 	print('Processing VERBS record', i[recordID_position] + '/' + str(len(data)))
+	#
+	# 	if i[3] != 'MD':
+	# 		continue
+	# 	else:
+	# 		if i[1].lower() in obligation_keywords:
+	# 			num_obligation_mod += 1
+	# 			modality_list.append(i + ['Obligation', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
+	# 																						 i[documentID_position],
+	# 																						 i[sentenceID_position])])
+	# 		elif i[1].lower() in will_would_keywords:
+	# 			num_will_would_mod += 1
+	# 			modality_list.append(i + ['Will/Would', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
+	# 																						 i[documentID_position],
+	# 																						 i[sentenceID_position])])
+	# 		elif i[1].lower() in can_may_keywords:
+	# 			num_can_may_mod += 1
+	# 			modality_list.append(i + ['Can/May', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
+	# 																					  i[documentID_position],
+	# 																					  i[sentenceID_position])])
+	# 		else:
+	# 			num_unclassified += 1
+	# 			modality_list.append(i + ['Non-classified Modal Type',
+	# 									  IO_CoNLL_util.Sentence_searcher(data_divided_sents,
+	# 																		   i[documentID_position], i[sentenceID_position])])
+
+	# modality_stats = [['Verb Modality', 'Frequencies'],
+	# 				  ['Obligation', postag_counter['MD'] and num_obligation_mod], obligation_keywords
+	# 				  ['Will/Would', num_will_would_mod],
+	# 				  ['Can/May', num_can_may_mod],
+	# 				  ['Non-classified modal type', num_unclassified]]
+
+	# return modality_list, modality_stats
 
 
 def verb_modality_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
+
 	filesToOpen = []  # Store all files that are to be opened once finished
 
-	modality_list, modality_stats = verb_modality_compute_categories(data,data_divided_sents)
+	obligation_stats, will_would_stats, can_may_stats = verb_modality_compute_categories(data,data_divided_sents)
+	modality_stats = [['Verb Modality', 'Frequencies'],
+					  ['Obligation',Counter(obligation_stats)],
+					  ['Will/would',Counter(will_would_stats)],
+					  ['Can/may',Counter(can_may_stats)]]
 
 	# output file names
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Modality', 'list')
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Modality', 'stats')
 
+	# errorFound = IO_csv_util.list_to_csv(GUI_util.window,
+	# 								 IO_CoNLL_util.sort_output_list('Verb Modality', modality_list),
+	# 								 verb_file_name)
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-									 IO_CoNLL_util.sort_output_list('Verb Modality', modality_list),
+									 modality_stats,
 									 verb_file_name)
 	if errorFound == True:
 		return filesToOpen
@@ -295,63 +329,18 @@ def verb_modality_stats(inputFilename, outputDir, data, data_divided_sents, open
 
 	return filesToOpen
 
+# VERB TENSE ----------------------------------------------------------------------------------------------
+
 # tense analysis; compute frequencies
-def verb_tense_compute_frequencies(CoNLL_table, data_divided_sents):
-	future_mod = ['\'ll', 'shall', 'will']
-	num_present_tense = 0
-	num_future_tense = 0
-	num_gerundive_tense = 0
-	num_infinitive_tense = 0
-	num_past_tense = 0
-	num_past_principle_tense = 0
-
+def verb_tense_compute_frequencies(data, data_divided_sents):
 	verb_tense_list = []
-
-	for i in CoNLL_table:
-		if i[3] == 'MD':
-			if i[1].lower() in future_mod:
-				num_future_tense += 1
-				verb_tense_list.append(i + ['Future', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-																						   i[documentID_position],
-																						   i[sentenceID_position])])
-			else:
-				num_present_tense += 1
-				verb_tense_list.append(i + ['Present', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-																							i[documentID_position],
-																							i[sentenceID_position])])
-		else:
-			if i[3] == 'VBG':
-				num_gerundive_tense += 1
-				verb_tense_list.append(i + ['Gerundive', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-																							  i[documentID_position],
-																							  i[sentenceID_position])])
-			elif i[3] == 'VB':
-				num_infinitive_tense += 1
-				verb_tense_list.append(i + ['Infinitive', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-																							   i[documentID_position],
-																							   i[sentenceID_position])])
-			elif i[3] == 'VBD':
-				num_past_tense += 1
-				verb_tense_list.append(i + ['Past', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-																						 i[documentID_position], i[sentenceID_position])])
-			elif i[3] == 'VBN':
-				num_past_principle_tense += 1
-				verb_tense_list.append(i + ['Past Principle/Passive',
-											IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-																				 i[documentID_position], i[sentenceID_position])])
-			elif i[3] in ['VBP', 'VBZ']:
-				num_present_tense += 1
-				verb_tense_list.append(i + ['Present', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-																							i[documentID_position],
-																							i[sentenceID_position])])
-
 	tense_stats = [['Verb Tense', 'Frequencies'],
-				   ['Future', num_future_tense],
-				   ['Gerundive', num_gerundive_tense],
-				   ['Infinitive', num_infinitive_tense],
-				   ['Past', num_past_tense],
-				   ['Past Principle/Passive', num_past_principle_tense],
-				   ['Present', num_present_tense]]
+				   # ['Future', postag_counter['VBD']],
+				   ['Gerundive', postag_counter['VBG']],
+				   ['Infinitive', postag_counter['VB']],
+				   ['Past', postag_counter['VBD']],
+				   ['Past Principle/Passive', postag_counter['VBN']],
+				   ['Present', postag_counter['VBP']]]
 
 	return verb_tense_list, tense_stats
 
@@ -362,14 +351,23 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	# inputFilename = GUI_util.inputFilename.get()
 	# outputDir = GUI_util.outputFilename.get()
 
-	tense_list, tense_stats = verb_tense_compute_frequencies(data, data_divided_sents)
+	tense_stats = [['Verb Tense', 'Frequencies'],
+				   # ['Future', postag_counter['VBD']],
+				   ['Gerundive', postag_counter['VBG']],
+				   ['Infinitive', postag_counter['VB']],
+				   ['Past', postag_counter['VBD']],
+				   ['Past Principle/Passive', postag_counter['VBN']],
+				   ['Present', postag_counter['VBP']]]
 
 	# output file names
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Tense', 'list')
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '',  outputDir, '.csv', 'NVA', 'Verb Tense', 'stats')
 
+	# errorFound = IO_csv_util.list_to_csv(GUI_util.window,
+	# 								 IO_CoNLL_util.sort_output_list('Verb Tense', tense_list),
+	# 								 verb_file_name)
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-									 IO_CoNLL_util.sort_output_list('Verb Tense', tense_list),
+									 tense_stats,
 									 verb_file_name)
 	if errorFound == True:
 		return
@@ -416,16 +414,20 @@ def verb_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 	startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VERB ANALYSES at',
 												 True, '', True, '', True)
 
+	form_list, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
+
+
 	outputFiles = verb_voice_stats(inputFilename, outputDir, data, data_divided_sents,
 															openOutputFiles, createExcelCharts)
 
 	if outputFiles != None:
 		filesToOpen.extend(outputFiles)
 
-	outputFiles = verb_modality_stats(inputFilename, outputDir, data, data_divided_sents,
-															   openOutputFiles, createExcelCharts)
-	if outputFiles != None:
-		filesToOpen.extend(outputFiles)
+	# modality temporarily excluded
+	# outputFiles = verb_modality_stats(inputFilename, outputDir, data, data_divided_sents,
+	# 														   openOutputFiles, createExcelCharts)
+	# if outputFiles != None:
+	# 	filesToOpen.extend(outputFiles)
 
 	outputFiles = verb_tense_stats(inputFilename, outputDir, data, data_divided_sents,
 															openOutputFiles, createExcelCharts)

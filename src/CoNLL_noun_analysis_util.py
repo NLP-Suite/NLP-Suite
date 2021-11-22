@@ -1,7 +1,7 @@
 """
 Python 3 script
 author: Jian Chen, January 2019, based on original vba code by Roberto Franzosi
-modified by Jack Hester and Roberto Franzosi, February, June 2019
+modified by Jack Hester and Roberto Franzosi, February, June 2019, November 2021
 """
 
 import sys
@@ -24,6 +24,7 @@ import Stanford_CoreNLP_tags_util
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
+recordID_position = 9 # NEW CoNLL_U
 sentenceID_position = 10 # NEW CoNLL_U
 documentID_position = 11 # NEW CoNLL_U
 
@@ -60,24 +61,6 @@ def noun_POSTAG_DEPREL_compute_frequencies(data, data_divided_sents):
     list_nouns_postag = []
     list_nouns_deprel = []
     list_nouns_ner = []
-
-    for i in data:
-        if i[3] in ['NN', 'NNS']:
-            list_nouns_postag.append(i + ['Improper', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-                                                                                           i[documentID_position],
-                                                                                           i[sentenceID_position])])
-        elif i[3] in ['NNP', 'NNPS']:
-            list_nouns_postag.append(
-                i + ['Proper', IO_CoNLL_util.Sentence_searcher(data_divided_sents, i[documentID_position], i[sentenceID_position])]
-            )
-        if i[6] in ['obj', 'iobj', 'nsubj', 'nsubj:pass', 'csubj', 'csubj:pass']:
-            list_nouns_deprel.append(
-                i + [i[6], IO_CoNLL_util.Sentence_searcher(data_divided_sents, i[documentID_position], i[sentenceID_position])]
-            )
-        if i[4] in ['ORGANIZATION', 'PERSON', 'COUNTRY', 'CITY', 'STATE_OR_PROVINCE']:
-            list_nouns_ner.append(
-                i + [i[4], IO_CoNLL_util.Sentence_searcher(data_divided_sents, i[documentID_position], i[sentenceID_position])]
-            )
 
     noun_postag_stats = [['Noun POS Tags', 'Frequencies'],
                          ['Proper noun singular (NNP)', postag_counter['NNP']],
@@ -207,6 +190,8 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
         if Excel_outputFilename != "":
             filesToOpen.append(Excel_outputFilename)
+
+        return filesToOpen # to avoid code breaking in plot by sentence index
 
         # line plots by sentence index -----------------------------------------------------------------------------------------------
 
