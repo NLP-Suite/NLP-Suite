@@ -26,7 +26,6 @@ import pandas as pd
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         searchedCoNLLField, searchField_kw, postag, deprel, co_postag, co_deprel,
@@ -42,6 +41,13 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
     noResults = "No results found matching your search criteria for your input CoNLL file. Please, try different search criteria.\n\nTypical reasons for this warning are:\n   1.  You are searching for a token/word not found in the FORM or LEMMA fields (e.g., 'child' in FORM when in fact FORM contains 'children', or 'children' in LEMMA when in fact LEMMA contains 'child'; the same would be true for the verbs 'running' in LEMMA instead of 'run');\n   2. you are searching for a token that is a noun (e.g., 'children'), but you select the POS value 'VB', i.e., verb, for the POSTAG of searched token."
     filesToOpen = []  # Store all files that are to be opened once finished
     outputFiles = []
+
+    if searchField_kw == 'e.g.: father':
+        if not compute_sentence_var.get() and not extract_var.get():
+            if clausal_analysis_var==False and noun_analysis_var==False and verb_analysis_var==False and function_words_analysis_var==False:
+                mb.showwarning(title='No option selected',
+                           message="No option has been selected.\n\nPlease, select an option and try again.")
+                return  # breaks loop
 
     withHeader = True
     data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
@@ -67,6 +73,10 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                                                  csv_file_field_list=csv_file_field_list)
         if outputFiles != None:
             filesToOpen.extend(outputFiles)
+
+    if clausal_analysis_var or noun_analysis_var or verb_analysis_var or function_words_analysis_var:
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CoNLL table analyses at',
+                                                     True, '', True, '', False)
 
     if clausal_analysis_var:
         import CoNLL_clause_analysis_util
@@ -104,10 +114,8 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         # only open the chart files
         if outputFiles != None:
             filesToOpen.append(outputFiles[2])
-            filesToOpen.append(outputFiles[4])
-            # modality
-            # filesToOpen.append(outputFiles[5])
-            # filesToOpen.append(outputFiles[7])
+            filesToOpen.append(outputFiles[5])
+            filesToOpen.append(outputFiles[7])
 
         right_hand_side = True
 
@@ -128,6 +136,10 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         right_hand_side = True
 
     if right_hand_side == True:
+        if clausal_analysis_var or noun_analysis_var or verb_analysis_var or function_words_analysis_var:
+            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+                                               'Finished running CoNLL table analyses at',
+                                               True, '', True, startTime, False)
         if openOutputFiles == True:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
             mb.showwarning(title='Output files',
@@ -138,8 +150,6 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
 
     if searchField_kw == 'e.g.: father':
         if not compute_sentence_var.get() and not extract_var.get():
-            mb.showwarning(title='No option selected',
-                           message="No option has been selected.\n\nPlease, select an option and try again.")
             return  # breaks loop
     else:
         if searchedCoNLLField.lower() not in ['lemma', 'form']:
