@@ -224,11 +224,10 @@ def verb_modality_compute_categories(data,data_divided_sents):
 		obligation_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in obligation_keywords)]
 		will_would_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in will_would_keywords)]
 		can_may_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in can_may_keywords)]
-		obligation_counter = Counter(obligation_list)
-		will_would_counter = Counter(will_would_list)
-		can_may_counter = Counter(can_may_list)
+		obligation_counter = len(obligation_list)
+		will_would_counter = len(will_would_list)
+		can_may_counter = len(can_may_list)
 
-		# return modality_list, modality_stats
 		return obligation_counter, will_would_counter, can_may_counter
 	except:
 		print("ERROR: INPUT MUST BE THE CoNLL TABLE CONTAINING THE SENTENCE ID. Program will exit.")
@@ -278,9 +277,9 @@ def verb_modality_stats(inputFilename, outputDir, data, data_divided_sents, open
 
 	obligation_stats, will_would_stats, can_may_stats = verb_modality_compute_categories(data,data_divided_sents)
 	modality_stats = [['Verb Modality', 'Frequencies'],
-					  ['Obligation',Counter(obligation_stats)],
-					  ['Will/would',Counter(will_would_stats)],
-					  ['Can/may',Counter(can_may_stats)]]
+					  ['Obligation',obligation_stats],
+					  ['Will/would',will_would_stats],
+					  ['Can/may',can_may_stats]]
 
 	# output file names
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Modality', 'list')
@@ -423,11 +422,10 @@ def verb_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 	if outputFiles != None:
 		filesToOpen.extend(outputFiles)
 
-	# modality temporarily excluded
-	# outputFiles = verb_modality_stats(inputFilename, outputDir, data, data_divided_sents,
-	# 														   openOutputFiles, createExcelCharts)
-	# if outputFiles != None:
-	# 	filesToOpen.extend(outputFiles)
+	outputFiles = verb_modality_stats(inputFilename, outputDir, data, data_divided_sents,
+															   openOutputFiles, createExcelCharts)
+	if outputFiles != None:
+		filesToOpen.extend(outputFiles)
 
 	outputFiles = verb_tense_stats(inputFilename, outputDir, data, data_divided_sents,
 															openOutputFiles, createExcelCharts)

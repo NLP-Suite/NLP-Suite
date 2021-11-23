@@ -234,7 +234,6 @@ def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):#extrac
     if "nsubj" in vgd.keys():
         s, s_idx = s_o_formation(vgd["nsubj"], sent_data)
         s_dep = "nsubj"
-        
 
         
     elif 'obl:agent' in vgd.keys():#subject in passive sentence
@@ -501,7 +500,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
             L.append(item["text"])
 
     link_verb_LVC_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "verb_obj_obl_json.txt"
-    for key in sent_data.keys():#traverse each token token in that sentence
+    for key in sent_data.keys():#traverse each token in that sentence
         negation = False 
         token = sent_data[key]
 
@@ -538,8 +537,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                     if s != 'Someone?' or o != '':
                         SVO.append([s, v, o])
                         N.append(n)
-               
-        
+
         
         else:#if that token is not a verb 
             #check if that token is a part of an LVC that starts with a link verb (like "be responsible for")
