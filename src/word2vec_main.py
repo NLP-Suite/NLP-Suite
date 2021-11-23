@@ -91,7 +91,6 @@ lemmatize_var=tk.IntVar()
 vector_size_var=tk.IntVar()
 window_var=tk.IntVar()
 min_count_var=tk.IntVar()
-#sg_var = tk.IntVar() ## to be added
 
 ##
 remove_stopwords_var.set(1)
@@ -101,25 +100,21 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 lemmatize_var.set(1)
 lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,lemmatize_checkbox)
-
 ##
 vector_size_lb = tk.Label(window,text='Vector size')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,vector_size_lb,True)
-
 vector_size_var.set(100)
 vector_size_entry = tk.Entry(window,width=5,textvariable=vector_size_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,vector_size_entry)
 ##
 window_lb = tk.Label(window,text='Window size')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,window_lb,True)
-
 window_var.set(5)
 window_entry = tk.Entry(window,width=5,textvariable=window_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,window_entry)
 ##
 min_count_lb = tk.Label(window,text='Minimum count')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,min_count_lb,True)
-
 min_count_var.set(5)
 min_count_entry = tk.Entry(window,width=5,textvariable=min_count_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,min_count_entry)

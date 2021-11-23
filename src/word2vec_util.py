@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"word2vec_main.py",['os','tkinter', 'gensim', 'spacy'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"word2vec_main.py",['os','tkinter', 'gensim', 'spacy', 'plotly'])==False:
     sys.exit(0)
 
 
@@ -20,7 +20,7 @@ from gensim.models import Word2Vec
 from nltk.tokenize import sent_tokenize
 
 #Visualization
-import matplotlib.pyplot as plt
+import plotly.express as px
 from sklearn.decomposition import PCA
 
 #stopwords
@@ -49,7 +49,8 @@ except:
 nlp = spacy.load('en_core_web_sm')
 
 def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
-                             remove_stopwords_var, lemmatize_var, vector_size_var, window_var, min_count_var):
+                        remove_stopwords_var, lemmatize_var, vector_size_var, window_var, min_count_var,
+                        word_vector=None):
 
     filesToOpen = []
 
@@ -62,7 +63,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     ## list for csv file
     word = []
     lemmatized_word = []
-    vector = []
+    unlemmatized_word =[]
     sentenceID = []
     sentence = []
     documentID = []
@@ -78,13 +79,16 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
             with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
                 dId += 1
                 text = file.read()
+                print('importing ' + str(dId) + '/' + str(numFiles) + ' file')
                 documentID.append(dId)
                 document.append(os.path.join(inputDir, doc))
                 all_input_docs[dId] = text
 
     document_df = pd.DataFrame({'documentID': documentID, 'document': document})
+    document_df = document_df.astype('str')
 
     documentID = []
+    print('tokenizing...')
     for idx, txt in enumerate(all_input_docs.items()):
         sentences = sent_tokenize(txt[1])
         sId = 0
@@ -99,30 +103,40 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                 word.append(w)
 
     sentence_df = pd.DataFrame({'word': word, 'sentence': sentence, 'sentenceID': sentenceID, 'documentID': documentID})
-
+    sentence_df = sentence_df.astype(str)
 
     if remove_stopwords_var == True:
-        sentence_df = remove_stopwords_df(sentence_df)
+        print('removing stopwords..')
+        ## sentence_df = remove_stopwords_df(sentence_df)
         word_list = list(remove_stopwords(word_list))
-
     else:
         word_list = list(word_list)
 
     ## lemmatize
-    ## allowed_postags = ['NOUN', 'ADJ', 'VERB', 'ADV']
+    if lemmatize_var == True:
+        print('lemmatizing...')
+
     sentences_out = []
     for word_in_sent in word_list:
         doc = nlp(" ".join(word_in_sent))
         if lemmatize_var == True:
             sentences_out.append([token.lemma_ for token in doc])
+            unlemmatized_word.extend([token for token in doc])
             lemmatized_word.extend([token.lemma_ for token in doc])
         else:
             sentences_out.append([token for token in doc])
 
+    word_df = pd.DataFrame({'word': unlemmatized_word})
     if (len(lemmatized_word)>0):
-        sentence_df['lemmatized_word'] = lemmatized_word
+        word_df['lemmatized_word'] = lemmatized_word
+
+    word_df = word_df.astype(str)
+    word_df = word_df.drop_duplicates()
+    sent_word_df = pd.merge(sentence_df, word_df, on='word', how='inner')
+    sent_word_df = sent_word_df.astype(str)
 
     ## train model
+    print('training word2vec model...')
     model = gensim.models.Word2Vec(
         sentences=sentences_out,
         vector_size=vector_size_var,
@@ -135,33 +149,48 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     word_vector_list = [word_vectors[v] for v in words]
 
     ## visualization
+    print('visualizing...')
 
     pca = PCA(n_components=2)
     xys = pca.fit_transform(word_vector_list)
+
     xs = xys[:, 0]
     ys = xys[:, 1]
+    word = words.keys()
 
-    plot_2d_graph(words, xs, ys)
+    pca_df = pd.DataFrame({'word': word, 'x': xs, 'y': ys})
+    fig = plot_interactive_graph(pca_df)
 
-    fileName = os.path.join(outputDir, "NLP_Gensim_Word2Vec_graph.png")
-    plt.savefig(fileName)
+    ## saving output
+    print('saving output...')
+
+    ### graph
+    fileName = os.path.join(outputDir, "NLP_Gensim_Word2Vec_graph.html")
+    fig.write_html(fileName)
     filesToOpen.append(fileName)
 
-
-    word_vector_csv = pd.DataFrame()
+    ### csv file
+    word_vector_df = pd.DataFrame()
     for v in words:
-        word_vector_csv = word_vector_csv.append(pd.Series([v, word_vectors[v]]), ignore_index=True)
-    word_vector_csv.columns = ['word', 'vector']
+        word_vector_df = word_vector_df.append(pd.Series([v, word_vectors[v]]), ignore_index=True)
 
-    '''
-    fileName = os.path.join(outputDir, "NLP_Gensim_Word2Vec_list.csv")
-    word_vector_csv.to_csv(fileName, index=False)
-    filesToOpen.append(fileName)
-    
-    '''
+    if(lemmatize_var == True):
+        word_vector_df.columns = ['lemmatized_word', 'vector']
+        word_vector_df = word_vector_df.astype(str)
+        sent_word_vector = pd.merge(word_vector_df, sent_word_df, on='lemmatized_word', how='inner')
+    else:
+        word_vector_df.columns = ['word', 'vector']
+        word_vector_df = word_vector_df.astype(str)
+        sent_word_vector = pd.merge(word_vector_df, sent_word_df, on='word', how='inner')
 
-    combined_df = pd.merge(document_df, sentence_df, on='documentID', how='inner')
-    result_df = pd.merge(combined_df, word_vector_csv, on='word', how='inner')
+    sent_word_vector = sent_word_vector.astype(str)
+    result_df = pd.merge(document_df, sent_word_vector, on='documentID', how='inner')
+    result_df = result_df.sort_values(by=["documentID","sentenceID"])
+
+    if (lemmatize_var == True):
+        result_df = result_df[["word", "lemmatized_word", "vector", "sentenceID", "sentence", "documentID", "document"]]
+    else:
+        result_df = result_df[["word", "vector", "sentenceID", "sentence", "documentID", "document"]]
 
     fileName = os.path.join(outputDir, "NLP_Gensim_Word2Vec_list.csv")
     result_df.to_csv(fileName, index=False)
@@ -170,9 +199,6 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     return filesToOpen
 
 ###########################################
-
-
-## functions
 
 def make_words(sent):
     words = list(sent_to_words(sent))
@@ -199,9 +225,7 @@ def remove_stopwords_df(sentence_df):
             sentence_df.drop(idx, inplace=True)
     return sentence_df
 
-def plot_2d_graph(words, xs, ys):
-    plt.figure(figsize=(8, 6))
-    plt.scatter(xs, ys, marker='o')
-    for i, v in enumerate(words):
-        plt.annotate(v, xy=(xs[i], ys[i]))
-    #plt.show()
+def plot_interactive_graph(pca_df):
+    fig = px.scatter(pca_df, x = "x", y = "y",
+                     hover_name = "word")
+    return fig
