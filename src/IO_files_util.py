@@ -370,7 +370,7 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
         inputfile = getFilename(inputFilename)
     default_outputFilename_str =''
     # do not add the NLP_ prefix if processing a file previously processed and with the prefix already added
-    if "NLP_" not in inputfile:
+    if inputfile[0:4]!='NLP_': #"NLP_" not in inputfile:
         if label1=='':
             default_outputFilename_str = 'NLP_' + inputfile  # adding to front of file name
         else:
@@ -379,7 +379,8 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
         if label1=='':
             default_outputFilename_str=inputfile
         else:
-            default_outputFilename_str = inputfile.replace("NLP_", "NLP_" + label1 + "_")
+            if inputfile[0:4]=='NLP_': #only replace first 4 characters since NLP may occur elsewhere in the filename
+                default_outputFilename_str = inputfile[0:4].replace('NLP_','NLP_' + label1 + '_') + inputfile[4:]
     if len(str(label2)) > 0:
         default_outputFilename_str = default_outputFilename_str + "_" + str(label2)
     if len(str(label3)) > 0:

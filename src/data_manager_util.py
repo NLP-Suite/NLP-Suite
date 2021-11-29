@@ -213,7 +213,8 @@ def export_csv_to_csv_txt(outputDir,operation_results_text_list,export_type='.cs
         value_var = value_var + [s.split(',')[3]]
         and_or = and_or + [s.split(',')[4]]
 
-    outputFilename = IO_files_util.generate_output_file_name(files[0], os.path.dirname(files[0]),
+    # os.path.dirname(files[0])
+    outputFilename = IO_files_util.generate_output_file_name(files[0], '',
                                                              outputDir,
                                                              export_type,
                                                              'extract',

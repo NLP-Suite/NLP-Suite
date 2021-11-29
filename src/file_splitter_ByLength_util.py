@@ -38,7 +38,10 @@ def splitAt(text,index):
             else:
                 return splitAt(text,index-1)
         except RecursionError:
-            mb.showwarning("Warning", "The file being split is a VERY large (" + str(len(text)) + " characters) file.\n\nTo deal with such large a file, the system recursion limit will be temporarily doubled, then restored to its original limit.\n\nClick OK to continue processing...")
+            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Warning',
+                                                           "The file being split is a VERY large (" + str(len(text)) + " characters) file.\n\nTo deal with such large a file, the system recursion limit will be temporarily doubled, then restored to its original limit.",
+                                                           False, '', True, '', False)
+            # mb.showwarning("Warning", "The file being split is a VERY large (" + str(len(text)) + " characters) file.\n\nTo deal with such large a file, the system recursion limit will be temporarily doubled, then restored to its original limit.\n\nClick OK to continue processing...")
             limit = limit * 2
             sys.setrecursionlimit(limit)
     sys.setrecursionlimit(first_limit)

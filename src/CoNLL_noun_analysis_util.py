@@ -53,7 +53,6 @@ def compute_stats(data):
     ner_counter = Counter(ner_list)
     return postag_list, postag_counter, deprel_list, deprel_counter, ner_list, ner_counter
 
-
 # noun analysis; compute frequencies
 
 def noun_POSTAG_DEPREL_compute_frequencies(data, data_divided_sents):
@@ -61,6 +60,8 @@ def noun_POSTAG_DEPREL_compute_frequencies(data, data_divided_sents):
     list_nouns_postag = []
     list_nouns_deprel = []
     list_nouns_ner = []
+
+    # must all be sorted in descending order
 
     noun_postag_stats = [['Noun POS Tags', 'Frequencies'],
                          ['Proper noun singular (NNP)', postag_counter['NNP']],

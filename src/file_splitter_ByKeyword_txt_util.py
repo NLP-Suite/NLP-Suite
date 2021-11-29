@@ -140,11 +140,3 @@ def run(inputFilename, outputPath, keyword, first_occurrence, lemmatization = Tr
                 #     contents[i][-1] = f
                 #     subpath = contents[i][2]
         writer.writerows(contents)
-
-                    
-
-        
-        
-
-
-

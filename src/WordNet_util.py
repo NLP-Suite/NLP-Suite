@@ -209,7 +209,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         hover_label=['Word']
         inputFilename = outputFilenameCSV1_new
         Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                  outputFileLabel='_WordNet_UP',
+                                                  outputFileLabel='',
                                                   chart_type_list=["bar"],
                                                   chart_title=chart_title,
                                                   column_xAxis_label_var='WordNet ' + noun_verb + ' category',
@@ -245,7 +245,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
             hover_label=[]
             inputFilename = outputFilenameCSV3_new
             Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                      outputFileLabel='_WordNet_UP',
+                                                      outputFileLabel='',
                                                       chart_type_list=["bar"],
                                                       chart_title=chart_title,
                                                       column_xAxis_label_var='WordNet ' + noun_verb + ' category',
