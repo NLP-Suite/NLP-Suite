@@ -14,14 +14,14 @@ WE DO NOT USE ANY OF THESE RECOMMENDATIONS
 """
 
 import sys
-from typing import Any, Tuple
-
 import IO_libraries_util
 import GUI_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "CoreNLP_annotator", ['os', 'tkinter','time','json','re','subprocess','string','pandas','pycorenlp','nltk'])==False:
     sys.exit(0)
-import pprint
+
+from typing import Any, Tuple
+# import pprint
 import json
 import os
 import re
@@ -218,7 +218,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # param_list_NN = []
     for annotator in annotator_params:
         if "gender" in annotator or "quote" in annotator or "coref" in annotator or "SVO" in annotator or "OpenIE" in annotator or ("parser" in annotator and "nn" in annotator):
-            print("NEED to use neural network model")
+            print("Using neural network model")
             neural_network = True
             parse_model = "NN"
         else:
@@ -1107,6 +1107,7 @@ def process_json_sentence(config_filename, documentID, document, sentenceID, jso
         sentenceID = sentenceID + 1
         temp.append([sentenceID, complete_sent, sentence_length, number_punctuations, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
     return temp
+
 
 
 # Dec. 21

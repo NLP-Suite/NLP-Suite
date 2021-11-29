@@ -428,8 +428,8 @@ corpus_tools_var.trace('w', lambda x, y, z: getScript(corpus_tools_var.get()))
 corpus_document_tools_var.trace('w', lambda x, y, z: getScript(corpus_document_tools_var.get()))
 sentence_tools_var.trace('w', lambda x, y, z: getScript(sentence_tools_var.get()))
 
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {'Help':'Help.mp4','IO Setup':'IO_Setup.mp4'}
+videos_options = 'Help','IO Setup'
 
 TIPS_lookup = {'NLP Suite: Package description': 'TIPS_NLP_NLP Suite Package description.pdf',
                'Things to do with words: NLP approach': 'TIPS_NLP_Things to do with words NLP approach.pdf',

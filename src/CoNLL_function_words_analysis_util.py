@@ -362,7 +362,8 @@ def verb_data_preparation_auxiliary(data):
 def stats_pronouns_output(data,data_divided_sents):
     
     list_pronouns_postag = []
-    
+
+    # must be sorted in descending order
     pronouns_postag_stats = [['PRONOUN ANALYSIS','FREQUENCY'],
            ['Personal pronoun (PRP)',postag_counter['PRP']],
            ['Possessive pronoun (PRP$)',postag_counter['PRP$']],
@@ -376,6 +377,7 @@ def stats_prepositions_output(data,data_divided_sents):
         
     list_prepositions_postag = []
 
+    # must be sorted in descending order
     prepositions_postag_stats = [['PREPOSITION ANALYSIS','FREQUENCY'],
            ['Preposition/subordinating conjunction',postag_counter['IN']]]
 
@@ -386,7 +388,8 @@ def stats_prepositions_output(data,data_divided_sents):
 def stats_articles_output(data,data_divided_sents):
         
     list_articles_postag = []
-    
+
+    # must be sorted in descending order
     articles_postag_stats = [['ARTICLE ANALYSIS','FREQUENCY'],
            ['Determiner/article (DT)',postag_counter['DT']]]
 
@@ -397,7 +400,8 @@ def stats_articles_output(data,data_divided_sents):
 def stats_conjunctions_output(data,data_divided_sents):
         
     list_conjunctions_postag = []
-    
+
+    # must be sorted in descending order
     conjunctions_postag_stats = [['CONJUNCTION ANALYSIS','FREQUENCY'],
            ['Coordinating conjunction (CC)',postag_counter['CC']],
            ['Preposition/subordinating conjunction (IN)',postag_counter['IN']]]
@@ -412,7 +416,8 @@ def stats_conjunctions_output(data,data_divided_sents):
 def stats_auxiliaries_output(data,data_divided_sents):
         
     list_auxiliaries_deprel = []
-    
+
+    # must be sorted in descending order
     auxiliaries_deprel_stats = [['AUXILIARY ANALYSIS','FREQUENCY'],
            ['Auxiliary (AUX)',deprel_counter['aux']],
            ['Passive auxiliary (AUXPASS)',deprel_counter['auxpass']]]

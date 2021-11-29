@@ -50,7 +50,9 @@ cla_open_csv = False  # if run from command line, will check if they want to ope
 
 def compute_stats(data):
 	global form_list, postag_list, postag_counter, deprel_list, deprel_counter
+	form_list = []
 	form_list = [i[1] for i in data]
+	form_list = []
 	postag_list = [i[3] for i in data]
 	deprel_list = [i[6] for i in data]
 	postag_counter = Counter(postag_list)
@@ -116,6 +118,7 @@ def verb_voice_compute_frequencies(list_all_tok):
 		aux_VBN_organize.append(pair[1])
 	_active_ = [i + ['Active'] for i in _active_]
 
+	# must be sorted in descending order
 	voice_list = [['Verb Voice', 'Frequencies'],
 				  ['Passive', len(auxp_VBN_organize)],
 				  ['Active', len(aux_VBN_organize) + len(_active_)]]
@@ -144,7 +147,6 @@ def voice_output(voice_word_list,data_divided_sents):
 	# 		 voice]  # get full sentence
 	voice_sorted = sorted(voice, key=lambda x: int(x[recordID_position]))  # sort in ascending record id order
 	return voice_sorted, voice_stats
-
 
 def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
 	filesToOpen = []  # Store all files that are to be opened once finished
@@ -235,47 +237,12 @@ def verb_modality_compute_categories(data,data_divided_sents):
 					"INPUT MUST BE THE MERGED CoNLL TABLE CONTAINING THE SENTENCE ID. Please use the merge option when generating your CoNLL table in the StanfordCoreNLP.py routine. Program will exit.")
 		return
 
-	# for i in data:
-	# 	print('Processing VERBS record', i[recordID_position] + '/' + str(len(data)))
-	#
-	# 	if i[3] != 'MD':
-	# 		continue
-	# 	else:
-	# 		if i[1].lower() in obligation_keywords:
-	# 			num_obligation_mod += 1
-	# 			modality_list.append(i + ['Obligation', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-	# 																						 i[documentID_position],
-	# 																						 i[sentenceID_position])])
-	# 		elif i[1].lower() in will_would_keywords:
-	# 			num_will_would_mod += 1
-	# 			modality_list.append(i + ['Will/Would', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-	# 																						 i[documentID_position],
-	# 																						 i[sentenceID_position])])
-	# 		elif i[1].lower() in can_may_keywords:
-	# 			num_can_may_mod += 1
-	# 			modality_list.append(i + ['Can/May', IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-	# 																					  i[documentID_position],
-	# 																					  i[sentenceID_position])])
-	# 		else:
-	# 			num_unclassified += 1
-	# 			modality_list.append(i + ['Non-classified Modal Type',
-	# 									  IO_CoNLL_util.Sentence_searcher(data_divided_sents,
-	# 																		   i[documentID_position], i[sentenceID_position])])
-
-	# modality_stats = [['Verb Modality', 'Frequencies'],
-	# 				  ['Obligation', postag_counter['MD'] and num_obligation_mod], obligation_keywords
-	# 				  ['Will/Would', num_will_would_mod],
-	# 				  ['Can/May', num_can_may_mod],
-	# 				  ['Non-classified modal type', num_unclassified]]
-
-	# return modality_list, modality_stats
-
-
 def verb_modality_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
 
 	filesToOpen = []  # Store all files that are to be opened once finished
 
 	obligation_stats, will_would_stats, can_may_stats = verb_modality_compute_categories(data,data_divided_sents)
+	# must be sorted in descending order
 	modality_stats = [['Verb Modality', 'Frequencies'],
 					  ['Obligation',obligation_stats],
 					  ['Will/would',will_would_stats],
@@ -333,6 +300,7 @@ def verb_modality_stats(inputFilename, outputDir, data, data_divided_sents, open
 # tense analysis; compute frequencies
 def verb_tense_compute_frequencies(data, data_divided_sents):
 	verb_tense_list = []
+	# must be sorted in descending order
 	tense_stats = [['Verb Tense', 'Frequencies'],
 				   # ['Future', postag_counter['VBD']],
 				   ['Gerundive', postag_counter['VBG']],
