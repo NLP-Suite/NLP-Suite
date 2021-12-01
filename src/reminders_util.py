@@ -129,8 +129,11 @@ message_SVO_corpus = 'You have selected to work with a set of txt files in a dir
 title_options_shape_of_stories_CoreNLP = ['Stanford CoreNLP Neural Network']
 message_shape_of_stories_CoreNLP = 'The Stanford CoreNLP Neural Network approach to Sentiment analysis, like all neural network algorithms, is VERY slow. On a few hundred stories it may take hours to run.\n\nAlso, neural network algorithms are memory hogs. MAKE SURE TO ALLOCATE AS MUCH MEMORY AS YOU CAN AFFORD ON YOUR MACHINE.'
 
+title_options_shape_of_stories = ['Shape of stories']
+message_shape_of_stories = "The Sentiment Analysis GUI will now open the 'Shape of stories' GUI. When the GUI opens, you will need to select the Alternative I/O configuration."
+
 title_options_CoNLL_analyzer = ['CoNLL table analyzer']
-message_CoNLL_analyzer = "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' where you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words)."
+message_CoNLL_analyzer = "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' GUI. When the GUI opens, you will need to select the Alternative I/O configuration.\n\nThe 'CoNLL table analyzer' GUI where you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words)."
 
 title_options_shape_of_stories_best_topic = ['Best topic estimation']
 message_shape_of_stories_best_topic = 'The function that estimates the best topics is VERY slow and may take an hour or longer. You can follow its progress in command line.'

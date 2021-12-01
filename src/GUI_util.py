@@ -549,7 +549,6 @@ def setup_IO_configuration_options(IO_setup_display_brief,y_multiplier_integer,S
     display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options, ScriptName,silent)
 
 def IO_config_setup_brief(window, y_multiplier_integer,ScriptName, silent):
-
     IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,y_multiplier_integer,ScriptName, silent))
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer,
@@ -586,6 +585,18 @@ def IO_config_setup_brief(window, y_multiplier_integer,ScriptName, silent):
     openOutputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
     openOutputDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_outputDir_button_brief,
+                               y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+
+    def openConfigFile():
+        if 'Default' in IO_setup_menu_var.get():  # GUI_util.GUI_util.IO_setup_menu_var.get()
+            temp_config_filename = 'default-config.txt'
+        else:
+            temp_config_filename = config_filename
+        IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + temp_config_filename)
+
+    openInputConfigFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
+                                     command=lambda: openConfigFile())
+    openInputConfigFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_config_file_button_brief,
                                y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
 def display_about_release_team_cite_buttons(ScriptName):
