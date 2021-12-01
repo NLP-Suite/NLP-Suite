@@ -176,6 +176,7 @@ def display_logo():
 
 version_str = '1.5.9'
 
+
 def check_newest_release(current_release: str):
     # check internet connection
     if not IO_internet_util.check_internet_availability_warning("Automatic check for NLP Suite newest release version on GitHub"):
@@ -193,7 +194,7 @@ def check_newest_release(current_release: str):
     except:
         mb.showwarning(title='Internet connection error', message="The attempt to connect to GitHub failed.\n\nIt is not possible to check the latest release of the NLP Suite at this time. You can continue run your current release and try again later.")
         return
-    # current_release = '1.9.9' # line used for testing
+    # current_release = '2.1.2' # line used for testing; should be LOWER than the version on GitHub
     # split the text string of release version (e.g., 1.5.9) into three parts separated by .
     current_release_parts=[current_release[i:i + 1] for i in range(0, len(current_release), 2)]
     GitHub_release_parts=[GitHub_newest_release[i:i + 1] for i in range(0, len(GitHub_newest_release), 2)]
@@ -290,6 +291,10 @@ def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,titl
         else:
             input_secondary_dir_path.set(directoryName)
     else:
+        if (GUI_IO_util.NLPPath + '\\') in directoryName.replace('/','\\'):
+            mb.showwarning(title='Warning',
+                           message="You have selected an output directory for your scripts that is inside the NLP Suite directory.\n\nPlease, select a different directory and try again.")
+            return
         output_dir_path.set(directoryName)
 
 # def get_IO_options(config_filename,config_input_output_options):

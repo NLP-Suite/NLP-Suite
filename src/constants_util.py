@@ -71,7 +71,7 @@ NLP_Suite_corpus_tools_menu = 'WHAT\'S IN YOUR CORPUS? A SWEEPING VIEW', \
 'Corpus statistics (Sentences, words, lines)', 'Co-Occurrences viewer', 'N-grams viewer', \
 'Shape of stories', 'Similarities between documents (via Python difflib)', \
 'Similarities between documents (via Java Lucene)', 'Topic modeling (via Gensim)', \
-'Topic modeling (via Mallet)', 'Word2Vec (via Gensim)'
+'Topic modeling (via MALLET)', 'Word2Vec (via Gensim)'
 
 NLP_Suite_corpus_document_tools_menu = 'Stanford CoreNLP', 'CoNLL table analyzer - Search the CoNLL table', \
 'CoNLL table analyzer - Clause, noun, verb, function words frequencies', 'CoreNLP annotator - date (NER normalized date)', \

@@ -253,7 +253,7 @@ pydict["SRL Semantic Role Labeling"] = ["", 0]
 pydict["SVO extractor & visualization"] = ["SVO_main.py", 1]
 pydict["Dictionary items by sentence index"] = ["sentence_analysis_util.dictionary_items_bySentenceID", 0, 3, 'txt']
 pydict["Topic modeling (via Gensim)"] = ["topic_modeling_gensim_main.py", 1]
-pydict["Topic modeling (via Mallet)"] = ["topic_modeling_mallet_main.py", 1]
+pydict["Topic modeling (via MALLET)"] = ["topic_modeling_mallet_main.py", 1]
 pydict["utf-8 compliance"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["Style analysis"] = ["style_analysis_main.py", 1]
 pydict["Narrative analysis"] = ["narrative_analysis_main.py", 1]
@@ -306,8 +306,8 @@ IO_setup_button = tk.Button(window, text='Setup default I/O options: INPUT corpu
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+30, y_multiplier_integer,
                                                IO_setup_button,True)
 
-open_default_IO_config_button = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'default-config.txt'))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+820, y_multiplier_integer,
+open_default_IO_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'default-config.txt'))
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button, y_multiplier_integer,
                                                open_default_IO_config_button)
 
 setup_software_checkbox = tk.Checkbutton(window, state='disabled',
@@ -315,7 +315,7 @@ setup_software_checkbox = tk.Checkbutton(window, state='disabled',
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                setup_software_checkbox,True)
 
-# check for external software installation (Stanford CoreNLP, WordNet, Mallet, SENNA)
+# check for external software installation (Stanford CoreNLP, WordNet, MALLET, SENNA)
 def setup_software(*args):
     silent = False
     only_check_missing = False
@@ -338,15 +338,15 @@ def callback(software: str):
 
 def setup_software_warning():
     mb.showwarning('Software option', 'Please, select next the external software that you would like to install using the dropdown menu.')
-    software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'Mallet', 'WordNet', 'SENNA', 'Gephi', 'Google Earth Pro'],'Stanford CoreNLP',callback)
+    software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'MALLET', 'WordNet', 'SENNA', 'Gephi', 'Google Earth Pro'],'Stanford CoreNLP',callback)
     return
 
 software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_software_warning())
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+30, y_multiplier_integer,
                                                software_setup_button,True)
 
-open_setup_button = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'software_config.csv'))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+820, y_multiplier_integer,
+open_setup_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'software_config.csv'))
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_setup_software_button, y_multiplier_integer,
                                                open_setup_button)
 
 general_tools_lb = tk.Label(window, text='General tools', foreground="red",font=("Courier", 12, "bold"))
@@ -443,7 +443,7 @@ videos_options = 'Help','IO Setup'
 TIPS_lookup = {'NLP Suite: Package description': 'TIPS_NLP_NLP Suite Package description.pdf',
                'Things to do with words: NLP approach': 'TIPS_NLP_Things to do with words NLP approach.pdf',
                'Setup Input/Output configuration for your corpus': 'TIPS_NLP_Setup INPUT-OUTPUT options.pdf',
-               'Setup external software (e.g., Mallet)': 'TIPS_NLP_Setup external software.pdf',
+               'Setup external software (e.g., MALLET)': 'TIPS_NLP_Setup external software.pdf',
                'NLP Suite: General tools': 'TIPS_NLP_NLP Suite general tools.pdf',
                'NLP Suite: Tools of linguistic analysis': 'TIPS_NLP_NLP Suite Tools of linguistic analysis.pdf',
                'NLP basic language': 'TIPS_NLP_NLP Basic Language.pdf',
@@ -456,7 +456,7 @@ TIPS_lookup = {'NLP Suite: Package description': 'TIPS_NLP_NLP Suite Package des
                'Style analysis': 'TIPS_NLP_Style analysis.pdf',
                'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf'}
-TIPS_options = 'NLP Suite: Package description', 'Things to do with words: NLP approach', 'Setup Input/Output configuration for your corpus', 'Setup external software (e.g., Mallet)', 'NLP Suite: General tools', 'NLP Suite: Tools of linguistic analysis', 'NLP basic language', 'Things to do with words: Overall view', 'Things to do with words: Content analysis', 'Things to do with words: Frame analysis', 'Things to do with words: Narrative analysis', 'Things to do with words: Rhetoric (Arguments)', 'Things to do with words: Rhetoric (Tropes & Figures)', 'Style analysis', 'Text encoding (utf-8)','csv files - Problems & solutions'
+TIPS_options = 'NLP Suite: Package description', 'Things to do with words: NLP approach', 'Setup Input/Output configuration for your corpus', 'Setup external software (e.g., MALLET)', 'NLP Suite: General tools', 'NLP Suite: Tools of linguistic analysis', 'NLP basic language', 'Things to do with words: Overall view', 'Things to do with words: Content analysis', 'Things to do with words: Frame analysis', 'Things to do with words: Narrative analysis', 'Things to do with words: Rhetoric (Arguments)', 'Things to do with words: Rhetoric (Tropes & Figures)', 'Style analysis', 'Text encoding (utf-8)','csv files - Problems & solutions'
 
 
 # reminders content for specific GUIs are set in the csv file reminders
@@ -475,7 +475,12 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
                                   "Please, click on the button to the right to open the GUI that will allow you to setup default I/O options:\n   INPUT file and or directory of files (your corpus)and\n   OUTPUT directory where all files (csv, txt, html, kml, jpg) produced by the NLP-Suite tools will be saved.\n\nThese default I/O options will be used for all GUIs.\n\nThe checkbox at the beginning of the line is set to OK if all INPUT/OUTPUT options have been successfully selected and saved in the default-config.txt file under the subdirecory config.\n\nYou can open the default-config.txt file by clicking on the button at the end of the line." + GUI_IO_util.msg_IO_config)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
-                                  "The NLP-Suite relies for some of its operations on external software that needs to be downloaded and installed (Stanford CoreNLP, WordNet, Mallet, SENNA, Gephi, Google Earth Pro). When using any of these software, the NLP-Suite needs to know where they have been installed on your computer (e.g., C:\Program Files (x86)\WordNet).\n\nPlease, click on the 'Select external software' button to select the software option that you want to link to its installation directory. YOUR SELECTION WILL BE SAVED IN THE software_config.csv FILE UNDER THE SUBDIRECTORY config.\n\nThe checkbox at the beginning of the line is set to OK if all external software packages have been successfully installed.\n\nYou can open the software_config.csv file by clicking on the button at the end of the line.")
+                                  "The NLP-Suite relies for some of its operations on external software that needs to be downloaded and installed (Stanford CoreNLP, WordNet, MALLET, SENNA, Gephi, Google Earth Pro). When using any of these software, the NLP-Suite needs to know where they have been installed on your computer (e.g., C:\Program Files (x86)\WordNet).\n\nPlease, click on the 'Select external software' button to select the software option that you want to link to its installation directory. YOUR SELECTION WILL BE SAVED IN THE software_config.csv FILE UNDER THE SUBDIRECTORY config.\n\nThe checkbox at the beginning of the line is set to OK if all external software packages have been successfully installed.\n\nYou can open the software_config.csv file by clicking on the button at the end of the line.\n\n"
+                                  "The software_config.csv file has three columns (with headers Software, Path, Download_link) and 6 rows, one for each of the external software and with the followining expected labels: Stanford CoreNLP, MALLET, SENNA, WordNet, Gephi, Google Earth Pro and where "
+                                  "Path refers to the installation path of the software on your machine. "\
+                                  "As an example, the three fields for the Stanford CoreNLP software would look like this: "
+                                  "Stanford CoreNLP   C:/Program Files (x86)/stanford-corenlp-4.3.1   https://stanfordnlp.github.io/CoreNLP/download.html. "
+                                  "Needless to say C:/Program Files (x86)/stanford-corenlp-4.3.1 will change, depending upon where you install CoreNLP locally.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 4, "Help",
                                   "Please, using the dropdown menu, select one of the many options available for data and file handling." + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 5, "Help",
@@ -523,7 +528,7 @@ routine_options = reminders_util.getReminders_list('NLP-config.txt')
 #                                  reminders_util.message_Mac_tkinter_bug,
 #                                  True)
 
-# check for external software installation (Stanford CoreNLP, WordNet, Mallet, SENNA)
+# check for external software installation (Stanford CoreNLP, WordNet, MALLET, SENNA)
 # IO_libraries_util.get_external_software_dir('NLP_menu','')
 
 # check for missing I/O configuration options
