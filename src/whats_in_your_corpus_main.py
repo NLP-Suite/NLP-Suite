@@ -107,8 +107,6 @@ def run(inputFilename,inputDir, outputDir,
         statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                           outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts,
                                                           bySentenceIndex_word_var)
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams end',
-                            'Finished running word n-grams at', True, '', True, startTime, True)
 
         if 'lines' in corpus_options_menu_var:
             output = statistics_txt_util.read_line(window, '', inputDir, outputDir, False, createExcelCharts)

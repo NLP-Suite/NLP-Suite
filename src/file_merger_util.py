@@ -64,7 +64,8 @@ def file_merger(window,inputdirectory,outputdirectory,openOutputFiles, processSu
                 continue
             docNum=docNum+1
             head, docName = os.path.split(doc)
-            print ('Processing file ' + str(docNum) + " (out of " + str(numberOfDocs) + ") " + docName)
+            head, tail = os.path.split(doc)
+            print('Processing file ' + str(docNum + 1) + "/" + str(numberOfDocs) + " " + docName)
             if saveFilenameInOutput == True:
                 if embedSubdir==True:
                     subDir = os.path.basename(os.path.normpath(head))

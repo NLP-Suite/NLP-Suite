@@ -8,10 +8,12 @@ import subprocess
 import psutil
 from psutil import virtual_memory
 from typing import List
+import webbrowser
 
 import GUI_IO_util
 import reminders_util
 import TIPS_util
+import IO_internet_util
 
 # import pip not used
 # def install(package):
@@ -165,6 +167,14 @@ def check_java_installation(script):
     return errorFound, error_code, system_output
 
 
+CoreNLP_download = "https://stanfordnlp.github.io/CoreNLP/download.html"
+# 'https://nlp.stanford.edu/software/stanford-corenlp-latest.zip'
+MALLET_download = "http://mallet.cs.umass.edu/download.php"
+SENNA_download = "https://ronan.collobert.com/senna/download.html"
+WordNet_download = "https://wordnet.princeton.edu/download/current-version"
+Gephi_download = "https://gephi.org/users/download/"
+Google_Earth_download = "https://www.google.com/earth/download/gep/agree.html?hl=en-GB"
+
 def inputProgramFileCheck(programName, subdirectory='src'):
     # filePath=NLPPath+os.sep+subdirectory+os.sep+programName
     if not os.path.isfile(GUI_IO_util.NLPPath + os.sep + subdirectory + os.sep + programName):
@@ -175,6 +185,7 @@ def inputProgramFileCheck(programName, subdirectory='src'):
 
 
 def inputExternalProgramFileCheck(software_dir, programName):
+
     fileList = []
     if platform == 'darwin':
         for file in os.listdir('/Applications'):
@@ -191,7 +202,7 @@ def inputExternalProgramFileCheck(software_dir, programName):
             if 'stanford-corenlp' in str(item):
                 return True
         mb.showwarning(title='Software error',
-                       message="The selected software directory\n  " + software_dir + "'\nis NOT the expected CoreNLP directory. The directory should contain, among other things, many files with \'stanford-corenlp\' in the filename. DO MAKE SURE THAT WHEN YOU UNZIP THE STANFORD CORENLP ARCHIVE YOU DO NOT END UP WITH A STANFORD CORENLP DIRECTORY INSIDE A STANFORD CORENLP DIRECTORY.\n\nPlease, select the appropriate CoreNLP directory and try again!\n\nYou can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\nPlease, read the TIPS_NLP_Stanford CoreNLP download install run.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
+                       message="The selected software directory\n  " + software_dir + "'\nis NOT the expected CoreNLP directory. The directory should contain, among other things, many files with \'stanford-corenlp\' in the filename. DO MAKE SURE THAT WHEN YOU UNZIP THE STANFORD CORENLP ARCHIVE YOU DO NOT END UP WITH A STANFORD CORENLP DIRECTORY INSIDE A STANFORD CORENLP DIRECTORY.\n\nPlease, select the appropriate CoreNLP directory and try again!\n\nYou can download Stanford CoreNLP at " + CoreNLP_download + ".\n\nPlease, read the TIPS_NLP_Stanford CoreNLP download install run.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
         return False
     if programName == 'Mallet':
         # check that Mallet has no spaces in path
@@ -203,7 +214,7 @@ def inputExternalProgramFileCheck(software_dir, programName):
             return True
         else:
             mb.showwarning(title='Software error',
-                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Mallet directory. The directory should contain, among other things, the directories \'bin\' and \'class\'. DO MAKE SURE THAT WHEN YOU UNZIP THE MALLET ARCHIVE YOU DO NOT END UP WITH A MALLET DIRECTORY INSIDE A MALLET DIRECTORY.\n\nPlease, select the appropriate Mallet directory and try again!\n\nYou can download Mallet at http://mallet.cs.umass.edu/download.php.\n\nPlease, read the TIPS_NLP_Topic modeling Mallet installation.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
+                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Mallet directory. The directory should contain, among other things, the directories \'bin\' and \'class\'. DO MAKE SURE THAT WHEN YOU UNZIP THE MALLET ARCHIVE YOU DO NOT END UP WITH A MALLET DIRECTORY INSIDE A MALLET DIRECTORY.\n\nPlease, select the appropriate Mallet directory and try again!\n\nYou can download Mallet at " + MALLET_download + ".\n\nPlease, read the TIPS_NLP_Topic modeling Mallet installation.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
 
             return False
     if programName == 'SENNA':
@@ -211,14 +222,14 @@ def inputExternalProgramFileCheck(software_dir, programName):
             return True
         else:
             mb.showwarning(title='Software error',
-                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected SENNA directory. The directory should contain, among other things, the files \'senna-osx\' and \'senna-win32.exe\'. DO MAKE SURE THAT WHEN YOU UNZIP THE SENNA ARCHIVE YOU DO NOT END UP WITH A SENNA DIRECTORY INSIDE A SENNA DIRECTORY.\n\nPlease, select the appropriate SENNA directory and try again!\n\nYou can download SENNA at https://ronan.collobert.com/senna/download.html.")
+                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected SENNA directory. The directory should contain, among other things, the files \'senna-osx\' and \'senna-win32.exe\'. DO MAKE SURE THAT WHEN YOU UNZIP THE SENNA ARCHIVE YOU DO NOT END UP WITH A SENNA DIRECTORY INSIDE A SENNA DIRECTORY.\n\nPlease, select the appropriate SENNA directory and try again!\n\nYou can download SENNA at " + SENNA_download + ".")
             return False
     if programName == 'WordNet':
         if 'dict' in fileList and 'src' in fileList:
             return True
         else:
             mb.showwarning(title='Software error',
-                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected WordNet directory. The directory should contain, among other things, the directories \'dict\' and \'src\'. DO MAKE SURE THAT WHEN YOU UNZIP THE WORDNET ARCHIVE YOU DO NOT END UP WITH A WORDNET DIRECTORY INSIDE A WORDENET DIRECTORY.\n\nPlease, select the appropriate WordNet directory and try again!\n\nYou can download WordNet at https://wordnet.princeton.edu/download/current-version.\n\nPlease, read the TIPS_NLP_WordNet.pdf.")
+                    message="The selected software directory\n  " + software_dir + "'\nis NOT the expected WordNet directory. The directory should contain, among other things, the directories \'dict\' and \'src\'. DO MAKE SURE THAT WHEN YOU UNZIP THE WORDNET ARCHIVE YOU DO NOT END UP WITH A WORDNET DIRECTORY INSIDE A WORDENET DIRECTORY.\n\nPlease, select the appropriate WordNet directory and try again!\n\nYou can download WordNet at " + WordNet_download + ".\n\nPlease, read the TIPS_NLP_WordNet.pdf.")
             return False
     if programName == 'Gephi':
         if platform == 'win32':
@@ -226,14 +237,14 @@ def inputExternalProgramFileCheck(software_dir, programName):
                 return True
             else:
                 mb.showwarning(title='Software error',
-                               message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Gephi directory. The directory should contain, among other things, the directories \'gephi\' and \'platform\'.\n\nPlease, select the appropriate Gephi directory and try again!\n\nYou can download Gephi at https://gephi.org/users/download/.\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
+                               message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Gephi directory. The directory should contain, among other things, the directories \'gephi\' and \'platform\'.\n\nPlease, select the appropriate Gephi directory and try again!\n\nYou can download Gephi at " + Gephi_download + ".\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
                 return False
         if platform == 'darwin':
             if 'gephi' in fileList:
                 return True
             else:
                 mb.showwarning(title='Software error',
-                               message="Gephi was not found among Mac applications.\n\nYou can download Gephi at https://gephi.org/users/download/.\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
+                               message="Gephi was not found among Mac applications.\n\nYou can download Gephi at " + Gephi_download + ".\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
                 return False
 
     if programName == 'Google Earth Pro':
@@ -246,7 +257,7 @@ def inputExternalProgramFileCheck(software_dir, programName):
             if 'google earth pro' in fileList:
                 return True
             mb.showwarning(title='Software error',
-                           message = "Google Earth Pro was not found among Mac applications.\n\nYou can download Google Earth Pro at https://www.google.com/earth/download/gep/agree.html?hl=en-GB.\n\nPlease, read the TIPS_NLP_Google Earth Pro.pdf.")
+                           message = "Google Earth Pro was not found among Mac applications.\n\nYou can download Google Earth Pro at " + Google_Earth_download + ".\n\nPlease, read the TIPS_NLP_Google Earth Pro.pdf.")
             return False
 
 def update_csv_fields(existing_csv: list) -> list:
@@ -256,12 +267,12 @@ def update_csv_fields(existing_csv: list) -> list:
     @return: the new csv files, with software fields up to date.
     """
     sample_csv = [['Software', 'Path', 'Download_link'],
-                  ['Stanford CoreNLP', '', 'https://nlp.stanford.edu/software/stanford-corenlp-latest.zip'],
-                  ['Mallet', '', 'http://mallet.cs.umass.edu/download.php'],
-                  ['SENNA', '', 'https://ronan.collobert.com/senna/download.html'],
-                  ['WordNet', '', 'https://wordnet.princeton.edu/download/current-version'],
-                  ['Gephi', '', 'https://gephi.org/users/download/'],
-                  ['Google Earth Pro', '', 'https://www.google.com/earth/download/gep/agree.html?hl=en-GB']]
+                  ['Stanford CoreNLP', '', CoreNLP_download],
+                  ['Mallet', '', MALLET_download],
+                  ['SENNA', '', SENNA_download],
+                  ['WordNet', '', WordNet_download],
+                  ['Gephi', '', Gephi_download],
+                  ['Google Earth Pro', '', Google_Earth_download]]
     fields = [x[0].lower() for x in existing_csv]
     for (index, row) in enumerate(sample_csv):
         if row[0].lower() not in fields:
@@ -384,20 +395,28 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             return None, missing_software
         if calling_script == 'NLP_menu':  # called from NLP_main GUI. We just need to warn the user to download and install options
             title = 'NLP Suite external software ' + str(package.upper())
-            message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\n' + missing_software + 'If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDo you want to install software now?'
+            message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\n' + missing_software + 'If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDo you want to download/install this software now?\n\nY = Download; N = Install CANCEL to exit?'
         else:
             title = package.upper() + ' software'
             message = 'WARNING!\n\nThe script ' + calling_script.upper() + ' requires the external software ' + package.upper() + \
-                      ' to run.\n\nIf you have not downloaded and installed ' + package + ' yet, you can do that at ' + download_software + '\n\nIf you have already downloaded ' + package + ', you meed to select the directory where you installed it; you will only have to do this once.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\nDo you want to install this software now?'
+                      ' to run.\n\nIf you have not downloaded and installed ' + package + ' yet, you can do that at ' + download_software + '\n\nIf you have already downloaded ' + package + ', you meed to select the directory where you installed it; you will only have to do this once.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\nDo you want to download/install this software now?\n\nY = Download; N = Install CANCEL to exit'
         # already downloaded the software, you meed to select the directory where you installed it; ESC or CANCEL to exit if you haven\'t installed it yet.
         if not silent:
-            answer = tk.messagebox.askyesno(title, message)
+            answer = tk.messagebox.askyesnocancel(title, message)
             # mb.showwarning(title=title, message=message)
-            if answer:
+            if answer == None:
+                software_dir = None
+            else:
                 for (index, row) in enumerate(existing_csv[1:]): # skip header row
                     index = index + 1
                     software_name = row[0]
                     software_dir = row[1]
+                    software_download = row[2]
+                    if answer == True:  # Yes Download
+                        # check internet connection
+                        if not IO_internet_util.check_internet_availability_warning('NLP_menu_main'):
+                            return
+                        webbrowser.open_new(software_download)
                     if software_dir == '' and package.lower() in software_name.lower():
                         # get software directory
                         title = software_name.upper() + ' software'
@@ -435,7 +454,6 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                 if package.lower() in software_name.lower():
                                     # exit loop: while software_dir == None
                                     break
-
             if software_dir == '':
                 software_dir = None
     return software_dir, missing_software
