@@ -18,6 +18,7 @@ There are two ways of updating to the newest NLP Suite version.
 
 1. Double click update_NLP-Suite.bat on your local machine every time you want to get new/changed files from GitHub.
 2. Double click on update_NLP-Suite_auto.bat and, from then on, when exiting the NLP Suite new/changed files will be automatically pulled from GitHub. You only need to run update_NLP-Suite_auto.bat once.
+The update_NLP-Suite_auto.bat ONLY WORKS IF YOU OPEN THE NLP SUITE FROM THE DESKTOP ICON OR THE run_NLP-Suite.bat. IT DOES NOT WORK IF YOU RUN IN COMMAND/PROMPT python NLP_welcome_main.py or python NLP_menu_main.py 
 
 The update features rely on Git. Please download Git at this link https://git-scm.com/downloads, if it hasn’t been installed already.
 
