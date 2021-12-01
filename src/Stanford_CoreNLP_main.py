@@ -141,7 +141,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                         return
                     # open the analyzer having saved the new parser output in config so that it opens the right input file
                     config_filename_temp = 'conll-table-analyzer-config.txt'
-                    config_array = ['EMPTY LINE', outputCoNLLfilePath, 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
+                    config_array = ['EMPTY LINE', str(tempOutputFiles[0]), 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
                     config_util.saveConfig(GUI_util.window, config_filename_temp, config_array, True)
 
                     reminders_util.checkReminder(config_filename,

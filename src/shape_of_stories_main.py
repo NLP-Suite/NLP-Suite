@@ -413,12 +413,12 @@ def check_IO_requirements(inputFilename, inputDir):
 
     txt_fileErr = txt_dir_required + get_txt_dir
     txt_DirErr = txt_dir_required + "\n\nThe selected input directory\n\n" + inputDir + "\n\ndoes not contain any txt files." + get_txt_dir
-    txt_dirWarning = "The selected input directory\n\n" + inputDir + "\n\ncontains less than 50 txt files from which to compute sentiment scores. TOO FEW!\n\nYou REALLY should select a different directory (" + untick_txt_options + ") and try again.\n\nAre you sure you want to continue?"
+    txt_dirWarning = "The selected input directory\n\n" + inputDir + "\n\ncontains fewer than the minimum recommended 50 txt files from which to compute sentiment scores. TOO FEW!\n\nYou REALLY should select a different directory (" + untick_txt_options + ") and try again.\n\nAre you sure you want to continue?"
 
     csv_DirErr = csv_dir_required + "\n\nThe selected input directory\n\n" + inputDir + "\n\ndoes not contain any csv files." + get_csv_dir
-    csv_dirWarning = "The selected input directory\n\n" + inputDir + "\n\ncontains less than 50 csv files of sentiment scores from which to compute the shape of stories. TOO FEW!\n\nYou REALLY should select a different directory (or select a csv file containing sentiment scores for a LARGE set of documents or untick the checkbox 'Sentiment Analysis') and try again.\n\nAre you sure you want to continue?"
+    csv_dirWarning = "The selected input directory\n\n" + inputDir + "\n\ncontains fewer than the minimum recommended 50 csv files of sentiment scores from which to compute the shape of stories. TOO FEW!\n\nYou REALLY should select a different directory (or select a csv file containing sentiment scores for a LARGE set of documents or untick the checkbox 'Sentiment Analysis') and try again.\n\nAre you sure you want to continue?"
 
-    csv_fileWarning = "The selected input csv file\n\n" + inputFilename + "\n\ncontains than 50 files of sentiment scores from which to compute the shape of stories. TOO FEW!\n\nYou REALLY should select a different csv file (or select a directory containing a LARGE set of csv files of sentiment scores or untick the checkbox 'Sentiment Analysis') and try again.\n\nAre you sure you want to continue?"
+    csv_fileWarning = "The selected input csv file\n\n" + inputFilename + "\n\ncontains fewer than the minimum recommended 50 files of sentiment scores from which to compute the shape of stories. TOO FEW!\n\nYou REALLY should select a different csv file (or select a directory containing a LARGE set of csv files of sentiment scores or untick the checkbox 'Sentiment Analysis') and try again.\n\nAre you sure you want to continue?"
     csv_fileErr = csv_file_required + "\n\nThe selected input file\n\n" + inputFilename + "\n\nis not a csv file containing sentiment scores." + get_csv_file
 
     Error = False

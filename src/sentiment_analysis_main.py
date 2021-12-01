@@ -24,6 +24,7 @@ import sentiment_analysis_hedonometer_util
 import sentiment_analysis_SentiWordNet_util
 import sentiment_analysis_VADER_util
 import sentiment_analysis_ANEW_util
+import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -43,11 +44,6 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
     usedir = False
     flag="" #used by CoreNLP
     filesToOpen = []  # Store all files that are to be opened once finished
-
-    if shape_of_stories_var:
-        if IO_libraries_util.inputProgramFileCheck('shape_of_stories_main.py') == False:
-            return
-        call("python shape_of_stories_main.py", shell=True)
 
     if SA_algorithm_var=='':
         mb.showwarning('Warning',"No option has been selected.\n\nPlease, select a Sentiment analysis option and try again.")
@@ -154,6 +150,20 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
 
                 if Excel_outputFilename != "":
                     filesToOpen.append(Excel_outputFilename)
+
+                if shape_of_stories_var:
+                    if IO_libraries_util.inputProgramFileCheck('shape_of_stories_main.py') == False:
+                        return
+
+                    # open the shape of stories GUI  having saved the new SA output in config so that it opens the right input file
+                    config_array = ['EMPTY LINE', outputFilename, 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
+                    config_util.saveConfig(GUI_util.window, 'shape-of-stories-config.txt', config_array, True)
+
+                    reminders_util.checkReminder(config_filename,
+                                                 reminders_util.title_options_shape_of_stories,
+                                                 reminders_util.message_shape_of_stories,
+                                                 True)
+                    call("python shape_of_stories_main.py", shell=True)
 
                 # outputFilenameXlsm1 = Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputQuotefilePath, chart_type_list = ["bar"], chart_title=
                 # "Stanford CoreNLP (Sentiment Value)", column_xAxis_label_var = 'Sentiment value',
@@ -503,9 +513,13 @@ mean_var.set(1)
 median_var.set(1)
 
 def clear(e):
-    SA_algorithm_var.set('')
+    SA_algorithm_var.set('*')
     memory_var_lb.place_forget()  # invisible
-    memory_var.place_forget()  # invisible
+    try:
+        memory_var.place_forget()  # invisible
+    except:
+        print()
+    activate_SOS()
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -571,11 +585,24 @@ SA_algorithm_var.trace('w',activate_memory_var)
 
 sentence_index_var.set(0)
 sentence_index_checkbox = tk.Checkbutton(window, state='disabled', text='Do sentiments fluctuate across a document (Sentiment scores by sentence index)', variable=sentence_index_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sentence_index_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,sentence_index_checkbox)
 
 shape_of_stories_var.set(0)
 shape_of_stories_checkbox = tk.Checkbutton(window, text='Do sentiments fluctuate across documents (Open \'Shape of stories\' GUI)', variable=shape_of_stories_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,shape_of_stories_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,shape_of_stories_checkbox)
+
+def activate_SOS(*args):
+    # the Shape of Stories is only available when processing a directory and using oreNLP
+    if input_main_dir_path.get()=='' or (SA_algorithm_var.get()!='Stanford CoreNLP' and SA_algorithm_var.get()!='*'):
+        shape_of_stories_checkbox.config(state='disabled')
+    else:
+        shape_of_stories_checkbox.config(state='normal')
+shape_of_stories_var.trace('w',activate_SOS)
+inputFilename.trace('w',activate_SOS)
+input_main_dir_path.trace('w',activate_SOS)
+SA_algorithm_var.trace('w',activate_SOS)
+
+activate_SOS()
 
 # doNotCreateIntermediateFiles_var.set(1)
 # doNotCreateIntermediateFiles_checkbox = tk.Checkbutton(window, variable=doNotCreateIntermediateFiles_var, onvalue=1, offvalue=0)
@@ -616,8 +643,8 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
 
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help", "Please, tick the checkboxes for either Mean or Median in output csv files. BY DEFAULT, BOTH VALUES ARE COMPUTED.\n\nStanford CoreNLP Sentiment Analysis only computes mean values for each sentence.\n\nVADER only computes 'compound' values for each sentence.\n\nSentiWordNet as well does not provide sentence mean/median values.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help", "Please, using the dropdown menu, select the algorithm to be used for computing sentiment analysis.\n\nSelect * to run ALL algorithms.\n\nStanford CoreNLP neural network approach to Sentiment Analysis typically achieves better results than dictionary-based approaches.\n\nCoreNLP computes mean values only for each sentence on a scale 0-4 (minimum-maximum).\n\nANEW (Affective Norms for English Words) computes sentiment/arousal/dominance mean/median values for each sentence using the ANEW ratings for SENTIMENT (VALENCE), AROUSAL, and DOMINANCE (CONTROL) by Bradley, M.M. & Lang, P.J. (2017). Affective Norms for English Words (ANEW): Instruction manual and affective ratings. Technical Report C-3. Gainesville, FL:UF Center for the Study of Emotion and Attention.\n\nContrary to all other approaches, the ANEW script computes three different measures, for SENTIMENT, AROUSAL, and DOMINANCE:\nSENTIMENT or VALENCE measures how pleasant/unpleasant a word makes us feel;\nAROUSAL measures how calm/excited a word makes us feel;\nDOMINANCE or CONTROL measures how dominated/in control a word makes us feel.\n\nTHE SCRIPT EXPECTS TO FIND THE FILE EnglishShortenedANEW.csv IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE Sentiment_Analysis_ANEW.py SCRIPT IS STORED.\n\nIn OUTPUT, the script creates a csv file containing the calculated mean/median sentiment values for each sentence, where each rating can have a total of maximum 9 points.\n\nValues for sentiment, arousal, and dominance are classified on a scale 0-9, grouped in 5 categories: <3, >=3 and < 5, 5 (neutral), >5 and <8, >=8 and <=9.\n\nThe hedonometer algorithm uses the hedonometer.org rated dictionary to compute sentiment mean/median values for each sentence.\n\nThe script has been shown to work best with social media texts (e.g., Twitter), New York Times editorials, movie reviews, and product reviews.\n\nTHE SCRIPT EXPECTS TO FIND THE FILE hedonometer.json IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE Sentiment_Analysis_Hedonometer.py SCRIPT IS STORED.\n\nIn OUTPUT, the script creates a csv file containing the calculated mean/median sentiment values for each sentence.\n\nSentiment values are classified on a scale 0-10, grouped in 3 categories: negative (>=0 and <4), neutral (>=4 and <=6), and positive (>6 and <=10).\n\nThe NLTK VADER (VADER, Valence Aware Dictionary and sEntiment Reasoner) uses the NLTK rated dictionary to compute sentiment mean/median values for each sentence.\n\nThe script has been shown to work best with social media texts (e.g., Twitter).\n\nIn INPUT the script expects either a single text file or a set of text files stored in a directory. THE SCRIPT ALSO EXPECTS TO FIND THE VADER RATED DICTIONARY FILE vader_lexicon.txt IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE Sentiment_Analysis_VADER.py SCRIPT IS STORED.\n\nIn OUTPUT, the script creates a csv file containing the calculated 'compound' sentiment values for each sentence.\n\nMean and Median calculations are not available for VADER; VADER computes 'compound' values for each sentence.\n\nSentiment values are classified on a scale -1 (most negative) to 1 as (most positive) grouped in 3 categories: negative (<-0.05), neutral (>=-0.05 and <=0.05), and positive (>0.05 and <=1).\n\nVADER heavily relies on a number of NLTK libraries. If VADER fails to run, make sure that in command line you run\n   python -m nltk.downloader all")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help", "Please, tick the checkboxes to display a line plot of sentiment scores by sentence index across a specific document.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help", "Please, tick the checkboxes to open a specific GUI to compute the \'shape of stories\' of a set of sentiment scores across different documents.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help", "Please, tick the checkbox to display a line plot of sentiment scores by sentence index across a specific document.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help", "Please, tick the checkbox to open the 'Shape of stories' GUI. The 'Shape of stories' algorithms will compute and visualize the \'shape of stories\' of a set of sentiment scores across different documents using different data reduction methods: Hiererchical Clustering, Singular Value Decomposition, Non-Negative Matrix Factorization.\n\nThe 'Shape of stories' GUI is only available when computing sentiment scores via Stanford CoreNLP on a corpus of txt files in an input directory.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help",GUI_IO_util.msg_openOutputFiles)
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
@@ -625,6 +652,5 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 readMe_message="The Python 3 Dictionary-based Analyses scripts calculate the mean/median values for various aspects of the language used in a text: sentiment, arousal, dominance.\n\nIn INPUT the scripts expect either a single text file or a set of text files stored in a directory. THE hedonometer, ANEW, AND VADER SCRIPTS ALSO EXPECT TO FIND DICTIONARY FILES IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE PYTHON SCRIPTS ARE STORED.\n\nIn OUTPUT, the scripts create csv files containing the calculated mean/median values for each sentence."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
-
 
 GUI_util.window.mainloop()

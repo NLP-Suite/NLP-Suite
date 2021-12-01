@@ -416,6 +416,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                         # check internet connection
                         if not IO_internet_util.check_internet_availability_warning('NLP_menu_main'):
                             return
+                        # open software download website
                         webbrowser.open_new(software_download)
                     if software_dir == '' and package.lower() in software_name.lower():
                         # get software directory
