@@ -127,7 +127,7 @@ def run(inputFilename,inputDir, outputDir,
             if open_GUI_var == True:
                 call("python topic_modeling_gensim_main.py", shell=True)
             else:
-                # run with all default values; do not run Mallet
+                # run with all default values; do not run MALLET
                 output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics=20,
                                                       remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createExcelCharts=createExcelCharts)
                 if output!=None:
@@ -380,7 +380,7 @@ topics_checkbox = tk.Checkbutton(window,text="What are the topics? (Topic modeli
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,topics_checkbox,True)
 
 topics_Mallet_var.set(0)
-topics_Mallet_checkbox = tk.Checkbutton(window,text="via Mallet", variable=topics_Mallet_var, onvalue=1, offvalue=0)
+topics_Mallet_checkbox = tk.Checkbutton(window,text="via MALLET", variable=topics_Mallet_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,topics_Mallet_checkbox,True)
 
 topics_Gensim_var.set(1)
@@ -388,7 +388,7 @@ topics_Gensim_checkbox = tk.Checkbutton(window,text="via Gensim", variable=topic
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,topics_Gensim_checkbox,True)
 
 open_GUI_var.set(0)
-open_GUI_checkbox = tk.Checkbutton(window,text="open Gensim/Mallet GUI", variable=open_GUI_var, onvalue=1, offvalue=0)
+open_GUI_checkbox = tk.Checkbutton(window,text="open Gensim/MALLET GUI", variable=open_GUI_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,open_GUI_checkbox)
 
 def activate_topics(*args):

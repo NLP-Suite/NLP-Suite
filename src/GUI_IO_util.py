@@ -124,6 +124,9 @@ if sys.platform == 'darwin': #Mac OS
     run_button_x_coordinate = 850
     close_button_x_coordinate = 980
 
+    open_IO_config_button = 650
+    open_setup_software_button = 650
+
     open_file_button_brief = 700
     open_inputDir_button_brief = 740
     open_outputDir_button_brief = 780
@@ -154,6 +157,9 @@ else: #windows and anything else
     open_reminders_x_coordinate = 550
     run_button_x_coordinate = 840
     close_button_x_coordinate = 960
+
+    open_IO_config_button = 820
+    open_setup_software_button = 820
 
     open_file_button_brief = 760
     open_inputDir_button_brief = 800
