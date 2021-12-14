@@ -37,11 +37,15 @@ y_multiplier_integer = 1
 noLicenceError=False
 
 # gather GUI info from external file
+# def set_window(size, label, config, config_option):
 def set_window(size, label, config, config_option):
-    global GUI_size, GUI_label, config_filename, config_input_output_options
-    GUI_size, GUI_label, config_filename, config_input_output_options = size, label, config, config_option
-    window.geometry(GUI_size)
-    window.title(GUI_label)
+
+    global GUI_size, GUI_label, config_filename, config_input_output_numeric_options
+    GUI_size, GUI_label, config_filename, config_input_output_numeric_options = size, label, config, config_option
+    # window.geometry(GUI_size)
+    # window.title(GUI_label)
+    window.geometry(size)
+    window.title(label)
 
 # insert side bar
 # To connect a vertical scrollbar to such a widget, you have to do two things:
@@ -69,28 +73,21 @@ window.bind("<Escape>", clear)
 #IO widgets
 
 IO_setup_menu_var = tk.StringVar()
-IO_setup_menu = tk.OptionMenu(window, IO_setup_menu_var, 'Default I/O configuration', 'Alternative I/O configuration')
+IO_setup_menu = tk.OptionMenu(window, IO_setup_menu_var, 'Default I/O configuration', 'GUI-specific I/O configuration')
 IO_setup_var = tk.StringVar()
 
-select_softwareDir_button=tk.Button()
 select_input_file_button=tk.Button()
 select_input_main_dir_button=tk.Button() 
 select_input_secondary_dir_button=tk.Button() 
-select_output_file_button=tk.Button()
 select_output_dir_button=tk.Button()
 
-softwareDir=tk.StringVar() #StanfordCoreNLP, WordNet, Mallet, SENNA
-softwareDir.set('')
 inputFilename=tk.StringVar()
 inputFilename.set('')
 input_main_dir_path=tk.StringVar()
 input_main_dir_path.set('')
 input_secondary_dir_path=tk.StringVar()
 input_secondary_dir_path.set('')
-outputFilename=tk.StringVar()
-outputFilename.set('')
 output_dir_path=tk.StringVar()
-output_dir_path.set('')
 output_dir_path.set('')
 
 release_version_var=tk.StringVar()
@@ -113,7 +110,9 @@ label = None
 checkbox = None
 onText = None
 offText = None
-
+# answer = True when you do not wish to enter I/O information on the IO_setup_main GUI; changed below
+answer = True
+run_button_state='disabled'
 
 # tracer when the checkbox has a separate label widget (label_local) attached to the checkbox widget (checkbox_local)
 #For the labels to change the text with the ON/OFF value of the checkbox the command=lambda must be included in the definition of the tk.button
@@ -261,7 +260,7 @@ def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_ma
         inputFilename.set(filename)
         input_main_dir_path.set('')
 
-#changeVar is the name of the IO FIELD (.get()) that needs to be displayed (e.g., softwareDir)
+#changeVar is the name of the IO FIELD (.get()) that needs to be displayed
 #changeVar1 is the name of the IO BUTTON that needs to be disabled in the case of mutuallyexclusive options
 #title is the name that will appear when selecting the directory, e.g., "Select Stanford CoreNLP directory"
 def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,title,inputMainDir=False):
@@ -297,42 +296,20 @@ def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,titl
             return
         output_dir_path.set(directoryName)
 
-# def get_IO_options(config_filename,config_input_output_options):
-#     if config_input_output_options!=[0,0,0,0,0,0]:
-#         # use default config at first
-#         IO_options=config_util.readConfig(config_filename,config_input_output_options)
-#     else:
-#         IO_options=None
-#
-#     # the following check and lines are necessary
-#     #   to avoid code break in
-#     #   if IO_options[] in later tests
-#     #   when there is no config folder
-#     if IO_options==None or IO_options==[]:
-#         IO_options=[]
-#         for i in range(len(config_input_output_options)):
-#             if config_input_output_options[i]>0:
-#                 lineValue="EMPTY LINE"
-#             else:
-#                 lineValue=""
-#             IO_options.append(lineValue)
-#     return IO_options
 
-# configuration_type is the value displayed on the GUI: Default I/O configuration, Alternative I/O configuration
-def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,ScriptName,silent,*args):
+# configuration_type is the value displayed on the GUI: Default I/O configuration,GUI-specific I/O configuration
+def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_output_numeric_options,scriptName,silent,*args):
     error = False
     fileName = ''
     dirName = ''
-    checkDefaultConfig = True
     y_multiplier_integer=1
     # temp_config_filename is used to check the existence of the default or GUI specific config
     if 'Default' in IO_setup_menu_var.get():
-        temp_config_filename='default-config.txt'
-        IO_options=config_util.get_IO_options('default-config.txt', config_input_output_options)
+        temp_config_filename='default_config.csv'
     else:
         temp_config_filename=config_filename
-        IO_options=config_util.get_IO_options(config_filename,config_input_output_options)
-
+    silent=False
+    config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file(temp_config_filename, config_input_output_numeric_options)
 
     # the full options must always be displayed, even when the brief option is selected;
     #   the reason is that the IO widgets filename, inputDir, and outputDir are used to check missing options and activate the RUN button
@@ -341,82 +318,66 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,Sc
     inputDirName = ''
     outputDirName = ''
 
-    if IO_options[0]=='' or IO_options[0]=="EMPTY LINE" : # INPUT software directory
-        softwareDir.set('')
-    else:
-        softwareDir.set(config_util.checkConfigDirExists(config_filename,IO_options[0],'INPUT'))
+    # INPUT file name -----------------------------------------------------------------------------------
 
-    # -----------------------------------------------------------------------------------
-    # file name
-
-    if IO_options[1]=='' or IO_options[1]=="EMPTY LINE": # INPUT filename
+    if config_input_output_alphabetic_options[0]=='': # INPUT filename
         inputFilename.set('')
     else:
         if error==False:
-            error, fileName = config_util.checkConfigFileExists(temp_config_filename, IO_options[1], 'INPUT')
+            error, fileName = config_util.checkConfigFileExists(temp_config_filename, config_input_output_alphabetic_options[0], 'INPUT')
         inputFilename.set(fileName)
 
     # -----------------------------------------------------------------------------------
-    # main input directory
+    # INPUT main directory
 
-    if IO_options[2]=='' or IO_options[2]=="EMPTY LINE": # INPUT main directory
+    if config_input_output_alphabetic_options[1]=='': # INPUT main directory
         input_main_dir_path.set('')
     else:
-        inputDirName = IO_options[2]
         if error==False:
-
-            error, dirName = config_util.checkConfigDirExists(temp_config_filename, IO_options[2], 'INPUT')
+            error, dirName = config_util.checkConfigDirExists(temp_config_filename, config_input_output_alphabetic_options[1], 'INPUT')
         input_main_dir_path.set(dirName)
 
     # -----------------------------------------------------------------------------------
-    # secondary input directory
+    # INPUT secondary directory
 
-    if IO_options[3]=='' or IO_options[3]=="EMPTY LINE": # INPUT secondary directory
+    if config_input_output_alphabetic_options[2]=='': # INPUT secondary directory
         input_secondary_dir_path.set('')
     else:
         if error==False:
-            error, dirName = config_util.checkConfigDirExists(temp_config_filename, IO_options[3], 'INPUT')
+            error, dirName = config_util.checkConfigDirExists(temp_config_filename, config_input_output_alphabetic_options[2], 'INPUT')
         input_secondary_dir_path.set(dirName)
 
     # -----------------------------------------------------------------------------------
-    # output file
+    # OUTPUT directory
 
-    # output files currently never used
-    if IO_options[4]=='' or IO_options[4]=="EMPTY LINE": # OUTPUT file name
-        outputFilename.set('')
-    else:
-        outputFilename.set(config_util.checkConfigFileExists(temp_config_filename,IO_options[4],'OUTPUT'))
-
-    # -----------------------------------------------------------------------------------
-    # output directory
-
-    if IO_options[5]=='' or IO_options[5]=="EMPTY LINE": # OUTPUT directory
+    if config_input_output_alphabetic_options[3]=='': # OUTPUT directory
         outputDirName = ''
         output_dir_path.set('')
     else:
-        outputDirName = IO_options[5]
         if error==False:
-            error, dirName = config_util.checkConfigDirExists(temp_config_filename, IO_options[5], 'OUTPUT')
+            error, dirName = config_util.checkConfigDirExists(temp_config_filename, config_input_output_alphabetic_options[3], 'OUTPUT')
         output_dir_path.set(dirName)
 
-    # else: #display I/O info briefly
-    if IO_setup_display_brief == True and config_input_output_options!=[0,0,0,0,0,0]:
+    # display I/O info briefly
+    if IO_setup_display_brief == True and config_input_output_numeric_options!=[0,0,0,0]:
         IO_setup_display_string = ''
         # check filename
-        if str(IO_options[1])!='' and str(IO_options[1])!='EMPTY LINE':
+        if str(config_input_output_alphabetic_options[0])!='':
             #head is path, tail is filename
-            head, tail = os.path.split(IO_options[1])
+            head, tail = os.path.split(config_input_output_alphabetic_options[0])
             IO_setup_display_string = "INPUT FILE: " + str(tail)
         else:
             # check input directory
-            if str(IO_options[2]) != '' and str(IO_options[2]) != 'EMPTY LINE':
-                inputDirName = IO_options[2]
+            if str(config_input_output_alphabetic_options[1]) != '':
+                inputDirName = config_input_output_alphabetic_options[1]
                 IO_setup_display_string = "INPUT DIR: " + str(inputDirName)
 
-        # both filename and input Dir empty
-        if (IO_options[1] == '' or IO_options[1] == "EMPTY LINE") and (
-                IO_options[2] == '' or IO_options[2] == "EMPTY LINE"):
+        # both filename [1] and input Dir [2] are empty
+        if (config_input_output_alphabetic_options[0] == '') and (
+                config_input_output_alphabetic_options[1] == ''):
             IO_setup_display_string = "INPUT FILE:\nINPUT DIR:"
+
+        outputDirName = config_input_output_alphabetic_options[3]
 
         IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(outputDirName)
         IO_setup_brief_display_area = tk.Text(width=60, height=2)
@@ -427,134 +388,30 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,IO_options,Sc
         IO_setup_brief_display_area.insert("end", IO_setup_display_string)
         # IO_setup_brief_display_area.pack(side=tk.LEFT)
         IO_setup_brief_display_area.configure(state='disabled')
-    activateRunButton(IO_setup_display_brief,ScriptName,silent)
+    # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
+    answer = activateRunButton(temp_config_filename,IO_setup_display_brief,scriptName,silent)
+    if not answer:
+        return
+    if run_button_state=='disabled':
+        setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent)
 
-def activateRunButton(IO_setup_display_brief,ScriptName,silent = False):
+# config_filename can be either the Default value or the GUI_specific value depending on IO_setup_menu_var.get()
+def activateRunButton(config_filename,IO_setup_display_brief,scriptName,silent = False):
+    global run_button_state, answer
+    # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
+    # if answer:
     # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
-    # readConfig
-    # global config_filename, config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path
-    configArray, missingIO=config_util.setup_IO_configArray(window,config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path)
-    # last parameter True: do not continue/repeat to warn the user about missing options when entering all IOs
-    run_button_state=GUI_IO_util.check_missingIO(window,missingIO,config_filename,IO_setup_display_brief,ScriptName,silent)
+    config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file(config_filename, config_input_output_numeric_options)
+    run_button_state, answer = config_util.check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_display_brief, silent)
     run_button.configure(state=run_button_state)
+    return answer
 
+#GUI top widgets ALL IO widgets
+#	 input filename, input dir, secondary input dir, output dir
 #__________________________________________________________________________________________________________________
-#GUI top widgets ALL IO widgets 
-#	softwareDir, input filename, input dir, secondary input dir, output filename, output dir
-#__________________________________________________________________________________________________________________
 
-def IO_config_setup_full (window, y_multiplier_integer):
-    if 'Default' in IO_setup_menu_var.get():
-        IO_options=config_util.get_IO_options('default-config.txt', config_input_output_options)
-    else:
-        IO_options=config_util.get_IO_options(config_filename,config_input_output_options)
-
-    # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
-    global select_softwareDir_button, select_input_file_button, select_input_main_dir_button, \
-        select_input_secondary_dir_button, select_output_file_button, select_output_dir_button
-    if config_input_output_options[1]>0:
-        # buttons are set to normal or disabled in selectFile_set_options
-        # openInputFile_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, inputFilename.get()))
-        # openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
-        #
-        if config_input_output_options[1]==1: #single CoNLL file
-            # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CoNLL table', command=lambda: selectFile_set_options(window,True,True,inputFilename,input_main_dir_path,'Select INPUT CoNLL table (csv file)',[('CoNLL csv file','.csv')],".csv"))
-        elif config_input_output_options[1]==2: #single txt file:
-            # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT TXT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT TXT file',[('text file','.txt')],".txt"))
-        elif config_input_output_options[1]==3: #single csv file:
-            # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT csv file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT csv file',[('csv file','.csv')],".csv"))
-        if config_input_output_options[1]==4: #any type file (used in NLP.py)
-            # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("html file","*.html"),("CoNLL table","*.conll")], "*.*"))
-        if config_input_output_options[1]==5: #txt/html
-            # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*"))
-        if config_input_output_options[1]==6: #txt/csv
-            # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
-
-        # place the INPUT file widget
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_file_button)
-        tk.Label(window, textvariable=inputFilename).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
-
-        #setup a button to open Windows Explorer on the selected input file
-        current_y_multiplier_integer2=y_multiplier_integer-1
-        openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, inputFilename.get()))
-        openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer2)
-
-    #primary INPUT directory ______________________________________________
-    if config_input_output_options[2]==1: #directory input
-        # buttons are set to normal or disabled in selectFile_set_options
-        select_input_main_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT files directory',  command = lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select INPUT files directory",True))
-        # select_input_main_dir_button.config(state="normal")
-
-        if IO_options[2]=="EMPTY LINE":
-            input_main_dir_path.set("")
-
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_main_dir_button)
-        tk.Label(window, textvariable=input_main_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
-
-        #setup a button to open Windows Explorer on the selected input directory
-        current_y_multiplier_integer2=y_multiplier_integer-1
-        openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, input_main_dir_path.get()))
-        openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer2)
-
-    #secondary INPUT directory ______________________________________________
-    if config_input_output_options[3]==1: #secondary directory input
-        # buttons are set to normal or disabled in selectFile_set_options
-        select_input_secondary_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT secondary directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path, input_secondary_dir_path,"Select INPUT secondary TXT directory"))
-
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_secondary_dir_button)
-        tk.Label(window, textvariable=input_secondary_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
-
-        #setup a button to open Windows Explorer on the selected input directory
-        current_y_multiplier_integer3=y_multiplier_integer-1
-        openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, input_secondary_dir_path.get()))
-        openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer3)
-
-    #__________________________________________________________________________________________________________________
-    #OUTPUT options
-    #OUTPUT file & directory options
-
-    #OUTPUT file ______________________________________________ NOT USED
-    if config_input_output_options[4]==1: #output file
-        # buttons are set to normal or disabled in selectFile_set_options
-        select_output_file_button=tk.Button(window, width = GUI_IO_util.select_file_directory_button_width,text='Select OUTPUT csv file',  command=lambda: selectFile_set_options(window,config_input_output_options,False,False,outputFilename,'','Select OUTPUT csv file','csv file','.csv',False,input_main_dir_path))
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_output_file_button)
-        tk.Label(window, textvariable=outputFilename).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
-
-    #OUTPUT directory ______________________________________________
-    if config_input_output_options[5]==1: #output directory
-        # buttons are set to normal or disabled in selectFile_set_options
-        select_output_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select OUTPUT files directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select OUTPUT files directory"))
-
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_output_dir_button)
-        tk.Label(window, textvariable=output_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
-
-        #setup a button to open Windows Explorer on the selected input directory
-        current_y_multiplier_integer4=y_multiplier_integer-1
-        openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
-        openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer4)
-
-def setup_IO_configuration_options(IO_setup_display_brief,y_multiplier_integer,ScriptName,silent):
-    if 'Default' in IO_setup_menu_var.get(): # GUI_util.GUI_util.IO_setup_menu_var.get()
-        temp_config_filename = 'default-config.txt'
-    else:
-        temp_config_filename=config_filename
-    # 2 arguments are passed:
-    #   1. config_input_output_options (i.e., the list of GUI specific IO options [0, 1, 0, 0, 0, 1])
-    #       when passing a default config, this list will be checked in IO_setup_main against the GUI specific IO list
-    #       if you have a specific GUI requiring only input Dir, rather than filename, and the default option specifies an inputfile
-    #       a warning will be raised
-    #   2. temp_config_filename, either as default or calling GUI config
-    call("python IO_setup_main.py --config_option " + str(config_input_output_options).replace('[', '"').replace(']', '"') + " --config_filename " + temp_config_filename, shell=True)
-    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options, ScriptName,silent)
-
-def IO_config_setup_brief(window, y_multiplier_integer,ScriptName, silent):
-    IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,y_multiplier_integer,ScriptName, silent))
+def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
+    IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,scriptName, silent))
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer,
                                                    IO_setup_button, True)
@@ -594,7 +451,7 @@ def IO_config_setup_brief(window, y_multiplier_integer,ScriptName, silent):
 
     def openConfigFile():
         if 'Default' in IO_setup_menu_var.get():  # GUI_util.GUI_util.IO_setup_menu_var.get()
-            temp_config_filename = 'default-config.txt'
+            temp_config_filename = 'default_config.csv'
         else:
             temp_config_filename = config_filename
         IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + temp_config_filename)
@@ -604,10 +461,105 @@ def IO_config_setup_brief(window, y_multiplier_integer,ScriptName, silent):
     openInputConfigFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_config_file_button_brief,
                                y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
-def display_about_release_team_cite_buttons(ScriptName):
-    # if ScriptName == 'NLP_welcome_main' or ScriptName == 'NLP_menu_main':
-    if ScriptName == 'NLP_menu_main':
-        if ScriptName == 'NLP_welcome_main':
+def IO_config_setup_full (window, y_multiplier_integer):
+    if 'Default' in IO_setup_menu_var.get():
+        config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file('default_config.csv', config_input_output_numeric_options)
+    else:
+        config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file(config_filename, config_input_output_numeric_options)
+
+    # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
+    global select_input_file_button, select_input_main_dir_button, \
+        select_input_secondary_dir_button, select_output_dir_button
+    if config_input_output_numeric_options[0]>0:
+        # buttons are set to normal or disabled in selectFile_set_options
+        if config_input_output_numeric_options[0]==1: #single CoNLL file
+            # buttons are set to normal or disabled in selectFile_set_options
+            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CoNLL table', command=lambda: selectFile_set_options(window,True,True,inputFilename,input_main_dir_path,'Select INPUT CoNLL table (csv file)',[('CoNLL csv file','.csv')],".csv"))
+        elif config_input_output_numeric_options[0]==2: #single txt file:
+            # buttons are set to normal or disabled in selectFile_set_options
+            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT TXT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT TXT file',[('text file','.txt')],".txt"))
+        elif config_input_output_numeric_options[0]==3: #single csv file:
+            # buttons are set to normal or disabled in selectFile_set_options
+            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT csv file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT csv file',[('csv file','.csv')],".csv"))
+        if config_input_output_numeric_options[0]==4: #any type file (used in NLP.py)
+            # buttons are set to normal or disabled in selectFile_set_options
+            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("html file","*.html"),("CoNLL table","*.conll")], "*.*"))
+        if config_input_output_numeric_options[0]==5: #txt/html
+            # buttons are set to normal or disabled in selectFile_set_options
+            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*"))
+        if config_input_output_numeric_options[0]==6: #txt/csv
+            # buttons are set to normal or disabled in selectFile_set_options
+            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
+
+        # place the INPUT file widget
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_file_button)
+        tk.Label(window, textvariable=inputFilename).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
+
+        #setup a button to open Windows Explorer on the selected input file
+        current_y_multiplier_integer2=y_multiplier_integer-1
+        openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, inputFilename.get()))
+        openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer2)
+
+    #primary INPUT directory ______________________________________________
+    if config_input_output_numeric_options[1]==1: #directory input
+        # buttons are set to normal or disabled in selectFile_set_options
+        select_input_main_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT files directory',  command = lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select INPUT files directory",True))
+        # select_input_main_dir_button.config(state="normal")
+
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_main_dir_button)
+        tk.Label(window, textvariable=input_main_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
+
+        #setup a button to open Windows Explorer on the selected input directory
+        current_y_multiplier_integer2=y_multiplier_integer-1
+        openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, input_main_dir_path.get()))
+        openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer2)
+
+    #secondary INPUT directory ______________________________________________
+    if config_input_output_numeric_options[2]==1: #secondary directory input
+        # buttons are set to normal or disabled in selectFile_set_options
+        select_input_secondary_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT secondary directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path, input_secondary_dir_path,"Select INPUT secondary TXT directory"))
+
+        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_secondary_dir_button)
+        tk.Label(window, textvariable=input_secondary_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
+
+        #setup a button to open Windows Explorer on the selected input directory
+        current_y_multiplier_integer3=y_multiplier_integer-1
+        openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, input_secondary_dir_path.get()))
+        openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer3)
+
+    #OUTPUT directory ______________________________________________
+    if config_input_output_numeric_options[3]==1: #output directory
+        # buttons are set to normal or disabled in selectFile_set_options
+        select_output_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select OUTPUT files directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select OUTPUT files directory"))
+
+        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_output_dir_button)
+        tk.Label(window, textvariable=output_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
+
+        #setup a button to open Windows Explorer on the selected input directory
+        current_y_multiplier_integer4=y_multiplier_integer-1
+        openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
+        openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer4)
+
+def setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent):
+    if 'Default' in IO_setup_menu_var.get(): # GUI_util.GUI_util.IO_setup_menu_var.get()
+        temp_config_filename = 'default_config.csv'
+    else:
+        temp_config_filename=config_filename
+    # 2 arguments are passed to python IO_setup_main.py:
+    #   1. config_input_output_numeric_options (i.e., the list of GUI specific IO options setup in every _main [1,0,0,1])
+    #       when passing a default config, this list will be checked in IO_setup_main against the GUI specific IO list
+    #       if you have a specific GUI requiring only input Dir, rather than filename, and the default option specifies an inputfile
+    #       a warning will be raised
+    #   2. temp_config_filename, either as default or GUI-specific config
+    # same call to IO_setup_main.py in NLP_menu_main
+    if scriptName!='IO_setup_main':
+        call("python IO_setup_main.py --config_option " + str(config_input_output_numeric_options).replace('[', '"').replace(']', '"') + " --config_filename " + temp_config_filename, shell=True)
+        # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
+        display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_numeric_options, scriptName,silent)
+
+def display_about_release_team_cite_buttons(scriptName):
+    if scriptName == 'NLP_menu_main':
+        if scriptName == 'NLP_welcome_main':
             y_multiplier_integer = .5
         else:
             y_multiplier_integer = 0
@@ -631,21 +583,21 @@ def display_about_release_team_cite_buttons(ScriptName):
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.cite_button_x_coordinate, y_multiplier_integer,
                                                        cite_button)
 
-# ScriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main
+# scriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main
 #   it can be used for handling GUIs with special treatment (e.g., IO_setup_main which does not have a RUN button)
-#   for consistency, it should also be used for NLP_main that for now relies on a previous approach based on config (i.e., NLP-config.txt)
+#   for consistency, it should also be used for NLP_main that for now relies on a previous approach based on config (i.e., NLP_config.csv)
 # silent is set to True in those GUIs where the selected default I/O configuration does not confirm to the expected input
 #   For example, you need a csv file but the default is a Directory, e.g., data_manager_main
-def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,ScriptName='',silent=False):
+def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_display_brief,scriptName='',silent=False):
     import IO_libraries_util
     from PIL import Image, ImageTk
 
     # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
-    global select_softwareDir_button, select_input_file_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_file_button, select_output_dir_button
-    global IO_options
+    global select_input_file_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_dir_button
+    global config_input_output_alphabetic_options
 
     # No top help lines displayed when opening the license agreement GUI
-    if config_filename!='license-config.txt':
+    if config_filename!='license_config.csv':
 
         intro = tk.Label(window, text=GUI_IO_util.introduction_main)
         intro.pack()
@@ -654,39 +606,19 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
 
         display_release()
 
-        display_about_release_team_cite_buttons(ScriptName)
+        display_about_release_team_cite_buttons(scriptName)
 
     y_multiplier_integer=0
-    missingIO=""
 
     #__________________________________________________________________________________________________________________
     # INPUT options widgets
-    # IO_options contains the .get() value for each IO widget
+    # config_input_output_alphabetic_options contains the .get() value for each IO widget
     #	e.g.,  ['C:/Program Files (x86)/NLP_backup/WordNet-3.0', '', '', '', '', 'C:/Program Files (x86)/NLP_backup/Output']
-    # IO_options will contain the specific user SAVED values for the script
+    # config_input_output_alphabetic_options will contain the specific user SAVED values for the script
 
     # there should only be one case of
-    #   config_input_output_options = [0,0,0,0,0,0]
-    #   in NLP_GUI (NLP-config.txt) since no IO lines are displayed
-    # default_config_filename = 'default-config.txt'
-    # if config_input_output_options!=[0,0,0,0,0,0]:
-    #     # use default config at first
-    #     IO_options=config_util.readConfig(default_config_filename,config_input_output_options)
-    # else:
-    #     IO_options=None
-    #
-    # # the following check and lines are necessary
-    # #   to avoid code break in
-    # #   if IO_options[] in later tests
-    # #   when there is no config folder
-    # if IO_options==None or IO_options==[]:
-    #     IO_options=[]
-    #     for i in range(len(config_input_output_options)):
-    #         if config_input_output_options[i]>0:
-    #             lineValue="EMPTY LINE"
-    #         else:
-    #             lineValue=""
-    #         IO_options.append(lineValue)
+    #   config_input_output_numeric_options = [0,0,0,0]
+    #   in NLP_GUI (NLP_config.csv) since no IO lines are displayed
 
     #file input file option ______________________________________________
     #	1 for CoNLL file,
@@ -696,13 +628,11 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
     #	5 for txt, html (used in annotator)
     #	6 for txt, csv (used in SVO)
 
-    # global config_filename, config_input_output_options,select_softwareDir_button,softwareDir,select_input_file_button,inputFilename,select_input_main_dir_button,input_main_dir_path,select_input_secondary_dir_button,input_secondary_dir_path,select_output_file_button,outputFilename,select_output_dir_button,output_dir_path
-
-    if ScriptName != 'NLP_menu_main':
+    if scriptName != 'NLP_menu_main':
         if not IO_setup_display_brief:
             IO_config_setup_full(window, y_multiplier_integer)
         else:
-            IO_config_setup_brief(window, y_multiplier_integer,ScriptName,silent)
+            IO_config_setup_brief(window, y_multiplier_integer,scriptName,silent)
 
     old_license_file=os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-1.0.txt')
     if os.path.isfile(old_license_file):
@@ -710,7 +640,7 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
         os.rename(old_license_file, os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-Suite-1.0.txt'))
 
     if (os.path.isfile(os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-Suite-1.0.txt')) and (IO_libraries_util.inputProgramFileCheck('license_GUI.py'))):
-        if not os.path.isfile(GUI_IO_util.configPath + os.sep + 'license-config.txt'):
+        if not os.path.isfile(GUI_IO_util.configPath + os.sep + 'license_config.csv'):
             call("python " + "license_GUI.py", shell=True)
     else:
         # The error message is displayed at the end of the script after the whole GUI has been displayed
@@ -718,37 +648,32 @@ def GUI_top(config_input_output_options,config_filename, IO_setup_display_brief,
         noLicenceError=True
 
 #__________________________________________________________________________________________________________________
-#GUI bottom buttons widgets (ReadMe, TIPS, RUN, CLOSE)
+# GUI bottom buttons widgets (ReadMe, Videos, TIPS, RUN, CLOSE)
 # silent is set to True in those GUIs where the selected default I/O configuration does not confirm to the expected input
 #   For example, you need a csv file but the default is a Directory, e.g., data_manager_main
-def GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command,
-               videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,ScriptName='', silent=False):
+def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
+               videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName='', silent=False):
 
-    """
-    :type TIPS_options: object
-    """
     # No bottom lines (README, TIPS, RUN, CLOSE) displayed when opening the license agreement GUI
-    if config_filename=='license-config.txt':
+    if config_filename=='license_config.csv':
         return
-    # IO_options=[]
     reminder_options=[]
-    missingIO=""
 
     # for those GUIs (e.g., style analysis) that simply
     #   display options for opening more specialized GUIs
     #   do NOT display the next two sets of widgets
     #   since there is no output to display
-    # if config_input_output_options!=[0, 0, 0, 0, 0, 0] and config_filename!='default-config.txt':
+    # if config_input_output_numeric_options!=[0,0,0,0] and config_filename!='default_config.csv':
 
     # "IO_setup_main" has no Excel display
     # GUIs that serve only as frontend GUIs for more specialized GUIs should NOT display Open ooutput and Excel tickboxes
     #   that is the case, for instance, in narrative_analysis_main
-    #   in this case config_input_output_options = [0, 0, 0, 0, 0, 0]
-    if config_input_output_options!= [0, 0, 0, 0, 0, 0] and \
-            ScriptName != 'NLP_menu_main' and \
-            ScriptName != "IO_setup_main" and \
-            ScriptName != "Stanford_CoreNLP_coreference_main":
-        #open out csv files widget defined above since it is used earlier
+    #   in this case config_input_output_numeric_options = [0,0,0,0]
+    if config_input_output_numeric_options!= [0,0,0,0] and \
+            scriptName != 'NLP_menu_main' and \
+            scriptName != "IO_setup_main" and \
+            scriptName != "Stanford_CoreNLP_coreference_main":
+        #open output csv files widget defined above since it is used earlier
         open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Automatically open ALL output files", "Do NOT automatically open ALL output files"))
         open_csv_output_label.configure(text="Automatically open ALL output files")
         open_csv_output_label.place(x=GUI_IO_util.get_labels_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
@@ -761,8 +686,8 @@ def GUI_bottom(config_filename, config_input_output_options, y_multiplier_intege
         create_Excel_chart_output_checkbox.set(1)
         y_multiplier_integer=y_multiplier_integer+1
 
-    if "IO_setup_main" in ScriptName:
-        if config_input_output_options[1]!=0 and config_input_output_options[2]!=0:
+    if "IO_setup_main" in scriptName:
+        if config_input_output_numeric_options[0]!=0 and config_input_output_numeric_options[1]!=0:
             y_multiplier_integer = y_multiplier_integer + 2
         else:
             y_multiplier_integer = y_multiplier_integer + 1
@@ -803,13 +728,13 @@ def GUI_bottom(config_filename, config_input_output_options, y_multiplier_intege
                                  reminders_util.message_NLP_Suite_reminders,
                                  True)
 
-    routine = config_filename[:-len('-config.txt')]
+    routine = config_filename[:-len('_config.csv')]
     # get the list of titles available for a given GUI
-    if ScriptName=='NLP_menu_main':
-        config_filename='NLP-config.txt'
+    if scriptName=='NLP_menu_main':
+        config_filename='NLP_config.csv'
     reminder_options = reminders_util.getReminders_list(config_filename, True)
-    if ScriptName == 'NLP_menu_main':
-        config_filename = 'default-config.txt'
+    if scriptName == 'NLP_menu_main':
+        config_filename = 'default_config.csv'
     # None returned for a faulty reminders.csv
     reminders_error = False
     if reminder_options==None:
@@ -840,27 +765,25 @@ def GUI_bottom(config_filename, config_input_output_options, y_multiplier_intege
     reminders_dropdown_field.trace('w', trace_reminders_dropdown)
 
     # there is no RUN button when setting up IO information in IO_setup_main.py
-    if not "IO_setup_main" in ScriptName:
+    if not "IO_setup_main" in scriptName:
         run_button.place(x=GUI_IO_util.run_button_x_coordinate, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     def _close_window():
-        configArray = \
-        config_util.setup_IO_configArray(window, config_input_output_options, select_softwareDir_button, softwareDir,
-                                         select_input_file_button, inputFilename, select_input_main_dir_button,
-                                         input_main_dir_path, select_input_secondary_dir_button,
-                                         input_secondary_dir_path,
-                                         select_output_file_button, outputFilename, select_output_dir_button,
-                                         output_dir_path)[0]
-
         if 'Default' in IO_setup_menu_var.get(): #GUI_util.IO_setup_menu_var.get()
-            temp_config_filename = 'default-config.txt'
+            temp_config_filename = 'default_config.csv'
         else:
             temp_config_filename = config_filename
+        config_input_output_alphabetic_options=[]
 
-        GUI_IO_util.exit_window(window, temp_config_filename, ScriptName, config_input_output_options, configArray)
+        # get the IO values currently displayed on a GUI so that they can be checked with the values saved in the csv config file
+        config_input_output_alphabetic_options.append(inputFilename.get())
+        config_input_output_alphabetic_options.append(input_main_dir_path.get())
+        config_input_output_alphabetic_options.append(input_secondary_dir_path.get())
+        config_input_output_alphabetic_options.append(output_dir_path.get())
+
+        GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options)
 
     close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
-    # get_help_button_x_coordinate()+820
     close_button.place(x=GUI_IO_util.close_button_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     # Any message should be displayed after the whole GUI has been displayed
@@ -869,14 +792,22 @@ def GUI_bottom(config_filename, config_input_output_options, y_multiplier_intege
         mb.showwarning(title='Fatal error', message="The licence agreement file 'LICENSE-NLP-1.0.txt' could not be found in the 'lib' subdirectory of your main NLP Suite directory\n" + GUI_IO_util.NLPPath + "\n\nPlease, make sure to copy this file in the 'lib' subdirectory.\n\nThe NLP Suite will now exit.")
         sys.exit()
 
-    IO_setup_menu_var.trace("w",lambda x,y,z: display_IO_setup(window, IO_setup_display_brief,config_filename,config_input_output_options,ScriptName,silent))
+    if 'Default' in IO_setup_menu_var.get():  # GUI_util.IO_setup_menu_var.get()
+        temp_config_filename = 'default_config.csv'
+    else:
+        temp_config_filename = config_filename
+
+    # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
+    IO_setup_menu_var.trace("w",lambda x,y,z: display_IO_setup(window, IO_setup_display_brief,config_filename,config_input_output_numeric_options,scriptName,silent))
 
     # this will display the available IO options for the GUI
-    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_options,ScriptName,silent)
+    # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
+    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_numeric_options,scriptName,silent)
 
+    # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
+    answer = activateRunButton(temp_config_filename, IO_setup_display_brief, scriptName, config_input_output_numeric_options)
     # GUI front end is used for those GUIs that do not have any code to run functions but the buttons just open other GUIs
-    configArray =[]
-    if ('GUI front end' not in reminder_options) and (configArray==['EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE']):
+    if ('GUI front end' not in reminder_options):
         # recompute the options since a new line has been added
         message=reminders_util.message_GUIfrontend
     else:
@@ -893,8 +824,9 @@ def GUI_bottom(config_filename, config_input_output_options, y_multiplier_intege
                                           reminders_util.title_options_IO_configuration,
                                           reminders_util.message_IO_configuration)
     if result != None:
-        routine_options = reminders_util.getReminders_list(config_filename)
+        routine_options = reminders_util.getReminders_list(temp_config_filename)
 
     check_newest_release(version_str)
 
     window.protocol("WM_DELETE_WINDOW", _close_window)
+

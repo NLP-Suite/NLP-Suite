@@ -7,6 +7,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window,"file_classifier_main.py",['os','tkinter','subprocess'])==False:
     sys.exit(0)
 
+import os
 import tkinter as tk
 import tkinter.messagebox as mb
 
@@ -81,11 +82,20 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size='1100x430'
+IO_setup_display_brief=False
+GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
+                                                 GUI_width=GUI_IO_util.get_GUI_width(3),
+                                                 GUI_height_brief=580, # height at brief display
+                                                 GUI_height_full=480, # height at full display
+                                                 y_multiplier_integer=GUI_util.y_multiplier_integer,
+                                                 y_multiplier_integer_add=3, # to be added for full display
+                                                 increment=3)  # to be added for full display
+
 GUI_label='Graphical User Interface (GUI) for File Classifier'
-config_filename='file-classifier-config.txt'
-# The 6 values of config_option refer to:
-#   software directory
+config_filename='file_classifier_config.csv'
+head, scriptName = os.path.split(os.path.basename(__file__))
+
+# The 4 values of config_option refer to:
 #   input file
         # 1 for CoNLL file
         # 2 for TXT file
@@ -95,22 +105,17 @@ config_filename='file-classifier-config.txt'
         # 6 for txt or csv
 #   input dir
 #   input secondary dir
-#   output file
 #   output dir
-config_option=[0,0,1,1,0,1]
-IO_setup_display_brief=False
+config_input_output_numeric_options=[1,1,1,1]
 
-GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
+GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
-# GUI CHANGES add following lines to every special GUI
-y_multiplier_integer=GUI_util.y_multiplier_integer+2
-# +3 is the number of lines starting at 1 of IO widgets
 window=GUI_util.window
-config_input_output_options=GUI_util.config_input_output_options
+config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 
-GUI_util.GUI_top(config_input_output_options,config_filename, IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options,config_filename, IO_setup_display_brief)
 
 
 by_date_var = tk.IntVar()
@@ -176,6 +181,9 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 similarityIndex_menu = tk.OptionMenu(window,similarityIndex_var,.1,.15,.2,.25,.3,.35,.4,.45,.5,.45,.5,.55,.6,.65,.7,.75,.8,.85,.9)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+450,y_multiplier_integer,similarityIndex_menu)
 
+videos_lookup = {'No videos available':''}
+videos_options='No videos available'
+
 TIPS_lookup = {'Classify files (By date)':'TIPS_NLP_Files classifier (By date).pdf','Classify files (By NER)':'TIPS_NLP_Files classifier (By NER).pdf', 'NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition) Stanford CoreNLP.pdf','CoNLL Table':'TIPS_NLP_Stanford CoreNLP CoNLL table.pdf'}
 TIPS_options='Classify files (By date)', 'Classify files (By NER)','NER (Named Entity Recognition)','CoNLL Table'
 
@@ -183,20 +191,23 @@ TIPS_options='Classify files (By date)', 'Classify files (By NER)','NER (Named E
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", "Please, select the directory that contains the set of SOURCE unflassified documents that require classification into TARGET directories.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", "Please, select the directory that contains the set of TARGET subdirectories.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", GUI_IO_util.msg_outputDirectory)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help", "Please, tick the checkbox to classify files by dates embedded in the filenames.\n\nThe script can only work if the filename embeds a date (e.g., The New York Time_2-18-1872).\n\nEnter the appropriate values for the date options.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help", "Please, enter the number of units (e.g., 1, 2, ..., 5, ...) and select the date type from the dropdown menu (day, month, year) that you wish to consider as the date distance for classification (e.g., the SOURCE date being + or - 5 days around the dates of the TARGET filename dates).\n\nAny SOURCE file within the selected date distance will be copied to the appropriate TARGET subdirectory.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help", "Please, tick the checkbox to classify files by social actors and Stanford CoreNLP NER values: location, date, person, organization.\n\nThe script will first build a dictionary of NER values for the documents in each subfolder, then process each unclassified document.\n\nPlease, using the dropdown menu, select a value for the similarity index. The similarity index is used to compute the degree of similarity between documents. The default value is set as 0.25. If you set a high value >.6, then fewer documents will be classified; if you set the valuue <.25 you may end up with too many repeated documents. The recommended value should be >.2 and <.4.\n\n\n\nIn INPUT the script expects 3 paths\n  path to the stanfordCoreNLP directory;\n  path to a directory containing a set of SOURCE documents to be classified;\n  path to a TARGET directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event).\n\nIn OUTPUT, the script creates a csv file that provides a classification of all unclassified source documents. For documents classified as repeated (i.e., they potentially belong to several target folders), the  script marks with an * the highest value Relativity index, signaling the record as the best target.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help", GUI_IO_util.msg_openOutputFiles)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_CoNLL)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", "Please, select the directory that contains the set of SOURCE unclassified documents that require classification into TARGET directories.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", "Please, select the directory that contains the set of TARGET subdirectories.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*3,"Help", GUI_IO_util.msg_outputDirectory)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*4,"Help", "Please, tick the checkbox to classify files by dates embedded in the filenames.\n\nThe script can only work if the filename embeds a date (e.g., The New York Time_2-18-1872).\n\nEnter the appropriate values for the date options.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*5,"Help", "Please, enter the number of units (e.g., 1, 2, ..., 5, ...) and select the date type from the dropdown menu (day, month, year) that you wish to consider as the date distance for classification (e.g., the SOURCE date being + or - 5 days around the dates of the TARGET filename dates).\n\nAny SOURCE file within the selected date distance will be copied to the appropriate TARGET subdirectory.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*6,"Help", "Please, tick the checkbox to classify files by social actors and Stanford CoreNLP NER values: location, date, person, organization.\n\nThe script will first build a dictionary of NER values for the documents in each subfolder, then process each unclassified document.\n\nPlease, using the dropdown menu, select a value for the similarity index. The similarity index is used to compute the degree of similarity between documents. The default value is set as 0.25. If you set a high value >.6, then fewer documents will be classified; if you set the valuue <.25 you may end up with too many repeated documents. The recommended value should be >.2 and <.4.\n\nIn INPUT the script expects 2 directories\n   1. path to a directory containing a set of SOURCE documents to be classified;\n   2. path to a TARGET directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event).\n\nIn OUTPUT, the script creates a csv file that provides a classification of all unclassified source documents. For documents classified as repeated (i.e., they potentially belong to several target folders), the  script marks with an * the highest value Relativity index, signaling the record as the best target.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help", "Please, tick the checkbox to classify files by social actors and Stanford CoreNLP NER values: location, date, person, organization.\n\nThe script will first build a dictionary of NER values for the documents in each subfolder, then process each unclassified document.\n\nPlease, using the dropdown menu, select a value for the similarity index. The similarity index is used to compute the degree of similarity between documents. The default value is set as 0.25. If you set a high value >.6, then fewer documents will be classified; if you set the valuue <.25 you may end up with too many repeated documents. The recommended value should be >.2 and <.4.\n\nIn INPUT the script expects 2 directories\n   1. path to a directory containing a set of SOURCE documents to be classified;\n   2. path to a TARGET directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event).\n\nIn OUTPUT, the script creates a csv file that provides a classification of all unclassified source documents. For documents classified as repeated (i.e., they potentially belong to several target folders), the  script marks with an * the highest value Relativity index, signaling the record as the best target.")
+
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*7,"Help", GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
-readMe_message="The Python 3 script provides a way to classify unsorted files into the proper subdirectory using either a naive approach based on dates embedded in the filenames or a more sophisticated approach based on social actors and CoreNLP NER values of location, date, person, organization.\n\nThe NER classifier \n\nThe script will first build a dictionary of NER values for the documents in each subfolder, then process each unclassified document.\n\nIn INPUT the script takes three directories:\n  1. a directory where the Stanford CoreNLP was downloaded\n  2. a main directory containing a list of SOURCE files with a date embedded in the filename;\n  3. a secondary directory containing a set of TARGET subdirectories, each with a set of files also with embedded dates.\n\nIn OUTPUT the sript produces a 2-columns csv file with: SOURCE filename; TARGET subdirectory.\n\nThe csv output file, after inspection, can be used to move the SOURCE files to the TARGET subdirectory.\n\nThe script processes each file in the SOURCE directory against each file in each sub-directory in the TARGET directory to compare embedded dates."
+readMe_message="The Python 3 script provides a way to classify unsorted files into the proper subdirectory using either a naive approach based on dates embedded in the filenames or a more sophisticated approach based on social actors and CoreNLP NER values of location, date, person, organization.\n\nThe NER classifier \n\nThe script will first build a dictionary of NER values for the documents in each subfolder, then process each unclassified document.\n\nIn INPUT the script takes two directories:\n  1. a main directory containing a list of SOURCE files with a date embedded in the filename;\n  2. a secondary directory containing a set of TARGET subdirectories, each with a set of files also with embedded dates.\n\nIn OUTPUT the sript produces a 2-columns csv file with: SOURCE filename; TARGET subdirectory.\n\nThe csv output file, after inspection, can be used to move the SOURCE files to the TARGET subdirectory.\n\nThe script processes each file in the SOURCE directory against each file in each sub-directory in the TARGET directory to compare embedded dates."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()
 

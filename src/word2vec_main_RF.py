@@ -71,11 +71,10 @@ else: # full display
     y_multiplier_integer = GUI_util.y_multiplier_integer + 2  # IO FULL display
     increment=2
 
-# GUI_size = str(GUI_width) + 'x' + str(GUI_height)
-
 GUI_label='Graphical User Interface (GUI) for Word2Vec with Gensim'
-config_filename='word2vec-gensim-config.txt'
-# The 6 values of config_option refer to:
+config_filename='word2vec_gensim_config.csv'
+head, scriptName = os.path.split(os.path.basename(__file__))
+# The 4 values of config_option refer to:
 #   software directory
 #   input file
 # 1 for CoNLL file
@@ -84,19 +83,19 @@ config_filename='word2vec-gensim-config.txt'
 # 4 for any type of file
 # 5 for txt or html
 # 6 for txt or csv
-config_option=[0,2,1,0,0,1]
+config_input_output_numeric_options=[2,1,0,1]
 
-GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
+GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
 window=GUI_util.window
 
-config_input_output_options = GUI_util.config_input_output_options
+config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
 config_filename = GUI_util.config_filename
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 outputDir = GUI_util.output_dir_path
 
-GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 
 remove_stopwords_var=tk.IntVar()
 lemmatize_var=tk.IntVar()
@@ -164,6 +163,6 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 # change the value of the readMe_message
 readMe_message="This Python 3 script analyzes a set of documents for Word2Vec with Gensim."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

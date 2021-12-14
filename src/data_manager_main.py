@@ -60,7 +60,7 @@ def run(inputFilename,
     if merge_var:
         if selectedCsvFile==inputFilename:
             mb.showwarning(title='Warning',
-                           message='You have selected the merge operation. This requires two different csv files in input.\n\nPlease, click on the + button next to File, select another csv file, select the field that yu want to use in tis file as the overlaping field(s) with the previous file (the key(s)), click OK and RUN.')
+                           message='You have selected the merge operation. This requires two different csv files in input.\n\nPlease, click on the + button next to File, select another csv file, select the field that yu want to use in this file as the overlaping field(s) with the previous file (the key(s)), click OK and RUN.')
             return
         outputFilename=data_manager_util.merge(outputDir,operation_results_text_list)
         if outputFilename!=None:
@@ -120,29 +120,20 @@ if __name__ == '__main__':
 
     # GUI section ______________________________________________________________________________________________________________________________________________________
 
-    # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
-    #   just change the next statement to True or False IO_setup_display_brief=True
-    IO_setup_display_brief = True
-    GUI_width=GUI_IO_util.get_GUI_width(3)
-    GUI_height = 680  # height of GUI with full I/O display
-
-    if IO_setup_display_brief:
-        GUI_height = GUI_height - 40
-        y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
-        increment = 0  # used in the display of HELP messages
-    else:  # full display
-        # GUI CHANGES add following lines to every special GUI
-        # +3 is the number of lines starting at 1 of IO widgets
-        # y_multiplier_integer=GUI_util.y_multiplier_integer+2
-        y_multiplier_integer = GUI_util.y_multiplier_integer + 1  # IO FULL display
-        increment = 1
-
-    GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+    IO_setup_display_brief=True
+    GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
+                                                     GUI_width=GUI_IO_util.get_GUI_width(3),
+                                                     GUI_height_brief=640,
+                                                     # height at brief display
+                                                     GUI_height_full=680,  # height at full display
+                                                     y_multiplier_integer=GUI_util.y_multiplier_integer,
+                                                     y_multiplier_integer_add=1,
+                                                     # to be added for full display
+                                                     increment=1)  # to be added for full display
 
     GUI_label = 'Graphical User Interface (GUI) for Data Manager'
-    config_filename = 'data-manager-config.txt'
-    # The 6 values of config_option refer to:
-    #   software directory
+    config_filename = 'data-manager_config.csv'
+    # The 4 values of config_option refer to:
     #   input file
             # 1 for CoNLL file
             # 2 for TXT file
@@ -152,11 +143,10 @@ if __name__ == '__main__':
             # 6 for txt or csv
     #   input dir
     #   input secondary dir
-    #   output file
     #   output dir
-    config_option = [0, 3, 0, 0, 0, 1]
+    config_input_output_numeric_options=[3,0,0,1]
 
-    GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
+    GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
     # in operation_results_text_list, the script returns a list of comma-separated csv filename + csv field
     # when using the extract option, operation_results_text_list will also list the where and and/or values
@@ -167,11 +157,11 @@ if __name__ == '__main__':
     # GUI CHANGES search for GUI CHANGES
 
     window = GUI_util.window
-    config_input_output_options = GUI_util.config_input_output_options
+    config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
     config_filename = GUI_util.config_filename
     inputFilename = GUI_util.inputFilename
 
-    GUI_util.GUI_top(config_input_output_options, config_filename,IO_setup_display_brief,'data_manager_main.py',True)
+    GUI_util.GUI_top(config_input_output_numeric_options, config_filename,IO_setup_display_brief,'data_manager_main.py',True)
 
     # GUI CHANGES cut/paste special GUI widgets from GUI_util
     operation_results_text_list = []
@@ -192,7 +182,7 @@ if __name__ == '__main__':
 
     current_pair_file_field_var = tk.Label(text="Current matched pair of csv filename and fields",
                                            font="Helvetica 10 italic")
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() +300, y_multiplier_integer,
                                                    current_pair_file_field_var)
 
     avoidLoop = False
@@ -852,7 +842,7 @@ if __name__ == '__main__':
     def changed_filename(tracedInputFile):
         if tracedInputFile[-4:] != '.csv':
             mb.showerror(title='Input file error',
-                         message="The Data manager functions expect in input a csv file.\n\nPlease, select a csv file for your Default or Alternative I/O configuration and try again.\n\nThe RUN button is disabled until the required Input/Output option is entered.")
+                         message="The Data manager functions expect in input a csv file.\n\nPlease, select a csv file for your Default orGUI-specific I/O configuration and try again.\n\nThe RUN button is disabled until the required Input/Output option is entered.")
         menu_values = []
         if tracedInputFile != '':
             numColumns = IO_csv_util.get_csvfile_numberofColumns(tracedInputFile)
@@ -1154,7 +1144,7 @@ if __name__ == '__main__':
     readMe_message = "The Python 3 scripts provide several ways of handling data from csv files.\n\nIn INPUT, the script takes one or more csv files depending upon the selected operation.\n\nIn OUTPUT, the script creates a new csv file.\n\nThe following operation are possible.\n\n   1. MERGE different csv files using one or more overlapping common field(s) as a way to JOIN the files together;\n   2. CONCATENATE into a single field the values of different fields from one csv file;\n   3. APPEND the content of different fields from one csv file after the content of a selected target field;\n   4. EXTRACT fields from one csv file, perhaps by specific field values (the equivalent of an SQL WHERE clause);\n   4. PURGE dulicate rows from one csv file."
     readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                        GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-    GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,'data_manager_main.py',True)
+    GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,'data_manager_main.py',True)
 
     GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
     changed_filename(inputFilename.get())

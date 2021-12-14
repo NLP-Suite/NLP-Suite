@@ -20,7 +20,7 @@ import GIS_pipeline_util
 # gmaps_list is a list of lat/long values to be written in the java script html output file
 # then saves a new file that contains the html/js to display the heatmap
 def create_google_heatmap(output_filename, gmaps_list):
-    api_key = GIS_pipeline_util.getGoogleAPIkey('Google-Maps-API-config.txt')
+    api_key = GIS_pipeline_util.getGoogleAPIkey('Google_Maps_API_config.csv')
     if api_key == '' or api_key == None :
         return
 
@@ -65,7 +65,7 @@ def create_js(output_filename, locations, geocoder, latLongList):
         gmaps_list.append(gmaps_str)
         # gmaps_list geocoded values
     create_google_heatmap(output_filename, gmaps_list)
-    config_filename = 'GIS-config.txt'
+    config_filename = 'GIS_config.csv'
     reminders_util.checkReminder(config_filename,
                             reminders_util.title_options_Google_API,
                             reminders_util.message_Google_API,

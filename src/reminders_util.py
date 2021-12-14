@@ -118,7 +118,7 @@ title_options_Plagiarist = ['Plagiarist']
 message_Plagiarist = "The 'plagiarist' script, based on Lucene, can process files with embedded dates.\n\nIf the filenames in the input directory embed dates, please tick the checkbox 'Filename embeds date' above."
 
 title_options_IO_configuration = ['Input/Output configurations']
-message_IO_configuration = 'Most GUIs in the NLP Suite provide two types of Input/Output (I/O) configurations that specify your selection for your input file or directory (these are mutually exclusive; you can only select one or the other) and output directory:\n\n  Default I/O configuration\n  Alternative I/O configuration\n\nThe Default I/O configuration applies to ALL GUIs in the NLP Suite. This is an ideal option if you work exclusively, or mostly, with the same input file(s) regardless of GUI (i.e., NLP algorithms); you would not need to select these options for every GUI.\n\nIf you occasionally need to run a script using a different set of I/O options, setup the Alternative I/O configuration. This will not affect your I/O selections for all GUIs and will only apply to a specific GUI if you chose the menu option Alternative I/O configuration.'
+message_IO_configuration = 'Most GUIs in the NLP Suite provide two types of Input/Output (I/O) configurations that specify your selection for your input file or directory (these are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH) and output directory:\n\n  Default I/O configuration\n GUI-specific I/O configuration\n\nThe Default I/O configuration applies to ALL GUIs in the NLP Suite. This is an ideal option if you work exclusively, or mostly, with the same input file(s) regardless of GUI (i.e., NLP algorithms); you would not need to select these options for every GUI.\n\nIf you occasionally need to run a script using a different set of I/O options, setup theGUI-specific I/O configuration. This will not affect your I/O selections for all GUIs and will only apply to a specific GUI if you chose the menu optionGUI-specific I/O configuration.'
 
 title_options_IO_setup = ['Input/Output options']
 message_IO_setup = 'The two widgets for INPUT FILE and INPUT DIRECTORY are mutually exclusive. You can select one OR the other but not both. Click on either button to make your selection.\n\nTo change an already selected option from FILE to DIRECTORY or from DIRECTORY to FILE, simply click on the button you want to select, make your selection, and the I/O configuration will automatically update.'
@@ -130,10 +130,10 @@ title_options_shape_of_stories_CoreNLP = ['Stanford CoreNLP Neural Network']
 message_shape_of_stories_CoreNLP = 'The Stanford CoreNLP Neural Network approach to Sentiment analysis, like all neural network algorithms, is VERY slow. On a few hundred stories it may take hours to run.\n\nAlso, neural network algorithms are memory hogs. MAKE SURE TO ALLOCATE AS MUCH MEMORY AS YOU CAN AFFORD ON YOUR MACHINE.'
 
 title_options_shape_of_stories = ['Shape of stories']
-message_shape_of_stories = "The Sentiment Analysis GUI will now open the 'Shape of stories' GUI. When the GUI opens, you will need to select the Alternative I/O configuration."
+message_shape_of_stories = "The Sentiment Analysis GUI will now open the 'Shape of stories' GUI. When the GUI opens, you will need to select theGUI-specific I/O configuration."
 
 title_options_CoNLL_analyzer = ['CoNLL table analyzer']
-message_CoNLL_analyzer = "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' GUI. When the GUI opens, you will need to select the Alternative I/O configuration.\n\nThe 'CoNLL table analyzer' GUI where you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words)."
+message_CoNLL_analyzer = "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' GUI. When the GUI opens, you will need to select theGUI-specific I/O configuration.\n\nIn the 'CoNLL table analyzer' GUI you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words)."
 
 title_options_shape_of_stories_best_topic = ['Best topic estimation']
 message_shape_of_stories_best_topic = 'The function that estimates the best topics is VERY slow and may take an hour or longer. You can follow its progress in command line.'
@@ -172,6 +172,9 @@ message_NGrams = 'subprocess.call(cmd) error\n\nIf the VIEWER you are running ex
 title_options_GIS_GUI = ['GIS GUI options']
 message_GIS_GUI = 'The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv.\n\nWith a TXT file, NER extraction via Stanford CoreNLP must be first performed.\n\nWith a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.'
 
+title_options_geocoder = ["GIS geocoder"]
+message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.'
+
 title_options_Google_Earth=['Open Google Earth GUI']
 message_Google_Earth = 'You should tick the Open GUI checkbox ONLY if you wish to open the Google Earth Pro GUI.\n\nThe Google Earth Pro GUI will provide a number of options to personalize a Google Earth Pro map. Press Run if you wish to open the Google Earth Pro GUI.'
 
@@ -192,9 +195,6 @@ message_gensim_release = 'Gensim release 4.0 removed the wrappers of other libra
 
 title_options_input_csv_file = ["Input csv file"]
 message_input_csv_file = "You have a csv file in the 'Select INPUT CSV file' widget. The RUN command would process this file in input rather than the file stored in the I/O configuration.\n\nPress ESC if you want to clear the 'Select INPUT CSV file' widget."
-
-title_options_geocoder = ["GIS geocoder"]
-message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.'
 
 title_options_wordclouds = ['Web-based word clouds services']
 message_wordclouds = "After the selected web-based word-clouds service opens up on your browser, you will need to either copy/paste the text you want to visualize or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file."
@@ -234,7 +234,7 @@ def create_remindersFile() -> None:
 
 # config_filename is the first column in reminders.csv
 #   it refers to the general Python script that calls the reminder
-#   The routine field contains the name used by the reminder script to visualize the correct reminder; it is the name of the config filename trimmed of -config.txt (e.g., GIS for GIS-config.txt, GIS-Google-Earth for GIS-Google-Earth-config.txt).
+#   The routine field contains the name used by the reminder script to visualize the correct reminder; it is the name of the config filename trimmed of _config.csv (e.g., GIS for GIS_config.csv, GIS-Google-Earth for GIS-Google-Earth_config.csv).
 #   When the Routine field contains a * the reminder will be displayed in ALL GUIs
 
 # title is the second column in reminders.csv
@@ -245,8 +245,8 @@ def create_remindersFile() -> None:
 # triggered_by_GUI_event is passed when triggered by an event in the GUI (a checkbox ticked, a file opened)
 #   (e.g., in shape_of_stories_GUI)
 def getReminders_list(config_filename,silent=False):
-    # if '-config.txt' in config_filename:
-    routine=config_filename[:-len('-config.txt')]
+    # if '_config.csv' in config_filename:
+    routine=config_filename[:-len('_config.csv')]
     # else:
     #     routine = config_filename
     title_options=[]
@@ -314,8 +314,8 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
     if config_filename=='*':
         routine='*'
     else:
-        routine = config_filename.replace('-config.txt', '')
-        # routine = config_filename[:-len('-config.txt')]
+        routine = config_filename.replace('_config.csv', '')
+        # routine = config_filename[:-len('_config.csv')]
     if title_options==None:
         title_options = getReminders_list(config_filename)
     else:
@@ -379,7 +379,7 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
 # called from a GUI when a reminder is selected from the reminder dropdown menu
 # title is a string, the reminders option selected in the GUI dropdown menu
 def resetReminder(config_filename,title):
-    routine = config_filename[:-len('-config.txt')]
+    routine = config_filename[:-len('_config.csv')]
     if title != "Open reminders":
         if title == 'No Reminders available':
             mb.showwarning(title='Reminders warning', message="There are no reminders available for this script.")

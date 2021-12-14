@@ -6,6 +6,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window,"sentence_analysis_main.py",['tkinter','subprocess','ast'])==False:
     sys.exit(0)
 
+import os
 import tkinter as tk
 import tkinter.messagebox as mb
 import subprocess
@@ -124,9 +125,10 @@ else: # full display
 GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 
 GUI_label='Graphical User Interface (GUI) for Sentence Analysis'
-config_filename='sentence-analysis-config.txt'
-# The 6 values of config_option refer to:
-#   software directory
+config_filename='sentence_analysis_config.csv'
+head, scriptName = os.path.split(os.path.basename(__file__))
+
+# The 4 values of config_option refer to:
 #   input file
         # 1 for CoNLL file
         # 2 for TXT file
@@ -136,19 +138,17 @@ config_filename='sentence-analysis-config.txt'
         # 6 for txt or csv
 #   input dir
 #   input secondary dir
-#   output file
 #   output dir
-# config_option=[0,4,0,0,0,1]
-config_option=[0,6,1,0,0,1]
+config_input_output_numeric_options=[6,1,0,1]
 
-GUI_util.set_window(GUI_size, GUI_label, config_filename,config_option)
+GUI_util.set_window(GUI_size, GUI_label, config_filename,config_input_output_numeric_options)
 
 window=GUI_util.window
-config_input_output_options=GUI_util.config_input_output_options
+config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 
-GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 
 # GUI CHANGES cut/paste special GUI widgets from GUI_util
 
@@ -300,7 +300,7 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide a variety of tools for fine-grained analyses of texts by sentence index, visualizing the ebb and flow of writing, the tempo of writing."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 # GUI_IO_util.GUI_frontEnd('Sentence Analysis')
 

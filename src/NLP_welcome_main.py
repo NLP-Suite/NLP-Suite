@@ -200,8 +200,8 @@ display_text()
 
 GUI_util.display_release()
 
-ScriptName = 'NLP_welcome_main'
-GUI_util.display_about_release_team_cite_buttons(ScriptName)
+scriptName = 'NLP_welcome_main'
+GUI_util.display_about_release_team_cite_buttons(scriptName)
 
 place_banner()
 display_enter_button()

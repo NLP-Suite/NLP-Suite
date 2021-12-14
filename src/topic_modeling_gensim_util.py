@@ -115,7 +115,7 @@ def format_topics_sentences(ldamodel, corpus, texts):
 
 def malletModelling(MalletDir, outputDir, createExcelCharts, corpus,num_topics, id2word,data_lemmatized, lda_model, data):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Mallet LDA topic modeling at',True)
-    config_filename='topic-modeling-gensim-config.txt'
+    config_filename='topic_modeling_gensim_config.csv'
     try:
         ldamallet = gensim.models.wrappers.LdaMallet(MalletDir, corpus=corpus, num_topics=num_topics, id2word=id2word)
     except:

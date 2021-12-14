@@ -122,7 +122,7 @@ def check_avaialable_memory(software):
     mem.total  # total physical memory available
     mem_GB=int(mem.total/1000000000)
     if mem_GB<10:
-        reminders_util.checkReminder('Stanford-CoreNLP-config.txt', reminders_util.title_options_memory,
+        reminders_util.checkReminder('Stanford-CoreNLP_config.csv', reminders_util.title_options_memory,
                                      reminders_util.message_memory, True)
     return mem_GB
 
@@ -139,7 +139,7 @@ def check_java_installation(script):
             title_options = ['Java JDK version']
             message = 'You are running ' + system_output.split("\r\n""", 1)[
                 0] + '.\n\nStanford CoreNLP works best with Java version JDK 8 on Windows machines.\n\nIf you run into problems with Stanford CoreNLP, you may wish to uninstall the Java version you are currently running and install Java JDK 8. Please, read the installation instructions on the NLP Suite GitHub wiki pages at\nhttps://github.com/NLP-Suite/NLP-Suite/wiki/Install-External-Software#JAVA-JDK.'
-            reminders_util.checkReminder('Stanford-CoreNLP-config.txt', title_options,
+            reminders_util.checkReminder('Stanford-CoreNLP_config.csv', title_options,
                                          message, True)
 
     if system_output:
@@ -395,7 +395,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             return None, missing_software
         if calling_script == 'NLP_menu':  # called from NLP_main GUI. We just need to warn the user to download and install options
             title = 'NLP Suite external software ' + str(package.upper())
-            message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\n' + missing_software + 'If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDo you want to download/install this software now?\n\nY = Download; N = Install CANCEL to exit?'
+            message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY WILL BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\n' + missing_software + 'If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDo you want to download/install this software now?\n\nY = Download; N = Install CANCEL to exit and download/install later?'
         else:
             title = package.upper() + ' software'
             message = 'WARNING!\n\nThe script ' + calling_script.upper() + ' requires the external software ' + package.upper() + \

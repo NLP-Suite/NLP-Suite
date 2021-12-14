@@ -383,7 +383,7 @@ def exit_window():
         msgbox_save = tk.messagebox.askquestion("Save Configuration", "If the paths configuration has changed (i.e., input and output paths), would you like to save the paths configuration? \n\nIf you save the paths configuration you will not need to enter them again next time you run this Python script.")
         
         if msgbox_save == 'yes':
-                config_file_path = "KWIC-config.txt"
+                config_file_path = "KWIC_config.csv"
 
                 config1 = CoNLL_input_file_path.get()
                 if config1 == '':
@@ -648,7 +648,7 @@ Help_util.place_help_buttons(window,Help_buttons,help_button_x_coordinate,basic_
 
 paths = [CoNLL_input_file_path,KWIC_create_output_file_path,KWIC_input_file_path,KWIC_search_output_file_path]
 
-configFile=os.path.join(configPath,"KWIC-config.txt")
+configFile=os.path.join(configPath,"KWIC_config.csv")
 if os.path.isfile(configFile)==True:
         f_config = open(configFile,'r')
         path_config = f_config.readlines()

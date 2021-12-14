@@ -9,6 +9,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window,"GIS",['os','tkinter','tkcolorpicker','PIL'])==False:
     sys.exit(0)
 
+import os
 import tkinter as tk
 
 import io
@@ -132,26 +133,19 @@ GUI_util.run_button.configure(command=run_script_command)
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
-GUI_width=GUI_IO_util.get_GUI_width(3)
-GUI_height=550 # height of GUI with full I/O display
-
-if IO_setup_display_brief:
-    GUI_height = GUI_height - 40
-    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
-    increment=0 # used in the display of HELP messages
-else: # full display
-    # GUI CHANGES add following lines to every special GUI
-    # +3 is the number of lines starting at 1 of IO widgets
-    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
-    y_multiplier_integer = GUI_util.y_multiplier_integer + 1  # IO FULL display
-    increment=1
-
-GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
+                                                 GUI_width=GUI_IO_util.get_GUI_width(3),
+                                                 GUI_height_brief=510, # height at brief display
+                                                 GUI_height_full=550, # height at full display
+                                                 y_multiplier_integer=GUI_util.y_multiplier_integer,
+                                                 y_multiplier_integer_add=1, # to be added for full display
+                                                 increment=1)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for Geocoding, Preparing kml File, and Visualizing Maps in Google Earth Pro'
-config_filename='GIS-Google-Earth-config.txt'
-# The 6 values of config_option refer to: 
-#   software directory
+config_filename='GIS_Google_Earth_config.csv'
+head, scriptName = os.path.split(os.path.basename(__file__))
+
+# The 4 values of config_option refer to:
 #   input file
         # 1 for CoNLL file 
         # 2 for TXT file 
@@ -161,18 +155,17 @@ config_filename='GIS-Google-Earth-config.txt'
         # 6 for txt or csv
 #   input dir
 #   input secondary dir
-#   output file
 #   output dir
-config_option=[0,3,0,0,0,1]
+config_input_output_numeric_options=[3,0,0,1]
 
-GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
+GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
 window = GUI_util.window
-config_input_output_options = GUI_util.config_input_output_options
+config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
 config_filename = GUI_util.config_filename
 inputFilename = GUI_util.inputFilename
 
-GUI_util.GUI_top(config_input_output_options, config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename,IO_setup_display_brief)
 
 """
 Icons
@@ -185,7 +178,7 @@ http://maps.google.com/mapfiles
 """
 
 # window = GUI_util.window
-# config_input_output_options = GUI_util.config_input_output_options
+# config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
 # config_filename = GUI_util.config_filename
 # inputFilename = GUI_util.inputFilename
 # input_main_dir_path = GUI_util.input_main_dir_path
@@ -1024,7 +1017,7 @@ help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get
 readMe_message = "This Python 3 script relies on the Python Geopy library to geocode locations, i.e., finding a locaton latitude and longitude so that it can be mapped using Google Earth Pro.\n\nYOU MUST DOWNLOAD AND INSTALL THE FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro.\n\nIn INPUT, the script can either take:\n   1. A CoNLL table produced by Stanford_CoreNLP.py and use the NER (Named Entity Recognition) values of LOCATION (STATE, PROVINCE, CITY, COUNTRY), values for geocoding;\n   2. a csv file that contains location names to be geocoded (e.g., Chicago);\n   2. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location').\n\nWhen a CoNLL file is used, if the file contains a date, the script can automatically process a wide variety of date formats: day, month, and year in numeric form and in different order, year in 2 or 4 digit form, and month in numeric or alphabetic form and, in the latter case, in 3 or full characters (e.g., Jan or January).\n\nThe current release of the script relies on Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe script prepares the kml file to be displayed in Google Earth Pro.\n\nThe script can also be used to compute geographic distances between locations, in both kilometers and miles, by either geodesic distance or by great circle distance. Distances will be visualized in Excel charts."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 if errorDisplayed==False:
     changed_GIS_filename()

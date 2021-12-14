@@ -1,41 +1,246 @@
-# Written by Roberto Franzosi November 2019, updated March 2020 
+# Written by Roberto Franzosi November 2019, updated December 2021
 
-# config_array
+# input_output_options[0] 0 No input file 1 CoNLL file 2 TXT file 3 csv file 4 any single txt, pdf, docx, csv, conll file
+# input_output_options[1] 0 NO input dir
+# input_output_options[2] 0 NO input secondary dir
+# input_output_options[3] 0 NO output dir
 
-# input_output_options[0] Directory of software used: 0 NO SOFTWARE 1 CoreNLP 2 WordNet 3 Mallet
-# input_output_options[1] 0 No input file 1 CoNLL file 2 TXT file 3 csv file 4 any single txt, pdf, docx, csv, conll file
-# input_output_options[2] 0 NO input dir
-# input_output_options[3] 0 NO input secondary dir
-# input_output_options[4] 0 NO output file
-# input_output_options[5] 0 NO output dir
+# every IO widget, files or directories, has a line in the config file
+# config lines can be blank if NOT required by the specific NLP script
 
-# every IO widget, files or directories, have a line in the config file
-# config lines can be blank, if NOT required by the specific NLP script
-# config lines with missing values for a required IO widget will be exported as "EMPTY LINE"  
-
-import sys
-import GUI_util
+# import sys
+# import GUI_util
 # import IO_libraries_util
 #
-# if not IO_libraries_util .install_all_packages(GUI_util.window,"config_util",['os','tkinter','ntpath']):
+# if not IO_libraries_util .install_all_packages(GUI_util.window,"config_util",['os','tkinter']):
 #     sys.exit(0)
 
 import os
-
-import ntpath  # to split the path from filename
-import tkinter as tk
 import tkinter.messagebox as mb
 
 import IO_user_interface_util
 import GUI_IO_util
+import csv
 
-defaultConfigFilename = 'default-config.txt'
-emptyConfigString = "EMPTY LINEEMPTY LINEEMPTY LINEEMPTY LINE"
+defaultConfigFilename = 'default_config.csv'
 
+# fileName with path, the value saved in config_filename
+def checkConfigFileExists(config_filename, fileName, IO):
+    error=False
+    # check that the config file exists first, after adding path to file
+    if not os.path.isfile(os.path.join(GUI_IO_util.configPath,config_filename)):
+        error = True
+        mb.showwarning(title='File error',
+                       message='The "' + config_filename + '" config file does not exist. It must have been never created, deleted, or moved.\n\nYou must re-create the file by selecting the appropriate I/O options, save them, and try again!')
+        fileName = ''
+    else:
+        if fileName != '':
+            if not os.path.isfile(fileName):
+                # must pass the right config filename in case there is only the default config
+                if (not os.path.isfile(config_filename) and
+                        os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename))):
+                    config_filename = defaultConfigFilename
+                mb.showwarning(title='File error',
+                               message="The " + IO + " file saved in " + config_filename + "\n\n" + fileName + "\n\nno longer exists. It must have been deleted or moved.\n\nPlease, select a new " + IO + " file and try again!")
+                fileName = ''
+    return error, fileName
+
+# dirName, the value saved in config_filename
+def checkConfigDirExists(config_filename, dirName, IO):
+    # the error variable is used to avoid checking repeatedly, with repeated error messages, when checking the config file
+    error=False
+    # check that the config file exists first, after adding path to file
+    if not os.path.isfile(os.path.join(GUI_IO_util.configPath,config_filename)):
+        error = True
+        mb.showwarning(title='File error',
+                       message='The "' + config_filename + '" config file does not exist. It must have been never created, deleted, or moved.\n\nYou must re-create the file by selecting the appropriate I/O options, save them, and try again!')
+
+        dirName = ''
+    else:
+        if dirName != '':
+            if not os.path.isdir(dirName):
+                # must pass the right config filename in case there is only the default config
+                if (not os.path.isfile(config_filename) and
+                        os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename))):
+                    config_filename = defaultConfigFilename
+                mb.showwarning(title='Directory error',
+                               message="The " + IO + " directory saved in " + config_filename + "\n\n" + dirName + "\n\nno longer exists. It must have been deleted or moved.\n\nPlease, select a new " + IO + " directory and try again!")
+                dirName = ''
+    return error, dirName
+
+
+def getFiletype(config_input_output_numeric_options):
+    if config_input_output_numeric_options[0]==1:
+        fileType='Input csv CoNLL filename with path'
+    elif config_input_output_numeric_options[0] == 2:
+        fileType = 'Input txt filename with path'
+    elif config_input_output_numeric_options[0] == 3:
+        fileType = 'Input csv filename with path'
+    elif config_input_output_numeric_options[0] == 4:
+        fileType = 'Input txt/pdf/docx/csv filename with path'
+    else:
+        fileType = 'Input filename with path'
+    return fileType
+
+def get_standard_config_csv(config_input_output_numeric_options, config_input_output_alphabetic_options):
+
+    header=['I/O configuration label', 'Path']
+    fileType=getFiletype(config_input_output_numeric_options)
+    standard_config_csv = \
+                  [[fileType],
+                  ['Input files directory'],
+                  ['Input files secondary directory'],
+                  ['Output files directory']]
+
+    for (index, row) in enumerate(standard_config_csv):
+        if len(config_input_output_alphabetic_options) > 0:
+            standard_config_csv[index].append(config_input_output_alphabetic_options[index])
+        else:
+            standard_config_csv[index].append('')
+    standard_config_csv.insert(0,header)
+    return standard_config_csv
+
+# called by get_missing_IO_values and readConfig below
+# returns a double list of csv IO labels and values saved in a csv config file
+def read_config_file(config_filename, config_input_output_numeric_options):
+    config_input_output_alphabetic_options = []
+    config_input_output_full_options = ''
+    configFilePath = os.path.join(GUI_IO_util.configPath, config_filename)
+    # check that the config file exists
+    if os.path.isfile(configFilePath) == True:
+        csv_file = open(configFilePath, 'r', newline='')
+        config_option_csv = list(csv.reader(csv_file, delimiter=','))
+    else:
+        config_option_csv = list()
+        config_option_csv=get_standard_config_csv(config_input_output_numeric_options,config_option_csv)
+    missingIO=get_missing_IO_values(config_input_output_numeric_options, config_option_csv)
+    index = 1
+    for row in config_option_csv[1:]:  # skip header line
+        if row[1]!='':
+            if config_input_output_full_options=='':
+                config_input_output_full_options=str(row[0]) + ': ' + str(row[1])
+            else:
+                config_input_output_full_options = config_input_output_full_options + '\n\n' + str(row[0]) + ': ' + str(row[1]) + '\n'
+        config_input_output_alphabetic_options.append(row[1])
+        index = index + 1
+    return config_input_output_alphabetic_options, config_input_output_full_options, missingIO
+
+# called by read_config_file above
+def get_missing_IO_values(config_input_output_numeric_options, config_option_csv):
+    index = 1 # skip header line
+    # the index for config_input_output_numeric_options starts at index -1 since it has no header
+    missing_IO=''
+    while index < len(config_option_csv):
+        if index == 1: # filename;
+            if config_input_output_numeric_options[index-1]>0 and config_option_csv[index][1] == '':
+                if config_option_csv[2][1] == '': # check input dir
+                    config_label = str(config_option_csv[index][0])
+                    missing_IO = missing_IO + config_label + '\n'
+        elif index == 2:  # Input files dir
+            if config_input_output_numeric_options[index-1] > 0 and config_option_csv[index][1] == '':
+                if config_option_csv[1][1] == '': # check input filename
+                    config_label = str(config_option_csv[index][0])
+                    missing_IO = missing_IO + config_label + '\n'
+        elif index == 3: # Input files secondary dir
+            if config_input_output_numeric_options[index-1] > 0 and config_option_csv[index][1] == '':
+                config_label = str(config_option_csv[index][0])
+                missing_IO = missing_IO + config_label + '\n'
+        elif index == 4: # outputDir
+            if config_input_output_numeric_options[index-1] > 0 and config_option_csv[index][1] == '':
+                config_label = str(config_option_csv[index][0])
+                missing_IO = missing_IO + config_label + '\n'
+        index = index + 1
+    return missing_IO
+
+# check_missingIO is called from GUI_util
+# the function checks for missing IO values, displays messages and sets the RUN button to normal or disabled
+def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_display_brief, silent=False):
+    if 'NLP_menu_main' in scriptName:
+        silent = True
+    if config_filename=='NLP_config.csv':
+        config_filename = 'default_config.csv'
+    # the IO_button_name error message changes depending upon the call
+    button = "button"
+    # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
+    run_button_disabled_msg = "The RUN button is disabled until the required information for the selected Input/Output fields is entered.\n\n"
+    if "IO_setup_main" in scriptName:
+        run_button_disabled_msg = ""
+        enter_required_IO='Press OK to enter the required I/O information using the \'Select INPUT and Select OUTPUT\' buttons at the top of the GUI.\nPress CANCEL to exit without entering I/O information then press CLOSE.'
+    else:
+        if not IO_setup_display_brief:
+            enter_required_IO='' #'Press OK to enter the required I/O information using the \'Select INPUT and Select OUTPUT\' buttons at the top of the GUI.\nPress CANCEL to exit without entering I/O information.'
+        else:
+            enter_required_IO='Press OK to enter the required I/O information when the I/O setup GUI opens next.\nPress CANCEL to exit without entering I/O information.'
+    if IO_setup_display_brief==True:
+        IO_button_name = "Setup INPUT/OUTPUT configuration" # when displaying brief
+    if IO_setup_display_brief==False:
+        if 'NLP_menu_main' in scriptName:
+            IO_button_name = "Setup default I/O options"  # when displaying from NLP_menu_main
+        else:
+            IO_button_name = "Select INPUT & Select OUTPUT" # when displaying full
+            button="buttons"
+    Run_Button_Off=False
+    #do not check IO requirements for NLP.py; too many IO options available depending upon the script run
+    # if config_filename=="NLP_config.csv" or config_filename=="social-science-research_config.csv":
+    if config_filename == "social_science_research_config.csv":
+        # RUN button always active since several options are available and IO gets checked in the respective scripts
+        Run_Button_Off=False
+        missingIO=''
+    mutually_exclusive_msg=''
+    if "Input filename with path" in missingIO and "Input files directory" in missingIO:
+        mutually_exclusive_msg='The two I/O options - "Input filename with path" and "Input files directory" - are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH. In other words, you can choose to work with a sigle file in input or with many files stored in a directory.\n\n'
+    answer=True # = cancel in mb.askokcancel
+    if missingIO!='':
+        Run_Button_Off = True
+        if not silent:
+            if (not IO_setup_display_brief) and (not "IO_setup_main" in scriptName):
+                mb.showwarning(title='Warning', message='The following required INPUT/OUTPUT information is missing in config file ' + config_filename + ':\n\n' + missingIO + '\n' + mutually_exclusive_msg + run_button_disabled_msg + enter_required_IO)
+                answer=False
+            else:
+                answer=mb.askokcancel(title='Warning', message='The following required INPUT/OUTPUT information is missing in config file ' + config_filename + ':\n\n' + missingIO + '\n' + mutually_exclusive_msg + run_button_disabled_msg + enter_required_IO)
+    if Run_Button_Off==True:
+        run_button_state="disabled"
+    else:
+        run_button_state="normal"
+    window.focus_force()
+    return run_button_state, answer
+
+# every IO widget, files or directories, have a line in the config file
+# config lines are blank, if NOT required by the specific NLP script
+
+# input_output_options[0] 0 No input file 1 CoNLL file 2 TXT file 3 csv file 4 any single txt, pdf, docx, csv, conll file
+# input_output_options[1] 0 NO input dir
+# input_output_options[2] 0 NO input secondary dir
+# input_output_options[3] 0 NO output dir
+def write_config_file(window, config_filename, config_input_output_numeric_options, config_input_output_alphabetic_options, silent=False):
+    print('IN def write_config_file')
+    # check that the config directory exists inside the NLP main directory
+    if os.path.isdir(GUI_IO_util.configPath) == False:
+        try:
+            os.mkdir(GUI_IO_util.configPath)
+        except:
+            mb.showwarning(title='Permission error?',
+                           message="The command failed to create the Config directory.\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
+            return
+
+    config_filename_path=os.path.join(GUI_IO_util.configPath, config_filename)
+    temp = get_standard_config_csv(config_input_output_numeric_options,config_input_output_alphabetic_options)
+    try:
+        with open(config_filename_path, 'w+', newline='') as csv_file:
+            writer = csv.writer(csv_file)
+            writer.writerows(temp)
+        csv_file.close()
+    except:
+        mb.showwarning(title='Permission error?',
+                       message="The command failed to save the config file\n\n" + config_filename + "\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
+
+    if config_filename != 'license_config.csv':
+        IO_user_interface_util.timed_alert(window, 3000, 'Warning',
+                                           'INPUT and OUTPUT paths configuration have been saved to\n\n' + config_filename_path,
+                                           False)
 
 # used in GIS_GUI and GIS_geocode_GUI
-
-# Google_config: 'Google-geocode_API-config.txt' or 'Google-Maps_API-config.txt'
+# Google_config: 'Google-geocode_API_config.csv' or 'Google-Maps_API_config.csv'
 def Google_API_Config_Save(Google_config,Google_API_key):
     # save the API key is not blank and not already there
     if Google_API_key != '':
@@ -50,383 +255,3 @@ def Google_API_Config_Save(Google_config,Google_API_key):
             mb.showwarning(title='Warning',
                            message='The Google API key\n\n' + Google_API_key + '\n\nhas been saved to ' + GoogleConfigFilename + '."\n\nIt will read in automatically every time you select the Google ' + msg)
         file1.close()
-
-# fileName with path
-def checkConfigFileExists(configFile, fileName, IO):
-    error=False
-    # check that the config file exists first
-    if not os.path.isfile(os.path.join(GUI_IO_util.configPath,configFile)):
-        error = True
-        mb.showwarning(title='File error',
-                       message='The "' + configFile + '" config file does not exist. It must have been never created, deleted, or moved.\n\nYou must re-create the file by selecting the appropriate I/O options, save them, and try again!')
-        fileName = ''
-    else:
-        if fileName != '' and fileName != 'EMPTY LINE':
-            if not os.path.isfile(fileName):
-                # must pass the right config filename in case there is only the default config
-                if (not os.path.isfile(configFile) and
-                        os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename))):
-                    configFile = defaultConfigFilename
-                mb.showwarning(title='File error',
-                               message="The " + IO + " file saved in " + configFile + "\n\n" + fileName + "\n\nno longer exists. It must have been deleted or moved.\n\nPlease, select a new " + IO + " file and try again!")
-                fileName = ''
-    return error, fileName
-
-
-# fileName with path
-def checkConfigDirExists(configFile, dirName, IO):
-    # the error variable is used to avoid checking repeatedly, with repeated error messages, when checking the config file
-    error=False
-    # check that the config file exists first; add path to file
-    # configFile = os.path.isfile(os.path.join(GUI_IO_util.configPath,configFile))
-    if not os.path.isfile(os.path.join(GUI_IO_util.configPath,configFile)):
-        error = True
-        mb.showwarning(title='File error',
-                       message='The "' + configFile + '" config file does not exist. It must have been never created, deleted, or moved.\n\nYou must re-create the file by selecting the appropriate I/O options, save them, and try again!')
-
-        dirName = ''
-    else:
-        if dirName != '' and dirName != 'EMPTY LINE':
-            if not os.path.isdir(dirName):
-                # must pass the right config filename in case there is only the default config
-                if (not os.path.isfile(configFile) and
-                        os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename))):
-                    configFile = defaultConfigFilename
-                mb.showwarning(title='Directory error',
-                               message="The " + IO + " directory saved in " + configFile + "\n\n" + dirName + "\n\nno longer exists. It must have been deleted or moved.\n\nPlease, select a new " + IO + " directory and try again!")
-                dirName = ''
-    return error, dirName
-
-# the function either reads available IO_options saved in the config file or
-#   takes the numeric list of I/O values (e.g. [0,1,0,0,1,0]) and converts it to a string list of items 'EMPTY LINE'
-def get_IO_options(config_filename,config_input_output_options):
-    if config_input_output_options!=[0,0,0,0,0,0]:
-        # use default config at first
-        IO_options=readConfig(config_filename,config_input_output_options)
-    else:
-        IO_options=None
-
-    # the following check and lines are necessary
-    #   to avoid code break in
-    #   if IO_options[] in later tests
-    #   when there is no config folder
-    if IO_options==None or IO_options==[]:
-        IO_options=[]
-        for i in range(len(config_input_output_options)):
-            lineValue = "EMPTY LINE"
-            IO_options.append(lineValue)
-    return IO_options
-
-
-# configFile includes path
-# changes made here must reflect changes in GUI_util.preload_configData_set_input_output_options(window,configFile)
-##configPath is defined in IO_util
-
-# every IO widget, files or directories, have a line in the config file
-# config lines can be blank, if NOT required by the specific NLP script
-# config lines with missing values for a required IO widget will be exported as "EMPTY LINE"  
-
-# called by GUI_util as first step
-# GUI_util calls setup_IO_configArray as second step
-#   config_array is config_input_output_options
-#   for examples, for NLP.py config_array=[0,4,1,0,0,1]
-# returns a list input_output_options
-def readConfig(configFile, config_array):
-    # configFile_basename is the filename w/o the full path
-    input_output_options = []
-    error = False
-    configFile_basename = ntpath.basename(configFile)
-    configFilePath = os.path.join(GUI_IO_util.configPath, configFile)
-    configFile = ''
-    # when BOTH the default-config.txt file and
-    #   specific GUI config file are present
-    #   the specific GUI config file will take precedence
-    # otherwise the default-config.txt will always be used for all tools
-
-    # must pass the right config filename in case there is only the default config
-    if os.path.isfile(configFilePath):
-        configFile = configFilePath
-    # else:
-    #     if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)):
-    #         configFile = os.path.join(GUI_IO_util.configPath, defaultConfigFilename)
-    if configFile != '':
-        f_config = open(configFile, 'r', encoding='utf-8', errors='ignore')
-        configList = f_config.readlines()
-        configList = [i.strip() for i in configList]
-        length = len(configList)
-        if length < len(config_array):
-            # Not necessary to display the error
-            # mb.showwarning(title='File error', message="The Input/Output config file\n\n" + configFile + "\n\ncontains only " + str(length) + " lines. IT IS AN OLD CONFIG FILE.\n\nThe new release of the NLP suite requires 6 lines. You will need to re-select your Input/Output options and save them when you press QUIT.")
-            error = True
-        for i in range(len(config_array)):
-            if error:
-                input_output_options.append('')
-            else:
-                input_output_options.append(configList[i])
-    # else:
-    #     mb.showwarning(title='File error', message="There is no Input/Output configuration file\n\n" + configFile + "\n\nPlease, click on the Setup INPUT/OUTPUT button to set it up.")
-    return input_output_options
-
-# the function is sed to obtain the list of six numeric values of IO options for a specific config file (e.g., [0, 1, 0, 1, 0, 1])
-
-# the function does NOT check for the various options in software dir and input file type
-# input_output_options[0] Directory of software used: 0 NO SOFTWARE 1 CoreNLP 2 WordNet 3 Mallet
-# input_output_options[1] 0 No input file 1 CoNLL file 2 TXT file 3 csv file 4 any single txt, pdf, docx, csv, conll file
-# input_output_options[2] 0 NO input dir
-# input_output_options[3] 0 NO input secondary dir
-# input_output_options[4] 0 NO output file
-# input_output_options[5] 0 NO output dir
-def get_config_array_from_configFile(configFile):
-    # configFile_basename is the filename w/o the full path
-    config_array = []
-    error = False
-    configFile_basename = ntpath.basename(configFile)
-    configFilePath = os.path.join(GUI_IO_util.configPath, configFile)
-    configFile = ''
-    if os.path.isfile(configFilePath):
-        configFile = configFilePath
-    else:
-        if os.path.isfile(os.path.join(GUI_IO_util.configPath, defaultConfigFilename)):
-            configFile = os.path.join(GUI_IO_util.configPath, defaultConfigFilename)
-    if configFile != '':
-        f_config = open(configFile, 'r', encoding='utf-8', errors='ignore')
-        configList = f_config.readlines()
-        configList = [i.strip() for i in configList]
-        length = len(configList)
-        for i in range(len(configList)):
-            if (i == 1):
-                if (configList[i] != ""):
-                    config_array.append(1)
-                else: # check Dir option
-                    config_array.append(0)
-            elif (i == 2):
-                if (configList[i] != ""):
-                    config_array.append(1)
-                else: # check Dir option
-                    config_array.append(0)
-            else:
-                if configList[i]!="EMPTY LINE" and configList[i]!="":
-                    config_array.append(1)
-                else:
-                    config_array.append(0)
-    return config_array
-
-
-def writeConfigFile(configFilename, configArray):
-    # when writing a csv file newline='' prevents writing an extra blank line after every record
-    try:
-        with open(os.path.join(GUI_IO_util.configPath, configFilename), "w+", newline='', encoding='utf-8',
-                  errors='ignore') as f:
-            for i in range(0, len(configArray)):
-                # all empty items are set to EMPTY LINE
-                if configArray[i]=='':
-                    configArray[i]='EMPTY LINE'
-                f.write(configArray[i])
-                f.write('\n')
-        f.close()
-    except:
-        mb.showwarning(title='Permission error?',
-                       message="The command failed to save the config file\n\n" + configFilename + "\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
-        return False
-    return True
-
-
-# returns True if the IO values are all blank
-#   or are the same as the saved ones in either
-#   GUI config or default config
-# When True, i.e., saved config and current config are the same, there will be need to ask the question to save
-def checkSavedConfig(configFilename, configArray):
-    currentStringArray = ''
-    savedStringArray = ''
-    IO_setup_display_string=''
-    for i in range(0, len(configArray)):
-        if configArray[i]=='':
-            configArray[i] = 'EMPTY LINE'
-        currentStringArray = currentStringArray + configArray[i]
-    # get config saved values; savedConfigArray is a list []
-    savedConfigArray = readConfig(configFilename, configArray)
-    for i in range(0, len(savedConfigArray)):
-        if savedConfigArray[i]=='':
-            savedConfigArray[i] = 'EMPTY LINE'
-        savedStringArray = savedStringArray + savedConfigArray[i]
-        # compute the IO_setup_display_string for display brief
-        # head is path, tail is filename
-        if i == 1:
-            if savedConfigArray[i]!='' and savedConfigArray[i]!='EMPTY LINE':
-                head, tail = os.path.split(savedConfigArray[i])
-                IO_setup_display_string = "INPUT FILE: " + str(tail)
-        if i == 2:
-            if savedConfigArray[i]!='' and savedConfigArray[i]!='EMPTY LINE':
-                head, tail = os.path.split(savedConfigArray[i])
-                IO_setup_display_string = "INPUT DIR: " + str(tail)
-        if i == 5:
-            if savedConfigArray[i] != '' and savedConfigArray[i] != 'EMPTY LINE':
-                head, tail = os.path.split(savedConfigArray[i])
-                IO_setup_display_string = IO_setup_display_string+"\nOUTPUT DIR: " + str(tail)
-    if (currentStringArray != emptyConfigString and currentStringArray != savedStringArray):
-        return False, IO_setup_display_string
-    else:
-        return True, IO_setup_display_string
-
-# Takes in the name of the config file (including .txt extension), the number of paths to save (nSaves)
-# and an array that should contain all the input-output files & dir
-# called from GUI_IO_util.exit_window 
-# configFilename with no path;
-# configArray contains all the IO files and paths
-#   configArray is computed by setup_IO_configArray in config_util 
-# configPath is defined in IO_util
-
-# every IO widget, files or directories, have a line in the config file
-# config lines can be blank, if NOT required by the specific NLP script
-# config lines with missing values for a required IO widget will be exported as "EMPTY LINE"  
-
-# EMPTY LINE refer to the following IO widgets
-# input_output_options[0] Directory of software used: 0 NO SOFTWARE 1 CoreNLP 2 WordNet 3 Mallet
-# input_output_options[1] 0 No input file 1 CoNLL file 2 TXT file 3 csv file 4 any single txt, pdf, docx, csv, conll file
-# input_output_options[2] 0 NO input dir
-# input_output_options[3] 0 NO input secondary dir
-# input_output_options[4] 0 NO output file
-# input_output_options[5] 0 NO output dir
-# MUTUALLY EXCLUSIVE OPTIONS (i.e., IInput file and input dir) ARE SAVED WITH A BLANK VALUE WHEN NOT PRESENT
-def saveConfig(window, configFilename, configArray, silent=False):
-    # for GUIs with no I/O widgets configArray 
-    #   is empty lines
-    if (configArray[0] == 'EMPTY LINE' or configArray[0] == '') and \
-        (configArray[1] == 'EMPTY LINE' or configArray[1] == '') and \
-        (configArray[2] == 'EMPTY LINE' or configArray[2] == '') and \
-        (configArray[3] == 'EMPTY LINE' or configArray[3] == '') and \
-        (configArray[4] == 'EMPTY LINE' or configArray[4] == '') and \
-        (configArray[5] == 'EMPTY LINE' or configArray[5] == ''):
-        return
-    currentStringArray = ''
-    configFileWritten = False
-    if os.path.isdir(GUI_IO_util.configPath) == False:
-        try:
-            os.mkdir(GUI_IO_util.configPath)
-        except:
-            mb.showwarning(title='Permission error?',
-                           message="The command failed to create the Config directory.\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
-            return
-
-    for i in range(0, len(configArray)):
-        currentStringArray = currentStringArray + configArray[i]
-    if currentStringArray == emptyConfigString:
-        return
-    # There IS GUI config or default config
-    #   and current IO values = saved IO values 
-    #   exit without asking save question    
-    if os.path.isfile(os.path.join(GUI_IO_util.configPath, configFilename)) == True:
-        # check config file content against current values; if the same, i.e., True, exit with no question
-        sameValues, IO_setup_display_string=checkSavedConfig(configFilename, configArray)
-        if sameValues==True:
-            return
-        else:
-            if silent == True:
-                saveGUIconfig = True
-            else:
-                if 'default' in configFilename:
-                    saveGUIconfig = mb.askyesno("Save I/O values to 'Default I/O configuration': " + configFilename,
-                                                'The selected Input/Output options are different from the I/O values previously saved in "' + configFilename + '"' + ' listed below in succinct form for readability:\n\n' + IO_setup_display_string + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
-                else:
-                    saveGUIconfig = mb.askyesno("Save I/O values to 'Alternative I/O configuration': " + configFilename,
-                                                'The selected Input/Output options are different from the I/O values previously saved in "' + configFilename + '"' + ' listed below in succinct form for readability:\n\n' + IO_setup_display_string + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
-            if saveGUIconfig == True:
-                configFileWritten = writeConfigFile(configFilename, configArray)
-    else:  # no GUI config available
-            configFileWritten = writeConfigFile(configFilename, configArray)
-
-    if configFilename != 'license-config.txt':
-        if configFileWritten:
-            IO_user_interface_util.timed_alert(window, 3000, 'Warning',
-                                               'INPUT and OUTPUT paths configuration have been saved to\n\n' + configFilename,
-                                               False)
-
-# in some circumstances, some buttons are disabled in the GUI
-#   (e.g., in WordNet the input csv file is disabled)
-#   In these case, you do not want to disable the RUN button
-def add2Missing(missingIO, configName, button_state):
-    if button_state == 'disabled':
-        return missingIO
-    if len(missingIO) > 0:
-        missingIO = missingIO + ", " + configName
-    else:
-        missingIO = configName
-    return missingIO
-
-
-# called by GUI_util
-# every IO widget, files or directories, have a line in the config file
-# config lines can be blank, if NOT required by the specific NLP script
-# config lines with missing values for a required IO widget will be exported as "EMPTY LINE"
-# config_input_output_options is the list of IO values set in the main scrip of a script with GUI 
-#   for examples, for NLP.py config_array=[0, 4, 1, 0, 0, 1]
-#   where config_array is config_input_output_options
-
-# called by GUI_util as second step
-# GUI_util calls readConfig as first step
-# configArray contains all the IO files and paths
-#   configArray is computed by setup_IO_configArray in config_util
-def setup_IO_configArray(window, config_input_output_options, select_softwareDir_button, softwareDir,
-                         select_file_button, inputFilename, select_input_main_dir_button, input_main_dir_path,
-                         select_input_secondary_dir_button, input_secondary_dir_path, select_output_file_button,
-                         outputFilename, select_output_dir_button, output_dir_path):
-    button_state = []
-    configArray = []
-    configNames = []
-    missingIO = ""
-
-    button_state.append(select_softwareDir_button['state'])
-    button_state.append(select_file_button['state'])
-    button_state.append(select_input_main_dir_button['state'])
-    button_state.append(select_input_secondary_dir_button['state'])
-    button_state.append(select_output_file_button['state'])
-    button_state.append(select_output_dir_button['state'])
-
-    configArray.append(softwareDir.get())
-    configArray.append(inputFilename.get())
-    configArray.append(input_main_dir_path.get())
-    configArray.append(input_secondary_dir_path.get())
-    configArray.append(outputFilename.get())
-    configArray.append(output_dir_path.get())
-
-    configNames.append("Software directory")
-    configNames.append("Input file")
-    configNames.append("Input files directory")
-    configNames.append("Input files secondary directory")
-    configNames.append("Output file")
-    configNames.append("Output files directory")
-
-    for i in range(0, len(config_input_output_options)):
-        if config_input_output_options[i] > 0:
-            # we no longer disable the IO buttons when mutually exclusive (input file vs dir)
-            # users did not know what to do although it is in the help
-            # if button_state[i]=='normal':
-            # some IO buttons, however, are still disabled when NOT needed
-            #   (e.g., in WordNet)
-            if configArray[i] == '':
-                if configNames[i] == "Input file" or configNames[i] == "Input files directory":
-                    # for Input you can only have either a single file or dir
-                    if configNames[i] == "Input file":
-                        # dir input option is available 
-                        if config_input_output_options[i + 1] > 0:
-                            if configArray[i + 1] == '':
-                                # add both file and dir to missingIO
-                                missingIO = add2Missing(missingIO, configNames[i], button_state[i])
-                                missingIO = add2Missing(missingIO, configNames[i + 1], button_state[i])
-                        else:
-                            # add file to missingIO when no dir option is available
-                            # if button_state[i]=='normal':
-                            missingIO = add2Missing(missingIO, configNames[i], button_state[i])
-                    elif configNames[i] == "Input files directory":
-                        # add dir to missingIO when no file option is available
-                        if config_input_output_options[i - 1] == 0:
-                            # if button_state[i]=='normal':
-                            missingIO = add2Missing(missingIO, configNames[i], button_state[i])
-                else:
-                    # if button_state[i] == 'normal':
-                    missingIO = add2Missing(missingIO, configNames[i], button_state[i])
-        else:
-            # when the IO widget option is not available
-            #   (e.g., software dir when no software is required)
-            configArray[i] = 'EMPTY LINE'
-    return configArray, missingIO

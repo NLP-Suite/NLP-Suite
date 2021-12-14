@@ -4,24 +4,28 @@ import tkinter as tk
 import tkinter.messagebox as mb
 
 import GUI_IO_util
-import IO_files_util
 import GUI_util
 import config_util
 
 GUI_size='700x550'
 GUI_label='License agreement for suite of NLP tools'
-config_filename='license-config.txt'
+config_filename='license_config.csv'
 
-# The 6 values of config_option refer to: 
-#   software directory
-#   input file 1 for CoNLL file 2 for TXT file 3 for csv file 4 for any type of file
+# The 4 values of config_option refer to:
+#   input file
+        # 1 for CoNLL file
+        # 2 for TXT file
+        # 3 for csv file
+        # 4 for any type of file
+        # 5 for txt or html
+        # 6 for txt or csv
 #   input dir
 #   input secondary dir
-#   output file
 #   output dir
-config_option=[0,0,0,0,0,0]
+config_input_output_numeric_options=[0,0,0,0]
+current_config_input_output_alphabetic_options = ['', '', '', '', ]
 
-GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
+GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
 text_area = tk.Text()
 # text_area.configure(height=440)
@@ -55,8 +59,8 @@ def save_agreement(*args):
 				mb.showwarning(title='Permission error?',
 							   message="The command failed to create the Config directory.\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
 				return
-		configArray = ['License agreement accepted']
-		configFileWritten = config_util.writeConfigFile(config_filename, configArray)
+		config_util.write_config_file(GUI_util.window, config_filename, config_input_output_numeric_options,
+									  current_config_input_output_alphabetic_options)
 		GUI_util.window.destroy()
 agreement_checkbox_var.trace('w',save_agreement)
 

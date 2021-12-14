@@ -7,6 +7,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window, "Stanford_CoreNLP.py", ['tkinter', 'subprocess']) == False:
     sys.exit(0)
 
+import os
 import tkinter as tk
 import tkinter.messagebox as mb
 from subprocess import call
@@ -140,9 +141,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                     if IO_libraries_util.inputProgramFileCheck('CoNLL_table_analyzer_main.py') == False:
                         return
                     # open the analyzer having saved the new parser output in config so that it opens the right input file
-                    config_filename_temp = 'conll-table-analyzer-config.txt'
-                    config_array = ['EMPTY LINE', str(tempOutputFiles[0]), 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
-                    config_util.saveConfig(GUI_util.window, config_filename_temp, config_array, True)
+                    config_filename_temp = 'conll-table-analyzer_config.csv'
+                    config_input_output_alphabetic_options = ['EMPTY LINE', str(tempOutputFiles[0]), 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
+                    config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_alphabetic_options, True)
 
                     reminders_util.checkReminder(config_filename,
                                                  reminders_util.title_options_CoNLL_analyzer,
@@ -183,44 +184,36 @@ GUI_util.run_button.configure(command=run_script_command)
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
-GUI_width=GUI_IO_util.get_GUI_width(3)
-GUI_height=560 # height of GUI with full I/O display
+GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
+                             GUI_width=GUI_IO_util.get_GUI_width(3),
+                             GUI_height_brief=480, # height at brief display
+                             GUI_height_full=560, # height at full display
+                             y_multiplier_integer=GUI_util.y_multiplier_integer,
+                             y_multiplier_integer_add=2, # to be added for full display
+                             increment=2)  # to be added for full display
 
-if IO_setup_display_brief:
-    GUI_height = GUI_height - 80
-    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
-    increment=0 # used in the display of HELP messages
-else: # full display
-    # GUI CHANGES add following lines to every special GUI
-    # +3 is the number of lines starting at 1 of IO widgets
-    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
-    y_multiplier_integer = GUI_util.y_multiplier_integer + 2  # IO FULL display
-    increment=2
-
-GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 
 GUI_label = 'Graphical User Interface (GUI) for Stanford CoreNLP'
-# The 6 values of config_option refer to:
-#   software directory
+# The 4 values of config_option refer to:
 #   input file
-# 1 for CoNLL file
-# 2 for TXT file
-# 3 for csv file
-# 4 for any type of file
-# 5 for txt or html
-# 6 for txt or csv
+        # 1 for CoNLL file
+        # 2 for TXT file
+        # 3 for csv file
+        # 4 for any type of file
+        # 5 for txt or html
+        # 6 for txt or csv
 #   input dir
 #   input secondary dir
-#   output file
 #   output dir
-config_option = [0, 2, 1, 0, 0, 1]
-config_filename = 'Stanford-CoreNLP-config.txt'
-GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
+config_input_output_numeric_options=[2,1,0,1]
+config_filename = 'Stanford-CoreNLP_config.csv'
+head, scriptName = os.path.split(os.path.basename(__file__))
+
+GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
 window = GUI_util.window
 
-GUI_util.GUI_top(config_option, config_filename, IO_setup_display_brief)
-
+GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
@@ -554,6 +547,6 @@ readMe_message = "This Python 3 script will perform different types of textual o
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
 
-GUI_util.GUI_bottom(config_filename, config_option, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()
