@@ -1,6 +1,0 @@
-EMPTY LINE
-C:/Program Files (x86)/NLP_backup/Output/Inaugural Addresses txt in_date_LOCATIONS.csv
-EMPTY LINE
-EMPTY LINE
-EMPTY LINE
-C:/Program Files (x86)/NLP_backup/Output

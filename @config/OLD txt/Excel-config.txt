@@ -1,6 +1,0 @@
-EMPTY LINE
-C:/Program Files (x86)/NLP_backup/Output/NLP_CoreNLP_gender_Dir_Lynching txt (1875-1935).csv
-EMPTY LINE
-EMPTY LINE
-EMPTY LINE
-C:/Program Files (x86)/NLP_backup/Output

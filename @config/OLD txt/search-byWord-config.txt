@@ -1,6 +1,0 @@
-EMPTY LINE
-C:/Program Files (x86)/NLP/lib/sampleData/The Three Little Pigs.txt
-
-EMPTY LINE
-EMPTY LINE
-C:/Program Files (x86)/NLP_backup/Output
