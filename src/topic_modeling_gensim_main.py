@@ -39,6 +39,7 @@ from multiprocessing import current_process
 import GUI_IO_util
 import topic_modeling_gensim_util
 import IO_internet_util
+import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -54,6 +55,10 @@ args = parser.parse_args()
 def run(inputDir, outputDir, openOutputFiles,createExcelCharts, num_topics, remove_stopwords_var, lemmatize_var, nounsOnly_var, Mallet_var):
     if not IO_internet_util.check_internet_availability_warning('Gensim Topic Modeling'):
         return
+
+    if num_topics==20:
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_topic_modelling_number_of_topics,
+                                     reminders_util.message_topic_modelling_number_of_topics, True)
 
     topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics,
                                           remove_stopwords_var, lemmatize_var, nounsOnly_var, Mallet_var, openOutputFiles,createExcelCharts)
@@ -142,7 +147,7 @@ if current_process().name == 'MainProcess':
                                                    nounsOnly_checkbox)
 
     Mallet_var.set(0)
-    Mallet_checkbox = tk.Checkbutton(window, text='Run Mallet (Topic coherence values and plot visualization)', variable=Mallet_var, onvalue=1, offvalue=0)
+    Mallet_checkbox = tk.Checkbutton(window, text='Run MALLET (Topic coherence values and plot visualization)', variable=Mallet_var, onvalue=1, offvalue=0)
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    Mallet_checkbox)
     videos_lookup = {'No videos available': ''}

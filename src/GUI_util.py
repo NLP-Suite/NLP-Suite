@@ -552,15 +552,15 @@ def setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent):
     #       a warning will be raised
     #   2. temp_config_filename, either as default or GUI-specific config
     # same call to IO_setup_main.py in NLP_menu_main
-    if scriptName!='IO_setup_main':
+    if not 'IO_setup_main' in scriptName:
         call("python IO_setup_main.py --config_option " + str(config_input_output_numeric_options).replace('[', '"').replace(']', '"') + " --config_filename " + temp_config_filename, shell=True)
         # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
         display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_numeric_options, scriptName,silent)
 
 def display_about_release_team_cite_buttons(scriptName):
-    if scriptName == 'NLP_menu_main':
-        if scriptName == 'NLP_welcome_main':
-            y_multiplier_integer = .5
+    if 'NLP_welcome_main' in scriptName or 'NLP_menu_main' in scriptName:
+        if 'NLP_welcome_main' in scriptName:
+            y_multiplier_integer = 1.7
         else:
             y_multiplier_integer = 0
         about_button = tk.Button(window, text='About', width=15, height=1, foreground="red",
@@ -628,7 +628,7 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     #	5 for txt, html (used in annotator)
     #	6 for txt, csv (used in SVO)
 
-    if scriptName != 'NLP_menu_main':
+    if not 'NLP_menu_main' in scriptName:
         if not IO_setup_display_brief:
             IO_config_setup_full(window, y_multiplier_integer)
         else:
@@ -670,9 +670,9 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     #   that is the case, for instance, in narrative_analysis_main
     #   in this case config_input_output_numeric_options = [0,0,0,0]
     if config_input_output_numeric_options!= [0,0,0,0] and \
-            scriptName != 'NLP_menu_main' and \
-            scriptName != "IO_setup_main" and \
-            scriptName != "Stanford_CoreNLP_coreference_main":
+            not 'NLP_menu_main' in scriptName and \
+            not "IO_setup_main" in scriptName and \
+            not "Stanford_CoreNLP_coreference_main" in scriptName:
         #open output csv files widget defined above since it is used earlier
         open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Automatically open ALL output files", "Do NOT automatically open ALL output files"))
         open_csv_output_label.configure(text="Automatically open ALL output files")
@@ -730,11 +730,10 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     routine = config_filename[:-len('_config.csv')]
     # get the list of titles available for a given GUI
-    if scriptName=='NLP_menu_main':
-        config_filename='NLP_config.csv'
-    reminder_options = reminders_util.getReminders_list(config_filename, True)
-    if scriptName == 'NLP_menu_main':
+    if 'NLP_menu_main' in scriptName:
+        # config_filename='NLP_config.csv'
         config_filename = 'default_config.csv'
+    reminder_options = reminders_util.getReminders_list(config_filename, True)
     # None returned for a faulty reminders.csv
     reminders_error = False
     if reminder_options==None:
@@ -797,12 +796,19 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     else:
         temp_config_filename = config_filename
 
-    # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
-    IO_setup_menu_var.trace("w",lambda x,y,z: display_IO_setup(window, IO_setup_display_brief,config_filename,config_input_output_numeric_options,scriptName,silent))
+    global IO_setup_config_SV
+    IO_setup_config_SV=''
 
-    # this will display the available IO options for the GUI
-    # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
-    display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_numeric_options,scriptName,silent)
+    def changed_IO_setup_config(*args):
+        global IO_setup_config_SV
+        if IO_setup_menu_var.get()!=IO_setup_config_SV:
+            IO_setup_config_SV=IO_setup_menu_var.get()
+            # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
+            display_IO_setup(window, IO_setup_display_brief, config_filename,
+                                             config_input_output_numeric_options, scriptName, silent)
+
+    IO_setup_menu_var.trace("w",changed_IO_setup_config)
+    changed_IO_setup_config()
 
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
     answer = activateRunButton(temp_config_filename, IO_setup_display_brief, scriptName, config_input_output_numeric_options)

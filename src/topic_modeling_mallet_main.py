@@ -40,11 +40,16 @@ from sys import platform
 import GUI_IO_util
 import IO_files_util
 import topic_modeling_mallet_util
+import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputDir, outputDir,openOutputFiles,createExcelCharts,OptimizeInterval, numTopics):
     filesToOpen=[]
+    if numTopics==20:
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_topic_modelling_number_of_topics,
+                                     reminders_util.message_topic_modelling_number_of_topics, True)
+
     filesToOpen=topic_modeling_mallet_util.run(inputDir, outputDir,openOutputFiles,createExcelCharts,OptimizeInterval, numTopics)
 
     if openOutputFiles==True:

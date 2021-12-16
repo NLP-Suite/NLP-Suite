@@ -393,7 +393,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
     if len(missing_software) > 0:
         if only_check_missing==True:
             return None, missing_software
-        if calling_script == 'NLP_menu':  # called from NLP_main GUI. We just need to warn the user to download and install options
+        if 'NLP_menu' in calling_script:  # called from NLP_main GUI. We just need to warn the user to download and install options
             title = 'NLP Suite external software ' + str(package.upper())
             message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY WILL BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\n' + missing_software + 'If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDo you want to download/install this software now?\n\nY = Download; N = Install CANCEL to exit and download/install later?'
         else:
