@@ -220,18 +220,26 @@ def geocode(window,locations, inputFilename, outputDir,
 			geowriter.writerow(['Location','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document'])
 	else:
 		# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
-		geowriter.writerow(['Location','Latitude','Longitude','Address'])
+		if datePresent==True:
+			geowriter.writerow(['Location','Latitude','Longitude','Address', 'Date'])
+		else:
+			geowriter.writerow(['Location', 'Latitude', 'Longitude', 'Address'])
 
 	# CYNTHIA
 	# ; added in SVO list of locations in SVO output (e.g., Los Angeles; New York; Washington)
 	tmp_loc = []
 	for item in locations:
-		tmp_loc = tmp_loc + item.split(";")
+		if ";" in item[0]:
+			sep_locs = item[0].split(";")
+			for l in sep_locs:
+				tmp_loc.append([l] + item[1:])
+		else:
+			tmp_loc.append(item)
 	locations = tmp_loc
 
 	for item in locations:
 		index=index+1 #items in locations are NOT DISTINCT
-		print("Processing location " + str(index) + "/" + str(len(locations)) + ": " + item)
+		print("Processing location " + str(index) + "/" + str(len(locations)) + ": " + item[0])
 		if str(item)!='nan' and str(item)!='':
 			currRecord=str(index) + "/" + str(len(locations))
 			#for CoNLL tables as input rows & columns 
@@ -246,7 +254,9 @@ def geocode(window,locations, inputFilename, outputDir,
 					date = item[5]
 			else:
 				# itemToGeocode =[item[0]]
-				itemToGeocode =item
+				itemToGeocode =item[0]
+				if datePresent==True:
+					date=item[1]
 
 			# avoid repetition; location already in list
 			if itemToGeocode in distinctGeocodedList:
@@ -287,7 +297,10 @@ def geocode(window,locations, inputFilename, outputDir,
 					else:
 						geowriter.writerow([itemToGeocode, lat, lng, address, sentenceID, sentence, documentID, filename])
 				else:
-					geowriter.writerow([itemToGeocode, lat, lng, address])
+					if datePresent==True:
+						geowriter.writerow([itemToGeocode, lat, lng, address, date])
+					else:
+						geowriter.writerow([itemToGeocode, lat, lng, address])
 	csvfile.close()
 	csvfileNotFound.close()
 	

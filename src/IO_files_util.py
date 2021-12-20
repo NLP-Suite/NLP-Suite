@@ -184,7 +184,7 @@ def getDateFromFileName(file_name, sep='_', date_field_position=2, date_format='
     if 1:
         startSearch = 0
         iteration = 0
-        while iteration < date_field_position - 1:
+        while iteration < date_field_position:
             startSearch = x.find(sep, startSearch + 1)
             iteration += 1
         # the altSeparator="."
@@ -192,7 +192,7 @@ def getDateFromFileName(file_name, sep='_', date_field_position=2, date_format='
         end = x.find(sep, startSearch + 1)
         if end == -1:
             end = x.find(altSeparator, startSearch + 1)
-        if date_field_position == 1:
+        if date_field_position == 0:
             raw_date = x[startSearch:end]
         else:
             raw_date = x[startSearch + 1:end]

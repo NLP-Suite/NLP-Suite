@@ -1,4 +1,4 @@
-#If there's an error that interrupted the operation within this script, PLEASE
+# If there's an error that interrupted the operation within this script, PLEASE
 #1. (In Terminal) Type in sudo lsof -i tcp:9000 see the PID of the subprocess occupying the port
 #2. Type in kill -9 ***** to kill that subprocess
 #P.S ***** is the 5 digit PID

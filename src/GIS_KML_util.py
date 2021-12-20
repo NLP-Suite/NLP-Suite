@@ -110,7 +110,6 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 			curr_filename = row[0]
 			GGPdateFormat = ''
 			# if inputIsCoNLL==True:
-			datePresent = False # TODO date no longer works unless input is geocoded
 			if datePresent == True:
 				date = row[4]
 				if date != 'nan' and date != '':

@@ -87,6 +87,10 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
 
     locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName)
 
+    dateColumnNumber = -1
+    if datePresent == True:
+        dateColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,"Date")
+
     filesToOpen=[]
 
     outputCsvLocationsOnly = ''
@@ -114,7 +118,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                                                             datePresent)
     else:
         # locations is a list of names of locations
-        locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnNumber,encodingValue)
+        locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnNumber,encodingValue, datePresent, dateColumnNumber)
 
     if locations == None or len(locations) == 0:
         return '', ''  # empty output files
