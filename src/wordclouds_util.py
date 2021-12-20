@@ -12,6 +12,7 @@ import os
 from collections import Counter
 import numpy as np
 from PIL import Image
+
 import stanza
 stanza.download('en')
 import pandas as pd
@@ -22,7 +23,6 @@ from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator, get_single_colo
 import matplotlib.pyplot as plt #pip install matplotlib
 import csv
 import ntpath #to split the path from filename
-import re
 
 import IO_files_util
 import IO_user_interface_util

@@ -782,7 +782,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                   'Document ID',
                   'Document']
 
-    config_filename = 'file-spell-checker-config.txt'
+    config_filename = 'file-spell-checker_config.csv'
     reminders_util.checkReminder(config_filename,
                                  reminders_util.title_options_language_detection,
                                  reminders_util.message_language_detection,

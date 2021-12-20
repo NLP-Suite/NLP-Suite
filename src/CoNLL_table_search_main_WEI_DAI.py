@@ -111,24 +111,23 @@ GUI_util.run_button.configure(command=run_script_command)
 
 GUI_size = '1000x750'
 GUI_label = 'GUI for CoNLL Table Search'
-config_filename = 'conll-table-search-config.txt'  # filename used in Stanford_CoreNLP_main
-# The 6 values of config_option refer to:
-#   software directory
+config_filename = 'conll-table-search_config.csv'  # filename used in Stanford_CoreNLP_main
+# The 4 values of config_option refer to:
 #   input file 1 for CoNLL file 2 for TXT file 3 for csv file 4 for any type of file
 #   input dir
 #   input secondary dir
-#   output file
 #   output dir
-config_option = [0, 1, 0, 0, 0, 1]
 
-GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
+config_input_output_numeric_options=[1,0,0,1]
+
+GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
 window = GUI_util.window
-config_input_output_options = GUI_util.config_input_output_options
+config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
 config_filename = GUI_util.config_filename
 inputFilename = GUI_util.inputFilename
 
-GUI_util.GUI_top(config_input_output_options, config_filename)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename)
 
 searchedCoNLLField = tk.StringVar()
 searched_term = tk.StringVar()
@@ -277,6 +276,6 @@ searchedCoNLLField.trace('w', on_searched_field_change)
 readMe_message = "This Python 3 script allows you to search in the CoNLL table."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer + 5, readMe_command, {'None': 'None'}, 'None')
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer + 5, readMe_command, {'None': 'None'}, 'None')
 
 GUI_util.window.mainloop()

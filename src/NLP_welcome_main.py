@@ -21,7 +21,7 @@ from subprocess import call
 import GUI_IO_util
 import videos_util
 
-GUI_size = '1000x600'
+GUI_size = str(GUI_IO_util.get_GUI_width(1)) + 'x600'
 
 GUI_util.set_window(GUI_size, '', '', '')
 
@@ -176,8 +176,9 @@ def update_images():
 
 # running banner
 svar = tk.StringVar()
-scolling_labl = tk.Label(window, textvariable=svar, height=10, width=1100, foreground="black",
-                         font=("Arial", 14, 'italic'))
+# scolling_labl = tk.Label(window, textvariable=svar, height=10, width=1100, foreground="black",
+scolling_labl=tk.Label(window, textvariable=svar, height=10, width=GUI_IO_util.get_GUI_width(1), foreground="black",
+                                                font=("Arial", 14, 'italic'))
 
 
 def display_running_banner():
@@ -200,8 +201,8 @@ display_text()
 
 GUI_util.display_release()
 
-ScriptName = 'NLP_welcome_main'
-GUI_util.display_about_release_team_cite_buttons(ScriptName)
+scriptName = 'NLP_welcome_main.py'
+GUI_util.display_about_release_team_cite_buttons(scriptName)
 
 place_banner()
 display_enter_button()

@@ -7,6 +7,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window,"file_merger_main.py",['os','tkinter'])==False:
     sys.exit(0)
 
+import os
 import tkinter as tk
 
 import GUI_IO_util
@@ -84,31 +85,31 @@ else: # full display
 GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 
 GUI_label='Graphical User Interface (GUI) for File Merger'
-config_filename='file-merger-config.txt'
-# The 6 values of config_option refer to: 
-#   software directory
+config_filename='file_merger_config.csv'
+head, scriptName = os.path.split(os.path.basename(__file__))
+
+# The 4 values of config_option refer to:
 #   input file
-        # 1 for CoNLL file 
-        # 2 for TXT file 
-        # 3 for csv file 
+        # 1 for CoNLL file
+        # 2 for TXT file
+        # 3 for csv file
         # 4 for any type of file
         # 5 for txt or html
         # 6 for txt or csv
 #   input dir
 #   input secondary dir
-#   output file
 #   output dir
-config_option=[0,0,1,0,0,1]
+config_input_output_numeric_options=[0,1,0,1]
 
-GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
+GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
 window=GUI_util.window
-config_input_output_options=GUI_util.config_input_output_options
+config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
 config_filename=GUI_util.config_filename
 input_main_dir_path =GUI_util.input_main_dir_path
 output_dir_path =GUI_util.output_dir_path
 
-GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 
 merge_subdir_var=tk.IntVar()
 merge_embed_subdir_name_var=tk.IntVar()
@@ -222,7 +223,7 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 # change the value of the readMe_message
 readMe_message="This Python 3 script merges txt files into a single txt file with a number of processing options."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()
 

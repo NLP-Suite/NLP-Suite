@@ -167,7 +167,7 @@ def geocode(window,locations, inputFilename, outputDir,
 	index=0
 
 	if "Google" in geocoder:
-		Google_API = GIS_pipeline_util.getGoogleAPIkey('Google-geocode-API-config.txt')
+		Google_API = GIS_pipeline_util.getGoogleAPIkey('Google_geocode_API_config.csv')
 	else:
 		Google_API=''
 
@@ -178,7 +178,7 @@ def geocode(window,locations, inputFilename, outputDir,
 	startTime=IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Started geocoding locations via the online service '" + geocoder + "' at",
 												 True, '', True,'',True)
 	# if geocoder=='Nominatim':
-	# 	config_filename='GIS-geocode-config.txt'
+	# 	config_filename='GIS-geocode_config.csv'
 	# 	reminders_util.checkReminder(config_filename,["GIS Nominatim geocoder"],'',True)
 
 	geoName = 'geo-' + str(geocoder[:3])

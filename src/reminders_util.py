@@ -24,7 +24,7 @@ from csv import writer
 # below is a lit of most reminders called from various scripts with their title_options and message
 
 title_options_NLP_Suite_welcome = ['NLP Suite welcome & system requirements']
-message_NLP_Suite_welcome = 'Welcome to the NLP Suite a package of Python 3 and Java tools designed for text processing and visualization. The Suite requires several FREWARE software components in order to run. You will need to download and install them or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro).\n\n   1. JAVA. Several scripts are based on the FREEWARE Java. You can download and install Java at https://www.java.com/en/download\n\n   2. STANFORD CORENLP. The core text analyses of the NLP Suite are based on the FREEWARE Stanford CoreNLP. You can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n   3. GEPHI. The visualization of network graphs requires the installation of the FREEWARE software Gephi. You can download and install Gephi at https://gephi.org/users/download/\n\n   4. GOOGLE EARTH PRO. The visualization of geographic maps requires the installation of the FREEWARE software Google Earth Pro. You can download and install Google Earth Pro at https://www.google.com/earth/versions/#download-pro.\n\n   5. MALLET. Mallet topic modelling requires the installation of the FREEWARE Mallet. You can download and install Mallet at http://mallet.cs.umass.edu/download.php.\n\n   7. SENNA. The FREEWARE SENNA will allow you to extract Subject-Verb-Object from a text. You can download SENNA at https://ronan.collobert.com/senna/download.html.'
+message_NLP_Suite_welcome = 'Welcome to the NLP Suite a package of Python 3 and Java tools designed for text processing and visualization. The Suite requires several FREWARE software components in order to run. You will need to download and install them or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro).\n\n   1. JAVA. Several scripts are based on the FREEWARE Java. You can download and install Java at https://www.java.com/en/download\n\n   2. STANFORD CORENLP. The core text analyses of the NLP Suite are based on the FREEWARE Stanford CoreNLP. You can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n   3. GEPHI. The visualization of network graphs requires the installation of the FREEWARE software Gephi. You can download and install Gephi at https://gephi.org/users/download/\n\n   4. GOOGLE EARTH PRO. The visualization of geographic maps requires the installation of the FREEWARE software Google Earth Pro. You can download and install Google Earth Pro at https://www.google.com/earth/versions/#download-pro.\n\n   5. MALLET. MALLET topic modelling requires the installation of the FREEWARE MALLET. You can download and install MALLET at http://mallet.cs.umass.edu/download.php.\n\n   7. SENNA. The FREEWARE SENNA will allow you to extract Subject-Verb-Object from a text. You can download SENNA at https://ronan.collobert.com/senna/download.html.'
 
 title_options_NLP_Suite_architecture = ['NLP Suite architecture & filenames']
 message_NLP_Suite_architecture = 'The Python scripts in the NLP Suite have filenames that clearly identify the Suite architecture.\n\nThe filename suffix designates two different types of files: _main and _util.\n\n_main files are the only ones that you can run in command line independently of others; they may call _util files.\n\nThe _main files, with their GUI options, lay out on the screen the widgets of a script for easy Graphical User Interface (GUI).\n\nALL SCRIPTS SUFFIXED BY _main CAN BE RUN INDIPENDENTLY OF THE NLP SUITE. Thus on command line you can type\nPython annotator_main.py\nand it will fire up the annotator GUI independently of NLP_main.py.\n\nThe filename prefix cluster together scripts used for the same purpose. Thus annotator identifies all files dealing with html annotation.'
@@ -65,8 +65,11 @@ message_WordNet_input_file_button = 'The Select INPUT file button is disabled (g
 title_options_WordNet_verb_aggregation = ['WordNet VERB aggregation']
 message_WordNet_verb_aggregation = "CAVEAT!\n\nFor VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.\n\nThe WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts."
 
-title_options_Mallet_installation = ['Mallet download and installation']
-message_Mallet_installation = 'The Mallet topic modelling tool requires a copy of the FREEWARE Mallet installed on your machine. You can download the FREEWARE Mallet at http://mallet.cs.umass.edu/download.php.\n\nMallet in turn requires a copy of the JAVA development kit installed on your machine.\n\nRead carrefully the Mallet and Java installation TIPS.'
+title_options_Mallet_installation = ['MALLET download and installation']
+message_Mallet_installation = 'The MALLET topic modelling tool requires a copy of the FREEWARE MALLET installed on your machine. You can download the FREEWARE MALLET at http://mallet.cs.umass.edu/download.php.\n\nMALLET in turn requires a copy of the JAVA development kit installed on your machine.\n\nRead carrefully the MALLET and Java installation TIPS.'
+
+title_options_topic_modelling_number_of_topics = ['Topic modelling: Number of topics']
+message_topic_modelling_number_of_topics = 'You are running the topic modelling algorithm with the default value of 20 topics.\n\nYOU ARE STRONGLY ADVISED to run the algorithm repeatedly with different number of topics (e.g., 50, 40 30, 20, 10). You should then select the number of topics that gives you the best set of topics with no or minimum word overlap across topics. When running Gensim, the topic circles displayed in the Intertopic Distance Map (via multidimensional scaling) should be scattered throughout the four quadrants and should not be overlapping.'
 
 title_options_CoreNLP_Sentiment_Analysis_system_requirements = ['Stanford CoreNLP Sentiment Analysis system requirements']
 message_CoreNLP_Sentiment_Analysis_system_requirements = 'The Stanford CoreNLP Sentiment Analysis tool requires two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/'
@@ -118,7 +121,7 @@ title_options_Plagiarist = ['Plagiarist']
 message_Plagiarist = "The 'plagiarist' script, based on Lucene, can process files with embedded dates.\n\nIf the filenames in the input directory embed dates, please tick the checkbox 'Filename embeds date' above."
 
 title_options_IO_configuration = ['Input/Output configurations']
-message_IO_configuration = 'Most GUIs in the NLP Suite provide two types of Input/Output (I/O) configurations that specify your selection for your input file or directory (these are mutually exclusive; you can only select one or the other) and output directory:\n\n  Default I/O configuration\n  Alternative I/O configuration\n\nThe Default I/O configuration applies to ALL GUIs in the NLP Suite. This is an ideal option if you work exclusively, or mostly, with the same input file(s) regardless of GUI (i.e., NLP algorithms); you would not need to select these options for every GUI.\n\nIf you occasionally need to run a script using a different set of I/O options, setup the Alternative I/O configuration. This will not affect your I/O selections for all GUIs and will only apply to a specific GUI if you chose the menu option Alternative I/O configuration.'
+message_IO_configuration = 'Most GUIs in the NLP Suite provide two types of Input/Output (I/O) configurations that specify your selection for your input file or directory (these are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH) and output directory:\n\n  Default I/O configuration\n GUI-specific I/O configuration\n\nThe Default I/O configuration applies to ALL GUIs in the NLP Suite. This is an ideal option if you work exclusively, or mostly, with the same input file(s) regardless of GUI (i.e., NLP algorithms); you would not need to select these options for every GUI.\n\nIf you occasionally need to run a script using a different set of I/O options, setup theGUI-specific I/O configuration. This will not affect your I/O selections for all GUIs and will only apply to a specific GUI if you chose the menu optionGUI-specific I/O configuration.'
 
 title_options_IO_setup = ['Input/Output options']
 message_IO_setup = 'The two widgets for INPUT FILE and INPUT DIRECTORY are mutually exclusive. You can select one OR the other but not both. Click on either button to make your selection.\n\nTo change an already selected option from FILE to DIRECTORY or from DIRECTORY to FILE, simply click on the button you want to select, make your selection, and the I/O configuration will automatically update.'
@@ -130,10 +133,10 @@ title_options_shape_of_stories_CoreNLP = ['Stanford CoreNLP Neural Network']
 message_shape_of_stories_CoreNLP = 'The Stanford CoreNLP Neural Network approach to Sentiment analysis, like all neural network algorithms, is VERY slow. On a few hundred stories it may take hours to run.\n\nAlso, neural network algorithms are memory hogs. MAKE SURE TO ALLOCATE AS MUCH MEMORY AS YOU CAN AFFORD ON YOUR MACHINE.'
 
 title_options_shape_of_stories = ['Shape of stories']
-message_shape_of_stories = "The Sentiment Analysis GUI will now open the 'Shape of stories' GUI. When the GUI opens, you will need to select the Alternative I/O configuration."
+message_shape_of_stories = "The Sentiment Analysis GUI will now open the 'Shape of stories' GUI. When the GUI opens, you will need to select theGUI-specific I/O configuration."
 
 title_options_CoNLL_analyzer = ['CoNLL table analyzer']
-message_CoNLL_analyzer = "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' GUI. When the GUI opens, you will need to select the Alternative I/O configuration.\n\nThe 'CoNLL table analyzer' GUI where you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words)."
+message_CoNLL_analyzer = "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' GUI. When the GUI opens, you will need to select theGUI-specific I/O configuration.\n\nIn the 'CoNLL table analyzer' GUI you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words)."
 
 title_options_shape_of_stories_best_topic = ['Best topic estimation']
 message_shape_of_stories_best_topic = 'The function that estimates the best topics is VERY slow and may take an hour or longer. You can follow its progress in command line.'
@@ -172,6 +175,9 @@ message_NGrams = 'subprocess.call(cmd) error\n\nIf the VIEWER you are running ex
 title_options_GIS_GUI = ['GIS GUI options']
 message_GIS_GUI = 'The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv.\n\nWith a TXT file, NER extraction via Stanford CoreNLP must be first performed.\n\nWith a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.'
 
+title_options_geocoder = ["GIS geocoder"]
+message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.'
+
 title_options_Google_Earth=['Open Google Earth GUI']
 message_Google_Earth = 'You should tick the Open GUI checkbox ONLY if you wish to open the Google Earth Pro GUI.\n\nThe Google Earth Pro GUI will provide a number of options to personalize a Google Earth Pro map. Press Run if you wish to open the Google Earth Pro GUI.'
 
@@ -185,16 +191,13 @@ title_options_Excel = ['Excel Charts']
 message_Excel = 'The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).\n\nFirst, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).\n\nSecond, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.'
 
 title_options_gensim = ['What is in your corpus - Gensim']
-message_gensim = 'The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.\n\nFor a more in-depth analysis of topics, use the topic modeling scripts for Gensim and Mallet.'
+message_gensim = 'The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.\n\nFor a more in-depth analysis of topics, use the topic modeling scripts for Gensim and MALLET.'
 
 title_options_gensim_release = ['Gensim 4.0']
-message_gensim_release = 'Gensim release 4.0 removed the wrappers of other library algorithms. The algorithms running Mallet through Gensim cannot be run. Please, run Mallet using the Mallet topic modelling script to run Mallet. If your work depends on any of the Gensim modules based on wrappers (e.g., the computation of the coherence value for each topic or of the optimal number of topics), uninstall Gensim 4.0 and install Gensim 3.8.3, the last release when wrappers was supported.\n\nFor more information, please, visit the Gensim GitHub page https://github.com/RaRe-Technologies/gensim/wiki/Migrating-from-Gensim-3.x-to-4#15-removed-third-party-wrappers.'
+message_gensim_release = 'Gensim release 4.0 removed the wrappers of other library algorithms. The algorithms running MALLET through Gensim cannot be run. Please, run MALLET using the MALLET topic modelling script to run MALLET. If your work depends on any of the Gensim modules based on wrappers (e.g., the computation of the coherence value for each topic or of the optimal number of topics), uninstall Gensim 4.0 and install Gensim 3.8.3, the last release when wrappers was supported.\n\nFor more information, please, visit the Gensim GitHub page https://github.com/RaRe-Technologies/gensim/wiki/Migrating-from-Gensim-3.x-to-4#15-removed-third-party-wrappers.'
 
 title_options_input_csv_file = ["Input csv file"]
 message_input_csv_file = "You have a csv file in the 'Select INPUT CSV file' widget. The RUN command would process this file in input rather than the file stored in the I/O configuration.\n\nPress ESC if you want to clear the 'Select INPUT CSV file' widget."
-
-title_options_geocoder = ["GIS geocoder"]
-message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.'
 
 title_options_wordclouds = ['Web-based word clouds services']
 message_wordclouds = "After the selected web-based word-clouds service opens up on your browser, you will need to either copy/paste the text you want to visualize or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file."
@@ -234,7 +237,7 @@ def create_remindersFile() -> None:
 
 # config_filename is the first column in reminders.csv
 #   it refers to the general Python script that calls the reminder
-#   The routine field contains the name used by the reminder script to visualize the correct reminder; it is the name of the config filename trimmed of -config.txt (e.g., GIS for GIS-config.txt, GIS-Google-Earth for GIS-Google-Earth-config.txt).
+#   The routine field contains the name used by the reminder script to visualize the correct reminder; it is the name of the config filename trimmed of _config.csv (e.g., GIS for GIS_config.csv, GIS-Google-Earth for GIS-Google-Earth_config.csv).
 #   When the Routine field contains a * the reminder will be displayed in ALL GUIs
 
 # title is the second column in reminders.csv
@@ -245,8 +248,8 @@ def create_remindersFile() -> None:
 # triggered_by_GUI_event is passed when triggered by an event in the GUI (a checkbox ticked, a file opened)
 #   (e.g., in shape_of_stories_GUI)
 def getReminders_list(config_filename,silent=False):
-    # if '-config.txt' in config_filename:
-    routine=config_filename[:-len('-config.txt')]
+    # if '_config.csv' in config_filename:
+    routine=config_filename[:-len('_config.csv')]
     # else:
     #     routine = config_filename
     title_options=[]
@@ -314,8 +317,8 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
     if config_filename=='*':
         routine='*'
     else:
-        routine = config_filename.replace('-config.txt', '')
-        # routine = config_filename[:-len('-config.txt')]
+        routine = config_filename.replace('_config.csv', '')
+        # routine = config_filename[:-len('_config.csv')]
     if title_options==None:
         title_options = getReminders_list(config_filename)
     else:
@@ -379,7 +382,7 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
 # called from a GUI when a reminder is selected from the reminder dropdown menu
 # title is a string, the reminders option selected in the GUI dropdown menu
 def resetReminder(config_filename,title):
-    routine = config_filename[:-len('-config.txt')]
+    routine = config_filename[:-len('_config.csv')]
     if title != "Open reminders":
         if title == 'No Reminders available':
             mb.showwarning(title='Reminders warning', message="There are no reminders available for this script.")

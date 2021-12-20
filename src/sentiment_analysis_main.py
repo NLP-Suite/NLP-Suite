@@ -28,7 +28,7 @@ import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(CoreNLPdir,inputFilename,inputDir,outputDir,
+def run(inputFilename,inputDir,outputDir,
         openOutputFiles,
         createExcelCharts,
         mean_var,
@@ -156,8 +156,8 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
                         return
 
                     # open the shape of stories GUI  having saved the new SA output in config so that it opens the right input file
-                    config_array = ['EMPTY LINE', outputFilename, 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
-                    config_util.saveConfig(GUI_util.window, 'shape-of-stories-config.txt', config_array, True)
+                    config_input_output_alphabetic_options = ['EMPTY LINE', outputFilename, 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
+                    config_util.write_config_file(GUI_util.window, 'shape-of-stories_config.csv', config_input_output_alphabetic_options, True)
 
                     reminders_util.checkReminder(config_filename,
                                                  reminders_util.title_options_shape_of_stories,
@@ -432,8 +432,7 @@ def run(CoreNLPdir,inputFilename,inputDir,outputDir,
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run(GUI_util.softwareDir.get(),
-                               GUI_util.inputFilename.get(),
+run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                GUI_util.input_main_dir_path.get(),
                                GUI_util.output_dir_path.get(),
                                GUI_util.open_csv_output_checkbox.get(),
@@ -452,26 +451,19 @@ GUI_util.run_button.configure(command=run_script_command)
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
-GUI_width=GUI_IO_util.get_GUI_width(3)
-GUI_height=480 # height of GUI with full I/O display
-
-if IO_setup_display_brief:
-    GUI_height = GUI_height - 80
-    y_multiplier_integer = GUI_util.y_multiplier_integer  # IO BRIEF display
-    increment=0 # used in the display of HELP messages
-else: # full display
-    # GUI CHANGES add following lines to every special GUI
-    # +3 is the number of lines starting at 1 of IO widgets
-    # y_multiplier_integer=GUI_util.y_multiplier_integer+2
-    y_multiplier_integer = GUI_util.y_multiplier_integer + 2  # IO FULL display
-    increment=2
-
-GUI_size = str(GUI_width) + 'x' + str(GUI_height)
+GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
+                             GUI_width=GUI_IO_util.get_GUI_width(3),
+                             GUI_height_brief=400, # height at brief display
+                             GUI_height_full=480, # height at full display
+                             y_multiplier_integer=GUI_util.y_multiplier_integer,
+                             y_multiplier_integer_add=2, # to be added for full display
+                             increment=2)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for Sentiment Analysis'
-config_filename='sentiment-analysis-config.txt'
-# The 6 values of config_option refer to:
-#   software directory
+config_filename='sentiment_analysis_config.csv'
+head, scriptName = os.path.split(os.path.basename(__file__))
+
+# The 4 values of config_option refer to:
 #   input file
         # 1 for CoNLL file
         # 2 for TXT file
@@ -481,22 +473,19 @@ config_filename='sentiment-analysis-config.txt'
         # 6 for txt or csv
 #   input dir
 #   input secondary dir
-#   output file
 #   output dir
-config_option=[0,2,1,0,0,1]
+config_input_output_numeric_options=[2,1,0,1]
 
-GUI_util.set_window(GUI_size, GUI_label, config_filename, config_option)
+GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
+# GUI_util.set_window(GUI_size, GUI_label)
 
 window=GUI_util.window
-config_input_output_options=GUI_util.config_input_output_options
+config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 input_main_dir_path=GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_options,config_filename,IO_setup_display_brief)
-
-# if GUI_util.softwareDir.get()=='':
-#     GUI_util.select_softwareDir_button.config(state='disabled')
+GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 
 mean_var = tk.IntVar()
 median_var = tk.IntVar()
@@ -651,6 +640,6 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 # change the value of the readMe_message
 readMe_message="The Python 3 Dictionary-based Analyses scripts calculate the mean/median values for various aspects of the language used in a text: sentiment, arousal, dominance.\n\nIn INPUT the scripts expect either a single text file or a set of text files stored in a directory. THE hedonometer, ANEW, AND VADER SCRIPTS ALSO EXPECT TO FIND DICTIONARY FILES IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE PYTHON SCRIPTS ARE STORED.\n\nIn OUTPUT, the scripts create csv files containing the calculated mean/median values for each sentence."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief)
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

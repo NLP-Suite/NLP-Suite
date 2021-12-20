@@ -3,11 +3,11 @@ TWO STEPS ARE INVOLVED
 STEP ONE: IMPORT YOUR CORPUS
     COMMAND: bin\\mallet import-dir --input folder\\files --output tutorial.mallet --keep-sequence --remove-stopwords
 
-    Here, we tell MALLET to import all the TXT files of your corpus and to create a single Mallet-formatted file in output
+    Here, we tell MALLET to import all the TXT files of your corpus and to create a single MALLET-formatted file in output
     Parameter: --keep-sequence keep the original texts in the order in which they were listed;
     Parameter: --remove-stopwords strip out the stop words (words such as and, the, but, and if that occur in such frequencies that they obstruct analysis) using the default English stop-words dictionary.
     INPUT: all TXT files of your corpus
-    OUTPUT: (tutorial.mallet) a single Mallet-formatted file containing all TXT input files
+    OUTPUT: (tutorial.mallet) a single MALLET-formatted file containing all TXT input files
 
 STEP TWO
     COMMAND: bin\\mallet train-topics  --input tutorial.mallet --num-topics 20 --output-state topic-state.gz --output-topic-keys tutorial_keys.txt --output-doc-topics tutorial_compostion.txt
@@ -20,7 +20,7 @@ STEP TWO
        OUTPUT (COMPOSITION): a CSV or TXT  file (tutorial_composition.txt) indicating the breakdown, by percentage, of each topic within each original text file you imported.
            To see the full range of possible parameters that you may want to tweak, type bin\\mallet train-topics ?help at the prompt
 
-All OUTPUT file names can be changed and Mallet will still run successfully
+All OUTPUT file names can be changed and MALLET will still run successfully
  OUTPUT file names extensions for step two can be TXT or CSV
 """
 import sys
@@ -66,7 +66,7 @@ def run(inputDir, outputDir,openOutputFiles,createExcelCharts,OptimizeInterval, 
             # the env variable has not been setup
             MalletPath =''
             mb.showwarning(title='MALLET-HOME environment variable',
-                           message='The value MALLET-HOME needed by Mallet to run was not found in the environment variables.\n\nThe MALLET_HOME value was added programmatically to your environment variables.\n\nTHIS IS A TEMPORARY FIX VALID FOR RUNNING THE MALLET AS LONG AS THIS GUI REMAINS OPEN. For a more permanent solution, please read the TIPS on Mallet installation and setting Mallet environment variables.')
+                           message='The value MALLET-HOME needed by MALLET to run was not found in the environment variables.\n\nThe MALLET_HOME value was added programmatically to your environment variables.\n\nTHIS IS A TEMPORARY FIX VALID FOR RUNNING THE MALLET AS LONG AS THIS GUI REMAINS OPEN. For a more permanent solution, please read the TIPS on Mallet installation and setting Mallet environment variables.')
             # add environment variable
             os.environ["MALLET_HOME"] = MalletDir
         else:
