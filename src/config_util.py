@@ -182,7 +182,7 @@ def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_displ
     Run_Button_Off=False
     #do not check IO requirements for NLP.py; too many IO options available depending upon the script run
     # if config_filename=="NLP_config.csv" or config_filename=="social-science-research_config.csv":
-    if config_filename == "social_science_research_config.csv":
+    if config_filename == "social-science-research_config.csv":
         # RUN button always active since several options are available and IO gets checked in the respective scripts
         Run_Button_Off=False
         missingIO=''
@@ -240,7 +240,7 @@ def write_config_file(window, config_filename, config_input_output_numeric_optio
                                            False)
 
 # used in GIS_GUI and GIS_geocode_GUI
-# Google_config: 'Google-geocode_API_config.csv' or 'Google-Maps_API_config.csv'
+# Google_config: 'Google-geocode-API_config.csv' or 'Google-Maps-API_config.csv'
 def Google_API_Config_Save(Google_config,Google_API_key):
     # save the API key is not blank and not already there
     if Google_API_key != '':

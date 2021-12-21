@@ -223,7 +223,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                            'The input csv file\n\n' + geocodedLocationsoutputFilename + '\n\ndoes not contain geocoded data with Latitude or Longitude columns required for Google Maps to produce heat maps.\n\nPlease, select a geocoded csv file in input and try again.')
             return
 
-        Google_Maps_API = getGoogleAPIkey('Google_Maps_API_config.csv')
+        Google_Maps_API = getGoogleAPIkey('Google-Maps-API_config.csv')
         if Google_Maps_API == '':
             return
 

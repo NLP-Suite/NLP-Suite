@@ -292,8 +292,9 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              increment=1)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for a Sweeping View of Your Corpus - A Pipeline'
-config_filename='corpus_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
+config_filename = scriptName.replace('main.py', 'config.csv')
+
 # The 4 values of config_option refer to:
 #   input file
         # 1 for CoNLL file

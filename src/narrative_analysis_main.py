@@ -143,8 +143,8 @@ IO_setup_display_brief=False
 
 GUI_size='1200x550'
 GUI_label='Graphical User Interface (GUI) for Narrative Analysis'
-config_filename='narrative_analysis_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
+config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

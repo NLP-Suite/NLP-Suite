@@ -255,8 +255,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                                                  increment=2)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for GIS (Geographic Information System) Pipeline from Text to Map'
-config_filename='GIS_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
+config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -600,7 +600,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordin
 
 def activate_Google_API_geocode(*args):
     if geocoder_var.get()=='Google':
-        key = GIS_pipeline_util.getGoogleAPIkey('Google_geocode_API_config.csv')
+        key = GIS_pipeline_util.getGoogleAPIkey('Google-geocode-API_config.csv')
         if key=='' or key==None:
             mb.showwarning(title='Warning',
                            message="No Google geocoder API key was entered. The geocoder option has been reset to 'Nominatim.'")

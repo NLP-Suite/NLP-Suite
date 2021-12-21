@@ -125,8 +125,8 @@ else: # full display
 GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 
 GUI_label='Graphical User Interface (GUI) for Sentence Analysis'
-config_filename='sentence_analysis_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
+config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
