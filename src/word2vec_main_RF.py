@@ -72,8 +72,9 @@ else: # full display
     increment=2
 
 GUI_label='Graphical User Interface (GUI) for Word2Vec with Gensim'
-config_filename='word2vec_gensim_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
+config_filename = scriptName.replace('main.py', 'config.csv')
+
 # The 4 values of config_option refer to:
 #   software directory
 #   input file

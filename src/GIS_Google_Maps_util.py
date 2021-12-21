@@ -20,7 +20,7 @@ import GIS_pipeline_util
 # gmaps_list is a list of lat/long values to be written in the java script html output file
 # then saves a new file that contains the html/js to display the heatmap
 def create_google_heatmap(output_filename, gmaps_list):
-    api_key = GIS_pipeline_util.getGoogleAPIkey('Google_Maps_API_config.csv')
+    api_key = GIS_pipeline_util.getGoogleAPIkey('Google-Maps-API_config.csv')
     if api_key == '' or api_key == None :
         return
 

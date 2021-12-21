@@ -104,7 +104,6 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              increment=2)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for NER (Named Entity Recognition) Extraction'
-config_filename='NER_config.txt'
 # The 4 values of config_option refer to:
 #   input file
         # 1 for CoNLL file
@@ -119,6 +118,7 @@ config_filename='NER_config.txt'
 config_input_output_numeric_options=[2,1,0,1]
 
 head, scriptName = os.path.split(os.path.basename(__file__))
+config_filename = scriptName.replace('main.py', 'config.csv')
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
