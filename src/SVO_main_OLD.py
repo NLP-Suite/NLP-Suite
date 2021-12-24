@@ -252,7 +252,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                  'normalized-date', False, memory_var, document_length_var, limit_sentence_length_var)
         filesToOpen.extend(files)
 
-    if SENNA_SVO_extractor_var or CoreNLP_SVO_extractor_var or CoreNLP_OpenIE_var:
+    if SENNA_SVO_extractor_var or CoreNLP_SVO_extractor_var:
         if isFile:
             inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
             # remove NLP_CoreNLP_ from filename (could have been added to filename in case of coref)
@@ -275,13 +275,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
 # CoreNLP Dependencies ++ _____________________________________________________
 
-    if CoreNLP_SVO_extractor_var or CoreNLP_OpenIE_var:
+    if CoreNLP_SVO_extractor_var:
 
         if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
             return
 
-        location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                     'CoreNLP_SVO_LOCATIONS')
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir, openOutputFiles,
                                                                        createExcelCharts,
@@ -290,9 +288,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                        extract_date_from_filename_var=False,
                                                                        date_format_var='',
                                                                        date_separator_var='',
-                                                                       date_position_var=0,
-                                                                       google_earth_var=google_earth_var,
-                                                                       location_filename = location_filename)
+                                                                       date_position_var=0)
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
                 output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
@@ -491,37 +487,45 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
         # SENNA locations are not really geocodable locations
         if google_earth_var:
-            # for f in svo_result_list:
-                # SENNA does not have a location field
-            if (CoreNLP_SVO_extractor_var or CoreNLP_OpenIE_var) and os.path.isfile(location_filename):
+            out_file = ''
+            kmloutputFilename = ''
 
-                reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
-                                             reminders_util.message_geocoder, True)
-                # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
-                date_present = False
-                country_bias = ''
-                area_var = ''
-                restrict = False
-                out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
-                             config_filename, location_filename,
-                             outputDir,
-                             'Nominatim', 'Google Earth Pro & Google Maps',
-                             date_present,
-                             country_bias,
-                             area_var,
-                             restrict,
-                             'Location',
-                             'utf-8',
-                             0, 1, [''], [''], # group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
-                             ['Pushpins'], ['red'], # icon_var_list, specific_icon_var_list,
-                             [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
-                             [1], [1]) # bold_var_list, italic_var_list
+            # out_file is a list []
+            #   containing several csv files of geocoded locations and non geocoded locations
+            # kmloutputFilename is a string; empty when the kml file fails to be created
 
-                if len(out_file) > 0:
-                    # since out_file produced by KML is a list cannot use append
-                    filesToOpen = filesToOpen + out_file
-                if len(kmloutputFilename) > 0:
-                    filesToOpen.append(kmloutputFilename)
+            for f in svo_result_list:
+                # SENNA and OpenIE do not have a location field
+                if (not 'SENNA' in f) and (not 'OpenIE' in f) and IO_csv_util.GetNumberOfRecordInCSVFile(
+                        f) > 1:  # including headers; file is empty
+
+                    reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
+                                                 reminders_util.message_geocoder, True)
+                    # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
+                    date_present = False
+                    country_bias = ''
+                    area_var = ''
+                    restrict = False
+                    out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
+                                 config_filename, f,
+                                 outputDir,
+                                 'Nominatim', 'Google Earth Pro & Google Maps',
+                                 date_present,
+                                 country_bias,
+                                 area_var,
+                                 restrict,
+                                 'Location',
+                                 'utf-8',
+                                 0, 1, [''], [''], # group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
+                                 ['Pushpins'], ['red'], # icon_var_list, specific_icon_var_list,
+                                 [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
+                                 [1], [1]) # bold_var_list, italic_var_list
+
+                    if len(out_file) > 0:
+                        # since out_file produced by KML is a list cannot use append
+                        filesToOpen = filesToOpen + out_file
+                    if len(kmloutputFilename) > 0:
+                        filesToOpen.append(kmloutputFilename)
 
     if openOutputFiles == True and len(filesToOpen) > 0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -590,8 +594,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 
 GUI_label = 'Graphical User Interface (GUI) for Subject-Verb-Object (SVO) Extraction & Visualization Pipeline - Extracting 4 of the 5 Ws of Narrative: Who, What, When, Where'
+config_filename = 'SVO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -616,8 +620,8 @@ NLPPath = GUI_IO_util.NLPPath
 # libPath = GUI_IO_util.libPath +os.sep+'wordLists'
 
 window = GUI_util.window
-# config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
-# config_filename = GUI_util.config_filename
+config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
+config_filename = GUI_util.config_filename
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
@@ -711,21 +715,21 @@ extract_date_from_text_checkbox = tk.Checkbutton(window, variable=extract_date_f
 extract_date_from_text_checkbox.config(text="From document content")
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),
                                                y_multiplier_integer, extract_date_from_text_checkbox, True)
-# extract_date_from_text_checkbox.configure(state='disabled')
+extract_date_from_text_checkbox.configure(state='disabled')
 
 extract_date_from_filename_var.set(0)
 extract_date_from_filename_checkbox = tk.Checkbutton(window, variable=extract_date_from_filename_var, onvalue=1, offvalue=0)
 extract_date_from_filename_checkbox.config(text="From filename")
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 190,
                                                y_multiplier_integer, extract_date_from_filename_checkbox, True)
-# extract_date_from_filename_checkbox.config(state='disabled')
+extract_date_from_filename_checkbox.config(state='disabled')
 
 date_format_lb = tk.Label(window,text='Format ')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 320,
                                                y_multiplier_integer, date_format_lb, True)
 date_format_var.set('mm-dd-yyyy')
 date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
-# date_format_menu.configure(width=10,state="disabled")
+date_format_menu.configure(width=10,state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 380,
                                                y_multiplier_integer, date_format_menu, True)
 date_separator_var.set('_')
@@ -733,7 +737,7 @@ date_separator_lb = tk.Label(window, text='Character separator ')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 510,
                                                y_multiplier_integer, date_separator_lb, True)
 date_separator = tk.Entry(window, textvariable=date_separator_var)
-# date_separator.configure(width=2,state="disabled")
+date_separator.configure(width=2,state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 640,
                                                y_multiplier_integer, date_separator, True)
 date_position_var.set(2)
@@ -741,7 +745,7 @@ date_position_menu_lb = tk.Label(window, text='Position ')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 670,
                                                y_multiplier_integer, date_position_menu_lb, True)
 date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
-# date_position_menu.configure(width=1,state="disabled")
+date_position_menu.configure(width=1,state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 740,
                                                y_multiplier_integer, date_position_menu)
 
@@ -871,7 +875,7 @@ def activateFilters(*args):
         gephi_checkbox.configure(state='disabled')
         wordcloud_checkbox.configure(state='disabled')
         google_earth_checkbox.configure(state='disabled')
-    if CoreNLP_SVO_extractor_var.get()==False and CoreNLP_OpenIE_var.get()==False and SENNA_SVO_extractor_var.get()==True:
+    if CoreNLP_SVO_extractor_var.get()==False and (SENNA_SVO_extractor_var.get()==True or CoreNLP_OpenIE_var.get()==True):
         google_earth_checkbox.configure(state='disabled')
         google_earth_var.set(0)
 

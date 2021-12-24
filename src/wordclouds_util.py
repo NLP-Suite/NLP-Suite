@@ -13,12 +13,15 @@ from collections import Counter
 import numpy as np
 from PIL import Image
 
-import stanza
-stanza.download('en')
 import pandas as pd
 from collections import defaultdict
 import tkinter.messagebox as mb
-
+import stanza
+try:
+    stanza.download('en')
+except:
+    mb.showwarning(title='Internet connection',
+                   message="stanza.download(en) in wordclouds_util.py requires a connection to the internet. Please, connect to the internet and try again.")
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator, get_single_color_func
 import matplotlib.pyplot as plt #pip install matplotlib
 import csv

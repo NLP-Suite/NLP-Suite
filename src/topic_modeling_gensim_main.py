@@ -109,8 +109,8 @@ config_input_output_numeric_options=[0,1,0,1]
 if current_process().name == 'MainProcess':
     GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
     window = GUI_util.window
-    config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
-    config_filename = GUI_util.config_filename
+    # config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
+    # config_filename = GUI_util.config_filename
     inputFilename = GUI_util.inputFilename
 
     GUI_util.GUI_top(config_input_output_numeric_options, config_filename,IO_setup_display_brief)

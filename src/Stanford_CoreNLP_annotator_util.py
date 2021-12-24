@@ -75,7 +75,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      sentence_length=1000, # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
                      print_json = True,
                      **kwargs):
-
     silent=True
     start_time = time.time()
     speed_assessment = []#storing the information used for speed assessment
@@ -142,7 +141,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'sentiment': {'annotators':['sentiment']},
         'normalized-date': {'annotators': ['tokenize','ssplit','ner']},
         'SVO':{"annotators": ['tokenize','ssplit','pos','depparse','natlog','lemma', 'ner']},
-        'OpenIE':{"annotators": ["tokenize","ssplit","pos", "depparse","natlog","openie"]},
+        'OpenIE':{"annotators": ['tokenize','ssplit','natlog','openie','ner']},
         'parser (pcfg)':{"annotators": ['tokenize','ssplit','pos','lemma','ner', 'parse','regexner']},
         'parser (nn)' :{"annotators": ['tokenize','ssplit','pos','lemma','ner','depparse','regexner']}
     }
@@ -183,7 +182,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'gender':['Word', 'Gender', 'Sentence','Sentence ID', 'Document ID', 'Document'],
         'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
         'SVO':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Negation","Location",'Person','Time','Time normalized NER','Sentence'],
-        'OpenIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Sentence'],
+        'OpenIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Location", 'Person', 'Time',
+                   'Time normalized NER', 'Sentence'],
         # Chen
         # added Deps column
         'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
@@ -1120,6 +1120,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
 
     date_str = date_in_filename(document, **kwargs)
     SVO_enhanced_dependencies = []
+    locations = [] # a list of [sentence, sentence id, [location_text, ner_value]]
     for sentence in json['sentences']:#traverse output of each sentence 
         sent_data = SVO_enhanced_dependencies_util.SVO_enhanced_dependencies_sent_data_reorg(sentence)#reorganize the output into a dictionary in which each content (also dictionary) contains information of a token
         #including a dictionary (govern_dictionary) indicating the index of tokens whose syntactical head is the current token
@@ -1133,12 +1134,12 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
                     complete_sent = complete_sent + token['originalText']
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
+
         sentenceID = sentenceID + 1
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         # CYNTHIA: feed another information sentence['entitymentions'] to SVO_extraction to get locations
-        SVO, L, T, T_S, P, N = SVO_enhanced_dependencies_util.SVO_extraction(sent_data, sentence['entitymentions'])# main function
-
+        SVO, L, NER_value, T, T_S, P, N = SVO_enhanced_dependencies_util.SVO_extraction(sent_data, sentence['entitymentions'])# main function
         nidx = 0
 
         #CYNTHIA: " ".join(L) => "; ".join(L)
@@ -1149,6 +1150,23 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
             else:
                 SVO_enhanced_dependencies.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], "; ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent])
             nidx += 1
+
+        if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:
+            # produce an intermediate location file
+            locations.append([sentenceID, complete_sent, [[x,y] for x,y in zip(L,NER_value)]])
+
+    if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True:
+        # columns: Location, NER Value, Sentence ID, Sentence, Document ID, Document
+        to_write = []
+        for sent in locations:
+            for locs in sent[2]:
+                to_write.append([locs[0], locs[1], sent[0], sent[1], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+        df = pd.DataFrame(to_write, columns=["Location", "NER Value", "Sentence ID", "Sentence", "Document ID", "Document"])
+        if documentID == 1:
+            df.to_csv(kwargs["location_filename"], header='column_names', index=False)
+        else:
+            df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False)
+
     return SVO_enhanced_dependencies
 
 def process_json_openIE(config_filename,documentID, document, sentenceID, json, **kwargs):
@@ -1160,8 +1178,25 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
     
     openIE = []
     for sentence in json['sentences']:
+        entitymentions = sentence['entitymentions']
         complete_sent = ''
+        L = []  # list that stores the location information appear in sentences
+        T = []  # list that stores the time information appear in sentences
+        T_S = []  # list that stores normalized form of the time information appear in sentences
+        P = []  # list that stores person names appear in sentences
+        # CYNTHIA: get locations from entitymentions
+        for item in entitymentions:
+            if item["ner"] is not None and item["ner"] in ['STATE_OR_PROVINCE', 'COUNTRY', "CITY", "LOCATION"]:
+                L.append(item["text"])
         for token in sentence['tokens']:
+            if token["ner"] == "TIME" or token["ner"] == "DATE":
+                T.append(token["word"])
+
+                T_S.append(token['normalizedNER'])
+
+            if token["ner"] == "PERSON":
+                P.append(token["word"])
+
             if token['originalText'] in string.punctuation:
                 complete_sent = complete_sent + token['originalText']
             else:
@@ -1193,11 +1228,10 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
                container.append(SVO_value)
         if len(container) > 0:
             for row in container:
-                # openIE.append([documentID, sentenceID, document, row[0], row[1], row[2], complete_sent])
                 if extract_date_from_filename_var:
-                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],complete_sent, date_str])
+                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],"; ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent, date_str])
                 else:
-                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],complete_sent])
+                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],"; ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent])
     # print(openIE)
 
     return openIE
