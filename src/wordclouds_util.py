@@ -20,8 +20,8 @@ import stanza
 try:
     stanza.download('en')
 except:
-    mb.showwarning(title='Internet connection',
-                   message="stanza.download(en) in wordclouds_util.py requires a connection to the internet. Please, connect to the internet and try again.")
+    import IO_internet_util
+    IO_internet_util.check_internet_availability_warning("wordclouds_util.py (stanza.download(en))")
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator, get_single_color_func
 import matplotlib.pyplot as plt #pip install matplotlib
 import csv
