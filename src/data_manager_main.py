@@ -157,8 +157,8 @@ if __name__ == '__main__':
     # GUI CHANGES search for GUI CHANGES
 
     window = GUI_util.window
-    config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
-    config_filename = GUI_util.config_filename
+    # config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
+    # config_filename = GUI_util.config_filename
     inputFilename = GUI_util.inputFilename
 
     GUI_util.GUI_top(config_input_output_numeric_options, config_filename,IO_setup_display_brief,'data_manager_main.py',True)

@@ -180,8 +180,8 @@ NLPPath = GUI_IO_util.NLPPath
 # libPath = GUI_IO_util.libPath +os.sep+'wordLists'
 
 window = GUI_util.window
-config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
-config_filename = GUI_util.config_filename
+# config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
+# config_filename = GUI_util.config_filename
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 

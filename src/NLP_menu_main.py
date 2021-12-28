@@ -9,24 +9,27 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-# if IO_util.install_all_packages("NLP",['os','tkinter','subprocess','ntpath','nltk','webbrowser'])==False:
-import IO_user_interface_util
-
-if IO_libraries_util.install_all_packages(GUI_util.window,"NLP",['os','tkinter'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"NLP",['os','tkinter','atexit'])==False:
     sys.exit(0)
 
 import os
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
-from sys import platform
-from subprocess import call
+import atexit
 
 import GUI_IO_util
 import IO_files_util
 import reminders_util
-import config_util
 import constants_util
+from update_util import update_self
+
+
+def exit_handler():
+    update_self()
+
+atexit.register(exit_handler)
+
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -86,8 +89,8 @@ GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_nu
 # # +2 is the number of lines starting at 1 of IO widgets
 y_multiplier_integer = GUI_util.y_multiplier_integer + 0
 window = GUI_util.window
-config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
-config_filename = GUI_util.config_filename
+# config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
+# config_filename = GUI_util.config_filename
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
@@ -516,4 +519,3 @@ setup_IO_checkbox()
 setup_software()
 
 GUI_util.window.mainloop()
-
