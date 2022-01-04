@@ -233,13 +233,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         if error_indicator != 0:
             return
 
-        if isFile:
-            inputFilename = str(file_open)
-            inputDir = ''
-        else:
-            # processing a directory
-            inputFilename = ''
-            inputDir = outputCorefedDir
+        for f in file_open:
+            # Only txt file is the actual corefed file we need for SVO. We don't need coref table
+            if os.path.splitext(f)[1] == ".txt":
+                inputFilename = f
+        isFile = True
+        inputDir = ""
 
         if len(file_open) > 0:
             filesToOpen.extend(file_open)
@@ -275,7 +274,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
 # CoreNLP Dependencies ++ _____________________________________________________
 
-    if CoreNLP_SVO_extractor_var or CoreNLP_OpenIE_var:
+    if CoreNLP_SVO_extractor_var:
 
         if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
             return
@@ -411,17 +410,22 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 # CoreNLP OpenIE _____________________________________________________
 
     if CoreNLP_OpenIE_var:
+        location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                     'CoreNLP_SVO_OpenIE_LOCATIONS')
+
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
                                                                            'OpenIE', 
                                                                            False,
                                                                            memory_var, document_length_var, limit_sentence_length_var,
-                                                                           extract_date_from_filename_var=False,
-                                                                           date_format_var='',
-                                                                           date_separator_var='',
-                                                                           date_position_var=0)
-        
+                                                                           extract_date_from_filename_var = False,
+                                                                           date_format_var = '',
+                                                                           date_separator_var = '',
+                                                                           date_position_var = 0,
+                                                                           google_earth_var = google_earth_var,
+                                                                           location_filename = location_filename)
+
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
                 output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
@@ -582,11 +586,12 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=630, # height at brief display
+                             GUI_height_brief=670, # height at brief display
                              GUI_height_full=710, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
+
 
 GUI_label = 'Graphical User Interface (GUI) for Subject-Verb-Object (SVO) Extraction & Visualization Pipeline - Extracting 4 of the 5 Ws of Narrative: Who, What, When, Where'
 head, scriptName = os.path.split(os.path.basename(__file__))

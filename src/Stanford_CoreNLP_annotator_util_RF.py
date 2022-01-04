@@ -36,6 +36,7 @@ import time
 import Stanford_CoreNLP_clause_util
 import IO_csv_util
 import file_splitter_ByLength_util
+import file_splitter_merged_util
 import IO_files_util
 import IO_user_interface_util
 import Excel_util
@@ -184,7 +185,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'SVO':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Negation","Location",'Person','Time','Time normalized NER','Sentence'],
         'OpenIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Location", 'Person', 'Time',
                    'Time normalized NER', 'Sentence'],
-        # Chen Gong
+        # Chen
         # added Deps column
         'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
         'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps","Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
@@ -318,9 +319,13 @@ def CoreNLP_annotate(config_filename,inputFilename,
         sentenceID = 0
         # if the file is too long, it needs splitting to allow processing by the Stanford CoreNLP
         #   which has a maximum 100,000 characters doc size limit
-        split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName,'',document_length)
-        split_docID = 0
+        if "SVO" in annotator_params and "coref" in docName.split("_"):
+            split_file = file_splitter_merged_util.run(docName, "<@#", "#@>", outputDir)
+            split_file = IO_files_util.getFileList("", split_file[0], fileType=".txt")
+        else:
+            split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName,'',document_length)
         nSplitDocs = len(split_file)
+        split_docID = 0
         for doc in split_file:
             split_docID = split_docID + 1
             annotated_length = 0#the number of tokens
@@ -1150,22 +1155,13 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
             else:
                 SVO_enhanced_dependencies.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], "; ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent])
             nidx += 1
-
+        # for each sentence, get locations
         if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:
             # produce an intermediate location file
             locations.append([sentenceID, complete_sent, [[x,y] for x,y in zip(L,NER_value)]])
 
     if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True:
-        # columns: Location, NER Value, Sentence ID, Sentence, Document ID, Document
-        to_write = []
-        for sent in locations:
-            for locs in sent[2]:
-                to_write.append([locs[0], locs[1], sent[0], sent[1], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
-        df = pd.DataFrame(to_write, columns=["Location", "NER Value", "Sentence ID", "Sentence", "Document ID", "Document"])
-        if documentID == 1:
-            df.to_csv(kwargs["location_filename"], header='column_names', index=False)
-        else:
-            df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False)
+        visualize_GIS_maps(kwargs, locations, documentID, document)
 
     return SVO_enhanced_dependencies
 
@@ -1177,6 +1173,7 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
     date_str = date_in_filename(document, **kwargs)
     
     openIE = []
+    locations = [] # a list of [sentence, sentence id, [location_text, ner_value]]
     for sentence in json['sentences']:
         entitymentions = sentence['entitymentions']
         complete_sent = ''
@@ -1232,22 +1229,13 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
                     openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],"; ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent, date_str])
                 else:
                     openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],"; ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent])
-
+        # for each sentence, get locations
     #     if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:
     #         # produce an intermediate location file
     #         locations.append([sentenceID, complete_sent, [[x,y] for x,y in zip(L,NER_value)]])
     #
     # if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True:
-    #     # columns: Location, NER Value, Sentence ID, Sentence, Document ID, Document
-    #     to_write = []
-    #     for sent in locations:
-    #         for locs in sent[2]:
-    #             to_write.append([locs[0], locs[1], sent[0], sent[1], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
-    #     df = pd.DataFrame(to_write, columns=["Location", "NER Value", "Sentence ID", "Sentence", "Document ID", "Document"])
-    #     if documentID == 1:
-    #         df.to_csv(kwargs["location_filename"], header='column_names', index=False)
-    #     else:
-    #         df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False)
+    #     visualize_GIS_maps(kwargs, locations, documentID, document)
 
     return openIE
 
@@ -1577,6 +1565,19 @@ def similar_string_floor_filter(str1, str2):
         return True
     else:
         return False
+
+def visualize_GIS_maps(kwargs, locations, documentID, document):
+    # columns: Location, NER Value, Sentence ID, Sentence, Document ID, Document
+    to_write = []
+    for sent in locations:
+        for locs in sent[2]:
+            to_write.append(
+                [locs[0], locs[1], sent[0], sent[1], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+    df = pd.DataFrame(to_write, columns=["Location", "NER Value", "Sentence ID", "Sentence", "Document ID", "Document"])
+    if documentID == 1:
+        df.to_csv(kwargs["location_filename"], header='column_names', index=False)
+    else:
+        df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False)
 
 
 def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesToOpen):

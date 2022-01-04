@@ -155,6 +155,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
     outputCorefedDir = ''
     outputSVODir = ''
+    outputLocations = []
 
     filesToOpen = []
 
@@ -281,15 +282,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
         location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'CoreNLP_SVO_LOCATIONS')
+        outputLocations.append(location_filename)
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir, openOutputFiles,
                                                                        createExcelCharts,
                                                                        'SVO', False,
                                                                        memory_var, document_length_var, limit_sentence_length_var,
-                                                                       extract_date_from_filename_var=False,
-                                                                       date_format_var='',
-                                                                       date_separator_var='',
-                                                                       date_position_var=0,
+                                                                       extract_date_from_text_var=extract_date_from_text_var,
+                                                                       extract_date_from_filename_var=extract_date_from_filename_var,
+                                                                       date_format=date_format_var,
+                                                                       date_separator_var=date_separator_var,
+                                                                       date_position_var=date_position_var,
                                                                        google_earth_var=google_earth_var,
                                                                        location_filename = location_filename)
         if len(tempOutputFiles)>0:
@@ -412,17 +415,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     if CoreNLP_OpenIE_var:
         location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'CoreNLP_SVO_OpenIE_LOCATIONS')
-
+        outputLocations.append(location_filename)
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
                                                                            'OpenIE', 
                                                                            False,
                                                                            memory_var, document_length_var, limit_sentence_length_var,
-                                                                           extract_date_from_filename_var = False,
-                                                                           date_format_var = '',
-                                                                           date_separator_var = '',
-                                                                           date_position_var = 0,
+                                                                           extract_date_from_text_var=extract_date_from_text_var,
+                                                                           extract_date_from_filename_var=extract_date_from_filename_var,
+                                                                           date_format=date_format_var,
+                                                                           date_separator_var=date_separator_var,
+                                                                           date_position_var=date_position_var,
                                                                            google_earth_var = google_earth_var,
                                                                            location_filename = location_filename)
 
@@ -502,30 +506,31 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                 reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
                                              reminders_util.message_geocoder, True)
                 # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
-                date_present = False
+                date_present = (extract_date_from_text_var == True) or (extract_date_from_filename_var == True)
                 country_bias = ''
                 area_var = ''
                 restrict = False
-                out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
-                             config_filename, location_filename,
-                             outputDir,
-                             'Nominatim', 'Google Earth Pro & Google Maps',
-                             date_present,
-                             country_bias,
-                             area_var,
-                             restrict,
-                             'Location',
-                             'utf-8',
-                             0, 1, [''], [''], # group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
-                             ['Pushpins'], ['red'], # icon_var_list, specific_icon_var_list,
-                             [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
-                             [1], [1]) # bold_var_list, italic_var_list
+                for location_filename in outputLocations:
+                    out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
+                                 config_filename, location_filename,
+                                 outputDir,
+                                 'Nominatim', 'Google Earth Pro & Google Maps',
+                                 date_present,
+                                 country_bias,
+                                 area_var,
+                                 restrict,
+                                 'Location',
+                                 'utf-8',
+                                 0, 1, [''], [''], # group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
+                                 ['Pushpins'], ['red'], # icon_var_list, specific_icon_var_list,
+                                 [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
+                                 [1], [1]) # bold_var_list, italic_var_list
 
-                if len(out_file) > 0:
-                    # since out_file produced by KML is a list cannot use append
-                    filesToOpen = filesToOpen + out_file
-                if len(kmloutputFilename) > 0:
-                    filesToOpen.append(kmloutputFilename)
+                    if len(out_file) > 0:
+                        # since out_file produced by KML is a list cannot use append
+                        filesToOpen = filesToOpen + out_file
+                    if len(kmloutputFilename) > 0:
+                        filesToOpen.append(kmloutputFilename)
 
     if openOutputFiles == True and len(filesToOpen) > 0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -1020,7 +1025,7 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
                                   "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
                                   "The Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+3),"Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+3),"Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE. \n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the follwing information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
                                   "Please, tick the checkbox to run the Stanford CoreNLP coreference resolution annotator using the Neural Network approach.\n\n\Please, BE PATIENT. Depending upon size and number of documents to be coreferenced the algorithm may take a long a time.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
