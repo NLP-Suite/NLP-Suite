@@ -178,14 +178,16 @@ version_str = '1.5.9'
 
 def check_newest_release(current_release: str):
     # check internet connection
-    if not IO_internet_util.check_internet_availability_warning("Automatic check for NLP Suite newest release version on GitHub"):
+    if not IO_internet_util.check_internet_availability_warning("GUI_util.py (Function Automatic check for NLP Suite newest release version on GitHub)"):
         return
     setup_folder="setup_Windows"
-    update_command_auto='update_NLP-Suite_auto.bat'
+    # now done automatically in update_util.py
+    # update_command_auto='update_NLP-Suite_auto.bat'
     update_command='update_NLP-Suite.bat'
     if sys.platform == 'darwin':
         setup_folder="setup_Mac"
-        update_command_auto = 'update_NLP-Suite_auto.command'
+        # now done automatically in update_util.py
+        # update_command_auto = 'update_NLP-Suite_auto.command'
         update_command='update_NLP-Suite.command'
     release_url = 'https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/lib/release_version.txt'
     try:
@@ -212,7 +214,7 @@ def check_newest_release(current_release: str):
     if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != current_release:
         result = mb.askyesno("NLP Suite Outdated",
                     "You are running NLP Suite release version " + str(current_release) + " an OLD version.\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) +
-                    ".\n\nEXIT the NLP Suite NOW.\n\n   1. If you have setup the NLP Suite for automatic updates (click on " + update_command_auto + " - HIGHLY RECOMMENDED), the NLP Suite will be automatically updated every time you exit the NLP Suite.\n\n   2. Otherwise, go to the " + setup_folder + " subfolder inside the NLP installation folder and run the update script by clicking on " + update_command + " to update your NLP Suite to the latest " + str(GitHub_newest_release) + " release.\n\nFire up the NLP Suite again and if you have performed either update command you will be all set.\n\n" +
+                    ".\n\nEXIT the NLP Suite NOW by clicking on the CLOSE button. The NLP Suite will be automatically updated every time you exit the NLP Suite.\n\n   You can also go to the " + setup_folder + " subfolder inside the NLP installation folder and run the update script by clicking on " + update_command + " to update manually your NLP Suite to the latest " + str(GitHub_newest_release) + " release.\n\nFire up the NLP Suite again and if you have performed either update command you will be all set.\n\n" +
                     "WOULD YOU LIKE TO SEE WHAT IS NEW IN THE RELEASE VERSION " + str(GitHub_newest_release) + " AVAILABLE ON GitHub? (You must be connected to the internet)")
         if result:
             webbrowser.open_new("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
