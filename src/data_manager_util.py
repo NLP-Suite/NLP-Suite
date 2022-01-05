@@ -66,46 +66,97 @@ def get_cols(dfs: list, headers: list):
 
 # merge ------------------------------------------------------------------------------------------
 
+def put_csv(lst):
+    new_lst = []
+    for item in lst:
+        if (item.endswith('.csv')):
+            new_lst.append(item.strip("[]''"))
+    return new_lst
+
+
+def put_param(lst):
+    new_lst = []
+    for item in lst:
+        if (item.endswith('.csv') == False):
+            new_lst.append(item.strip("[]''"))
+    return new_lst
+
+
+def drop_suffixCol(df):
+    for c in df.columns:
+        if c.endswith('_'):
+            df = df.drop(columns=[c])
+    return df
+
+
 def merge(outputDir, operation_results_text_list):
-    # processed_params: [(field1, field2..., dataframe1), (field1', field2'..., dataframe2)]
-    processed_params = []
-    operation_results_text_list = list(operation_results_text_list)
+    df = pd.DataFrame()
+    operation_results_text_list = list(operation_results_text_list.split(','))
+    temp = put_csv(ip)
+    temp2 = put_param(ip)
+    csv_lst = list(dict.fromkeys(temp))
+    param_lst = list(dict.fromkeys(temp2))
 
-    i = 0
-    for text in operation_results_text_list:
-        param_str: str
-        for param_str in text:
-            params = list(param_str.split(','))
-            csv_path = params[0]
-            df = pd.read_csv(csv_path)
-            params.pop(0)
-            params.append(df)
-            processed_params.append(params)
-        indexes = processed_params[i][:-1]
-        data_files_for_merge = [processed_params[i][-1]]
-        i = i + 1
-        for row in processed_params[1:]:
-            # rename different field names to the field name on the first document.
-            # They will be merged anyway so this doesn't change much.
-            column_mapping = dict()
-            for index_int, field in enumerate(indexes):
-                # {original_index1: new_index1, original_index2: new_index2...}
-                column_mapping[row[index_int]] = field
-            df: DataFrame = row[-1]
-            df.rename(columns=column_mapping)
-            data_files_for_merge.append(df)
+    size = len(param_lst)
+    if (size >= 2):
+        try:
+            df1 = pd.read_csv(csv_lst[0])
+            df2 = pd.read_csv(csv_lst[1])
+            df = pd.merge(df1, df2, on=param_lst[0], how='right', suffixes=('', '_'))
+            df = drop_suffixCol(df)
+            for i in range(1, size):
+                tdf = pd.read_csv(csv_lst[i])
+                df = pd.merge(df, df2, on=param_lst[i], how='right', suffixes=('', '_'))
+                df = drop_suffixCol(df)
+        except (ValueError, TypeError) as err:
+            # print(f"Unexpected {err=}, {type(err)=}")
+            print("Unexpected err", err)
+            raise
+    df.to_csv('merged.csv', index=False)
 
-        df_merged: DataFrame = data_files_for_merge[0]
-        for df in data_files_for_merge[1:]:
-            df_merged = df_merged.merge(df, how='left', on=indexes, suffixes=('', '_delme'))
+    return 'merged.csv'
 
-        outputFilename = IO_files_util.generate_output_file_name(files[0], os.path.dirname(files[0]),
-                                                                 outputDir,
-                                                                 '.csv', 'merge',
-                                                                 '', '', '', '', False, True)
-        df_merged.to_csv(outputFilename, index=False)
 
-    return outputFilename
+# def merge(outputDir, operation_results_text_list):
+#     # processed_params: [(field1, field2..., dataframe1), (field1', field2'..., dataframe2)]
+#     processed_params = []
+#     operation_results_text_list = list(operation_results_text_list)
+#
+#     i = 0
+#     for text in operation_results_text_list:
+#         param_str: str
+#         for param_str in text:
+#             params = list(param_str.split(','))
+#             csv_path = params[0]
+#             df = pd.read_csv(csv_path)
+#             params.pop(0)
+#             params.append(df)
+#             processed_params.append(params)
+#         indexes = processed_params[i][:-1]
+#         data_files_for_merge = [processed_params[i][-1]]
+#         i = i + 1
+#         for row in processed_params[1:]:
+#             # rename different field names to the field name on the first document.
+#             # They will be merged anyway so this doesn't change much.
+#             column_mapping = dict()
+#             for index_int, field in enumerate(indexes):
+#                 # {original_index1: new_index1, original_index2: new_index2...}
+#                 column_mapping[row[index_int]] = field
+#             df: DataFrame = row[-1]
+#             df.rename(columns=column_mapping)
+#             data_files_for_merge.append(df)
+#
+#         df_merged: DataFrame = data_files_for_merge[0]
+#         for df in data_files_for_merge[1:]:
+#             df_merged = df_merged.merge(df, how='left', on=indexes, suffixes=('', '_delme'))
+#
+#         outputFilename = IO_files_util.generate_output_file_name(files[0], os.path.dirname(files[0]),
+#                                                                  outputDir,
+#                                                                  '.csv', 'merge',
+#                                                                  '', '', '', '', False, True)
+#         df_merged.to_csv(outputFilename, index=False)
+#
+#     return outputFilename
 
 # APPEND ----------------------------------------------------------------------------------------------
 

@@ -64,20 +64,22 @@ GUI_label = 'Graphical User Interface (GUI) for Setting Up Input/Output, I/O, Op
 # 	e.g., [2,1,0,1] when both an input file of type txt or an input dir are valid options
 # 		  [0,1,0,1] in this case ONLY an inout Dir is a valid option
 
+# define variables
 help_increment = 0
-GUI_size = '1100x280'
-if config_input_output_numeric_options[0] == 0: # no input file; only dir (for corpus)
+GUI_size = '1100x240'
+
+# either input file or dir (for corpus) and no secondary dir
+if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric_options[1] != 0) or (config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] == 0)) and config_input_output_numeric_options[2] == 0:
     GUI_size = '1100x240'
     help_increment = 0
-if config_input_output_numeric_options[1] != 0:  # both input file and input dir are valid options
-    if config_input_output_numeric_options[0] == 0:
-        GUI_size = '1100x240'
-        help_increment = 0
-    else:
-        GUI_size = '1100x280'
-        help_increment = 1
-# the secondary INPUT directory is currently not used in IO_setup
-if config_input_output_numeric_options[2] != 0:  # secondary INPUT directory
+
+# both input file and dir (for corpus) and no secondary dir
+if config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] != 0 and config_input_output_numeric_options[2] == 0:
+    GUI_size = '1100x280'
+    help_increment = 1
+
+# both input file and dir (for corpus) and secondary dir
+if config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] != 0 and config_input_output_numeric_options[2] != 0:
     GUI_size = '1100x320'
     help_increment = 2
 
