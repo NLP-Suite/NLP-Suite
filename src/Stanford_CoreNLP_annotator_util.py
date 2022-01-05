@@ -1174,9 +1174,9 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         # ; added list of locations in SVO output (e.g., Los Angeles; New York; Washington)
         for row in SVO:
             if extract_date_from_filename_var:
-                SVO_enhanced_dependencies.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], "; ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent, date_str])
+                SVO_enhanced_dependencies.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),complete_sent, date_str])
             else:
-                SVO_enhanced_dependencies.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], "; ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent])
+                SVO_enhanced_dependencies.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),complete_sent])
             nidx += 1
         # for each sentence, get locations
         if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:
@@ -1251,9 +1251,9 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
         if len(container) > 0:
             for row in container:
                 if extract_date_from_filename_var:
-                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],"; ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent, date_str])
+                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],"; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),complete_sent, date_str])
                 else:
-                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],"; ".join(L), " ".join(P), " ".join(T), " ".join(T_S),complete_sent])
+                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],"; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),complete_sent])
         # for each sentence, get locations
         if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:
             # produce an intermediate location file
