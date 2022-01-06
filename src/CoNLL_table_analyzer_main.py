@@ -108,7 +108,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
     if verb_analysis_var == True:
         import CoNLL_verb_analysis_util
 
-        outputFiles = CoNLL_verb_analysis_util.verb_stats(inputFilename, outputDir, data, data_divided_sents,
+        outputFiles = CoNLL_verb_analysis_util.verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents,
                                                           openOutputFiles, createExcelCharts)
 
         # only open the chart files

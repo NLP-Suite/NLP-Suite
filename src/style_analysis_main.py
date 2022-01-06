@@ -71,7 +71,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
             # only open the chart files
             # add line plots eventually
             filesToOpen.append(tempfilesToOpen[1])
-            filesToOpen.append(tempfilesToOpen[2])
 
         if 'Nouns' in CoNLL_table_analysis_menu_var or '*' in CoNLL_table_analysis_menu_var:
             tempfilesToOpen = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, data_divided_sents,
@@ -89,7 +88,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
             # only open the chart files
             # add line plots eventually
             filesToOpen.append(tempfilesToOpen[2])
-            tempfilesToOpen = CoNLL_verb_analysis_util.verb_modality_stats(inputFilename, outputDir, data,
+            tempfilesToOpen = CoNLL_verb_analysis_util.verb_modality_stats(config_filename, inputFilename, outputDir, data,
                                                                            data_divided_sents, openOutputFiles,
                                                                            createExcelCharts)
             filesToOpen.append(tempfilesToOpen[2])

@@ -32,17 +32,26 @@ message_NLP_Suite_architecture = 'The Python scripts in the NLP Suite have filen
 title_options_NLP_Suite_reminders = ['NLP Suite reminders']
 message_NLP_Suite_reminders = 'Several NLP Suite scripts will fire up reminders for the user. You can turn them off once you are familiar with a script. You can always turn any reminder back ON (or OFF for that matter) if you select the reminders dropdown menu at the bottom of each GUI and then select a specific reminder (if reminders are available for that GUI).'
 
+title_options_SVO_system_requirements = ['SVO system requirements']
+message_SVO_system_requirements = 'The extraction and visualization of SVOs requires several software components.\n\n1. The extraction of SVOs requires the Stanford CoreNLP set of NLP tools. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP requires to have the Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/\n\n3. The visualization of the SVO output as GIS maps and network graphs further requires the installation of the FREEWARE software Gephi and Google Earth Pro.\n\n3a. You can download and install the FREEWARE GEPHI at https://gephi.org/users/download/\n\n3b. You can download and install the FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro'
+
 title_options_SVO_input = ['SVO input']
 message_SVO_input = "The SVO pipeline allows you to start from a TXT file in input and extract from it via OpenIE the SVOs and visualize them.\n\nBut you can also select a CSV file in input, the output file previosuly created by OpenIE characerized by the suffix '-svo.csv', and use that file to visualize the results without having to rerun OpenIE."
+
+title_options_SVO_corpus = ['SVO with corpus data']
+message_SVO_corpus = 'You have selected to work with a set of txt files in a directory (your corpus).\n\nBeware that SVO extraction is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.\n\nDepending upon corpus size, manual coreference editing may also not be possible, due to memory requirements.'
 
 title_options_SVO_output = ['SVO output']
 message_SVO_output = 'Depending upon the options you select, the SVO pipeline will produce in output different types of files: cvf files, wordcloud image, Google Earth Pro map, and Gephi network graph.\n\nWhile cvf and png files are easy to read, less so are Google Earth Pro kml files and, particularly, Gephi gexf files.\n\nPLEASE, read the Gephi TIPS file before you run the SVO pipeline.'
 
-title_options_SVO_system_requirements = ['SVO system requirements']
-message_SVO_system_requirements = 'The extraction and visualization of SVOs requires several software components.\n\n1. The extraction of SVOs requires the Stanford CoreNLP set of NLP tools. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP requires to have the Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/\n\n3. The visualization of the SVO output as GIS maps and network graphs further requires the installation of the FREEWARE software Gephi and Google Earth Pro.\n\n3a. You can download and install the FREEWARE GEPHI at https://gephi.org/users/download/\n\n3b. You can download and install the FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro'
-
 title_options_no_SVO_records = ['No SVO records extracted']
 message_no_SVO_records = 'The SVO algorithms have not extracted any SVOs. If you have selected to filter Subject and/or Verb, the filtering algorithms may have excluded available records.\n\nYou may want to untick either/both checkboxes and try again.'
+
+title_options_SVO_someone = ['SVO Someone?']
+message_SVO_someone = 'The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., "A beautiful car was bought"), a subject is automatically added as Someone?.'
+
+title_options_SVO_personal_pronouns = ['SVO Personal pronouns']
+message_SVO_personal_pronouns = 'The SVO algorithms have detected the presence of personal pronouns (e.g., he, she). You should run the coreference annotator to resolve the coreferences.'
 
 title_options_Excel_Charts = ['Excel Charts']
 message_Excel_Charts = 'The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).\n\nFirst, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).\n\nSecond, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.'
@@ -105,6 +114,12 @@ message_CoreNLP_percent = 'The file contains % sign. This will break Stanford Co
 title_options_CoNLL_table = ['CoNLL table']
 message_CoNLL_table = 'The CoNLL table produced by the Stanford CoreNLP parser is the input to a number of NLP Suite algorithms.\n\nPLEASE, DO NOT TINKER WITH THE CONLL TABLE OR MANY NLP SUITE ALGORITHMS WILL FAIL.'
 
+title_options_CoNLL_analyzer = ['CoNLL table analyzer']
+message_CoNLL_analyzer = "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' GUI. When the GUI opens, you will need to select theGUI-specific I/O configuration.\n\nIn the 'CoNLL table analyzer' GUI you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words)."
+
+title_options_CoNLL_table_verb_modality = ['CoNLL table - Verb modality']
+message_CoNLL_table_verb_modality = 'The categories of Verb modality (Obligation, Will/would, Can/may) computed from the CoNLL table are NOT mutually exclusive. The same verb may appear in several categories.'
+
 title_options_CoreNLP_split_files = ['CoreNLP split files']
 message_CoreNLP_split_files = 'Stanford CoreNLP has a limit of 100,000 characters maximum text size.\n\nThe input file was automatically split into chunks smaller than 100K characters size, fed to Stanford CoreNLP and the output recomposed into a single file.\n\nSplit files are created in a sub-folder named "split_files" inside the directory where the input txt files are located, regardless of the choice of output directory.\n\nIf you are processing files in a directory, other files may similarly need to be split and the message display may become annoying.'
 
@@ -126,17 +141,11 @@ message_IO_configuration = 'Most GUIs in the NLP Suite provide two types of Inpu
 title_options_IO_setup = ['Input/Output options']
 message_IO_setup = 'The two widgets for INPUT FILE and INPUT DIRECTORY are mutually exclusive. You can select one OR the other but not both. Click on either button to make your selection.\n\nTo change an already selected option from FILE to DIRECTORY or from DIRECTORY to FILE, simply click on the button you want to select, make your selection, and the I/O configuration will automatically update.'
 
-title_options_SVO_corpus = ['SVO with corpus data']
-message_SVO_corpus = 'You have selected to work with a set of txt files in a directory (your corpus).\n\nBeware that SVO extraction is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.\n\nDepending upon corpus size, manual coreference editing may also not be possible, due to memory requirements.'
-
 title_options_shape_of_stories_CoreNLP = ['Stanford CoreNLP Neural Network']
 message_shape_of_stories_CoreNLP = 'The Stanford CoreNLP Neural Network approach to Sentiment analysis, like all neural network algorithms, is VERY slow. On a few hundred stories it may take hours to run.\n\nAlso, neural network algorithms are memory hogs. MAKE SURE TO ALLOCATE AS MUCH MEMORY AS YOU CAN AFFORD ON YOUR MACHINE.'
 
 title_options_shape_of_stories = ['Shape of stories']
 message_shape_of_stories = "The Sentiment Analysis GUI will now open the 'Shape of stories' GUI. When the GUI opens, you will need to select theGUI-specific I/O configuration."
-
-title_options_CoNLL_analyzer = ['CoNLL table analyzer']
-message_CoNLL_analyzer = "The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' GUI. When the GUI opens, you will need to select theGUI-specific I/O configuration.\n\nIn the 'CoNLL table analyzer' GUI you can:\n\n  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;\n  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words)."
 
 title_options_shape_of_stories_best_topic = ['Best topic estimation']
 message_shape_of_stories_best_topic = 'The function that estimates the best topics is VERY slow and may take an hour or longer. You can follow its progress in command line.'
