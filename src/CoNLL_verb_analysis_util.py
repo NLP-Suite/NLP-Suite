@@ -23,6 +23,7 @@ import IO_csv_util
 import IO_user_interface_util
 import Excel_util
 import Stanford_CoreNLP_tags_util
+import reminders_util
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
@@ -237,7 +238,11 @@ def verb_modality_compute_categories(data,data_divided_sents):
 					"INPUT MUST BE THE MERGED CoNLL TABLE CONTAINING THE SENTENCE ID. Please use the merge option when generating your CoNLL table in the StanfordCoreNLP.py routine. Program will exit.")
 		return
 
-def verb_modality_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
+def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
+	reminders_util.checkReminder(config_filename,
+								 reminders_util.title_options_CoNLL_table_verb_modality,
+								 reminders_util.message_CoNLL_table_verb_modality,
+								 True)
 
 	filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -299,6 +304,7 @@ def verb_modality_stats(inputFilename, outputDir, data, data_divided_sents, open
 
 # tense analysis; compute frequencies
 def verb_tense_compute_frequencies(data, data_divided_sents):
+	global postag_counter
 	verb_tense_list = []
 	# must be sorted in descending order
 	tense_stats = [['Verb Tense', 'Frequencies'],
@@ -313,6 +319,7 @@ def verb_tense_compute_frequencies(data, data_divided_sents):
 
 
 def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
+	global postag_counter
 	filesToOpen = []  # Store all files that are to be opened once finished
 
 	# inputFilename = GUI_util.inputFilename.get()
@@ -374,7 +381,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 	return filesToOpen
 
-def verb_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
+def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
 	filesToOpen = []  # Store all files that are to be opened once finished
 
 
@@ -390,7 +397,7 @@ def verb_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 	if outputFiles != None:
 		filesToOpen.extend(outputFiles)
 
-	outputFiles = verb_modality_stats(inputFilename, outputDir, data, data_divided_sents,
+	outputFiles = verb_modality_stats(config_filename, inputFilename, outputDir, data, data_divided_sents,
 															   openOutputFiles, createExcelCharts)
 	if outputFiles != None:
 		filesToOpen.extend(outputFiles)
