@@ -10,7 +10,7 @@ import re
 import pandas as pd
 import csv
 
-import IO_CoNLL_util
+import CoNLL_util
 import IO_csv_util
 import IO_user_interface_util
 
@@ -90,7 +90,7 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 		if row[4] in ['LOCATION','STATE_OR_PROVINCE','CITY','COUNTRY']: #col 4 is NER
 			# do NOT compute the same sentence for the same document
 			if (sentenceID==1 and documentID==1) or (row[9]!=sentenceID and row[10]==documentID):
-				currentRecord, sentence_str = IO_CoNLL_util.compute_sentence(conllFile,currentRecord,row[9],row[10])
+				currentRecord, sentence_str = CoNLL_util.compute_sentence(conllFile,currentRecord,row[9],row[10])
 			if row[filenamePositionInCoNLLTable] in currList:
 				# No need to display the filename in Description when only one file is processed 
 				# A blank value for the filename will be checked in Description to avoid displaying it 

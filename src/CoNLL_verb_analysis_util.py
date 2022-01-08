@@ -17,7 +17,7 @@ from tkinter import filedialog
 import tkinter.messagebox as mb
 import tkinter as tk
 
-import IO_CoNLL_util
+import CoNLL_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
@@ -144,7 +144,7 @@ def voice_output(voice_word_list,data_divided_sents):
 	voice_pass, voice_act_aux, voice_act, voice_stats = verb_voice_compute_frequencies(
 		voice_word_list)  # passive active analysis
 	voice = voice_pass + voice_act_aux + voice_act  # join
-	# voice = [i + [IO_CoNLL_util.Sentence_searcher(data_divided_sents, i[documentID_position], i[sentenceID_position])] for i in
+	# voice = [i + [CoNLL_util.Sentence_searcher(data_divided_sents, i[documentID_position], i[sentenceID_position])] for i in
 	# 		 voice]  # get full sentence
 	voice_sorted = sorted(voice, key=lambda x: int(x[recordID_position]))  # sort in ascending record id order
 	return voice_sorted, voice_stats
@@ -163,7 +163,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice', 'stats')
 
 	# errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-	# 								 IO_CoNLL_util.sort_output_list('Verb Voice', voice_list),
+	# 								 CoNLL_util.sort_output_list('Verb Voice', voice_list),
 	# 								 verb_file_name)
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
 									 voice_stats,
@@ -258,7 +258,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Modality', 'stats')
 
 	# errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-	# 								 IO_CoNLL_util.sort_output_list('Verb Modality', modality_list),
+	# 								 CoNLL_util.sort_output_list('Verb Modality', modality_list),
 	# 								 verb_file_name)
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
 									 modality_stats,
@@ -338,7 +338,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '',  outputDir, '.csv', 'NVA', 'Verb Tense', 'stats')
 
 	# errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-	# 								 IO_CoNLL_util.sort_output_list('Verb Tense', tense_list),
+	# 								 CoNLL_util.sort_output_list('Verb Tense', tense_list),
 	# 								 verb_file_name)
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
 									 tense_stats,

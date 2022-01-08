@@ -43,13 +43,13 @@ def check_filename(output_dir_path):
 
 
 def character(output_dir_path):
-    if IO_libraries_util.inputProgramFileCheck('WordNet_main.py') == False:
+    if IO_libraries_util.inputProgramFileCheck('knowledge_graphs_WordNet_main.py') == False:
         return
     if platform == "win32":
-        subprocess.call("python WordNet_main.py character", shell=True)
+        subprocess.call("python knowledge_graphs_WordNet_main.py character", shell=True)
     # linux # OS X
     elif platform == "linux" or platform == "linux2" or platform == "darwin":
-        subprocess.call("sudo Python WordNet_main.py character", shell=True)
+        subprocess.call("sudo Python knowledge_graphs_WordNet_main.py character", shell=True)
     # files are opened in the WordNet GUI
 
 
@@ -85,13 +85,13 @@ def intruder(CoreNLPdir,input_main_dir_path, output_dir_path, openOutputFiles, c
 
 
 def ancestor(input_main_dir_path, output_dir_path):
-    if IO_libraries_util.inputProgramFileCheck('WordNet_main.py') == False:
+    if IO_libraries_util.inputProgramFileCheck('knowledge_graphs_WordNet_main.py') == False:
         return
     if platform == "win32":
         subprocess.call("python WordNet.py ancestor", shell=True)
     # linux # OS X
     elif platform == "linux" or platform == "linux2" or platform == "darwin":
-        subprocess.call("sudo Python WordNet_main.py ancestor", shell=True)
+        subprocess.call("sudo Python knowledge_graphs_WordNet_main.py ancestor", shell=True)
     # files are opened in the WordNet GUI
 
 

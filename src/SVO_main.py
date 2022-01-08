@@ -36,7 +36,7 @@ import Stanford_CoreNLP_coreference_util
 import Stanford_CoreNLP_annotator_util
 import semantic_role_labeling_senna
 import reminders_util
-import WordNet_util
+import knowledge_graphs_WordNet_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -308,7 +308,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                     outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0],outputDir,'',['V'])
                     # check that SVO output file contains records
                     if IO_csv_util.GetNumberOfRecordInCSVFile(tempOutputFiles[0], encodingValue='utf-8') > 1:
-                        output = WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'VERB',
+                        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'VERB',
                                                                openOutputFiles, createExcelCharts)
                         if output != None:
                             filesToOpen.extend(output)

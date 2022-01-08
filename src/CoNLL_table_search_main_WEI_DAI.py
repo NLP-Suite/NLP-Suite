@@ -11,7 +11,7 @@ import tkinter.ttk as ttk
 from typing import List
 
 import GUI_IO_util
-import IO_CoNLL_util
+import CoNLL_util
 import CoNLL_table_search_util
 import IO_files_util
 import IO_csv_util
@@ -48,7 +48,7 @@ def run(search_filters):
     data, header = IO_csv_util.get_csv_data(input_file_name, withHeader)
     if len(data) == 0:
         return
-    data_divided_sents = IO_CoNLL_util.sentence_division(data)
+    data_divided_sents = CoNLL_util.sentence_division(data)
     if data_divided_sents is None:
         return
     if len(data_divided_sents) == 0:
@@ -67,7 +67,7 @@ def run(search_filters):
 
     if len(data) == 0:
         return
-    all_sents = IO_CoNLL_util.sentence_division(data)
+    all_sents = CoNLL_util.sentence_division(data)
     if len(all_sents) == 0:
         return
     queried_list = CoNLL_table_search_util.search_conll_table2(all_sents, filters)

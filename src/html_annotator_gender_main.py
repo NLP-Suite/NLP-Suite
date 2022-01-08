@@ -18,7 +18,7 @@ import GUI_IO_util
 import IO_files_util
 import reminders_util
 import Stanford_CoreNLP_annotator_util
-import annotator_dictionary_util
+import html_annotator_dictionary_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

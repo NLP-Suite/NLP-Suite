@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "annotator_DBpedia.py",
+if IO_libraries_util.install_all_packages(GUI_util.window, "knowledge_graph_DBpedia_util.py",
                                           ['os', 'SPARQLWrapper', 'requests', 'urllib', 'ssl', 'shutil']) == False:
     sys.exit(0)
 
@@ -53,7 +53,7 @@ Eventual implementation of local server would be more reliable/faster...
 # TODO possible to annotate different types in different colors?
 def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotationTypes, confidence_level=0.5):
     # check for internet; DBpedia accesses the DBpedia server
-    # if not IO_util.check_internet_availability_warning("DBpedia annotator"):
+    # if not IO_util.check_internet_availability_warning("DBpedia knowledge graph"):
     #    return
     # turn annotation types list into string compatible with DBpedia
     filesToOpen = []
@@ -87,7 +87,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
         return
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                   'Started running DBpedia annotator at', True,
+                                                   'Started running DBpedia knowledge graph at', True,
                                                    '\n\nAnnotating types: ' + str(
                                                        annotationTypes) + '\nConfidence level: ' + str(
                                                        confidence_level),True)
@@ -196,9 +196,9 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
                 if r.status_code == 414: # line too long
                     if sizeErrorDisplayed == False: # avoid repeating message
                         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Warning',
-                                                           'The DBpedia annotator ran into a "line too long" error for document\n\n' + doc + '\n\nThe document will now be split for DBpedia.')
+                                                           'The DBpedia knowledge graph ran into a "line too long" error for document\n\n' + doc + '\n\nThe document will now be split for DBpedia.')
                         # mb.showwarning(title='Warning',
-                        #                message='The DBpedia annotator ran into a "line too long" error. The DBpedia server has a limit on chunk of text it can process. The document passed\n\n' + doc + '\n\nis too big for the server. The NLP Suite function will now split the document into parts and process each part separately and then put the annotated output back together automatically.')
+                        #                message='The DBpedia knowledge graph ran into a "line too long" error. The DBpedia server has a limit on chunk of text it can process. The document passed\n\n' + doc + '\n\nis too big for the server. The NLP Suite function will now split the document into parts and process each part separately and then put the annotated output back together automatically.')
                         # set error to avoid repeating warning for every file processed
                         sizeErrorDisplayed = True
                     print('   ERROR: Line too long (current split size ' + str(defaultSize) + '). The document will be split into sub-files.')
@@ -243,7 +243,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
         numberOfSplitSubfiles=0
         filesToOpen.append(outFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running DBpedia annotator at',
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running DBpedia knowledge graph at',
                                        True, '', True, startTime)
 
     return filesToOpen

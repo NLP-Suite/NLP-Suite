@@ -1,6 +1,6 @@
 import tkinter.messagebox as mb
 import IO_csv_util
-import IO_CoNLL_util
+import CoNLL_util
 
 # returns False if error found
 def geocoded_checker(numColumns, minColumns, headers, locationColumnValue, inputFilename, encodingValue):
@@ -118,7 +118,7 @@ def restrictions_checker(inputFilename, inputIsCoNLL, withHeader, headers,
 
 
 def CoNLL_checker(inputFilename):
-    if IO_CoNLL_util.check_CoNLL(inputFilename,True):
+    if CoNLL_util.check_CoNLL(inputFilename,True):
         inputIsCoNLL = True
         inputIsGeocoded = False
     else:

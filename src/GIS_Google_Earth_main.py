@@ -20,7 +20,7 @@ import tkinter.ttk as ttk
 # pillow is the Python 3 version of PIL which was an older Python 2 version
 # PIL being the commmon module for both packages, you need to check for PIL and trap PIL to tell the user to install pillow
 from tkcolorpicker import askcolor
-import IO_CoNLL_util
+import CoNLL_util
 
 import tkinter.messagebox as mb
 from urllib.request import urlopen # used to call Google website to display a selected pin
@@ -674,7 +674,7 @@ def changed_GIS_filename(*args):
         inputError=True
         # return
 
-    inputIsCoNLL = IO_CoNLL_util.check_CoNLL(inputFilename.get(), True)
+    inputIsCoNLL = CoNLL_util.check_CoNLL(inputFilename.get(), True)
     if inputIsCoNLL == True:
         reminders_util.checkReminder(config_filename, reminders_util.title_options_Google_Earth_CoNLL,
                                          reminders_util.message_Google_Earth_CoNLL, True)

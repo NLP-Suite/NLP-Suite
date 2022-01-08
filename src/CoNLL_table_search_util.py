@@ -16,7 +16,7 @@ import tkinter as tk
 import tkinter.messagebox as mb
 
 import Stanford_CoreNLP_tags_util
-import IO_CoNLL_util
+import CoNLL_util
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
@@ -614,11 +614,11 @@ def output_list(list_queried, searchedCoNLLField, documentId_position):
                         'Co-occurring token DEPREL', 'Co-occurring token DEPREL-DESCRIPTION', 'is_HEAD',
                         'Sentence ID', 'Document ID', 'Document', 'Sentence']]
         for item in list_queried:
-            output_list.append([item[8], item[9], IO_CoNLL_util.find_full_postag(item[8], item[9]), item[10],
-                                IO_CoNLL_util.find_full_deprel(item[8],
+            output_list.append([item[8], item[9], CoNLL_util.find_full_postag(item[8], item[9]), item[10],
+                                CoNLL_util.find_full_deprel(item[8],
                                                                item[10]), item[0], item[1],
-                                IO_CoNLL_util.find_full_postag(item[0], item[1]), item[2],
-                                IO_CoNLL_util.find_full_deprel(item[0], item[2]),
+                                CoNLL_util.find_full_postag(item[0], item[1]), item[2],
+                                CoNLL_util.find_full_deprel(item[0], item[2]),
                                 item[3], item[5], item[4], item[6], item[7]])
     return output_list
 

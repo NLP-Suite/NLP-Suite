@@ -10,7 +10,7 @@ import tkinter as tk
 import tkinter.messagebox as mb
 
 import GUI_IO_util
-import IO_CoNLL_util
+import CoNLL_util
 import CoNLL_table_search_util
 import statistics_csv_util
 import Excel_util
@@ -53,7 +53,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
     data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
     if len(data) == 0:
         return
-    data_divided_sents = IO_CoNLL_util.sentence_division(data)
+    data_divided_sents = CoNLL_util.sentence_division(data)
     if data_divided_sents == None:
         return
     if len(data_divided_sents) == 0:
@@ -62,7 +62,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
     right_hand_side = False
 
     if compute_sentence_var.get():
-        tempOutputFile = IO_CoNLL_util.compute_sentence_table(inputFilename, outputDir)
+        tempOutputFile = CoNLL_util.compute_sentence_table(inputFilename, outputDir)
         filesToOpen.append(tempOutputFile)
 
     if extract_var.get():
@@ -224,7 +224,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
 
         if len(data) == 0:
             return
-        all_sents = IO_CoNLL_util.sentence_division(data)
+        all_sents = CoNLL_util.sentence_division(data)
         if len(all_sents) == 0:
             return
         queried_list = CoNLL_table_search_util.search_CoNLL_table(all_sents, searchField_kw, searchedCoNLLField,
@@ -521,7 +521,7 @@ co_postag_field.set('*')
 tk.Label(window, text='POSTAG of co-occurring tokens').place(x=GUI_IO_util.get_labels_x_coordinate(),
                                                              y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step() * y_multiplier_integer)
 # co_postag_description_csv_field_menu_lb = tk.OptionMenu(window,co_postag_field,'*','CC - Coordinating conjunction','CD - Cardinal number', 'DT - Determinant', 'EX - Existential there', 'FW - Foreign word', 'IN - Preposition or subordinating conjunction', 'JJ* - Any adjective', 'JJ - Adjective', 'JJR - Adjective, comparative', 'JJS - Adjective, superlative', 'LS - List marker','MD - Modal verb', 'NN* - Any noun', 'NN - Noun, singular or mass', 'NNS - Noun, plural', 'NNP - Proper noun, singluar', 'NNPS - Proper noun, plural', 'PDT - Predeterminer', 'POS - Possessive ending', 'PRP - Personal pronoun', 'RB* - Any adverb','RB - Adverb', 'RBR - Adverb, comparative', 'RBS - Adverb, superlative','RP - Particle', 'SYM - Symbol', 'TO - To', 'UH - Interjection', 'VB* - Any verb', 'VB - Verb, base form', 'VBD - Verb, past tense', 'VBG - Verb, gerundive or present participle', 'VBN - Verb, past participle', 'VBP - Verb, non-3rd person singular present', 'VBZ - Verb, 3rd person singular present','WDT - Wh-determiner (what, which, whose)', 'WP - Wh-pronoun (how, what, which, where, when, who, whom, whose, whether', 'WP - Possessive wh-pronoun', 'WRB - Wh-adverb (when, where, how, and why)','( - (',') - )','. - .',', - ,',': - :','\' - \'','\" - \"','# - #')
-# postag_menu = tk.OptionMenu(window,postag_field,'*',*IO_CoNLL_util.dict_POSTAG)
+# postag_menu = tk.OptionMenu(window,postag_field,'*',*CoNLL_util.dict_POSTAG)
 co_postag_description_csv_field_menu_lb = tk.OptionMenu(window, co_postag_field, '*', 'JJ* - Any adjective',
                                                         'NN* - Any noun', 'VB* - Any verb', *sorted(
         [k + " - " + v for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()], key=lambda s: (custom_sort(s), s)))
@@ -1000,6 +1000,6 @@ if GUI_util.input_main_dir_path.get()!='':
                    message="The CoNLL Table Analyzer scripts require in input a csv CoNLL table.\n\nThe RUN button is disabled until the expected CoNLL file is seleted in input.\n\nPlease, select in input a CoNLL file.")
 else:
     if inputFilename.get()!='':
-        IO_CoNLL_util.check_CoNLL(inputFilename.get())
+        CoNLL_util.check_CoNLL(inputFilename.get())
 
 GUI_util.window.mainloop()

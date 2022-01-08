@@ -17,7 +17,7 @@ from collections import Counter
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
-import IO_CoNLL_util
+import CoNLL_util
 import Excel_util
 import statistics_csv_util
 import Stanford_CoreNLP_tags_util
@@ -118,21 +118,21 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     # save csv files -------------------------------------------------------------------------------------------------
 
     errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                         IO_CoNLL_util.sort_output_list('Noun POS Tags', noun_postag),
+                                         CoNLL_util.sort_output_list('Noun POS Tags', noun_postag),
                                          noun_postag_file_name)
     if errorFound == True:
         return filesToOpen
     filesToOpen.append(noun_postag_file_name)
 
     errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                         IO_CoNLL_util.sort_output_list('Noun DEPREL Tags', noun_deprel),
+                                         CoNLL_util.sort_output_list('Noun DEPREL Tags', noun_deprel),
                                          noun_deprel_file_name)
     if errorFound == True:
         return filesToOpen
     filesToOpen.append(noun_deprel_file_name)
 
     errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                         IO_CoNLL_util.sort_output_list('Noun NER Tags', noun_ner),
+                                         CoNLL_util.sort_output_list('Noun NER Tags', noun_ner),
                                          noun_ner_file_name)
     if errorFound == True:
         return filesToOpen
