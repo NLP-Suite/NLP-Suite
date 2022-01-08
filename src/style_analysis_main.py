@@ -22,7 +22,7 @@ import CoNLL_clause_analysis_util
 import CoNLL_noun_analysis_util
 import CoNLL_verb_analysis_util
 import IO_csv_util
-import IO_CoNLL_util
+import CoNLL_util
 import sentence_analysis_util
 import concreteness_analysis_util
 import lib_util
@@ -58,7 +58,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
         data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
         if len(data) == 0:
             return
-        data_divided_sents = IO_CoNLL_util.sentence_division(data)
+        data_divided_sents = CoNLL_util.sentence_division(data)
         if data_divided_sents == None:
             return
         if len(data_divided_sents) == 0:

@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_main.py",['os','tkinter','subprocess'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"knowledge_graphs_DBpedia_YAGO_main.py",['os','tkinter','subprocess'])==False:
     sys.exit(0)
 
 import os
@@ -19,56 +19,35 @@ import GUI_IO_util
 import IO_files_util
 import IO_csv_util
 import reminders_util
-import annotator_dictionary_util
 import constants_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createExcelCharts,
-        annotator_DBpedia_var,
-        annotator_YAGO_var,
+        knowledge_graphs_DBpedia_var,
+        knowledge_graphs_YAGO_var,
         confidence_level,
         databases_var,
         sub_class_entry,
         DBpedia_YAGO_class_list,
         DBpedia_YAGO_color_list,
-        bold_DBpedia_YAGO_var,
-        annotator_dictionary_var,
-        annotator_add_dictionary_var,
-        dictionary_file,
-        csv_field1_var,
-        csv_field2_var,
-        color_palette_dict_var,
-        bold_var,
-        csvValue_color_list,
-        annotator_extractor,
-        CoreNLP_gender_annotator_var):
+        bold_DBpedia_YAGO_var):
 
     filesToOpen=[]
 
-    if annotator_DBpedia_var==True or annotator_YAGO_var==True:
+    if knowledge_graphs_DBpedia_var==True or knowledge_graphs_YAGO_var==True:
         import IO_internet_util
-        if annotator_DBpedia_var:
+        if knowledge_graphs_DBpedia_var:
             IO_internet_util.check_internet_availability_warning('DBpedia')
         else:
             IO_internet_util.check_internet_availability_warning('YAGO')
 
-    if annotator_DBpedia_var==True or annotator_YAGO_var==True or annotator_dictionary_var==True:
+    if knowledge_graphs_DBpedia_var==True or knowledge_graphs_YAGO_var==True or annotator_dictionary_var==True:
         if inputFilename!='' and inputFilename[-4:]!='.txt':
             mb.showwarning(title='Warning', message='You have selected to annotate your corpus, but the input file is not of type .txt as required by the selected annotator.\n\nPlease, select a .txt file (or a directory) and try again.')
             return
         if sub_class_entry!='' and DBpedia_YAGO_class_list==[]:
             mb.showwarning(title='Warning', message='You have selected to annotate your corpus using the keywords ' + sub_class_entry + ' but it looks like you have forgotten to press OK.\n\nPlease, press OK and try again (or delete YOUR keyword(s) by pressing ESCape)')
-            return
-
-    if annotator_add_dictionary_var==True or annotator_extractor==True:
-        if inputFilename!='' and inputFilename[-5:]!='.html':
-            mb.showwarning(title='Warning', message='You have selected to run an option that requires an input file of type .html.\n\nPlease, select an .html file (or a directory) and try again.')
-            return
-
-    if annotator_dictionary_var==True or annotator_add_dictionary_var==True and dictionary_file=='':
-        if dictionary_file=='':
-            mb.showwarning(title='Warning', message='You have selected to annotate your corpus using dictionary entries, but you have not provided the required .csv dictionary file.\n\nPlease, select a .csv dictionary file and try again.')
             return
 
     if color_palette_dict_var=='':
@@ -79,20 +58,20 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
     else:
         tagAnnotations = ['<span style=\"color: ' + color_palette_dict_var + '\">','</span>']
 
-    if annotator_DBpedia_var==True:
-        if not IO_internet_util.check_internet_availability_warning('annotator_main.py'):
+    if knowledge_graphs_DBpedia_var==True:
+        if not IO_internet_util.check_internet_availability_warning('knowledge_graphs_DBpedia_YAGO_main.py'):
             return
-        if IO_libraries_util.inputProgramFileCheck('annotator_DBpedia_util.py')==False:
+        if IO_libraries_util.inputProgramFileCheck('knowledge_graphs_DBpedia_util.py')==False:
             return
-        import annotator_DBpedia_util
+        import knowledge_graphs_DBpedia_util
         # for a complete list of annotator types:
         #http://mappings.DBpedia.org/server/ontology/classes/
-        filesToOpen = annotator_DBpedia_util.DBpedia_annotate(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, DBpedia_YAGO_class_list, confidence_level)
-    elif annotator_YAGO_var==True:
-        if not IO_internet_util.check_internet_availability_warning('annotator_main.py'):
+        filesToOpen = knowledge_graphs_DBpedia_util.DBpedia_annotate(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, DBpedia_YAGO_class_list, confidence_level)
+    elif knowledge_graphs_YAGO_var==True:
+        if not IO_internet_util.check_internet_availability_warning('knowledge_graphs_DBpedia_YAGO_main.py'):
             return
-        import annotator_YAGO_util
-        if IO_libraries_util.inputProgramFileCheck('annotator_YAGO_util.py')==False:
+        import knowledge_graphs_YAGO_util
+        if IO_libraries_util.inputProgramFileCheck('knowledge_graphs_YAGO_util.py')==False:
             return
         # for a complete list of annotator types:
         #http://mappings.DBpedia.org/server/ontology/classes/
@@ -107,37 +86,18 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
                 colorls.append(temp[i])
         color1 = 'black'
 
-        filesToOpen = annotator_YAGO_util.YAGO_annotate(inputFilename, input_main_dir_path, output_dir_path,
+        filesToOpen = knowledge_graphs_YAGO_util.YAGO_annotate(inputFilename, input_main_dir_path, output_dir_path,
                                                                 DBpedia_YAGO_class_list, color1, colorls)
 
-    elif annotator_dictionary_var==True:
-        if IO_libraries_util.inputProgramFileCheck('annotator_dictionary_util.py')==False:
-            return
-        if csv_field2_var=='':
-            csvValue_color_list=[]
-        filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, output_dir_path, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.txt')
-    elif annotator_add_dictionary_var==True:
-        if IO_libraries_util.inputProgramFileCheck('annotator_dictionary_util.py')==False:
-            return
-        filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, output_dir_path, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.html')
-    elif annotator_extractor==True:
-        if IO_libraries_util.inputProgramFileCheck('annotator_html_extractor_util.py')==False:
-            return
-        import annotator_html_extractor_util
-        annotator_html_extractor_util.buildcsv(inputFilename, input_main_dir_path, output_dir_path,openOutputFiles,createExcelCharts)
-    elif CoreNLP_gender_annotator_var==True:
-        if IO_libraries_util.inputProgramFileCheck('annotator_gender_main.py')==False:
-            return
-        call("python annotator_gender_main.py", shell=True)
     else:
         mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options and try again.')
         return
 
     if openOutputFiles==True:
         if filesToOpen==None:
-            if annotator_DBpedia_var:
+            if knowledge_graphs_DBpedia_var:
                 print("\nDBpedia exited with error")
-            if annotator_YAGO_var:
+            if knowledge_graphs_YAGO_var:
                 print("\nYAGO exited with error")
             return
         nFile=len(filesToOpen)
@@ -154,24 +114,14 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.output_dir_path.get(),
                 GUI_util.open_csv_output_checkbox.get(),
                 GUI_util.create_Excel_chart_output_checkbox.get(),
-                annotator_DBpedia_var.get(),
-                annotator_YAGO_var.get(),
+                knowledge_graphs_DBpedia_var.get(),
+                knowledge_graphs_YAGO_var.get(),
                 confidence_level_entry.get(),
                 databases_var.get(),
                 sub_class_entry_var.get(),
                 DBpedia_YAGO_class_list,
                 DBpedia_YAGO_color_list,
-                bold_DBpedia_YAGO_var.get(),
-                annotator_dictionary_var.get(),
-                annotator_add_dictionary_var.get(),
-                annotator_dictionary_file_var.get(),
-                csv_field1_var.get(),
-                csv_field2_var.get(),
-                color_palette_dict_var.get(),
-                bold_dict_var.get(),
-                csvValue_color_list,
-                annotator_extractor_var.get(),
-                CoreNLP_gender_annotator_var.get())
+                bold_DBpedia_YAGO_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -182,13 +132,13 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=520, # height at brief display
-                                                 GUI_height_full=600, # height at full display
+                                                 GUI_height_brief=320, # height at brief display
+                                                 GUI_height_full=400, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=2, # to be added for full display
                                                  increment=2) # to be added for full display
 
-GUI_label='Graphical User Interface (GUI) for annotating documents using DBpedia, YAGO, and/or dictionaries'
+GUI_label='Graphical User Interface (GUI) for HTML annotating documents using the knowledge graphs DBpedia & YAGO'
 head, scriptName = os.path.split(os.path.basename(__file__))
 config_filename = scriptName.replace('main.py', 'config.csv')
 
@@ -226,8 +176,8 @@ DBpedia_YAGO_class_list=[]
 DBpedia_YAGO_color_list=[]
 csvValue_color_list=[]
 
-annotator_DBpedia_var=tk.IntVar() # to annotate a document using DBpedia
-annotator_YAGO_var=tk.IntVar() # to annotate a document using YAGO
+knowledge_graphs_DBpedia_var=tk.IntVar() # to annotate a document using DBpedia
+knowledge_graphs_YAGO_var=tk.IntVar() # to annotate a document using YAGO
 confidence_level_var=tk.StringVar()
 databases_var=tk.StringVar()
 ontology_class_var = tk.StringVar()
@@ -328,22 +278,22 @@ CoreNLP_gender_annotator_var=tk.IntVar()
 
 def activate_DBpedia_YAGO_menu():
     global DBpedia_YAGO_menu_options
-    if annotator_DBpedia_var.get():
+    if knowledge_graphs_DBpedia_var.get():
         DBpedia_YAGO_menu_options=DBpedia_ontology_class_menu
-    if annotator_YAGO_var.get():
+    if knowledge_graphs_YAGO_var.get():
         DBpedia_YAGO_menu_options=YAGO_ontology_class_menu
 
 y_multiplier_integerSV= y_multiplier_integer
 
-annotator_DBpedia_var.set(0)
-annotator_DBpedia_checkbox = tk.Checkbutton(window, text='Annotate corpus (using DBpedia)', variable=annotator_DBpedia_var, onvalue=1, offvalue=0,command=lambda: activate_DBpedia_YAGO_menu())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,annotator_DBpedia_checkbox,True)
+knowledge_graphs_DBpedia_var.set(0)
+knowledge_graphs_DBpedia_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using DBpedia knowledge graph)', variable=knowledge_graphs_DBpedia_var, onvalue=1, offvalue=0,command=lambda: activate_DBpedia_YAGO_menu())
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,knowledge_graphs_DBpedia_checkbox,True)
 
 # http://yago.r2.enst.fr/
 # http://yago.r2.enst.fr/downloads/yago-4
-annotator_YAGO_var.set(0)
-annotator_YAGO_checkbox = tk.Checkbutton(window, text='Annotate corpus (using YAGO)',variable=annotator_YAGO_var, onvalue=1, offvalue=0,command=lambda: activate_DBpedia_YAGO_menu())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,annotator_YAGO_checkbox,True)
+knowledge_graphs_YAGO_var.set(0)
+knowledge_graphs_YAGO_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using YAGO knowledge graph',variable=knowledge_graphs_YAGO_var, onvalue=1, offvalue=0,command=lambda: activate_DBpedia_YAGO_menu())
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+100,y_multiplier_integer,knowledge_graphs_YAGO_checkbox,True)
 
 confidence_level_lb = tk.Label(window, text='DBpedia confidence level')
 # y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+270,y_multiplier_integer,confidence_level_lb,True)
@@ -462,36 +412,36 @@ firstTime = False
 
 def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry,*args):
     global firstTime
-    if annotator_DBpedia_var.get()==False and annotator_YAGO_var.get()==False:
+    if knowledge_graphs_DBpedia_var.get()==False and knowledge_graphs_YAGO_var.get()==False:
         DBpedia_YAGO_class_list.clear()
         DBpedia_YAGO_color_list.clear()
         ontology_class_var.set('') # DBpedia_YAGO_menu_options
-        annotator_DBpedia_checkbox.configure(state="normal")
-        annotator_YAGO_checkbox.configure(state="normal")
+        knowledge_graphs_DBpedia_checkbox.configure(state="normal")
+        knowledge_graphs_YAGO_checkbox.configure(state="normal")
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integerSV,
-                                                   annotator_YAGO_checkbox)
+                                                   knowledge_graphs_YAGO_checkbox)
     else:
         ontology_class.configure(state='normal')
-    if annotator_DBpedia_var.get()==True:
+    if knowledge_graphs_DBpedia_var.get()==True:
         ontology_class['values'] = DBpedia_ontology_class_menu
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integerSV,
-                                                       annotator_YAGO_checkbox, True)
+                                                       knowledge_graphs_YAGO_checkbox, True)
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 270,
                                                        y_multiplier_integerSV, confidence_level_lb,True)
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 420,
                                                        y_multiplier_integerSV, confidence_level_entry)
-        annotator_YAGO_checkbox.configure(state="disabled")
+        knowledge_graphs_YAGO_checkbox.configure(state="disabled")
     else:
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integerSV,
-                                                       annotator_YAGO_checkbox)
+                                                       knowledge_graphs_YAGO_checkbox)
         confidence_level_lb.place_forget()  # invisible
         confidence_level_entry.place_forget()  # invisible
-    if annotator_DBpedia_var.get()==True:
-        annotator_YAGO_checkbox.configure(state="disabled")
-    if annotator_YAGO_var.get()==True:
+    if knowledge_graphs_DBpedia_var.get()==True:
+        knowledge_graphs_YAGO_checkbox.configure(state="disabled")
+    if knowledge_graphs_YAGO_var.get()==True:
         ontology_class['values'] = YAGO_ontology_class_menu
-        annotator_DBpedia_checkbox.configure(state="disabled")
-    if annotator_DBpedia_var.get()==True or annotator_YAGO_var.get()==True:
+        knowledge_graphs_DBpedia_checkbox.configure(state="disabled")
+    if knowledge_graphs_DBpedia_var.get()==True or knowledge_graphs_YAGO_var.get()==True:
         # display the reminder only once in the same GUI or the trace will display it many times
         if firstTime==False:
             reminders_util.checkReminder(config_filename,
@@ -506,8 +456,8 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
         databases_menu.configure(state="disabled")
         ontology_class.configure(state='disabled')
         sub_class_entry.configure(state="disabled")
-annotator_DBpedia_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
-annotator_YAGO_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
+knowledge_graphs_DBpedia_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
+knowledge_graphs_YAGO_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
 
 def activate_class_options(*args):
     if ontology_class_var.get() in DBpedia_YAGO_class_list:
@@ -568,253 +518,6 @@ def activate_class_color_combo(*args):
             show_class_color_button.configure(state='normal')
 color_palette_DBpedia_YAGO_var.trace('w',activate_class_color_combo)
 
-def clear_dictionary_list():
-    csv_field1_var.set('')
-    csv_field2_var.set('')
-    csv_field1_menu.configure(state="normal")
-    csv_field2_menu.configure(state="normal")
-    csv_field_value_var.set('')
-    csv_field_value_menu.configure(state='normal')
-    color_palette_dict_var.set('')
-    color_palette_DBpedia_YAGO_var.set('')
-    bold_DBpedia_YAGO_var.set(1)
-    bold_dict_var.set(1)
-    csvValue_color_list.clear()
-
-annotator_dictionary_var.set(0)
-annotator_dictionary_checkbox = tk.Checkbutton(window, text='Annotate corpus (using dictionary)', variable=annotator_dictionary_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,annotator_dictionary_checkbox,True)
-
-annotator_add_dictionary_var.set(0)
-annotator_add_dictionary_checkbox = tk.Checkbutton(window, text='Add annotations to a previously annotated html file (using dictionary)', variable=annotator_add_dictionary_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+300,y_multiplier_integer,annotator_add_dictionary_checkbox)
-
-annotator_dictionary_button=tk.Button(window, width=20, text='Select dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT csv dictionary file', [("dictionary files", "*.csv")]))
-annotator_dictionary_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20, y_multiplier_integer,annotator_dictionary_button,True)
-
-#setup a button to open Windows Explorer on the selected input directory
-current_y_multiplier_integer2=y_multiplier_integer-1
-openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, annotator_dictionary_file_var.get()))
-openInputFile_button.place(x=GUI_IO_util.get_labels_x_coordinate()+190, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
-
-annotator_dictionary_file=tk.Entry(window, width=100,textvariable=annotator_dictionary_file_var)
-annotator_dictionary_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,annotator_dictionary_file)
-
-menu_values=IO_csv_util.get_csvfile_headers(annotator_dictionary_file.get())
-
-field_lb = tk.Label(window, text='Select csv field 1')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,field_lb,True)
-if menu_values!='':
-    csv_field1_menu = tk.OptionMenu(window, csv_field1_var, *menu_values)
-else:
-    csv_field1_menu = tk.OptionMenu(window, csv_field1_var, menu_values)
-csv_field1_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,csv_field1_menu,True)
-
-add_dictValue_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: csv_field_value_menu.configure(state="normal"))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+230,y_multiplier_integer,add_dictValue_button, True)
-
-reset_dictValue_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: clear_dictionary_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+260,y_multiplier_integer,reset_dictValue_button,True)
-
-def showKeywordList():
-    if len(csvValue_color_list)==0:
-        mb.showwarning(title='Warning', message='There are no currently selected combinations of csv field values and colors.')
-    else:
-        mb.showwarning(title='Warning', message='The currently selected combination of csv field values and colors are:\n\n' + ','.join(csvValue_color_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
-
-show_keywords_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: showKeywordList())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+310,y_multiplier_integer,show_keywords_button,True)
-
-# OK_button = tk.Button(window, text='OK', width=3,height=1,state='disabled',command=lambda: accept_keyword_list())
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+330,y_multiplier_integer,OK_button,True)
-
-field2_lb = tk.Label(window, text='Select csv field 2')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+380,y_multiplier_integer,field2_lb,True)
-if menu_values!='':
-    csv_field2_menu = tk.OptionMenu(window, csv_field2_var, *menu_values)
-else:
-    csv_field2_menu = tk.OptionMenu(window, csv_field2_var, menu_values)
-csv_field2_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+480,y_multiplier_integer,csv_field2_menu,True)
-
-value_lb = tk.Label(window, text='Select csv field value ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+620,y_multiplier_integer,value_lb,True)
-if menu_values!='':
-    csv_field_value_menu = tk.OptionMenu(window, csv_field_value_var, *menu_values)
-else:
-    csv_field_value_menu = tk.OptionMenu(window, csv_field_value_var, menu_values)
-csv_field_value_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+750,y_multiplier_integer,csv_field_value_menu,True)
-
-def changed_dictionary_filename(*args):
-    csvValue_color_list.clear()
-    csv_field1_var.set('')
-    csv_field2_var.set('')
-    csv_field_value_var.set('')
-    color_palette_dict_var.set('')
-    # menu_values is the number of headers in the csv dictionary file
-    menu_values=IO_csv_util.get_csvfile_headers(annotator_dictionary_file.get())
-    m = csv_field1_menu["menu"]
-    m.delete(0,"end")
-    for s in menu_values:
-        m.add_command(label=s,command=lambda value=s:csv_field1_var.set(value))
-
-    if len(menu_values)>1:
-        m1 = csv_field2_menu["menu"]
-        m1.delete(0,"end")
-        for s in menu_values:
-            m1.add_command(label=s,command=lambda value=s:csv_field2_var.set(value))
-
-    # set default value of csv_field1_var to
-    #	first column of csv file
-    if len(menu_values)>0:
-        csv_field1_var.set(menu_values[0])
-        if len(menu_values)>1:
-            csv_field2_menu.configure(state='normal')
-        else:
-            csv_field2_menu.configure(state='disabled')
-annotator_dictionary_file_var.trace('w',changed_dictionary_filename)
-
-changed_dictionary_filename()
-
-if csv_field2_var.get()!='':
-    menu_field_values = IO_csv_util.get_csv_field_values(annotator_dictionary_file.get(), csv_field2_var.get())
-else:
-    menu_field_values = IO_csv_util.get_csv_field_values(annotator_dictionary_file.get(), csv_field1_var.get())
-
-color_menu=['black','blue','green','pink','red','yellow']
-
-color_palette_dict_lb = tk.Label(window, text='Select color')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+640,y_multiplier_integer,color_palette_dict_lb,True)
-color_palette_dict_menu = tk.OptionMenu(window, color_palette_dict_var,*color_menu)
-color_palette_dict_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+730, y_multiplier_integer,color_palette_dict_menu, True)
-
-def get_csv_fieldValues(*args):
-    csv_field_value_var.set('')
-    color_palette_dict_menu.configure(state='normal')
-    menu_values = IO_csv_util.get_csvfile_headers(annotator_dictionary_file.get())
-    if csv_field2_var.get()!='':
-        menu_field_values = IO_csv_util.get_csv_field_values(annotator_dictionary_file.get(), csv_field2_var.get())
-    else:
-        menu_field_values = IO_csv_util.get_csv_field_values(annotator_dictionary_file.get(), csv_field1_var.get())
-
-    m2 = csv_field_value_menu["menu"]
-    m2.delete(0,"end")
-    for s in menu_field_values:
-        m2.add_command(label=s,command=lambda value=s:csv_field_value_var.set(value))
-    if csv_field1_var.get()!='' or csv_field2_var.get()!='':
-        if csv_field_value_var.get()=='':
-            csv_field_value_menu.configure(state="normal")
-    else:
-        csv_field_value_menu.configure(state="disabled")
-    # if csv_field1_var.get()!='':
-    # 	if color_palette_dict_var.get()=='':
-    # 		color_palette_dict_var.set('red')
-csv_field1_var.trace('w',get_csv_fieldValues)
-csv_field2_var.trace('w',get_csv_fieldValues)
-
-get_csv_fieldValues()
-
-def activate_color_palette_dict_menu(*args):
-    if color_palette_dict_var.get()!='':
-        reset_dictValue_button.configure(state='normal')
-        show_keywords_button.configure(state='normal')
-        state = str(color_palette_dict_menu['state'])
-        if state != 'disabled':
-            if color_palette_dict_var.get() in csvValue_color_list:
-                mb.showwarning(title='Warning', message='The selected color, ' + color_palette_dict_var.get() + ', has already been selected.\n\nPlease, select a different value. You can display all selected values by clicking on SHOW.')
-                return
-            if csv_field1_var.get()=='' and csv_field2_var.get()=='':
-                csvValue_color_list.clear()
-            else:
-                if len(csvValue_color_list)==0:
-                    csv_field1_menu.configure(state="disabled")
-                    csv_field2_menu.configure(state="disabled")
-                    csv_field_value_menu.configure(state="disabled")
-                    csvValue_color_list.append(csv_field1_var.get())
-                    csvValue_color_list.append("|")
-                csvValue_color_list.append(color_palette_dict_var.get())
-                csvValue_color_list.append("|")
-            color_palette_dict_menu.configure(state='disabled')
-color_palette_dict_var.trace('w',activate_color_palette_dict_menu)
-
-bold_dict_var.set(1)
-bold_checkbox = tk.Checkbutton(window, text='Bold', state='disabled',variable=bold_dict_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+830,y_multiplier_integer,bold_checkbox)
-
-def activateDictionary(*args):
-    if annotator_dictionary_var.get()==1 or annotator_add_dictionary_var.get()==1:
-        annotator_dictionary_button.config(state='normal')
-        openInputFile_button.config(state='normal')
-        annotator_dictionary_file.config(state='normal')
-        csv_field1_menu.configure(state='normal')
-        # csv_field2_menu.configure(state='normal')
-        # csv_field_value_menu.configure(state='normal')
-    else:
-        annotator_dictionary_file_var.set('')
-        annotator_dictionary_button.config(state='disabled')
-        openInputFile_button.config(state='disabled')
-        annotator_dictionary_file.config(state='disabled')
-        csv_field1_menu.configure(state='disabled')
-        # csv_field2_menu.configure(state='disabled')
-        # csv_field_value_menu.configure(state='disabled')
-annotator_dictionary_var.trace('w',activateDictionary)
-annotator_add_dictionary_var.trace('w',activateDictionary)
-
-activateDictionary()
-
-def di_activateCsvFieldValue(*args):
-    if csv_field_value_var.get()!='':
-        state = str(csv_field_value_menu['state'])
-        if state != 'disabled':
-            if csv_field_value_var.get() in csvValue_color_list:
-                mb.showwarning(title='Warning', message='The selected csv field value, ' + csv_field_value_var.get() + ', has already been selected.\n\nPlease, select a different value. You can display all selected values by clicking on SHOW.')
-                return
-            add_dictValue_button.configure(state="normal")
-            reset_dictValue_button.configure(state="normal")
-            show_keywords_button.configure(state='normal')
-            if len(csvValue_color_list)==0:
-                csv_field1_menu.configure(state="disabled")
-                csv_field2_menu.configure(state="disabled")
-                if csv_field2_var.get()!='':
-                    csvValue_color_list.append(csv_field2_var.get())
-                else:
-                    csvValue_color_list.append(csv_field1_var.get())
-                csvValue_color_list.append("|")
-            csvValue_color_list.append(csv_field_value_var.get())
-            csv_field_value_menu.configure(state="disabled")
-        else:
-            add_dictValue_button.configure(state="normal")
-            reset_dictValue_button.configure(state="normal")
-            show_keywords_button.configure(state='normal')
-    else:
-        add_dictValue_button.configure(state="disabled")
-        reset_dictValue_button.configure(state="disabled")
-        show_keywords_button.configure(state='disabled')
-    color_palette_dict_menu.configure(state='normal')
-csv_field_value_var.trace('w',di_activateCsvFieldValue)
-
-di_activateCsvFieldValue()
-
-def get_dictionary_file(window,title,fileType):
-    #annotator_dictionary_var.set('')
-    initialFolder = os.path.dirname(os.path.abspath(__file__))
-    filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
-    if len(filePath)>0:
-        annotator_dictionary_file.config(state='normal')
-        annotator_dictionary_file_var.set(filePath)
-
-annotator_extractor_var.set(0)
-annotator_extractor_checkbox = tk.Checkbutton(window, text='Extract html annotations', variable=annotator_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,annotator_extractor_checkbox)
-
-CoreNLP_gender_annotator_var.set(0)
-CoreNLP_gender_annotator_checkbox = tk.Checkbutton(window, text='CoreNLP gender annotator', variable=CoreNLP_gender_annotator_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoreNLP_gender_annotator_checkbox)
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -838,12 +541,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
 
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+1),"Help", 'Please, tick the appropriate checkbox if you wish to run the Python 3 annotator_DBpedia script or annotator_YAGO script to annotate the input corpus by terms found in either DBpedia or YAGO.\n\nDBpedia will allow you to set confidence levels for your annotation (.5 is the recommended default value in a range between 0 and 1). THE HIGHER THE CONFIDENCE LEVEL THE LESS LIKELY YOU ARE TO FIND DBpedia ENTRIES; THE LOWER THE LEVEL AND THE MORE LIKELY YOU ARE TO FIND EXTRANEOUS ENTRIES.\n\nDBpedia and YAGO are enormous databases (DB for database) designed to extract structured content from the information created in Wikipedia, Wikidata and other knowledge bases. DBpedia and YAGO allow users to semantically query relationships and properties of Wikipedia data (including links to other related datasets) via a large ontology of search values (for a complete listing, see the TIPS files TIPS_NLP_DBpedia Ontology Classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf).\n\nFor more information, see https://wiki.DBpedia.org/ and https://yago-knowledge.org/.\n\nIn INPUT the scripts expect one or more txt files.\n\nIn OUTPUT the scripts generate as many annotated html files as selected in input.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+2),"Help", 'Once you tick the DBpedia checkbox, the options on this line will become available.\n\nUsing the class dropdown menu, also select the DPpedia or YAGO ontology class you wish to use. IF NO CLASS IS SELECTED, ALL CLASSES WILL BE PROCESSED, WITH \'THING\' AS THE DEFAULT CLASS.\n\nThe class dropdown menu only includes the main classes in the DBpedia or YAGO ontology. For specific sub-classes, please, get the values from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf and enter them, comma-separated, in Ontology sub-class field.\n\nYAGO DOES NOT USE THE COMPLETE SCHEMA CLASSES AND SUB-CLASSES. PLEASE, REFER TO THE REDUCED LIST FOR ALL THE SCHEMA CLASSES USED.\n\nYou can test the resulting annotations directly on DBpedia Spotlight at https://www.dbpedia-spotlight.org/demo/\n\nYou can select a specific color for a specific ontology class (Press the \'Show\' widget to display the seleted values. The choice of colors is available only when selecting main ontology classes from the dropdown menu and not for sub-classes.\n\nPress + for multiple selections.\nPress RESET (or ESCape) to delete all values entered and start fresh.\nPress Show to display all selected values.\n\nThe + Reset and Show widgets become available only after selecting both an ontology class and its associated color.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+3),"Help", 'Please, tick the checkbox if you wish to run the Python 3 annotator_dictionary script to annotate the input corpus by terms found in a dictionary file.\n\nThe script allows you to select the color to be used for annotating.\n\nIn INPUT, the script expects .txt file(s) to be annotated and a .csv dictionary file with a list of single- or multiple-word terms to be used for annotation (e.g., "love", "in love").\n\ncsv dictionary files can be constructed, for instance, by exporting specific tokens from the CoNLL table (e.g., FORM values of NER PERSON or all past verbs). If you use a csv dictionary file generated by WordNet, remember those Nouns or Verbs WorNet dictionaries contain lemmatized words. You are unlikely to tag all terms in a text using lemmatized values (e.g., \'being\', \'was\', \'is\' would not be tagged using the lemmatized \'be\').\n\nIn OUTPUT the script generates as many annotated html files as selected in input.\n\nYou can also select to add new annotations to a previously annotated html file. A selected dictionary file will be used for annotating.\n\nThe script allows you to select the color to be used for annotating. By using a color different from the previous annotation color, you can visualize different annotations (e.g., black for fascists and red for socialists in a study of Italian fascism using, the first-time around, a dictionary file of terms for fascists, and, the second-time around, a dictionary file of terms for socialists).\n\nIn INPUT, the script expects .html file(s) and a .csv dictionary file with a list of single- or multiple-word terms to be used for annotation (e.g., "love", "in love").\n\nIn OUTPUT the script generates an annotaded html file (even when using the files directory option, the script generates a single output file). Each filename processed is added before each tagged text.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+4),"Help", 'Please, click on the \'Select dictionary file\' button to select the csv file that contains dictionary values.\n\nThe button becomes available only when using the dictionary as an annotator (see the widget above \'Annotate corpus (using dictionary)\'.\n\nOnce selected, you can open the dictionary file by clicking on the little square widget.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+5),"Help", 'The widgets become available only when a csv dictionary file has been selected (via the widget above \'Select dictionary file\').\n\nSelect csv field 1 is the column that contains the values used to annotate the input txt file(s). The FIRST COLUMN of the dictionary file is taken as the default column. YOU CAN SELECT A DIFFERENT COLUMN FROM THE DROPDOWN MENU Select csv field 1.\n\nIf the dictionary file contains more columns, you can select a SECOND COLUMN using the dropdown menu in Select csv field 2 to be used if you wish to use different colors for different items listed in this column. YOU CAN SELECT A DIFFERENT COLUMN FROM THE DROPDOWN MENU Select csv field 2. For example, column 1 contains words to be annotated in different colors by specific categories of field 2 (e.g., \'he\' to be annotated by a \'Gender\' column with the value \'Male\').\n\nThe specific values will have to be selected together with the specific color to be used. YOU CAN ACHIEVE THE SAME RESULT BY ANNOTATING THE SAME HTML FILE MULTIPLE TIMES USING A DIFFERENT DICTIONARY FILE ASSOCIATED EACH TIME TO A DIFFERENT COLOR.\n\n\nPress + for multiple selections.\nPress RESET (or ESCape) to delete all values entered and start fresh.\nPress Show to display all selected values.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+6),"Help", 'Please, tick the checkbox if you wish to run the Python 3 annotator_html_extractor script to extract all matched terms in your corpus as tagged in the html file(s).\n\nIn INPUT, the script expects previously annotated .html file(s) via DBpedia or dictionary.\n\nIn OUTPUT the script generates a csv file with the filename and term annotated, and whether it was annotated using DBpedia or dictionary.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+7),"Help", 'Please, tick the checkbox if you wish to open the gender annotator GUI for annotating text by gender (male/female), either via Stanford CoreNLP gender annotator or various gender databases (US Census, US Social Security, Carnegie Mellon).')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+8),"Help",GUI_IO_util.msg_openOutputFiles)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+3),"Help",GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 

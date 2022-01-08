@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"WordNet",['os','tkinter','pandas'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"knowledge_graphs_WordNet_main",['os','tkinter','pandas'])==False:
     sys.exit(0)
 
 import os
@@ -16,10 +16,10 @@ import pandas as pd
 
 import GUI_IO_util
 import IO_files_util
-import IO_CoNLL_util
-import WordNet_util
+import CoNLL_util
+import knowledge_graphs_WordNet_util
 import reminders_util
-import annotator_dictionary_util
+import html_annotator_dictionary_util
 import sentence_analysis_util
 import Stanford_CoreNLP_annotator_util
 
@@ -46,7 +46,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('WordNet_main', 'WordNet')
+    WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet')
     if WordNetDir == None:
         return
 
@@ -61,7 +61,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         return False
 
     if disaggregate_var==True:
-        filesToOpen= WordNet_util.disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb)
+        filesToOpen= knowledge_graphs_WordNet_util.disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb)
         if len(filesToOpen)>0:
             csv_file_var.set(str(filesToOpen[0]))
 
@@ -87,9 +87,9 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
             return
         check_column=0
         if extract_proper_nouns:
-            filesToOpen=WordNet_util.get_case_initial_row(csv_file, outputDir,'Term', True)
+            filesToOpen=knowledge_graphs_WordNet_util.get_case_initial_row(csv_file, outputDir,'Term', True)
         if extract_improper_nouns:
-            filesToOpen=WordNet_util.get_case_initial_row(csv_file, outputDir,'Term', False)
+            filesToOpen=knowledge_graphs_WordNet_util.get_case_initial_row(csv_file, outputDir,'Term', False)
 
     if aggregate_lemmatized_var==True:
 
@@ -111,14 +111,14 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 result=mb.askokcancel(title='Missing required information', message="You have selected to run the option 'Zoom OUT/UP to find higher-level aggregates' with the 'VERB' option but the csv file currently selected does not contain the expected subscript 'verbs_lemma'.\n\nIf this an overshigth, click on the Select INPUT CSV file button to select a different csv file and try again.")
                 if result==False:
                     return
-        filesToOpen = WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, config_filename, noun_verb, openOutputFiles,
+        filesToOpen = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, config_filename, noun_verb, openOutputFiles,
                                                      createExcelCharts)
 
     if extract_nouns_verbs_from_CoNLL_var==True:
         # check that input file is a CoNLL table
-        if not IO_CoNLL_util.check_CoNLL(csv_file):
+        if not CoNLL_util.check_CoNLL(csv_file):
             return
-        noun_form_csv,noun_lemma_csv,verb_form_csv,verb_lemma_csv = IO_CoNLL_util.get_nouns_verbs_CoNLL(csv_file, outputDir)
+        noun_form_csv,noun_lemma_csv,verb_form_csv,verb_lemma_csv = CoNLL_util.get_nouns_verbs_CoNLL(csv_file, outputDir)
         filesToOpen.append(noun_form_csv)
         filesToOpen.append(noun_lemma_csv)
         filesToOpen.append(verb_form_csv)
@@ -148,7 +148,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                     noun_verb = 'VERB'
                 else:
                     return
-                output = WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
+                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, createExcelCharts)
                 if output != None:
                     filesToOpen.extend(output)
@@ -159,14 +159,14 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                     noun_verb = 'NOUN'
                 else:
                     return
-                output = WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
+                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, createExcelCharts)
                 if output != None:
                     filesToOpen.extend(output)
 
     if aggregate_bySentenceID_var==1:
         # check that input file is a CoNLL table
-        if not IO_CoNLL_util.check_CoNLL(csv_file):
+        if not CoNLL_util.check_CoNLL(csv_file):
             return
         outputFilename=IO_files_util.generate_output_file_name(csv_file, outputDir, '.csv', 'WordNet', 'conll')
         filesToOpen.append(outputFilename)

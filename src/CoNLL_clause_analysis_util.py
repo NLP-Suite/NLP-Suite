@@ -17,7 +17,7 @@ import tkinter.messagebox as mb
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
-import IO_CoNLL_util
+import CoNLL_util
 import Excel_util
 import statistics_csv_util
 import Stanford_CoreNLP_tags_util

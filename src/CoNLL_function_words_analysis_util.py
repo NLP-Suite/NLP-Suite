@@ -24,7 +24,7 @@ import os
 from collections import Counter
 import tkinter.messagebox as mb
 
-import IO_CoNLL_util
+import CoNLL_util
 import Excel_util
 import IO_files_util
 import IO_csv_util
@@ -56,7 +56,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
     
     #obtain data
     #data  = get_data(inputFilename)
-    #data_divided_sents = IO_CoNLL_util.sentence_division(data)
+    #data_divided_sents = CoNLL_util.sentence_division(data)
     
     if 0:
         stats_pronouns(data)
@@ -66,7 +66,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
             return filesToOpen
         
         pronouns_list,pronouns_stats= stats_pronouns_output(data,data_divided_sents)
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,IO_CoNLL_util.sort_output_list('PRONOUNS',pronouns_list), function_words_list_file_name)
+        errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('PRONOUNS',pronouns_list), function_words_list_file_name)
         if errorFound==True:
             return filesToOpen
         filesToOpen.append(function_words_list_file_name)
@@ -114,7 +114,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
     # filesToOpen.append(function_words_stats_file_name)
     
     #data  = get_data(inputFilename)
-    #data_divided_sents = IO_CoNLL_util.sentence_division(data)
+    #data_divided_sents = CoNLL_util.sentence_division(data)
     
     
     if 0:
@@ -125,7 +125,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
             return filesToOpen
        
         prepositions_list,prepositions_stats= stats_prepositions_output(data,data_divided_sents)
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,IO_CoNLL_util.sort_output_list('PREPOSITIONS',prepositions_list), function_words_list_file_name)
+        errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('PREPOSITIONS',prepositions_list), function_words_list_file_name)
         if errorFound==True:
             return filesToOpen
         filesToOpen.append(function_words_list_file_name)
@@ -172,7 +172,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
     # filesToOpen.append(function_words_stats_file_name)
 
     #data  = get_data(inputFilename)
-    #data_divided_sents = IO_CoNLL_util.sentence_division(data)
+    #data_divided_sents = CoNLL_util.sentence_division(data)
     
     
     if 0:
@@ -186,7 +186,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
         # output files
         article_list,article_stats =  stats_articles_output(data,data_divided_sents)
 
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,IO_CoNLL_util.sort_output_list('ARTICLES',article_list), function_words_list_file_name)
+        errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('ARTICLES',article_list), function_words_list_file_name)
         if errorFound==True:
             return filesToOpen
         filesToOpen.append(function_words_list_file_name)
@@ -235,7 +235,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
     # filesToOpen.append(function_words_stats_file_name)
 
     #data  = get_data(inputFilename)
-    #data_divided_sents = IO_CoNLL_util.sentence_division(data)
+    #data_divided_sents = CoNLL_util.sentence_division(data)
     
     if 0:
         stats_conjunctions(data)
@@ -246,7 +246,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
             return filesToOpen
 
         conjunction_list,conjunction_stats =  stats_conjunctions_output(data,data_divided_sents)
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,IO_CoNLL_util.sort_output_list('CONJUNCTIONS',conjunction_list), function_words_list_file_name)
+        errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('CONJUNCTIONS',conjunction_list), function_words_list_file_name)
         if errorFound==True:
             return filesToOpen
         filesToOpen.append(function_words_list_file_name)
@@ -297,7 +297,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
     # filesToOpen.append(function_words_stats_file_name)
 
     #data  = get_data(inputFilename)
-    #data_divided_sents = IO_CoNLL_util.sentence_division(data)
+    #data_divided_sents = CoNLL_util.sentence_division(data)
     
     if 0:
         stats_auxiliaries(data)
@@ -307,7 +307,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
             mb.showwarning(title='output file path error', message='Please check OUTPUT DIRECTORY PATH and try again')
             return filesToOpen
         auxiliary_list,auxiliary_stats =  stats_auxiliaries_output(data,data_divided_sents)
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,IO_CoNLL_util.sort_output_list('AUXILIARIES',auxiliary_list), function_words_list_file_name)
+        errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('AUXILIARIES',auxiliary_list), function_words_list_file_name)
         if errorFound==True:
             return filesToOpen
         filesToOpen.append(function_words_list_file_name)

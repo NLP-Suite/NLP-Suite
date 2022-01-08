@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_YAGO_util.py",['os','re','tkinter','subprocess','time','pandas','string','SPARQLWrapper','ssl','stanza','fuzzywuzzy'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"knowledge_graph_YAGO_util.py",['os','re','tkinter','subprocess','time','pandas','string','SPARQLWrapper','ssl','stanza','fuzzywuzzy'])==False:
     sys.exit(0)
 
 import os
@@ -78,7 +78,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     nFile = len(files)
     if nFile == 0:
         return
-    startTime=IO_files_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running YAGO annotator at', True,
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running YAGO knowledge graph at', True,
                         '\nAnnotating types: ' + str(categories) + " with associated colors: " + str(colorls),True)
     i=0
     docID=1
@@ -103,7 +103,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
 
                 if inputDir == '':
                     IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'YAGO pre-processing and running-time estimation',
-                                                   'The YAGO annotator is pre-processing your file and estimating the time required to annotate your file.\n\nThis may take several minutes. Please, be patient...',
+                                                   'The YAGO knowledge graph is pre-processing your file and estimating the time required to annotate your file.\n\nThis may take several minutes. Please, be patient...',
                                                    False,'',True)
                 if numberOfAnnotations==0: # default annotation, when no annotation was selected by user
                     html_content=annotate_default(contents,categories,color1,"blue",doc, inputDir) # TODO should be colorls
@@ -153,7 +153,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     csvname = os.path.join(outputDir,csvname)
     df.to_csv((csvname),index=False)
     filesToOpen.append(csvname)
-    IO_files_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running YAGO annotator at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running YAGO knowledge graph at', True, '', True, startTime)
     if inputDir!='':
         mb.showwarning(title='Warning',
                        message='When processing a directory, only the summary csv output file is automatically opened.\n\nDon\'t forget to look in your output directory for the ' + str(nFile) + ' annotated html files - too many to open automatically.')
@@ -169,7 +169,7 @@ def estimate_time(parsed_doc,num_cats,word_bag):
     est=num2/5+num2*(num_cats-1)/2+len(a)/15
     time1.append(time.time())
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'YAGO annotator',
+    IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'YAGO knowledge graph',
         '   Estimated time of YAGO query for the current document is: ' + str(est//60)+' mins and '+str(round(est%60,2))+' secs.\n'\
         '      Number of tokens in document: ' +str(len(a)) +'\n'\
         '      Number of tokens to be queried: ' +str(num2) +'\n'\

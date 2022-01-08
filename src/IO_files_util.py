@@ -23,7 +23,7 @@ import ntpath  # to split the path from filename
 from pathlib import Path
 
 import reminders_util
-import IO_CoNLL_util
+import CoNLL_util
 import IO_user_interface_util
 import GUI_IO_util
 
@@ -148,7 +148,7 @@ def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outp
     if len(inputFilename) < 3:
         inputFilename = ""
     if (checkCoNLL == True) and (IsInputFile == 1) and (extension == ".csv") and (len(inputFilename) > 3):
-        if IO_CoNLL_util.check_CoNLL(inputFilename, False) == False:
+        if CoNLL_util.check_CoNLL(inputFilename, False) == False:
             inputFilename = ""
     return inputFilename
 

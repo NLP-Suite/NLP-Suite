@@ -14,7 +14,7 @@ import Excel_util
 import IO_libraries_util
 import IO_user_interface_util
 
-if IO_libraries_util.install_all_packages("annotator_html_extractor_util",['os','tkinter','re','csv','ntpath','nltk'])==False:
+if IO_libraries_util.install_all_packages("html_annotator_extractor_util",['os','tkinter','re','csv','ntpath','nltk'])==False:
     sys.exit(0)
 
 import re

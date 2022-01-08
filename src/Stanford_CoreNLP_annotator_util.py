@@ -40,7 +40,7 @@ import file_splitter_merged_util
 import IO_files_util
 import IO_user_interface_util
 import Excel_util
-import annotator_dictionary_util
+import html_annotator_dictionary_util
 import SVO_enhanced_dependencies_util # Enhanced++ dependencies
 import reminders_util
 
@@ -1623,7 +1623,7 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesT
     bold_var = True
     tagAnnotations = ['<span style="color: blue; font-weight: bold">', '</span>']
 
-    tempFilename = annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
+    tempFilename = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
                                                              dictFilename,'',
                                                              csvValue_color_list, bold_var, tagAnnotations,
                                                              fileType='.txt')

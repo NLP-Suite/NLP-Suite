@@ -104,7 +104,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
                                                GIS_button)
 
 HTML_button = tk.Button(window, text='Open HTML annotator GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
-                               command=lambda: call("python annotator_main.py", shell=True))
+                               command=lambda: call("python html_annotator_main.py", shell=True))
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                HTML_button)
 

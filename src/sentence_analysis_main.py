@@ -195,7 +195,7 @@ pydict["Sentence complexity by sentence index"] = ["sentence_analysis_util.sente
 pydict["Sentence/text readability by sentence index (via textstat)"] = ["sentence_analysis_util.sentence_text_readability", 0, 3, 'txt']
 pydict["Sentiment analysis by sentence index"] = ["sentiment_concreteness_analysis_main.py", 1]
 pydict["Words/collocations by sentence index"] = ["", 0]
-pydict["WordNet categories by sentence index"] = ["WordNet_main.py", 1]
+pydict["WordNet categories by sentence index"] = ["knowledge_graphs_WordNet_main.py", 1]
 
 visualize_bySentenceIndex_var=tk.IntVar()
 visualize_bySentenceIndex_options_var=tk.StringVar()

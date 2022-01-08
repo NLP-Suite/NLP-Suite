@@ -16,7 +16,7 @@ import GUI_IO_util
 import IO_user_interface_util
 import IO_files_util
 import statistics_txt_util
-import WordNet_util
+import knowledge_graphs_WordNet_util
 import Stanford_CoreNLP_annotator_util
 import topic_modeling_gensim_util
 import topic_modeling_mallet_util
@@ -197,7 +197,7 @@ def run(inputFilename,inputDir, outputDir,
                             noun_verb='VERB'
                         else:
                             return
-                        output = WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, config_filename, noun_verb,
+                        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, config_filename, noun_verb,
                                                                     openOutputFiles, createExcelCharts)
                         if output!=None:
                             filesToOpen.extend(output)
@@ -208,7 +208,7 @@ def run(inputFilename,inputDir, outputDir,
                             noun_verb='NOUN'
                         else:
                             return
-                        output = WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, config_filename, noun_verb,
+                        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, config_filename, noun_verb,
                                                                     openOutputFiles, createExcelCharts)
                         if output!=None:
                             filesToOpen.extend(output)

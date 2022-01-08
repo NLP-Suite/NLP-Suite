@@ -184,13 +184,14 @@ def checkIO_Filename_InputDir(script, IO_values_local=0, fileExtension=''):
 pydict = {}
 pydict[""] = ["", 0]  # not available
 # https://stanfordnlp.github.io/CoreNLP/quote.html
-pydict["Stanford CoreNLP"] = ["annotator_main.py", 1]
+pydict["Stanford CoreNLP"] = ["knowledge_graphs_main.py", 1]
 pydict["CoreNLP annotator - date (NER normalized date)"] = ["Stanford_CoreNLP_main.py", 1]
-pydict["CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)"] = ["annotator_gender_main.py", 1]
+pydict["CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)"] = ["html_annotator_gender_main.py", 1]
 pydict["CoreNLP annotator - quote"] = ["Stanford_CoreNLP_main.py", 1]
 pydict["CoreNLP annotator - coreference (pronominal)"] = ["Stanford_CoreNLP_coreference_main.py", 1]
-pydict["HTML annotator - dictionary, gender, DBpedia, YAGO"] = ["annotator_main.py", 1]
-pydict["HTML annotator extractor"] = ["annotator_main.py", 1]
+pydict["Knowledge graphs: DBpedia & YAGO"] = ["knowledge_graphs_DBpedia_YAGO_main.py", 1]
+pydict["HTML annotator"] = ["html_annotator_main.py", 1]
+pydict["HTML annotator extractor"] = ["html_annotator_main.py", 1]
 pydict["Annotator - hedge/uncertainty"] = ["", 0]
 pydict["CoNLL table analyzer - Search the CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["CoNLL table analyzer - Clause, noun, verb, function words frequencies"] = ["CoNLL_table_analyzer_main.py", 1]
@@ -264,7 +265,7 @@ pydict["Narrative analysis"] = ["narrative_analysis_main.py", 1]
 pydict["WHAT\'S IN YOUR CORPUS? A SWEEPING VIEW"] = ["whats_in_your_corpus_main.py", 1]
 pydict["Corpus statistics (Sentences, words, lines)"] = ["statistics_NLP_main.py", 1]
 pydict["Word clouds"] = ["wordclouds_main.py", 1]
-pydict["WordNet"] = ["WordNet_main.py", 1]
+pydict["WordNet"] = ["knowledge_graphs_WordNet_main.py", 1]
 pydict["Word2Vec (via Gensim)"] = ["word2vec_main.py", 1]
 
 # NLP Suite team & How to cite are in GUI_util
