@@ -28,4 +28,4 @@ python ../src/download_jars.py
 conda activate NLP
 python -m spacy download en
 
-echo "\033[0;31m Errors may have occurred in the installation of specific Python packages. Please, scroll up to see if errors occurred or use CTRL+F to search for words such as “error” or “fail”"
+echo "\033[0;31m Errors may have occurred in the installation of specific Python packages. Please, scroll up to see if errors occurred or use CTRL+F to search for words such as error or fail"
