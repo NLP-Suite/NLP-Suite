@@ -5,6 +5,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL table_search", ['os', 'tkinter','typing']) == False:
     sys.exit(0)
 
+import os
 import tkinter as tk
 import tkinter.messagebox as mb
 import tkinter.ttk as ttk
@@ -109,9 +110,9 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
-GUI_size = '1000x750'
-GUI_label = 'GUI for CoNLL Table Search'
-config_filename = 'conll-table-search_config.csv'  # filename used in Stanford_CoreNLP_main
+# GUI_size = '1000x750'
+# GUI_label = 'GUI for CoNLL Table Search'
+# config_filename = 'conll-table-search_config.csv'  # filename used in Stanford_CoreNLP_main
 # The 4 values of config_option refer to:
 #   input file 1 for CoNLL file 2 for TXT file 3 for csv file 4 for any type of file
 #   input dir
@@ -120,6 +121,19 @@ config_filename = 'conll-table-search_config.csv'  # filename used in Stanford_C
 
 config_input_output_numeric_options=[1,0,0,1]
 
+IO_setup_display_brief=True
+GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
+                                                 GUI_width=GUI_IO_util.get_GUI_width(3),
+                                                 GUI_height_brief=590, # height at brief display
+                                                 GUI_height_full=630, # height at full display
+                                                 y_multiplier_integer=GUI_util.y_multiplier_integer,
+                                                 y_multiplier_integer_add=1, # to be added for full display
+                                                 increment=1)  # to be added for full display
+
+GUI_label = 'Graphical User Interface (GUI) for CoNLL Table Analyzer'
+head, scriptName = os.path.split(os.path.basename(__file__))
+config_filename = scriptName.replace('main.py', 'config.csv')
+
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
 window = GUI_util.window
@@ -127,7 +141,7 @@ config_input_output_numeric_options = GUI_util.config_input_output_numeric_optio
 config_filename = GUI_util.config_filename
 inputFilename = GUI_util.inputFilename
 
-GUI_util.GUI_top(config_input_output_numeric_options, config_filename)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename,IO_setup_display_brief)
 
 searchedCoNLLField = tk.StringVar()
 searched_term = tk.StringVar()
@@ -273,9 +287,27 @@ def on_searched_field_change(*args):
     entry_searchField_kw = new_entry
 searchedCoNLLField.trace('w', on_searched_field_change)
 
+videos_lookup = {'No videos available':''}
+videos_options='No videos available'
+
+TIPS_lookup = {'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
+               'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
+               'DEPREL (Stanford Dependency Relations)': "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf",
+               'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
+               'Style Analysis': 'TIPS_NLP_Style Analysis.pdf', 'Clause Analysis': 'TIPS_NLP_Clause Analysis.pdf',
+               'Noun Analysis': 'TIPS_NLP_Noun Analysis.pdf', 'Verb Analysis': 'TIPS_NLP_Verb Analysis.pdf',
+               'Function Words Analysis': 'TIPS_NLP_Function Words Analysis.pdf',
+               'Nominalization': 'TIPS_NLP_Nominalization.pdf', 'NLP Searches': "TIPS_NLP_NLP Searches.pdf",
+               'Excel Charts': 'TIPS_NLP_Excel Charts.pdf',
+               'Excel Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
+               'Network Graphs (via Gephi)': 'TIPS_NLP_Gephi network graphs.pdf'}
+TIPS_options = 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'English Language Benchmarks', 'Style Analysis', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'Nominalization', 'NLP Searches', 'Excel Charts', 'Excel Enabling Macros', 'Network Graphs (via Gephi)'
+
 readMe_message = "This Python 3 script allows you to search in the CoNLL table."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer + 5, readMe_command, {'None': 'None'}, 'None')
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName,True)
+
+# GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer + 5, readMe_command, {'None': 'None'}, 'None')
 
 GUI_util.window.mainloop()

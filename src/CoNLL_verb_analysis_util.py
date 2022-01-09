@@ -307,6 +307,7 @@ def verb_tense_compute_frequencies(data, data_divided_sents):
 	global postag_counter
 	verb_tense_list = []
 	# must be sorted in descending order
+	form_list, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
 	tense_stats = [['Verb Tense', 'Frequencies'],
 				   # ['Future', postag_counter['VBD']],
 				   ['Gerundive', postag_counter['VBG']],
@@ -324,7 +325,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 	# inputFilename = GUI_util.inputFilename.get()
 	# outputDir = GUI_util.outputFilename.get()
-
+	form_list, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
 	tense_stats = [['Verb Tense', 'Frequencies'],
 				   # ['Future', postag_counter['VBD']],
 				   ['Gerundive', postag_counter['VBG']],
@@ -388,7 +389,6 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
 	startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VERB ANALYSES at',
 												 True, '', True, '', True)
 
-	form_list, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
 
 
 	outputFiles = verb_voice_stats(inputFilename, outputDir, data, data_divided_sents,
