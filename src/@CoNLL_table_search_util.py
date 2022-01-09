@@ -7,8 +7,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL table_search_util",
-                                          ['os', 'tkinter', 'enum', 'typing']) == False:
+if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL table_search_util", ['os', 'tkinter','enum','typing']) == False:
     sys.exit(0)
 
 from enum import Enum
@@ -26,7 +25,6 @@ noResults = "No results found matching your search criteria for your input CoNLL
 filesToOpen = []  # Store all files that are to be opened once finished
 
 
-# deep search
 def find_children(sentence_children, ind_keyword, searchedCoNLLField):
     list_children = []
     list_children_index = []
@@ -46,30 +44,9 @@ def find_children(sentence_children, ind_keyword, searchedCoNLLField):
     return list_children, list_children_index
 
 
-# Chen
-def deps_index(deps):
-    """
-    break the deps string and return indexes
-
-    Parameters
-    ----------
-    deps: a string contains all dependencies "7:conj:and|11:conj:and"
-
-    Returns
-    -------
-    deps_list: all the index in the deps
-    """
-    deps_str = deps.split("|")
-    deps_list = []
-    for dep in deps_str:
-        deps_list.append(int(dep.split(":")[0]))
-    return deps_list
-
-
-# Chen
 def search_deps(token_id_in_sentence, sentence, searchedCoNLLField):
-    """
-    search into enhanced dependency column
+    '''
+    break the enhanced dependencies column to search each dependencies.
 
     Parameters
     ----------
@@ -78,9 +55,11 @@ def search_deps(token_id_in_sentence, sentence, searchedCoNLLField):
     searchedCoNLLField
 
     Returns
+        []: empty list when no head or error
+
     -------
-    res: a list of ((head_form, head_postag, head_deprel), index)
-    """
+
+    '''
     try:
         token = sentence[int(token_id_in_sentence) - 1]
     except:
@@ -88,21 +67,28 @@ def search_deps(token_id_in_sentence, sentence, searchedCoNLLField):
                        message="The records in the CoNLL table appear to be out of sequence, leading to computing errors. Please, make sure that you haven't tinkered with the file sorting the data by any columns other than RecordID.\n\nSort the data by RecordID (col. 9) and try again.")
         # sys.exit(0)
         return []
-    if len(token[SearchField.DEPS.value]) == 0:
+    if len(token[7]) == 0:
         return []
 
     res = []
-    deps_list = deps_index(token[SearchField.DEPS.value])
-    for index in deps_list:
-        if index != token[SearchField.ID.value] and index != 0:
+    #split deps string "5:nsubj|8:nsubj"
+    deps_str = token[7].split("|")
+    deps_list = []
+    for dep in deps_str:
+        deps_list.append(dep.split(":"))
+
+    #TODO: check the edge case when return None, is it possible to have one of the head pointing to self
+    for dep in deps_list:
+        head_num = int(dep[0])
+        if head_num != token[0] and head_num != 0:
             if searchedCoNLLField == "FORM":
-                head_form = sentence[index - 1][SearchField.FORM.value]  # form
+                head_form = sentence[head_num - 1][1]  # form
             else:
-                head_form = sentence[index - 1][SearchField.LEMMA.value]  # lemma
-            head_postag = sentence[index - 1][SearchField.POSTAG.value]  # postag
-            head_deprel = sentence[index - 1][SearchField.DEPREL.value]  # deprel
-            res.append(((head_form, head_postag, head_deprel), index))
-        elif index == 0:
+                head_form = sentence[head_num - 1][2]  # lemma
+            head_postag = sentence[head_num - 1][3]  # postag
+            head_deprel = sentence[head_num - 1][6]  # deprel
+            res.append(((head_form, head_postag, head_deprel), head_num))
+        elif head_num == 0:
             continue
         else:
             return res
@@ -110,44 +96,33 @@ def search_deps(token_id_in_sentence, sentence, searchedCoNLLField):
     return res
 
 
-# Chen
-def search_governors(sentence, searchedCoNLLField, target, target_index_list):
-    """
-    find all words whose head is the target word
-
-    Parameters
-    ----------
-    sentence
-    searchedCoNLLField
-    target
-    target_index_list: a list of index, containing all target word
-
-    Returns
-    -------
-
-    res [(('ate', 'VBD', 'conj:and'), 17))]
-    """
-
-    res = []
-    for token in sentence:
-        if token[SearchField.FORM.value] == target or token[SearchField.LEMMA.value] == target:  # skip the target word
-            continue
-
-        deps_list = deps_index(token[SearchField.DEPS.value])
-        for index in deps_list:
-            if index in target_index_list:
-                target_index = index
-                governor_index = token[SearchField.ID.value]
-                governor_word = token[SearchField.FORM.value]
-                res.append((governor_index, governor_word, target_index))
-    return res
 
 
-# Chen
-def deep_search(related_list):
-    #TODO: implement search for "conj".
-    #      prevent infinite loop by adding a list.
-    pass
+
+
+
+def search_head(token_id_in_sentence, sentence, searchedCoNLLField):
+    try:
+        token = sentence[int(token_id_in_sentence) - 1]
+    except:
+        mb.showwarning(title='CoNLL table error',
+                       message="The records in the CoNLL table appear to be out of sequence, leading to computing errors. Please, make sure that you haven't tinkered with the file sorting the data by any columns other than RecordID.\n\nSort the data by RecordID (col. 9) and try again.")
+        #sys.exit(0)
+        return "NO_HEAD", "NO_HEAD"
+    head_num = int(token[5])
+    if head_num != token[0] and head_num != 0:
+        if searchedCoNLLField == "FORM":
+            head_form = sentence[head_num - 1][1]  # form
+        else:
+            head_form = sentence[head_num - 1][2]  # lemma
+        head_postag = sentence[head_num - 1][3]  # postag
+        head_deprel = sentence[head_num - 1][6]  # deprel
+    elif head_num == 0:
+        return "NO_HEAD", "NO_HEAD"
+    else:
+        return "NO_HEAD", "NO_HEAD"
+    return (head_form, head_postag, head_deprel), head_num
+
 
 def search_parsetree_loop_all_related(token_id_in_sentence, sentence, searchedCoNLLField):
     visited = []
@@ -205,6 +180,137 @@ def search_parsetree_loop_all_related(token_id_in_sentence, sentence, searchedCo
 
 # return all indices of the input word
 
+# NEVER CALLED
+# def search_token_form(desired_form,sentence):
+# 		#return a list of indices in the sentence related to the desired word
+# 		list_indices = []
+# 		for item in sentence:
+# 			if desired_form == '*':
+# 				list_indices.append(item[0])
+# 			else:
+# 					token_form = item[1]
+# 					token_index_in_sent = int(item[0])
+# 					if token_form == desired_form:
+# 							list_indices.append(token_index_in_sent)
+# 		return list_indices
+
+
+# #return all indices of the co-occuring word
+
+# 		list_indices_related_word = []
+# 		#compare term: form or lemma
+# 		if __field__ == 'FORM':
+# 				compare_term = 1 #field poistion of FORM in CoNLL
+# 		else:
+# 				compare_term = 2 #field poistion of LEMMA in CoNLL
+
+# 		if desired_form == '*':
+# 				keyword_list = sentence
+# 		#in each sentence, obtain the keyword tokens
+# 		else:
+# 				keyword_list = [keyword for keyword in sentence if keyword[compare_term] == desired_form]
+# 		#select remaining tokens
+
+# 		if kw_desired_postag == '*':
+# 				keyword_list = keyword_list
+# 		elif kw_desired_postag == 'NN*':
+# 				keyword_list = [keyword for keyword in keyword_list if keyword[3] in ['NN','NNS','NNP','NNPS']]
+# 		elif kw_desired_postag == 'JJ*':
+# 				keyword_list = [keyword for keyword in keyword_list if keyword[3] in ['JJ','JJR','JJS']]
+# 		elif kw_desired_postag == 'RB*':
+# 				keyword_list = [keyword for keyword in keyword_list if keyword[3] in ['RB','RBR','RBS',]]
+# 		elif kw_desired_postag == 'VB*':
+# 				keyword_list = [keyword for keyword in keyword_list if keyword[3] in ['VB','VBN','VBG','VBZ','VBP','VBD']]
+# 		else:
+# 				keyword_list = [keyword for keyword in keyword_list if keyword[3] == kw_desired_postag]
+# 		if kw_desired_deprel == '*':
+# 				keyword_list = keyword_list
+# 		else:
+# 				keyword_list = [keyword for keyword in keyword_list if keyword[6] == kw_desired_deprel]
+# 		#search 
+# 		for keyword in keyword_list:
+# 				token_id = keyword[0]
+# 				#search head
+# 				head, head_num = search_head(token_id,sentence)
+# 				if head != "NO_HEAD":
+# 					 list_indices_related_word.append((head_num,1,keyword))
+# 				#search_children (the tokens whose head is the searched word)
+# 				for child in find_children(sentence,int(token_id))[1]:
+# 						list_indices_related_word.append((child,0,keyword))
+
+# 		for keyword in keyword_list:
+# 				token_id = int(keyword[0])
+# 				a, b = search_parsetree_loop_all_related(token_id, sentence,__field__)
+# 				for ind in b:
+# 						if (ind,0,keyword) not in list_indices_related_word and (ind,1,keyword) not in list_indices_related_word:
+# 								list_indices_related_word.append((ind,2,keyword))
+
+
+# 		return list_indices_related_word
+
+# """
+# NEVER CALLED
+
+# This funtion search deeper relations on the parse tree to find consecutive tokens related to the same keyword.
+# 1. It reads the list of the tokens that are directly linked to the keyword. 
+# 2. It finds the grand-children of the keyword (as in a tree) that share the same POSTAG and deprel and add them into the list
+# 3. return the list
+# """
+# def search_consecutive_relations(list_related,sentence):
+# 		list_secondary_relations = []
+# 		for related_token_tup in list_related:
+# 				#print(related_token_tup)
+# 				related_token = sentence[related_token_tup[0]-1]
+# 				#print(related_token)
+# 				is_HEAD = related_token_tup[1]
+# 				if is_HEAD:
+# 						continue
+# 				token_id = related_token[0]
+# 				for child_index in find_children(sentence, int(token_id))[1]:
+# 						child = sentence[child_index-1]
+# 						if child[3] == related_token[3] and child[6]== related_token[6]:
+# 								list_secondary_relations.append((child[0],2,related_token_tup[2]))
+# 		return list_secondary_relations
+
+# # NEVER CALLED
+# def search_related_words(desired_form, sentence, __field__ = 'FORM', kw_desired_postag = '*',kw_desired_deprel='*'):
+# 		list_indices_related_word = []
+# 		for token in sentence:
+# 				token_form = token[1]
+# 				token_lemma = token[2]
+# 				token_id = token[0]
+# 				token_postag = token[3]
+# 				token_deprel = token[6]
+# 				if __field__ == 'FORM':
+# 						compare_term = token_form
+# 				else:
+# 						compare_term = token_lemma
+# 				skip_flag = 0
+# 				#filter the keywords
+# 				if compare_term == desired_form:
+# 						#print (kw_desired_postag)
+# 						if kw_desired_postag != '*':
+# 								if '*' not in kw_desired_postag:
+# 										if token_postag != kw_desired_postag:
+# 												skip_flag = 1
+# 								else:
+# 										if kw_desired_postag == "NN*":
+# 												if token_postag in ['NN','NNS','NNP','NNPS']:
+# 														skip_flag = 1
+# 						if kw_desired_deprel != "*":
+# 							 # print ("#######",token_deprel,kw_desired_deprel)
+# 								if token_deprel != kw_desired_deprel:
+# 										skip_flag = 1
+# 						if skip_flag == 0:
+# 							#find its head
+# 							head, head_num = search_head(token_id,sentence,__field__)
+# 							if head != "NO_HEAD":
+# 								 list_indices_related_word.append((head_num,1))
+# 							#find its children
+# 							for child in find_children(sentence,int(token_id))[1]:
+# 									list_indices_related_word.append((child,0))
+# 		return list_indices_related_word
+
 """
 
 1. return the list of tokens related to the keyword
@@ -223,95 +329,11 @@ The 11 indexed items are created in the function search_CoNLL_table:
 """
 
 
-# Chen
-def filter_list_by_pstage(keyword_list, kw_desired_postag='*'):
-    if kw_desired_postag == '*':
-        keyword_list = keyword_list
-    elif kw_desired_postag == 'NN*':
-        keyword_list = [keyword for keyword in keyword_list if
-                        keyword[SearchField.POSTAG] in ['NN', 'NNS', 'NNP', 'NNPS']]
-    elif kw_desired_postag == 'JJ*':
-        keyword_list = [keyword for keyword in keyword_list if keyword[SearchField.POSTAG.value] in ['JJ', 'JJR', 'JJS']]
-    elif kw_desired_postag == 'RB*':
-        keyword_list = [keyword for keyword in keyword_list if keyword[SearchField.POSTAG.value] in ['RB', 'RBR', 'RBS', ]]
-    elif kw_desired_postag == 'VB*':
-        keyword_list = [keyword for keyword in keyword_list if
-                        keyword[SearchField.POSTAG.value] in ['VB', 'VBN', 'VBG', 'VBZ', 'VBP', 'VBD']]
-    else:
-        keyword_list = [keyword for keyword in keyword_list if keyword[SearchField.POSTAG.value] == kw_desired_postag]
-
-    return keyword_list
-
-
-# Chen
-def filter_list_by_deprel(keyword_list, kw_desired_deprel='*'):
-    if kw_desired_deprel == '*':
-        keyword_list = keyword_list
-    else:
-        keyword_list = [keyword for keyword in keyword_list if keyword[SearchField.DEPREL.value] == kw_desired_deprel]
-    return keyword_list
-
-
-# Chen
-def filter_output_list(list_queried, related_token_DEPREL="*", Sentence_ID="*", related_token_POSTAG="*"):
-    """
-    filter the output list by related_token_DEPREL, Sentence_ID, and related_token_POSTAG
-    Parameters
-    ----------
-    list_queried : [('the', 'DT', 'det', 2, '1', '1', file_path, whole_sentence, 'pig', 'NN', 'obj')]
-    related_token_DEPREL
-    Sentence_ID
-    related_token_POSTAG
-
-    Returns
-    -------
-    deprel_list_queried: a list of filtered output [('the', 'DT', 'det', 2, '1', '1', file_path, whole_sentence, 'pig', 'NN', 'obj')]
-    """
-    # filter the output list
-    # print ("related_token_POSTAG " + related_token_POSTAG)
-    if related_token_POSTAG == "*" and related_token_DEPREL == "*" and Sentence_ID == "*":
-        return list_queried
-    if "*" not in related_token_POSTAG:
-        postag_list_queried = list(filter(lambda tok: tok[1] == related_token_POSTAG, list_queried))
-    elif related_token_POSTAG == "NN*":
-        postag_list_queried = [token for token in list_queried if token[1] in ['NN', 'NNS', 'NNP', 'NNPS']]
-    elif related_token_POSTAG == 'JJ*':
-        postag_list_queried = [token for token in list_queried if token[1] in ['JJ', 'JJR', 'JJS']]
-    elif related_token_POSTAG == 'RB*':
-        postag_list_queried = [token for token in list_queried if token[1] in ['RB', 'RBR', 'RBS']]
-    # postag_list_queried = list(filter(lambda tok:tok[1] in ['RB','RBR','RBS'],list_queried))
-    elif related_token_POSTAG == 'VB*':
-        postag_list_queried = [token for token in list_queried if token[1] in ['VB', 'VBN', 'VBG', 'VBZ', 'VBP', 'VBD']]
-    # postag_list_queried = list(filter(lambda tok:tok[1] in ['VB','VBN','VBG','VBZ','VBP','VBD'],list_queried))
-    else:
-        postag_list_queried = list_queried
-    if "*" not in related_token_DEPREL:
-        deprel_list_queried = list(filter(lambda tok: tok[2] == related_token_DEPREL, postag_list_queried))
-    else:
-        deprel_list_queried = postag_list_queried
-    return deprel_list_queried
-
-
-# Chen
-def search_in_sentence(desired_form, sentence, __field__='FORM', kw_desired_postag='*', kw_desired_deprel='*'):
-    """
-    Search related words in the input sentence
-
-    Parameters
-    ----------
-    desired_form: "pig"
-    sentence: a list of all word token in the sentence
-    __field__: SearchField , "FORM" "LEMMA"
-    kw_desired_postag: postag for searched word
-    kw_desired_deprel: postage for related word
-
-    Returns
-    -------
-    list_indices_related_word: a list of (related word's index, is_head, target word token)
-    """
-
+# Deprecated
+def search_related_words2(desired_form, sentence, __field__='FORM', kw_desired_postag='*', kw_desired_deprel='*'):
     list_indices_related_word = []
     # compare term: form or lemma
+    # print(sentence)
     if __field__ == 'FORM':
         compare_term = 1  # field poistion of FORM in CoNLL
     else:
@@ -319,29 +341,51 @@ def search_in_sentence(desired_form, sentence, __field__='FORM', kw_desired_post
 
     if desired_form == '*':
         keyword_list = sentence
-        # in each sentence, obtain the keyword tokens
-        keyword_list = filter_list_by_pstage(keyword_list, kw_desired_postag)
+    # in each sentence, obtain the keyword tokens
     else:
-        # if desired form is not *, need to search governor word
         keyword_list = [keyword for keyword in sentence if keyword[compare_term] == desired_form]
-        keyword_list = filter_list_by_pstage(keyword_list, kw_desired_postag)
-        keyword_index_list = [int(word[0]) for word in keyword_list]
-        targets_governors = search_governors(sentence, __field__, desired_form, keyword_index_list)
+    # select remaining tokens
 
-        for governor in targets_governors:
-            # Return form of search governors: [(governor_index, governor_word, target_index)]
-            list_indices_related_word.append((governor[0], 2, sentence[governor[2] - 1]))
-
-    # TODO: confirm is_head
+    if kw_desired_postag == '*':
+        keyword_list = keyword_list
+    elif kw_desired_postag == 'NN*':
+        keyword_list = [keyword for keyword in keyword_list if keyword[3] in ['NN', 'NNS', 'NNP', 'NNPS']]
+    elif kw_desired_postag == 'JJ*':
+        keyword_list = [keyword for keyword in keyword_list if keyword[3] in ['JJ', 'JJR', 'JJS']]
+    elif kw_desired_postag == 'RB*':
+        keyword_list = [keyword for keyword in keyword_list if keyword[3] in ['RB', 'RBR', 'RBS', ]]
+    elif kw_desired_postag == 'VB*':
+        keyword_list = [keyword for keyword in keyword_list if keyword[3] in ['VB', 'VBN', 'VBG', 'VBZ', 'VBP', 'VBD']]
+    else:
+        keyword_list = [keyword for keyword in keyword_list if keyword[3] == kw_desired_postag]
+    if kw_desired_deprel == '*':
+        keyword_list = keyword_list
+    else:
+        keyword_list = [keyword for keyword in keyword_list if keyword[6] == kw_desired_deprel]
+    # search
     for keyword in keyword_list:
         token_id = keyword[0]
         # search head
-        # head, head_num = search_head(token_id, sentence, __field__)
-        # search deps
+        #head, head_num = search_head(token_id, sentence, __field__)
+        #search deps
         head_list = search_deps(token_id, sentence, __field__)
         if len(head_list) != 0:
             for head in head_list:
                 list_indices_related_word.append((head[1], 1, keyword))
+
+    #     if head != "NO_HEAD":
+    #         list_indices_related_word.append((head_num, 1, keyword))
+    #     # search_children (the tokens whose head is the searched word)
+    #     for child in find_children(sentence, int(token_id), __field__)[1]:
+    #         list_indices_related_word.append((child, 0, keyword))
+    #
+    # for keyword in keyword_list:
+    #     token_id = int(keyword[0])
+    #     a, b = search_parsetree_loop_all_related(token_id, sentence, __field__)
+    #     for ind in b:
+    #         if (ind, 0, keyword) not in list_indices_related_word and (
+    #                 ind, 1, keyword) not in list_indices_related_word:
+    #             list_indices_related_word.append((ind, 2, keyword))
 
     return list_indices_related_word
 
@@ -372,12 +416,11 @@ class SearchField(Enum):
     NER = 4
     HEAD = 5
     DEPREL = 6
-    DEPS = 7
-    CLAUSAL_TAG = 8
-    RECORD_ID = 9
-    Sentence_ID = 10
-    Document_ID = 11
-    DOCUMENT = 12
+    CLAUSAL_TAG = 7
+    RECORD_ID = 8
+    Sentence_ID = 9
+    Document_ID = 10
+    DOCUMENT = 11
 
     def get_index(self) -> int:
         return self.value
@@ -429,21 +472,14 @@ def search_related_words3(sentence: dict, filters: List[CoNLLFilter]):
     return list_indices_related_word
 
 
-# Chen
 def search_CoNLL_table(list_sentences, form_of_token, _field_='FORM', related_token_POSTAG="*",
                        related_token_DEPREL="*",
                        Sentence_ID="*", _tok_postag_='*', _tok_deprel_='*'):
     list_queried = []
     deprel_list_queried = []
     for sent in list_sentences:
-        # test
-        whole_sent = ""
-        for token in sent:
-            whole_sent += token[1] + " "
-        print(whole_sent)
-        # test
         try:
-            list_word_indices = search_in_sentence(form_of_token, sent, _field_, _tok_postag_, _tok_deprel_)
+            list_word_indices = search_related_words2(form_of_token, sent, _field_, _tok_postag_, _tok_deprel_)
         except:
             mb.showwarning(title='CoNLL table error',
                            message="The records in the CoNLL table appear to be out of sequence, leading to computing "
@@ -452,9 +488,6 @@ def search_CoNLL_table(list_sentences, form_of_token, _field_='FORM', related_to
                                    "again.")
             # sys.exit(0)
             return deprel_list_queried
-        # if return is null, continue
-        if not list_word_indices:
-            continue
         # obtain the full sentence
         whole_sent = ""
         for token in sent:
@@ -475,7 +508,9 @@ def search_CoNLL_table(list_sentences, form_of_token, _field_='FORM', related_to
             tok_Document_ID = row[11]
             tok_Document = row[12]
             token_id = str(tok_Document_ID)[:-2] + str("-" + tok_Sentence_ID)
-
+            # item[8] keyword[1]/SEARCHED TOKEN
+            # item[9] keyword[3]/SEARCHED TOKEN POSTAG,
+            # item[10] keyword[6]/'SEARCHED TOKEN DEPREL')
             if _field_ == "FORM":
                 searched_keyword = keyword[1]
             else:
@@ -483,10 +518,28 @@ def search_CoNLL_table(list_sentences, form_of_token, _field_='FORM', related_to
             list_queried.append((tok_form, tok_postag, tok_deprel, is_head, tok_Document_ID,
                                  tok_Sentence_ID, tok_Document,
                                  whole_sent, searched_keyword, keyword[3], keyword[6]))
-
     # filter the output list
-    deprel_list_queried = filter_output_list(list_queried, related_token_DEPREL, Sentence_ID, related_token_POSTAG)
-
+    # print ("related_token_POSTAG " + related_token_POSTAG)
+    if related_token_POSTAG == "*" and related_token_DEPREL == "*" and Sentence_ID == "*":
+        return list_queried
+    if "*" not in related_token_POSTAG:
+        postag_list_queried = list(filter(lambda tok: tok[1] == related_token_POSTAG, list_queried))
+    elif related_token_POSTAG == "NN*":
+        postag_list_queried = [token for token in list_queried if token[1] in ['NN', 'NNS', 'NNP', 'NNPS']]
+    elif related_token_POSTAG == 'JJ*':
+        postag_list_queried = [token for token in list_queried if token[1] in ['JJ', 'JJR', 'JJS']]
+    elif related_token_POSTAG == 'RB*':
+        postag_list_queried = [token for token in list_queried if token[1] in ['RB', 'RBR', 'RBS']]
+    # postag_list_queried = list(filter(lambda tok:tok[1] in ['RB','RBR','RBS'],list_queried))
+    elif related_token_POSTAG == 'VB*':
+        postag_list_queried = [token for token in list_queried if token[1] in ['VB', 'VBN', 'VBG', 'VBZ', 'VBP', 'VBD']]
+    # postag_list_queried = list(filter(lambda tok:tok[1] in ['VB','VBN','VBG','VBZ','VBP','VBD'],list_queried))
+    else:
+        postag_list_queried = list_queried
+    if "*" not in related_token_DEPREL:
+        deprel_list_queried = list(filter(lambda tok: tok[2] == related_token_DEPREL, postag_list_queried))
+    else:
+        deprel_list_queried = postag_list_queried
     return deprel_list_queried
 
 

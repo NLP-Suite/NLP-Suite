@@ -362,7 +362,7 @@ def verb_data_preparation_auxiliary(data):
 def stats_pronouns_output(data,data_divided_sents):
     
     list_pronouns_postag = []
-
+    postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
     # must be sorted in descending order
     pronouns_postag_stats = [['PRONOUN ANALYSIS','FREQUENCY'],
            ['Personal pronoun (PRP)',postag_counter['PRP']],
@@ -376,7 +376,7 @@ def stats_pronouns_output(data,data_divided_sents):
 def stats_prepositions_output(data,data_divided_sents):
         
     list_prepositions_postag = []
-
+    postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
     # must be sorted in descending order
     prepositions_postag_stats = [['PREPOSITION ANALYSIS','FREQUENCY'],
            ['Preposition/subordinating conjunction',postag_counter['IN']]]
@@ -386,9 +386,9 @@ def stats_prepositions_output(data,data_divided_sents):
 
 #ARTICLES with output
 def stats_articles_output(data,data_divided_sents):
-        
-    list_articles_postag = []
 
+    list_articles_postag = []
+    postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
     # must be sorted in descending order
     articles_postag_stats = [['ARTICLE ANALYSIS','FREQUENCY'],
            ['Determiner/article (DT)',postag_counter['DT']]]
@@ -400,7 +400,7 @@ def stats_articles_output(data,data_divided_sents):
 def stats_conjunctions_output(data,data_divided_sents):
         
     list_conjunctions_postag = []
-
+    postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
     # must be sorted in descending order
     conjunctions_postag_stats = [['CONJUNCTION ANALYSIS','FREQUENCY'],
            ['Coordinating conjunction (CC)',postag_counter['CC']],
@@ -416,7 +416,7 @@ def stats_conjunctions_output(data,data_divided_sents):
 def stats_auxiliaries_output(data,data_divided_sents):
         
     list_auxiliaries_deprel = []
-
+    postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
     # must be sorted in descending order
     auxiliaries_deprel_stats = [['AUXILIARY ANALYSIS','FREQUENCY'],
            ['Auxiliary (AUX)',deprel_counter['aux']],
@@ -431,7 +431,6 @@ def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openO
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running FUNCTION WORDS ANALYSES at',
                                                  True, '', True, '', True)
 
-    compute_stats(data)
 
     outputFiles = article_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                    openOutputFiles, createExcelCharts)
