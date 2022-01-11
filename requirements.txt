@@ -85,6 +85,9 @@ spacy
 # pprint #THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA
 # matplotlib #THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA
 
+# used by Word2Vec
+plotly
+
 pandas~=1.2.1
 future~=0.18.2
 numpy

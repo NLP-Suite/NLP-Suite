@@ -449,17 +449,20 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
             if inputFilename[-4:] == ".csv":
                 if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1:  # including headers; file is empty
-                    gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputDir, inputFilename, "S", "V", "O")
+                    gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputDir, inputFilename, "S", "V", "O",
+                                                       "Sentence ID")
                     filesToOpen.append(gexf_file)
                 else:
                     if IO_csv_util.GetNumberOfRecordInCSVFile(
                             svo_result_list[0]) > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputDir, svo_result_list[0], "S", "V", "O")
+                        gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputDir, svo_result_list[0],
+                                                           "S", "V", "O", "Sentence ID")
                         filesToOpen.append(gexf_file)
             else:  # txt input file
                 for f in svo_result_list:
                     if IO_csv_util.GetNumberOfRecordInCSVFile(f) > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], outputDir, f, "S", "V", "O")
+                        gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], outputDir, f, "S", "V", "O",
+                                                           "Sentence ID")
                         if "CoreNLP" in f or "SENNA_SVO" in f:
                             filesToOpen.append(gexf_file)
                         if not save_intermediate_file:

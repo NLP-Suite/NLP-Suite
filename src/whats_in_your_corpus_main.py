@@ -41,6 +41,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             open_GUI_var.get(),
                             what_else_var.get(),
                             what_else_menu_var.get(),
+                            quote_var.get(),
                             memory_var.get())
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
@@ -57,6 +58,7 @@ def run(inputFilename,inputDir, outputDir,
         open_GUI_var,
         what_else_var,
         what_else_menu_var,
+        quote_var,
         memory_var):
 
     filesToOpen=[]
@@ -339,12 +341,14 @@ times_var= tk.IntVar()
 dialogues_var= tk.IntVar()
 nature_var= tk.IntVar()
 
+quote_var = tk.IntVar()
 
 def clear(e):
     corpus_statistics_var.set(1)
     corpus_options_menu_var.set('*')
     what_else_var.set(1)
     what_else_menu_var.set('*')
+    quote_checkbox.place_forget()  # invisible
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -445,12 +449,31 @@ what_else_menu.config(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 440, y_multiplier_integer,
                                                what_else_menu, True)
 
+quote_checkbox = tk.Checkbutton(window, text='Use double quotes',
+                                       variable=quote_var,
+                                       onvalue=1, offvalue=0)
+
 def activate_what_else_menu(*args):
+    global y_multiplier_integer
     if what_else_var.get()==True:
         what_else_menu.config(state='normal')
+        if "*" in what_else_menu_var.get() or "Dialogues" in what_else_menu_var.get():
+            # any changes to the GUI lines will need to change the 5
+            if y_multiplier_integer==5:
+                y_multiplier_integer = y_multiplier_integer - 1
+            quote_var.set(1)
+            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 500,
+                                                           y_multiplier_integer,
+                                                           quote_checkbox, True)
+            quote_checkbox.configure(state='normal')
+        else:
+            quote_checkbox.place_forget()  # invisible
     else:
         what_else_menu.config(state='disabled')
+        quote_checkbox.place_forget()  # invisible
+
 what_else_var.trace('w',activate_what_else_menu)
+what_else_menu_var.trace('w',activate_what_else_menu)
 
 activate_what_else_menu()
 

@@ -21,7 +21,9 @@ from nltk.tokenize import sent_tokenize
 
 #Visualization
 import plotly.express as px
-from sklearn.decomposition import PCA
+##from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+
 
 #stopwords
 from nltk.corpus import stopwords
@@ -49,7 +51,7 @@ except:
 nlp = spacy.load('en_core_web_sm')
 
 def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
-                        remove_stopwords_var, lemmatize_var, vector_size_var, window_var, min_count_var,
+                        remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var,
                         word_vector=None):
 
     filesToOpen = []
@@ -135,10 +137,19 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     sent_word_df = pd.merge(sentence_df, word_df, on='word', how='inner')
     sent_word_df = sent_word_df.astype(str)
 
+
+    if sg_menu_var == 'CBOW':
+        sg_var = 0
+    else:
+        sg_var = 1
+
+    print('learning architecture: ', sg_menu_var)
+
     ## train model
     print('training word2vec model...')
     model = gensim.models.Word2Vec(
         sentences=sentences_out,
+        sg = sg_var,
         vector_size=vector_size_var,
         window=window_var,
         min_count=min_count_var
@@ -151,15 +162,17 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     ## visualization
     print('visualizing...')
 
-    pca = PCA(n_components=2)
-    xys = pca.fit_transform(word_vector_list)
+    #pca = PCA(n_components=2)
+    #xys = pca.fit_transform(word_vector_list)
+    tsne = TSNE(n_components=2)
+    xys = tsne.fit_transform(word_vector_list)
 
     xs = xys[:, 0]
     ys = xys[:, 1]
     word = words.keys()
 
-    pca_df = pd.DataFrame({'word': word, 'x': xs, 'y': ys})
-    fig = plot_interactive_graph(pca_df)
+    tsne_df = pd.DataFrame({'word': word, 'x': xs, 'y': ys})
+    fig = plot_interactive_graph(tsne_df)
 
     ## saving output
     print('saving output...')
@@ -225,7 +238,7 @@ def remove_stopwords_df(sentence_df):
             sentence_df.drop(idx, inplace=True)
     return sentence_df
 
-def plot_interactive_graph(pca_df):
-    fig = px.scatter(pca_df, x = "x", y = "y",
+def plot_interactive_graph(tsne_df):
+    fig = px.scatter(tsne_df, x = "x", y = "y",
                      hover_name = "word")
     return fig

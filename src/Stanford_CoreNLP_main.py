@@ -222,6 +222,7 @@ def clear(e):
     CoreNLP_annotators_menu_var.set('')
     manual_Coref_checkbox.place_forget()  # invisible
     open_GUI_checkbox.place_forget()  # invisible
+    quote_checkbox.place_forget()  # invisible
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -244,6 +245,8 @@ CoNLL_table_analyzer_var = tk.IntVar()
 
 CoreNLP_annotators_var = tk.IntVar()
 CoreNLP_annotators_menu_var = tk.StringVar()
+
+quote_var = tk.IntVar()
 
 def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
@@ -446,6 +449,10 @@ open_GUI_checkbox = tk.Checkbutton(window, text='Open coreference GUI',
                                        variable=open_GUI_var,
                                        onvalue=1, offvalue=0)
 
+quote_checkbox = tk.Checkbutton(window, text='Use double quotes',
+                                       variable=quote_var,
+                                       onvalue=1, offvalue=0)
+
 def activate_CoreNLP_annotators_menu(*args):
     global y_multiplier_integer
     if CoreNLP_annotators_var.get() == True:
@@ -456,6 +463,16 @@ def activate_CoreNLP_annotators_menu(*args):
                 CoreNLP_annotators_menu_var.set('')
                 return
         CoreNLP_annotators_menu.configure(state='normal')
+        if '*' in CoreNLP_annotators_menu_var.get() or 'dialogue' in CoreNLP_annotators_menu_var.get():
+            y_multiplier_integer=y_multiplier_integer-1
+            quote_var.set(1)
+            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 400,
+                                                           y_multiplier_integer,
+                                                           quote_checkbox,True)
+            quote_checkbox.configure(state='normal')
+        else:
+            quote_checkbox.place_forget()  # invisible
+
         if 'Coreference' in CoreNLP_annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer-1
             manual_Coref_var.set(0)

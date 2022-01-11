@@ -70,7 +70,10 @@ def put_csv(lst):
     new_lst = []
     for item in lst:
         if (item.endswith('.csv')):
-            new_lst.append(item.strip("[]''"))
+            it = item
+            it = it.strip()
+            it = it.strip("[]''")
+            new_lst.append(it)
     return new_lst
 
 
@@ -78,7 +81,10 @@ def put_param(lst):
     new_lst = []
     for item in lst:
         if (item.endswith('.csv') == False):
-            new_lst.append(item.strip("[]''"))
+            it = item
+            it = it.strip()
+            it = it.strip("[]''")
+            new_lst.append(it)
     return new_lst
 
 
@@ -91,14 +97,20 @@ def drop_suffixCol(df):
 
 def merge(outputDir, operation_results_text_list):
     df = pd.DataFrame()
-    operation_results_text_list = list(operation_results_text_list.split(','))
-    temp = put_csv(ip)
-    temp2 = put_param(ip)
+    operation_results_text_list = str(operation_results_text_list)
+    ip = operation_results_text_list.split("][")
+    tp = []
+    for item in ip:
+        tmp = item.split(',')
+        for t in tmp:
+            tp.append(t)
+    temp = put_csv(tp)
+    temp2 = put_param(tp)
     csv_lst = list(dict.fromkeys(temp))
     param_lst = list(dict.fromkeys(temp2))
 
     size = len(param_lst)
-    if (size >= 2):
+    if (size >= 1):
         try:
             df1 = pd.read_csv(csv_lst[0])
             df2 = pd.read_csv(csv_lst[1])
@@ -109,12 +121,16 @@ def merge(outputDir, operation_results_text_list):
                 df = pd.merge(df, df2, on=param_lst[i], how='right', suffixes=('', '_'))
                 df = drop_suffixCol(df)
         except (ValueError, TypeError) as err:
-            # print(f"Unexpected {err=}, {type(err)=}")
             print("Unexpected err", err)
             raise
-    df.to_csv('merged.csv', index=False)
+    outputFilename = IO_files_util.generate_output_file_name(csv_lst[0], os.path.dirname(csv_lst[0]),
+                                                             outputDir,
+                                                             '.csv', 'merge',
+                                                             '', '', '', '', False, True)
 
-    return 'merged.csv'
+    df.to_csv(outputFilename, index=False)
+
+    return outputFilename
 
 
 # def merge(outputDir, operation_results_text_list):

@@ -62,6 +62,7 @@ def run(inputFilename,
             mb.showwarning(title='Warning',
                            message='You have selected the merge operation. This requires two different csv files in input.\n\nPlease, click on the + button next to File, select another csv file, select the field that yu want to use in this file as the overlaping field(s) with the previous file (the key(s)), click OK and RUN.')
             return
+        operation_results_text_list= operation_results_text.get(0.1, tk.END)
         outputFilename=data_manager_util.merge(outputDir,operation_results_text_list)
         if outputFilename!=None:
             filesToOpen.append(outputFilename)
