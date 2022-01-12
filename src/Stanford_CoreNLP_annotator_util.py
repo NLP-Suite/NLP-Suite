@@ -105,6 +105,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # global extract_date_from_text_var, extract_date_from_filename_var
     extract_date_from_text_var=False
     extract_date_from_filename_var=False
+    single_quote_var = False
     date_format = ''
     date_separator_var = ''
     date_position_var = 0
@@ -123,6 +124,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
             date_separator_var = value
         if key == 'date_position_var':
             date_position_var = value
+        if key == 'single_quote_var':
+            single_quote_var = value
 
     produce_split_files=False
 
@@ -390,6 +393,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     params_NN = params
                     params_NN['parse.model'] = 'edu/stanford/nlp/models/parser/nndep/english_UD.gz'
                     params_NN['annotators'] = param_string_NN
+                    if "quote" in param_string_NN and single_quote_var:
+                        print("debugging: Include Single Quote")
+                        params_NN["quote.singleQuotes"] = True
                     NN_start_time = time.time()
                     CoreNLP_output = nlp.annotate(text, properties=params_NN)
                     errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(

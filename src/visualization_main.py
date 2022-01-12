@@ -19,12 +19,13 @@ import IO_csv_util
 import Gephi_util
 import IO_files_util
 
-def runGephi(inputFilename, outputDir, csv_file_field_list):
+def runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var):
     fileBase = os.path.basename(inputFilename)[0:-4]
     return Gephi_util.create_gexf(GUI_util.window, fileBase, outputDir, inputFilename,
-                                  csv_file_field_list[0], csv_file_field_list[1], csv_file_field_list[2])
+                                  csv_file_field_list[0], csv_file_field_list[1],
+                                  csv_file_field_list[2], dynamic_network_field_var)
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, csv_file_field_list):
+def run(inputFilename, inputDir, outputDir, openOutputFiles, csv_file_field_list, dynamic_network_field_var):
     if Gephi_var==False:
         mb.showwarning("Warning",
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
@@ -37,7 +38,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, csv_file_field_list
                            "The input file must be a csv file.")
             return
         filesToOpen = []
-        gexf_file = runGephi(inputFilename, outputDir, csv_file_field_list)
+        gexf_file = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
         filesToOpen.append(gexf_file)
         if openOutputFiles and len(filesToOpen) > 0:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -48,7 +49,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            csv_file_field_list)
+                            csv_file_field_list,
+                            dynamic_network_field_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 

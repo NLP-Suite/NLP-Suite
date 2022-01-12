@@ -88,7 +88,7 @@ GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_nu
 y_multiplier_integer = GUI_util.y_multiplier_integer
 
 window = GUI_util.window
-config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
+# config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, False)
 
@@ -99,8 +99,18 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, False)
 #   selectFile or selectDirectory in IO_files_util
 # initial folders are setup in IO_files_util
 
-msg = ""
 config_input_output_alphabetic_options, config_input_output_full_options, missingIO = config_util.read_config_file(config_filename, config_input_output_numeric_options)
+# set existing GUI options
+if config_input_output_numeric_options[0]!=0:
+    GUI_util.inputFilename.set(config_input_output_alphabetic_options[0])
+if config_input_output_numeric_options[1]!=0:
+    GUI_util.input_main_dir_path.set(config_input_output_alphabetic_options[1])
+if config_input_output_numeric_options[2]!=0:
+    GUI_util.input_secondary_dir_path.set(config_input_output_alphabetic_options[2])
+if config_input_output_numeric_options[3] != 0:
+        GUI_util.output_dir_path.set(config_input_output_alphabetic_options[3])
+
+msg = ""
 if config_filename == 'default_config.csv':
     if (config_input_output_alphabetic_options[0]!='') or config_input_output_alphabetic_options[1]!='':
         # check the input filename

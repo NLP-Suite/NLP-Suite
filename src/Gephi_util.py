@@ -1066,7 +1066,7 @@ class GexfImport:
 #  generalize function beyond SVO
 #   passing the three headers that need to be displayed
 #   processing Sentence ID optional with a Dynamic boolean
-def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3):
+def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spellCol):
     """
     Create gexf format file that can be used in Gephi to visualize result dynamically.
     :param corpus: A Corpus Object
@@ -1091,62 +1091,79 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3):
             if row[col1] == '' or row[col2] == '' or row[col3] == '':
                 continue
             if row[col1] not in graph.nodes:
-                node = Node(graph,row[col1],row[col1],
-                            r = random.randint(0,255),g = random.randint(0,255),b = random.randint(0,255),
-                            size = "50",
-                            spells = [
-                                {"start":(EPOCH+datetime.timedelta(days = int(row["Sentence ID"])))
-                                    .strftime("%Y-%m-%d"),
-                                 "end":(EPOCH+datetime.timedelta(days = int(row["Sentence ID"])+1))
-                                    .strftime("%Y-%m-%d")}
-                            ])
+                if spellCol != "":
+                    node = Node(graph,row[col1],row[col1],
+                                r = random.randint(0,255),g = random.randint(0,255),b = random.randint(0,255),
+                                size = "50",
+                                spells = [
+                                    {"start":(EPOCH+datetime.timedelta(days = int(row[spellCol])))
+                                        .strftime("%Y-%m-%d"),
+                                     "end":(EPOCH+datetime.timedelta(days = int(row[spellCol])+1))
+                                        .strftime("%Y-%m-%d")}
+                                ])
+                else:
+                    node = Node(graph, row[col1], row[col1],
+                                r=random.randint(0, 255), g=random.randint(0, 255), b=random.randint(0, 255),
+                                size="50")
                 graph.nodes[row[col1]] = node
 
             else:
                 graph.nodes[row[col1]].size = str(int(graph.nodes[row[col1]].size)+50)
-                graph.nodes[row[col1]].spells.append({
-                    "start": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"])))
-                        .strftime("%Y-%m-%d"),
-                    "end": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"]) + 1))
-                        .strftime("%Y-%m-%d")
-                })
+                if spellCol != "":
+                    graph.nodes[row[col1]].spells.append({
+                        "start": (EPOCH + datetime.timedelta(days=int(row[spellCol])))
+                            .strftime("%Y-%m-%d"),
+                        "end": (EPOCH + datetime.timedelta(days=int(row[spellCol]) + 1))
+                            .strftime("%Y-%m-%d")
+                    })
 
             if row[col3] not in graph.nodes:
-                node = Node(graph, row[col3], row[col3],
-                            r=random.randint(0,255), g=random.randint(0,255), b=random.randint(0,255),
-                            size="50",
-                            spells=[
-                                {"start": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"])))
-                                    .strftime("%Y-%m-%d"),
-                                 "end": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"]) + 1))
-                                    .strftime("%Y-%m-%d")}
-                            ])
+                if spellCol != "":
+                    node = Node(graph, row[col3], row[col3],
+                                r=random.randint(0,255), g=random.randint(0,255), b=random.randint(0,255),
+                                size="50",
+                                spells=[
+                                    {"start": (EPOCH + datetime.timedelta(days=int(row[spellCol])))
+                                        .strftime("%Y-%m-%d"),
+                                     "end": (EPOCH + datetime.timedelta(days=int(row[spellCol]) + 1))
+                                        .strftime("%Y-%m-%d")}
+                                ])
+                else:
+                    node = Node(graph, row[col3], row[col3],
+                                r=random.randint(0, 255), g=random.randint(0, 255), b=random.randint(0, 255),
+                                size="50")
                 graph.nodes[row[col3]] = node
 
             else:
                 graph.nodes[row[col3]].size = str(int(graph.nodes[row[col3]].size)+50)
-                graph.nodes[row[col3]].spells.append({
-                    "start": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"])))
-                        .strftime("%Y-%m-%d"),
-                    "end": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"]) + 1))
-                        .strftime("%Y-%m-%d")
-                })
+                if spellCol != "":
+                    graph.nodes[row[col3]].spells.append({
+                        "start": (EPOCH + datetime.timedelta(days=int(row[spellCol])))
+                            .strftime("%Y-%m-%d"),
+                        "end": (EPOCH + datetime.timedelta(days=int(row[spellCol]) + 1))
+                            .strftime("%Y-%m-%d")
+                    })
 
             edge_id = row[col1]+" "+row[col3]
             if edge_id not in graph.edges:
-                edge = Edge(graph,edge_id,row[col1],row[col3],
-                            spells = [{"start": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"])))
-                                    .strftime("%Y-%m-%d"),
-                                       "end": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"]) + 1))
-                                    .strftime("%Y-%m-%d")}],
-                            label = row[col2])
+                if spellCol != "":
+                    edge = Edge(graph,edge_id,row[col1],row[col3],
+                                spells = [{"start": (EPOCH + datetime.timedelta(days=int(row[spellCol])))
+                                        .strftime("%Y-%m-%d"),
+                                           "end": (EPOCH + datetime.timedelta(days=int(row[spellCol]) + 1))
+                                        .strftime("%Y-%m-%d")}],
+                                label = row[col2])
+                else:
+                    edge = Edge(graph, edge_id, row[col1], row[col3],
+                                label=row[col2])
                 graph.edges[edge_id] = edge
             else:
-                graph.edges[edge_id].spells.append(
-                    {"start": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"])))
-                                    .strftime("%Y-%m-%d"),
-                     "end": (EPOCH + datetime.timedelta(days=int(row["Sentence ID"]) + 1))
-                                    .strftime("%Y-%m-%d")})
+                if spellCol != "":
+                    graph.edges[edge_id].spells.append(
+                        {"start": (EPOCH + datetime.timedelta(days=int(row[spellCol])))
+                                        .strftime("%Y-%m-%d"),
+                         "end": (EPOCH + datetime.timedelta(days=int(row[spellCol]) + 1))
+                                        .strftime("%Y-%m-%d")})
     gexf.write(open(os.path.join(OutputDir,graph_name),'wb'))
 
     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running Gephi network graphs at', True,
