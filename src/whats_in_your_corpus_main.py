@@ -58,7 +58,7 @@ def run(inputFilename,inputDir, outputDir,
         open_GUI_var,
         what_else_var,
         what_else_menu_var,
-        quote_var,
+        single_quote,
         memory_var):
 
     filesToOpen=[]
@@ -252,7 +252,7 @@ def run(inputFilename,inputDir, outputDir,
             annotator = 'quote'
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir, openOutputFiles, createExcelCharts,
-                                                                      annotator, False, memory_var)
+                                                                      annotator, False, memory_var, single_quote_var = single_quote)
             if output != None:
                 filesToOpen.extend(output)
 
@@ -342,6 +342,7 @@ dialogues_var= tk.IntVar()
 nature_var= tk.IntVar()
 
 quote_var = tk.IntVar()
+y_multiplier_integer_SV=0 # used to set the quote_var widget on the proper GUI line
 
 def clear(e):
     corpus_statistics_var.set(1)
@@ -449,19 +450,18 @@ what_else_menu.config(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 440, y_multiplier_integer,
                                                what_else_menu, True)
 
-quote_checkbox = tk.Checkbutton(window, text='Use double quotes',
+quote_checkbox = tk.Checkbutton(window, text='Include single quotes',
                                        variable=quote_var,
                                        onvalue=1, offvalue=0)
 
 def activate_what_else_menu(*args):
-    global y_multiplier_integer
+    global y_multiplier_integer, y_multiplier_integer_SV
     if what_else_var.get()==True:
         what_else_menu.config(state='normal')
         if "*" in what_else_menu_var.get() or "Dialogues" in what_else_menu_var.get():
-            # any changes to the GUI lines will need to change the 5
-            if y_multiplier_integer==5:
-                y_multiplier_integer = y_multiplier_integer - 1
-            quote_var.set(1)
+            if y_multiplier_integer_SV!=0:
+                y_multiplier_integer = y_multiplier_integer_SV - 1
+            quote_var.set(0)
             y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 500,
                                                            y_multiplier_integer,
                                                            quote_checkbox, True)
@@ -510,7 +510,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
                                       "Please, tick the checkbox to check your input corpus for utf-8 encoding.\n   Non utf-8 compliant texts are likely to lead to code breakdown.\n\nTick the checkbox to convert non-ASCII apostrophes & quotes and % to percent.\n   ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n   % signs may lead to code breakdon of Stanford CoreNLP.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 2), "Help","Please, tick checkbox to compute corpus statistics: number of documents, number of sentences and words, word n-grams by document.\n\nFOR N-GRAMS, THERE IS A SEPARATE SCRIPT WITH MORE GENERAL OPTIONS: NGrams_CoOccurrences_Viewer_main.\n\nThe * option will lemmatize words and exclude stopwords and punctuation. IT WILL COMPUTE BASIC WORD N-GRAMS. IT WILL NOT COMPUTE LINE LENGTH. YOU WOULD NEED TO RUN THE LINE LENGTH OPTION SEPARATELY.\n\nLine length in a typical document mostly depends upon typesetting formats. Only for poetry or music lyrics does the line-length measure make sense; in fact, you could use the option the detect those documents in your corpus characterized by different typesetting formats (.g., a poem document among narrative documents).\n\nRUN THE LINE-LENGTH OPTION ONLY IF IT MAKES SENSE FOR YOUR CORPUS.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step*(increment + 3), "Help","Please, tick the Mallet or Gensim checkboxes to run run LDA Topic Modeling to find out the main topics of your corpus.\n\nTick the \'open GUI\' checkbox to open the specialized Gensim topic modeling GUI that offers more options. Mallet can only be run via its GUI")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step*(increment + 4), "Help","Please, tick the checkbox to analyze your corpus for a variety of tools. Select the default \'*\' to run all options. Allternatively, select the specific option to run.\n\nThe NLP tools will allow you to answer questions such as:\n  1. Are there dialogues in your corpus?\n  .2 Do nouns and verbs cluster in specific aggregates (e.g., communication, movement)?\n  3. Does the corpus contain references to people (by gender) and organizations?\n  4.  References to dates and times?\n  5. References to geographical locations that could be placed on a map?\n  6. References to nature (e.g., weather, seasons, animals, plants)?")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step*(increment + 4), "Help","Please, tick the checkbox to analyze your corpus for a variety of tools. Select the default \'*\' to run all options. Allternatively, select the specific option to run.\n\nThe NLP tools will allow you to answer questions such as:\n  1. Are there dialogues in your corpus? The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker. The default CoreNLP parameter is DOUBLE quotes. If you want to process both DOUBLE and SINGLE quotes, plase tick the checkbox 'Include single quotes.'\n  .2 Do nouns and verbs cluster in specific aggregates (e.g., communication, movement)?\n  3. Does the corpus contain references to people (by gender) and organizations?\n  4.  References to dates and times?\n  5. References to geographical locations that could be placed on a map?\n  6. References to nature (e.g., weather, seasons, animals, plants)?")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 5),"Help", GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
@@ -519,5 +519,8 @@ help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_b
 readMe_message="The GUI brings together various Python 3 scripts to buil a pipeline for the analysis of a corpus, automatically extracting all relevant data from texts and visualizing the results.\n\nEach tool performs all required computations then saves results as csv files and visualizes them in various ways (word clouds, Excel charts, and HTML files)."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+if y_multiplier_integer_SV == 0:
+    y_multiplier_integer_SV = y_multiplier_integer
 
 GUI_util.window.mainloop()

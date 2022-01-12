@@ -603,11 +603,8 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
 
         intro = tk.Label(window, text=GUI_IO_util.introduction_main)
         intro.pack()
-
         display_logo()
-
         display_release()
-
         display_about_release_team_cite_buttons(scriptName)
 
     y_multiplier_integer=0

@@ -52,7 +52,6 @@ def character(output_dir_path):
         subprocess.call("sudo Python knowledge_graphs_WordNet_main.py character", shell=True)
     # files are opened in the WordNet GUI
 
-
 def find_character_home(output_dir_path):
     if IO_libraries_util.inputProgramFileCheck('file_classifier_main.py') == False:
         return
