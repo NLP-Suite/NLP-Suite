@@ -230,7 +230,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
                         with open(htmlDoc,'r', encoding="utf-8",errors='ignore') as infile:
                             for line in infile:
                                 outfile.write(line)
-                    infile.close()
+                            infile.close()
                     try:
                         os.remove(htmlDoc)  # delete temporary split html file from output directory
                     except:

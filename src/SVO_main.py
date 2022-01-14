@@ -178,8 +178,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             mb.showerror(title='Input file error',
                          message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or txt file(s)) and try again.")
             return
-        if (
-                utf8_var == True or Coref == True or memory_var == True or Manual_Coref_var == True or normalized_NER_date_extractor_var == True or CoreNLP_SVO_extractor_var == True):
+        if (utf8_var == True or Coref == True or memory_var == True or Manual_Coref_var == True or normalized_NER_date_extractor_var == True or CoreNLP_SVO_extractor_var == True):
             mb.showerror(title='Input file/option error',
                          message="The data analysis option(s) you have selected require in input a txt file, rather than a csv file.\n\nPlease, check your input file and/or algorithm selections and try again.")
             return
@@ -315,6 +314,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                     else:
                         reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
                                                      reminders_util.message_no_SVO_records, True)
+            pronoun_files = SVO_util.check_pronouns(window, config_filename, tempOutputFiles[0], outputDir, createExcelCharts)
+            filesToOpen.extend(pronoun_files)
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
@@ -438,8 +439,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                     filesToOpen.extend(output)
 
             filesToOpen.extend(tempOutputFiles)
+            pronoun_files = SVO_util.check_pronouns(window, config_filename, tempOutputFiles[0], outputDir,
+                                                    createExcelCharts)
+            filesToOpen.extend(pronoun_files)
             svo_result_list.append(tempOutputFiles[0])
 
+    reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_someone,
+                                 reminders_util.message_SVO_someone, True)
     # the SVO script can take in input a csv SVO file previously computed: inputFilename
     # results currently produced are in svo_result_list
     if ('SVO_' in inputFilename) or (len(svo_result_list) > 0):

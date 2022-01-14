@@ -26,6 +26,7 @@ import constants_util
 def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createExcelCharts,
         knowledge_graphs_DBpedia_YAGO_var,
         knowledge_graphs_WordNet_var,
+        html_gender_annotator_var,
         html_annotator_dictionary_var,
         html_annotator_add_dictionary_var,
         html_dictionary_file,
@@ -34,8 +35,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
         color_palette_dict_var,
         bold_var,
         csvValue_color_list,
-        html_annotator_extractor,
-        html_gender_annotator_var):
+        html_annotator_extractor):
 
     filesToOpen=[]
 
@@ -113,6 +113,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.create_Excel_chart_output_checkbox.get(),
                 knowledge_graphs_DBpedia_YAGO_var.get(),
                 knowledge_graphs_WordNet_var.get(),
+                html_gender_annotator_var.get(),
                 html_annotator_dictionary_var.get(),
                 html_annotator_add_dictionary_var.get(),
                 html_annotator_dictionary_file_var.get(),
@@ -121,8 +122,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 color_palette_dict_var.get(),
                 bold_dict_var.get(),
                 csvValue_color_list,
-                html_annotator_extractor_var.get(),
-                html_gender_annotator_var.get())
+                html_annotator_extractor_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -166,19 +166,16 @@ inputFilename=GUI_util.inputFilename
 GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 
 def clear(e):
-    clear_DBpedia_YAGO_class_list()
     clear_dictionary_list()
-    DBpedia_YAGO_color_list.clear()
-    html_gender_annotator_var.set(0)
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
-DBpedia_YAGO_class_list=[]
-DBpedia_YAGO_color_list=[]
 csvValue_color_list=[]
 
 knowledge_graphs_DBpedia_YAGO_var=tk.IntVar() # to annotate a document using DBpedia
 knowledge_graphs_WordNet_var=tk.IntVar() # to annotate a document using DBpedia
+html_gender_annotator_var=tk.IntVar()
+
 html_annotator_dictionary_var=tk.IntVar() # to annotate a document using a dictionary
 csv_field1_var=tk.StringVar()
 csv_field2_var=tk.StringVar()
@@ -190,7 +187,6 @@ bold_dict_var= tk.IntVar() # display in bod the selected color selected for dict
 html_annotator_add_dictionary_var=tk.IntVar() # to add new annotations via dictionary to an already annotated document
 html_annotator_dictionary_file_var=tk.StringVar() # dictionary file used to annotate
 html_annotator_extractor_var=tk.IntVar() # to extract annotations in csv format from an annotated file
-html_gender_annotator_var=tk.IntVar()
 
 knowledge_graphs_DBpedia_YAGO_var.set(0)
 knowledge_graphs_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using the DBpedia & YAGO knowledge graphs (GUI)', variable=knowledge_graphs_DBpedia_YAGO_var)
@@ -479,7 +475,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
-readMe_message="The Python 3 scripts provide ways of annotating text files for matching terms found in a user-supplied dictionary file and/or in DBpedia or YAGO.\n\ncsv dictionary files can be constructed, for instance, by exporting specific tokens from the CoNLL table (e.g., FORM values of NER PERSON or all past verbs).\n\nDBpedia and YAGO tags can be selected from the class dropdown menu containing the DBpedia and YAGO ontology. The menu only includes the main classes in the ontology. For specific sub-classes, please, get the values from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org) ontology classes.pdf and enter them in the Ontology sub-class field."
+readMe_message="The Python 3 scripts provide different ways of annotating text files in HTML for matching terms found in a user-supplied dictionary file, in knowledge graphs such as DBpedia, YAGO, or WordNet, or in the Stanford CorenNLP gender annotator.\n\ncsv dictionary files can be constructed, for instance, by exporting specific tokens from the CoNLL table (e.g., FORM values of NER PERSON or all past verbs).\n\nThe selection of the knowledge graphs DBpedia, YAGO, WordNet and the Stanford CoreNLP gender annotator will open specialized GUIs."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
