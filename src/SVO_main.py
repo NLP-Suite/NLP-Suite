@@ -12,7 +12,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "SVO extractor",
                                           ['subprocess', 'os', 'tkinter', 'csv']) == False:
     sys.exit(0)
 
-from collections import defaultdict
+# from collections import defaultdict
 import os
 import SVO_util
 import csv
@@ -27,7 +27,6 @@ from subprocess import call
 
 import GUI_IO_util
 import IO_files_util
-import IO_user_interface_util
 import Gephi_util
 import GIS_pipeline_util
 import wordclouds_util

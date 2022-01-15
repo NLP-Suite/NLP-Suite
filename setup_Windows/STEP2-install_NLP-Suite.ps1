@@ -19,6 +19,13 @@ $Shortcut.TargetPath = "${PSScriptRoot}\run_NLP-Suite.bat"
 $Shortcut.IconLocation = "${PSScriptRoot}\logo.ico"
 $Shortcut.Save()
 
+git init ..
+git remote add -t \* -f origin https://github.com/NLP-Suite/NLP-Suite.git
+git checkout -f current-stable
+git add -A .
+git stash
+git pull -f origin current-stable
+
 Write-Host "----------------------" -ForegroundColor Green
-Write-Host "Installation Completed! Although installation completed, errors may have occurred in the installation of specific Python packages. Please, scroll up to see if errors occurred or use CTRL+F to search for words such as error or fail." -ForegroundColor Green
+Write-Host "Installation Completed! Although installation completed, errors may have occurred in the installation of specific Python packages. Please, scroll up to see if errors occurred or use CTRL+F to search for words such as “error” or “fail.”" -ForegroundColor Green
 Write-Host "----------------------" -ForegroundColor Green
