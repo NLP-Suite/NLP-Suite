@@ -1,4 +1,4 @@
-
+g
 # given a comma-separated string in input, the function returns a variable with separated values
 #  https://stackoverflow.com/questions/4298415/omit-last-element-in-comma-separated-list
 # x = "first, second, third,"

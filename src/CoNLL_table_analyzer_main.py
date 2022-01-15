@@ -69,7 +69,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
     if extract_var.get():
         df = pd.read_csv(inputFilename)
         data_files = [df]
-        print(csv_file_field_list)
+        # print(csv_file_field_list)
         outputFiles: list = extract_from_csv(path=[inputFilename], output_path=outputDir, data_files=data_files,
                                                  csv_file_field_list=csv_file_field_list)
         if outputFiles != None:
@@ -174,25 +174,6 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
             co_deprel = str(co_deprel).split(' - ')[0]
             co_deprel = co_deprel.strip()
         else:
-            co_deprel = '*'
-
-        POS_tags = ['*', 'JJ*', 'NN*', 'VB*'] + [k for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()]
-        POS_descriptions = [v for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()]
-
-        DEPREL_tags = [k for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()]
-        DEPREL_descriptions = [v for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()]
-
-        if postag != '*' and postag not in POS_tags:
-            postag = '*'
-        if deprel != '*' and deprel not in DEPREL_tags:  # dict_DEPREL:
-            print("The routine cannot recognize your input. The default value\'*\'(i.e. ANY VALUE) will be used.")
-            deprel = '*'
-
-        if co_postag != '*' and co_postag not in POS_tags:  # set_POSTAG: #search_CoNLL_table:
-            co_postag = '*'
-
-        if co_deprel != '*' and co_deprel not in DEPREL_tags:  # set_DEPREL: #dict_DEPREL:
-            print("The routine cannot recognize your input. The default value\'*\'(i.e. ANY VALUE) will be used.")
             co_deprel = '*'
 
         if (not os.path.isfile(inputFilename.strip())) and (not inputFilename.strip()[-6:] == '.conll') and (
@@ -359,10 +340,10 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),
                                  searchedCoNLLField.get(),
                                  searchField_kw.get(),
-                                 postag_field.get(),
-                                 deprel_field.get(),
-                                 co_postag_field.get(),
-                                 co_deprel_field.get(),
+                                 postag_var.get(),
+                                 deprel_var.get(),
+                                 co_postag_var.get(),
+                                 co_deprel_var.get(),
                                  clausal_analysis_var.get(),
                                  noun_analysis_var.get(),
                                  verb_analysis_var.get(),
@@ -411,11 +392,11 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename,IO_setup_d
 
 searchField_kw = tk.StringVar()
 searchedCoNLLField = tk.StringVar()
-postag_field = tk.StringVar()
-deprel_field = tk.StringVar()
+postag_var = tk.StringVar()
+deprel_var = tk.StringVar()
 co_postag_var = tk.StringVar()
-co_postag_field = tk.StringVar()
-co_deprel_field = tk.StringVar()
+co_postag_var = tk.StringVar()
+co_deprel_var = tk.StringVar()
 SVO_var = tk.IntVar()
 csv_file_field_list = []
 
@@ -437,14 +418,16 @@ all_analyses_var = tk.IntVar()
 buildString = ''
 menu_values = []
 
+postag_menu = '*', 'JJ* - Any adjective', 'NN* - Any noun', 'VB* - Any verb', *sorted([k + " - " + v for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()])
+deprel_menu = '*', *sorted([k + " - " + v for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()])
 
 def clear(e):
     searchField_kw.set('e.g.: father')
-    postag_field.set('*')
-    deprel_field.set('*')
+    postag_var.set('*')
+    deprel_var.set('*')
     co_postag_var.set('*')
-    co_postag_field.set('*')
-    co_deprel_field.set('*')
+    co_postag_var.set('*')
+    co_deprel_var.set('*')
     activate_options()
     activate_csv_fields_selection(extract_var.get(), False, False)
     reset_all_values()
@@ -474,7 +457,7 @@ searchField_kw.set('e.g.: father')
 y_multiplier_integer_top = y_multiplier_integer
 
 entry_searchField_kw = tk.Entry(window, textvariable=searchField_kw)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
                                                entry_searchField_kw)
 
 # Search type var (FORM/LEMMA)
@@ -485,45 +468,30 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 
 searchedCoNLLdescription_csv_field_menu_lb = tk.OptionMenu(window, searchedCoNLLField, 'FORM', 'LEMMA')
 searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
                                                searchedCoNLLdescription_csv_field_menu_lb)
 
 # POSTAG variable
 
-postag_field.set('*')
+postag_var.set('*')
 tk.Label(window, text='POSTAG of searched token').place(x=GUI_IO_util.get_labels_x_coordinate(),
                                                         y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step() * y_multiplier_integer)
-
-postag_menu = '*', 'JJ* - Any adjective', 'NN* - Any noun', 'VB* - Any verb', *sorted([k + " - " + v for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()])
-
-postag_var = tk.StringVar()
-postag_var.set('*')
-postag_menu_lb = ttk.Combobox(window, width = 50, textvariable = postag_var)
+postag_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = postag_var)
 postag_menu_lb['values'] = postag_menu
 postag_menu_lb.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,postag_menu_lb, True)
-
-postag_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
                                                postag_menu_lb)
 
 # DEPREL variable
 
-deprel_menu = '*','acl - clausal modifier of noun (adjectival clause)', 'acl:relcl - relative clause modifier', 'acomp - adjectival complement', 'advcl - adverbial clause modifier', 'advmod - adverbial modifier', 'agent - agent', 'amod - adjectival modifier', 'appos - appositional modifier', 'arg - argument', 'aux - auxiliary', 'auxpass - passive auxiliary', 'case - case marking', 'cc - coordinating conjunction', 'ccomp - clausal complement with internal subject', 'cc:preconj - preconjunct','compound - compound','compound:prt - phrasal verb particle','conj - conjunct','cop - copula conjunction','csubj - clausal subject','csubjpass - clausal passive subject','dep - unspecified dependency','det - determiner','det:predet - predeterminer','discourse - discourse element','dislocated - dislocated element','dobj - direct object','expl - expletive','foreign - foreign words','goeswith - goes with','iobj - indirect object','list - list','mark - marker','mod - modifier','mwe - multi-word expression','name - name','neg - negation modifier','nn - noun compound modifier','nmod - nominal modifier','nmod:npmod - noun phrase as adverbial modifier','nmod:poss - possessive nominal modifier','nmod:tmod - temporal modifier','nummod - numeric modifier','npadvmod - noun phrase adverbial modifier','nsubj - nominal subject','nsubjpass - passive nominal subject','num - numeric modifier','number - element of compound number','parataxis - parataxis','pcomp - prepositional complement','pobj - object of a preposition','poss - possession modifier', 'possessive - possessive modifier','preconj - preconjunct','predet - predeterminer','prep - prepositional modifier','prepc - prepositional clausal modifier','prt - phrasal verb particle','punct - punctuation','quantmod - quantifier phrase modifier','rcmod - relative clause modifier','ref - referent','remnant - remnant in ellipsis','reparandum - overridden disfluency','ROOT - root','sdep - semantic dependent','subj - subject','tmod - temporal modifier','vmod - reduced non-finite verbal modifier','vocative - vocative','xcomp - clausal complement with external subject','xsubj - controlling subject','# - #'
-
-deprel_var = tk.StringVar()
 deprel_var.set('*')
 tk.Label(window, text='DEPREL of searched token').place(x=GUI_IO_util.get_labels_x_coordinate(),
                                                         y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step() * y_multiplier_integer)
-deprel_menu_lb = ttk.Combobox(window, width = 50, textvariable = deprel_var)
+deprel_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = deprel_var)
 deprel_menu_lb['values'] = deprel_menu
 deprel_menu_lb.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,deprel_menu_lb, True)
-
-deprel_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
                                                deprel_menu_lb)
-
 
 # Co-Occurring POSTAG menu
 
@@ -531,30 +499,21 @@ co_postag_var.set('*')
 
 tk.Label(window, text='POSTAG of co-occurring tokens').place(x=GUI_IO_util.get_labels_x_coordinate(),
                                                              y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step() * y_multiplier_integer)
-co_postag_menu_lb = ttk.Combobox(window, width = 50, textvariable = co_postag_var)
+co_postag_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_postag_var)
 co_postag_menu_lb['values'] = postag_menu
 co_postag_menu_lb.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,co_postag_menu_lb,True)
-co_postag_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
                                                co_postag_menu_lb)
-
 
 co_deprel_menu = '*','acl - clausal modifier of noun (adjectival clause)', 'acl:relcl - relative clause modifier', 'acomp - adjectival complement', 'advcl - adverbial clause modifier', 'advmod - adverbial modifier', 'agent - agent', 'amod - adjectival modifier', 'appos - appositional modifier', 'arg - argument', 'aux - auxiliary', 'auxpass - passive auxiliary', 'case - case marking', 'cc - coordinating conjunction', 'ccomp - clausal complement with internal subject', 'cc:preconj - preconjunct','compound - compound','compound:prt - phrasal verb particle','conj - conjunct','cop - copula conjunction','csubj - clausal subject','csubjpass - clausal passive subject','dep - unspecified dependency','det - determiner','det:predet - predeterminer','discourse - discourse element','dislocated - dislocated element','dobj - direct object','expl - expletive','foreign - foreign words','goeswith - goes with','iobj - indirect object','list - list','mark - marker','mod - modifier','mwe - multi-word expression','name - name','neg - negation modifier','nn - noun compound modifier','nmod - nominal modifier','nmod:npmod - noun phrase as adverbial modifier','nmod:poss - possessive nominal modifier','nmod:tmod - temporal modifier','nummod - numeric modifier','npadvmod - noun phrase adverbial modifier','nsubj - nominal subject','nsubjpass - passive nominal subject','num - numeric modifier','number - element of compound number','parataxis - parataxis','pcomp - prepositional complement','pobj - object of a preposition','poss - possession modifier', 'possessive - possessive modifier','preconj - preconjunct','predet - predeterminer','prep - prepositional modifier','prepc - prepositional clausal modifier','prt - phrasal verb particle','punct - punctuation','quantmod - quantifier phrase modifier','rcmod - relative clause modifier','ref - referent','remnant - remnant in ellipsis','reparandum - overridden disfluency','ROOT - root','sdep - semantic dependent','subj - subject','tmod - temporal modifier','vmod - reduced non-finite verbal modifier','vocative - vocative','xcomp - clausal complement with external subject','xsubj - controlling subject','# - #'
 
-co_deprel_var = tk.StringVar()
 co_deprel_var.set('*')
 tk.Label(window, text='DEPREL of co-occurring tokens').place(x=GUI_IO_util.get_labels_x_coordinate(),
                                                         y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step() * y_multiplier_integer)
-co_deprel_menu_lb = ttk.Combobox(window, width = 50, textvariable = co_deprel_var)
+co_deprel_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_deprel_var)
 co_deprel_menu_lb['values'] = deprel_menu
 co_deprel_menu_lb.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,co_deprel_menu_lb, True)
-
-co_deprel_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
-                                               co_deprel_menu_lb)
-
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.combobox_position, y_multiplier_integer,co_deprel_menu_lb)
 
 def reset_all_values():
     global buildString
@@ -616,7 +575,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
                                                extract_checkbox, True)
 
 select_csv_field_lb = tk.Label(window, text='Select field')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
                                                select_csv_field_lb, True)
 
 if len(menu_values) > 0:
@@ -624,7 +583,7 @@ if len(menu_values) > 0:
 else:
     select_csv_field_extract_menu = tk.OptionMenu(window, select_csv_field_extract_var, menu_values)
 select_csv_field_extract_menu.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 280, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position+80, y_multiplier_integer,
                                                select_csv_field_extract_menu, True)
 
 comparator_var = tk.StringVar()

@@ -10,17 +10,11 @@ You can find detailed installation instructions at the NLP Suitte GitHub pages h
 	Running STEP1 will not affect Anaconda if you already have it installed on your machine.
 
 4. Once STEP1 is finished, run STEP2-install_components through right-click -> run using Powershell 
-	STEP2 will install all Python components via requirements.txt and Java files and may take quite a while. STEP2 will also install torch and torchvision, nltk, and spaCy en language pack. Please, be patient.
+	STEP2 will install all Python components via requirements.txt and Java files and may take quite a while. STEP2 will also install torch and torchvision, nltk, and spaCy en language pack. Please, be patient. Installatin of all files may take an hour or more.
 
-Update Instructions
+NLP Suite updates & Git instructions
 
-There are two ways of updating to the newest NLP Suite version.
-
-1. Double click update_NLP-Suite.command on your local machine every time you want to get new/changed files from GitHub.
-2. Double click on update_NLP-Suite_auto.command and, from then on, when exiting the NLP Suite new/changed files will be automatically pulled from GitHub. You only need to run update_NLP-Suite_auto.command once.
-The update_NLP-Suite_auto.command ONLY WORKS IF YOU OPEN THE NLP SUITE FROM THE run_NLP-Suite.command. IT DOES NOT WORK IF YOU RUN IN COMMAND/PROMPT python NLP_welcome_main.py or python NLP_menu_main.py 
-
-The update features rely on Git. Please download Git at this link https://git-scm.com/downloads, if it hasn’t been installed already.
+The NLP Suite updates the scripts automatically to the lastest release available on GitHub every time you exit the NLP Suite. The update features rely on Git. Please download Git at this link https://git-scm.com/downloads, if it hasn’t been installed already.
 
 Run Instructions
 

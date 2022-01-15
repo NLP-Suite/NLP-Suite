@@ -113,10 +113,15 @@ if sys.platform == 'darwin': #Mac OS
     open_outputDir_button_brief = 780
     open_config_file_button_brief = 820
 
-    # special internal GUI specific values
+    # special internal GUI specific values MAC
+    # SVO_main
     SVO_2nd_column = 570
     SVO_2nd_column_top = 450
     SVO_3rd_column_top = 850
+
+    # CoNLL_table_analyzer_main
+    combobox_position = 210
+    combobox_width = 40
 
 else: #windows and anything else
     about_button_x_coordinate = 230 # get_labels_x_coordinate() + 100
@@ -147,10 +152,15 @@ else: #windows and anything else
     open_outputDir_button_brief = 840
     open_config_file_button_brief = 880
 
-    # special internal GUI specific values
+    # special internal GUI specific values WINDOWS
+    # SVO_main
     SVO_2nd_column = 520
     SVO_2nd_column_top = 400
     SVO_3rd_column_top = 800
+
+    # CoNLL_table_analyzer_main
+    combobox_position = 200
+    combobox_width = 50
 
 basic_y_coordinate = 90
 y_step = 40 #the line-by-line increment on the GUI
