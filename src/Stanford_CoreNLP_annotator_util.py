@@ -1670,6 +1670,43 @@ def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen,
 
     return filesToOpen
 
-
-# def visualize_date_distribution(inputFileName):
+def check_pronouns(window, config_filename, inputFilename, outputDir, createExcelCharts, option):
+    df = pd.read_csv(inputFilename)
+    personal_pronouns = ["I", "me", "you", "she", "her", "he", "him", "we", "us", "they", "them"]
+    total_count = 0
+    pronouns_count = {"I": 0, "me": 0, "you": 0, "she": 0, "her": 0, "he": 0, "him": 0, "we": 0, "us": 0, "they": 0, "them": 0}
+    return_files = []
+    for _, row in df.iterrows():
+        if option == "SVO":
+            if (not pd.isna(row["S"])) and (row["S"].lower() in personal_pronouns):
+                total_count+=1
+                pronouns_count[row["S"].lower()] += 1
+            if (not pd.isna(row["O"])) and (row["O"].lower() in personal_pronouns):
+                total_count+=1
+                pronouns_count[row["O"].lower()] += 1
+        elif option == "CoNLL":
+            if (not pd.isna(row["Form"])) and (row["Form"].lower() in personal_pronouns):
+                total_count+=1
+                pronouns_count[row["Form"].lower()] += 1
+        else:
+            print ("Wrong Option value!")
+            return []
+    if total_count > 0:
+        if option == "SVO" or option == "CoNLL":
+            reminders_util.checkReminder(config_filename, reminders_util.title_options_SCoreNLP_personal_pronouns,
+                                         reminders_util.message_CoreNLP_personal_pronouns, True)
+        if createExcelCharts:
+            data_to_be_plotted = [["Personal Pronouns Value", "Personal Pronouns Count"], ["Total Count", total_count]]
+            for w in sorted(pronouns_count, key=pronouns_count.get, reverse=True):
+                data_to_be_plotted.append([w, pronouns_count[w]])
+            data_to_be_plotted = [data_to_be_plotted]
+            Excel_outputFilename = Excel_util.create_excel_chart(window, data_to_be_plotted, inputFilename, outputDir,
+                                                      "Personal_Pronouns_bar", "Frequency Distribution of Personal Pronouns",
+                                                      ["bar"], "Personal Pronouns", "Frequency")
+            # Excel_outputFilename = Excel_util.create_excel_chart(window, data_to_be_plotted, svo_file_name, outputDir,
+            #                                           "Personal_Pronouns_bar", "Frequency Distribution of Personal Pronouns",
+            #                                           ["bar"], "Personal Pronouns", "Frequencies",
+            #                                           [], False, [], 0, "")
+            return_files.append(Excel_outputFilename)
+    return return_files
 

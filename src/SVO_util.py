@@ -161,37 +161,6 @@ def visualize_Excel_chart(createExcelCharts, inputFilename, outputDir, filesToOp
                                                   count_var=count_var)
         return Excel_outputFilename
 
-def check_pronouns(window, config_filename, svo_file_name, outputDir, createExcelCharts):
-    df = pd.read_csv(svo_file_name)
-    personal_pronouns = ["I", "me", "you", "she", "her", "he", "him", "we", "us", "they", "them"]
-    total_count = 0
-    pronouns_count = {"I": 0, "me": 0, "you": 0, "she": 0, "her": 0, "he": 0, "him": 0, "we": 0, "us": 0, "they": 0, "them": 0}
-    return_files = []
-    for _, row in df.iterrows():
-        if (not pd.isna(row["S"])) and (row["S"].lower() in personal_pronouns):
-            total_count+=1
-            pronouns_count[row["S"].lower()] += 1
-        if (not pd.isna(row["O"])) and (row["O"].lower() in personal_pronouns):
-            total_count+=1
-            pronouns_count[row["O"].lower()] += 1
-    if total_count > 0:
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_personal_pronouns,
-                                     reminders_util.message_SVO_personal_pronouns, True)
-        if createExcelCharts:
-            data_to_be_plotted = [["Personal Pronouns Value", "Personal Pronouns Count"], ["Total Count", total_count]]
-            for w in sorted(pronouns_count, key=pronouns_count.get, reverse=True):
-                data_to_be_plotted.append([w, pronouns_count[w]])
-            data_to_be_plotted = [data_to_be_plotted]
-            Excel_outputFilename = Excel_util.create_excel_chart(window, data_to_be_plotted, svo_file_name, outputDir,
-                                                      "Personal_Pronouns_bar", "Frequency Distribution of Personal Pronouns",
-                                                      ["bar"], "Personal Pronouns", "Frequency")
-            # Excel_outputFilename = Excel_util.create_excel_chart(window, data_to_be_plotted, svo_file_name, outputDir,
-            #                                           "Personal_Pronouns_bar", "Frequency Distribution of Personal Pronouns",
-            #                                           ["bar"], "Personal Pronouns", "Frequencies",
-            #                                           [], False, [], 0, "")
-            return_files.append(Excel_outputFilename)
-    return return_files
-
 
 def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filter_o_fileName, lemmatize_s, lemmatize_v,lemmatize_o, outputDir, createExcelCharts=True):
     """

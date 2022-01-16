@@ -50,8 +50,8 @@ message_no_SVO_records = 'The SVO algorithms have not extracted any SVOs. If you
 title_options_SVO_someone = ['SVO Someone?']
 message_SVO_someone = 'The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., "A beautiful car was bought"), a subject is automatically added as Someone?.'
 
-title_options_SVO_personal_pronouns = ['SVO Personal pronouns']
-message_SVO_personal_pronouns = 'The SVO algorithms have detected the presence of personal pronouns (e.g., he, she). You should run the coreference annotator to resolve the coreferences.'
+title_options_CoreNLP_personal_pronouns = ['CoreNLP Personal pronouns']
+message_CoreNLP_personal_pronouns = 'The CoreNLP algorithms have detected the presence of personal pronouns (e.g., he, she). You should run the coreference annotator to resolve the coreferences.'
 
 title_options_Excel_Charts = ['Excel Charts']
 message_Excel_Charts = 'The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).\n\nFirst, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).\n\nSecond, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.'
