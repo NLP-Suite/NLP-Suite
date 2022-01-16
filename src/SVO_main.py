@@ -313,7 +313,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                     else:
                         reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
                                                      reminders_util.message_no_SVO_records, True)
-            pronoun_files = SVO_util.check_pronouns(window, config_filename, tempOutputFiles[0], outputDir, createExcelCharts)
+            pronoun_files = Stanford_CoreNLP_annotator_util.check_pronouns(window, config_filename, tempOutputFiles[0],
+                                                                           outputDir, createExcelCharts, "SVO")
             filesToOpen.extend(pronoun_files)
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
@@ -439,7 +440,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
             filesToOpen.extend(tempOutputFiles)
             pronoun_files = SVO_util.check_pronouns(window, config_filename, tempOutputFiles[0], outputDir,
-                                                    createExcelCharts)
+                                                    createExcelCharts, "SVO")
             filesToOpen.extend(pronoun_files)
             svo_result_list.append(tempOutputFiles[0])
 
