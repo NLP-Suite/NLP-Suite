@@ -331,8 +331,11 @@ def callback(software: str):
     # setup_software()
 
 def setup_software_warning():
-    mb.showwarning('Software option', 'Please, select next the external software that you would like to install using the dropdown menu.')
+    mb.showwarning('Software option', 'Please, select next the external software that you would like to download/install using the dropdown menu.')
     software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'MALLET', 'WordNet', 'SENNA', 'Gephi', 'Google Earth Pro'],'Stanford CoreNLP',callback)
+    if software == 'WordNet':
+        mb.showwarning('Software option',
+                       'Please, select next the external software that you would like to download/install using the dropdown menu.')
     return
 
 software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_software_warning())

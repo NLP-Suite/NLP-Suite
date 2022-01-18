@@ -109,20 +109,22 @@ def merge(outputDir, operation_results_text_list):
     csv_lst = list(dict.fromkeys(temp))
     param_lst = list(dict.fromkeys(temp2))
 
-    size = len(param_lst)
-    if (size >= 1):
-        try:
-            df1 = pd.read_csv(csv_lst[0])
-            df2 = pd.read_csv(csv_lst[1])
-            df = pd.merge(df1, df2, on=param_lst[0], how='right', suffixes=('', '_'))
-            for i in range(1, size):
+    size = len(csv_lst)
+    try:
+        df1 = pd.read_csv(csv_lst[0])
+        df2 = pd.read_csv(csv_lst[1])
+        df = pd.merge(df1, df2, on=param_lst, how='inner', suffixes=('', '_'))
+        df = drop_suffixCol(df)
+        if (size > 2):
+            for i in range(2, size):
                 tdf = pd.read_csv(csv_lst[i])
-                df = pd.merge(df, df2, on=param_lst[i], how='right', suffixes=('', '_'))
-        except (ValueError, TypeError) as err:
-            mb.showwarning(title='Error',
-                           message="An unexpected error occurred while merging the files.\n\nPlease, check the input files and try again.")
-            print("Unexpected err", err)
-            raise
+                df = pd.merge(df, tdf, on=param_lst, how='inner', suffixes=('', '_'))
+                df = drop_suffixCol(df)
+    except (ValueError, TypeError) as err:
+        mb.showwarning(title='Error',
+                        message="An unexpected error occurred while merging the files.\n\nPlease, check the input files and try again.")
+        print("Unexpected err", err)
+        raise
     outputFilename = IO_files_util.generate_output_file_name(csv_lst[0], os.path.dirname(csv_lst[0]),
                                                              outputDir,
                                                              '.csv', 'merge',

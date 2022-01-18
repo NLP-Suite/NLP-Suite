@@ -126,6 +126,7 @@ def check_avaialable_memory(software):
                                      reminders_util.message_memory, True)
     return mem_GB
 
+# return errorFound, error_code, system_output
 def check_java_installation(script):
     errorFound = False
     java_output = subprocess.run(['java', '-version'], capture_output=True)
@@ -395,7 +396,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             return None, missing_software
         if 'NLP_menu' in calling_script:  # called from NLP_main GUI. We just need to warn the user to download and install options
             title = 'NLP Suite external software ' + str(package.upper())
-            message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY WILL BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\n' + missing_software + 'If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDo you want to download/install this software now?\n\nY = Download; N = Install CANCEL to exit and download/install later?'
+            message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY WILL BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\n' + missing_software + 'If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDo you want to download/install this software now?\n\nY = Download;  N = Install;  CANCEL to exit and download/install later?'
         else:
             title = package.upper() + ' software'
             message = 'WARNING!\n\nThe script ' + calling_script.upper() + ' requires the external software ' + package.upper() + \
@@ -412,12 +413,51 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                     software_name = row[0]
                     software_dir = row[1]
                     software_download = row[2]
-                    if answer == True:  # Yes Download
+                    # answer is True for downloading
+                    if answer == True and software_dir == '':  # Yes Download if software not installed
+                        # Stanford CoreNLP, MALLET, SENNA download zip files which must be treated differently from straight executable files
+                        zip_message = ''
+                        if software_name=='Stanford CoreNLP' or software_name == 'SENNA' or software_name == 'MALLET':
+                            zip_message=', unzip the downloaded zip file, and move the entire unzipped folder '
+                            zip_warning='\n\nDO MAKE SURE THAT WHEN YOU UNZIP ' + software_name + ' YOU DO NOT END UP WITH A ' + software_name + ' DIRECTORY INSIDE A ' + software_name + ' DIRECTORY.'
+                        else:
+                            zip_message = ', move the downloaded software '
+                            zip_warning = ''
+                        title=software_name+' download & installation'
+                        message='After downloading ' + software_name + zip_message + 'to a directory of your choice and select that directory for installation, so that the NLP Suite algorithms will know where to find ' + software_name + ' on your hard drive.' + zip_warning
+                        mb.showwarning(title=title,
+                                       message=message)
                         # check internet connection
                         if not IO_internet_util.check_internet_availability_warning('NLP_menu_main'):
                             return
                         # open software download website
+                        if software_name == 'WordNet':
+                            mb.showwarning(title=software_name,
+                                           message='If you use Chrome as a browser and after clicking on the download link nothing happens, most likely Chrome has blocked the download operation. You have two options. Right click on the download executable and ...\n   1. Select "Open link in new window." and refresh or hit return to start downloading.\n   2. Select "Copy link address", start a new tab, paste the copied address and refresh or hit return to start downloading.')
                         webbrowser.open_new(software_download)
+                        if software_name == 'Stanford CoreNLP':
+                            # since Stanford CoreNLP needs Java, check for Java installation
+                            errorFound, error_code, system_output = check_java_installation('Stanford CoreNLP')
+                            if platform == 'win32':
+                                java_download = 'https://www.oracle.com/java/technologies/downloads/#java8-windows'
+                            else:
+                                java_download = 'https://www.oracle.com/java/technologies/downloads/#java8-mac'
+                            # errorFound=True # for testing
+                            if errorFound:
+                                Java_required='To run Stanford CoreNLP, written in Java, you need the freeware Java (by Oracle) installed on our machine.\n\nTo dowanload Java from the Oracle website, you will need to sign in in your Oracle account (you must create a free Oracle account if you do not have one).\n\nThe NLP Suite will now open the Java website on JDK8... JDK8 seems to work best with Stanford CoreNP on some machines. But on most machines higher Java releases also work.\n\nWhichever Java version you install, you need the JDK version, Java Development Kit.\n\nDownload Java JDK and run the executable.'
+                                mb.showwarning(title='Java',
+                                                message=Java_required)
+                                webbrowser.open_new(java_download)
+                        if software_name == 'SENNA':
+                            # Microsoft Visual Studio C++ must be downloaded for Windows machines;
+                            #   on Mac it is built into the OS
+                            if platform=='win32':
+                                title='Microsoft Visual Studio C++'
+                                message='SENNA (and Python wordclouds) require the freeware Visual Studio C++ (Community edition) installed on our Windows machine. If you haven\'t already installed it, please do so now.\n\nThe downloaded file is an executable file that opens an installer.\n\nDo you want to install Visual Studio C++?'
+                                answer = tk.messagebox.askyesnocancel(title, message)
+                                if answer:
+                                    download_studio='https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019'
+                                    webbrowser.open_new(download_studio)
                     if software_dir == '' and package.lower() in software_name.lower():
                         # get software directory
                         title = software_name.upper() + ' software'
@@ -446,6 +486,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                 # check that the selected folder for the external program is correct; if so save
                                 if not inputExternalProgramFileCheck(software_dir, software_name):
                                     software_dir = ''
+
                             # update the array existing_csv with the value of software_dir
                             if software_dir != '':
                                 existing_csv[index][1] = software_dir
