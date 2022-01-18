@@ -547,15 +547,14 @@ def CoreNLP_annotate(config_filename,inputFilename,
         #02/27/2021; eliminate the value error when there's no information from certain annotators
         if filesToVisualize[j][-4:] == ".csv":
             file_df = pd.read_csv(filesToVisualize[j])
-            file_df_name = os.path.split(filesToVisualize[j])[1]
             if not file_df.empty:
-                if 'Lemma' in str(file_df_name):
+                if "Lemma" in annotator_params:
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
                                           'Frequency Distribution of Lemmas', 1, [], 'lemma_bar','Lemma')
-                elif 'All POS' in str(file_df_name):
+                elif 'All POS' in annotator_params:
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
                                           'Frequency Distribution of POS Tag Values', 1, [], 'POS_bar','POS tag')
-                elif 'gender' in str(file_df_name):
+                elif 'gender' in annotator_params:
                     filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j], filesToOpen)
     
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
@@ -567,18 +566,18 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                       [[0, 0]], 'bar',
                                           'Frequency Distribution of Words by Gender Type', 1, ['Gender'], 'gender_words','')
 
-                elif 'quote' in str(file_df_name):
+                elif 'quote' in annotator_params:
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
                                                         [[5, 5]], 'bar',
                                                         'Frequency Distribution of Speakers', 1, [],
                                                         'quote_bar', 'Speaker')
-                elif 'date' in str(file_df_name):
+                elif 'date' in annotator_params:
                     # TODO put values hover-over values to pass to Excel chart as a list []
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
                                           'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Normalized date type')
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
                                                       'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type')
-                elif 'NER' in str(file_df_name):
+                elif 'NER' in annotator_params:
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
                                           'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
                     # ner tags are _ separated; individual NER tags at most have 2 _ (e.g., STATE_OR_PROVINCE)
@@ -588,7 +587,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         ner_tags = str(kwargs['NERs'][0])
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
                                           'Frequency Distribution of Words by NER ' +ner_tags, 1, ['NER Value'], 'NER_word_bar','') #NER ' +ner_tags+ ' Word
-                elif 'SVO' in str(file_df_name) or 'OpenIE' in str(file_df_name):
+                elif 'SVO' in annotator_params or 'OpenIE' in annotator_params:
                     # pie chart of SVO
                     # filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3],[4,4],[5,5]], 'pie',
                     #                       'Frequency Distribution of SVOs', 1, [], 'SVO_pie','SVOs')
@@ -1692,9 +1691,8 @@ def check_pronouns(window, config_filename, inputFilename, outputDir, createExce
             print ("Wrong Option value!")
             return []
     if total_count > 0:
-        if option == "SVO" or option == "CoNLL":
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_SCoreNLP_personal_pronouns,
-                                         reminders_util.message_CoreNLP_personal_pronouns, True)
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_personal_pronouns,
+                                     reminders_util.message_CoreNLP_personal_pronouns, True)
         if createExcelCharts:
             data_to_be_plotted = [["Personal Pronouns Value", "Personal Pronouns Count"], ["Total Count", total_count]]
             for w in sorted(pronouns_count, key=pronouns_count.get, reverse=True):
