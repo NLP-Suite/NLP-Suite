@@ -30,11 +30,29 @@ import ntpath #to split the path from filename
 import IO_files_util
 import IO_user_interface_util
 
+#Added by Tony
+#change the transparent pixel to white
+#user could use the website such as https://www.remove.bg/ to remove the background
+#They could Google for remove background
+def changeTransparentToWhite(img):
+    img = img.convert("RGBA")
+    datas = img.getdata()
+
+    newData = []
+    for item in datas:
+        if item[3] == 0: #if alpha value is zero, it is transparent
+            newData.append((255, 255, 255, 255))
+        else:
+            newData.append(item)
+
+    img.putdata(newData)
+    return img
+
+#Do Not Needed
 def transform_format(val):
-    if val == 0:
-        return 255
-    else:
-        return val
+    val = np.where(val == 0, 255 , val)
+    return val
+
     
 class GroupedColorFunc(object):
     """Create a color function object which assigns DIFFERENT SHADES of
@@ -290,8 +308,9 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, prefer_h
         # In order to create a shape for your wordcloud, first, you need to find a PNG file to become the mask.
         # Not all mask images have the same format resulting in different outcomes, hence making the WordCloud function not working properly.
         # The way the masking functions works is that it requires all white part of the mask should be 255 not 0 (integer type). This value represents the "intensity" of the pixel. Values of 255 are pure white, whereas values of 1 are black. Here, you can use the provided function below to transform your mask if your mask has the same format as above. Notice if you have a mask that the background is not 0, but 1 or 2, adjust the function to match your mask.
-
-        image_mask = np.array(Image.open(selectedImage))
+        img = Image.open(selectedImage)
+        img = changeTransparentToWhite(img)
+        image_mask = np.array(img)
         print("Image_mask (SHOULD ALL BE 0 VALUES)",image_mask)
         numberImages=len(image_mask.shape)
         # if i==1: #only print once
@@ -306,8 +325,11 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, prefer_h
             transformed_image_mask = np.ndarray((image_mask.shape[0],image_mask.shape[1],image_mask.shape[2]), np.int32)
         else:
             return
+        transformed_image_mask = image_mask
+        '''
         for j in range(len(image_mask)):
             transformed_image_mask[j] = list(map(transform_format, image_mask[j]))
+            '''
         # Check the expected result of your mask
         # if i==1: #only print once
         print("transformed_image_mask (SHOULD ALL BE 255 VALUES)",transformed_image_mask)

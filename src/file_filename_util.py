@@ -27,7 +27,9 @@ def backup_files (inputFilename,inputDir,fileType='.txt',silent=False):
     else:
         temp_inputDir = inputDir
     backup_path = os.path.join(temp_inputDir, 'backup')
-    answer=mb.askyesno("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
+    answer=mb.askyesnocancel("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
+    if answer==None: # Cancel
+        return False
     if answer:
         IO_files_util.make_directory(backup_path)
     else:
