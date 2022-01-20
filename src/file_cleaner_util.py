@@ -319,7 +319,7 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles):
 def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
     result=file_filename_util.backup_files(inputFilename, inputDir)
     if result==False:
-        return
+        return False
 
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     Ndocs=len(inputDocs)
@@ -328,7 +328,7 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
         return
     result= IO_user_interface_util.input_output_save("Convert apostrophes/quotes/%")
     if result ==False:
-        return
+        return False
 
     docError = 0
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
@@ -368,6 +368,7 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
             mb.showwarning(title='Non-ASCII punctuations converted',message=str(Ndocs) + ' document(s) processed.\n\n' + str(docError)+' documents were edited to convert non-ASCII apostrophes and/or quotes and % to percent.\n\nCHANGES WERE MADE DIRECTLY IN THE INPUT FILES.')
     else:
         mb.showwarning(title='Non-ASCII punctuations converted', message=str(Ndocs) + ' document(s) processed.\n\nNo documents were found with non-ASCII apostrophes or quotes and % to percent.')
+    return True
 
 # TODO to be completed w/o opening and closing the txt file for every string processed
 #Finished
