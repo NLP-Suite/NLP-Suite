@@ -278,9 +278,6 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                    openInputFile_button,True)
 
-    # openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate,
-    #                            y=y_multiplier_integer,True)
-
     selectedCsvFile_var = tk.StringVar()
     selectedCsvFile = tk.Entry(window, width=100, textvariable=selectedCsvFile_var)
     selectedCsvFile.config(state='disabled')
