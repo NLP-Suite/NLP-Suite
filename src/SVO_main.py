@@ -439,8 +439,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                     filesToOpen.extend(output)
 
             filesToOpen.extend(tempOutputFiles)
-            pronoun_files = SVO_util.check_pronouns(window, config_filename, tempOutputFiles[0], outputDir,
-                                                    createExcelCharts, "SVO")
+            pronoun_files = Stanford_CoreNLP_annotator_util.check_pronouns(window, config_filename, tempOutputFiles[0],
+                                                                           outputDir, createExcelCharts, "SVO")
             filesToOpen.extend(pronoun_files)
             svo_result_list.append(tempOutputFiles[0])
 

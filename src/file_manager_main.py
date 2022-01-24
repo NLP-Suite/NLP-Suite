@@ -126,6 +126,12 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
         mb.showwarning(title='File manager', message='Only one option at a time can be selected. You have selected ' + str(options) + ' options.\n\nPlease, deselect some options and try again.')
         return
 
+    if by_embedded_items_var:
+        if embedded_item_character_value_var=='':
+            mb.showwarning(title='File manager',
+                           message='You have selected the option "By number of embedded items" but you have not entered the "Separator character(s).\n\nPlease, enter the character(s) and try again.')
+            return
+
     # -------------------------------------------------------------------------------------------------
     # setup the field names of the output csv file
     fieldnames = ['File_Name', 'Path_To_File', 'File_Name_With_Path']
