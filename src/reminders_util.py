@@ -53,9 +53,6 @@ message_SVO_someone = 'The SVO algorithms convert passive sentences into active 
 title_options_CoreNLP_personal_pronouns = ['CoreNLP Personal pronouns']
 message_CoreNLP_personal_pronouns = 'The CoreNLP algorithms have detected the presence of personal pronouns (e.g., he, she). You should run the coreference annotator to resolve the coreferences.'
 
-title_options_Excel_Charts = ['Excel Charts']
-message_Excel_Charts = 'The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).\n\nFirst, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).\n\nSecond, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.'
-
 title_options_GIS_Nominatim = ['GIS Nominatim geocoder']
 message_GIS_Nominatim = "If the Nominatim geocoder service exits with the error 'too many requests', you can break up the csv location file and process each subfile for geocoding as normal csv files."
 
@@ -196,8 +193,8 @@ message_Google_Earth_CoNLL = "You are using a GIS visualization tool with a CoNL
 title_options_Google_API=['Google Maps API']
 message_Google_API = 'If the heatmap produced by Google Maps is displayed correctly for a split second and then displays "Oops! Something went wrong" you probably:\n\n   1. pasted incorrectly into the API key popup widget the Google API key;\n   2. you may not have entered billing information when applying for an API key; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale;\n   3. you may not have enabled the Maps JavaScript API (and if you use Google for geocoding, you also need to enable the Geocoding API).\n\nPlease, check the API key, your billing information, and the API enabled and try again.\n\nPLEASE, read the TIPS_NLP_Google API Key.pdf for help.'
 
-title_options_Excel = ['Excel Charts']
-message_Excel = 'The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).\n\nFirst, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).\n\nSecond, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.'
+title_options_Excel_Charts = ['Excel Charts']
+message_Excel_Charts = 'The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).\n\nFirst, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).\n\nSecond, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.\n\nThird, if the chart is displayed but the bars of a bar chart, for instance, have the same height, contrary to expectations, click on Data then on Chart to display the chart properly.'
 
 title_options_gensim = ['What is in your corpus - Gensim']
 message_gensim = 'The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.\n\nFor a more in-depth analysis of topics, use the topic modeling scripts for Gensim and MALLET.'

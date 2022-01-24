@@ -311,8 +311,8 @@ def save_software_config(new_csv,package):
         writer = csv.writer(csv_file)
         writer.writerows(new_csv)
 
-    mb.showwarning(title=package + ' saved',
-                               message="The installation location of " + package + " was successfully saved to " + software_config)
+    mb.showwarning(title=package.upper() + ' installation path saved',
+                               message="The installation path of " + package.upper() + " was successfully saved to " + software_config)
 
 # when coming from NLP_menu_main only_check_missing is set to True to set te checkbox to 0/1 if there is/isn't missing software
 def get_external_software_dir(calling_script, package, silent=False, only_check_missing=False):
@@ -396,7 +396,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             return None, missing_software
         if 'NLP_menu' in calling_script:  # called from NLP_main GUI. We just need to warn the user to download and install options
             title = 'NLP Suite external software ' + str(package.upper())
-            message = 'The NLP Suite relies on several external programs.\n\nPlease, download and install the following software or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm.\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY WILL BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.\n\n' + missing_software + 'If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDo you want to download/install this software now?\n\nY = Download;  N = Install;  CANCEL to exit and download/install later?'
+            message = 'The NLP Suite relies on several external programs that need to be installed.\n\nLIST OF PROGRAMS TO BE INSTALLED:\n\n' + missing_software + 'Please, download and install the software in the list or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm. If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDO YOU WANT TO DOWNLOAD/INSTALL THIS SOFTWARE NOW?\n\nY = Download;  N = Install;  CANCEL to exit and download/install later?'
         else:
             title = package.upper() + ' software'
             message = 'WARNING!\n\nThe script ' + calling_script.upper() + ' requires the external software ' + package.upper() + \
@@ -423,8 +423,13 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                         else:
                             zip_message = ', move the downloaded software '
                             zip_warning = ''
+                        software_name=software_name.upper()
                         title=software_name+' download & installation'
-                        message='After downloading ' + software_name + zip_message + 'to a directory of your choice and select that directory for installation, so that the NLP Suite algorithms will know where to find ' + software_name + ' on your hard drive.' + zip_warning
+                        if software_name == 'MALLET':
+                            MALLET_msg = '\n\nA MALLET DIRECTORY CANNOT CONTAIN BLANKS (SPACES) IN THE PATH. THE MALLET CODE CANNOT HANDLE PATHS THAT CONTAIN A SPACE AND WILL BREAK.'
+                        else:
+                            MALLET_msg = ''
+                        message='After downloading ' + software_name + zip_message + 'to a directory of your choice and select that directory for installation, so that the NLP Suite algorithms will know where to find ' + software_name + ' on your hard drive.' + '\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY WILL BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.' + zip_warning + MALLET_msg
                         mb.showwarning(title=title,
                                        message=message)
                         # check internet connection
@@ -453,7 +458,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                             #   on Mac it is built into the OS
                             if platform=='win32':
                                 title='Microsoft Visual Studio C++'
-                                message='SENNA (and Python wordclouds) require the freeware Visual Studio C++ (Community edition) installed on our Windows machine. If you haven\'t already installed it, please do so now.\n\nThe downloaded file is an executable file that opens an installer.\n\nDo you want to install Visual Studio C++?'
+                                message='SENNA (and Python WordCloud) require the freeware Visual Studio C++ (Community edition) installed on our Windows machine. If you haven\'t already installed it, please do so now.\n\nThe downloaded file is an executable file that opens an installer.\n\nDo you want to install Visual Studio C++?'
                                 answer = tk.messagebox.askyesnocancel(title, message)
                                 if answer:
                                     download_studio='https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019'
