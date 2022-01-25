@@ -432,11 +432,18 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                         # check internet connection
                         if not IO_internet_util.check_internet_availability_warning('NLP_menu_main'):
                             return
-                        # open software download website
 # WordNet
                         if software_name == 'WordNet':
                             mb.showwarning(title=software_name,
                                            message='If you use Chrome as a browser and after clicking on the download link nothing happens, most likely Chrome has blocked the download operation. You have two options. Right click on the download executable and ...\n   1. Select "Open link in new window." and refresh or hit return to start downloading.\n   2. Select "Copy link address", start a new tab, paste the copied address and refresh or hit return to start downloading.')
+                        if platform == 'darwin':
+                            mb.showwarning(title=software_name,
+                                           message='Once the WordNet website opens up, you need to download the executable file WordNet-3.0.tar.gz. Right-click on the file to unpack the archive.')
+                        if platform == 'win32':
+                            mb.showwarning(title=software_name,
+                                           message='Once the WordNet website opens up, you need to download the executable file WordNet-2.1.exe.')
+
+                        # open software download website
                         webbrowser.open_new(software_download)
 # CoreNLP
 # JAVA
