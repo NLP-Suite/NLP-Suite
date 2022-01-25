@@ -216,8 +216,9 @@ def writeOutput(inputPath, input_filename, outputPath, output_filename, fieldnam
             try:
                 writer.writerow(printLine)
             except:
-                mb.showwarning(title="Filename error",
-                               message=split_string + "\n\nERROR! The current file has more embedded items than the expected number (" + str(ID) + ").\n\nPlease, check the filename and edit it.")
+                # mb.showwarning(title="Filename error",
+                #                message=split_string + "\n\nERROR! The current file has more embedded items than the number of fields first created in the output csv file (" + str(ID) + ").\n\nPlease, check the filename and edit it.")
+                print("ERROR! The current file has more embedded items (" + str(ID) + ") than the number of fields first created in the output csv file. The file split values cannot be saved.")
     else:
         fileFound = False
 

@@ -879,6 +879,7 @@ number_of_items_value = tk.Entry(window, width=2,textvariable=number_of_items_va
 number_of_items_value.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+530,y_multiplier_integer, number_of_items_value,True)
 
+embedded_item_character_value_var.set("_")
 embedded_item_character_value_lb = tk.Label(window, text='Separator character(s)')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+580,y_multiplier_integer, embedded_item_character_value_lb,True)
 embedded_item_character_value = tk.Entry(window, width=2,textvariable=embedded_item_character_value_var)
@@ -892,7 +893,7 @@ include_exclude_checkbox.config(text='Include first # items only',state="disable
 
 def activate_numberEmbeddedItems_options(*args):
     number_of_items_var.set(0)
-    embedded_item_character_value_var.set('')
+    embedded_item_character_value_var.set('_')
     if by_embedded_items_var.get()==1:
         if split_file_manager_var.get()==False:
             comparison_menu.configure(state="normal")

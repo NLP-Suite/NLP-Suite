@@ -495,6 +495,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                         if not os.path.isdir("Applications/Gephi.app/Contents/MacOS"):
                                             mb.showwarning(title='GEPHI',
                                                            message="GEPHI has not been installed.")
+                                            software_dir = ''
                                         else:
                                             software_dir = "Applications/Gephi.app/Contents/MacOS"
                                     # GOOGLE EARTH PRO
@@ -502,6 +503,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                         if not os.path.isdir("Applications/Google Earth Pro.app/Contents/MacOS"):
                                             mb.showwarning(title='GOOGLE EARTH PRO',
                                                            message="GOOGLE EARTH PRO has not been installed.")
+                                            software_dir = ''
                                         else:
                                             software_dir = "Applications/Google Earth Pro.app/Contents/MacOS"
 
