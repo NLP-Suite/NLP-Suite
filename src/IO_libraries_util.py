@@ -413,19 +413,21 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                             zip_message=', unzip the downloaded zip file, and move the entire unzipped folder '
                             zip_warning='\n\nDO MAKE SURE THAT WHEN YOU UNZIP ' + software_name + ' YOU DO NOT END UP WITH A ' + software_name + ' DIRECTORY INSIDE A ' + software_name + ' DIRECTORY.'
                         if software_name == 'Gephi' or software_name == 'Google Earth Pro':
-                            message = 'After downloading ' + software_name + ' run the executable file.'
+                            if software_name == 'Gephi' or software_name == 'Google Earth Pro':
+                                    # only the Windows version is an exe file
+                                    # the Mac version is a compressed tar.gz file
+                                    message = 'After downloading ' + software_name.upper() + ' run the executable file.'
                             if platform == 'darwin':
                                 message = message + ' The software will be installed among the Mac applications: '
                                 if software_name == 'Gephi':
                                     message = message + 'Applications/Gephi.app/Contents/MacOS.'
                                 if software_name == 'Google Earth Pro':
                                     message = message + 'Applications/Gephi.app/Contents/MacOS.'
-                            else:
-                                message='After downloading ' + software_name + zip_message + 'to a directory of your choice and select that directory for installation, so that the NLP Suite algorithms will know where to find ' + software_name + ' on your hard drive.' + '\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY WILL BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.' + zip_warning + MALLET_msg
-                                zip_message = ', move the downloaded software '
-                                zip_warning = ''
-                        software_name=software_name.upper()
-                        title=software_name+' download & installation'
+                        else:
+                            zip_message = ', move the downloaded software '
+                            zip_warning = ''
+                            message='After downloading ' + software_name.upper() + zip_message + 'to a directory of your choice and select that directory for installation, so that the NLP Suite algorithms will know where to find ' + software_name + ' on your hard drive.' + '\n\nDO NOT INSTALL EXTERNAL SOFTWARE INSIDE THE NLP SUITE FOLDER OR THEY MAY BE OVERWRITTEN WHEN YOU UPGRADE THE SUITE.' + zip_warning + MALLET_msg
+                        title=software_name.upper() +' download & installation'
 
                         mb.showwarning(title=title,
                                        message=message)
@@ -434,14 +436,16 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                             return
 # WordNet
                         if software_name == 'WordNet':
-                            mb.showwarning(title=software_name,
+                            mb.showwarning(title=software_name.upper(),
                                            message='If you use Chrome as a browser and after clicking on the download link nothing happens, most likely Chrome has blocked the download operation. You have two options. Right click on the download executable and ...\n   1. Select "Open link in new window." and refresh or hit return to start downloading.\n   2. Select "Copy link address", start a new tab, paste the copied address and refresh or hit return to start downloading.')
-                        if platform == 'darwin':
-                            mb.showwarning(title=software_name,
-                                           message='Once the WordNet website opens up, you need to download the executable file WordNet-3.0.tar.gz. Right-click on the file to unpack the archive.')
-                        if platform == 'win32':
-                            mb.showwarning(title=software_name,
-                                           message='Once the WordNet website opens up, you need to download the executable file WordNet-2.1.exe.')
+                            if platform == 'darwin':
+                                mb.showwarning(title=software_name.upper(),
+                                               message='Once the WORDNET website opens up, you need to download the executable file WordNet-3.0.tar.gz. Right-click on the file to unpack the archive and install it.')
+                            # only the Windows version is an exe file
+                            # the Mac version is a compressed tar.gz file
+                            if platform == 'win32':
+                                mb.showwarning(title=software_name.upper(),
+                                               message='Once the WORDNET website opens up, you need to download the executable file WordNet-2.1.exe. After downloading, run the executable file.')
 
                         # open software download website
                         webbrowser.open_new(software_download)
@@ -481,22 +485,22 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                         while software_dir == None:
                             initialFolder = os.path.dirname(os.path.abspath(__file__))
                             if (platform == 'win32') or (platform == 'darwin' and software_name != 'Google Earth Pro' and software_name != 'Gephi'):
-                                mb.showwarning(title='Warning',
-                                                    message = "You will be asked next to select the directory where the software " + software_name.upper() + " was installed; or press CANCEL or ESC if you have not downloaded the software yet.")
+                                mb.showwarning(title=software_name.upper(),
+                                                    message = "You will be asked next to select the directory where the software " + software_name.upper() + " was installed after downloading; or press CANCEL or ESC if you have not downloaded the software yet.")
                                 software_dir = tk.filedialog.askdirectory(initialdir=initialFolder,
-                                                                          title=title + '. Please, select the directory where the software was installed; or press CANCEL or ESC if you have not downloaded the software yet.')
+                                                                          title=title + '. Please, select the directory where the software was installed after downloading; or press CANCEL or ESC if you have not downloaded the software yet.')
                                 # GEPHI
                                 if platform == 'darwin':
                                     if software_name == 'Gephi':
                                         if not os.path.isdir("Applications/Gephi.app/Contents/MacOS"):
-                                            mb.showwarning(title='Warning',
+                                            mb.showwarning(title='GEPHI',
                                                            message="GEPHI has not been installed.")
                                         else:
                                             software_dir = "Applications/Gephi.app/Contents/MacOS"
                                     # GOOGLE EARTH PRO
                                     if software_name == 'Google Earth Pro':
                                         if not os.path.isdir("Applications/Google Earth Pro.app/Contents/MacOS"):
-                                            mb.showwarning(title='Warning',
+                                            mb.showwarning(title='GOOGLE EARTH PRO',
                                                            message="GOOGLE EARTH PRO has not been installed.")
                                         else:
                                             software_dir = "Applications/Google Earth Pro.app/Contents/MacOS"
