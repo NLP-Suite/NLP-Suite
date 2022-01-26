@@ -860,8 +860,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             ws1.cell(row=i+1, column = 26*27).value = names[i]
 
         reminders_util.checkReminder('*',
-                                       reminders_util.title_options_Excel,
-                                       reminders_util.message_Excel,
+                                       reminders_util.title_options_Excel_Charts,
+                                       reminders_util.message_Excel_Charts,
                                        True)
 
     # NO hover-over effects; the Excel filename extension MUST be xlsx
