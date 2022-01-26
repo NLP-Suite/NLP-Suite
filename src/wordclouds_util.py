@@ -193,18 +193,19 @@ def processColorList(currenttext, color_to_words, csvField_color_list, myfile):
 def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transformed_image_mask,collocation,prefer_horizontal, bg_image = None,bg_image_flag = False):
     # stopwords dealt with in main function
     stopwords=''
+    c_wid = 0 if bg_image_flag else 3
     if len(transformed_image_mask) != 0:
         wc = WordCloud(collocations=collocation,width = 800, height = 800, max_words=1000, prefer_horizontal=prefer_horizontal, stopwords = stopwords, mask=transformed_image_mask,
-                       contour_width=3, contour_color='firebrick', background_color ='white').generate(text)
+                       contour_width=c_wid, contour_color='firebrick', background_color ='white').generate(text)
     else:
-        wc = WordCloud(collocations=collocation, width=800, height=800, max_words=1000,prefer_horizontal=prefer_horizontal,stopwords = stopwords, contour_width=3,
+        wc = WordCloud(collocations=collocation, width=800, height=800, max_words=1000,prefer_horizontal=prefer_horizontal,stopwords = stopwords, contour_width=c_wid,
                         background_color='white').generate(text)
     default_color = "(169, 169, 169)" # dark grey; black is 0,0,0
     grouped_color_func = GroupedColorFunc(color_to_words, default_color)
     wc.recolor(color_func=grouped_color_func)
     plt.figure(figsize = (8, 8), facecolor = None)
     output_file_name = IO_files_util.generate_output_file_name(doc, '', outputDir, '.png', 'WC', 'img')
-    if bg_image_flag:
+    if bg_image_flag and bg_image is not None:
         img = changeWhiteToTransparent(wc.to_image())
         img = img.resize(bg_image.size)
         img = Image.alpha_composite(bg_image, img)
@@ -242,6 +243,7 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
     #     tokens[i] = regex.sub('', tokens[i].lower())
     # for words in tokens:
     #     comment_words = comment_words + words + ' '
+    c_wid = 0 if bg_image_flag else 3
     if len(transformed_image_mask)!=0:
         wordcloud = WordCloud(width = 800, height = 800,
                         background_color ='white', 
@@ -249,32 +251,30 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
                         mask=transformed_image_mask,
                         prefer_horizontal=prefer_horizontal,
                         # stopwords = stopwords,
-                        contour_width=3,
+                        contour_width=c_wid,
                         contour_color='firebrick',
                         #min_font_size = 10, collocations=collocation).generate(comment_words)
-                        min_font_size = 10, collocations=collocation).generate(textToProcess)
+                        #min_font_size = 10, collocations=collocation).generate(textToProcess)
+                        collocations = collocation).generate(textToProcess)
     else:
         wordcloud = WordCloud(width = 800, height = 800,
                         background_color ='white', 
                         max_words=1000,
                         prefer_horizontal=prefer_horizontal,
                         # stopwords = stopwords,
-                        contour_width=3,
+                        contour_width=c_wid,
                         #min_font_size = 10, collocations=collocation).generate(comment_words)
-                        min_font_size = 10, collocations = collocation).generate(textToProcess)
-    # if inputDir == '' or doNotListIndividualFiles==False:
-    #     if doNotListIndividualFiles==False:
-            # inputDir = ''
-    if doc != '':
-        doc = ntpath.basename(doc)
-        title = doc
+                        #min_font_size = 10, collocations = collocation).generate(textToProcess)
+                        collocations = collocation).generate(textToProcess)
+    if doNotListIndividualFiles==True:
+        plt.title(inputDir)
+        output_file_name=IO_files_util.generate_output_file_name('', inputDir, outputDir, '.png', 'WC', 'img')
     else:
-        title = inputDir
-    plt.title(title)
-    output_file_name=IO_files_util.generate_output_file_name(doc, inputDir, outputDir, '.png', 'WC', 'img')
+        plt.title(ntpath.basename(doc))
+        output_file_name=IO_files_util.generate_output_file_name(doc, '', outputDir, '.png', 'WC', 'img')
     # plot the WordCloud image
     plt.figure(figsize = (8, 8), facecolor = None)
-    if bg_image_flag:
+    if bg_image_flag and bg_image is not None:
         img = changeWhiteToTransparent(wordcloud.to_image())
         img = img.resize(bg_image.size)
         img = Image.alpha_composite(bg_image, img)
@@ -448,8 +448,6 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
         startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Running STANZA & wordcloud',
                                            'Started running STANZA and wordcloud at', True,
                                            'Please, be patient. Depending upon the number of documents processed this may take a few minutes.',True,'',False)
-
-    nDocsRewritten = 0
     for doc in inputDocs:
         i = i+1
         head, tail = os.path.split(doc)
@@ -537,46 +535,34 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
                     if len(textToProcess) == 0:
                         textToProcess = currenttext
 
-                combinedtext = combinedtext + textToProcess
+        if doNotListIndividualFiles==False or len(inputFilename)>0:
+            if differentPOS_differentColors:
+                tempOutputfile = display_wordCloud_sep_color(doc, outputDir, textToProcess, color_to_words,
+                                                             transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only)
+            else:
+                tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only)
+            filesToOpen.append(tempOutputfile)
+            # write an output txt file that can be used for internet wordclouds services
+            if lemmatize or exclude_stopwords:
+                with open(tempOutputfile[:-8]+'.txt', 'w') as f:
+                    f.write(textToProcess)
+        combinedtext = combinedtext + textToProcess
 
-                # process individual files for inputDir
-                if len(inputDir)>0 and doNotListIndividualFiles==False:
-                    if differentPOS_differentColors:
-                        tempOutputfile = display_wordCloud_sep_color(doc, outputDir, textToProcess, color_to_words,
-                                                                     transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only)
-                    else:
-                        tempOutputfile=display_wordCloud(doc,'',outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only)
-
-                    filesToOpen.append(tempOutputfile)
-
-                    # write an output txt file that can be used for internet wordclouds services
-                    if lemmatize or exclude_stopwords:
-                        if lemmatize or exclude_stopwords:
-                            with open(tempOutputfile[:-8] + '.txt', 'w') as f:
-                                f.write(textToProcess)
-
-    # process FINAL file, either doc or combined
     if len(inputDir)>0:
-        doc=''
-    else:
-        inputDir=''
-    if differentPOS_differentColors:
-        tempOutputfile = display_wordCloud_sep_color(doc, outputDir, combinedtext, color_to_words,
-                                                     transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only)
-    else:
-        tempOutputfile=display_wordCloud(doc,inputDir,outputDir,combinedtext, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only)
-    filesToOpen.append(tempOutputfile)
-
-    # write an output txt file that can be used for internet wordclouds services
-    if lemmatize or exclude_stopwords:
-        with open(tempOutputfile[:-8] + '.txt', 'w') as f:
-            f.write(combinedtext)
-        if doNotListIndividualFiles==False:
-            nDocsRewritten = nDocs+1
+        if differentPOS_differentColors:
+            tempOutputfile=display_wordCloud_sep_color(inputDir, outputDir, combinedtext, color_to_words, transformed_image_mask, collocation, prefer_horizontal,bg_image=img, bg_image_flag = use_contour_only)
         else:
+            tempOutputfile=display_wordCloud(inputDir,inputDir,outputDir,combinedtext, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_img=img, bg_image_flag = use_contour_only)
+        filesToOpen.append(tempOutputfile)
+        # write an output txt file that can be used for internet wordclouds services
+        if lemmatize or exclude_stopwords:
+            with open(tempOutputfile[:-8] + '.txt', 'w') as f:
+                f.write(combinedtext)
             nDocsRewritten = 1
-        mb.showwarning(title='txt files',
-                   message='The Python 3 WordCloud algorithm has produced '+ str(nDocsRewritten)+' txt file(s) without stopwords, punctuation, and with lemmatized words, depending upon your selected filter options.\n\nYou will find the file(s) in your output directory.\n\nYou can use the file(s) to produce wordclouds using any of the internet wordcloud services that do not offer lemmas or stopwords options.')
+            if doNotListIndividualFiles==False:
+                nDocsRewritten = nDocs+1
+            mb.showwarning(title='txt files',
+                           message='The Python 3 wordclouds algorithm has produced '+ str(nDocsRewritten)+' txt file(s) without stopwords, punctuation, and with lemmatized words, depending upon your selected filter options.\n\nYou will find the file(s) in your output directory.\n\nYou can use the file(s) to produce wordclouds using any of the internet wordcloud services.')
 
     if len(combinedtext) < 1:
         print('All ' + str(NumEmptyDocs) + ' txt files in your input directory\n' + str(
