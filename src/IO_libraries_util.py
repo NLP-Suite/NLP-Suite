@@ -513,20 +513,20 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                             # GEPHI
                             if platform == 'darwin':
                                 if software_name == 'Gephi':
-                                    if not os.path.isdir("Applications/Gephi.app/Contents/MacOS"):
+                                    if not os.path.isdir("/Applications/Gephi.app/Contents/MacOS"):
                                         mb.showwarning(title=title,
                                                        message="GEPHI has not been installed.")
                                         software_dir = ''
                                     else:
-                                        software_dir = "Applications/Gephi.app/Contents/MacOS"
+                                        software_dir = "/Applications/Gephi.app/Contents/MacOS"
                                 # GOOGLE EARTH PRO
                                 if software_name == 'Google Earth Pro':
-                                    if not os.path.isdir("Applications/Google Earth Pro.app/Contents/MacOS"):
+                                    if not os.path.isdir("/Applications/Google Earth Pro.app/Contents/MacOS"):
                                         mb.showwarning(title=title,
                                                        message="GOOGLE EARTH PRO has not been installed.")
                                         software_dir = ''
                                     else:
-                                        software_dir = "Applications/Google Earth Pro.app/Contents/MacOS"
+                                        software_dir = "/Applications/Google Earth Pro.app/Contents/MacOS"
 
                             if software_dir != '':
                                 # check that it is the correct software directory
