@@ -514,13 +514,15 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
                             if exclude_stopwords:
                                 if word_str in stopwords:
                                     continue  # do not process stopwords & punctuation marks
-                            if exclude_punctuation:
-                                if word.pos == "PUNCT":
-                                    continue  # do not process stopwords & punctuation marks
                             # print("   word_str",word_str,"word.pos",word.pos)
                             # convert to lower case for same improper words that may appear after a full stop
                             if lowercase:
+                                if word_str=='':
+                                    word_str = word.text
                                 word_str = word_str.lower()
+                            if exclude_punctuation:
+                                if word.pos == "PUNCT":
+                                    continue  # do not process stopwords & punctuation marks
                             if word.pos == "NOUN":
                                 color_to_words[red_code].append(word_str)
                             elif word.pos == "VERB":
@@ -529,8 +531,11 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
                                 color_to_words[green_code].append(word_str)
                             elif word.pos == "ADV":
                                 color_to_words[grey_code].append(word_str)
-                            if word.pos == "NOUN" or word.pos == "VERB" or \
-                                    word.pos == "ADJ" or word.pos == "ADV":
+                            if differentColumns_differentColors:
+                                if word.pos == "NOUN" or word.pos == "VERB" or \
+                                        word.pos == "ADJ" or word.pos == "ADV":
+                                        textToProcess = textToProcess + ' ' + word_str
+                            else:
                                 textToProcess = textToProcess + ' ' + word_str
                     if len(textToProcess) == 0:
                         textToProcess = currenttext
@@ -566,7 +571,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
 
     if len(combinedtext) < 1:
         print('All ' + str(NumEmptyDocs) + ' txt files in your input directory\n' + str(
-            inputDir) + ' are empty.\n\nPlease, check your directory an try again.')
+            inputDir) + ' are empty.\n\nPlease, check your directory and try again.')
         mb.showerror(title='Files empty',
                      message='All ' + str(NumEmptyDocs) + ' txt files are empty in your input directory\n' + str(
                          inputDir) + '\n\nPlease, check your directory and try again.')
