@@ -195,27 +195,35 @@ def check_newest_release(current_release: str):
     except:
         mb.showwarning(title='Internet connection error', message="The attempt to connect to GitHub failed.\n\nIt is not possible to check the latest release of the NLP Suite at this time. You can continue run your current release and try again later.")
         return
-    # current_release = '2.1.2' # line used for testing; should be LOWER than the version on GitHub
+    # current_release = '2.3.1' # line used for testing; should be LOWER than the version on GitHub
     # split the text string of release version (e.g., 1.5.9) into three parts separated by .
     current_release_parts=[current_release[i:i + 1] for i in range(0, len(current_release), 2)]
     GitHub_release_parts=[GitHub_newest_release[i:i + 1] for i in range(0, len(GitHub_newest_release), 2)]
     old_version = False
     # check numbers
-    if int(current_release_parts[0])>int(GitHub_release_parts[0]):
+    if int(current_release_parts[0]) > int(GitHub_release_parts[0]):
         return
+    if int(current_release_parts[0])<int(GitHub_release_parts[0]):
+        old_version = True
     else:
+        # if the first parts are the same, check the second part
         if int(current_release_parts[1])>int(GitHub_release_parts[1]):
             return
+        if int(current_release_parts[1]) < int(GitHub_release_parts[1]):
+            old_version = True
         else:
-            if int(current_release_parts[2]) >= int(GitHub_release_parts[2]):
-                return
-            else:
+            # if the second parts are the same, check the third part
+            if int(current_release_parts[2]) < int(GitHub_release_parts[2]):
                 old_version = True
+            else:
+                return
     if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != current_release:
         result = mb.askyesno("NLP Suite Outdated",
-                    "You are running NLP Suite release version " + str(current_release) + " an OLD version.\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) +
-                    ".\n\nEXIT the NLP Suite NOW by clicking on the CLOSE button. The NLP Suite will be automatically updated every time you exit the NLP Suite.\n\n   You can also go to the " + setup_folder + " subfolder inside the NLP installation folder and run the update script by clicking on " + update_command + " to update manually your NLP Suite to the latest " + str(GitHub_newest_release) + " release.\n\nFire up the NLP Suite again and if you have performed either update command you will be all set.\n\n" +
-                    "WOULD YOU LIKE TO SEE WHAT IS NEW IN THE RELEASE VERSION " + str(GitHub_newest_release) + " AVAILABLE ON GitHub? (You must be connected to the internet)")
+                    "You are running the NLP Suite release version " + str(current_release) + ", an OLD version." +
+                    "\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) + "." +
+                    "\n\nTo update to the newer release, EXIT the NLP Suite NOW by clicking on the CLOSE button and fire up the NLP Suite again.\n\nThe NLP Suite is automatically updated every time you exit the NLP Suite and fire it up again." +
+                    "\n\nThe update features of the NLP Suite rely on Git. Please download Git at this link https://git-scm.com/downloads, if it hasn’t been installed already." +
+                    "\n\nWOULD YOU LIKE TO SEE WHAT IS NEW IN THE RELEASE VERSION " + str(GitHub_newest_release) + "?")
         if result:
             webbrowser.open_new("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
 

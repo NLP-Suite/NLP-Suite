@@ -169,14 +169,14 @@ def get_hover_column_numbers(withHeader_var,headers,hover_info_column_list):
                 x=headers.index(hover_info_column_list[i])
             else:
                 if len(hover_info_column_list[i]) > 0:
-                    mb.showwarning(title='Series No.'+ str(i+1) +' Hover Data Warning', message='The hover-over data column for series No.' + str(i+1) + ' will be empty.\n\nYou may have entered a column name which does not exist in the input CSV file.\n\nPlease, exit the program, check your input and try again.')
+                    mb.showwarning(title='Series No.'+ str(i+1) + ' ' + hover_info_column_list[i] + 'Hover Data Warning', message='The hover-over data column for series No.' + str(i+1) + ' will be empty.\n\nYou may have entered a column name which does not exist in the input CSV file.\n\nPlease, exit the program, check your input and try again.')
                 x=-1
             # y=headers.index(selected_series[i][1])
         else: #NO headers
             try:
                 x=int(hover_info_column_list[i])
             except:
-                mb.showwarning(title='Series No.'+ str(i+1) +' Hover Data Header', message='The input csv file has no header so the expected hover-over column header should be numbers(o for A, 1 for B,...) but the ENTERED hover-over data column for series No.' + str(i+1) + ' is not a number.\n\nPlease, exit the program, check your input and try again.')
+                mb.showwarning(title='Series No.'+ str(i+1) + ' ' + hover_info_column_list[i] +' Hover Data Header', message='The input csv file has no header so the expected hover-over column header should be numbers(o for A, 1 for B,...) but the ENTERED hover-over data column for series No.' + str(i+1) + ' is not a number.\n\nPlease, exit the program, check your input and try again.')
                 return
         hover_column_numbers.append(x)
     return hover_column_numbers
@@ -860,8 +860,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             ws1.cell(row=i+1, column = 26*27).value = names[i]
 
         reminders_util.checkReminder('*',
-                                       reminders_util.title_options_Excel,
-                                       reminders_util.message_Excel,
+                                       reminders_util.title_options_Excel_Charts,
+                                       reminders_util.message_Excel_Charts,
                                        True)
 
     # NO hover-over effects; the Excel filename extension MUST be xlsx

@@ -1218,9 +1218,11 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
         for token in sentence['tokens']:
             if token["ner"] == "TIME" or token["ner"] == "DATE":
                 T.append(token["word"])
-
                 T_S.append(token['normalizedNER'])
-
+                # try:
+                #     T_S.append(token['normalizedNER'])
+                # except:
+                #     print("normalizedNER not found.")
             if token["ner"] == "PERSON":
                 P.append(token["word"])
 

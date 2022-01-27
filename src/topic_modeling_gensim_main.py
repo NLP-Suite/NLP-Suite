@@ -150,6 +150,18 @@ if current_process().name == 'MainProcess':
     Mallet_checkbox = tk.Checkbutton(window, text='Run MALLET (Topic coherence values and plot visualization)', variable=Mallet_var, onvalue=1, offvalue=0)
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    Mallet_checkbox)
+
+    def Mallet_reminder(*args):
+        if Mallet_var.get():
+            routine_options = reminders_util.getReminders_list(config_filename)
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_gensim_release,
+                                         reminders_util.message_gensim_release,
+                                         True)
+            routine_options = reminders_util.getReminders_list(config_filename)
+    Mallet_var.trace('w',Mallet_reminder)
+
+
     videos_lookup = {'No videos available': ''}
     videos_options = 'No videos available'
 
