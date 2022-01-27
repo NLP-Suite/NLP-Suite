@@ -583,10 +583,10 @@ def pin_customizer(inputFilename, pnt, geo_index, index_list, locationColumnName
 				   icon_type_list, icon_style_list, icon_url,
 				   name_var_list, scale_var_list, color_var_list, color_style_var_list,
 				   bold_var_list, italic_var_list, description_var_list, description_csv_field_var_list,
-				   j):
-
-	withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
-	data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
+				   j, data=None, headers=None):
+	if data is None:
+		withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
+		data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
 
 	# Assign description
 	if description_var_list[j] == 1:
