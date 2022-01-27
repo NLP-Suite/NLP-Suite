@@ -44,7 +44,6 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 				 name_var_list, scale_var_list, color_var_list, color_style_var_list,
 				 bold_var_list, italic_var_list,
 				 description_var_list, description_csv_field_var_list, colorize=True):
-	rafael_times = [time.time()]
 	startTime=IO_user_interface_util.timed_alert(window, 3000, 'GIS kml generator', 'Started generating KML file at',
 									   True, '', True,'',True)
 
