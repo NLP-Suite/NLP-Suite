@@ -20,6 +20,8 @@ import IO_csv_util
 import IO_user_interface_util
 import Stanford_CoreNLP_tags_util
 import pandas as pd
+import CoNLL_k_sentences_util
+
 # from data_manager_main import extract_from_csv
 
 # more imports (e.g., import CoNLL_clause_analysis_util) are called below under separate if statements
@@ -30,6 +32,7 @@ import pandas as pd
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         searchedCoNLLField, searchField_kw, postag, deprel, co_postag, co_deprel,
+        k_sentences_var,
         clausal_analysis_var,
         noun_analysis_var,
         verb_analysis_var,
@@ -45,7 +48,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
 
     if searchField_kw == 'e.g.: father':
         if not compute_sentence_var.get() and not extract_var.get():
-            if clausal_analysis_var==False and noun_analysis_var==False and verb_analysis_var==False and function_words_analysis_var==False:
+            if clausal_analysis_var==False and noun_analysis_var==False and verb_analysis_var==False and function_words_analysis_var==False and k_sentences_var==False:
                 mb.showwarning(title='No option selected',
                            message="No option has been selected.\n\nPlease, select an option and try again.")
                 return  # breaks loop
@@ -74,6 +77,11 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                                                  csv_file_field_list=csv_file_field_list)
         if outputFiles != None:
             filesToOpen.extend(outputFiles)
+
+    if k_sentences_var:
+        outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename,outputDir)
+        if outputFiles != None:
+            filesToOpen.append(outputFiles)
 
     if clausal_analysis_var or noun_analysis_var or verb_analysis_var or function_words_analysis_var:
         startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CoNLL table analyses at',
@@ -149,10 +157,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         outputFiles = []
         return
 
-    if searchField_kw == 'e.g.: father':
-        if not compute_sentence_var.get() and not extract_var.get():
-            return  # breaks loop
-    else:
+    if searchField_kw != 'e.g.: father':
         if searchedCoNLLField.lower() not in ['lemma', 'form']:
             searchedCoNLLField = 'FORM'
         if postag != '*':
@@ -344,6 +349,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  deprel_var.get(),
                                  co_postag_var.get(),
                                  co_deprel_var.get(),
+                                 k_sentences_var.get(),
                                  clausal_analysis_var.get(),
                                  noun_analysis_var.get(),
                                  verb_analysis_var.get(),
@@ -358,8 +364,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=590, # height at brief display
-                                                 GUI_height_full=630, # height at full display
+                                                 GUI_height_brief=630, # height at brief display
+                                                 GUI_height_full=670, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -398,6 +404,7 @@ co_postag_var = tk.StringVar()
 co_postag_var = tk.StringVar()
 co_deprel_var = tk.StringVar()
 SVO_var = tk.IntVar()
+k_sentences_var = tk.IntVar()
 csv_file_field_list = []
 
 clausal_analysis_var = tk.IntVar()
@@ -697,6 +704,13 @@ SVO_checkbox.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                SVO_checkbox)
 
+k_sentences_var.set(0)
+k_sentences_checkbox = tk.Checkbutton(window, text="Analyze K sentences",
+                              variable=k_sentences_var, onvalue=1, offvalue=0)
+# k_sentences_checkbox.configure(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               k_sentences_checkbox)
+
 # Here rowspan=3 is necessary to make the separator span all 3 rows (the header, player 1 and player2).
 # The sticky='ns' is there to stretch the separator from the top to the bottom of the window.
 # Separators are only 1 pixel long per default, so without the sticky it would hardly be visible.
@@ -949,6 +963,8 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+9), "Help",
                                   "ON THE LEFT-HAND SIDE, please, tick the checkbox if you wish to extract SVOs from the CoNLL table.\n\nON THE RIGHT-HAND SIDE, tick the 'All analyses: clauses, nouns, verbs, function words (\'junk/stop\' words)' to select and deselect all options, allowing you to select specific options." + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+10), "Help",
+                                  "ON THE LEFT-HAND SIDE, please, tick the checkbox if you wish to extract specific items (e.g., Proper nouns) from the first K and last K sentences in a document." + GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+11), "Help",
                                   GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
