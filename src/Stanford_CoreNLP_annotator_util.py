@@ -554,20 +554,21 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 elif 'All POS' in annotator_params:
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
                                           'Frequency Distribution of POS Tag Values', 1, [], 'POS_bar','POS tag')
-                elif 'gender' in annotator_params:
+                elif 'gender' in annotator_params and "gender" in filesToVisualize[j].split("_"):
                     filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j], filesToOpen)
-    
-                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
-                                                        [[1, 1]], 'bar',
-                                                        'Frequency Distribution of Gender Types', 1, [],
-                                                        'gender_types','Gender')
+                    if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "Gender":
+                        filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
+                                                            [[1, 1]], 'bar',
+                                                            'Frequency Distribution of Gender Types', 1, [],
+                                                            'gender_types','Gender')
 
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
-                                                      [[0, 0]], 'bar',
-                                          'Frequency Distribution of Words by Gender Type', 1, ['Gender'], 'gender_words','')
+                        filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
+                                                          [[0, 0]], 'bar',
+                                              'Frequency Distribution of Words by Gender Type', 1, ['Gender'], 'gender_words','')
 
-                elif 'quote' in annotator_params:
-                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
+                elif 'quote' in annotator_params and "quote" in filesToVisualize[j].split("_"):
+                    if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[5] == "Speakers":
+                        filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
                                                         [[5, 5]], 'bar',
                                                         'Frequency Distribution of Speakers', 1, [],
                                                         'quote_bar', 'Speaker')
@@ -577,16 +578,17 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                           'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Normalized date type')
                     filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
                                                       'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type')
-                elif 'NER' in annotator_params:
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
-                                          'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
-                    # ner tags are _ separated; individual NER tags at most have 2 _ (e.g., STATE_OR_PROVINCE)
-                    if len(kwargs['NERs'])>1:
-                        ner_tags = 'Multi-tags'
-                    else:
-                        ner_tags = str(kwargs['NERs'][0])
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
-                                          'Frequency Distribution of Words by NER ' +ner_tags, 1, ['NER Value'], 'NER_word_bar','') #NER ' +ner_tags+ ' Word
+                elif 'NER' in annotator_params and "NER" in filesToVisualize[j].split("_"):
+                    if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "NER Value":
+                        filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
+                                              'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
+                        # ner tags are _ separated; individual NER tags at most have 2 _ (e.g., STATE_OR_PROVINCE)
+                        if len(kwargs['NERs'])>1:
+                            ner_tags = 'Multi-tags'
+                        else:
+                            ner_tags = str(kwargs['NERs'][0])
+                        filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
+                                              'Frequency Distribution of Words by NER ' +ner_tags, 1, ['NER Value'], 'NER_word_bar','') #NER ' +ner_tags+ ' Word
                 elif 'SVO' in annotator_params or 'OpenIE' in annotator_params:
                     # pie chart of SVO
                     # filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3],[4,4],[5,5]], 'pie',
@@ -1625,11 +1627,13 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
 
 
 def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesToOpen):
+    if "Gender" not in IO_csv_util.get_csvfile_headers(dictFilename, False):
+        return
+
     # annotate the input file(s) for gender values
     csvValue_color_list = ['Gender', '|', 'FEMALE', 'red', '|', 'MALE', 'blue', '|']
     bold_var = True
     tagAnnotations = ['<span style="color: blue; font-weight: bold">', '</span>']
-
     tempFilename = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
                                                              dictFilename,'',
                                                              csvValue_color_list, bold_var, tagAnnotations,

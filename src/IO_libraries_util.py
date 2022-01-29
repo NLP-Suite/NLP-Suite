@@ -238,14 +238,14 @@ def inputExternalProgramFileCheck(software_dir, programName):
                 return True
             else:
                 mb.showwarning(title='Software error',
-                               message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Gephi directory. The directory should contain, among other things, the directories \'gephi\' and \'platform\'.\n\nPlease, select the appropriate Gephi directory and try again!\n\nYou can download Gephi at " + Gephi_download + ".\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
+                               message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Gephi directory. The directory should contain, among other things, the directories \'gephi\' and \'platform\'.\n\nPlease, select the appropriate Gephi directory and try again!\n\nYou can download Gephi at " + Gephi_download + ". Make sure you have a recent Java installed on your system. Gephi is compatible with Java 7 and 8 versions. After the Gephi download completes, run the installer and follow the steps.\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
                 return False
         if platform == 'darwin':
             if 'gephi' in fileList:
                 return True
             else:
                 mb.showwarning(title='Software error',
-                               message="Gephi was not found among Mac applications.\n\nYou can download Gephi at " + Gephi_download + ".\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
+                               message="Gephi was not found among Mac applications.\n\nYou can download Gephi at " + Gephi_download + ".\n\nAfter the download completes, click on the downloaded .dmg file and drag the Gephi application in your Mac Applications folder.\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
                 return False
 
     if programName == 'Google Earth Pro':
@@ -411,6 +411,8 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                     if package!='' and package!=software_name:
                         continue
 
+# Setup user messages for the various types f external software and platforms
+
                     if platform == 'darwin':
                         message2 = "You will be asked next to select the Mac Applications directory where the software " + software_name.upper() + " was installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
                     if platform == 'win32':
@@ -428,15 +430,20 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                         zip_message = ''
                         title=software_name.upper() +' download'
 
-                        # MALLET
+# Messages for MALLET
+
                         if software_name == 'MALLET':
                             MALLET_msg = '\n\nA MALLET DIRECTORY CANNOT CONTAIN BLANKS (SPACES) IN THE PATH. THE MALLET CODE CANNOT HANDLE PATHS THAT CONTAIN A SPACE AND WILL BREAK.'
                         else:
                             MALLET_msg = ''
 
+# Messages for Stanford CoreNLP, SENNA, MALLET, WordNet in Mac
+
                         if software_name=='Stanford CoreNLP' or software_name == 'SENNA' or software_name == 'MALLET' or (platform == 'darwin' and software_name == 'WordNet'):
                             zip_message=', UNARCHIVE the downloaded archived file, and move the entire unarchived folder '
                             zip_warning='\n\nDO MAKE SURE THAT WHEN YOU UNARCHIVE ' + software_name + ' YOU DO NOT END UP WITH A ' + software_name + ' DIRECTORY INSIDE A ' + software_name + ' DIRECTORY.'
+
+# Messages for Gephi, Google Earth Pro, and WordNet in Windows
 
                         if software_name == 'Gephi' or software_name == 'Google Earth Pro' or (platform == 'win32' and software_name == 'WordNet'):
                             message = 'After downloading ' + software_name.upper() + ' run the executable file.'
@@ -461,29 +468,33 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                         # check internet connection
                         if not IO_internet_util.check_internet_availability_warning('NLP_menu_main'):
                             return
-# Download WordNet
+
+# DOWNLOAD WordNet
                         if software_name == 'WordNet':
                             mb.showwarning(title=software_name.upper()+ ' with Chrome',
                                            message='If you use Chrome as a browser and after clicking on the download link nothing happens, most likely Chrome has blocked the download operation. You have two options. Right click on the download executable and ...\n   1. Select "Open link in new window." and refresh or hit return to start downloading.\n   2. Select "Copy link address", start a new tab, paste the copied address and refresh or hit return to start downloading.')
 
                         # open software download website
                         webbrowser.open_new(software_download)
-# Download CoreNLP
-# Download JAVA
-                        if software_name == 'Stanford CoreNLP':
-                            # since Stanford CoreNLP needs Java, check for Java installation
-                            errorFound, error_code, system_output = check_java_installation('Stanford CoreNLP')
+
+# DOWNLOAD JAVA for CoreNLP or Gephi
+
+                        if software_name == 'Stanford CoreNLP' or software_name == 'Gephi':
+                            # since Stanford CoreNLP and Gephi need Java, check for Java installation
+                            errorFound, error_code, system_output = check_java_installation(software_name)
                             if platform == 'win32':
                                 java_download = 'https://www.oracle.com/java/technologies/downloads/#java8-windows'
                             else:
                                 java_download = 'https://www.oracle.com/java/technologies/downloads/#java8-mac'
                             # errorFound=True # for testing
                             if errorFound:
-                                Java_required='To run Stanford CoreNLP, written in Java, you need the freeware Java (by Oracle) installed on our machine.\n\nTo dowanload Java from the Oracle website, you will need to sign in in your Oracle account (you must create a free Oracle account if you do not have one).\n\nThe NLP Suite will now open the Java website on JDK8... JDK8 seems to work best with Stanford CoreNP on some machines. But on most machines higher Java releases also work.\n\nWhichever Java version you install, you need the JDK version, Java Development Kit.\n\nDownload Java JDK and run the executable.'
+                                Java_required=software_name + ' requires the freeware Java (by Oracle) installed on our machine.\n\nTo dowanload Java from the Oracle website, you will need to sign in in your Oracle account (you must create a free Oracle account if you do not have one).\n\nThe NLP Suite will now open the Java website on JDK8... JDK8 seems to work best with Stanford CoreNP on some machines. But on most machines higher Java releases also work.\n\nWhichever Java version you install, you need the JDK version, Java Development Kit.\n\nDownload Java JDK and run the executable.'
                                 mb.showwarning(title='Java',
                                                 message=Java_required)
                                 webbrowser.open_new(java_download)
-# Download SENNA
+
+# DOWNLOAD Microsoft Visual Studio C++ for SENNA
+
                         if software_name == 'SENNA':
                             # Microsoft Visual Studio C++ must be downloaded for Windows machines;
                             #   on Mac it is built into the OS
@@ -510,7 +521,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                                message=message2)
                             software_dir = tk.filedialog.askdirectory(initialdir=initialFolder,
                                                                       title=title + message3)
-                            # GEPHI
+                            # GEPHI INSTALLATION
                             if platform == 'darwin':
                                 if software_name == 'Gephi':
                                     if not os.path.isdir("/Applications/Gephi.app/Contents/MacOS"):
@@ -519,7 +530,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                         software_dir = ''
                                     else:
                                         software_dir = "/Applications/Gephi.app/Contents/MacOS"
-                                # GOOGLE EARTH PRO
+                                # GOOGLE EARTH PRO INSTALLATION
                                 if software_name == 'Google Earth Pro':
                                     if not os.path.isdir("/Applications/Google Earth Pro.app/Contents/MacOS"):
                                         mb.showwarning(title=title,
@@ -527,7 +538,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                         software_dir = ''
                                     else:
                                         software_dir = "/Applications/Google Earth Pro.app/Contents/MacOS"
-
+                            # INSTALLATION
                             if software_dir != '':
                                 # check that it is the correct software directory
                                 if 'corenlp' in software_name.lower():
