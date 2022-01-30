@@ -58,7 +58,7 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
 
         pythonFile = importlib.import_module(script_to_run)
         func = getattr(pythonFile, function_to_run)
-        if IO_libraries_util.inputProgramFileCheck(script_to_run + ".py") == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile(script_to_run + ".py") == False:
             return
         outputFile=[]
 

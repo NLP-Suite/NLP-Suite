@@ -66,7 +66,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
             csv_file_var.set(str(filesToOpen[0]))
 
     if annotate_file_var:
-        if IO_libraries_util.inputProgramFileCheck('annotator_dictionary_util.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('annotator_dictionary_util.py') == False:
             return
         csvValue_color_list = []
         bold_var=True

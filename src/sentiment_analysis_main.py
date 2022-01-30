@@ -101,7 +101,7 @@ def run(inputFilename,inputDir,outputDir,
 
         flag = "false" # the true option does not seem to work
 
-        if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py') == False:
             return
         # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Stanford CoreNLP Sentiment Analysis',
         #                                    'Started running Stanford CoreNLP Sentiment Analysis at', True,
@@ -152,7 +152,7 @@ def run(inputFilename,inputDir,outputDir,
                     filesToOpen.append(Excel_outputFilename)
 
                 if shape_of_stories_var:
-                    if IO_libraries_util.inputProgramFileCheck('shape_of_stories_main.py') == False:
+                    if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py') == False:
                         return
 
                     # open the shape of stories GUI  having saved the new SA output in config so that it opens the right input file
@@ -183,7 +183,7 @@ def run(inputFilename,inputDir,outputDir,
     if hedonometer_var==1 and (mean_var or median_var):
         if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'hedonometer.json', 'sentiment_analysis_hedonometer_util.py')==False:
             return
-        if IO_libraries_util.inputProgramFileCheck('sentiment_analysis_hedonometer_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_hedonometer_util.py')==False:
             return
         startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running HEDONOMETER Sentiment Analysis at',
                                                      True, '', True, '', True)
@@ -239,7 +239,7 @@ def run(inputFilename,inputDir,outputDir,
 
     #SentiWordNet _______________________________________________________
     if SentiWordNet_var==1 and (mean_var or median_var):
-        if IO_libraries_util.inputProgramFileCheck('sentiment_analysis_SentiWordNet_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_SentiWordNet_util.py')==False:
             return
         startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running SentiWordNet Sentiment Analysis at',
                                                      True, '', True, '', True)
@@ -289,7 +289,7 @@ def run(inputFilename,inputDir,outputDir,
     if vader_var==1 and (mean_var or median_var):
         if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'vader_lexicon.txt', 'sentiment_analysis_VADER_util.py')==False:
             return
-        if IO_libraries_util.inputProgramFileCheck('sentiment_analysis_VADER_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_VADER_util.py')==False:
             return
         startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VADER Sentiment Analysis at',
                                                      True, '', True, '', True)
@@ -339,7 +339,7 @@ def run(inputFilename,inputDir,outputDir,
     if anew_var==1 and (mean_var or median_var):
         if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'EnglishShortenedANEW.csv', 'sentiment_analysis_ANEW')==False:
             return
-        if IO_libraries_util.inputProgramFileCheck('sentiment_analysis_ANEW_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_ANEW_util.py')==False:
             return
         startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running ANEW Sentiment Analysis at',
                                                      True, '', True, '', True)

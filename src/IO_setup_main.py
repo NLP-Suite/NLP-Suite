@@ -41,6 +41,8 @@ if __name__ == '__main__':
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
+if config_filename == 'NLP_menu_config.csv':
+    config_filename = 'default_config.csv'
 config_file_label=config_filename
 if 'default' in config_file_label:
     config_file_label='Default I/O configuration, to be saved to: ' + config_file_label

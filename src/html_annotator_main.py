@@ -40,12 +40,12 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
     filesToOpen=[]
 
     if knowledge_graphs_DBpedia_YAGO_var==True:
-        if IO_libraries_util.inputProgramFileCheck('knowledge_graphs_DBpedia_YAGO_main.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_DBpedia_YAGO_main.py') == False:
             return
         call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True)
 
     if knowledge_graphs_WordNet_var==True:
-        if IO_libraries_util.inputProgramFileCheck('knowledge_graphs_WordNet_main.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py') == False:
             return
         call("python knowledge_graphs_WordNet_main.py", shell=True)
 
@@ -68,22 +68,22 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
         tagAnnotations = ['<span style=\"color: ' + color_palette_dict_var + '\">','</span>']
 
     if html_annotator_dictionary_var==True:
-        if IO_libraries_util.inputProgramFileCheck('html_annotator_dictionary_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_dictionary_util.py')==False:
             return
         if csv_field2_var=='':
             csvValue_color_list=[]
         filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, output_dir_path, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.txt')
     elif html_annotator_add_dictionary_var==True:
-        if IO_libraries_util.inputProgramFileCheck('html_annotator_dictionary_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_dictionary_util.py')==False:
             return
         filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, output_dir_path, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.html')
     elif html_annotator_extractor==True:
-        if IO_libraries_util.inputProgramFileCheck('html_annotator_extractor_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_extractor_util.py')==False:
             return
         import html_annotator_extractor_util
         html_annotator_extractor_util.buildcsv(inputFilename, input_main_dir_path, output_dir_path,openOutputFiles,createExcelCharts)
     elif html_gender_annotator_var==True:
-        if IO_libraries_util.inputProgramFileCheck('html_annotator_gender_main.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_gender_main.py')==False:
             return
         call("python html_annotator_gender_main.py", shell=True)
     else:

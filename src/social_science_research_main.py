@@ -32,7 +32,7 @@ import file_find_non_related_documents_util
 
 
 def check_filename(output_dir_path):
-    if IO_libraries_util.inputProgramFileCheck('file_checker_converter_cleaner_main.py') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('file_checker_converter_cleaner_main.py') == False:
         return
     if platform == "win32":
         subprocess.call("python file_manager_main.py", shell=True)
@@ -43,7 +43,7 @@ def check_filename(output_dir_path):
 
 
 def character(output_dir_path):
-    if IO_libraries_util.inputProgramFileCheck('knowledge_graphs_WordNet_main.py') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py') == False:
         return
     if platform == "win32":
         subprocess.call("python knowledge_graphs_WordNet_main.py character", shell=True)
@@ -53,7 +53,7 @@ def character(output_dir_path):
     # files are opened in the WordNet GUI
 
 def find_character_home(output_dir_path):
-    if IO_libraries_util.inputProgramFileCheck('file_classifier_main.py') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('file_classifier_main.py') == False:
         return
     if platform == "win32":
         subprocess.call("python file_classifier_main.py character home", shell=True)
@@ -63,14 +63,14 @@ def find_character_home(output_dir_path):
     # files are opened in the file_classifier_main.py GUI
 
 def missing_character(CoreNLPdir, input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createExcelCharts, checkNER):
-    if IO_libraries_util.inputProgramFileCheck('file_summary_checker_util.py') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('file_summary_checker_util.py') == False:
         return
     Excel_outputFile=file_summary_checker_util.main(CoreNLPdir, input_main_dir_path,input_secondary_dir_path,output_dir_path,openOutputFiles, createExcelCharts, checkNER)
     if Excel_outputFile!="":
         filesToOpen.extend(Excel_outputFile)
 
 def intruder(CoreNLPdir,input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, similarityIndex_Intruder_var):
-    if IO_libraries_util.inputProgramFileCheck('file_find_non_related_documents_util.py') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('file_find_non_related_documents_util.py') == False:
         return
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running INTRUDER at',
                                                  True, '', True, '', True)
@@ -84,7 +84,7 @@ def intruder(CoreNLPdir,input_main_dir_path, output_dir_path, openOutputFiles, c
 
 
 def ancestor(input_main_dir_path, output_dir_path):
-    if IO_libraries_util.inputProgramFileCheck('knowledge_graphs_WordNet_main.py') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py') == False:
         return
     if platform == "win32":
         subprocess.call("python WordNet.py ancestor", shell=True)
@@ -149,7 +149,7 @@ def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, c
         mb.showwarning(title='Similarity Index warning', message="The level of similarity was set at " + str(
             similarityIndex_Plagiarist_var) + ".\n\nCAVEAT! The default threshold for similarity is normally set at 80%.\n\nBe aware that lowering the default level may result in too many documents wrongly classified as similar; conversely, raising the level may exclude too many documents.")
 
-    if IO_libraries_util.inputProgramFileCheck('Lucene.jar') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('Lucene.jar') == False:
         return
     if len(DateCharacterSeparator) == 0:
         tk.messagebox.showinfo("Plagiarist", "DateCharacterSeparator")
@@ -236,7 +236,7 @@ def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, c
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running PLAGIARIST at', True, '', True, startTime)
 
 def Levenshtein():
-    if IO_libraries_util.inputProgramFileCheck('file_spell_checker_main.py') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('file_spell_checker_main.py') == False:
         return
     if platform == "win32":
         subprocess.call("python file_spell_checker_main.py", shell=True)

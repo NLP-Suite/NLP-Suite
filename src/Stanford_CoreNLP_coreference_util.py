@@ -245,7 +245,7 @@ def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, ope
     # if errorFound:
     #     return filesToOpen, errorFound
     #
-    if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py') == False:
         return
     # with only one input file
     if len(inputFilename)>0:

@@ -275,7 +275,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
     if CoreNLP_SVO_extractor_var:
 
-        if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py') == False:
             return
 
         location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',

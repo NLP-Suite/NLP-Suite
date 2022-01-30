@@ -45,19 +45,19 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
         return
 
     if sentence_complexity_var==True:
-        if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
         filesToOpen=sentence_analysis_util.sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts)
         if filesToOpen==None:
             return
 
     if text_readability_var==True:
-        if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
         sentence_analysis_util.sentence_text_readability(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts)
 
     if visualize_sentence_structure_var==True:
-        # if IO_libraries_util.inputProgramFileCheck('DependenSee.Jar')==False:
+        # if IO_libraries_util.check_inputPythonJavaProgramFile('DependenSee.Jar')==False:
         #     return
         # errorFound, error_code, system_output = IO_libraries_util.check_java_installation('Sentence structure visualization')
         # if errorFound:

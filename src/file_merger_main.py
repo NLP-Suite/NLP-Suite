@@ -27,7 +27,7 @@ def run(input_main_dir_path, output_dir_path,
     merge_embed_subdir_name,
     merge_character_separator):
 
-    if IO_libraries_util.inputProgramFileCheck('file_merger_util.py')==False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('file_merger_util.py')==False:
         return
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', "Started running 'File Merger' at",
