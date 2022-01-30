@@ -502,7 +502,7 @@ def getScript(pydict,script):
     # RF return
     # IO_values is 0 when an internet program is used; do not check software in the software dir
     if IO_values != 0:
-        if IO_libraries_util.inputProgramFileCheck(scriptName) == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile(scriptName) == False:
             return script_to_run, IO_values
     # passed to NLP.py
     script_to_run = val[0]
@@ -511,7 +511,7 @@ def getScript(pydict,script):
 
 def run_jar_script(scriptName, inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts):
     filesToOpen = []
-    if IO_libraries_util.inputProgramFileCheck(scriptName) == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile(scriptName) == False:
         return
     # if scriptName=='Sentence_Complexity.jar':
     #     outputFilename=IO_util.generate_output_file_name(inputFilename,output_dir_path,'.csv','SCo','','')
@@ -563,7 +563,7 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
             return
         webbrowser.open('http://www.hackerfactor.com/GenderGuesser.php#About')
     elif script_to_run.endswith('.py'):  # with GUI
-        if IO_libraries_util.inputProgramFileCheck(script_to_run) == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile(script_to_run) == False:
             return
         call("python " + script_to_run, shell=True)
     elif script_to_run.endswith('.jar'):  # with GUI
@@ -582,7 +582,7 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
         pythonFile = importlib.import_module(script[0])
         # script[0] contains the Python file name
         # script[1] contains the function name insime a specific Python file
-        if IO_libraries_util.inputProgramFileCheck(script[0] + '.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile(script[0] + '.py') == False:
             return
         func = getattr(pythonFile, script[1])
         # correct values are checked in NLP_GUI

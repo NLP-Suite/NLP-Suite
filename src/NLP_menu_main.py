@@ -65,10 +65,12 @@ GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 
 # GUI_size='1150x670'
 GUI_label='Graphical User Interface (GUI) for a suite of tools of Natural Language Processing (NLP) & Data Visualization'
-# there is now now way to setup a specific I/O config for the NLP_menu_main; it can only have the default setup
+# there is currently NO way to setup a specific I/O config for the NLP_menu_main; it can only have the default setup
 # config_filename='NLP_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
 config_filename = scriptName.replace('main.py', 'config.csv')
+# overwrite the standard way of setting up config_filename, since NLP_menu_main saves to default_config
+config_filename = 'default_config.csv'
 
 # The 4 values of config_option refer to:
 #   input file
@@ -332,11 +334,7 @@ def callback(software: str):
 
 def setup_software_warning():
     mb.showwarning('External software option', 'Please, select next the external software that you would like to download/install using the dropdown menu.')
-    software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'MALLET', 'WordNet', 'SENNA', 'Gephi', 'Google Earth Pro'],'Stanford CoreNLP',callback)
-    # if software == 'WordNet':
-    #     mb.showwarning('External software option',
-    #                    'Please, select next the external software that you would like to download/install using the dropdown menu.')
-    return
+    software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'Gephi', 'Google Earth Pro', 'MALLET', 'SENNA', 'WordNet'],'Stanford CoreNLP',callback)
 
 software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_software_warning())
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+30, y_multiplier_integer,

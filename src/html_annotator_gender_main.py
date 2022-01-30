@@ -48,7 +48,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
 
     #dict annotate
     elif annotator_dictionary_var==True:
-        if IO_libraries_util.inputProgramFileCheck('annotator_gender_dictionary_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('annotator_gender_dictionary_util.py')==False:
             return
         import annotator_gender_dictionary_util
         # csvValue_color_list, bold_var, tagAnnotations, '.txt'

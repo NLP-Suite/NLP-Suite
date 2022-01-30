@@ -62,7 +62,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         return
 
     if CoreNLP_annotators_var == True and 'Coreference PRONOMINAL resolution' in CoreNLP_annotators_menu_var:
-        if IO_libraries_util.inputProgramFileCheck("Stanford_CoreNLP_coReference_util.py") == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile("Stanford_CoreNLP_coReference_util.py") == False:
             return
         # if "Neural" in CoreNLP_annotators_menu_var:
         #     CoRef_Option = 'Neural Network'
@@ -85,7 +85,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
     if parser or (CoreNLP_annotators_var and CoreNLP_annotators_menu_var != ''):
 
-        if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py') == False:
             return
 
         if parser and parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
@@ -95,7 +95,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         else:
             if CoreNLP_annotators_var and CoreNLP_annotators_menu_var != '':
                 if 'NER (GUI)' in CoreNLP_annotators_menu_var: # NER annotator
-                    if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_NER_main.py') == False:
+                    if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_NER_main.py') == False:
                         return
                     call("python Stanford_CoreNLP_NER_main.py", shell=True)
                 elif 'Sentence splitter (with sentence length)' in CoreNLP_annotators_menu_var:
@@ -140,7 +140,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                              reminders_util.message_CoreNLP_NER_tags,
                                              True)
                 if CoNLL_table_analyzer_var:
-                    if IO_libraries_util.inputProgramFileCheck('CoNLL_table_analyzer_main.py') == False:
+                    if IO_libraries_util.check_inputPythonJavaProgramFile('CoNLL_table_analyzer_main.py') == False:
                         return
                     # open the analyzer having saved the new parser output in config so that it opens the right input file
                     config_filename_temp = 'conll-table-analyzer_config.csv'

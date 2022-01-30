@@ -112,7 +112,7 @@ def process_keyword(wordNet_keyword_list, noun_verb):
 
 def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb):
     filesToOpen=[]
-    if IO_libraries_util.inputProgramFileCheck('WordNet_Search_DOWN.jar') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('WordNet_Search_DOWN.jar') == False:
         return
     errorFound, error_code, system_output = IO_libraries_util.check_java_installation('WordNet downward search')
     if errorFound:
@@ -157,7 +157,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     # the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get')
 
     filesToOpen=[]
-    if IO_libraries_util.inputProgramFileCheck('WordNet_Search_UP.jar') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('WordNet_Search_UP.jar') == False:
         return
     errorFound, error_code, system_output = IO_libraries_util.check_java_installation('WordNet upward search')
     if errorFound:

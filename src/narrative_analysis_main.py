@@ -63,47 +63,47 @@ def run(inputFilename,inputdirname, outdirname,
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
 
-    # if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_main.py')==False:
+    # if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_main.py')==False:
     #     return
     #     call("python Stanford_CoreNLP_main.py", shell=True)
 
     if characters_NER_var==True or time_NER_var==True or space_NER_var==True:
-        if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_NER_main.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_NER_main.py')==False:
             return
         call("python Stanford_CoreNLP_NER_main.py", shell=True)
 
     if characters_WordNet_var==True or space_WordNet_var == True or action_WordNet_var == True:
-        if IO_libraries_util.inputProgramFileCheck('knowledge_graphs_WordNet_main.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py')==False:
             return
         call("python knowledge_graphs_WordNet_main.py", shell=True)
 
     if characters_DBpedia_YAGO_var == True or characters_DBpedia_YAGO_var == True or space_DBpedia_YAGO_var==True or action_DBpedia_YAGO_var == True:
-        if IO_libraries_util.inputProgramFileCheck('knowledge_graphs_main.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_main.py') == False:
             return
         call("python knowledge_graphs_main.py", shell=True)
 
     if characters_byGender_CoreNLP_var == True or characters_DBpedia_YAGO_var == True or characters_byGender_dict_var == True:
-        if IO_libraries_util.inputProgramFileCheck('annotator_gender_main.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('annotator_gender_main.py') == False:
             return
         call("python annotator_gender_main.py", shell=True)
 
     if story_plot_var==True:
-        if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_main.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_main.py') == False:
             return
         call("Stanford_CoreNLP_main.py", shell=True)
 
     if space_GIS_var==True:
-        if IO_libraries_util.inputProgramFileCheck('GIS_main.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('GIS_main.py')==False:
             return
         call("python GIS_main.py", shell=True)
 
     if SVO_var==True:
-        if IO_libraries_util.inputProgramFileCheck('SVO_main.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('SVO_main.py')==False:
             return
         call("python SVO_main.py", shell=True)
 
     if shape_stories_var==True:
-        if IO_libraries_util.inputProgramFileCheck('shape_of_stories_main.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py')==False:
             return
         call("python shape_of_stories_main.py", shell=True)
 

@@ -82,7 +82,7 @@ def run(inputFilename,inputDir, outputDir,
             return
 
     if corpus_statistics_var==True:
-        if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
 
         lemmatize = False
@@ -99,7 +99,7 @@ def run(inputFilename,inputDir, outputDir,
             if output!=None:
                 filesToOpen.extend(output)
 
-        if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
             return
 
         inputFilename = ''  # for now we only process a whole directory
@@ -119,7 +119,7 @@ def run(inputFilename,inputDir, outputDir,
 
     if topics_var==True:
         if topics_Gensim_var==True:
-            if IO_libraries_util.inputProgramFileCheck('topic_modeling_gensim_main.py')==False:
+            if IO_libraries_util.check_inputPythonJavaProgramFile('topic_modeling_gensim_main.py')==False:
                 return
             routine_options = reminders_util.getReminders_list(config_filename)
             reminders_util.checkReminder(config_filename,
@@ -179,7 +179,7 @@ def run(inputFilename,inputDir, outputDir,
         nature_var=True
 
     if (what_else_var and what_else_menu_var == '*') or nouns_var==True or verbs_var==True or people_organizations_var==True or gender_var==True or dialogues_var==True or times_var==True or locations_var==True:
-        if IO_libraries_util.inputProgramFileCheck('Stanford_CoreNLP_annotator_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py')==False:
             return
 
         if nouns_var or verbs_var:

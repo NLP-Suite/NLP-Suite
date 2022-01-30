@@ -53,7 +53,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
     if knowledge_graphs_DBpedia_var==True:
         if not IO_internet_util.check_internet_availability_warning('knowledge_graphs_DBpedia_YAGO_main.py'):
             return
-        if IO_libraries_util.inputProgramFileCheck('knowledge_graphs_DBpedia_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_DBpedia_util.py')==False:
             return
         import knowledge_graphs_DBpedia_util
         # for a complete list of annotator types:
@@ -65,7 +65,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
         if not IO_internet_util.check_internet_availability_warning('knowledge_graphs_DBpedia_YAGO_main.py'):
             return
         import knowledge_graphs_YAGO_util
-        if IO_libraries_util.inputProgramFileCheck('knowledge_graphs_YAGO_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_YAGO_util.py')==False:
             return
         # for a complete list of annotator types:
         #http://mappings.DBpedia.org/server/ontology/classes/

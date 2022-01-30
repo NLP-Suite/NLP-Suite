@@ -646,7 +646,7 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
         # rename the file to the new standard
         os.rename(old_license_file, os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-Suite-1.0.txt'))
 
-    if (os.path.isfile(os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-Suite-1.0.txt')) and (IO_libraries_util.inputProgramFileCheck('license_GUI.py'))):
+    if (os.path.isfile(os.path.join(GUI_IO_util.libPath, 'LICENSE-NLP-Suite-1.0.txt')) and (IO_libraries_util.check_inputPythonJavaProgramFile('license_GUI.py'))):
         if not os.path.isfile(GUI_IO_util.configPath + os.sep + 'license_config.csv'):
             call("python " + "license_GUI.py", shell=True)
     else:
@@ -818,7 +818,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     changed_IO_setup_config()
 
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
-    answer = activateRunButton(temp_config_filename, IO_setup_display_brief, scriptName, config_input_output_numeric_options)
+    answer = activateRunButton(temp_config_filename, IO_setup_display_brief, scriptName, silent)
     # GUI front end is used for those GUIs that do not have any code to run functions but the buttons just open other GUIs
     if ('GUI front end' not in reminder_options):
         # recompute the options since a new line has been added

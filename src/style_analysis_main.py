@@ -135,7 +135,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
 
     if complexity_readability_analysis_var == True:
         if 'Sentence' in complexity_readability_analysis_menu_var:
-            if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py') == False:
+            if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
             filesToOpen = sentence_analysis_util.sentence_complexity(GUI_util.window, inputFilename,
                                                                      inputDir, outputDir,
@@ -144,7 +144,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                 return
 
         elif 'Text' in complexity_readability_analysis_menu_var:
-            if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py') == False:
+            if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
             sentence_analysis_util.sentence_text_readability(GUI_util.window, inputFilename, inputDir,
                                                              outputDir, openOutputFiles, createExcelCharts)
@@ -203,7 +203,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                     GUI_IO_util.concreteness_libPath + os.sep + 'Concreteness_ratings_Brysbaert_et_al_BRM.csv',
                     'concreteness_analysis_util.py') == False:
                 return
-            if IO_libraries_util.inputProgramFileCheck('concreteness_analysis_util.py') == False:
+            if IO_libraries_util.check_inputPythonJavaProgramFile('concreteness_analysis_util.py') == False:
                 return
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
                                                'Started running CONCRETENESS Analysis at', True)
@@ -265,7 +265,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                                                'Started running Word/Characters N-Grams at',
                                                True, '', True, '', True)
             # (inputFilename = ''  # for now we only process a whole directory
-            if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py') == False:
+            if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
             ngramsNumber=4
             normalize = False

@@ -799,7 +799,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             mb.showwarning(title='Chart type error', message="The hover-over feature for multiple groups of data requires that all  groups have the same chart type. The system indicated more than one chart type.\n\nPlease, check your input and try again!")
             return True
 
-        if IO_libraries_util.inputProgramFileCheck(chartFile,'lib'+os.sep+'sampleCharts') == 0:
+        if IO_libraries_util.check_inputPythonJavaProgramFile(chartFile,'lib'+os.sep+'sampleCharts') == 0:
             return True
 
         wb = openpyxl.load_workbook(fpath, read_only=False, keep_vba=True)

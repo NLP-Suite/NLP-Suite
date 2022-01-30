@@ -149,7 +149,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                 bySentenceIndex_character_var=True
 
         if n_grams_word_var or n_grams_character_var or bySentenceIndex_word_var or bySentenceIndex_character_var:
-            if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py') == False:
+            if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
 
         if n_grams_word_var or bySentenceIndex_word_var:

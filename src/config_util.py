@@ -155,9 +155,9 @@ def get_missing_IO_values(config_input_output_numeric_options, config_option_csv
 # check_missingIO is called from GUI_util
 # the function checks for missing IO values, displays messages and sets the RUN button to normal or disabled
 def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_display_brief, silent=False):
-    if 'NLP_menu_main' in scriptName:
-        silent = True
-    if config_filename=='NLP_config.csv':
+    # if 'NLP_menu_main' in scriptName:
+    #     silent = True
+    if config_filename=='NLP_config.csv' or 'NLP_menu_main' in scriptName:
         config_filename = 'default_config.csv'
     # the IO_button_name error message changes depending upon the call
     button = "button"
@@ -166,6 +166,8 @@ def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_displ
     if "IO_setup_main" in scriptName:
         run_button_disabled_msg = ""
         enter_required_IO='Press OK to enter the required I/O information using the \'Select INPUT and Select OUTPUT\' buttons at the top of the GUI.\nPress CANCEL to exit without entering I/O information then press CLOSE.'
+    elif 'NLP_menu_main' in scriptName:
+        enter_required_IO="Please, click on the top button 'Setup default I/O options: INPUT corpus file(s) and OUTPUT files directory' to enter the required I/O information."
     else:
         if not IO_setup_display_brief:
             enter_required_IO='' #'Press OK to enter the required I/O information using the \'Select INPUT and Select OUTPUT\' buttons at the top of the GUI.\nPress CANCEL to exit without entering I/O information.'
@@ -187,8 +189,8 @@ def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_displ
         Run_Button_Off=False
         missingIO=''
     mutually_exclusive_msg=''
-    if "Input filename with path" in missingIO and "Input files directory" in missingIO:
-        mutually_exclusive_msg='The two I/O options - "Input filename with path" and "Input files directory" - are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH. In other words, you can choose to work with a sigle file in input or with many files stored in a directory.\n\n'
+    if "Input txt filename with path" in missingIO and "Input files directory" in missingIO:
+        mutually_exclusive_msg='The two I/O options - "Input txt filename with path" and "Input files directory" - are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH. In other words, you can choose to work with a sigle file in input or with many files stored in a directory.\n\n'
     answer=True # = cancel in mb.askokcancel
     if missingIO!='':
         Run_Button_Off = True

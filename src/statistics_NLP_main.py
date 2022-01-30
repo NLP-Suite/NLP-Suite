@@ -42,13 +42,13 @@ def run(inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelC
         return
 
     if corpus_stats or n_grams:
-        if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
         else:
             import statistics_txt_util
 
     if all_csv_stats or csv_field_stats:
-        if IO_libraries_util.inputProgramFileCheck('statistics_csv_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_csv_util.py')==False:
             return
         else:
             import statistics_csv_util
@@ -121,7 +121,7 @@ def run(inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelC
 
         if n_grams_word_var or n_grams_character_var or bySentenceIndex_word_var or bySentenceIndex_character_var:
             inputFilename = ''  # for now we only process a whole directory
-            if IO_libraries_util.inputProgramFileCheck('statistics_txt_util.py') == False:
+            if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
 
         if n_grams_word_var or bySentenceIndex_word_var:
