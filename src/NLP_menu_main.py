@@ -13,6 +13,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"NLP",['os','tkinter',
     sys.exit(0)
 
 import os
+from sys import platform
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
@@ -101,6 +102,9 @@ setup_software_OK_checkbox_var = tk.IntVar()
 
 script_to_run=''
 IO_values=''
+
+software = ''
+missing_external_software = ''
 
 def clear(e):
 
@@ -310,31 +314,32 @@ setup_software_checkbox = tk.Checkbutton(window, state='disabled',
                                          variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                setup_software_checkbox,True)
+software_dir = ''
 
-# check for external software installation (Stanford CoreNLP, WordNet, MALLET, SENNA)
-def setup_software(*args):
+def setup_external_programs_checkbox(software):
+    global software_dir
     silent = False
     only_check_missing = False
-    output, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software_setup_var.get())
-    # must be recomputed because the return variable missing_external_software will STILL contain the missing software
-    # that could have been updated
-    setup_software_checkbox()
-
-def setup_software_checkbox():
-    missing_external_software=IO_libraries_util.get_missing_external_software_list('')
-    if len(missing_external_software)>0:
-        setup_software_OK_checkbox_var.set(0)
-    else:
-        setup_software_OK_checkbox_var.set(1)
-software_setup_var.trace('w',setup_software)
+    if setup_software_OK_checkbox_var.get()==0:
+        if software_dir == None and software == '':
+            return
+        software_dir, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software, silent, only_check_missing)
+        if len(missing_external_software) > 0:
+            setup_software_OK_checkbox_var.set(0)
+        else:
+            setup_software_OK_checkbox_var.set(1)
+setup_software_OK_checkbox_var.trace('w', lambda x, y, z: setup_external_programs_checkbox(''))
 
 def callback(software: str):
     software_setup_var.set(software)
-    # setup_software()
+    setup_external_programs_checkbox(software)
 
 def setup_software_warning():
+    global software
     mb.showwarning('External software option', 'Please, select next the external software that you would like to download/install using the dropdown menu.')
     software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'Gephi', 'Google Earth Pro', 'MALLET', 'SENNA', 'WordNet'],'Stanford CoreNLP',callback)
+    if software != None:
+        setup_external_programs_checkbox(software)
 
 software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_software_warning())
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+30, y_multiplier_integer,
@@ -502,6 +507,9 @@ readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
+if platform == 'darwin':
+    window.update()
+
 routine_options = reminders_util.getReminders_list('NLP_config.csv')
 
 reminders_util.checkReminder('NLP_config.csv',
@@ -517,7 +525,8 @@ routine_options = reminders_util.getReminders_list('NLP_config.csv')
 
 # check for missing I/O configuration options
 setup_IO_checkbox()
+
 # check for missing external software
-setup_software()
+setup_external_programs_checkbox('')
 
 GUI_util.window.mainloop()

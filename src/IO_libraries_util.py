@@ -200,6 +200,7 @@ def check_inputExternalProgramFile(software_dir, programName):
                 return True
         mb.showwarning(title='Software error',
                        message="The selected software directory\n  " + software_dir + "'\nis NOT the expected CoreNLP directory. The directory should contain, among other things, many files with \'stanford-corenlp\' in the filename. DO MAKE SURE THAT WHEN YOU UNARCHIVE THE STANFORD CORENLP ARCHIVE YOU DO NOT END UP WITH A STANFORD CORENLP DIRECTORY INSIDE A STANFORD CORENLP DIRECTORY.\n\nPlease, select the appropriate CoreNLP directory and try again!\n\nYou can download Stanford CoreNLP at " + CoreNLP_download + ".\n\nPlease, read the TIPS_NLP_Stanford CoreNLP download install run.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
+        get_external_software_dir('', programName)
         return False
 
 # Check Gephi
@@ -305,11 +306,11 @@ def get_missing_external_software_list(existing_csv):
     missing_software=''
     for row in existing_csv[1:]:  # skip header line
         software_name = row[0]
-        download_software = row[2]
+        software_dir = row[1]
         index = index + 1
-        if existing_csv[index][1]=='':
+        if existing_csv[index][1]=='' or os.path.isdir(software_dir) == False or check_inputExternalProgramFile(software_dir, software_name) == False:
             missing_index = missing_index +1
-            # missing_software = missing_software + str(software_name).upper() + ' download at ' + str(download_software + '\n\n')
+            print("MISSING SOFTWARE", str(software_name).upper())
             missing_software = missing_software + '  ' + str(missing_index) + '. ' + str(software_name).upper() + '\n\n'
     return missing_software
 
@@ -322,51 +323,54 @@ def save_software_config(new_csv,package):
     mb.showwarning(title=package.upper() + ' installation path saved',
                                message="The installation path of " + package.upper() + " was successfully saved to " + software_config)
 
-# when coming from NLP_menu_main only_check_missing is set to True to set te checkbox to 0/1 if there is/isn't missing software
+
+# package is != '' when ...
+#   1. the function is called from a specific script that uses the package (e.g., Stanford_CoreNLP_main)
+#   2. the function is called from NLP_menu_main when clicking on the button Setup external software
 # return software_dir, missing_software
 def get_external_software_dir(calling_script, package, silent=False, only_check_missing=False):
     # get a list of software in software-config.csv
     existing_csv = get_existing_software_config()
-    download_software = ''
-    missing_software = ''
-    # software_dir = None
     software_dir = ''
     software_name = ''
     index = 0
-    missing_index = 0
     errorFound = False
+    Cancel = False
 
     missing_software = get_missing_external_software_list(existing_csv)
 
+    archive_location_warning = '\n\nDO NOT MOVE THE EXTERNAL SOFTWARE FOLDER INSIDE THE NLP SUITE FOLDER OR IT MAY BE OVERWRITTEN IN CASE YOU NEED TO RE-INSTALL THE SUITE.'
     if package == '':
         title = 'NLP Suite external software download/install'
         download_website_msg = 'You can select whether to download and/or install required external software in the list (or exit setup).\n\nFor your convenience, the download function automatically opens the appropriate software download website. YOU NEED TO BE CONNECTED TO THE INTERNET!'
-        downoad_install_list_msg = download_website_msg + '\n\nPlease, download and install the software in the list or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm. If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDO YOU WANT TO DOWNLOAD/INSTALL THE SOFTWARE IN THE LIST NOW?\n\nY = Download & install;\nN = Install;\nCANCEL to exit and download/install later'
-        message = 'The NLP Suite relies on several external programs that need to be installed.\n\nLIST OF PROGRAMS TO BE INSTALLED:\n\n' + missing_software + downoad_install_list_msg
-        archive_location_warning = '\n\nDO NOT MOVE THE EXTERNAL SOFTWARE FOLDER INSIDE THE NLP SUITE FOLDER OR IT MAY BE OVERWRITTEN IN CASE YOU NEED TO RE-INSTALL THE SUITE.'
+        download_install_list_msg = download_website_msg + '\n\nPlease, download and install the software in the list or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm. If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDO YOU WANT TO DOWNLOAD/INSTALL THE SOFTWARE IN THE LIST NOW?\n\nY = Download & install;\nN = Install;\nCANCEL to exit and download/install later'
+        message = 'The NLP Suite relies on several external programs that need to be downloaded and installed.\n\nLIST OF PROGRAMS TO BE DOWNLOADED/INSTALLED:\n\n' + missing_software + download_install_list_msg
     else:
         title = package.upper() + ' software download/install'
         download_website_msg = 'You can select whether to download and/or install ' + package.upper() + ' (or exit setup).\n\nFor your convenience, the download function automatically opens the ' + package.upper() + ' download website. YOU NEED TO BE CONNECTED TO THE INTERNET!'
-        if platform == 'darwin' and (package == 'Gephi' or package == 'Google Earth Pro'):
-            downoad_install_package_msg = download_website_msg + '\n\nPlease, download/install ' + package.upper() + ' or some functionality will be lost for some of the scripts. You will only have to do this once.\n\nDO YOU WANT TO DOWNLOAD/INSTALL ' + package.upper() + ' NOW?\n\nY = Download & install;\nN = Install;\nCANCEL to exit and download/install later'
+        if calling_script != 'NLP_menu':
+            if platform == 'darwin' and (package == 'Gephi' or package == 'Google Earth Pro'):
+                download_install_package_msg = download_website_msg + '\n\nDO YOU WANT TO DOWNLOAD/INSTALL ' + package.upper() + ' NOW?\n\nY = Download & install;\nN = Install;\nCANCEL to exit and download/install later'
+            else:
+                download_install_package_msg = download_website_msg + '\n\nDO YOU WANT TO DOWNLOAD/INSTALL ' + package.upper() + ' NOW?\n\nY = Download & install;\nN = Install;\nCANCEL to exit and download/install later'
+            message = 'The script ' + calling_script.upper() + ' requires the external software ' + package.upper() + ' to run.\n\n' + download_install_package_msg
         else:
-            archive_location_warning = '\n\nDO NOT MOVE THE ' + package.upper() + ' FOLDER INSIDE THE NLP SUITE FOLDER OR IT MAY BE OVERWRITTEN IN CASE YOU NEED TO RE-INSTALL THE SUITE.'
-            downoad_install_package_msg = download_website_msg + '\n\nPlease, download/install ' + package.upper() + ' or some functionality will be lost for some of the scripts. If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDO YOU WANT TO DOWNLOAD/INSTALL ' + package.upper() + ' NOW?\n\nY = Download & install;\nN = Install;\nCANCEL to exit and download/install later'
-        message = downoad_install_package_msg
+            if platform == 'darwin' and (package == 'Gephi' or package == 'Google Earth Pro'):
+                download_install_package_msg = download_website_msg + '\n\nPlease, download/install ' + package.upper() + ' or some functionality will be lost for some of the scripts. You will only have to do this once.\n\nDO YOU WANT TO DOWNLOAD/INSTALL ' + package.upper() + ' NOW?\n\nY = Download & install;\nN = Install;\nCANCEL to exit and download/install later'
+            else:
+                download_install_package_msg = download_website_msg + '\n\nPlease, download/install ' + package.upper() + ' or some functionality will be lost for some of the scripts. If you have already downloaded the software, you need to select the directory where you installed it; you will only have to do this once.\n\nDO YOU WANT TO DOWNLOAD/INSTALL ' + package.upper() + ' NOW?\n\nY = Download & install;\nN = Install;\nCANCEL to exit and download/install later'
+            message = download_install_package_msg
 
     # get any existing software_config csv file
     for row in existing_csv[1:]:  # skip header line
         index = index + 1
         software_name = row[0]
         software_dir = row[1]
-        download_software = row[2]
         # if checking a specific external software (i.e., package) you do not want a list of missing external software
         if package!='' and package != software_name:
             continue
         # platform = 'darwin' # forcing darwin for testing in a Windows machine
         if software_dir == '':  # check path field; software_dir == '' the software has not been downloaded and installed yet
-            # print("MISSING SOFTWARE", str(software_name).upper() + ' download at ' + str(download_software))
-            print("MISSING SOFTWARE", str(software_name).upper())
             errorFound=True
         else:
             errorFound=False
@@ -376,9 +380,9 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                 if (package.lower()!='') and (package.lower() in software_name.lower()) and (calling_script!='NLP_menu'):
                     return software_dir, missing_software
             if os.path.isdir(software_dir) == False or check_inputExternalProgramFile(software_dir, software_name) == False:
-                mb.showwarning(title='Directory error',
-                               message='The directory\n  ' + software_dir + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-select the ' +
-                                       software_name.upper() + ' directory.')
+                mb.showwarning(title=software_name.upper() + ' directory error',
+                               message='The directory\n  ' + software_dir + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-download/re-install ' +
+                                       software_name.upper() + '.')
                 errorFound=True
                 silent = False
             else:
@@ -388,7 +392,6 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                     return software_dir, missing_software
 
         if errorFound:
-            # missing_index=missing_index+1
             software_dir = ''
             existing_csv[index][1] = software_dir
             # if you are checking for a specific package and the directory is NOT found
@@ -455,7 +458,6 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                         # Stanford CoreNLP, MALLET, SENNA download zip files which must be treated differently from straight executable files
                         archive_message = ''
                         title=software_name.upper() +' download'
-
 
 # DOWNLOAD Messages for MALLET
 
@@ -544,13 +546,10 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                     webbrowser.open_new(download_studio)
 
 # INSTALLING -------------------------------------------------------------------------------
-#                                 if not answer:  # answer = True downloading and installing; you have already warned the user
+#                   if not answer:  # answer = True downloading and installing; you have already warned the user
 
                     if software_dir == '' and package.lower() in software_name.lower():
                         # get software directory
-                        # software_dir = None
-                        software_dir = ''
-                        # while software_dir == None:
                         while software_dir == '':
 
                             # on Mac Gephi and Google Earth Pro are installed in Applications
@@ -571,8 +570,11 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
 
                                 software_dir = tk.filedialog.askdirectory(initialdir=initialFolder,
                                                                   title=title + message3)
+                                if software_dir == '': # hit CANCEL in file dialog
+                                    Cancel = True
+                                    software_dir = None # to exit while loop
                             # INSTALLATION
-                            if software_dir != '':
+                            if software_dir != '' and software_dir != None:
                                 # check that it is the correct software directory
                                 if 'corenlp' in software_name.lower():
                                     software_name = 'Stanford CoreNLP'
@@ -591,16 +593,16 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                     software_dir = ''
 
                             # update the array existing_csv with the value of software_dir
-                            if software_dir != '':
+                            if software_dir != '' and software_dir != None:
                                 existing_csv[index][1] = software_dir
                                 save_software_config(existing_csv, software_name)
                             # exit when you are considering a specific software (package)
                             if package.lower()!='':
                                 if package.lower() in software_name.lower():
-                                    if answer:  # downloading and installing; you have already warned the user
+                                    if answer or Cancel:  # downloading and installing; you have already warned the user
                                         exit_for_loop = True #  break # exit top download for loop as well
-                                    # exit loop: while software_dir == None
+                                        # exit loop: while software_dir == ''
                                     break
-            # if software_dir == '':
-            #     software_dir = None
+            if software_dir == '':
+                software_dir = None # specific calling scripts (e.g. Stanford CoreNL) check for None
     return software_dir, missing_software

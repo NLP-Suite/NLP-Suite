@@ -19,3 +19,4 @@ bash anaconda.sh -b -y -p $HOME/anaconda
 source $HOME/anaconda/bin/activate
 conda init
 conda init zsh
+echo "The Anaconda3 installation is complete."
