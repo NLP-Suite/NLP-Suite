@@ -8,7 +8,8 @@ You can find detailed installation instructions at the NLP Suitte GitHub pages h
  
 3. Run STEP1-install_anaconda by double-clicking on it to install Anaconda and Python. Click "install" if prompted.
 	Running STEP1 will not affect Anaconda if you already have it installed on your machine.
-	
+	Installation may take a while. Do not turn off your machine or start running STEP2 until STEP1 is complete. When installation is complete you will see the message "The Anaconda3 installation is complete." in command line/prompt.			
+
 	If something goes fundamentally wrong while running STEP1 and you get errors in both STEP1 and STEP2, you may need to delete Anaconda and reinstall it. To do that, in command line/prompt type:
 	rm -rf ~/anaconda
 	Press enter to run the command and then run STEP1 again.
@@ -18,7 +19,7 @@ You can find detailed installation instructions at the NLP Suitte GitHub pages h
 
 NLP Suite updates & Git instructions
 
-The NLP Suite updates the scripts automatically to the lastest release available on GitHub every time you exit the NLP Suite. The update features rely on Git. Please download Git at this link https://git-scm.com/downloads, if it hasn’t been installed already.
+The NLP Suite updates the scripts automatically to the lastest release available on GitHub every time you exit the NLP Suite. The update features rely on Git. Please download Git at this link https://git-scm.com/downloads (select the macOS link and then download and install Xcode (if space allows; if you have limited disk space, use the binary installer).
 
 Run Instructions
 
