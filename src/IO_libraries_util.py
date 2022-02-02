@@ -190,7 +190,9 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName):
 
     wrong_dir_msg = 'The selected software directory\n  ' + software_dir + '\nis NOT the expected ' + programName.upper() + ' directory.'
     unarchive_msg = '\n\nDO MAKE SURE THAT WHEN YOU UNARCHIVE THE ' + programName.upper() + ' ARCHIVE YOU DO NOT END UP WITH A ' + programName.upper() + ' DIRECTORY INSIDE A ' + programName.upper() + ' DIRECTORY.'
+    select_directory_msg = '\n\nPlease, select the appropriate ' + programName.upper() + ' directory and try again!'
     directory_content = '' # initialize variable
+    Mac_msg = '\n\nOnce you have downloaded ' + programName.upper() + ' click on the downloaded .dmg file and drag the ' + programName.upper() + ' application in your Mac Applications folder.'
 
     fileList = []
     for file in os.listdir(software_dir):
@@ -203,7 +205,7 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName):
             if 'stanford-corenlp' in str(item):
                 return True
         directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, many files with \'stanford-corenlp\' in the filename.'
-        message = directory_content + unarchive_msg
+        message = directory_content + select_directory_msg + unarchive_msg
 
 # Check Gephi
     if programName == 'Gephi':
@@ -211,12 +213,12 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName):
             if 'gephi' in fileList and 'gephi' in fileList and 'platform' in fileList:
                 return True
             directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, the subdirectories \'gephi\' and \'platform\''
-            message = directory_content + unarchive_msg
+            message = directory_content + select_directory_msg + unarchive_msg
         if platform == 'darwin':
             if 'Gephi.app' in fileList:
                 return True
             directory_content ='\n\nThe ' + programName.upper() + ' was not found among Mac applications.'
-            message = directory_content
+            message = directory_content + Mac_msg
 
 # Check Google Earth Pro
     if programName == 'Google Earth Pro':
@@ -224,13 +226,13 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName):
             if 'client' in fileList:
                 return True
             directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain the subdirectory \'client\n\nMOST LIKELY THE EXECUTABLE FILE WILL AUTOMATICALLY INSTALL GOOGLE EARTH PRO UNDER A FOLDER GOOGLE IN C:\Program Files.'
-            message = directory_content + unarchive_msg
+            message = directory_content + select_directory_msg + unarchive_msg
 
         if platform == 'darwin':
             if 'Google Earth Pro.app' in fileList:
                 return True
             directory_content = '\n\nThe ' + programName.upper() + ' was not found among Mac applications.'
-            message = directory_content
+            message = directory_content + Mac_msg
 
 # Check MALLET
     if programName == 'Mallet':
@@ -243,24 +245,23 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName):
                          message='The selected ' + programName.upper() + ' directory \n   ' + software_dir + '\ncontains a blank (space) in the path.\n\nThe ' + programName.upper() + ' code cannot handle paths that contain a space and will break.\n\nPlease, move ' + programName.upper() + ' in a directory with a path containing no spaces and try again.')
 
         directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, the subdirectories \'bin\' and \'class\''
-        message = directory_content + directory_content
+        message = directory_content + select_directory_msg + directory_content
 
 # Check SENNA
     if programName == 'SENNA':
         if 'senna-osx' in fileList and 'senna-win32.exe' in fileList:
             return True
         directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, the files \'senna-osx\' and \'senna-win32.exe\''
-        message = directory_content + unarchive_msg
+        message = directory_content + select_directory_msg + unarchive_msg
 
 # Check WordNet
     if programName == 'WordNet':
         if 'dict' in fileList and 'src' in fileList:
             return True
         directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, the subdirectories \'dict\' and \'src\''
-        message = directory_content + unarchive_msg
+        message = directory_content + select_directory_msg + unarchive_msg
 
     # display error messages ----------------------------------------------------------------
-    message = message + '\n\nPlease, select the appropriate ' + programName.upper() + ' directory and try again!'
 
     mb.showwarning(title=programName.upper() + ' installation error',
             message=message)
@@ -298,7 +299,7 @@ def get_existing_software_config():
     return existing_csv
 
 # gets a list of the external software: CoreNLP, SENNA, WordNet, MALLET, Google Earth Pro, Gephi
-def get_missing_external_software_list(existing_csv):
+def get_missing_external_software_list(calling_script, existing_csv):
     if existing_csv=='':
         existing_csv=get_existing_software_config()
     index = 0
@@ -337,7 +338,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
     errorFound = False
     Cancel = False
 
-    missing_software = get_missing_external_software_list(existing_csv)
+    missing_software = get_missing_external_software_list(calling_script, existing_csv)
 
     archive_location_warning = '\n\nDO NOT MOVE THE EXTERNAL SOFTWARE FOLDER INSIDE THE NLP SUITE FOLDER OR IT MAY BE OVERWRITTEN IN CASE YOU NEED TO RE-INSTALL THE SUITE.'
     if package == '':
