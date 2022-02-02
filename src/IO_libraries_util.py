@@ -198,9 +198,10 @@ def check_inputExternalProgramFile(software_dir, programName):
         for item in fileList:
             if 'stanford-corenlp' in str(item):
                 return True
+        # \n\nPlease, read the TIPS_NLP_Stanford CoreNLP download install run.pdf and the NLP_TIPS_Java JDK download install run.pdf.
         mb.showwarning(title='Software error',
-                       message="The selected software directory\n  " + software_dir + "'\nis NOT the expected CoreNLP directory. The directory should contain, among other things, many files with \'stanford-corenlp\' in the filename. DO MAKE SURE THAT WHEN YOU UNARCHIVE THE STANFORD CORENLP ARCHIVE YOU DO NOT END UP WITH A STANFORD CORENLP DIRECTORY INSIDE A STANFORD CORENLP DIRECTORY.\n\nPlease, select the appropriate CoreNLP directory and try again!\n\nYou can download Stanford CoreNLP at " + CoreNLP_download + ".\n\nPlease, read the TIPS_NLP_Stanford CoreNLP download install run.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
-        get_external_software_dir('', programName)
+                       message="The selected software directory\n  " + software_dir + "'\nis NOT the expected CoreNLP directory. The directory should contain, among other things, many files with \'stanford-corenlp\' in the filename.\n\nDO MAKE SURE THAT WHEN YOU UNARCHIVE THE STANFORD CORENLP ARCHIVE YOU DO NOT END UP WITH A STANFORD CORENLP DIRECTORY INSIDE A STANFORD CORENLP DIRECTORY.\n\nPlease, select the appropriate CoreNLP directory and try again!")
+        software_dir, missing_software = get_external_software_dir('', programName)
         return False
 
 # Check Gephi
@@ -209,15 +210,19 @@ def check_inputExternalProgramFile(software_dir, programName):
             if 'gephi' in fileList and 'gephi' in fileList and 'platform' in fileList:
                 return True
             else:
+                # \n\nPlease, read the TIPS_NLP_Gephi.pdf.
                 mb.showwarning(title='Software error',
-                               message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Gephi directory. The directory should contain, among other things, the directories \'gephi\' and \'platform\'.\n\nPlease, select the appropriate Gephi directory and try again!\n\nYou can download Gephi at " + Gephi_download + ". Make sure you have a recent Java installed on your system. Gephi is compatible with Java 7 and 8 versions. After the Gephi download completes, run the installer and follow the steps.\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
+                               message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Gephi directory. The directory should contain, among other things, the directories \'gephi\' and \'platform\'.\n\nPlease, select the appropriate Gephi directory and try again!\n\nMake sure you have a recent Java installed on your system. Gephi is compatible with Java 7 and 8 versions. After the Gephi download completes, run the installer and follow the steps.")
+                get_external_software_dir('', programName)
                 return False
         if platform == 'darwin':
             if 'gephi' in fileList:
                 return True
             else:
+                # \n\nPlease, read the TIPS_NLP_Gephi.pdf.
                 mb.showwarning(title='Software error',
-                               message="Gephi was not found among Mac applications.\n\nYou can download Gephi at " + Gephi_download + ".\n\nAfter the download completes, click on the downloaded .dmg file and drag the Gephi application in your Mac Applications folder.\n\nPlease, read the TIPS_NLP_Gephi.pdf.")
+                               message="Gephi was not found among Mac applications.\n\nAfter the download completes, click on the downloaded .dmg file and drag the Gephi application in your Mac Applications folder.")
+                get_external_software_dir('', programName)
                 return False
 
 # Check Google Earth Pro
@@ -228,26 +233,30 @@ def check_inputExternalProgramFile(software_dir, programName):
             else:
                 expected_GEP_files = "The directory should contain the subdirectory \'client'\n\nMOST LIKELY THE EXECUTABLE FILE WILL AUTOMATICALLY INSTALL GOOGLE EARTH PRO UNDER A FOLDER GOOGLE IN C:\Program Files."
         if platform == 'darwin':
-            if 'google earth pro' in fileList:
+            if 'Google Earth' in fileList:
                 return True
+            # \n\nYou can download Google Earth Pro at " + Google_Earth_download + ".\n\nPlease, read the TIPS_NLP_Google Earth Pro.pdf."
             mb.showwarning(title='Software error',
-                           message = "Google Earth Pro was not found among Mac applications.\n\nYou can download Google Earth Pro at " + Google_Earth_download + ".\n\nPlease, read the TIPS_NLP_Google Earth Pro.pdf.")
+                           message = "Google Earth Pro was not found among Mac applications.")
+            get_external_software_dir('', programName)
             return False
 
 # Check MALLET
     if programName == 'Mallet':
+        if not 'bin' in fileList and not 'class' in fileList:
+            # + ".\n\nPlease, read the TIPS_NLP_Topic modeling Mallet installation.pdf and the NLP_TIPS_Java JDK download install run.pdf.
+            # \n\nYou can download Mallet at " + MALLET_download
+            mb.showwarning(title='Software error',
+                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Mallet directory. The directory should contain, among other things, the directories \'bin\' and \'class\'. DO MAKE SURE THAT WHEN YOU UNARCHIVE THE MALLET ARCHIVE YOU DO NOT END UP WITH A MALLET DIRECTORY INSIDE A MALLET DIRECTORY.\n\nPlease, select the appropriate Mallet directory and try again!")
+            get_external_software_dir('', programName)
+            return False
         # check that Mallet has no spaces in path
         if ' ' in software_dir:
             mb.showerror(title='Mallet directory error',
-                         message='The selected Mallet directory \n   ' + software_dir + '\ncontains a blank (space) in the path. The Mallet code cannot handle paths that contain a space and will break.\n\nPlease, move Mallet in a directory with a path containing no spaces and try again.')
+                         message='The selected Mallet directory \n   ' + software_dir + '\ncontains a blank (space) in the path.\n\nThe Mallet code cannot handle paths that contain a space and will break.\n\nPlease, move Mallet in a directory with a path containing no spaces and try again.')
+            get_external_software_dir('', programName)
             return False
-        if 'bin' in fileList and 'class' in fileList:
-            return True
-        else:
-            mb.showwarning(title='Software error',
-                           message="The selected software directory\n  " + software_dir + "'\nis NOT the expected Mallet directory. The directory should contain, among other things, the directories \'bin\' and \'class\'. DO MAKE SURE THAT WHEN YOU UNARCHIVE THE MALLET ARCHIVE YOU DO NOT END UP WITH A MALLET DIRECTORY INSIDE A MALLET DIRECTORY.\n\nPlease, select the appropriate Mallet directory and try again!\n\nYou can download Mallet at " + MALLET_download + ".\n\nPlease, read the TIPS_NLP_Topic modeling Mallet installation.pdf and the NLP_TIPS_Java JDK download install run.pdf.")
-
-            return False
+        return True
 
 # Check SENNA
     if programName == 'SENNA':
@@ -256,6 +265,7 @@ def check_inputExternalProgramFile(software_dir, programName):
         else:
             mb.showwarning(title='Software error',
                            message="The selected software directory\n  " + software_dir + "'\nis NOT the expected SENNA directory. The directory should contain, among other things, the files \'senna-osx\' and \'senna-win32.exe\'. DO MAKE SURE THAT WHEN YOU UNARCHIVE THE SENNA ARCHIVE YOU DO NOT END UP WITH A SENNA DIRECTORY INSIDE A SENNA DIRECTORY.\n\nPlease, select the appropriate SENNA directory and try again!\n\nYou can download SENNA at " + SENNA_download + ".")
+            get_external_software_dir('', programName)
             return False
 
 # Check WordNet
@@ -263,8 +273,10 @@ def check_inputExternalProgramFile(software_dir, programName):
         if 'dict' in fileList and 'src' in fileList:
             return True
         else:
+            # \n\nYou can download WordNet at " + WordNet_download + ".\n\nPlease, read the TIPS_NLP_WordNet.pdf.
             mb.showwarning(title='Software error',
-                    message="The selected software directory\n  " + software_dir + "'\nis NOT the expected WordNet directory. The directory should contain, among other things, the directories \'dict\' and \'src\'. DO MAKE SURE THAT WHEN YOU UNARCHIVE THE WORDNET ARCHIVE YOU DO NOT END UP WITH A WORDNET DIRECTORY INSIDE A WORDENET DIRECTORY.\n\nPlease, select the appropriate WordNet directory and try again!\n\nYou can download WordNet at " + WordNet_download + ".\n\nPlease, read the TIPS_NLP_WordNet.pdf.")
+                    message="The selected software directory\n  " + software_dir + "'\nis NOT the expected WordNet directory. The directory should contain, among other things, the directories \'dict\' and \'src\'. DO MAKE SURE THAT WHEN YOU UNARCHIVE THE WORDNET ARCHIVE YOU DO NOT END UP WITH A WORDNET DIRECTORY INSIDE A WORDENET DIRECTORY.\n\nPlease, select the appropriate WordNet directory and try again!")
+            get_external_software_dir('', programName)
             return False
 
 def update_csv_fields(existing_csv: list) -> list:
@@ -560,7 +572,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                 # GOOGLE EARTH PRO INSTALLATION
                                 if software_name == 'Google Earth Pro':
                                     software_dir = "/Applications/Google Earth Pro.app/Contents/MacOS"
-                            else:
+                            if platform == 'darwin' or platform == 'win32':
                                 # should not start from NLP/src since users are strongly advised NT to install external softare inside the NLP Suite folder
                                 # initialFolder = os.path.dirname(os.path.abspath(__file__))
                                 initialFolder = ''
