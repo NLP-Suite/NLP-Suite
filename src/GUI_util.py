@@ -180,15 +180,6 @@ def check_newest_release(current_release: str):
     # check internet connection
     if not IO_internet_util.check_internet_availability_warning("GUI_util.py (Function Automatic check for NLP Suite newest release version on GitHub)"):
         return
-    setup_folder="setup_Windows"
-    # now done automatically in update_util.py
-    # update_command_auto='update_NLP-Suite_auto.bat'
-    update_command='update_NLP-Suite.bat'
-    if sys.platform == 'darwin':
-        setup_folder="setup_Mac"
-        # now done automatically in update_util.py
-        # update_command_auto = 'update_NLP-Suite_auto.command'
-        update_command='update_NLP-Suite.command'
     release_url = 'https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/lib/release_version.txt'
     try:
         GitHub_newest_release = requests.get(release_url).text
@@ -218,6 +209,7 @@ def check_newest_release(current_release: str):
             else:
                 return
     if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != current_release:
+        # update is carried out in update_util.py
         result = mb.askyesno("NLP Suite Outdated",
                     "You are running the NLP Suite release version " + str(current_release) + ", an OLD version." +
                     "\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) + "." +

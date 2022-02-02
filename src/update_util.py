@@ -11,6 +11,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"update_util.py",['os'
 
 import os
 from pygit2 import Repository
+import tkinter.messagebox as mb
 
 def update_self():
     """
@@ -24,4 +25,5 @@ def update_self():
         os.system("git pull -f origin")
         print("Script updated.")
     else:
-        print("You are not on the current stable branch. Update aborted.")
+        mb.showwarning(title='Warning',
+                       message="You are not on the current stable branch of the NLP Suite. Update aborted.")
