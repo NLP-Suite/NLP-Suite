@@ -186,7 +186,7 @@ SENNA_download = "https://ronan.collobert.com/senna/download.html"
 WordNet_download = "https://wordnet.princeton.edu/download/current-version"
 
 # the function checks that external programs (e.g., Gephi, StanfordCoreNLP) have been properly installed
-def check_inputExternalProgramFile(software_dir, programName):
+def check_inputExternalProgramFile(calling_script, software_dir, programName):
 
     wrong_dir_msg = 'The selected software directory\n  ' + software_dir + '\nis NOT the expected ' + programName.upper() + ' directory.'
     unarchive_msg = '\n\nDO MAKE SURE THAT WHEN YOU UNARCHIVE THE ' + programName.upper() + ' ARCHIVE YOU DO NOT END UP WITH A ' + programName.upper() + ' DIRECTORY INSIDE A ' + programName.upper() + ' DIRECTORY.'
@@ -213,7 +213,7 @@ def check_inputExternalProgramFile(software_dir, programName):
             directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, the subdirectories \'gephi\' and \'platform\''
             message = directory_content + unarchive_msg
         if platform == 'darwin':
-            if 'Gephi' in fileList:
+            if 'Gephi.app' in fileList:
                 return True
             directory_content ='\n\nThe ' + programName.upper() + ' was not found among Mac applications.'
             message = directory_content
@@ -227,7 +227,7 @@ def check_inputExternalProgramFile(software_dir, programName):
             message = directory_content + unarchive_msg
 
         if platform == 'darwin':
-            if 'Google Earth' in fileList:
+            if 'Google Earth Pro.app' in fileList:
                 return True
             directory_content = '\n\nThe ' + programName.upper() + ' was not found among Mac applications.'
             message = directory_content
@@ -264,7 +264,7 @@ def check_inputExternalProgramFile(software_dir, programName):
 
     mb.showwarning(title=programName.upper() + ' installation error',
             message=message)
-    get_external_software_dir('', programName)
+    get_external_software_dir(calling_script, programName)
     return False
 
 def update_csv_fields(existing_csv: list) -> list:
@@ -379,7 +379,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             if platform == 'darwin' and software_dir == '/Applications':
                 if (package.lower()!='') and (package.lower() in software_name.lower()) and (calling_script!='NLP_menu'):
                     return software_dir, missing_software
-            if os.path.isdir(software_dir) == False or check_inputExternalProgramFile(software_dir, software_name) == False:
+            if os.path.isdir(software_dir) == False or check_inputExternalProgramFile(calling_script, software_dir, software_name) == False:
                 mb.showwarning(title=software_name.upper() + ' directory error',
                                message='The directory\n  ' + software_dir + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-download/re-install ' +
                                        software_name.upper() + '.')
@@ -588,7 +588,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                 elif 'google earth pro' in software_name.lower():
                                     software_name = 'Google Earth Pro'
                                 # check that the selected folder for the external program is correct; if so save
-                                if not check_inputExternalProgramFile(software_dir, software_name):
+                                if not check_inputExternalProgramFile(calling_script, software_dir, software_name):
                                     software_dir = None
 
                             # update the array existing_csv with the value of software_dir
