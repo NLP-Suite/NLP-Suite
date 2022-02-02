@@ -549,7 +549,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
             filesToOpen.append(tempOutputfile)
             # write an output txt file that can be used for internet wordclouds services
             if lemmatize or exclude_stopwords:
-                with open(tempOutputfile[:-8]+'.txt', 'w') as f:
+                with open(tempOutputfile[:-8]+'.txt', 'w', encoding='utf-8', errors='ignore') as f:
                     f.write(textToProcess)
         combinedtext = combinedtext + textToProcess
 
@@ -561,7 +561,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
         filesToOpen.append(tempOutputfile)
         # write an output txt file that can be used for internet wordclouds services
         if lemmatize or exclude_stopwords:
-            with open(tempOutputfile[:-8] + '.txt', 'w') as f:
+            with open(tempOutputfile[:-8] + '.txt', 'w', encoding='utf-8', errors='ignore') as f:
                 f.write(combinedtext)
             nDocsRewritten = 1
             if doNotListIndividualFiles==False:
