@@ -308,7 +308,7 @@ def get_missing_external_software_list(existing_csv):
         software_name = row[0]
         software_dir = row[1]
         index = index + 1
-        if existing_csv[index][1]=='' or os.path.isdir(software_dir) == False or check_inputExternalProgramFile(software_dir, software_name) == False:
+        if existing_csv[index][1]=='' or os.path.isdir(software_dir) == False or check_inputExternalProgramFile(calling_script, software_dir, software_name) == False:
             missing_index = missing_index +1
             print("MISSING SOFTWARE", str(software_name).upper())
             missing_software = missing_software + '  ' + str(missing_index) + '. ' + str(software_name).upper() + '\n\n'
