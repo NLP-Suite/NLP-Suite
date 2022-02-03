@@ -1,3 +1,11 @@
+@echo off
+setlocal
+ECHO STEP2 relies on Git. If you have not done so already, please download Git at this link https://git-scm.com/downloads (select the Windows link; it will automatically detect whether your machine is 32-bit or 64-bit on the top line Click here to download the latest...). Run the downloaded exe file.
+echo(
+:PROMPT
+SET /P AREYOUSURE=Do you wish to continue (Yes if you have already installed Git)? [y/n]
+IF /I "%AREYOUSURE%" NEQ "y" GOTO END
+
 cd "${PSScriptRoot}\..\"
 
 conda create -n NLP -y
@@ -29,3 +37,6 @@ git pull -f origin current-stable
 Write-Host "----------------------" -ForegroundColor Green
 Write-Host "Installation Completed! Although installation completed, errors may have occurred in the installation of specific Python packages. Please, scroll up to see if errors occurred or use CTRL+F to search for words such as error or fail." -ForegroundColor Green
 Write-Host "----------------------" -ForegroundColor Green
+
+echo(
+SET /P ENDPROMPT=Press Return to close this window.
