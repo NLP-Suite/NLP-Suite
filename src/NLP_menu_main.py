@@ -349,7 +349,7 @@ open_setup_button = tk.Button(window, width=GUI_IO_util.open_file_directory_butt
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_setup_software_button, y_multiplier_integer,
                                                open_setup_button)
 
-general_tools_lb = tk.Label(window, text='General tools', foreground="red",font=("Courier", 12, "bold"))
+general_tools_lb = tk.Label(window, text='General Tools', foreground="red",font=("Courier", 12, "bold"))
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                general_tools_lb)
 
@@ -392,7 +392,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordin
 
 # leave a blank line to separate the linguistic analyses
 
-linguistic_tools_lb = tk.Label(window, text='Linguistic analysis tools', foreground="red",font=("Courier", 12, "bold"))
+linguistic_tools_lb = tk.Label(window, text='Linguistic Analysis Tools', foreground="red",font=("Courier", 12, "bold"))
 # text.configure(font=("Times New Roman", 12, "bold"))
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                linguistic_tools_lb)

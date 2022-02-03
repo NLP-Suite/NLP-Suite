@@ -26,4 +26,4 @@ def update_self():
         print("Script updated.")
     else:
         mb.showwarning(title='Warning',
-                       message="You are not on the current stable branch of the NLP Suite. Update aborted.")
+                       message="You are not on the current stable branch of the NLP Suite.\n\nYou are on " + Repository('.').head.shorthand + ".\n\nThe automatic update only works from current stable.\n\nUpdate aborted to avoid overwriting your branch.")

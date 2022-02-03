@@ -377,12 +377,9 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             errorFound=False
             # the software directory is stored in config file but...
             #   check that the software directory still exists and the package has not been moved
-            if platform == 'darwin' and software_dir == '/Applications':
-                if (package.lower()!='') and (package.lower() in software_name.lower()) and (calling_script!='NLP_menu'):
-                    return software_dir, missing_software
             if os.path.isdir(software_dir) == False or check_inputExternalProgramFile(calling_script, software_dir, software_name) == False:
                 mb.showwarning(title=software_name.upper() + ' directory error',
-                               message='The directory\n  ' + software_dir + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-download/re-install ' +
+                               message='The directory\n   ' + software_dir + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-download/re-install ' +
                                        software_name.upper() + '.')
                 errorFound=True
                 silent = False
