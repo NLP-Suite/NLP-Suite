@@ -13,17 +13,22 @@ import os
 from pygit2 import Repository
 import tkinter.messagebox as mb
 
-def update_self():
+def update_self(window,GitHub_release_version):
     """
     Update the current script to the latest version.
     """
 
+    message = "The NLP Suite was successfully updated to the latest release available on GitHub: " + str(
+        GitHub_release_version) + "\n\nThe next time you fire up the NLP Suite it will use this release."
+
     if Repository('.').head.shorthand == 'current-stable':
-        print("Updating script...")
+        print("Updating the NLP Suite...")
         os.system("git add -A . ")
         os.system("git stash")
         os.system("git pull -f origin")
-        print("Script updated.")
+        mb.showwarning(title='Warning',
+                       message=message)
+        print(message)
     else:
         mb.showwarning(title='Warning',
                        message="You are not on the current stable branch of the NLP Suite.\n\nYou are on " + Repository('.').head.shorthand + ".\n\nThe automatic update only works from current stable.\n\nUpdate aborted to avoid overwriting your branch.")
