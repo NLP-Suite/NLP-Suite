@@ -27,7 +27,7 @@ from update_util import update_self
 
 
 def exit_handler():
-    update_self()
+    update_self(window,GUI_util.GitHub_release_version_var.get())
 
 atexit.register(exit_handler)
 

@@ -91,6 +91,7 @@ output_dir_path=tk.StringVar()
 output_dir_path.set('')
 
 release_version_var=tk.StringVar()
+GitHub_release_version_var=tk.StringVar()
 
 open_csv_output_checkbox = tk.IntVar()
 create_Excel_chart_output_checkbox = tk.IntVar()
@@ -176,15 +177,17 @@ def display_logo():
 version_str = '1.5.9'
 
 
-def check_newest_release(current_release: str):
+def check_GitHub_release(current_release: str, silent = False):
     # check internet connection
     if not IO_internet_util.check_internet_availability_warning("GUI_util.py (Function Automatic check for NLP Suite newest release version on GitHub)"):
         return
     release_url = 'https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/lib/release_version.txt'
     try:
         GitHub_newest_release = requests.get(release_url).text
+        GitHub_release_version_var.set(GitHub_newest_release)
     except:
-        mb.showwarning(title='Internet connection error', message="The attempt to connect to GitHub failed.\n\nIt is not possible to check the latest release of the NLP Suite at this time. You can continue run your current release and try again later.")
+        if not silent:
+            mb.showwarning(title='Internet connection error', message="The attempt to connect to GitHub failed.\n\nIt is not possible to check the latest release of the NLP Suite at this time. You can continue run your current release and try again later.")
         return
     # current_release = '2.3.1' # line used for testing; should be LOWER than the version on GitHub
     # split the text string of release version (e.g., 1.5.9) into three parts separated by .
@@ -236,13 +239,12 @@ def display_release():
 
     y_multiplier_integer=-.7
 
-    release_version_lb = tk.Label(window, text='Release ',foreground="red")
+    # get the release version available on GitHub
+    check_GitHub_release(version_str)
+    release_display= str(release_version_var.get()) + "/" + str(GitHub_release_version_var.get())
+    release_lb = tk.Label(window, text='Release ' + release_display,foreground="red")
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate(),
-                                                   y_multiplier_integer, release_version_lb, True)
-    release_version = tk.Entry(window, state='disabled', width=6, foreground="red", textvariable=release_version_var)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
-                                                   y_multiplier_integer, release_version,True)
-
+                                                   y_multiplier_integer, release_lb, True)
 
 def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_main_dir_path,title,fileType,extension):
     currentFilename=inputFilename.get()
@@ -831,7 +833,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     if result != None:
         routine_options = reminders_util.getReminders_list(temp_config_filename)
 
-    check_newest_release(version_str)
+    # check_GitHub_release(version_str)
 
     window.protocol("WM_DELETE_WINDOW", _close_window)
 
