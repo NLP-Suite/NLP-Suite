@@ -133,6 +133,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         Coref,
         Manual_Coref_var,
         normalized_NER_date_extractor_var,
+        gender_var,
+        quote_var,
         SRL_var,
         CoreNLP_SVO_extractor_var,
         SENNA_SVO_extractor_var,
@@ -280,6 +282,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
         location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'CoreNLP_SVO_LOCATIONS')
+        gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                       'CoreNLP_SVO', "gender_info")
+        quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                       'CoreNLP_SVO', "quote_info")
         outputLocations.append(location_filename)
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir, openOutputFiles,
@@ -292,7 +298,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                        date_separator_var=date_separator_var,
                                                                        date_position_var=date_position_var,
                                                                        google_earth_var=google_earth_var,
-                                                                       location_filename = location_filename)
+                                                                       location_filename = location_filename,
+                                                                       gender_var = gender_var, gender_filename = gender_filename,
+                                                                       quote_var = quote_var, quote_filename = quote_filename)
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
                 output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
@@ -577,6 +585,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  CoRef_var.get(),
                                  manual_Coref_var.get(),
                                  normalized_NER_date_extractor_var.get(),
+                                 gender_var.get(),
+                                 quote_var.get(),
                                  SRL_var.get(),
                                  CoreNLP_SVO_extractor_var.get(),
                                  SENNA_SVO_extractor_var.get(),
@@ -667,6 +677,8 @@ date_separator_var = tk.StringVar()
 date_position_var = tk.IntVar()
 manual_Coref_var = tk.IntVar()
 normalized_NER_date_extractor_var = tk.IntVar()
+gender_var = tk.IntVar()
+quote_var = tk.IntVar()
 SRL_var = tk.IntVar()
 CoreNLP_SVO_extractor_var = tk.IntVar()
 SENNA_SVO_extractor_var = tk.IntVar()
@@ -823,10 +835,21 @@ activateCoRefOptions()
 # y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
 #                                                date_extractor_checkbox)
 
+gender_var.set(0)
+gender_checkbox = tk.Checkbutton(window, text='S & O gender',
+                                                variable=gender_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               gender_checkbox, True)
+quote_var.set(0)
+quote_checkbox = tk.Checkbutton(window, text='S & O speaker',
+                                                variable=quote_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,
+                                               quote_checkbox, True)
+
 SRL_var.set(0)
 SRL_checkbox = tk.Checkbutton(window, text='SRL (Semantic Role Labeling)',
                                                 variable=SRL_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+600, y_multiplier_integer,
                                                SRL_checkbox)
 SRL_checkbox.configure(state='disabled')
 
@@ -999,7 +1022,9 @@ videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
 TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
+               'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
                'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Stanford CoreNLP memory issues':'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
                'Stanford CoreNLP date extractor': 'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
                'Stanford CoreNLP OpenIE': 'TIPS_NLP_Stanford CoreNLP OpenIE.pdf',
@@ -1012,7 +1037,7 @@ TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and 
                "Geocoding: How to Improve Nominatim":"TIPS_NLP_Geocoding Nominatim.pdf",
                "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf",
                'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
-TIPS_options = 'SVO extraction and visualization', 'utf-8 encoding', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'CoNLL table', 'Stanford CoreNLP coreference resolution', 'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs', 'Java download install run'
+TIPS_options = 'SVO extraction and visualization', 'utf-8 encoding', 'Excel - Enabling Macros', 'csv files - Problems & solutions', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'CoNLL table', 'Stanford CoreNLP coreference resolution', 'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs', 'Java download install run'
 
 
 # add all the lines lines to the end to every special GUI
@@ -1042,7 +1067,9 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     # GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
     #                               "Please, tick the checkbox if you wish to run the Stanford CoreNLP normalized NER date annotator to extract standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\nThis will display time plots of dates, visualizing the WHEN of the 5 Ws of narrative."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
-                                  "Please, tick the checkbox if you wish to run Jinho Choi's SRL (Semantic Role Labeling) algorithm (https://github.com/emorynlp/elit/blob/main/docs/semantic_role_labeling.md)."+GUI_IO_util.msg_Esc)
+                                  "Please, tick the S & O gender checkbox if you wish to run Stanford CoreNLP gender annotator to extract the gender (female, male) for every Subject and Object extracted by the SVO script.\n\n"
+                                  "Tick the S & O speaker checkbox if you wish to run Stanford CoreNLP quote annotator to extract the speaker involved in direct discourse for every Subject and Object extracted by the SVO script.\n\n"
+                                  "Tick the SRL checkbox if you wish to run Jinho Choi's SRL (Semantic Role Labeling) algorithm (https://github.com/emorynlp/elit/blob/main/docs/semantic_role_labeling.md). THE OPTION IS CURRENTLY DISABLED."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
                                   "Please, tick the checkboxes if you wish to run the Stanford CoreNLP neural network Enhanced++ Dependencies parser and/or SENNA to extract SVO triplets and SV pairs. Tick the checkbox 'Extract relation triples (via OpenIE)' if you wish to run the Stanford CoreNLP OpenIE annotator to extract any relation triples (not just SVOs).\n\nSENNA can be downloaded at https://ronan.collobert.com/senna/download.html\n\nIn INPUT CoreNLP and/or SENNA can process a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT CoreNLP and/or SENNA will produce a csv file of SVO results and, if the appropriate visualization options are selected, a Gephi gexf network file, png word cloud file, and Google Earth Pro kml file (GIS maps are not produced when running SVO with SENNA; SENNA, by and large, does not produce geocodable locations.\n\nWHEN PROCESSING A DIRECTORY, ALL OUTPUT FILES WILL BE SAVED IN A SUBDIRECTORY OF THE SELECTED OUTPUT DIRECTORY WITH THE NAME OF THE INPUT DIRECTORY."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",

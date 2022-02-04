@@ -27,7 +27,10 @@ from update_util import update_self
 
 
 def exit_handler():
-    update_self(window,GUI_util.GitHub_release_version_var.get())
+    # release_version_var is the release on the current machine
+    # GitHub_release_version_var is the release available on GitHub
+    if GUI_util.GitHub_release_version_var.get() != GUI_util.release_version_var.get():
+        update_self(window,GUI_util.GitHub_release_version_var.get())
 
 atexit.register(exit_handler)
 
@@ -455,8 +458,9 @@ TIPS_lookup = {'NLP Suite: Package description': 'TIPS_NLP_NLP Suite Package des
                'Things to do with words: Rhetoric (Tropes & Figures)': 'TIPS_NLP_Things to do with words Rhetorical analysis Tropes and Figures.pdf',
                'Style analysis': 'TIPS_NLP_Style analysis.pdf',
                'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf',
+               'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf'}
-TIPS_options = 'NLP Suite: Package description', 'Things to do with words: NLP approach', 'Setup Input/Output configuration for your corpus', 'Setup external software (e.g., MALLET)', 'NLP Suite: General tools', 'NLP Suite: Tools of linguistic analysis', 'NLP basic language', 'Things to do with words: Overall view', 'Things to do with words: Content analysis', 'Things to do with words: Frame analysis', 'Things to do with words: Narrative analysis', 'Things to do with words: Rhetoric (Arguments)', 'Things to do with words: Rhetoric (Tropes & Figures)', 'Style analysis', 'Text encoding (utf-8)','csv files - Problems & solutions'
+TIPS_options = 'NLP Suite: Package description', 'Text encoding (utf-8)','Excel - Enabling Macros','csv files - Problems & solutions', 'Things to do with words: NLP approach', 'Setup Input/Output configuration for your corpus', 'Setup external software (e.g., MALLET)', 'NLP Suite: General tools', 'NLP Suite: Tools of linguistic analysis', 'NLP basic language', 'Things to do with words: Overall view', 'Things to do with words: Content analysis', 'Things to do with words: Frame analysis', 'Things to do with words: Narrative analysis', 'Things to do with words: Rhetoric (Arguments)', 'Things to do with words: Rhetoric (Tropes & Figures)', 'Style analysis'
 
 
 # reminders content for specific GUIs are set in the csv file reminders
