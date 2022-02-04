@@ -144,7 +144,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'gender': {'annotators': ['coref']},
         'sentiment': {'annotators':['sentiment']},
         'normalized-date': {'annotators': ['tokenize','ssplit','ner']},
-        'SVO':{"annotators": ['tokenize','ssplit','pos','depparse','natlog','lemma', 'ner']},
+        'SVO':{"annotators": ['tokenize','ssplit','pos','depparse','natlog','lemma', 'ner', 'coref', 'quote']},
         'OpenIE':{"annotators": ['tokenize','ssplit','natlog','openie','ner']},
         'parser (pcfg)':{"annotators": ['tokenize','ssplit','pos','lemma','ner', 'parse','regexner']},
         'parser (nn)' :{"annotators": ['tokenize','ssplit','pos','lemma','ner','depparse','regexner']}
@@ -438,7 +438,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 if annotator_chosen == 'coref table':
                     pronouns_count += count_pronoun(CoreNLP_output)
                 # sentenceID = new_sentenceID
-                
+
                 if output_format == 'text':
                     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
                                                                              'CoreNLP_'+ str(annotator_chosen))
@@ -447,7 +447,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                             text_file.write("\n<@#" + docTitle + "#@>\n")
                             processing_doc = docTitle
                         text_file.write(sub_result)
-                    if outputFilename not in filesToOpen: 
+                    if outputFilename not in filesToOpen:
                         filesToOpen.append(outputFilename)
                 else:
                     # add output to the output storage list in routine_list
@@ -1030,7 +1030,7 @@ def process_json_gender(config_filename,documentID, document, start_sentenceID, 
     for key, value in kwargs.items():
         if key == 'extract_date_from_filename_var' and value == True:
             extract_date_from_filename_var = True
-            
+
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
     result = []
@@ -1108,7 +1108,7 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
                     complete_sent = complete_sent + token['originalText']
                 else:
                     complete_sent = complete_sent + ' ' + token['originalText']
-            
+
         check_sentence_length(len(sentence_data['tokens']), sentenceID, config_filename)
 
         if extract_date_from_filename_var:
@@ -1149,14 +1149,37 @@ def process_json_sentence(config_filename, documentID, document, sentenceID, jso
 def process_json_SVO_enhanced_dependencies(config_filename,documentID, document, sentenceID, json, **kwargs):
     #extract date from file name
     extract_date_from_filename_var = False
+    gender_var = False
+    quote_var = False
     for key, value in kwargs.items():
         if key == 'extract_date_from_filename_var' and value == True:
             extract_date_from_filename_var = True
+        if key == "gender_var" and value == True:
+            gender_var = True
+        if key == "quote_var" and value == True:
+            quote_var = True
+
 
     date_str = date_in_filename(document, **kwargs)
+
+    # get gender information for this document
+    if gender_var:
+        raw_gender_info = process_json_gender(config_filename, documentID, document, 0, json, **kwargs)
+        gender_info = []
+        for row in raw_gender_info:
+            gender_info.append([row[0], row[1], row[3], row[4]])
+
+    # get quote information for this document
+    if quote_var:
+        raw_quote_info = process_json_quote(config_filename, documentID, document, sentenceID, json, **kwargs)
+        quote_info = []
+        for row in raw_quote_info:
+            quote_info.append([row[0], row[2], row[4], row[5]])
+
     SVO_enhanced_dependencies = []
+    SVO_brief = []
     locations = [] # a list of [sentence, sentence id, [location_text, ner_value]]
-    for sentence in json['sentences']:#traverse output of each sentence 
+    for sentence in json['sentences']:#traverse output of each sentence
         sent_data = SVO_enhanced_dependencies_util.SVO_enhanced_dependencies_sent_data_reorg(sentence)#reorganize the output into a dictionary in which each content (also dictionary) contains information of a token
         #including a dictionary (govern_dictionary) indicating the index of tokens whose syntactical head is the current token
 
@@ -1180,6 +1203,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         #CYNTHIA: " ".join(L) => "; ".join(L)
         # ; added list of locations in SVO output (e.g., Los Angeles; New York; Washington)
         for row in SVO:
+            SVO_brief.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], complete_sent])
             if extract_date_from_filename_var:
                 SVO_enhanced_dependencies.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),complete_sent, date_str])
             else:
@@ -1192,6 +1216,25 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
 
     if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True:
         visualize_GIS_maps(kwargs, locations, documentID, document, date_str)
+
+    # merge gender information with SVO information
+    if gender_var:
+        SVO_df = pd.DataFrame(SVO_brief, columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Sentence'])
+        gender_df = pd.DataFrame(gender_info, columns=["S", "S Gender", "Sentence ID", "Document ID"])
+        merge_df = pd.merge(SVO_df, gender_df, on=["Document ID", "Sentence ID", "S"], how='left')
+        gender_df = pd.DataFrame(gender_info, columns=["O", "O Gender", "Sentence ID", "Document ID"])
+        merge_df = pd.merge(merge_df, gender_df, on=["Document ID", "Sentence ID", "O"], how='left')
+        merge_df = merge_df[['Document ID', 'Sentence ID', 'Document', 'S', 'S Gender', 'V', 'O', 'O Gender', 'Sentence']]
+        merge_df = merge_df.drop_duplicates()
+        merge_df.to_csv(kwargs["gender_filename"], index=False, mode="a")
+
+    if quote_var:
+        SVO_df = pd.DataFrame(SVO_brief, columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Sentence'])
+        quote_df = pd.DataFrame(quote_info, columns=["Document ID", "Sentence ID", "Number of Quotes", "Speakers"])
+        merge_df = pd.merge(SVO_df, quote_df, on=["Document ID", "Sentence ID"], how='left')
+        merge_df = merge_df[["Document ID", "Sentence ID", "Document", "S", "V", "O", "Number of Quotes", "Speakers", 'Sentence']]
+        merge_df = merge_df.drop_duplicates()
+        merge_df.to_csv(kwargs["quote_filename"], index=False, mode="a")
 
     return SVO_enhanced_dependencies
 

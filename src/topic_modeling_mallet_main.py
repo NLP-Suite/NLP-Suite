@@ -122,8 +122,14 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {"Mallet installation":"TIPS_NLP_Topic modeling Mallet installation.pdf","JAVA installation":"TIPS_NLP_Java download install run.pdf","Topic modeling in Mallet":"TIPS_NLP_Topic modeling Mallet.pdf","Topic modeling in Gensim":"TIPS_NLP_Topic modeling Gensim.pdf",'Topic modeling and corpus size':'TIPS_NLP_Topic modeling and corpus size.pdf'}
-TIPS_options='Topic modeling in Mallet','Mallet installation','JAVA installation','Topic modeling in Gensim','Topic modeling and corpus size'
+TIPS_lookup = {"Mallet installation":"TIPS_NLP_Topic modeling Mallet installation.pdf",
+               "JAVA installation":"TIPS_NLP_Java download install run.pdf",
+               'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               "Topic modeling in Mallet":"TIPS_NLP_Topic modeling Mallet.pdf",
+               "Topic modeling in Gensim":"TIPS_NLP_Topic modeling Gensim.pdf",
+               'Topic modeling and corpus size':'TIPS_NLP_Topic modeling and corpus size.pdf'}
+TIPS_options='Topic modeling in Mallet','Mallet installation','JAVA installation','Excel - Enabling Macros','csv files - Problems & solutions','Topic modeling in Gensim','Topic modeling and corpus size'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons

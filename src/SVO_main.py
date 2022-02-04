@@ -282,6 +282,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
         location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'CoreNLP_SVO_LOCATIONS')
+        gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                       'CoreNLP_SVO', "gender_info")
+        quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                       'CoreNLP_SVO', "quote_info")
         outputLocations.append(location_filename)
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir, openOutputFiles,
@@ -294,7 +298,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                        date_separator_var=date_separator_var,
                                                                        date_position_var=date_position_var,
                                                                        google_earth_var=google_earth_var,
-                                                                       location_filename = location_filename)
+                                                                       location_filename = location_filename,
+                                                                       gender_var = gender_var, gender_filename = gender_filename,
+                                                                       quote_var = quote_var, quote_filename = quote_filename)
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
                 output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
@@ -1016,7 +1022,9 @@ videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
 TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
+               'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
                'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Stanford CoreNLP memory issues':'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
                'Stanford CoreNLP date extractor': 'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
                'Stanford CoreNLP OpenIE': 'TIPS_NLP_Stanford CoreNLP OpenIE.pdf',
@@ -1029,7 +1037,7 @@ TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and 
                "Geocoding: How to Improve Nominatim":"TIPS_NLP_Geocoding Nominatim.pdf",
                "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf",
                'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
-TIPS_options = 'SVO extraction and visualization', 'utf-8 encoding', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'CoNLL table', 'Stanford CoreNLP coreference resolution', 'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs', 'Java download install run'
+TIPS_options = 'SVO extraction and visualization', 'utf-8 encoding', 'Excel - Enabling Macros', 'csv files - Problems & solutions', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'CoNLL table', 'Stanford CoreNLP coreference resolution', 'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs', 'Java download install run'
 
 
 # add all the lines lines to the end to every special GUI

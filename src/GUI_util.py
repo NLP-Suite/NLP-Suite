@@ -241,7 +241,7 @@ def display_release():
 
     # get the release version available on GitHub
     check_GitHub_release(version_str)
-    release_display= str(release_version_var.get()) + "/" + str(GitHub_release_version_var.get())
+    release_display = str(release_version_var.get()) + "/" + str(GitHub_release_version_var.get())
     release_lb = tk.Label(window, text='Release ' + release_display,foreground="red")
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate(),
                                                    y_multiplier_integer, release_lb, True)
