@@ -40,8 +40,8 @@ def get_csv_data(file_name,withHeader):
     #print ("\n\n\n\ndetectCsvHeader(file_name) ",detectCsvHeader(file_name))
     with open(file_name,encoding='utf-8',errors='ignore') as f:
         reader = csv.reader(f,delimiter=delimiter)
-        if withHeader==True:
-            headers=next(reader, None) #ADDED to skip header in new .csv CoNLL
+        if withHeader == True:
+            headers = next(reader, None) #ADDED to skip header in new .csv CoNLL
         #data = [r[:numColumns] for r in reader]
         data = [r for r in reader]
         #f.close()
