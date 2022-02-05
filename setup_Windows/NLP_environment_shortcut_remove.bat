@@ -9,7 +9,7 @@ cd %~dp0 && python "..\src\shortcut_remove.py"
 :PROMPT
 echo(
 ECHO The NLP shortcut has been removed.
-ECHO Double click on NLP_environment_shortcut_add.bat to add again the NLP shortcut.
+ECHO Double click on STEP3-NLP-environment.bat to add again the NLP shortcut.
 SET /P ENDPROMPT=Press Return to close this window.
 EXIT 0
 

@@ -19,4 +19,4 @@ unalias nlp
 
 echo
 echo "The NLP shortcut has been removed."
-echo "Double click on NLP_environment_shortcut_add.bat to add again the NLP shortcut."
+echo "Double click on STEP3-NLP-environment.bat to add again the NLP shortcut."

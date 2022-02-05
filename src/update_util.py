@@ -1,5 +1,6 @@
 """
 Author: David Dai December 22nd, 2021
+Edited Roberto Franzosi February 2022
 """
 
 import sys
@@ -30,5 +31,6 @@ def update_self(window,GitHub_release_version):
                        message=message)
         print(message)
     else:
-        mb.showwarning(title='Warning',
-                       message="You are not on the current stable branch of the NLP Suite.\n\nYou are on " + Repository('.').head.shorthand + ".\n\nThe automatic update only works from current stable.\n\nUpdate aborted to avoid overwriting your branch.")
+        print("You are not working on the 'current-stable' branch of the NLP Suite. You are on the '" + Repository('.').head.shorthand + "' branch'. Update aborted to avoid overwriting your branch.")
+        # mb.showwarning(title='Warning',
+        #                message="You are not on the current stable branch of the NLP Suite.\n\nYou are on " + Repository('.').head.shorthand + ".\n\nThe automatic update only works from current stable.\n\nUpdate aborted to avoid overwriting your branch.")
