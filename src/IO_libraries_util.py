@@ -25,6 +25,11 @@ import IO_internet_util
 # PIL being the commmon module for both packages, you need to check for PIL and trap PIL to tell the user to install pillow
 
 def install_all_packages(window, calling_script, modules_to_try):
+    if platform == 'darwin':
+        error_msg = "\n\nIf after installing the package in the right environment you still get an error, make sure your Mac is running zsh rather than bash. The NLP Suite expects zsh.\n\nPlease, read the TIPS_NLP_Anaconda NLP environment pip.pdf"
+    else:
+        error_msg = "\n\nPlease, read the TIPS_NLP_Anaconda NLP environment pip.pdf"
+
     missingModules = []
     for module in modules_to_try:
         # import module
@@ -56,8 +61,8 @@ def install_all_packages(window, calling_script, modules_to_try):
             msg = 'each of the listed modules'
         mb.showwarning(title='Module import error',
                        message="FATAL ERROR. Please, read carefully. The NLP Suite will exit.\n\nThe script '" + calling_script + "' needs to import the following modules:\n\n" + ', '.join(
-                           missingModules) + "\n\nPlease, in command prompt/terminal, type\nconda activate NLP\nto activate the right NLP environment (NLP case sensitive) where to install the package, then use the command\npip install " + str(
-                           msg) + "\nand try again.\n\nTo install a specific version of a package use: pip install SomePackage==1.0.4 where SomePackage can be Spacy, wordcloud or whatever package you are trying to install and 1.0.4 will be the specific version you want to install.\n\nTo find the package version currently installed on your machine, type: conda list to list the version of all the packages, or conda list SomePackage for a a specific package.\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!\n\nThe installation of some modules (e.g., pdfminer.six) may give you a permission error. In that case, add --user to the pip command, for instance, pip install pdfminer.six --user.")
+                           missingModules) + "\n\nPlease, in command prompt/terminal, type\nNLP\nif you have run STEP3-NLP environment) otherwise\n conda activate NLP\nto activate the right NLP environment (NLP case sensitive) where to install the package, then use the command\npip install " + str(
+                           msg) + "\nand try again." + error_msg)
         if 'stanfordnlp' or 'stanza' in missingModules:
             # sys.version_info is the Python version
             if (sys.version_info[0] < 3) or (sys.version_info[0] == 3 and sys.version_info[1] < 6):
