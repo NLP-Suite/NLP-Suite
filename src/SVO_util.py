@@ -1,5 +1,15 @@
 import pandas as pd
-from nltk.stem import WordNetLemmatizer
+import IO_libraries_util
+import GUI_util
+import nltk
+import nltk.data
+
+# check punkt
+IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
+# check WordNet
+IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/WordNet', 'WordNet')
+from nltk.stem.wordnet import WordNetLemmatizer
+
 # import stanza
 # stanza.download('en')
 # stannlp = stanza.Pipeline(lang='en', processors='tokenize,ner,mwt,pos,lemma')

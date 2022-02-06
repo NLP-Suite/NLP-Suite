@@ -83,7 +83,6 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 		return ''
 
 	kmloutputFilename = inputGeocodedCsvFile.replace('.csv', '.kml')
-
 	inputfile = csv.reader(result)
 	kml = simplekml.Kml()
 	colorIndex = 0
@@ -92,8 +91,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 	index = 0
 	j = 0
 	# index_list = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile, encodingValue, locationColumnName)
-	index_list = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile, encodingValue, locationColumnName)
-
+	index_list, data, headers = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile, encodingValue, locationColumnName)
 	# Icon selection
 	icon_url = GIS_Google_pin_util.pin_icon_select(icon_var_list[j], specific_icon_var_list[j])
 
@@ -135,7 +133,6 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 							'%m-%d-%y', '%d-%m-%Y', '%d-%m-%y', '%m-%Y', '%m-%y',
 							'%B-%d-%Y', '%B-%d-%y', '%b-%d-%Y', '%b-%d-%y', '%d-%B-%Y', '%d-%B-%y',
 							'%d-%b-%Y', '%d-%b-%y', '%m-%Y', '%m-%y', '%B-%Y', '%B-%y', '%b-%Y', '%b-%y')
-
 					for e in date.splitlines():
 						for fmt in fmts:
 							try:
@@ -168,7 +165,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 														 name_var_list, scale_var_list, color_var_list, color_style_var_list,
 														 bold_var_list, italic_var_list,
 														 description_var_list, description_csv_field_var_list,
-														 j=0)
+														 j=0, data=data, headers=headers)
 				pnt.timespan.begin = GGPdateFormat
 				pnt.timespan.end = GGPdateFormat
 
@@ -186,7 +183,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 			data, headers = IO_csv_util.get_csv_data(inputFilename, withHeader_var)  # get the data and header
 			# get the column name and its column num that we are splitting groups based on
 			icon_csv_field_var_name = icon_csv_field_var
-
+			
 			for m in range(len(headers)):
 				if icon_csv_field_var_name == headers[m]:
 					icon_csv_field_var_name_num = m
@@ -208,13 +205,13 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 						for w in range(len(specified_values_temp)):
 							specified_values.append(specified_values_temp[w])
 							specified_values_raw.clear()
-
+													
 				duplicates = []
 				for s in range(len(values_raw_temp)):
 					for r in range(len(specified_values)):
 						if values_raw_temp[s] == specified_values[r]:
 							duplicates.append(values_raw_temp[s])
-
+				
 				for t in range(len(duplicates)):
 					values_raw.remove(duplicates[t])
 
@@ -234,7 +231,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 				for a in range(len(values)):
 					if values[a] == data[n][icon_csv_field_var_name_num]:
 						values_row_num.append(n)
-
+			
 			index = 0
 			inputfile = csv.reader(open(inputGeocodedCsvFile, 'r', encoding=encodingValue, errors='ignore'))
 			for row in inputfile:
@@ -255,7 +252,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 													 color_var_list, color_style_var_list,
 													 description_location_var_name, description_var_list, description_csv_field_var_list,
 													 bold_var_list, italic_var_list, group_number_var, j=0)
-				index = index + 1
+				index = index + 1	
 	IO_user_interface_util.timed_alert(window, 3000, 'GIS kml generator', 'Finished generating KML file at', True, '', True, startTime, True)
 	try:
 		kml.save(kmloutputFilename)

@@ -21,19 +21,24 @@ import IO_user_interface_util
 def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_name):
 	geo_index = 0
 	index = 0
-	index_list = []
+	index_list = {}
 
 	inputfile = csv.reader(open(InputCodedCsvFile,'r',encoding = encodingValue,errors='ignore'))
-	first_row = next(inputfile) #skip header
+	input_coded_csv_file = [line for line in inputfile] # reminder to skip the header here
+	# first_row = next(inputfile) #skip header
 
-	withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
-	data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
+	# withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
+	withHeader_var = not any(cell.isdigit() for cell in input_coded_csv_file[0])
 
-	geo_withHeader_var = IO_csv_util.csvFile_has_header(InputCodedCsvFile) # check if the file has header
-	geo_data, geo_headers = IO_csv_util.get_csv_data(InputCodedCsvFile,geo_withHeader_var) # get the data and header
+	data, headers = IO_csv_util.get_csv_data(inputFilename, withHeader_var) # get the data and header
+
+	# geo_withHeader_var = IO_csv_util.csvFile_has_header(InputCodedCsvFile) # check if the file has header
+	geo_withHeader_var = withHeader_var
+	# geo_data, geo_headers = IO_csv_util.get_csv_data(InputCodedCsvFile,geo_withHeader_var) # get the data and header
+	geo_data, geo_headers = input_coded_csv_file[1 if geo_withHeader_var else 0:], input_coded_csv_file[0] if geo_withHeader_var else ''
 
 	if len(geo_data)==0:
-		return index_list
+		return []
 
 	names = []
 	location_num=0
@@ -44,7 +49,7 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 	for n in range(len(data)):
 		names.append(data[n][location_num])
 
-	for row in inputfile:
+	for row in input_coded_csv_file[1:]:
 		geo_index += 1
 		geo_name = geo_data[geo_index-1][0]
 
@@ -53,12 +58,9 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 				index = l
 				if index not in index_list:
 					break
-		index_list.append(index)
+		index_list[index] = True
 
-	for i in range(len(index_list)):
-		index_list[i] += 1
-
-	return index_list
+	return [i + 1 for i in index_list.keys()], data, headers
 
 #the CoNLL table includes the filename; the position in the table varies with old and new CoNLL
 # returns filename, location, sentence, date (if present)
