@@ -59,13 +59,12 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, OptimizeInterva
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-def run_script_command():
-    run(GUI_util.input_main_dir_path.get(),
-        GUI_util.output_dir_path.get(),
-        GUI_util.open_csv_output_checkbox.get(),
-        GUI_util.create_Excel_chart_output_checkbox.get(),
-        optimize_intervals_var.get(),
-        num_topics_var.get())
+def run_script_command(): return run(GUI_util.input_main_dir_path.get(),
+                                     GUI_util.output_dir_path.get(),
+                                     GUI_util.open_csv_output_checkbox.get(),
+                                     GUI_util.create_Excel_chart_output_checkbox.get(),
+                                     optimize_intervals_var.get(),
+                                     num_topics_var.get())
 
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -196,9 +195,9 @@ readme_message = "This Python 3 script analyzes a set of documents for topic mod
                  "descending PROPORTION order). "
 
 
-def readme_command():
-    GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
-                              "Help", readme_message)
+def readme_command(): return GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
+                                                       GUI_IO_util.get_basic_y_coordinate(),
+                                                       "Help", readme_message)
 
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readme_command,
