@@ -1,6 +1,6 @@
 Write-Host "STEP2 relies on Git. If you have not done so already, please download Git at this link https://git-scm.com/downloads (select the Windows link; it will automatically detect whether your machine is 32-bit or 64-bit on the top line Click here to download the latest...). Run the downloaded exe file."
 Write-Host ""
-$AREYOUSURE = Read-Host "Do you wish to continue (Yes if you have already installed Git)? [y/n]"
+$AREYOUSURE = Read-Host "Do you wish to continue (Yes if you have already installed Git and wish to continue; No to exit)? [y/n]"
 if ( $AREYOUSURE -ne "y") {
     exit
 }

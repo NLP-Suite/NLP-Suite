@@ -558,10 +558,10 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                             if platform == 'darwin':
                                 # GEPHI INSTALLATION
                                 if software_name == 'Gephi':
-                                    software_dir = "/Applications/Gephi.app/Contents/MacOS"
+                                    software_dir = "/Applications"
                                 # GOOGLE EARTH PRO INSTALLATION
                                 if software_name == 'Google Earth Pro':
-                                    software_dir = "/Applications/Google Earth Pro.app/Contents/MacOS"
+                                    software_dir = "/Applications"
                             if platform == 'darwin' or platform == 'win32':
                                 # should not start from NLP/src since users are strongly advised NT to install external softare inside the NLP Suite folder
                                 # initialFolder = os.path.dirname(os.path.abspath(__file__))
@@ -580,16 +580,16 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                 # check that it is the correct software directory
                                 if 'corenlp' in software_name.lower():
                                     software_name = 'Stanford CoreNLP'
+                                elif 'gephi' in software_name.lower():
+                                    software_name = 'Gephi'
+                                elif 'google earth pro' in software_name.lower():
+                                    software_name = 'Google Earth Pro'
                                 elif 'mallet' in software_name.lower():
                                     software_name = 'Mallet'
                                 elif 'senna' in software_name.lower():
                                     software_name = 'SENNA'
                                 elif 'wordnet' in software_name.lower():
                                     software_name = 'WordNet'
-                                elif 'gephi' in software_name.lower():
-                                    software_name = 'Gephi'
-                                elif 'google earth pro' in software_name.lower():
-                                    software_name = 'Google Earth Pro'
                                 # check that the selected folder for the external program is correct; if so save
                                 if not check_inputExternalProgramFile(calling_script, software_dir, software_name):
                                     software_dir = None

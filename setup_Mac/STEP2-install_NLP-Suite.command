@@ -1,7 +1,7 @@
 echo "STEP2 relies on Git. If you have not done so already, please download Git at this link https://git-scm.com/downloads (select the macOS link and then download and install Xcode (if space allows; if you have limited disk space, use the binary installer)."
 echo
 while true; do
-    read -p "Do you wish to continue (Yes if you have already installed Git)? [y/n]" yn
+    read -p "Do you wish to continue (Yes if you have already installed Git and wish to continue; No to exit)? [y/n]" yn
     case $yn in
         [Yy]* ) break;;
         [Nn]* ) echo "STEP2 Aborted." && exit;;
