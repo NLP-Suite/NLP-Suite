@@ -1,4 +1,4 @@
-from shortcut_add import remove, get_env, set_env
+from NLP_setup_shortcut_add import remove, get_env, set_env
 import os
 from pathlib import Path
 
