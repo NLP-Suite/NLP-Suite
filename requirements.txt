@@ -3,7 +3,7 @@
 
 #lines preceded by # are comments
 
-#used in update_util for the automatic update to the latest release available on GitHub using git
+#used in NLP_setup_update_util for the automatic update to the latest release available on GitHub using git
 pygit2
 
 #used to parse arguments that are passed to a script via command line

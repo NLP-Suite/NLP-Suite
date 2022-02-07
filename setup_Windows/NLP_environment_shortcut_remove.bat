@@ -5,7 +5,7 @@ echo(
 SET /P AREYOUSURE=Do you wish to continue? [y/n]
 IF /I "%AREYOUSURE%" NEQ "y" GOTO END
 @echo off
-cd %~dp0 && python "..\src\shortcut_remove.py"
+cd %~dp0 && python "..\src\NLP_setup_shortcut_remove.py"
 :PROMPT
 echo(
 ECHO The NLP shortcut has been removed.

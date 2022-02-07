@@ -61,6 +61,10 @@ def run_NLP():
         return
     call("python NLP_menu_main.py", shell=True)
 
+def close_NLP():
+    window.destroy()
+    sys.exit(0)
+
 def watch_video(video_button):
     videos_util.get_videos('File manager', {'File manager': 'NLP_File manager.mp4'}, video_button, '')
 
@@ -142,11 +146,18 @@ def display_text():
 
 
 def display_enter_button():
+    # display CLOSE button
+    enter_button = tk.Button(window, text='CLOSE', width=15, height=1,
+                             font=("Arial", 14),
+                             command=lambda: close_NLP())
+    enter_button.grid(row=9, column=4, columnspan=3, rowspan=2, sticky=(tk.N,tk.W),padx=30)
+
     # display Enter NLP button
     enter_button = tk.Button(window, text='Enter NLP Suite', width=20, height=2, foreground="red",
                              font=("Arial", 14, "bold"),
                              command=lambda: run_NLP())
-    enter_button.grid(row=8, column=4, columnspan=3, rowspan=2, pady=50)
+    # enter_button.grid(row=8, column=4, columnspan=3, rowspan=2, pady=50)
+    enter_button.grid(row=8, column=2, columnspan=2, rowspan=2, pady=50)
 
     roberto_franzosi = tk.Label(window,
                              text='Roberto Franzosi',
@@ -161,7 +172,7 @@ def display_enter_button():
                              font=("Arial", 12, "italic"),
                              command=lambda: watch_video(video_button))
     video_button.configure(state='disabled')
-    video_button.grid(row=9, column=3, columnspan=3, sticky=(tk.N,tk.W),padx=30)
+    video_button.grid(row=9, column=1, columnspan=3, sticky=(tk.N,tk.W),padx=30)
 
 
 def update_images():

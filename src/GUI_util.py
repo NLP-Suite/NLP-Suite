@@ -212,7 +212,7 @@ def check_GitHub_release(current_release: str, silent = False):
             else:
                 return
     if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != current_release:
-        # update is carried out in update_util.py
+        # update is carried out in NLP_setup_update_util.py
         result = mb.askyesno("NLP Suite Outdated",
                     "You are running the NLP Suite release version " + str(current_release) + ", an OLD version." +
                     "\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) + "." +
@@ -782,7 +782,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         config_input_output_alphabetic_options.append(output_dir_path.get())
 
         def exit_handler():
-            from update_util import update_self
+            from NLP_setup_update_util import update_self
             # release_version_var is the release on the current machine
             # GitHub_release_version_var is the release available on GitHub
             if GitHub_release_version_var.get() != release_version_var.get():
