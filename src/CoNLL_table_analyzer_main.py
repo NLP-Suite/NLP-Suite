@@ -705,7 +705,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
                                                SVO_checkbox)
 
 k_sentences_var.set(0)
-k_sentences_checkbox = tk.Checkbutton(window, text="Analyze K sentences",
+k_sentences_checkbox = tk.Checkbutton(window, text="K sentences analyzer (repetition finder)",
                               variable=k_sentences_var, onvalue=1, offvalue=0)
 # k_sentences_checkbox.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
@@ -979,9 +979,11 @@ scriptName=os.path.basename(__file__)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName,True)
 
 if GUI_util.input_main_dir_path.get()!='':
+    GUI_util.run_button.configure(state='disabled')
     mb.showwarning(title='Input file',
                    message="The CoNLL Table Analyzer scripts require in input a csv CoNLL table.\n\nThe RUN button is disabled until the expected CoNLL file is seleted in input.\n\nPlease, select in input a CoNLL file.")
 else:
+    GUI_util.run_button.configure(state='normal')
     if inputFilename.get()!='':
         CoNLL_util.check_CoNLL(inputFilename.get())
 

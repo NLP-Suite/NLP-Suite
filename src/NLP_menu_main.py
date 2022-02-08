@@ -439,7 +439,7 @@ TIPS_lookup = {'NLP Suite: Package description': 'TIPS_NLP_NLP Suite Package des
                'NLP Suite: General tools': 'TIPS_NLP_NLP Suite general tools.pdf',
                'NLP Suite: Tools of linguistic analysis': 'TIPS_NLP_NLP Suite Tools of linguistic analysis.pdf',
                'NLP basic language': 'TIPS_NLP_NLP Basic Language.pdf',
-               'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
+               'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',               'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
                'Things to do with words: Content analysis': 'TIPS_NLP_Things to do with words Content analysis.pdf',
                'Things to do with words: Frame analysis': 'TIPS_NLP_Things to do with words Frame analysis.pdf',
                'Things to do with words: Narrative analysis': 'TIPS_NLP_Things to do with words Narrative analysis.pdf',
@@ -449,7 +449,7 @@ TIPS_lookup = {'NLP Suite: Package description': 'TIPS_NLP_NLP Suite Package des
                'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf',
                'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf'}
-TIPS_options = 'NLP Suite: Package description', 'pip install & Anaconda environments', 'Text encoding (utf-8)','Excel - Enabling Macros','csv files - Problems & solutions', 'Things to do with words: NLP approach', 'Setup Input/Output configuration for your corpus', 'Setup external software (e.g., MALLET)', 'NLP Suite: General tools', 'NLP Suite: Tools of linguistic analysis', 'NLP basic language', 'Things to do with words: Overall view', 'Things to do with words: Content analysis', 'Things to do with words: Frame analysis', 'Things to do with words: Narrative analysis', 'Things to do with words: Rhetoric (Arguments)', 'Things to do with words: Rhetoric (Tropes & Figures)', 'Style analysis'
+TIPS_options = 'NLP Suite: Package description', 'pip install & Anaconda environments', 'Text encoding (utf-8)','Excel - Enabling Macros','csv files - Problems & solutions', 'Setup Input/Output configuration for your corpus', 'Setup external software (e.g., MALLET)', 'Things to do with words: NLP approach', 'English Language Benchmarks',  'NLP Suite: General tools', 'NLP Suite: Tools of linguistic analysis', 'NLP basic language', 'Things to do with words: Overall view', 'Things to do with words: Content analysis', 'Things to do with words: Frame analysis', 'Things to do with words: Narrative analysis', 'Things to do with words: Rhetoric (Arguments)', 'Things to do with words: Rhetoric (Tropes & Figures)', 'Style analysis'
 
 
 # reminders content for specific GUIs are set in the csv file reminders

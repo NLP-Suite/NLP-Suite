@@ -174,13 +174,13 @@ def display_logo():
         logo.place(x=GUI_IO_util.get_help_button_x_coordinate()-offset, y=10)
 
 
-version_str = '1.5.9'
+# define the variable local_release
+local_release = '0.0.0' #stored in lib\release_version.txt
 
-
-def check_GitHub_release(current_release: str, silent = False):
+def get_GitHub_release(silent = False):
     # check internet connection
     if not IO_internet_util.check_internet_availability_warning("GUI_util.py (Function Automatic check for NLP Suite newest release version on GitHub)"):
-        return
+        return '0.0.0'
     release_url = 'https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/lib/release_version.txt'
     try:
         GitHub_newest_release = requests.get(release_url).text
@@ -188,34 +188,41 @@ def check_GitHub_release(current_release: str, silent = False):
     except:
         if not silent:
             mb.showwarning(title='Internet connection error', message="The attempt to connect to GitHub failed.\n\nIt is not possible to check the latest release of the NLP Suite at this time. You can continue run your current release and try again later.")
+        return '0.0.0'
+    return GitHub_newest_release
+
+def check_GitHub_release(local_release: str, silent = False):
+    GitHub_newest_release = get_GitHub_release()
+    if GitHub_newest_release == None or GitHub_newest_release == '0.0.0': # when not connected to internet
         return
-    # current_release = '2.3.1' # line used for testing; should be LOWER than the version on GitHub
+    # local_release = '2.3.1' # line used for testing; should be LOWER than the version on GitHub
     # split the text string of release version (e.g., 1.5.9) into three parts separated by .
-    current_release_parts=[current_release[i:i + 1] for i in range(0, len(current_release), 2)]
+    local_release_parts=[local_release[i:i + 1] for i in range(0, len(local_release), 2)]
     GitHub_release_parts=[GitHub_newest_release[i:i + 1] for i in range(0, len(GitHub_newest_release), 2)]
     old_version = False
     # check numbers
-    if int(current_release_parts[0]) > int(GitHub_release_parts[0]):
+    if int(local_release_parts[0]) > int(GitHub_release_parts[0]):
         return
-    if int(current_release_parts[0])<int(GitHub_release_parts[0]):
+    if int(local_release_parts[0])<int(GitHub_release_parts[0]):
         old_version = True
     else:
         # if the first parts are the same, check the second part
-        if int(current_release_parts[1])>int(GitHub_release_parts[1]):
+        if int(local_release_parts[1])>int(GitHub_release_parts[1]):
             return
-        if int(current_release_parts[1]) < int(GitHub_release_parts[1]):
+        if int(local_release_parts[1]) < int(GitHub_release_parts[1]):
             old_version = True
         else:
             # if the second parts are the same, check the third part
-            if int(current_release_parts[2]) < int(GitHub_release_parts[2]):
+            if int(local_release_parts[2]) < int(GitHub_release_parts[2]):
                 old_version = True
             else:
                 return
-    if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != current_release:
+    if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != local_release:
         # update is carried out in NLP_setup_update_util.py
         result = mb.askyesno("NLP Suite Outdated",
-                    "You are running the NLP Suite release version " + str(current_release) + ", an OLD version." +
+                    "You are running the NLP Suite release version " + str(local_release) + ", an OLD version." +
                     "\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) + "." +
+                    "\n\nThe OLD and NEW release versions are displayed on the top left-hand corner of the GUI, local OLD version left of \ GitHUB new version right of \ (0.0.0 is displayed when you are not connected to the internet to access GitHub)." +
                     "\n\nTo update to the newer release, EXIT the NLP Suite NOW by clicking on the CLOSE button and fire up the NLP Suite again.\n\nThe NLP Suite is automatically updated every time you exit the NLP Suite and fire it up again." +
                     "\n\nThe update features of the NLP Suite rely on Git. Please download Git at this link https://git-scm.com/downloads, if it hasn’t been installed already." +
                     "\n\nWOULD YOU LIKE TO SEE WHAT IS NEW IN THE RELEASE VERSION " + str(GitHub_newest_release) + "?")
@@ -228,24 +235,28 @@ def display_release():
     # third digit for bug fixes and minor changes to current version
     # must also change the Release version in readMe on GitHub
 
-    global version_str
+    global local_release
     release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
 
     if os.path.isfile(release_version_file):
         with open(release_version_file,'r') as file:
-            version_str = file.read()
+            local_release = file.read()
 
-    release_version_var.set(version_str)
+    release_version_var.set(local_release)
 
     y_multiplier_integer=-.7
 
     # get the release version available on GitHub
-    check_GitHub_release(version_str)
-    release_display = str(release_version_var.get()) + "/" + str(GitHub_release_version_var.get())
+    GitHub_newest_release = get_GitHub_release()
+    release_display = str(release_version_var.get()) + "/" + str(GitHub_newest_release)
     release_lb = tk.Label(window, text='Release ' + release_display,foreground="red")
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_help_button_x_coordinate(),
                                                    y_multiplier_integer, release_lb, True)
-
+    # check and display a possible warning message
+    if GitHub_newest_release != '0.0.0':
+        check_GitHub_release(local_release)
+    else:
+        mb.showwarning(title='GitHub release version',message="The GitHub release version is displayed on the top left-hand corner of the GUI as 0.0.0.\n\nWithout internet the newest release available on GitHub cannnot be retrieved.")
 def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_main_dir_path,title,fileType,extension):
     currentFilename=inputFilename.get()
     if len(currentFilename)>0:
@@ -606,7 +617,9 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
         intro = tk.Label(window, text=GUI_IO_util.introduction_main)
         intro.pack()
         display_logo()
-        display_release()
+        # although the release version appears in the top part of the GUI,
+        #   it is run at the end otherwise a message will be displayed with an incomplete GUI
+        # display_release()
         display_about_release_team_cite_buttons(scriptName)
 
     y_multiplier_integer=0
@@ -796,7 +809,11 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     close_button.place(x=GUI_IO_util.close_button_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
     # Any message should be displayed after the whole GUI has been displayed
-    
+
+    # although the release version appears in the top part of the GUI,
+    #   it is run here otherwise a message will be displayed with an incomplete GUI
+    display_release()
+
     if noLicenceError==True:
         mb.showwarning(title='Fatal error', message="The licence agreement file 'LICENSE-NLP-1.0.txt' could not be found in the 'lib' subdirectory of your main NLP Suite directory\n" + GUI_IO_util.NLPPath + "\n\nPlease, make sure to copy this file in the 'lib' subdirectory.\n\nThe NLP Suite will now exit.")
         sys.exit()
@@ -842,7 +859,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     if result != None:
         routine_options = reminders_util.getReminders_list(temp_config_filename)
 
-    # check_GitHub_release(version_str)
+    # check_GitHub_release(local_release)
 
     window.protocol("WM_DELETE_WINDOW", _close_window)
 

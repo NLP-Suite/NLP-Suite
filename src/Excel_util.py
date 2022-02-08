@@ -803,13 +803,15 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             return True
 
         wb = openpyxl.load_workbook(fpath, read_only=False, keep_vba=True)
-        ws1 = wb ["Labels"]
-        ws2 = wb["Excel data"]
+        ws1 = wb["Data"]
+        ws2 = wb ["Labels"]
 
+        # clear data values
         row_count1 = ws1.max_row
         for i in range(row_count1):
             ws1.delete_rows(row_count1 - i)
 
+        # clear labels values
         row_count2 = ws2.max_row
         for i in range(row_count2):
             ws2.delete_rows(row_count2 - i)
@@ -838,7 +840,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                     row += [""]
                     row += [""]
                 index = index + 1
-            ws2.append(row)
+            # fill out data sheet
+            ws1.append(row)
 
         withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
         data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
@@ -851,13 +854,15 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                         "Excel chart error with hover over data: The number of rows in the input csv file\n\n" + inputFilename + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.'\n\nProcessing continues...")
                     break
                 else:
-                    ws1.cell(row=j + 1, column=i + 1).value = hover_data[j][0]
+                    # fill out labels sheet
+                    ws2.cell(row=j + 1, column=i + 1).value = hover_data[j][0]
         names = []
         names.append(chartTitle)
         names.append(column_yAxis_label)
         names.append(column_xAxis_label+insertLines)
         for i in range(3):
-            ws1.cell(row=i+1, column = 26*27).value = names[i]
+            # fill out labels sheet
+            ws2.cell(row=i+1, column = 26*27).value = names[i]
 
         reminders_util.checkReminder('*',
                                        reminders_util.title_options_Excel_Charts,
@@ -919,8 +924,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 mb.showwarning(title='Series Label Warning', message="The system indicates that there are more series labels specified than the number of series (" + str(n) + "). The system will automatically choose the first " + str(n) + " in the series label list.\n\nPlease click 'OK' and continue.")
 
             for i in range(n): # iterate n times, n is the number of series
-                labels = Reference(ws,min_col=i*2+1, min_row=2,max_row=1+num_label)
                 data = Reference(ws, min_col=i*2+2, min_row=2, max_row=1+num_label)
+                labels = Reference(ws,min_col=i*2+1, min_row=2,max_row=1+num_label)
 
                 if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
                     if len(series_label_list) > 0 and len(series_label_list[i]) > 0:
@@ -1001,8 +1006,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             #     chartName2.y_axis.title = " Second Y_AXIS"
 
 
-            labels = Reference(ws,min_col=1, min_row=2,max_row=1+num_label)
             data = Reference(ws, min_col=2, min_row=2, max_row=1+num_label)
+            labels = Reference(ws,min_col=1, min_row=2,max_row=1+num_label)
 
             if len(series_label_list) > 2:
                 mb.showwarning(title='Series Label Warning', message="The system indicates that there are more series labels specified than the number of series (2). The system will automatically choose the first 2 of the series label list.\n\nPlease click 'OK' and continue.")
@@ -1022,8 +1027,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             chartName1.y_axis.majorGridlines = None
 
             # Create a second chart
-            labels = Reference(ws,min_col=3, min_row=2,max_row=1+num_label)
             data = Reference(ws, min_col=4, min_row=2, max_row=1+num_label)
+            labels = Reference(ws,min_col=3, min_row=2,max_row=1+num_label)
 
             if len(series_label_list) > 0 and len(series_label_list[1]) > 0:
                 chartName.series.append(Series(data, title=series_label_list[1]))

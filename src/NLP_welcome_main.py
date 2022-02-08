@@ -210,7 +210,7 @@ update_images()  # this MUST be before  displaying logo, text, and buttons
 GUI_util.display_logo()
 display_text()
 
-GUI_util.display_release()
+# GUI_util.display_release()
 
 scriptName = 'NLP_welcome_main.py'
 GUI_util.display_about_release_team_cite_buttons(scriptName)
@@ -239,6 +239,7 @@ def fit_images(event):
         canvas3.coords(canvas_img3, event.width/2, event.height/2)
         canvas3.itemconfig(canvas_img3, image=img3)
 
+GUI_util.display_release()
 
 window.bind("<Configure>", fit_images)
 window.mainloop()
