@@ -6,7 +6,7 @@ echo(
 SET /P AREYOUSURE=Do you wish to continue? [y/n]
 IF /I "%AREYOUSURE%" NEQ "y" GOTO END
 @echo off
-cd %~dp0 && python "..\src\STEP3-NLP-environment.py"
+cd %~dp0 && python "..\src\NLP_setup_shortcut_add.py"
 :PROMPT
 echo(
 ECHO The NLP shortcut has been added to the environment variables.
