@@ -2,13 +2,13 @@
 
 from fileinput import filename
 import sys
-import GUI_util
-import IO_libraries_util
+# import GUI_util
+# import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Excel_util",['csv','tkinter','os','collections'])==False:
-    sys.exit(0)
+# if IO_libraries_util.install_all_packages(GUI_util.window,"Excel_util",['csv','tkinter','os','collections'])==False:
+#     sys.exit(0)
 
-import tkinter.messagebox as mb
+#import tkinter.messagebox as mb
 from collections import Counter
 
 import pandas as pd
@@ -17,9 +17,9 @@ import os
 import csv
 
 import IO_csv_util
-import GUI_IO_util
-import IO_files_util
-import IO_user_interface_util
+#import GUI_IO_util
+#import IO_files_util
+#import IO_user_interface_util
 
 # if createExcelCharts:
 #         columns_to_be_plotted = [[0, 1]]
@@ -59,7 +59,7 @@ def main():
     height = 'count'
     hover_label = 'count'
     chartTitle = 'test chart'
-    fileName =  'C:/Users/Tony Chen/Desktop/NLP_working/Test Input/test_input.csv'
+    fileName =  'C:/Users/Tony Chen/Desktop/NLP_working/Test Input/bar_test_data.csv'
     outputDir = 'd:/'
     plot_bar_chart(x_label, height, fileName, outputDir, chartTitle, hover_label)
 
