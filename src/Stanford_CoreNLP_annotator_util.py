@@ -599,6 +599,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                         'Frequency Distribution of Verbs (unfiltered)', 1, [], 'V_bar', 'Verbs (unfiltered)')
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[5, 5]], 'bar',
                                                         'Frequency Distribution of Objects (unfiltered)', 1, [], 'O_bar', 'Objects (unfiltered)')
+                    if 'SVO' in annotator_params:
+                        for key, value in kwargs.items():
+                            if key == "gender_var" and value == True:
+                                filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, kwargs["gender_filename"],
+                                                                  filesToOpen, genderCol=["S Gender", "O Gender"], wordCol=["S", "O"])
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))
     if len(filesError)>0:
@@ -1669,16 +1674,17 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
         df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False)
 
 
-def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesToOpen):
-    if "Gender" not in IO_csv_util.get_csvfile_headers(dictFilename, False):
-        return
+def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesToOpen, genderCol=["Gender"], wordCol=[]):
+    for col in genderCol:
+        if col not in IO_csv_util.get_csvfile_headers(dictFilename, False):
+         return
 
     # annotate the input file(s) for gender values
-    csvValue_color_list = ['Gender', '|', 'FEMALE', 'red', '|', 'MALE', 'blue', '|']
+    csvValue_color_list = [genderCol, '|', 'FEMALE', 'red', '|', 'MALE', 'blue', '|']
     bold_var = True
     tagAnnotations = ['<span style="color: blue; font-weight: bold">', '</span>']
     tempFilename = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
-                                                             dictFilename,'',
+                                                             dictFilename, wordCol,
                                                              csvValue_color_list, bold_var, tagAnnotations,
                                                              fileType='.txt')
     # the annotator returns a list rather than a string

@@ -93,9 +93,9 @@ def getFileList_SubDir(inputFilename, inputDir, fileType='.*', silent=False):
 
 
 # inputFile contains a file name with full path;
-#   can also be blank 
+#   can also be blank
 # inputDir is the full path of an input directory
-#   can also be blank 
+#   can also be blank
 # fileType can be * (for any fileType), .pdf, .csv, .txt, ...
 # returns a list of either a single file or all files in a directory
 #   examples of calls
@@ -283,7 +283,7 @@ def open_kmlFile(window,inputFilename):
 
 
 # opens a filename with its path
-# if a file with the same name is already open, it throws an error 
+# if a file with the same name is already open, it throws an error
 def openFile(window, inputFilename):
     if len(inputFilename) == 0:
         tk.messagebox.showinfo("Input file error", "The filename is blank. No file can be opened.")
@@ -423,6 +423,10 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
 
 # extension can be 'txt', 'xlsx', 'doc, 'docx' WITHOUT .
 def GetNumberOfDocumentsInDirectory(inputDirectory, extension=''):
+    numberOfDocs = 0
+    if inputDirectory=='':
+        mb.showwarning(title='No directory selected',message='The directory passed to the GetNumberOfDocumentsInDirectory function is blank.\n\nFunction aborted.')
+        return numberOfDocs
     if extension == '':  # count any document
         numberOfDocs = len([os.path.join(inputDirectory, f) for f in os.listdir(inputDirectory)])
     else:  # count documents by specific document type

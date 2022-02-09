@@ -10,9 +10,9 @@ You can find detailed installation instructions at the NLP Suitte GitHub pages h
 	Running STEP1 will not affect Anaconda if you already have it installed on your machine.
 	Installation may take a while. Do not turn off your machine or start running STEP2 until STEP1 is complete. When installation is complete you will see the message "The Anaconda3 installation is complete." in command line/prompt.
 
-	If something goes fundamentally wrong while running STEP1 and you get errors in both STEP1 and STEP2, you may need to delete Anaconda and reinstall it. To do that, you will need to run he PowerShell command with these three steps:
+	If something goes fundamentally wrong while running STEP1 and you get errors in both STEP1 and STEP2, you may need to uninstall Anaconda and reinstall it. To do that, you will need to run the PowerShell command with these three steps:
 		1.	Right click the windows button on the lower left corner;
-		2.	Select "PowerShell (Admin)"
+		2.	Select "Windows PowerShell (Admin)"
 		3.	Run the rd – r "$Home\Anaconda3"
 	Run STEP1 again.
 

@@ -283,9 +283,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'CoreNLP_SVO_LOCATIONS')
         gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                       'CoreNLP_SVO', "gender_info")
+                                                                       'CoreNLP_SVO_gender')
         quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                       'CoreNLP_SVO', "quote_info")
+                                                                       'CoreNLP_SVO_quote')
         outputLocations.append(location_filename)
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir, openOutputFiles,
@@ -325,6 +325,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                            outputDir, createExcelCharts, "SVO")
             filesToOpen.extend(pronoun_files)
             filesToOpen.extend(tempOutputFiles)
+            if gender_var:
+                filesToOpen.append(gender_filename)
+            if quote_var:
+                filesToOpen.append(quote_filename)
             svo_result_list.append(tempOutputFiles[0])
 
         # ask Do you want to display the distribution of verbs by WordNet top synset categories for the n most frequent Subjects?

@@ -1,4 +1,4 @@
-echo "You are about to setup a shortcut that by typing NLP in command line/prompt will 1. activate the NLP python environment and 2. change the directory to the NLP/src directory."
+echo "STEP3 will setup a shortcut that by typing NLP in command line/prompt will 1. activate the NLP python environment and 2. change the directory to the NLP/src directory."
 echo
 while true; do
     read -p "Do you wish to continue? [y/n]" yn
@@ -18,5 +18,6 @@ source ~/.bash_profile
 source ~/.zshrc
 
 echo
+echo "Installation completed!"
 echo "The NLP shortcut has been added to the environment variables."
 echo "Double click on NLP_environment_shortcut_remove.bat to remove the shortcut."

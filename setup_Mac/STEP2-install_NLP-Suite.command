@@ -1,3 +1,5 @@
+echo "STEP2 will take a while to install. Please, be patient and wait for the message Installation Completed!"
+echo
 echo "STEP2 relies on Git. If you have not done so already, please download Git at this link https://git-scm.com/downloads (select the macOS link and then download and install Xcode (if space allows; if you have limited disk space, use the binary installer)."
 echo
 while true; do

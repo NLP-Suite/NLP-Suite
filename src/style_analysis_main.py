@@ -35,7 +35,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
     complexity_readability_analysis_var,
     vocabulary_analysis_var,
     ngrams_analysis_var,
-    CoNLL_table_analysis_menu_var,
+    # CoNLL_table_analysis_menu_var,
     complexity_readability_analysis_menu_var,
     vocabulary_analysis_menu_var,
     ngrams_analysis_menu_var,
@@ -52,86 +52,89 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
         return
 
     if CoNLL_table_analysis_var == True:
-        withHeader = True
-        recordID_position = 8
-        documentId_position = 10
-        data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
-        if len(data) == 0:
-            return
-        data_divided_sents = CoNLL_util.sentence_division(data)
-        if data_divided_sents == None:
-            return
-        if len(data_divided_sents) == 0:
-            return
+        call("python CoNLL_table_analyzer_main.py", shell=True)
+        return
+        # withHeader = True
+        # recordID_position = 8
+        # documentId_position = 10
+        # data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
+        # if len(data) == 0:
+        #     return
+        # data_divided_sents = CoNLL_util.sentence_division(data)
+        # if data_divided_sents == None:
+        #     return
+        # if len(data_divided_sents) == 0:
+        #     return
 
-        if 'Clauses' in CoNLL_table_analysis_menu_var or '*' in CoNLL_table_analysis_menu_var:
-            tempfilesToOpen = CoNLL_clause_analysis_util.clause_stats(inputFilename, inputDir, outputDir, data,
-                                                                      data_divided_sents, openOutputFiles,
-                                                                      createExcelCharts)
-            # only open the chart files
-            # add line plots eventually
-            filesToOpen.append(tempfilesToOpen[1])
+        # if 'Clauses' in CoNLL_table_analysis_menu_var or '*' in CoNLL_table_analysis_menu_var:
+        #     tempfilesToOpen = CoNLL_clause_analysis_util.clause_stats(inputFilename, inputDir, outputDir, data,
+        #                                                               data_divided_sents, openOutputFiles,
+        #                                                               createExcelCharts)
+        #     # only open the chart files
+        #     # add line plots eventually
+        #     filesToOpen.append(tempfilesToOpen[1])
 
-        if 'Nouns' in CoNLL_table_analysis_menu_var or '*' in CoNLL_table_analysis_menu_var:
-            tempfilesToOpen = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, data_divided_sents,
-                                                                  openOutputFiles, createExcelCharts)
-            # only open the chart files
-            # add line plots eventually
-            filesToOpen.append(tempfilesToOpen[6])
-            filesToOpen.append(tempfilesToOpen[7])
-            filesToOpen.append(tempfilesToOpen[8])
+        # if 'Nouns' in CoNLL_table_analysis_menu_var or '*' in CoNLL_table_analysis_menu_var:
+        #     tempfilesToOpen = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, data_divided_sents,
+        #                                                           openOutputFiles, createExcelCharts)
+        #     # only open the chart files
+        #     # add line plots eventually
+        #     filesToOpen.append(tempfilesToOpen[6])
+        #     filesToOpen.append(tempfilesToOpen[7])
+        #     filesToOpen.append(tempfilesToOpen[8])
 
-        if 'Verbs' in CoNLL_table_analysis_menu_var or '*' in CoNLL_table_analysis_menu_var:
-            tempfilesToOpen = CoNLL_verb_analysis_util.verb_voice_stats(inputFilename, outputDir, data,
-                                                                        data_divided_sents, openOutputFiles,
-                                                                        createExcelCharts)
-            # only open the chart files
-            # add line plots eventually
-            filesToOpen.append(tempfilesToOpen[2])
-            tempfilesToOpen = CoNLL_verb_analysis_util.verb_modality_stats(config_filename, inputFilename, outputDir, data,
-                                                                           data_divided_sents, openOutputFiles,
-                                                                           createExcelCharts)
-            filesToOpen.append(tempfilesToOpen[2])
-            tempfilesToOpen = CoNLL_verb_analysis_util.verb_tense_stats(inputFilename, outputDir, data,
-                                                                        data_divided_sents, openOutputFiles,
-                                                                        createExcelCharts)
-            filesToOpen.append(tempfilesToOpen[1])
+        # if 'Verbs' in CoNLL_table_analysis_menu_var or '*' in CoNLL_table_analysis_menu_var:
+        #     tempfilesToOpen = CoNLL_verb_analysis_util.verb_voice_stats(inputFilename, outputDir, data,
+        #                                                                 data_divided_sents, openOutputFiles,
+        #                                                                 createExcelCharts)
+        #     # only open the chart files
+        #     # add line plots eventually
+        #     filesToOpen.append(tempfilesToOpen[2])
+        #     tempfilesToOpen = CoNLL_verb_analysis_util.verb_modality_stats(config_filename, inputFilename, outputDir, data,
+        #                                                                    data_divided_sents, openOutputFiles,
+        #                                                                    createExcelCharts)
+        #     filesToOpen.append(tempfilesToOpen[2])
+        #     tempfilesToOpen = CoNLL_verb_analysis_util.verb_tense_stats(inputFilename, outputDir, data,
+        #                                                                 data_divided_sents, openOutputFiles,
+        #                                                                 createExcelCharts)
+        #     filesToOpen.append(tempfilesToOpen[1])
 
-        if 'Function' in CoNLL_table_analysis_menu_var or '*' in CoNLL_table_analysis_menu_var:
-            # only open the chart files
-            # add line plots eventually
-            import CoNLL_function_words_analysis_util
-            tempfilesToOpen = CoNLL_function_words_analysis_util.article_stats(inputFilename, outputDir, data,
-                                                                               data_divided_sents, openOutputFiles,
-                                                                               createExcelCharts)
-            filesToOpen.append(tempfilesToOpen[2])
-            tempfilesToOpen = CoNLL_function_words_analysis_util.auxiliary_stats(inputFilename, outputDir, data,
-                                                                                 data_divided_sents, openOutputFiles,
-                                                                                 createExcelCharts)
-            filesToOpen.append(tempfilesToOpen[2])
-            tempfilesToOpen = CoNLL_function_words_analysis_util.conjunction_stats(inputFilename, outputDir, data,
-                                                                                   data_divided_sents, openOutputFiles,
-                                                                                   createExcelCharts)
-            filesToOpen.append(tempfilesToOpen[2])
-            tempfilesToOpen = CoNLL_function_words_analysis_util.preposition_stats(inputFilename, outputDir, data,
-                                                                                   data_divided_sents, openOutputFiles,
-                                                                                   createExcelCharts)
-            filesToOpen.append(tempfilesToOpen[2])
-            tempfilesToOpen = CoNLL_function_words_analysis_util.pronoun_stats(inputFilename, outputDir, data,
-                                                                               data_divided_sents, openOutputFiles,
-                                                                               createExcelCharts)
-            filesToOpen.append(tempfilesToOpen[2])
 
-        if 'POSTAG' in CoNLL_table_analysis_menu_var or 'DEPREL' in CoNLL_table_analysis_menu_var or 'NER' in CoNLL_table_analysis_menu_var:
-            mb.showwarning('Warning','The selected option is not available yet.\n\nSorry!')
-            return
+        # if 'Function' in CoNLL_table_analysis_menu_var or '*' in CoNLL_table_analysis_menu_var:
+        #     # only open the chart files
+        #     # add line plots eventually
+        #     import CoNLL_function_words_analysis_util
+        #     tempfilesToOpen = CoNLL_function_words_analysis_util.article_stats(inputFilename, outputDir, data,
+        #                                                                        data_divided_sents, openOutputFiles,
+        #                                                                        createExcelCharts)
+        #     filesToOpen.append(tempfilesToOpen[2])
+        #     tempfilesToOpen = CoNLL_function_words_analysis_util.auxiliary_stats(inputFilename, outputDir, data,
+        #                                                                          data_divided_sents, openOutputFiles,
+        #                                                                          createExcelCharts)
+        #     filesToOpen.append(tempfilesToOpen[2])
+        #     tempfilesToOpen = CoNLL_function_words_analysis_util.conjunction_stats(inputFilename, outputDir, data,
+        #                                                                            data_divided_sents, openOutputFiles,
+        #                                                                            createExcelCharts)
+        #     filesToOpen.append(tempfilesToOpen[2])
+        #     tempfilesToOpen = CoNLL_function_words_analysis_util.preposition_stats(inputFilename, outputDir, data,
+        #                                                                            data_divided_sents, openOutputFiles,
+        #                                                                            createExcelCharts)
+        #     filesToOpen.append(tempfilesToOpen[2])
+        #     tempfilesToOpen = CoNLL_function_words_analysis_util.pronoun_stats(inputFilename, outputDir, data,
+        #                                                                        data_divided_sents, openOutputFiles,
+        #                                                                        createExcelCharts)
+        #     filesToOpen.append(tempfilesToOpen[2])
 
-        if CoNLL_table_analysis_menu_var=='':
-            mb.showwarning('Warning', 'No option has been selected for CoNLL table analysis.\n\nPlease, select an option and try again.')
-            return
+        # if 'POSTAG' in CoNLL_table_analysis_menu_var or 'DEPREL' in CoNLL_table_analysis_menu_var or 'NER' in CoNLL_table_analysis_menu_var:
+        #     mb.showwarning('Warning','The selected option is not available yet.\n\nSorry!')
+        #     return
 
-        mb.showwarning(title='Output files',
-                       message="The analysis of the CoNLL table for clauses, nouns, verbs, and function words opens only the Excel chart files. But the script produces in output many more csv files.\n\nPlease, check your output directory for more file output.")
+        # if CoNLL_table_analysis_menu_var=='':
+        #     mb.showwarning('Warning', 'No option has been selected for CoNLL table analysis.\n\nPlease, select an option and try again.')
+        #     return
+
+        # mb.showwarning(title='Output files',
+        #                message="The analysis of the CoNLL table for clauses, nouns, verbs, and function words opens only the Excel chart files. But the script produces in output many more csv files.\n\nPlease, check your output directory for more file output.")
 
     if complexity_readability_analysis_var == True:
         if 'Sentence' in complexity_readability_analysis_menu_var:
@@ -318,7 +321,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 complexity_readability_analysis_var.get(),
                                 vocabulary_analysis_var.get(),
                                 ngrams_analysis_var.get(),
-                                CoNLL_table_analysis_menu_var.get(),
+                                # CoNLL_table_analysis_menu_var.get(),
                                 complexity_readability_analysis_menu_var.get(),
                                 vocabulary_analysis_menu_var.get(),
                                 ngrams_analysis_menu_var.get(),
@@ -376,12 +379,12 @@ def clear(e):
     vocabulary_analysis_var.set(0)
     ngrams_analysis_var.set(0)
 
-    CoNLL_table_analysis_menu_var.set('')
+    # CoNLL_table_analysis_menu_var.set('')
     complexity_readability_analysis_menu_var.set('')
     vocabulary_analysis_menu_var.set('')
     ngrams_analysis_menu_var.set('')
 
-    CoNLL_table_analysis_menu.configure(state='disabled')
+    # CoNLL_table_analysis_menu.configure(state='disabled')
     complexity_readability_analysis_menu.configure(state='disabled')
     vocabulary_analysis_menu.configure(state='disabled')
     ngrams_analysis_menu.configure(state='disabled')
@@ -399,7 +402,7 @@ vocabulary_analysis_var=tk.IntVar()
 ngrams_analysis_var=tk.IntVar()
 gender_guesser_var=tk.IntVar()
 
-CoNLL_table_analysis_menu_var=tk.StringVar()
+# CoNLL_table_analysis_menu_var=tk.StringVar()
 complexity_readability_analysis_menu_var=tk.StringVar()
 vocabulary_analysis_menu_var=tk.StringVar()
 ngrams_analysis_menu_var=tk.StringVar()
@@ -409,13 +412,13 @@ bySentenceIndex_checkbox = tk.Checkbutton(window, text='By sentence index', vari
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,bySentenceIndex_checkbox)
 
 CoNLL_table_analysis_var.set(0)
-CoNLL_table_analysis_checkbox = tk.Checkbutton(window, text='CoNLL table analysis', variable=CoNLL_table_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoNLL_table_analysis_checkbox,True)
+CoNLL_table_analysis_checkbox = tk.Checkbutton(window, text='CoNLL table analysis (GUI)', variable=CoNLL_table_analysis_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoNLL_table_analysis_checkbox)
 
-CoNLL_table_analysis_lb = tk.Label(window, text='Select the CoNLL table analysis you wish to perform')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,CoNLL_table_analysis_lb,True)
-CoNLL_table_analysis_menu = tk.OptionMenu(window,CoNLL_table_analysis_menu_var,'*','Clauses','Nouns','Verbs','Function words','DEPREL','POSTAG','NER')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+400, y_multiplier_integer,CoNLL_table_analysis_menu)
+# CoNLL_table_analysis_lb = tk.Label(window, text='Select the CoNLL table analysis you wish to perform')
+# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,CoNLL_table_analysis_lb,True)
+# CoNLL_table_analysis_menu = tk.OptionMenu(window,CoNLL_table_analysis_menu_var,'*','Clauses','Nouns','Verbs','Function words','DEPREL','POSTAG','NER')
+# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+400, y_multiplier_integer,CoNLL_table_analysis_menu)
 
 complexity_readability_analysis_var.set(0)
 complexity_readability_analysis_checkbox = tk.Checkbutton(window, text='Complexity/readability analysis', variable=complexity_readability_analysis_var, onvalue=1, offvalue=0)
@@ -447,38 +450,52 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory
 gender_guesser_var.set(0)
 gender_guesser_checkbox = tk.Checkbutton(window, text='Who wrote the text - Gender guesser', variable=gender_guesser_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,gender_guesser_checkbox)
+gender_guesser_checkbox.configure(state='normal')
 
 def activate_options(*args):
     if CoNLL_table_analysis_var.get()==True:
-        CoNLL_table_analysis_menu.configure(state='normal')
+        # CoNLL_table_analysis_menu.configure(state='normal')
         complexity_readability_analysis_checkbox.configure(state='disabled')
         vocabulary_analysis_checkbox.configure(state='disabled')
         ngrams_analysis_checkbox.configure(state='disabled')
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
         ngrams_analysis_menu.configure(state='disabled')
+        gender_guesser_checkbox.configure(state='disabled')
     elif complexity_readability_analysis_var.get()==True:
         complexity_readability_analysis_menu.configure(state='normal')
         CoNLL_table_analysis_checkbox.configure(state='disabled')
         vocabulary_analysis_checkbox.configure(state='disabled')
         ngrams_analysis_checkbox.configure(state='disabled')
-        CoNLL_table_analysis_menu.configure(state='disabled')
+        # CoNLL_table_analysis_menu.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
         ngrams_analysis_menu.configure(state='disabled')
+        gender_guesser_checkbox.configure(state='disabled')
     elif vocabulary_analysis_var.get()==True:
         vocabulary_analysis_menu.configure(state='normal')
         CoNLL_table_analysis_checkbox.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='disabled')
         ngrams_analysis_checkbox.configure(state='disabled')
-        CoNLL_table_analysis_menu.configure(state='disabled')
+        # CoNLL_table_analysis_menu.configure(state='disabled')
         complexity_readability_analysis_menu.configure(state='disabled')
         ngrams_analysis_menu.configure(state='disabled')
+        gender_guesser_checkbox.configure(state='disabled')
     elif ngrams_analysis_var.get() == True:
         ngrams_analysis_menu.configure(state='normal')
         CoNLL_table_analysis_checkbox.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='disabled')
         vocabulary_analysis_checkbox.configure(state='disabled')
-        CoNLL_table_analysis_menu.configure(state='disabled')
+        # CoNLL_table_analysis_menu.configure(state='disabled')
+        complexity_readability_analysis_menu.configure(state='disabled')
+        vocabulary_analysis_menu.configure(state='disabled')
+        gender_guesser_checkbox.configure(state='disabled')
+    elif gender_guesser_var.get() == True:
+        ngrams_analysis_checkbox.configure(state='disabled')
+        ngrams_analysis_menu.configure(state='disabled')
+        CoNLL_table_analysis_checkbox.configure(state='disabled')
+        complexity_readability_analysis_checkbox.configure(state='disabled')
+        vocabulary_analysis_checkbox.configure(state='disabled')
+        # CoNLL_table_analysis_menu.configure(state='disabled')
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
     else:
@@ -486,8 +503,9 @@ def activate_options(*args):
         complexity_readability_analysis_checkbox.configure(state='normal')
         vocabulary_analysis_checkbox.configure(state='normal')
         ngrams_analysis_checkbox.configure(state='normal')
+        gender_guesser_checkbox.configure(state='normal')
 
-        CoNLL_table_analysis_menu.configure(state='disabled')
+        # CoNLL_table_analysis_menu.configure(state='disabled')
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
         ngrams_analysis_menu.configure(state='disabled')
@@ -496,6 +514,7 @@ CoNLL_table_analysis_var.trace('w',activate_options)
 complexity_readability_analysis_var.trace('w',activate_options)
 vocabulary_analysis_var.trace('w',activate_options)
 ngrams_analysis_var.trace('w',activate_options)
+gender_guesser_var.trace('w',activate_options)
 
 activate_options()
 
@@ -517,7 +536,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
                                       GUI_IO_util.msg_IO_setup)
 
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help",'Please, tick the \'By sentence index\' checkbox if you wish to analyze any selected option with sentence information.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help",'Please, tick the \'CoNLL table analysis\' checkbox if you wish to analyze various items in the CoNLL table.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Clause\n   2. Noun\n   3. Verb\n   4. Function word\n   5. DEPREL\n   6. POSTAG\n   7. NER.')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help",'Please, tick the \'CoNLL table analysis\' checkbox if you wish to open the CoNLL table analyzer GUI to analyze various items in the CoNLL table, such as\n\n   1. Clause\n   2. Noun\n   3. Verb\n   4. Function words\n   5. DEPREL\n   6. POSTAG\n   7. NER\n\nYou will also be able to run specialized functions such as\n\n   1. CoNLL table searches\n   2. K sentences analyszer')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help",'Please, tick the \'Complex\\readability analysis\' checkbox if you wish to analyze the complexity or readability of sentences and documents.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Sentence complexity to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure. The Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\n   2. Text readability to compute various measures of text readability.\n 12 readability score requires HIGHSCHOOL education;\n 16 readability score requires COLLEGE education;\n 18 readability score requires MASTER education;\n 24 readability score requires DOCTORAL education;\n >24 readability score requires POSTDOC education.\n\n   3. Visualize the sentence tree as a png image, using spacy and nltk.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help",'Please, tick the \'Vocabulary analysis\' checkbox if you wish to analyze the vocabulary used in your corpus.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Abstract/concrete vocabulary, The script uses the concreteness ratings by Brysbaert, Warriner, Kuperman, Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas, Behavioral Research (2014) 46:904–911.\nMean/median Concreteness values are calculated for each sentence on a 5-point scale going from abstract (0) to concrete (5).\n\n   2. Vocabulary richness (word type/token ratio or Yule’s K). C.U. Yule. 1944. The statistical study of literary vocabulary. Cambridge: Cambridge University Press.\n\n   3. Short words to compute the number of short words (<4 characters) and list them.\n\n   4. Vowel words to compute the number of words that start with a vowel (vowel words) and list them.\n\n   5. Unusual, or misspelled, words (via NLTK).\n\n   6. Language detection. Language detection is carried out via LANGDETECT, LANGID, SPACY. Languages are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages (check here for the list https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help",'Please, tick the \'N-grams analysis\' checkbox if you wish to compute various types of n-grams.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Characters\n   2. Words\n   3. Hapax legomena (once-occurring words)\n   4. DEPREL\n   5. POSTAG\n   6. NER.')
