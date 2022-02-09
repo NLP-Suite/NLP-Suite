@@ -174,8 +174,8 @@ def display_logo():
         logo.place(x=GUI_IO_util.get_help_button_x_coordinate()-offset, y=10)
 
 
-# define the variable local_release
-local_release = '0.0.0' #stored in lib\release_version.txt
+# define the variable local_release_version
+local_release_version = '0.0.0' #stored in lib\release_version.txt
 
 def get_GitHub_release(silent = False):
     # check internet connection
@@ -191,36 +191,36 @@ def get_GitHub_release(silent = False):
         return '0.0.0'
     return GitHub_newest_release
 
-def check_GitHub_release(local_release: str, silent = False):
+def check_GitHub_release(local_release_version: str, silent = False):
     GitHub_newest_release = get_GitHub_release()
     if GitHub_newest_release == None or GitHub_newest_release == '0.0.0': # when not connected to internet
         return
-    # local_release = '2.3.1' # line used for testing; should be LOWER than the version on GitHub
+    # local_release_version = '2.3.1' # line used for testing; should be LOWER than the version on GitHub
     # split the text string of release version (e.g., 1.5.9) into three parts separated by .
-    local_release_parts=[local_release[i:i + 1] for i in range(0, len(local_release), 2)]
-    GitHub_release_parts=[GitHub_newest_release[i:i + 1] for i in range(0, len(GitHub_newest_release), 2)]
+    local_release_version_parts=[local_release_version[i:i + 1] for i in range(0, len(local_release_version), 2)]
+    GitHub_release_version_parts=[GitHub_newest_release[i:i + 1] for i in range(0, len(GitHub_newest_release), 2)]
     old_version = False
     # check numbers
-    if int(local_release_parts[0]) > int(GitHub_release_parts[0]):
+    if int(local_release_version_parts[0]) > int(GitHub_release_version_parts[0]):
         return
-    if int(local_release_parts[0])<int(GitHub_release_parts[0]):
+    if int(local_release_version_parts[0])<int(GitHub_release_version_parts[0]):
         old_version = True
     else:
         # if the first parts are the same, check the second part
-        if int(local_release_parts[1])>int(GitHub_release_parts[1]):
+        if int(local_release_version_parts[1])>int(GitHub_release_version_parts[1]):
             return
-        if int(local_release_parts[1]) < int(GitHub_release_parts[1]):
+        if int(local_release_version_parts[1]) < int(GitHub_release_version_parts[1]):
             old_version = True
         else:
             # if the second parts are the same, check the third part
-            if int(local_release_parts[2]) < int(GitHub_release_parts[2]):
+            if int(local_release_version_parts[2]) < int(GitHub_release_version_parts[2]):
                 old_version = True
             else:
                 return
-    if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != local_release:
+    if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != local_release_version:
         # update is carried out in NLP_setup_update_util.py
         result = mb.askyesno("NLP Suite Outdated",
-                    "You are running the NLP Suite release version " + str(local_release) + ", an OLD version." +
+                    "You are running the NLP Suite release version " + str(local_release_version) + ", an OLD version." +
                     "\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) + "." +
                     "\n\nThe OLD and NEW release versions are displayed on the top left-hand corner of the GUI, local OLD version left of \ GitHUB new version right of \ (0.0.0 is displayed when you are not connected to the internet to access GitHub)." +
                     "\n\nTo update to the newer release, EXIT the NLP Suite NOW by clicking on the CLOSE button and fire up the NLP Suite again.\n\nThe NLP Suite is automatically updated every time you exit the NLP Suite and fire it up again." +
@@ -235,14 +235,14 @@ def display_release():
     # third digit for bug fixes and minor changes to current version
     # must also change the Release version in readMe on GitHub
 
-    global local_release
+    global local_release_version
     release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
 
     if os.path.isfile(release_version_file):
         with open(release_version_file,'r') as file:
-            local_release = file.read()
+            local_release_version = file.read()
 
-    release_version_var.set(local_release)
+    release_version_var.set(local_release_version)
 
     y_multiplier_integer=-.7
 
@@ -254,7 +254,7 @@ def display_release():
                                                    y_multiplier_integer, release_lb, True)
     # check and display a possible warning message
     if GitHub_newest_release != '0.0.0':
-        check_GitHub_release(local_release)
+        check_GitHub_release(local_release_version)
     else:
         mb.showwarning(title='GitHub release version',message="The GitHub release version is displayed on the top left-hand corner of the GUI as 0.0.0.\n\nWithout internet the newest release available on GitHub cannnot be retrieved.")
 def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_main_dir_path,title,fileType,extension):
@@ -796,10 +796,12 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
         def exit_handler():
             from NLP_setup_update_util import update_self
-            # release_version_var is the release on the current machine
+            # local_release_version is the release on the local machine
+            # local_release_version = "4.3.1" # used to test
             # GitHub_release_version_var is the release available on GitHub
-            if GitHub_release_version_var.get() != release_version_var.get():
+            if GitHub_release_version_var.get() != local_release_version:
                 update_self(window, GitHub_release_version_var.get())
+            return
 
         atexit.register(exit_handler)
 
@@ -859,7 +861,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     if result != None:
         routine_options = reminders_util.getReminders_list(temp_config_filename)
 
-    # check_GitHub_release(local_release)
+    # check_GitHub_release(local_release_version)
 
     window.protocol("WM_DELETE_WINDOW", _close_window)
 
