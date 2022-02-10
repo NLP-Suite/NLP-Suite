@@ -12,6 +12,7 @@ import tkinter.messagebox as mb
 import GUI_IO_util
 import IO_files_util
 import word2vec_util
+import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -22,11 +23,17 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
     ## if statements for any requirements
 
     if 'Clustering' in vis_menu_var and keywords_var=='':
-        mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
+        mb.showwarning(title='Missing keywords',message='The algorithm requires a list of comma-separated keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
         return
     filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
                              remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var, vis_menu_var, keywords_var)
 
+    reminders_util.checkReminder('*',
+                                 reminders_util.title_options_Word2Vec,
+                                 reminders_util.message_Word2Vec,
+                                 True)
+
+    title_options_Word2Vec = ['Word2Vec HTML visual']
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
@@ -174,18 +181,18 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help", "Please, tick the checkbox to exclude stopwords from the analyzes (e.g, determiners, personal and possessive pronouns, auxiliaries).")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help", "Please, tick the checkbox to lemmatize nouns (using the singular version instead of plural, e.g., ox iinstead of oxen, child instead of children) and verbs (using the infinitive form instead of any verb forms, e.g., go gor going, went, goes).")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 3),"Help", "-")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 4), "Help", "It refers to the dimensionality of the word vectors. If you have a large corpus (> billions of tokens), you can go up to 100-300 dimensions. Generally word vectors with more dimensions give better results")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 5), "Help", "It refers to the maximum distance between the current and predicted word within a sentence. In other words, how many words come before and after your given word.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 6), "Help", "It refers to the minimum frequency threshold. The words with total frequency lower than this will be ignored.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 7), "Help","plot all word vectors at once if you want to see the whole picture. cluster words if you want to see the most similar words of your interested keyword.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 4), "Help", "Vector size refers to the dimensionality of the word vectors.\n\nIf you have a large corpus (> billions of tokens), you can go up to 100-300 dimensions.\n\nIn general, word vectors with more dimensions give better results.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 5), "Help", "Window size refers to the maximum distance between the current and predicted word within a sentence, in other words, how many words come before and after your given word.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 6), "Help", "Minimum count refers to the minimum frequency threshold.\n\nThe words with total frequency lower than the selected value will be ignored.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 7), "Help","Using the dropdown menu, select the option you want to use in running WordNet.\n\nSelect \'Plot all word vectors\' if you want to use ALL the words in your input file(s).\n\nSelect \'Clustering of word vectors\' if you want to focus on selected keywords. THE KEYWORDS MUST BE CONTAINED IN THE INPUT FILE(S).\n\nA good analysis strategy is to run Word2Vec for all words first, then re-run the algorithm on a special subset of keywords.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 8),
-                                  "Help", "the format of keyword must be keyword1, keyword2, ..., keywordN. The space + comma is required between your keywords.")
+                                  "Help", "Enter comma-separated keywords you want to focus on for semantic similarity. The words MUST be in the file(s) you are analyzing.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 9),"Help",GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
-readMe_message="This Python 3 script analyzes a set of documents for Word2Vec with Gensim."
+readMe_message="This Python 3 script analyzes file(s) with Gensim Word2Vec .\n\nIn INPUT the algorith can take a single txt file or a set of files in a directory.\n\nIn OUTPUT the algorithm produces two types of files:\n   1. a csv file;\n   2. an HTML file that visualizes a T-SNE graph of semantic distances between words. YOU CAN ENLARGE A TYPICAL MESSY DISPLAY BY SELECTING WITH YOUR MOUSE AN AREA OF INTEREST OF THE GRAPH. Hit REFRESH to go back to the original display."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
