@@ -149,7 +149,7 @@ def check_java_installation(script):
                         errorFound = True
                         return errorFound, error_code, system_output
                     else:
-                        if not 'Java\jdk' in os.getenv(x):
+                        if not 'Java\jre' in os.getenv(x):
                             # Java\jdk or java\jre
                             mb.showwarning(title='Java JDK error',
                                            message='A test for Java JDK in the Environment Variables PATH failed.' +
