@@ -134,6 +134,30 @@ def check_avaialable_memory(software):
 # return errorFound, error_code, system_output
 def check_java_installation(script):
     errorFound = False
+    error_code = 1 # should be 0 if Java is installed
+    system_output = '' # This is what you see when you run "java -version" in your command line
+
+    if platform == "win32" and 'CoreNLP' in script:
+        for x in os.environ:
+            if x == 'PATH':
+                if 'Java' in os.getenv(x):
+                    if not 'Java' in os.getenv(x):
+                        mb.showwarning(title='Java error',
+                                       message='A test for Java in the Environment Variables PATH failed.' +
+                                               '\n\nJava is not installed in your machine.\n\n' + script + ' is a Java script that requires Java installed on your machine (you need the JDK version, Java Development Kit; install Java JDK 8, which seems to work best for Stanford CoreNLP).\n\nPlease, read the Java installation TIPS, check your Java installation, install Java properly and try again (go to command line and type Java -version). Program will exit.')
+                        print('Java is not installed in Environment variables')
+                        errorFound = True
+                        return errorFound, error_code, system_output
+                    else:
+                        if not 'Java\jdk' in os.getenv(x):
+                            # Java\jdk or java\jre
+                            mb.showwarning(title='Java JDK error',
+                                           message='A test for Java JDK in the Environment Variables PATH failed.' +
+                                                   '\n\nJava is installed in your machine but not the JDK version.\n\n' + script + ' is a Java script that requires Java JDK installed on your machine (you need the JDK version, Java Development Kit; install Java JDK 8, which seems to work best for Stanford CoreNLP).\n\nPlease, read the Java installation TIPS, check your Java installation, install Java JDK properly and try again (go to command line and type Java -version). Program will exit.')
+                            print('Java is installed in Environment variables but ot the jdk version required by Stanford CoreNLP.')
+                            errorFound = True
+                            return errorFound, error_code, system_output
+
     java_output = subprocess.run(['java', '-version'], capture_output=True)
     error_code = java_output.returncode  # Should be 0 if java installed
     system_output = java_output.stderr.decode(
