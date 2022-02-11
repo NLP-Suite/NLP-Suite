@@ -52,7 +52,6 @@ def update_self(window,GitHub_release_version):
             webbrowser.open_new(url)
         else:
             return
-
     try:
         if Repository('.').head.shorthand == 'current-stable':
             print("Updating the NLP Suite...")
@@ -61,7 +60,7 @@ def update_self(window,GitHub_release_version):
             os.system("git pull -f origin")
             mb.showwarning(title='Warning',
                            message=message_update)
-            print(message)
+            print(message_update)
         else:
             print("You are not working on the 'current-stable' branch of the NLP Suite. You are on the '" + Repository('.').head.shorthand + "' branch'. Update aborted to avoid overwriting your branch.")
             # mb.showwarning(title='Warning',
