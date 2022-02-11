@@ -71,7 +71,7 @@ NLP_Suite_corpus_tools_menu = 'WHAT\'S IN YOUR CORPUS? A SWEEPING VIEW', \
 'Corpus statistics (Sentences, words, lines)', 'Co-Occurrences viewer', 'N-grams viewer', \
 'Shape of stories', 'Similarities between documents (via Python difflib)', \
 'Similarities between documents (via Java Lucene)', 'Topic modeling (via Gensim)', \
-'Topic modeling (via MALLET)', 'Word2Vec (via Gensim)'
+'Topic modeling (via MALLET)'
 
 NLP_Suite_corpus_document_tools_menu = 'Stanford CoreNLP', 'CoNLL table analyzer - Search the CoNLL table', \
 'CoNLL table analyzer - Clause, noun, verb, function words frequencies', 'CoreNLP annotator - date (NER normalized date)', \
@@ -83,7 +83,7 @@ NLP_Suite_corpus_document_tools_menu = 'Stanford CoreNLP', 'CoNLL table analyzer
 'Search text file(s) for n-grams & co-occurrences (N-grams viewer)', 'Search text file(s) for words/collocations', 'Sentence complexity', \
 'Sentence/text readability (via textstat)', 'Similarities between words (Levenshtein distance)', 'Spelling checkers', \
 'Spelling checker cleaner (Find & Replace string)', 'Semantic analysis (via TensorFlow)', 'SRL Semantic Role Labeling', \
-'SVO extractor & visualization', 'Word clouds', 'WordNet'
+'SVO extractor & visualization', 'Word clouds', 'WordNet', 'Word2Vec (via Gensim)'
 
 # 'Spelling checker/Unusual words (via NLTK)',
 # 'Spelling checker (via autocorrect)',

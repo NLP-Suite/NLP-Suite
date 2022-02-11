@@ -10,16 +10,19 @@ from tkinter import ttk
 import tkinter.messagebox as mb
 
 import config_util
-import IO_internet_util
-import webbrowser
+import IO_libraries_util
 
+# import IO_internet_util
+# import webbrowser
+
+NLP_Suite_website_name = 'NLP Suite GitHub'
 # HELP messages
 text_msg=''
 
 introduction_main = "Welcome to this Python 3 script.\nFor brief general information about this script, click on the \"Read Me\" button.\nFor brief information on specific lines click on any of the \"?HELP\" buttons.\nFor longer information on various aspects of the script, click on the \"Open TIPS files\" button and select the pdf help file to view.\nAfter selecting an option, click on \"RUN\" (the RUN button is disabled until all I/O information has been entered).   Click on \"CLOSE\" to exit."
 # msg_fileButtonDisabled="\n\nIf the Select INPUT file button is greyed out because you previously selected an INPUT directory but you now wish to use a file as input, click on the Select INPUT directory button and press ESCape to make all INPUT options available."
 # msg_dirButtonDisabled="\n\nIf the Select INPUT directory button is greyed out because you previously selected an INPUT file but you now wish to use a directory as input, click on the Select INPUT file button and press ESCape to make all INPUT options available."
-msg_openExplorer="\n\nA small button appears next to the select directory button. Click on the button to open Windows Explorer on the directory displayed, if one is displayed, or on the directory where the NLP script is saved." 
+msg_openExplorer="\n\nA small button appears next to the select directory button. Click on the button to open Windows Explorer on the directory displayed, if one is displayed, or on the directory where the NLP script is saved."
 msg_openFile="\n\nA small button appears next to the select file button. Click on the button to open the file, if one has been selected, as a check that you selected the correct file." # + msg_fileButtonDisabled
 msg_Esc="\n\nPress the ESCape button to clear any previously selected options and start fresh."
 
@@ -205,29 +208,38 @@ def get_open_file_directory_coordinate():
     return open_file_directory_coordinate
 
 def about():
+    url = "https://github.com/NLP-Suite/NLP-Suite/wiki/About"
+    IO_libraries_util.open_url(NLP_Suite_website_name, url)
     # check internet connection
-    if not IO_internet_util.check_internet_availability_warning("Check on GitHub what the NLP Suite is all about"):
-        return
-    webbrowser.open_new("https://github.com/NLP-Suite/NLP-Suite/wiki/About")
+    # if not IO_internet_util.check_internet_availability_warning("Check on GitHub what the NLP Suite is all about"):
+    #     return
+    # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/About")
 
 def release_history():
+    url = "https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History"
+    IO_libraries_util.open_url(NLP_Suite_website_name, url)
     # check internet connection
-    if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite release history"):
-        return
-    webbrowser.open_new("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
+    # if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite release history"):
+    #     return
+    # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
 
 # The function displays the contributors to the development of the NLP Suite
 def list_team():
+    url = "https://github.com/NLP-Suite/NLP-Suite/wiki/About#How-to-Cite-the-NLP-Suite"
+    IO_libraries_util.open_url(NLP_Suite_website_name, url)
     # check internet connection
-    if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite team"):
-        return
-    webbrowser.open_new("https://github.com/NLP-Suite/NLP-Suite/wiki/The-NLP-Suite-Team")
+    # if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite team"):
+    #     return
+    # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/The-NLP-Suite-Team")
 
 def cite_NLP():
-    # check internet connection
-    if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite newest release version"):
-        return
-    webbrowser.open_new("https://github.com/NLP-Suite/NLP-Suite/wiki/About#How-to-Cite-the-NLP-Suite")
+    url = "https://github.com/NLP-Suite/NLP-Suite/wiki/About#How-to-Cite-the-NLP-Suite"
+    IO_libraries_util.open_url(NLP_Suite_website_name, url)
+    #
+    # # check internet connection
+    # if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite newest release version"):
+    #     return
+    # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/About#How-to-Cite-the-NLP-Suite")
 
 def GUI_settings(IO_setup_display_brief,GUI_width,GUI_height_brief,GUI_height_full,y_multiplier_integer,y_multiplier_integer_add,increment):
     # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)

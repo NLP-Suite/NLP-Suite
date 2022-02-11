@@ -13,7 +13,7 @@ import tkinter.messagebox as mb
 import tkinter as tk
 from tkinter import filedialog
 # import nltk
-import webbrowser
+# import webbrowser
 import re
 import datetime
 import subprocess
@@ -561,11 +561,13 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
     if len(script_to_run) == 0:
         return
     if script_to_run == "Gender guesser":
-        import IO_internet_util
-        # check internet connection
-        if not IO_internet_util.check_internet_availability_warning("Gender guesser"):
-            return
-        webbrowser.open('http://www.hackerfactor.com/GenderGuesser.php#About')
+        url = 'http://www.hackerfactor.com/GenderGuesser.php#About'
+        IO_libraries_util.open_url('Gender guesser', url)
+        # import IO_internet_util
+        # # check internet connection
+        # if not IO_internet_util.check_internet_availability_warning("Gender guesser"):
+        #     return
+        # webbrowser.open_new_tab('http://www.hackerfactor.com/GenderGuesser.php#About')
     elif script_to_run.endswith('.py'):  # with GUI
         if IO_libraries_util.check_inputPythonJavaProgramFile(script_to_run) == False:
             return

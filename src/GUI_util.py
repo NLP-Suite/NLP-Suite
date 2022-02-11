@@ -22,7 +22,7 @@ import os
 import tkinter.messagebox as mb
 import inspect
 from subprocess import call
-import webbrowser
+# import webbrowser
 import atexit
 
 import config_util
@@ -77,8 +77,8 @@ IO_setup_menu = tk.OptionMenu(window, IO_setup_menu_var, 'Default I/O configurat
 IO_setup_var = tk.StringVar()
 
 select_input_file_button=tk.Button()
-select_input_main_dir_button=tk.Button() 
-select_input_secondary_dir_button=tk.Button() 
+select_input_main_dir_button=tk.Button()
+select_input_secondary_dir_button=tk.Button()
 select_output_dir_button=tk.Button()
 
 inputFilename=tk.StringVar()
@@ -119,7 +119,7 @@ run_button_state='disabled'
 #For the labels to change the text with the ON/OFF value of the checkbox the command=lambda must be included in the definition of the tk.button
 #	For example (see the example in this script):
 #	create_Excel_chart_output_label = tk.Checkbutton(window, variable=create_Excel_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label, create_Excel_chart_output_checkbox, "Automatically compute Excel charts", "NOT automatically compute Excel charts"))
-#	The next line must always be included to dsplay te label the first time the GUI is opened 
+#	The next line must always be included to dsplay te label the first time the GUI is opened
 #	create_Excel_chart_output_label.configure(text="Automatically open output Excel charts for inspection")
 
 def trace_checkbox(label_local, checkbox_local, local_onText, local_offText):
@@ -133,12 +133,12 @@ def trace_checkbox(label_local, checkbox_local, local_onText, local_offText):
 # 	matching_checkbox = tk.Checkbutton(window, variable=matching_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(matching_var, matching_checkbox, "Exact match", "Partial match"))
 # 	matching_checkbox.config(text="Exact match",state='disabled')
 # checkbox_var and checkbox_text are the var and checkbox widgets
-# onText, offText the texts to be displayed on 1 or 0 
+# onText, offText the texts to be displayed on 1 or 0
 
 #For the labels to change the text with the ON/OFF value of the checkbox the command=lambda must be included in the definition of the tk.button
 #	For example (see the example in geocoder_Google_eart_GUI or in WordNet_GUI):
 #	geoCodedFile_checkbox = tk.Checkbutton(window, variable=geoCodedFile_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(geoCodedFile_var, geoCodedFile_checkbox, "File contains geocoded data with Latitude and Longitude", "File does NOT contain geocoded data with Latitude and Longitude"))
-#	The next line must always be included to display the label the first time the GUI is opened 
+#	The next line must always be included to display the label the first time the GUI is opened
 #	geoCodedFile_checkbox.config(text="File does NOT contain geocoded data with Latitude and Longitude")
 
 def trace_checkbox_NoLabel(checkbox_var, checkbox_text, onText, offText):
@@ -227,7 +227,9 @@ def check_GitHub_release(local_release_version: str, silent = False):
                     "\n\nThe update features of the NLP Suite rely on Git. Please download Git at this link https://git-scm.com/downloads, if it hasn’t been installed already." +
                     "\n\nWOULD YOU LIKE TO SEE WHAT IS NEW IN THE RELEASE VERSION " + str(GitHub_newest_release) + "?")
         if result:
-            webbrowser.open_new("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
+            url = "https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History"
+            IO_libraries_util.open_url('NLP Suite GitHub', url)
+            # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
 
 def display_release():
     # first digit for major upgrades
