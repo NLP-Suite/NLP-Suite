@@ -797,21 +797,29 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         config_input_output_alphabetic_options.append(output_dir_path.get())
 
         def exit_handler():
+            global local_release_version
             from NLP_setup_update_util import update_self
             # local_release_version is the release on the local machine
-            # local_release_version = "4.3.1" # used to test
+            local_release_version = local_release_version.strip('\n')
+            # local_release_version = "2.5.3" # used to test
             # GitHub_release_version_var is the release available on GitHub
-            if GitHub_release_version_var.get() != local_release_version:
-                update_self(window, GitHub_release_version_var.get())
-            return
+            GitHub_release_version = GitHub_release_version_var.get()
+            GitHub_release_version = GitHub_release_version.strip('\n')
+            GitHub_release_version = GitHub_release_version.strip('\r')
+            if GitHub_release_version != local_release_version:
+                update_self(window, GitHub_release_version)
+            else:
+                print('\nYour NLP Suite is already up-to-date with the release available on GitHub (' + GitHub_release_version_var.get() + ').')
 
-        atexit.register(exit_handler)
+            GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options)
 
-        GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options)
+        atexit.register(exit_handler())
+
+        # GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options)
 
     close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
     close_button.place(x=GUI_IO_util.close_button_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
-
+    #
     # Any message should be displayed after the whole GUI has been displayed
 
     # although the release version appears in the top part of the GUI,

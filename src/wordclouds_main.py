@@ -8,11 +8,11 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"Wordclouds",['os','tk
     sys.exit(0)
 
 import os
-# import webbrowser
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox as mb
 # import requests
+# import webbrowser
 
 import IO_internet_util
 import IO_files_util
@@ -172,7 +172,7 @@ color_style_var=tk.StringVar()
 csvField_color_list=[]
 
 def clear(e):
-    wordclouds_var.set('')
+    wordclouds_var.set('Python WordCloud')
     differentColumns_differentColors_var.set(0)
     differentColumns_differentColors_checkbox.config(state='normal')
     selectedImage_var.set('')
@@ -200,7 +200,7 @@ def clear_field_color_list():
 # def run_clouds(window,y_multiplier_integer, wordclouds_var,selectedImage_var,
 # 	doNotCreateIntermediateFiles_var,input_main_dir_path):
 
-wordclouds_var.set('')
+wordclouds_var.set('Python WordCloud')
 selectedImage_var.set('')
 use_contour_only_var.set(1)
 wordclouds = tk.OptionMenu(window,wordclouds_var,'Python WordCloud','TagCrowd','Tagul','Tagxedo','Wordclouds','Wordle')

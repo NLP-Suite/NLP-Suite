@@ -17,7 +17,6 @@ python -m pip install -r requirements.txt
 
 conda activate NLP
 python src\NLP_setup_download_nltk_stanza.py
-python src\NLP_setup_download_jars.py
 
 conda activate NLP
 python -m spacy download en

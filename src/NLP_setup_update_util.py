@@ -43,18 +43,6 @@ def update_self(window,GitHub_release_version):
     except:
         if not IO_libraries_util.open_url('Git', url, ask_to_open=True, message_title='Git installation', message=message_Git):
             return
-
-        # answer = tk.messagebox.askyesno("Git installation",
-        #                                 message_Git)
-        # if answer:
-        #     status_code = requests.get(url).status_code
-        #     if status_code != 200:
-        #         mb.showwarning(title='Warning',
-        #                        message='Oops! The Git website could not be opened. Please, try aggain later.')
-        #         return
-        #     webbrowser.open_new_tab(url)
-        # else:
-        #     return
     try:
         if Repository('.').head.shorthand == 'current-stable':
             print("Updating the NLP Suite...")
@@ -65,9 +53,7 @@ def update_self(window,GitHub_release_version):
                            message=message_update)
             print(message_update)
         else:
-            print("You are not working on the 'current-stable' branch of the NLP Suite. You are on the '" + Repository('.').head.shorthand + "' branch'. Update aborted to avoid overwriting your branch.")
-            # mb.showwarning(title='Warning',
-            #                message="You are not on the current stable branch of the NLP Suite.\n\nYou are on " + Repository('.').head.shorthand + ".\n\nThe automatic update only works from current stable.\n\nUpdate aborted to avoid overwriting your branch.")
+            print("\nYou are not working on the 'current-stable' branch of the NLP Suite. You are on the '" + Repository('.').head.shorthand + "' branch'. Update aborted to avoid overwriting your branch.")
     except:
         mb.showwarning(title='Warning',
                        message="Git encountered an error in executing the command 'Repository('.').head.shorthand.\n\nUpdate aborted.")
