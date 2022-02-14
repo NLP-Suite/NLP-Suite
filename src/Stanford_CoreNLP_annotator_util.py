@@ -289,8 +289,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
             ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer',  '-parse.maxlen' + str(sentence_length), '-timeout', '999999'])
     else:
+        # CoreNLP_nlp = subprocess.Popen(
+        #     ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp',  os.path.join(CoreNLPdir, '*'),
+        #      'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
         CoreNLP_nlp = subprocess.Popen(
-            ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp',  os.path.join(CoreNLPdir, '*'),
+            ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
 
     time.sleep(5)
@@ -1726,9 +1729,9 @@ def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen,
 
 def check_pronouns(window, config_filename, inputFilename, outputDir, createExcelCharts, option):
     df = pd.read_csv(inputFilename)
-    personal_pronouns = ["I", "me", "you", "she", "her", "he", "him", "we", "us", "they", "them"]
+    personal_pronouns = ["i", "me", "you", "she", "her", "he", "him", "we", "us", "they", "them"]
     total_count = 0
-    pronouns_count = {"I": 0, "me": 0, "you": 0, "she": 0, "her": 0, "he": 0, "him": 0, "we": 0, "us": 0, "they": 0, "them": 0}
+    pronouns_count = {"i": 0, "me": 0, "you": 0, "she": 0, "her": 0, "he": 0, "him": 0, "we": 0, "us": 0, "they": 0, "them": 0}
     return_files = []
     for _, row in df.iterrows():
         if option == "SVO":

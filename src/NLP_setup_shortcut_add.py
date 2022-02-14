@@ -80,6 +80,5 @@ if __name__ == '__main__':
     prepend_env('Path', [
         os.path.abspath(path_setup)
     ])
-
     # allow running of these filetypes without having to type the extension
     prepend_env_pathext(['.bat'])
