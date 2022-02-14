@@ -17,7 +17,6 @@ python -m pip install -r requirements.txt
 
 conda activate NLP
 python src\NLP_setup_download_nltk_stanza.py
-python src\NLP_setup_download_jars.py
 
 conda activate NLP
 python -m spacy download en
@@ -39,5 +38,5 @@ Write-Host "----------------------" -ForegroundColor Green
 Write-Host "Installation Completed! Although installation completed, errors may have occurred in the installation of specific Python packages. Please, scroll up to see if errors occurred or use CTRL+F to search for words such as error or fail." -ForegroundColor Green
 Write-Host "----------------------" -ForegroundColor Green
 
-$ENDPROMPT = Read-Host "Press Enter/Return to close this window."
+$ENDPROMPT = Read-Host "Press Return to close this window."
 exit

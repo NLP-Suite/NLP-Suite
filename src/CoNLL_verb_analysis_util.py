@@ -2,14 +2,16 @@
 Python 3 script
 author: Jian Chen, January 2019, based on original vba code by Roberto Franzosi
 modified by Jack Hester and Roberto Franzosi, February, June 2019, November 2021
+modified by Siyan Pu November 2021
 """
 
 import sys
 import GUI_util
 import IO_libraries_util
+import pandas as pd
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "Verb Analysis",
-								['csv', 'os', 'collections', 'tkinter']) == False:
+										  ['csv', 'os', 'collections', 'tkinter']) == False:
 	sys.exit(0)
 
 from collections import Counter
@@ -28,9 +30,9 @@ import reminders_util
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
 # global recordID_position, documentID_position #, data, data_divided_sents
-recordID_position = 9 # NEW CoNLL_U
-sentenceID_position = 10 # NEW CoNLL_U
-documentID_position = 11 # NEW CoNLL_U
+recordID_position = 9  # NEW CoNLL_U
+sentenceID_position = 10  # NEW CoNLL_U
+documentID_position = 11  # NEW CoNLL_U
 
 # Following are used if running all analyses to prevent redundancy
 # filesToOpen = []  # Store all files that are to be opened once finished
@@ -59,6 +61,7 @@ def compute_stats(data):
 	postag_counter = Counter(postag_list)
 	deprel_counter = Counter(deprel_list)
 	return form_list, postag_list, postag_counter, deprel_list, deprel_counter
+
 
 # VERB VOICE ----------------------------------------------------------------------------------------------
 
@@ -119,7 +122,6 @@ def verb_voice_compute_frequencies(list_all_tok):
 		aux_VBN_organize.append(pair[1])
 	_active_ = [i + ['Active'] for i in _active_]
 
-	# must be sorted in descending order
 	voice_list = [['Verb Voice', 'Frequencies'],
 				  ['Passive', len(auxp_VBN_organize)],
 				  ['Active', len(aux_VBN_organize) + len(_active_)]]
@@ -140,14 +142,15 @@ def verb_voice_data_preparation(data):
 		return
 
 
-def voice_output(voice_word_list,data_divided_sents):
+def voice_output(voice_word_list, data_divided_sents):
 	voice_pass, voice_act_aux, voice_act, voice_stats = verb_voice_compute_frequencies(
 		voice_word_list)  # passive active analysis
 	voice = voice_pass + voice_act_aux + voice_act  # join
-	# voice = [i + [CoNLL_util.Sentence_searcher(data_divided_sents, i[documentID_position], i[sentenceID_position])] for i in
+	# voice = [i + [IO_CoNLL_util.Sentence_searcher(data_divided_sents, i[documentID_position], i[sentenceID_position])] for i in
 	# 		 voice]  # get full sentence
 	voice_sorted = sorted(voice, key=lambda x: int(x[recordID_position]))  # sort in ascending record id order
 	return voice_sorted, voice_stats
+
 
 def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
 	filesToOpen = []  # Store all files that are to be opened once finished
@@ -156,18 +159,28 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 	data_prep = verb_voice_data_preparation(data)
 
-	voice_list, voice_stats = voice_output(data_prep,data_divided_sents)
+	voice_list, voice_stats = voice_output(data_prep, data_divided_sents)
 
 	# output file names
-	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice', 'list')
-	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice', 'stats')
+	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice',
+															 'list')
+	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
+																   'Verb Voice', 'stats')
 
 	# errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-	# 								 CoNLL_util.sort_output_list('Verb Voice', voice_list),
+	# 								 IO_CoNLL_util.sort_output_list('Verb Voice', voice_list),
 	# 								 verb_file_name)
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-									 voice_stats,
-									 verb_file_name)
+										 voice_list,
+										 verb_file_name)
+
+	df = pd.read_csv(verb_file_name, header=None)
+	# modified by Siyan Pu November 2021
+	# temporary headers added, not sure why the voice_list doesn't have headers
+	df.to_csv(verb_file_name,
+			  header=["A", "FORM", "Lemma", "Postag", "B", "C", "D", "E", "F", "G", "Sentence ID", "Document ID", "H",
+					  "Verb Voice"])
+
 	if errorFound == True:
 		return
 	filesToOpen.append(verb_file_name)
@@ -192,27 +205,32 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 			filesToOpen.append(Excel_outputFilename)
 
 		# line plots by sentence index
-		outputFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window,
-																	   verb_file_name,
-																	   '',
-																	   outputDir,
-																	   openOutputFiles,
-																	   createExcelCharts,
-																	   [[1, 4]],
-																	   ['Verb Voice'],
-																		   ['FORM', 'Sentence'],
-																		   ['Document ID', 'Sentence ID',
-																			'Document'],
-																	   'NVA', 'line')
-		if len(outputFiles) > 0:
-			filesToOpen.extend(outputFiles)
+		# outputFiles = Excel_util.compute_csv_column_frequencies(window=GUI_util.window,
+		# 														inputFilename=verb_file_name,
+		# 														inputDataFrame='',
+		# 														outputDir=outputDir,
+		# 														openOutputFiles=openOutputFiles,
+		# 														createExcelCharts=createExcelCharts,
+		# 														columns_to_be_plotted=[[1, 4]],
+		# 														select_col='Verb Voice',
+		# 														hover_col=['FORM'],
+		# 														group_col=['Sentence ID'
+		# 																   ],
+		# 														fileNameType='NVA',
+		# 														chartType='line',
+		# 														count_var=0)
+		# if len(outputFiles) > 0:
+		# 	filesToOpen.extend(outputFiles)
+		# if outputFiles != "":
+		# 	filesToOpen.append(outputFiles)
 
 	return filesToOpen
+
 
 # VERB MODALITY ----------------------------------------------------------------------------------------------
 
 # modality compute frequencies of modality categories
-def verb_modality_compute_categories(data,data_divided_sents):
+def verb_modality_compute_categories(data, data_divided_sents):
 	num_obligation_mod = 0
 	num_will_would_mod = 0
 	num_can_may_mod = 0
@@ -238,7 +256,9 @@ def verb_modality_compute_categories(data,data_divided_sents):
 					"INPUT MUST BE THE MERGED CoNLL TABLE CONTAINING THE SENTENCE ID. Please use the merge option when generating your CoNLL table in the StanfordCoreNLP.py routine. Program will exit.")
 		return
 
-def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
+
+def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles,
+						createExcelCharts):
 	reminders_util.checkReminder(config_filename,
 								 reminders_util.title_options_CoNLL_table_verb_modality,
 								 reminders_util.message_CoNLL_table_verb_modality,
@@ -246,23 +266,25 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 
 	filesToOpen = []  # Store all files that are to be opened once finished
 
-	obligation_stats, will_would_stats, can_may_stats = verb_modality_compute_categories(data,data_divided_sents)
+	obligation_stats, will_would_stats, can_may_stats = verb_modality_compute_categories(data, data_divided_sents)
 	# must be sorted in descending order
 	modality_stats = [['Verb Modality', 'Frequencies'],
-					  ['Obligation',obligation_stats],
-					  ['Will/would',will_would_stats],
-					  ['Can/may',can_may_stats]]
+					  ['Obligation', obligation_stats],
+					  ['Will/would', will_would_stats],
+					  ['Can/may', can_may_stats]]
 
 	# output file names
-	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Modality', 'list')
-	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Modality', 'stats')
+	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
+															 'Verb Modality', 'list')
+	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
+																   'Verb Modality', 'stats')
 
 	# errorFound = IO_csv_util.list_to_csv(GUI_util.window,
 	# 								 CoNLL_util.sort_output_list('Verb Modality', modality_list),
 	# 								 verb_file_name)
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-									 modality_stats,
-									 verb_file_name)
+										 modality_stats,
+										 verb_file_name)
 	if errorFound == True:
 		return filesToOpen
 	filesToOpen.append(verb_file_name)
@@ -287,18 +309,20 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 
 		# line plots by sentence index
 		outputFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window,
-																	   verb_file_name,
-																	   '',
-																	   outputDir,
-																	   openOutputFiles,
-																	   createExcelCharts,
-																	   [[1, 4]],
-																	   ['Verb Modality'],['FORM', 'Sentence'],['Document ID', 'Sentence ID', 'Document'],
-																	   'NVA','line')
+																verb_file_name,
+																'',
+																outputDir,
+																openOutputFiles,
+																createExcelCharts,
+																[[1, 4]],
+																['Verb Modality'], ['FORM', 'Sentence'],
+																['Document ID', 'Sentence ID', 'Document'],
+																'NVA', 'line')
 		if len(outputFiles) > 0:
 			filesToOpen.extend(outputFiles)
 
 	return filesToOpen
+
 
 # VERB TENSE ----------------------------------------------------------------------------------------------
 
@@ -335,15 +359,17 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 				   ['Present', postag_counter['VBP']]]
 
 	# output file names
-	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Tense', 'list')
-	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '',  outputDir, '.csv', 'NVA', 'Verb Tense', 'stats')
+	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Tense',
+															 'list')
+	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
+																   'Verb Tense', 'stats')
 
 	# errorFound = IO_csv_util.list_to_csv(GUI_util.window,
 	# 								 CoNLL_util.sort_output_list('Verb Tense', tense_list),
 	# 								 verb_file_name)
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-									 tense_stats,
-									 verb_file_name)
+										 tense_stats,
+										 verb_file_name)
 	if errorFound == True:
 		return
 
@@ -369,44 +395,45 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 		# line plots by sentence index
 		outputFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window,
-																	   verb_file_name,
-																	   '',
-																	   outputDir,
-																	   openOutputFiles,
-																	   createExcelCharts,
-																	   [[1, 4]],
-																	   ['Verb Tense'], ['FORM', 'Sentence'], ['Document ID', 'Sentence ID','Document'],
-																	   'NVA', 'line')
+																verb_file_name,
+																'',
+																outputDir,
+																openOutputFiles,
+																createExcelCharts,
+																[[1, 4]],
+																['Verb Tense'], ['FORM', 'Sentence'],
+																['Document ID', 'Sentence ID', 'Document'],
+																'NVA', 'line')
 		if len(outputFiles) > 0:
 			filesToOpen.extend(outputFiles)
 
 	return filesToOpen
 
+
 def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
 	filesToOpen = []  # Store all files that are to be opened once finished
 
-
-	startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VERB ANALYSES at',
-												 True, '', True, '', True)
-
-
+	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+												   'Started running VERB ANALYSES at',
+												   True, '', True, '', True)
 
 	outputFiles = verb_voice_stats(inputFilename, outputDir, data, data_divided_sents,
-															openOutputFiles, createExcelCharts)
+								   openOutputFiles, createExcelCharts)
 
 	if outputFiles != None:
 		filesToOpen.extend(outputFiles)
 
 	outputFiles = verb_modality_stats(config_filename, inputFilename, outputDir, data, data_divided_sents,
-															   openOutputFiles, createExcelCharts)
+									  openOutputFiles, createExcelCharts)
 	if outputFiles != None:
 		filesToOpen.extend(outputFiles)
 
 	outputFiles = verb_tense_stats(inputFilename, outputDir, data, data_divided_sents,
-															openOutputFiles, createExcelCharts)
+								   openOutputFiles, createExcelCharts)
 	if outputFiles != None:
 		filesToOpen.extend(outputFiles)
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VERB ANALYSES at', True, '', True, startTime,True)
+	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VERB ANALYSES at', True,
+									   '', True, startTime, True)
 
 	return filesToOpen

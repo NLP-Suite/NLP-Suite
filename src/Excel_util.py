@@ -410,6 +410,8 @@ def compute_csv_column_frequencies_NEW(window, inputFileName, inputDataFrame, ou
                                                                 openOutputFiles, createExcelCharts, count_var)
 
 
+
+# Siyan Pu November 2021
 # group_col and hover_col are lists with multiple items, if so wished
 # select_col is also a list BUT with one item only
 # called from WordNet.py, CoNLL_*, Stanford_CoreNLP_date_annotator
@@ -419,16 +421,16 @@ def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, output
                                         select_col, hover_col, group_col,
                                        fileNameType='CSV', chartType='line', count_var=0):
 
-    # # outputCsvfilename = IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
-    # outputCsvfilename = inputFilename[:-4]+"_stats.csv" #IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
 
-    # filesToOpen.append(outputCsvfilename)
+    # outputCsvfilename = IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
+    # outputCsvfilename = inputFilename[:-4]+"_stats.csv" #IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
 
     tempFiles=[]
     container = []
+    Excel_outputFilename = []
 
-    # TODO remove return when fixed
-    return tempFiles
+    # TODO remove return when calling function w/o headers are fixed
+    return Excel_outputFilename
 
     if len(inputDataFrame) != 0:
         data = inputDataFrame
@@ -443,16 +445,13 @@ def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, output
         temp = group_col.copy()
         temp.append(col)
         c = data.groupby(group_col)[col].apply(list).to_dict()
-
-        container.append(c)
-
+    container.append(c)
     temp = group_col.copy()
-    temp.extend(select_col)
+    temp.append(select_col)
     data = data.groupby(temp).size().reset_index(name='Frequency')
     for index, row in data.iterrows():
-        if row[select_col[0]] == '':
+        if row[select_col] == '':
             data.at[index, 'Frequency'] = 0
-
     hover_header = ', '.join(hover_col)
     Hover_over_header = ['Hover_over: ' + hover_header]
     if len(hover_col) != 0:
@@ -463,35 +462,36 @@ def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, output
             df.columns = temp
             data = data.merge(df, how='left', left_on=group_col, right_on=group_col)
         temp_str = '%s' + '\n%s' * (len(hover_col) - 1)
+
+        # data.to_csv('data.csv',index=False)
         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col), axis=1)
         data.drop(hover_col, axis=1, inplace=True)
+    # data.to_csv('freq.csv',index=False)
 
-        # prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_list, count_var=0,
-        #                                column_yAxis_field_list=[]):
-        #     withHeader_var = IO_csv_util.csvFile_has_header(inputFilename)  # check if the file has header
-        #     data, headers = IO_csv_util.get_csv_data(inputFilename, withHeader_var)  # get the data and header
-        #     count_msg, withHeader_msg = build_timed_alert_message(chart_type_list[0], withHeader_var, count_var)
-    data.to_csv('freq.csv',index=False)
+    freq_output = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'freq')
+    data.to_csv(freq_output, index=False)
     if createExcelCharts:
-        xAxis='Sentence index'
-        chartTitle='Frequency distribution'
-        columns_to_be_plotted=[[1,3]]
+        # xAxis='Sentence index'
+        # chartTitle='Frequency distribution'
+        # columns_to_be_plotted=[[1,3]]
 
-        Excel_outputFilename=prepare_csv_data_for_chart(window, inputFilename, data, outputDir, select_col, Hover_over_header, group_col,
-                                   fileNameType, chartType, openOutputFiles, createExcelCharts, count_var)
+        # Excel_outputFilename=prepare_csv_data_for_chart(window, inputFilename, data, outputDir, select_col, Hover_over_header, group_col,
+        #                            fileNameType, chartType, openOutputFiles, createExcelCharts, count_var)
+        data = data.pivot_table(index=group_col[0], columns=select_col, values='Frequency',
+                                fill_value=0).reset_index().rename_axis(None, axis=1)
+        data_to_be_plotted = data.iloc[:, 0:4].T.reset_index().values.T.tolist()
 
-        # data_to_be_plotted=prepare_data_to_be_plotted('freq.csv', columns_to_be_plotted,
-        #                                      chartType)
-        #
-        # Excel_outputFilename=create_excel_chart(window, data_to_be_plotted, 'freq.csv', outputDir,
-        #                     scriptType=fileNameType,
-        #                     chartTitle='',
-        #                    chart_type_list=[chartType],
-        #                     column_xAxis_label='Sentence index', column_yAxis_label='Frequency',
-        #                     hover_info_column_list=[hover_header])
+        Excel_outputFilename = create_excel_chart(window,
+                                                  data_to_be_plotted=[data_to_be_plotted],
+                                                  inputFilename=freq_output,
+                                                  outputDir=outputDir,
+                                                  scriptType=fileNameType,
+                                                  chartTitle='Frequency Distribution by Sentence',
+                                                  chart_type_list=[chartType],
+                                                  column_xAxis_label='Sentence index',
+                                                  column_yAxis_label='Frequency')
 
-    return Excel_outputFilename #2 files
-
+    return Excel_outputFilename  # 2 files
 
 
 # generate a new csv file:

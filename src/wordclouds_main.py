@@ -8,11 +8,11 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"Wordclouds",['os','tk
     sys.exit(0)
 
 import os
-import webbrowser
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox as mb
-import requests
+# import requests
+# import webbrowser
 
 import IO_internet_util
 import IO_files_util
@@ -51,10 +51,12 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
     if 'Python' in visualization_tools:
         if prepare_image_var:
             #check internet connection
-            if not IO_internet_util.check_internet_availability_warning(visualization_tools):
+            # if not IO_internet_util.check_internet_availability_warning(visualization_tools):
+            #     return
+            # webbrowser.open_new_tab('https://www.remove.bg/')
+            url = 'https://www.remove.bg/'
+            if not IO_libraries_util.open_url('remove.bg', url):
                 return
-            webbrowser.open_new('https://www.remove.bg/')
-            return
 
     if visualization_tools=="TagCrowd" or visualization_tools=="Tagul" or visualization_tools=="Tagxedo" or visualization_tools=="Wordclouds" or visualization_tools=="Wordle":
         #check internet connection
@@ -70,14 +72,18 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
             url="https://www.wordclouds.com/"
         if visualization_tools=="Wordle":
             url="http://www.wordle.net/"
-        status_code = requests.get(url).status_code
-        if status_code != 200:
-            mb.showwarning(title='Warning',
-                           message='Oops! It appears that the website www.wordle.net that traditionally hosted Wordle is no longer available.\n\nWordle was the fiirst wordclouds algorithm developed by Jonathan Feinberg at IBM Research in 2005, 2008 and subsequently followed by several other applications.\n\nPlease, use one of these freeware applications hosted by the NLP Suite, including the Python package WordCloud.')
-        else:
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_wordclouds,
-                                         reminders_util.message_wordclouds, True)
-            webbrowser.open_new(url)
+
+        if not IO_libraries_util.open_url(visualization_tools, url, message_title='', message='', config_filename='',
+                     reminder_title='', reminder_message=''):
+            return
+        # status_code = requests.get(url).status_code
+        # if status_code != 200:
+        #     mb.showwarning(title='Warning',
+        #                    message='Oops! It appears that the website www.wordle.net that traditionally hosted Wordle is no longer available.\n\nWordle was the fiirst wordclouds algorithm developed by Jonathan Feinberg at IBM Research in 2005, 2008 and subsequently followed by several other applications.\n\nPlease, use one of these freeware applications hosted by the NLP Suite, including the Python package WordCloud.')
+        # else:
+        #     reminders_util.checkReminder(config_filename, reminders_util.title_options_wordclouds,
+        #                                  reminders_util.message_wordclouds, True)
+        #     webbrowser.open_new(url)
     elif visualization_tools=="Python WordCloud":
         import wordclouds_util
         if not IO_internet_util.check_internet_availability_warning("wordclouds_main.py"):
@@ -166,7 +172,7 @@ color_style_var=tk.StringVar()
 csvField_color_list=[]
 
 def clear(e):
-    wordclouds_var.set('')
+    wordclouds_var.set('Python WordCloud')
     differentColumns_differentColors_var.set(0)
     differentColumns_differentColors_checkbox.config(state='normal')
     selectedImage_var.set('')
@@ -194,7 +200,7 @@ def clear_field_color_list():
 # def run_clouds(window,y_multiplier_integer, wordclouds_var,selectedImage_var,
 # 	doNotCreateIntermediateFiles_var,input_main_dir_path):
 
-wordclouds_var.set('')
+wordclouds_var.set('Python WordCloud')
 selectedImage_var.set('')
 use_contour_only_var.set(1)
 wordclouds = tk.OptionMenu(window,wordclouds_var,'Python WordCloud','TagCrowd','Tagul','Tagxedo','Wordclouds','Wordle')
