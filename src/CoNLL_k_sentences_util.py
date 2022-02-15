@@ -14,7 +14,7 @@ def k_sent(inputFilename, outputDir):
                                                            1, '', '', '')
     k = int(k_str)
     conll = pd.read_csv(inputFilename)
-    head = ["Document", "Words Count","Nouns Count","Nouns Proportion", "Verbs Count", "Verbs Proportion", "Adjectives Count","Adjectives Proportion","Proper-Nouns Count","Proper-Nouns Proportion"]
+    head = ["K value", "Words Count","Nouns Count","Nouns Proportion", "Verbs Count", "Verbs Proportion", "Adjectives Count","Adjectives Proportion","Proper-Nouns Count","Proper-Nouns Proportion", "Document ID", "Document"]
     result = []
     
     for i in range(1, max(conll["Document ID"])+1):
@@ -29,23 +29,22 @@ def k_sent(inputFilename, outputDir):
         adj_count = 0
         pp_count = 0#proper nouns
         for pos in ksentences['POStag']:
-            if "NN" in pos:
+            if "NN" in pos: # nouns
                 noun_count +=1
-                if "NNP" in pos:
+                if "NNP" in pos: # proper nouns
                     pp_count += 1
-                    
-            elif "VB" in pos:
+            elif "VB" in pos: # verbs
                 verb_count +=1
-            elif "JJ" in pos:
+            elif "JJ" in pos: # adjectives
                 adj_count +=1
         # print("dataframe: ")
         # print(ksentences)
         for doc in ksentences['Document']:
-            DOC = doc
+            DOC = doc # as doc is in CoNLL table, doc already as the hyperlink
             break
         
-        temp =[DOC, word_count, noun_count, noun_count / word_count, 
-                      verb_count, verb_count / word_count, adj_count, adj_count / word_count,pp_count, pp_count / word_count]
+        temp =[k, word_count, noun_count, noun_count / word_count,
+                      verb_count, verb_count / word_count, adj_count, adj_count / word_count,pp_count, pp_count / word_count, i, DOC]
         result.append(temp)
         df = pd.DataFrame(result, columns=head)
         if df.empty:
@@ -58,7 +57,6 @@ def k_sent(inputFilename, outputDir):
                                                                                       True)
             df.to_csv(outputFilename, index=False)
     return outputFilename
-#add proper nouns
 
 
 # inputFilename = '/Users/claude/Desktop/ClaudeCase/Emory/Trabajo/NLP_CoreNLP_Dir_ksent_CoNLL.csv'

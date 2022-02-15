@@ -208,8 +208,8 @@ def check_java_installation(script):
                 '\n\nJAVA IS NOT INSTALLED IN YOUR MACHINE.\n\n'
         message = message + script + ' is a Java script that requires the freeware Java (by Oracle) installed on our machine.\n\n' \
                 'THE ROGRAM WILL EXIT.' \
-                '\n\nTo download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a fFREE Oracle account if you do not have one).'\
-                '\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and run the dowanloaded executable.' \
+                '\n\nTo download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one).'\
+                '\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable.' \
                 '\n\nDO YOU WANT TO OPEN THE JAVA DOWNLOAD WEBSITE AND INSTALL JAVA NOW? (You must be connected to the internet)'
         errorFound = True
 
@@ -602,7 +602,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                             url = 'https://www.oracle.com/java/technologies/downloads/archive/'
                             # errorFound=True # for testing
                             if errorFound:
-                                Java_required = software_name + ' requires the freeware Java (by Oracle) installed on our machine.\n\nTo download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one).\n\nThe NLP Suite will open the Java download website.\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and run the dowanloaded executable.'
+                                Java_required = software_name + ' requires the freeware Java (by Oracle) installed on our machine.\n\nTo download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one).\n\nThe NLP Suite will open the Java download website.\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable.'
                                 open_url('Java', url, ask_to_open = True, message_title = 'Java', message = Java_required)
 
 # DOWNLOAD Microsoft Visual Studio C++ for SENNA

@@ -58,7 +58,7 @@ def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_
     count_msg, withHeader_msg = build_timed_alert_message(chart_type_list[0],withHeader_var,count_var)
     if count_var == 1:
         dataRange = get_dataRange(columns_to_be_plotted, data)
-        # TODO hover_over labels not being passed, neither are any potential aggregate columns
+        # TODO hover_over_values not being passed, neither are any potential aggregate columns
         #   get_data_to_be_plotted_with_counts is less general than
         data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange)
     else:
@@ -520,9 +520,9 @@ def prepare_csv_data_for_chart(window,inputfile, inputDataFrame, outputpath, sel
     df_list = [slicing_dataframe(d, group_col + select_col + ['Frequency']) for d in df_list]
     # rename those newly added columns
     df_list = [rename_df(d,select_column) for d in df_list]
-    # append the hover-over data in the original csv file
+    # append the hover-over data (Labels) in the original csv file
     df_list.append(df_hover)
-    # horizontally comcatenate all the frequency dataframes and the hover-over dataframe
+    # horizontally concatenate all the frequency dataframes and the hover-over dataframe
     df_merged = reduce(lambda left, right: pd.merge(left, right, how='outer',on=group_col), df_list)
     # replace all the empty strings inside this new df_merged dataframe with 0
     df_merged = df_merged.replace(r'^\s*$', 0, regex=True)
@@ -613,7 +613,7 @@ def prepare_csv_data_for_chart(window,inputfile, inputDataFrame, outputpath, sel
 #     return complete_column_frequencies
 
 
-# when hover-over data are displayed the Excel filename extension MUST be xlsm (for macro VBA enabling)
+# when hover-over data (Labels) are displayed the Excel filename extension MUST be xlsm (for macro VBA enabling)
 def prepare_hover_data(inputFilename, hover_info_column, index):
     hover_data = []
     withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
@@ -622,9 +622,9 @@ def prepare_hover_data(inputFilename, hover_info_column, index):
         if hover_info_column >= 0:
             hover_data.append([headers[hover_info_column]])
         else:
-            hover_data.append(['Labels for series ' + str(index+1)])
+            hover_data.append(['Hover-over data for series ' + str(index+1)])
     else:
-        hover_data.append(['Labels for series ' + str(index+1)])
+        hover_data.append(['Hover-over data for series ' + str(index+1)])
 
 
     for i in range(len(data)):
@@ -667,34 +667,40 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                        second_yAxis_label=''):
 
     #TODO perhaps all these different imports can be consolidated into a single import?
-    from openpyxl.chart import (
-            PieChart,
-            ProjectedPieChart,
-            Reference,
-    )
-    from openpyxl.chart import (
-            BarChart,
-            Series,
-            Reference,
-    )
-    from openpyxl.chart import (
+    if 'pie' in chart_type_list:
+        from openpyxl.chart import (
+                PieChart,
+                ProjectedPieChart,
+                Reference,
+        )
+    if 'bar' in chart_type_list:
+        from openpyxl.chart import (
+                BarChart,
+                Series,
+                Reference,
+        )
+    if 'line' in chart_type_list:
+        from openpyxl.chart import (
             LineChart,
             Series,
-    )
-    from openpyxl.chart import (
-            ScatterChart,
-            Reference,
-            Series,
-    )
-    from openpyxl.chart import (
-            RadarChart,
-            Reference,
-    )
-    from openpyxl.chart import (
-            BubbleChart,
-            Series,
-            Reference,
-    )
+        )
+    if 'scatter' in chart_type_list:
+        from openpyxl.chart import (
+                ScatterChart,
+                Reference,
+                Series,
+        )
+    if 'radar' in chart_type_list:
+        from openpyxl.chart import (
+                RadarChart,
+                Reference,
+        )
+    if 'bubble' in chart_type_list:
+        from openpyxl.chart import (
+                BubbleChart,
+                Series,
+                Reference,
+        )
     """
     from the User Manual
     Warning: Openpyxl currently supports chart creation within a worksheet only. Charts in existing workbooks will be lost.
@@ -804,20 +810,20 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
 
         wb = openpyxl.load_workbook(fpath, read_only=False, keep_vba=True)
         ws1 = wb["Data"]
-        ws2 = wb ["Labels"]
+        ws2 = wb["Labels"]
 
         # clear data values
         row_count1 = ws1.max_row
         for i in range(row_count1):
             ws1.delete_rows(row_count1 - i)
 
-        # clear labels values
+        # clear Hover-over data (Labels)
         row_count2 = ws2.max_row
         for i in range(row_count2):
             ws2.delete_rows(row_count2 - i)
 
         if reverse_column_position_for_series_label == True:
-            mb.showwarning(title='Reverse Series Label var Warning', message="The system indicates that you set reverse var for series labels to be true; however, in the hover-over feature, the series labels can only be the header of the Y-axis values (Column B, C, D,... in 'Excel data' sheet). Or you can specify series labels in series_label_list.\n\nPlease click 'OK' and continue.")
+            mb.showwarning(title='Reverse Series Label var Warning', message="The system indicates that you set reverse var for series labels to be true; however, in the hover-over feature, the series labels can only be the header of the Y-axis values (Column B, C, D,... in 'Data' sheet). Or you can specify series labels in series_label_list.\n\nPlease click 'OK' and continue.")
 
         for i in range(len(series_label_list)):
             if len(series_label_list[i]) > 0:
@@ -854,14 +860,14 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                         "Excel chart error with hover over data: The number of rows in the input csv file\n\n" + inputFilename + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.'\n\nProcessing continues...")
                     break
                 else:
-                    # fill out labels sheet
+                    # fill out Hover-over data (Labels) sheet
                     ws2.cell(row=j + 1, column=i + 1).value = hover_data[j][0]
         names = []
         names.append(chartTitle)
         names.append(column_yAxis_label)
         names.append(column_xAxis_label+insertLines)
         for i in range(3):
-            # fill out labels sheet
+            # fill out Hover-over data (Labels) sheet
             ws2.cell(row=i+1, column = 26*27).value = names[i]
 
         reminders_util.checkReminder('*',
@@ -921,11 +927,11 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 #     chartName.y_axis.title = " Y_AXIS"
 
             if len(series_label_list) > n:
-                mb.showwarning(title='Series Label Warning', message="The system indicates that there are more series labels specified than the number of series (" + str(n) + "). The system will automatically choose the first " + str(n) + " in the series label list.\n\nPlease click 'OK' and continue.")
+                mb.showwarning(title='Series Label Warning', message="The system indicates that there are more series hover_over_values specified than the number of series (" + str(n) + "). The system will automatically choose the first " + str(n) + " in the series label list.\n\nPlease click 'OK' and continue.")
 
             for i in range(n): # iterate n times, n is the number of series
                 data = Reference(ws, min_col=i*2+2, min_row=2, max_row=1+num_label)
-                labels = Reference(ws,min_col=i*2+1, min_row=2,max_row=1+num_label)
+                hover_over_values = Reference(ws,min_col=i*2+1, min_row=2,max_row=1+num_label)
 
                 if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
                     if len(series_label_list) > 0 and len(series_label_list[i]) > 0:
@@ -946,10 +952,10 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                         # LEGEND
                         # chartName.legend(legendEntry=())
                         chartName.series.append(Series(data, title=title_series[0]))
-                    chartName.set_categories(labels)
+                    chartName.set_categories(hover_over_values)
                 else:
                     chartName.add_data(data,titles_from_data=False)
-                    chartName.set_categories(labels)
+                    chartName.set_categories(hover_over_values)
                 chartName.title = chartTitle
                 if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
                     # https://stackoverflow.com/questions/35010050/setting-x-axis-label-to-bottom-in-openpyxl
@@ -1007,7 +1013,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
 
 
             data = Reference(ws, min_col=2, min_row=2, max_row=1+num_label)
-            labels = Reference(ws,min_col=1, min_row=2,max_row=1+num_label)
+            hover_over_values = Reference(ws,min_col=1, min_row=2,max_row=1+num_label)
 
             if len(series_label_list) > 2:
                 mb.showwarning(title='Series Label Warning', message="The system indicates that there are more series labels specified than the number of series (2). The system will automatically choose the first 2 of the series label list.\n\nPlease click 'OK' and continue.")
@@ -1023,12 +1029,12 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
 
                 chartName1.series.append(Series(data, title=title_series[0]))
                 chartName1.y_axis.title = title_series[0]
-            chartName1.set_categories(labels)
+            chartName1.set_categories(hover_over_values)
             chartName1.y_axis.majorGridlines = None
 
             # Create a second chart
             data = Reference(ws, min_col=4, min_row=2, max_row=1+num_label)
-            labels = Reference(ws,min_col=3, min_row=2,max_row=1+num_label)
+            hover_over_values = Reference(ws,min_col=3, min_row=2,max_row=1+num_label)
 
             if len(series_label_list) > 0 and len(series_label_list[1]) > 0:
                 chartName.series.append(Series(data, title=series_label_list[1]))
@@ -1040,7 +1046,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                     title_series = [t[0] for t in data_to_be_plotted[1]]
                 chartName2.series.append(Series(data, title=title_series[0]))    
                 chartName2.y_axis.title = title_series[0]
-            chartName2.set_categories(labels)
+            chartName2.set_categories(hover_over_values)
             chartName2.y_axis.axId = 200
             # Display y-axis of the second chart on the right by setting it to cross the x-axis at its maximum
             chartName1.y_axis.crosses = "max"

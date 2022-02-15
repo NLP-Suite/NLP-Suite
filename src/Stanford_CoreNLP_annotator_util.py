@@ -87,7 +87,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     if CoreNLPdir== None:
         return filesToOpen
 
-    # check for Java and Java version JDK 8
+    # check for Java
     errorFound, error_code, system_output=IO_libraries_util.check_java_installation('Stanford CoreNLP')
     if errorFound:
         return filesToOpen
