@@ -665,8 +665,9 @@ setNounVerbMenu()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'WordNet': 'TIPS_NLP_WordNet.pdf', 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
-TIPS_options = 'WordNet', 'Java download install run'
+TIPS_lookup = {'WordNet': 'TIPS_NLP_WordNet.pdf'}
+#'Java download install run': 'TIPS_NLP_Java download install run.pdf'
+TIPS_options = 'WordNet' #, 'Java download install run'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons

@@ -615,8 +615,9 @@ activate_SOS()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Sentiment Analysis':"TIPS_NLP_Sentiment Analysis.pdf",'Java download install run':'TIPS_NLP_Java download install run.pdf'}
-TIPS_options='Sentiment Analysis','Java download install run'
+TIPS_lookup = {'Sentiment Analysis':"TIPS_NLP_Sentiment Analysis.pdf"}
+# 'Java download install run':'TIPS_NLP_Java download install run.pdf'
+TIPS_options='Sentiment Analysis' #,'Java download install run'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
