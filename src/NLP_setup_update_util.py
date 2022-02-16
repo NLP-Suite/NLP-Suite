@@ -54,6 +54,8 @@ def update_self(window,GitHub_release_version):
             print(message_update)
         else:
             print("\nYou are not working on the 'current-stable' branch of the NLP Suite. You are on the '" + Repository('.').head.shorthand + "' branch'. Update aborted to avoid overwriting your branch.")
-    except:
-        mb.showwarning(title='Warning',
-                       message="Git encountered an error in executing the command 'Repository('.').head.shorthand.\n\nUpdate aborted.")
+    except Exception as e:
+        print('Git fatal error :' + e)
+        # mb.warning(e);  # or print(e)
+        mb.showwarning(title='Git fatal error',
+                   message="Git encountered an error in executing the command 'Repository('.').head.shorthand.\n\nError: " + e + "\n\nUpdate aborted.")

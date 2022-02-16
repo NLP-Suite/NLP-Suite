@@ -259,6 +259,8 @@ def display_release():
         check_GitHub_release(local_release_version)
     else:
         mb.showwarning(title='GitHub release version',message="The GitHub release version is displayed on the top left-hand corner of the GUI as 0.0.0.\n\nWithout internet the newest release available on GitHub cannnot be retrieved.")
+    return local_release_version, GitHub_newest_release
+
 def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_main_dir_path,title,fileType,extension):
     currentFilename=inputFilename.get()
     if len(currentFilename)>0:
@@ -795,26 +797,33 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         config_input_output_alphabetic_options.append(input_main_dir_path.get())
         config_input_output_alphabetic_options.append(input_secondary_dir_path.get())
         config_input_output_alphabetic_options.append(output_dir_path.get())
+        global local_release_version
+        # def exit_handler():
+        #     global local_release_version
+        #     from NLP_setup_update_util import update_self
+        #     # local_release_version is the release on the local machine
+        #     local_release_version = local_release_version.strip('\n')
+        #     # local_release_version = "2.5.3" # used to test
+        #     # GitHub_release_version_var is the release available on GitHub
+        #     GitHub_release_version = GitHub_release_version_var.get()
+        #     GitHub_release_version = GitHub_release_version.strip('\n')
+        #     GitHub_release_version = GitHub_release_version.strip('\r')
+        #     if GitHub_release_version != local_release_version:
+        #         update_self(window, GitHub_release_version)
+        #     else:
+        #         print('\nYour NLP Suite is already up-to-date with the release available on GitHub (' + GitHub_release_version_var.get() + ').')
+        # local_release_version is the release on the local machine
+        local_release_version = local_release_version.strip('\n')
+        # local_release_version = "2.5.3" # used to test
+        # GitHub_release_version_var is the release available on GitHub
+        GitHub_release_version = GitHub_release_version_var.get()
+        GitHub_release_version = GitHub_release_version.strip('\n')
+        GitHub_release_version = GitHub_release_version.strip('\r')
 
-        def exit_handler():
-            global local_release_version
-            from NLP_setup_update_util import update_self
-            # local_release_version is the release on the local machine
-            local_release_version = local_release_version.strip('\n')
-            # local_release_version = "2.5.3" # used to test
-            # GitHub_release_version_var is the release available on GitHub
-            GitHub_release_version = GitHub_release_version_var.get()
-            GitHub_release_version = GitHub_release_version.strip('\n')
-            GitHub_release_version = GitHub_release_version.strip('\r')
-            if GitHub_release_version != local_release_version:
-                update_self(window, GitHub_release_version)
-            else:
-                print('\nYour NLP Suite is already up-to-date with the release available on GitHub (' + GitHub_release_version_var.get() + ').')
+        GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options, local_release_version, GitHub_release_version)
 
-            GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options)
-
-        atexit.register(exit_handler())
-
+        # atexit.register(exit_handler())
+        #
         # GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options)
 
     close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())

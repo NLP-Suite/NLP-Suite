@@ -69,6 +69,7 @@ def checkConfigDirExists(config_filename, dirName, IO):
     return error, dirName
 
 
+# config_input_output_numeric_options is a list
 def getFiletype(config_input_output_numeric_options):
     if config_input_output_numeric_options[0]==1:
         fileType='Input csv CoNLL filename with path'

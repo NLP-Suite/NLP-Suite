@@ -62,8 +62,8 @@ def run_NLP():
     call("python NLP_menu_main.py", shell=True)
 
 def close_NLP():
-    window.destroy()
-    sys.exit(0)
+    global local_release_version, GitHub_release_version
+    GUI_IO_util.exit_window(window, '', 'NLP_welcome_main', [0,0,0,0], [], local_release_version, GitHub_release_version)
 
 def watch_video(video_button):
     videos_util.get_videos('File manager', {'File manager': 'NLP_File manager.mp4'}, video_button, '')
@@ -239,7 +239,7 @@ def fit_images(event):
         canvas3.coords(canvas_img3, event.width/2, event.height/2)
         canvas3.itemconfig(canvas_img3, image=img3)
 
-GUI_util.display_release()
+local_release_version, GitHub_release_version = GUI_util.display_release()
 
 window.bind("<Configure>", fit_images)
 window.mainloop()
