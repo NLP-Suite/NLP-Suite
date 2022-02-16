@@ -13,6 +13,7 @@ from collections import Counter
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import plotly.express as px
 import os
 import csv
 
@@ -47,10 +48,22 @@ def prepare_data_bar(fileName, columns_to_be_plotted, hover_label):
         hover = csv.DictWriter(csvfile, fieldnames=hover_label)
     return data, hover
 
-def plot_bar_chart(x_label, height, fileName, outputDir, chartTitle, hover_label):
+#plot bar chart
+def plot_bar_chart(x_label, height, fileName, outputDir, chartTitle):
     data = pd.read_csv(fileName, encoding='utf-8')
     plt.bar(data[x_label], data[height], align='center', alpha=0.5)
+    plt.title(chartTitle)
+    plt.xlabel(x_label)
+    plt.ylabel(height)
     plt.show()
+    return
+
+def plot_bar_chart_px(x_label, height, fileName, outputDir, chartTitle):
+    data = pd.read_csv(fileName, encoding='utf-8')
+    fig = px.bar(data, x=x_label, y=height)
+    fig.update_layout(title=chartTitle)
+    fig.show()
+    #fig.write_image(outputDir + chartTitle + '.png')
     return
 
 #debug use
@@ -61,7 +74,8 @@ def main():
     chartTitle = 'test chart'
     fileName =  'C:/Users/Tony Chen/Desktop/NLP_working/Test Input/bar_test_data.csv'
     outputDir = 'd:/'
-    plot_bar_chart(x_label, height, fileName, outputDir, chartTitle, hover_label)
+    #plot_bar_chart(x_label, height, fileName, outputDir, chartTitle, hover_label)
+    plot_bar_chart_px(x_label, height, fileName, outputDir, chartTitle)
 
 if __name__ == "__main__":
     main()

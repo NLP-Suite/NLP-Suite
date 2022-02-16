@@ -798,6 +798,9 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             from NLP_setup_update_util import update_self
             # release_version_var is the release on the current machine
             # GitHub_release_version_var is the release available on GitHub
+            ver = GitHub_release_version_var.get()
+            ver = ver.strip("\n")
+            ver = ver.strip("\r")
             if GitHub_release_version_var.get() != release_version_var.get():
                 update_self(window, GitHub_release_version_var.get())
 
