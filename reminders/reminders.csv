@@ -1,0 +1,69 @@
+Routine,Title,Message,Event,Status
+*,NLP Suite reminders,Several NLP Suite scripts will fire up reminders for the user. You can turn them off once you are familiar with a script. You can always turn any reminder back ON (or OFF for that matter) if you select the reminders dropdown menu at the bottom of each GUI and then select a specific reminder (if reminders are available for that GUI).,Yes,No
+*,Input/Output configurations,"Most GUIs in the NLP Suite provide two types of Input/Output (I/O) configurations that specify your selection for your input file or directory (these are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH) and output directory:
+
+  Default I/O configuration
+ GUI-specific I/O configuration
+
+The Default I/O configuration applies to ALL GUIs in the NLP Suite. This is an ideal option if you work exclusively, or mostly, with the same input file(s) regardless of GUI (i.e., NLP algorithms); you would not need to select these options for every GUI.
+
+If you occasionally need to run a script using a different set of I/O options, setup theGUI-specific I/O configuration. This will not affect your I/O selections for all GUIs and will only apply to a specific GUI if you chose the menu optionGUI-specific I/O configuration.",No,No
+NLP,NLP Suite welcome & system requirements,"Welcome to the NLP Suite a package of Python 3 and Java tools designed for text processing and visualization. The Suite requires several FREWARE software components in order to run. You will need to download and install them or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro).
+
+   1. JAVA. Several scripts are based on the FREEWARE Java. You can download and install Java at https://www.java.com/en/download
+
+   2. STANFORD CORENLP. The core text analyses of the NLP Suite are based on the FREEWARE Stanford CoreNLP. You can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.
+
+   3. GEPHI. The visualization of network graphs requires the installation of the FREEWARE software Gephi. You can download and install Gephi at https://gephi.org/users/download/
+
+   4. GOOGLE EARTH PRO. The visualization of geographic maps requires the installation of the FREEWARE software Google Earth Pro. You can download and install Google Earth Pro at https://www.google.com/earth/versions/#download-pro.
+
+   5. MALLET. MALLET topic modelling requires the installation of the FREEWARE MALLET. You can download and install MALLET at http://mallet.cs.umass.edu/download.php.
+
+   7. SENNA. The FREEWARE SENNA will allow you to extract Subject-Verb-Object from a text. You can download SENNA at https://ronan.collobert.com/senna/download.html.",Yes,No
+NLP,NLP Suite architecture & filenames,"The Python scripts in the NLP Suite have filenames that clearly identify the Suite architecture.
+
+The filename suffix designates two different types of files: _main and _util.
+
+_main files are the only ones that you can run in command line independently of others; they may call _util files.
+
+The _main files, with their GUI options, lay out on the screen the widgets of a script for easy Graphical User Interface (GUI).
+
+ALL SCRIPTS SUFFIXED BY _main CAN BE RUN INDIPENDENTLY OF THE NLP SUITE. Thus on command line you can type
+Python knowledge_graphs_main.py
+and it will fire up the annotator GUI independently of NLP_main.py.
+
+The filename prefix cluster together scripts used for the same purpose. Thus annotator identifies all files dealing with html annotation.",Yes,No
+default,Input/Output options,"The two widgets for INPUT FILE and INPUT DIRECTORY are mutually exclusive. You can select one OR the other but not both. Click on either button to make your selection.
+
+To change an already selected option from FILE to DIRECTORY or from DIRECTORY to FILE, simply click on the button you want to select, make your selection, and the I/O configuration will automatically update.",No,No
+*,Excel Charts,"The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).
+
+First, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).
+
+Second, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.
+
+Third, if the chart is displayed but the bars of a bar chart, for instance, have the same height, contrary to expectations, click on Data then on Chart to display the chart properly.",Yes,No
+*,csv files,"If csv ouput files open displaying weird characters in a Windows OS (e.g., a€), most likely the cause is due to non utf-8 compliant input text. Apostrophes and quotes are the typical culprits, but also other punctuation characters.
+
+Please, run the tool to check documents for utf-8 compliance and, if necessary, run the tool for automatic apostrophe and quote conversion from non utf-8 to utf-8.
+
+To learm more on utf-8 compliance, read the TIPS on utf-8 compliance.",Yes,No
+whats_in_your_corpus,CoreNLP POS/NER max sentence length,"The CoreNLP POS/NER annotators set a maximum sentence length for processing.
+
+Sentences longer that your selected max length will be cut and some POS/NER tags in those long sentences may be be lost.",Yes,No
+whats_in_your_corpus,CoreNLP sentence length,"The length of the current sentence exceeds 100 words. The average sentence length in modern English is 20 words.
+
+More to the point, Stanford CoreNLP's performance deteriorates with sentences with more that 70/100 words.
+
+You should run the algorithm that extracts all sentences from a corpus and computes sentence length. This will allow you to either edit the sentence manually or perhaps run the algorithm that will add full stops (.) to sentences without end-of-sentence markers (too many sentences of this kind, one after the other, can create unduly long sentences).
+
+On Stanford CoreNLP and memory and performance issues and what to do about them, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.
+
+If you are processing files in a directory, other files may similarly need to be split and the message display may become annoying.",Yes,No
+whats_in_your_corpus,WordNet VERB aggregation,"CAVEAT!
+
+For VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.
+
+The WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts.",Yes,No
+whats_in_your_corpus,CoreNLP quote annotator,"The CoreNLP quote annotator works with double quotes as default "" rather than with single quotes '. If your document(s) use single quotes for dialogue, make sure to tick the checkbob 'Include single quotes'. The Stanford CoreNLP annotator will then process BOTH single AND double quotes, otherwise single quotes for dialogues would be missed (e.g., The user said: 'This NLP Suite sucks.').",Yes,No

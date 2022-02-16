@@ -62,3 +62,4 @@ buck-out/
 #/src/Lucene.jar
 #/src/WordNet_Search_DOWN.jar
 #/src/WordNet_Search_UP.jar
+*.pyc
