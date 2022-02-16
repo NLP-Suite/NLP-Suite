@@ -263,8 +263,19 @@ def GUI_settings(IO_setup_display_brief,GUI_width,GUI_height_brief,GUI_height_fu
 #config_filename has no path;
 # config_input_output_numeric_options is set to [0 0,0,0] for GUIs that are placeholders for more specialized GUIs
 #   in these cases (e.g., narrative_analysis_main, there are no I/O options to save
-def exit_window(window,config_filename, scriptName, config_input_output_numeric_options,current_config_input_output_alphabetic_options):
-    if not 'NLP_menu_main' in scriptName:
+def exit_window(window,config_filename, scriptName, config_input_output_numeric_options,current_config_input_output_alphabetic_options, local_release_version, GitHub_release_version):
+    import atexit
+    def exit_handler():
+        from NLP_setup_update_util import update_self
+        if GitHub_release_version != local_release_version:
+            update_self(window, GitHub_release_version)
+        else:
+            print(
+                '\nYour NLP Suite is already up-to-date with the release available on GitHub (' + GitHub_release_version + ').')
+
+    atexit.register(exit_handler)
+
+    if not 'NLP_menu_main' in scriptName and 'NLP_welcome_main' not in scriptName:
         saved_config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file(config_filename, config_input_output_numeric_options)
         if saved_config_input_output_alphabetic_options!=current_config_input_output_alphabetic_options:
             if current_config_input_output_alphabetic_options==['','','',''] or current_config_input_output_alphabetic_options==['', '', '', '']:

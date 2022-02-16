@@ -58,7 +58,7 @@ buck-out/
 
 # CocoaPods
 /ios/Pods/
-/src/IO_files_util.py
-/src/Lucene.jar
-/src/WordNet_Search_DOWN.jar
-/src/WordNet_Search_UP.jar
+#/src/IO_files_util.py
+#/src/Lucene.jar
+#/src/WordNet_Search_DOWN.jar
+#/src/WordNet_Search_UP.jar
