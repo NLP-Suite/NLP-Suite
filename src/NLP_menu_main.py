@@ -311,7 +311,7 @@ def setup_external_programs_checkbox(software):
     global software_dir
     silent = False
     only_check_missing = False
-    if setup_software_OK_checkbox_var.get()==0:
+    if setup_software_OK_checkbox_var.get()==0 or software != '':
         if software_dir == None and software == '':
             return
         software_dir, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software, silent, only_check_missing)

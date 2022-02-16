@@ -249,6 +249,24 @@ MALLET_download = "http://mallet.cs.umass.edu/download.php"
 SENNA_download = "https://ronan.collobert.com/senna/download.html"
 WordNet_download = "https://wordnet.princeton.edu/download/current-version"
 
+# the function checks that if Stanford CoreNLP version matches with the latest downloadable version
+def check_CoreNLPVersion(CoreNLPdir,calling_script=''):
+    # get latest downloadable version
+    response = requests.get("https://api.github.com/repos/stanfordnlp/CoreNLP/releases/latest")
+    github_version = response.json()["name"][1:]
+    # get local stanford corenlp version
+    onlyfiles = [f for f in os.listdir(CoreNLPdir) if os.path.isfile(os.path.join(CoreNLPdir, f))]
+    for f in onlyfiles:
+        if f.startswith("stanford-corenlp-"):
+            local_version = f[:-4].split("-")[2]
+            if github_version != local_version:
+                mb.showwarning("Warning", "Oops! Your local Stanford CoreNLP version is " + local_version +
+                               ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nPlease update.")
+                if calling_script != 'NLP_menu_main':
+                    get_external_software_dir('calling_script', 'Stanford CoreNLP', silent=False, only_check_missing=False)
+                return False
+    return True
+
 # the function checks that external programs (e.g., Gephi, StanfordCoreNLP) have been properly installed
 def check_inputExternalProgramFile(calling_script, software_dir, programName):
 
@@ -355,7 +373,7 @@ def open_url(website_name, url, ask_to_open = False, message_title='', message='
     webbrowser.open_new_tab(url)
     return True
 
-def update_software_config_fields(existing_software_config: list) -> list:
+def initialize_software_config_fields(existing_software_config: list) -> list:
     """
 
     @param existing_software_config: current csv file in list format, similar to sample_csv below
@@ -374,6 +392,13 @@ def update_software_config_fields(existing_software_config: list) -> list:
             existing_software_config.append(sample_csv[index])
     return existing_software_config
 
+def delete_software_config(existing_software_config, software):
+    for (index, row) in enumerate(existing_software_config):
+        if row[0] == software:
+            (existing_software_config[index])[1]=''
+            break
+    return existing_software_config
+
 def get_existing_software_config():
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
     # FIXED: must insert the new package into software-config.csv when the package is missing in the user csv file
@@ -382,7 +407,7 @@ def get_existing_software_config():
         existing_software_config = list(csv.reader(csv_file, delimiter=','))
     except:
         existing_software_config = list()
-    update_software_config_fields(existing_software_config)
+        existing_software_config = initialize_software_config_fields(existing_software_config)
     return existing_software_config
 
 # gets a list of the external software: CoreNLP, SENNA, WordNet, MALLET, Google Earth Pro, Gephi
@@ -402,7 +427,7 @@ def get_missing_external_software_list(calling_script, existing_software_config)
             missing_software = missing_software + '  ' + str(missing_index) + '. ' + str(software_name).upper() + '\n\n'
     return missing_software
 
-def save_software_config(new_csv,package):
+def save_software_config(new_csv, package):
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
     with open(software_config, 'w+', newline='') as csv_file:
         writer = csv.writer(csv_file)
@@ -488,12 +513,20 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             continue
 
         if (not errorFound) and (package!='') and (calling_script=='NLP_menu'):
-
-            mb.showwarning(title=package,
-                           message='The external software ' + package + ' is up-to-date and correctly installed at ' + software_dir)
-            # if you are checking for a specific package and that is found return the appropriate directory
-            if (package!=''):
-                return software_dir, missing_software
+            if package == 'Stanford CoreNLP':
+                check_CoreNLPVersion(software_dir, calling_script)
+                # software_dir = ''
+                # missing_software = package
+            answer = tk.messagebox.askyesno(title=package, message='The external software ' + package + ' is already installed at ' + software_dir + '\n\nDo you want to re-install the software?')
+            if answer == True:
+                # initialize_software_config_fields(existing_software_config, package)
+                delete_software_config(existing_software_config, package)
+                missing_software = package
+                software_dir = ''
+            else:
+                # if you are checking for a specific package and that is found return the appropriate directory
+                if (package!=''):
+                    return software_dir, missing_software
 
     # check for missing external software
     if len(missing_software) > 0:
@@ -524,8 +557,10 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                         continue
 
 # Setup user messages for the various types of external software and platforms
-
-                    if platform == 'darwin':
+                    # in Mac, Gephi and Google Earth Pro are installed in Applications
+                    if platform == 'darwin' and (software_name != 'Google Earth Pro' and software_name != 'Gephi'):
+                        message2 = "You will be asked next to select the directory (NOT Mac Applications!) where the software " + software_name.upper() + " was installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
+                    if platform == 'darwin' and (software_name == 'Google Earth Pro' or software_name == 'Gephi'):
                         message2 = "You will be asked next to select the Mac Applications directory where the software " + software_name.upper() + " was installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
                     if platform == 'win32':
                         message2 = "You will be asked next to select the directory where the software " + software_name.upper() + " was installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."

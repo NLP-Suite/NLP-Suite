@@ -86,6 +86,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
     CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_annotator', 'Stanford CoreNLP')
     if CoreNLPdir== None:
         return filesToOpen
+    # check the version of CoreNLP
+    IO_libraries_util.check_CoreNLPVersion(CoreNLPdir)
 
     # check for Java
     errorFound, error_code, system_output=IO_libraries_util.check_java_installation('Stanford CoreNLP')
