@@ -283,9 +283,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'CoreNLP_SVO_LOCATIONS')
         gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                       'CoreNLP_SVO', "gender_info")
+                                                                       'CoreNLP_SVO_gender')
         quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                       'CoreNLP_SVO', "quote_info")
+                                                                       'CoreNLP_SVO_quote')
         outputLocations.append(location_filename)
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir, openOutputFiles,
@@ -325,6 +325,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                            outputDir, createExcelCharts, "SVO")
             filesToOpen.extend(pronoun_files)
             filesToOpen.extend(tempOutputFiles)
+            if gender_var:
+                filesToOpen.append(gender_filename)
+            if quote_var:
+                filesToOpen.append(quote_filename)
             svo_result_list.append(tempOutputFiles[0])
 
         # ask Do you want to display the distribution of verbs by WordNet top synset categories for the n most frequent Subjects?
@@ -1035,9 +1039,9 @@ TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and 
                "Google Earth Pro": "TIPS_NLP_Google Earth Pro.pdf",
                "Geocoding": "TIPS_NLP_Geocoding.pdf",
                "Geocoding: How to Improve Nominatim":"TIPS_NLP_Geocoding Nominatim.pdf",
-               "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf",
-               'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
-TIPS_options = 'SVO extraction and visualization', 'utf-8 encoding', 'Excel - Enabling Macros', 'csv files - Problems & solutions', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'CoNLL table', 'Stanford CoreNLP coreference resolution', 'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs', 'Java download install run'
+               "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf"}
+               # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
+TIPS_options = 'SVO extraction and visualization', 'utf-8 encoding', 'Excel - Enabling Macros', 'csv files - Problems & solutions', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'CoNLL table', 'Stanford CoreNLP coreference resolution', 'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
 
 
 # add all the lines lines to the end to every special GUI

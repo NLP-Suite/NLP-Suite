@@ -65,9 +65,13 @@ def make_directory(newDirectory):
 def getFileList_SubDir(inputFilename, inputDir, fileType='.*', silent=False):
     files = []
     if inputDir!='':
+        if not checkDirectory(inputDir):
+            return files
         for path in Path(inputDir).rglob('*' + fileType):
             files.append(str(path))
     else:
+        if not checkFile(inputFilename):
+            return files
         if inputFilename.endswith(fileType):
             files = [inputFilename]
         else:
@@ -93,9 +97,9 @@ def getFileList_SubDir(inputFilename, inputDir, fileType='.*', silent=False):
 
 
 # inputFile contains a file name with full path;
-#   can also be blank 
+#   can also be blank
 # inputDir is the full path of an input directory
-#   can also be blank 
+#   can also be blank
 # fileType can be * (for any fileType), .pdf, .csv, .txt, ...
 # returns a list of either a single file or all files in a directory
 #   examples of calls
@@ -104,12 +108,16 @@ def getFileList_SubDir(inputFilename, inputDir, fileType='.*', silent=False):
 def getFileList(inputFile, inputDir, fileType='.*',silent=False):
     files = []
     if inputDir != '':
+        if not checkDirectory(inputDir):
+            return files
         for path in Path(inputDir).glob('*' + fileType):
             files.append(str(path))
         if len(files) == 0:
             mb.showwarning(title='Input files error',
                            message='No files of type ' + fileType + ' found in the directory ' + inputDir)
     else:
+        if not checkFile(inputFile):
+            return files
         if inputFile.endswith(fileType):
             files = [inputFile]
         else:
@@ -283,7 +291,7 @@ def open_kmlFile(window,inputFilename):
 
 
 # opens a filename with its path
-# if a file with the same name is already open, it throws an error 
+# if a file with the same name is already open, it throws an error
 def openFile(window, inputFilename):
     if len(inputFilename) == 0:
         tk.messagebox.showinfo("Input file error", "The filename is blank. No file can be opened.")
@@ -316,6 +324,7 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen):
         return
     if len(filesToOpen) == 0:
         return
+    filesToOpen = list(set(filesToOpen))
     if len(filesToOpen) == 1:
         singularPlural = 'file'
     else:
@@ -423,6 +432,10 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
 
 # extension can be 'txt', 'xlsx', 'doc, 'docx' WITHOUT .
 def GetNumberOfDocumentsInDirectory(inputDirectory, extension=''):
+    numberOfDocs = 0
+    if inputDirectory=='':
+        mb.showwarning(title='No directory selected',message='The directory passed to the GetNumberOfDocumentsInDirectory function is blank.\n\nFunction aborted.')
+        return numberOfDocs
     if extension == '':  # count any document
         numberOfDocs = len([os.path.join(inputDirectory, f) for f in os.listdir(inputDirectory)])
     else:  # count documents by specific document type

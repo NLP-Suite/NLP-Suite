@@ -87,7 +87,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     if CoreNLPdir== None:
         return filesToOpen
 
-    # check for Java and Java version JDK 8
+    # check for Java
     errorFound, error_code, system_output=IO_libraries_util.check_java_installation('Stanford CoreNLP')
     if errorFound:
         return filesToOpen
@@ -289,8 +289,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
             ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer',  '-parse.maxlen' + str(sentence_length), '-timeout', '999999'])
     else:
+        # CoreNLP_nlp = subprocess.Popen(
+        #     ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp',  os.path.join(CoreNLPdir, '*'),
+        #      'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
         CoreNLP_nlp = subprocess.Popen(
-            ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp',  os.path.join(CoreNLPdir, '*'),
+            ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
              'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
 
     time.sleep(5)
@@ -599,6 +602,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                         'Frequency Distribution of Verbs (unfiltered)', 1, [], 'V_bar', 'Verbs (unfiltered)')
                     filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[5, 5]], 'bar',
                                                         'Frequency Distribution of Objects (unfiltered)', 1, [], 'O_bar', 'Objects (unfiltered)')
+                    if 'SVO' in annotator_params:
+                        for key, value in kwargs.items():
+                            if key == "gender_var" and value == True:
+                                filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, kwargs["gender_filename"],
+                                                                  filesToOpen, genderCol=["S Gender", "O Gender"], wordCol=["S", "O"])
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))
     if len(filesError)>0:
@@ -1669,16 +1677,17 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
         df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False)
 
 
-def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesToOpen):
-    if "Gender" not in IO_csv_util.get_csvfile_headers(dictFilename, False):
-        return
+def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesToOpen, genderCol=["Gender"], wordCol=[]):
+    for col in genderCol:
+        if col not in IO_csv_util.get_csvfile_headers(dictFilename, False):
+         return
 
     # annotate the input file(s) for gender values
-    csvValue_color_list = ['Gender', '|', 'FEMALE', 'red', '|', 'MALE', 'blue', '|']
+    csvValue_color_list = [genderCol, '|', 'FEMALE', 'red', '|', 'MALE', 'blue', '|']
     bold_var = True
     tagAnnotations = ['<span style="color: blue; font-weight: bold">', '</span>']
     tempFilename = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
-                                                             dictFilename,'',
+                                                             dictFilename, wordCol,
                                                              csvValue_color_list, bold_var, tagAnnotations,
                                                              fileType='.txt')
     # the annotator returns a list rather than a string
@@ -1720,9 +1729,9 @@ def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen,
 
 def check_pronouns(window, config_filename, inputFilename, outputDir, createExcelCharts, option):
     df = pd.read_csv(inputFilename)
-    personal_pronouns = ["I", "me", "you", "she", "her", "he", "him", "we", "us", "they", "them"]
+    personal_pronouns = ["i", "me", "you", "she", "her", "he", "him", "we", "us", "they", "them"]
     total_count = 0
-    pronouns_count = {"I": 0, "me": 0, "you": 0, "she": 0, "her": 0, "he": 0, "him": 0, "we": 0, "us": 0, "they": 0, "them": 0}
+    pronouns_count = {"i": 0, "me": 0, "you": 0, "she": 0, "her": 0, "he": 0, "him": 0, "we": 0, "us": 0, "they": 0, "them": 0}
     return_files = []
     for _, row in df.iterrows():
         if option == "SVO":

@@ -710,9 +710,9 @@ TIPS_lookup = {'Check the character\'s name tag': 'TIPS_NLP_Word similarity (Lev
                'Find the intruder': 'TIPS_NLP_Find the intruder.pdf',
                'Find the plagiarist': 'TIPS_NLP_Find the plagiarist (via Lucene).pdf',
                'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
-               'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
-               'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
-TIPS_options = 'Filename well-formedness', 'WordNet', 'Find the character\'s home (By date)', 'Find the character\'s home (By NER)', 'NER (Named Entity Recognition)', 'Find the missing character', 'Check the character\'s name tag', 'Find the intruder', 'Find the plagiarist', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'Java download install run'
+               'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf"}
+               # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
+TIPS_options = 'Filename well-formedness', 'WordNet', 'Find the character\'s home (By date)', 'Find the character\'s home (By NER)', 'NER (Named Entity Recognition)', 'Find the missing character', 'Check the character\'s name tag', 'Find the intruder', 'Find the plagiarist', 'CoNLL Table', 'POSTAG (Part of Speech Tags)' #, 'Java download install run'
 
 
 # add all the lines lines to the end to every special GUI

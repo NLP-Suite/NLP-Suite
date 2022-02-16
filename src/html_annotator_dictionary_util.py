@@ -21,6 +21,7 @@ from csv import reader
 import IO_csv_util
 
 # the function associates specific values of a csv file to a specific color
+# extend the function to allow multiple wordColNum and catColNum
 def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
     dictionary = []
     number_of_items = len(csvValue_color_list)
@@ -44,12 +45,15 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
                 # We check every line of the csv input to see if it matches one of the target categories
                 for c in range(len(categories)):
                     # Check if the current row has category value equivalent to one of our categories
-                    if row[catColNum] == categories[c]:
-                        # dictionary[c] represents the list of words from category 'c'
-                        if row[wordColNum] not in dictionary[c]:
-                            dictionary[c].append(row[wordColNum])
+                    # go through all catCols
+                    for i in range(len(catColNum)):
+                        if row[catColNum[i]] == categories[c]:
+                            # dictionary[c] represents the list of words from category 'c'
+                            if row[wordColNum[i]] not in dictionary[c]:
+                                dictionary[c].append(row[wordColNum[i]])
             else:
-                dictionary.append(row[wordColNum])
+                for i in range(wordColNum):
+                    dictionary.append(row[wordColNum[i]])
 
     return dictionary, color_list
 
@@ -57,9 +61,8 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
 # takes in file to annotate and list of terms to check against
 # returns list of a list of terms with appropriate annotations for each file
 # annotation allows custom tagging style (via csv, etc.)
-
+# NOTICE: csv_field1_var and first entry of csvValue_color_list should be a list
 def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt'):
-
     writeout = []
     filesToOpen = []
 
@@ -70,17 +73,23 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Dictionary annotator at',
                                                  True, '', True, '', True)
     i=0
-    wordColNum=0
-    catColNum = 1
-    if csv_field1_var!='':
-        headers=IO_csv_util.get_csvfile_headers (dict_file)
-        wordColNum=IO_csv_util.get_columnNumber_from_headerValue(headers,csv_field1_var)
-        if wordColNum==None:
-            mb.showerror(title='Input file error', message="The selected dictionary file\n\n" + dict_file + "\n\ndoes not contain the expected header \'" + csv_field1_var + "\'\n\nPlease, select a different dictionary file and try again.")
-            return
-        catColNum = wordColNum
-    # if csv_field2_var!='':
-    #     catColNum = IO_csv_util.get_columnNumber_from_headerValue(headers,csv_field2_var)
+    wordColNum = [0]
+    catColNum = [1]
+    if len(csv_field1_var) > 0:
+        headers=IO_csv_util.get_csvfile_headers(dict_file)
+        wordColNum = []
+        for field in csv_field1_var:
+            col = IO_csv_util.get_columnNumber_from_headerValue(headers,field)
+            if col == None:
+                mb.showerror(title='Input file error',
+                             message="The selected dictionary file\n\n" + dict_file + "\n\ndoes not contain the expected header \'" + csv_field1_var + "\'\n\nPlease, select a different dictionary file and try again.")
+                return
+            wordColNum.append(col)
+        catColNum = []
+        if len(csvValue_color_list) > 0:
+            for field in csvValue_color_list[0]:
+                catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field))
+
     dictionary, color_list = readCsv(wordColNum, catColNum, dict_file, csvValue_color_list)
     reserved_dictionary = ['bold', 'color', 'font', 'span', 'style', 'weight', 'black', 'blue', 'green', 'pink', 'yellow', 'red']
     # check the dictionary list if any of the reserved annotator terms (bold, color, font, span, style, weight) appear in the list

@@ -22,7 +22,7 @@ import os
 import tkinter.messagebox as mb
 import inspect
 from subprocess import call
-import webbrowser
+# import webbrowser
 import atexit
 
 import config_util
@@ -77,8 +77,8 @@ IO_setup_menu = tk.OptionMenu(window, IO_setup_menu_var, 'Default I/O configurat
 IO_setup_var = tk.StringVar()
 
 select_input_file_button=tk.Button()
-select_input_main_dir_button=tk.Button() 
-select_input_secondary_dir_button=tk.Button() 
+select_input_main_dir_button=tk.Button()
+select_input_secondary_dir_button=tk.Button()
 select_output_dir_button=tk.Button()
 
 inputFilename=tk.StringVar()
@@ -119,7 +119,7 @@ run_button_state='disabled'
 #For the labels to change the text with the ON/OFF value of the checkbox the command=lambda must be included in the definition of the tk.button
 #	For example (see the example in this script):
 #	create_Excel_chart_output_label = tk.Checkbutton(window, variable=create_Excel_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label, create_Excel_chart_output_checkbox, "Automatically compute Excel charts", "NOT automatically compute Excel charts"))
-#	The next line must always be included to dsplay te label the first time the GUI is opened 
+#	The next line must always be included to dsplay te label the first time the GUI is opened
 #	create_Excel_chart_output_label.configure(text="Automatically open output Excel charts for inspection")
 
 def trace_checkbox(label_local, checkbox_local, local_onText, local_offText):
@@ -133,12 +133,12 @@ def trace_checkbox(label_local, checkbox_local, local_onText, local_offText):
 # 	matching_checkbox = tk.Checkbutton(window, variable=matching_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(matching_var, matching_checkbox, "Exact match", "Partial match"))
 # 	matching_checkbox.config(text="Exact match",state='disabled')
 # checkbox_var and checkbox_text are the var and checkbox widgets
-# onText, offText the texts to be displayed on 1 or 0 
+# onText, offText the texts to be displayed on 1 or 0
 
 #For the labels to change the text with the ON/OFF value of the checkbox the command=lambda must be included in the definition of the tk.button
 #	For example (see the example in geocoder_Google_eart_GUI or in WordNet_GUI):
 #	geoCodedFile_checkbox = tk.Checkbutton(window, variable=geoCodedFile_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(geoCodedFile_var, geoCodedFile_checkbox, "File contains geocoded data with Latitude and Longitude", "File does NOT contain geocoded data with Latitude and Longitude"))
-#	The next line must always be included to display the label the first time the GUI is opened 
+#	The next line must always be included to display the label the first time the GUI is opened
 #	geoCodedFile_checkbox.config(text="File does NOT contain geocoded data with Latitude and Longitude")
 
 def trace_checkbox_NoLabel(checkbox_var, checkbox_text, onText, offText):
@@ -174,8 +174,8 @@ def display_logo():
         logo.place(x=GUI_IO_util.get_help_button_x_coordinate()-offset, y=10)
 
 
-# define the variable local_release
-local_release = '0.0.0' #stored in lib\release_version.txt
+# define the variable local_release_version
+local_release_version = '0.0.0' #stored in lib\release_version.txt
 
 def get_GitHub_release(silent = False):
     # check internet connection
@@ -191,43 +191,45 @@ def get_GitHub_release(silent = False):
         return '0.0.0'
     return GitHub_newest_release
 
-def check_GitHub_release(local_release: str, silent = False):
+def check_GitHub_release(local_release_version: str, silent = False):
     GitHub_newest_release = get_GitHub_release()
     if GitHub_newest_release == None or GitHub_newest_release == '0.0.0': # when not connected to internet
         return
-    # local_release = '2.3.1' # line used for testing; should be LOWER than the version on GitHub
+    # local_release_version = '2.3.1' # line used for testing; should be LOWER than the version on GitHub
     # split the text string of release version (e.g., 1.5.9) into three parts separated by .
-    local_release_parts=[local_release[i:i + 1] for i in range(0, len(local_release), 2)]
-    GitHub_release_parts=[GitHub_newest_release[i:i + 1] for i in range(0, len(GitHub_newest_release), 2)]
+    local_release_version_parts=[local_release_version[i:i + 1] for i in range(0, len(local_release_version), 2)]
+    GitHub_release_version_parts=[GitHub_newest_release[i:i + 1] for i in range(0, len(GitHub_newest_release), 2)]
     old_version = False
     # check numbers
-    if int(local_release_parts[0]) > int(GitHub_release_parts[0]):
+    if int(local_release_version_parts[0]) > int(GitHub_release_version_parts[0]):
         return
-    if int(local_release_parts[0])<int(GitHub_release_parts[0]):
+    if int(local_release_version_parts[0])<int(GitHub_release_version_parts[0]):
         old_version = True
     else:
         # if the first parts are the same, check the second part
-        if int(local_release_parts[1])>int(GitHub_release_parts[1]):
+        if int(local_release_version_parts[1])>int(GitHub_release_version_parts[1]):
             return
-        if int(local_release_parts[1]) < int(GitHub_release_parts[1]):
+        if int(local_release_version_parts[1]) < int(GitHub_release_version_parts[1]):
             old_version = True
         else:
             # if the second parts are the same, check the third part
-            if int(local_release_parts[2]) < int(GitHub_release_parts[2]):
+            if int(local_release_version_parts[2]) < int(GitHub_release_version_parts[2]):
                 old_version = True
             else:
                 return
-    if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != local_release:
+    if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != local_release_version:
         # update is carried out in NLP_setup_update_util.py
         result = mb.askyesno("NLP Suite Outdated",
-                    "You are running the NLP Suite release version " + str(local_release) + ", an OLD version." +
+                    "You are running the NLP Suite release version " + str(local_release_version) + ", an OLD version." +
                     "\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) + "." +
                     "\n\nThe OLD and NEW release versions are displayed on the top left-hand corner of the GUI, local OLD version left of \ GitHUB new version right of \ (0.0.0 is displayed when you are not connected to the internet to access GitHub)." +
                     "\n\nTo update to the newer release, EXIT the NLP Suite NOW by clicking on the CLOSE button and fire up the NLP Suite again.\n\nThe NLP Suite is automatically updated every time you exit the NLP Suite and fire it up again." +
                     "\n\nThe update features of the NLP Suite rely on Git. Please download Git at this link https://git-scm.com/downloads, if it hasn’t been installed already." +
                     "\n\nWOULD YOU LIKE TO SEE WHAT IS NEW IN THE RELEASE VERSION " + str(GitHub_newest_release) + "?")
         if result:
-            webbrowser.open_new("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
+            url = "https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History"
+            IO_libraries_util.open_url('NLP Suite GitHub', url)
+            # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
 
 def display_release():
     # first digit for major upgrades
@@ -235,14 +237,14 @@ def display_release():
     # third digit for bug fixes and minor changes to current version
     # must also change the Release version in readMe on GitHub
 
-    global local_release
+    global local_release_version
     release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
 
     if os.path.isfile(release_version_file):
         with open(release_version_file,'r') as file:
-            local_release = file.read()
+            local_release_version = file.read()
 
-    release_version_var.set(local_release)
+    release_version_var.set(local_release_version)
 
     y_multiplier_integer=-.7
 
@@ -254,9 +256,11 @@ def display_release():
                                                    y_multiplier_integer, release_lb, True)
     # check and display a possible warning message
     if GitHub_newest_release != '0.0.0':
-        check_GitHub_release(local_release)
+        check_GitHub_release(local_release_version)
     else:
         mb.showwarning(title='GitHub release version',message="The GitHub release version is displayed on the top left-hand corner of the GUI as 0.0.0.\n\nWithout internet the newest release available on GitHub cannnot be retrieved.")
+    return local_release_version, GitHub_newest_release
+
 def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_main_dir_path,title,fileType,extension):
     currentFilename=inputFilename.get()
     if len(currentFilename)>0:
@@ -793,24 +797,38 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         config_input_output_alphabetic_options.append(input_main_dir_path.get())
         config_input_output_alphabetic_options.append(input_secondary_dir_path.get())
         config_input_output_alphabetic_options.append(output_dir_path.get())
+        global local_release_version
+        # def exit_handler():
+        #     global local_release_version
+        #     from NLP_setup_update_util import update_self
+        #     # local_release_version is the release on the local machine
+        #     local_release_version = local_release_version.strip('\n')
+        #     # local_release_version = "2.5.3" # used to test
+        #     # GitHub_release_version_var is the release available on GitHub
+        #     GitHub_release_version = GitHub_release_version_var.get()
+        #     GitHub_release_version = GitHub_release_version.strip('\n')
+        #     GitHub_release_version = GitHub_release_version.strip('\r')
+        #     if GitHub_release_version != local_release_version:
+        #         update_self(window, GitHub_release_version)
+        #     else:
+        #         print('\nYour NLP Suite is already up-to-date with the release available on GitHub (' + GitHub_release_version_var.get() + ').')
+        # local_release_version is the release on the local machine
+        local_release_version = local_release_version.strip('\n')
+        # local_release_version = "2.5.3" # used to test
+        # GitHub_release_version_var is the release available on GitHub
+        GitHub_release_version = GitHub_release_version_var.get()
+        GitHub_release_version = GitHub_release_version.strip('\n')
+        GitHub_release_version = GitHub_release_version.strip('\r')
 
-        def exit_handler():
-            from NLP_setup_update_util import update_self
-            # release_version_var is the release on the current machine
-            # GitHub_release_version_var is the release available on GitHub
-            ver = GitHub_release_version_var.get()
-            ver = ver.strip("\n")
-            ver = ver.strip("\r")
-            if GitHub_release_version_var.get() != release_version_var.get():
-                update_self(window, GitHub_release_version_var.get())
+        GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options, local_release_version, GitHub_release_version)
 
-        atexit.register(exit_handler)
-
-        GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options)
+        # atexit.register(exit_handler())
+        #
+        # GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options)
 
     close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
     close_button.place(x=GUI_IO_util.close_button_x_coordinate,y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
-
+    #
     # Any message should be displayed after the whole GUI has been displayed
 
     # although the release version appears in the top part of the GUI,
@@ -862,7 +880,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     if result != None:
         routine_options = reminders_util.getReminders_list(temp_config_filename)
 
-    # check_GitHub_release(local_release)
+    # check_GitHub_release(local_release_version)
 
     window.protocol("WM_DELETE_WINDOW", _close_window)
 

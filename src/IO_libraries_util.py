@@ -8,6 +8,7 @@ import subprocess
 import psutil
 from psutil import virtual_memory
 from typing import List
+import requests
 import webbrowser
 
 import GUI_IO_util
@@ -131,44 +132,102 @@ def check_avaialable_memory(software):
                                      reminders_util.message_memory, True)
     return mem_GB
 
+# originally written to check for Java jdk version
+# could be used for something else
+# def check_environment_variables_path():
+    # if platform == "win32" and 'CoreNLP' in script:
+    #     for x in os.environ:
+    #         if x == 'PATH':
+    #             if 'Java' in os.getenv(x):
+    #                 if not 'Java' in os.getenv(x):
+    #                     answer = tk.messagebox.askyesno(title='Java error',
+    #                                    message='A test for Java in the Environment Variables PATH failed.' +
+    #                                            # '\n\nJava is not installed in your machine.\n\n' + script + ' is a Java script that requires Java installed on your machine (you need the JDK version, Java Development Kit; install Java JDK 8, which seems to work best for Stanford CoreNLP).\n\nPlease, read the Java installation TIPS, check your Java installation, install Java properly and try again (go to command line and type Java -version). Program will exit.')
+    #                                             '\n\nJava is not installed in your machine.\n\n' + script + ' is a Java script that requires Java installed on your machine (you can check by going to command line and typing Java -version).\n\nInstall Java properly and try again. Program will exit.\n\n\n\nDo you want to open the Java website now and install it?')
+    #                     print('Java is not installed in Environment variables')
+    #                     errorFound = True
+    #                     if answer:
+    #                         status_code = requests.get(url).status_code
+    #                         if status_code != 200:
+    #                             mb.showwarning(title='Warning',
+    #                                            message='Oops! The Java website could not be opened. Please, try again later.')
+    #                             return
+    #                         webbrowser.open_new_tab(url)
+    #                     else:
+    #                         return
+    #                     return errorFound, error_code, system_output
+    #                 else:
+    #                     if not 'Java\jdk' in os.getenv(x):
+    #                         # Java\jdk or java\jre
+    #                         mb.showwarning(title='Java JDK error',
+    #                                        message='A test for Java JDK in the Environment Variables PATH failed.' +
+    #                                                '\n\nJava is installed in your machine but not the JDK version.\n\n' + script + ' is a Java script that requires Java JDK installed on your machine (you need the JDK version, Java Development Kit; install Java JDK 8, which seems to work best for Stanford CoreNLP).\n\nPlease, read the Java installation TIPS, check your Java installation, install Java JDK properly and try again (go to command line and type Java -version). Program will exit.')
+    #                         print('Java is installed in Environment variables but ot the jdk version required by Stanford CoreNLP.')
+    #                         errorFound = True
+    #                         return errorFound, error_code, system_output
+
+
 # return errorFound, error_code, system_output
 def check_java_installation(script):
     errorFound = False
-    java_output = subprocess.run(['java', '-version'], capture_output=True)
-    error_code = java_output.returncode  # Should be 0 if java installed
-    system_output = java_output.stderr.decode(
-        'utf-8')  # This is what you see when you run "java -version" in your command line
+    config_filename = ''
+    reminder_title = ''
+    reminder_message = ''
+    error_code = 1 # should be 0 if Java is installed
+    system_output = '' # This is what you see when you run "java -version" in your command line
 
-    if not system_output:
-        # Java issues do not seem to be a problem with Mac
-        if platform == "win32" and 'CoreNLP' in script:
-            title_options = ['Java JDK version']
-            message = 'You are running ' + system_output.split("\r\n""", 1)[
-                0] + '.\n\nStanford CoreNLP works best with Java version JDK 8 on Windows machines.\n\nIf you run into problems with Stanford CoreNLP, you may wish to uninstall the Java version you are currently running and install Java JDK 8. Please, read the installation instructions on the NLP Suite GitHub wiki pages at\nhttps://github.com/NLP-Suite/NLP-Suite/wiki/Install-External-Software#JAVA-JDK.'
-            reminders_util.checkReminder('Stanford-CoreNLP_config.csv', title_options,
-                                         message, True)
+    try:
+        # if you are testing new Java install/uninstall ...
+        #   YOU MUST CLOSE PyCharm to run correctly the next command
+        java_output = subprocess.run(['java', '-version'], capture_output=True)
+        error_code = java_output.returncode  # Should be 0 if java installed
+        system_output = java_output.stderr.decode(
+            'utf-8')  # This is what you see when you run "java -version" in your command line
+        
+        # for now the java_version as a single version number, e.g., 8 or 17, is not used
+        # java_version = system_output.split('\r\n')[0]
+        # java_version = java_version.split(' ')[2]
+        # java_version = java_version.split('.')[0]
+        # java_version = java_version.replace("\"","")
+    except:
+        error_code = 1
 
-    if system_output:
+    url = 'https://www.oracle.com/java/technologies/downloads/archive/'
+    title = 'Java error'
+
+    if error_code != 0 and ("not recognized" in system_output or system_output == ''):
+        message = 'A test for Java returned a non-zero error code ' + str(
+                error_code) + ' and Java not recognized (You can check this in command line by typing Java -version).'
+
+        if system_output != '':
+            message = message + ' with the following system error: ' + system_output + '\n\n'
+            message = message + \
+                '\n\nJAVA MAY NOT BE CORRECTLY INSTALLED IN YOUR MACHINE.\n\n'
+        else:
+            message = message + \
+                '\n\nJAVA IS NOT INSTALLED IN YOUR MACHINE.\n\n'
+        message = message + script + ' is a Java script that requires the freeware Java (by Oracle) installed on our machine.\n\n' \
+                'THE ROGRAM WILL EXIT.' \
+                '\n\nTo download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one).'\
+                '\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable.' \
+                '\n\nDO YOU WANT TO OPEN THE JAVA DOWNLOAD WEBSITE AND INSTALL JAVA NOW? (You must be connected to the internet)'
+        errorFound = True
+
+    if errorFound:
+        open_url(title, url, ask_to_open=True, message_title=title, message=message, reminder_title=reminder_title, reminder_message=reminder_message)
+
+    if system_output != '':
+        # checking for 64 bits windows machines
         if platform == "win32" and 'CoreNLP' in script:
             for info in system_output.split(" "):
                 if "-Bit" in info:  # find the information about bit
                     if info[:2] != "64":  # check if it's 64 bit
+                        message = 'You are not using JAVA 64-Bit version.\n\nThis will cause an error running Stanford CoreNLP: Could not create the Java Virtual Machine.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nAfter checking the Java version installed in your machine, if 32-Bit you will need to uninstall it and download and install the Java 64-Bit version,\n\nTHE PROGRAM WILL EXIT.\n\nDo you want to open the TIPS file now?'
                         answer = tk.messagebox.askyesno("Java version Error",
                                                         "You are not using JAVA 64-Bit version.\n\nThis will cause an error running Stanford CoreNLP: Could not create the Java Virtual Machine.\n\nPlease, configure your machine to use JAVA 64-Bit.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?")
                         if answer:
                             TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
                         errorFound = True
-
-    if error_code != 0 and "not recognized" in system_output:
-        mb.showwarning(title='Java installation error',
-                       message='A test for Java returned a non-zero error code ' + str(
-                           error_code) + ' and Java not recognized (You can check this in command line by typing Java -version). Java is not installed.\n\n' + script + ' is a Java script that requires Java installed on your machine (you need the JDK version, Java Development Kit; install Java JDK 8, which seems to work best for Stanford CoreNLP).\n\nPlease, read the Java installation TIPS, install Java and try again. Program will exit.')
-        errorFound = True
-    elif error_code != 0:
-        mb.showwarning(title='Java error',
-                       message='A test for Java returned a non-zero error code ' + str(
-                           error_code) + ' with the following system error: ' + system_output + '.\n\nJava may not be properly installed.\n\n' + script + ' is a Java script that requires Java installed on your machine (you need the JDK version, Java Development Kit; install Java JDK 8, which seems to work best for Stanford CoreNLP).\n\nPlease, read the Java installation TIPS, check your Java installation, install Java properly and try again (go to command line and type Java -version). Program will exit.')
-        errorFound = True
 
     return errorFound, error_code, system_output
 
@@ -273,10 +332,33 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName):
     get_external_software_dir(calling_script, programName)
     return False
 
-def update_csv_fields(existing_csv: list) -> list:
+def open_url(website_name, url, ask_to_open = False, message_title='', message='', config_filename='', reminder_title='', reminder_message=''):
+    # check internet connection
+    if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite newest release version"):
+        return False
+    # check if a reminder needs to be displayed
+    if reminder_title != '':
+        reminders_util.checkReminder(config_filename, reminders_util.reminder_title,
+                                     reminders_util.reminder_message, True)
+    # check if the question to open the website is asked
+    if ask_to_open:
+        answer = tk.messagebox.askyesno(message_title,
+                                        message)
+        if answer == False:
+            return False
+
+    status_code = requests.get(url).status_code
+    if status_code != 200:
+        mb.showwarning(title='Warning',
+                       message='Oops! The ' + website_name + ' website could not be opened.\n\nPlease, check the url or try again later.')
+        return False
+    webbrowser.open_new_tab(url)
+    return True
+
+def update_software_config_fields(existing_software_config: list) -> list:
     """
 
-    @param existing_csv: current csv file in list format, similar to sample_csv below
+    @param existing_software_config: current csv file in list format, similar to sample_csv below
     @return: the new csv files, with software fields up to date.
     """
     sample_csv = [['Software', 'Path', 'Download_link'],
@@ -286,35 +368,35 @@ def update_csv_fields(existing_csv: list) -> list:
                   ['Mallet', '', MALLET_download],
                   ['SENNA', '', SENNA_download],
                   ['WordNet', '', WordNet_download]]
-    fields = [x[0].lower() for x in existing_csv]
+    fields = [x[0].lower() for x in existing_software_config]
     for (index, row) in enumerate(sample_csv):
         if row[0].lower() not in fields:
-            existing_csv.append(sample_csv[index])
-    return existing_csv
+            existing_software_config.append(sample_csv[index])
+    return existing_software_config
 
 def get_existing_software_config():
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
     # FIXED: must insert the new package into software-config.csv when the package is missing in the user csv file
     try:
         csv_file = open(software_config, 'r', newline='')
-        existing_csv = list(csv.reader(csv_file, delimiter=','))
+        existing_software_config = list(csv.reader(csv_file, delimiter=','))
     except:
-        existing_csv = list()
-    update_csv_fields(existing_csv)
-    return existing_csv
+        existing_software_config = list()
+    update_software_config_fields(existing_software_config)
+    return existing_software_config
 
 # gets a list of the external software: CoreNLP, SENNA, WordNet, MALLET, Google Earth Pro, Gephi
-def get_missing_external_software_list(calling_script, existing_csv):
-    if existing_csv=='':
-        existing_csv=get_existing_software_config()
+def get_missing_external_software_list(calling_script, existing_software_config):
+    if existing_software_config=='':
+        existing_software_config=get_existing_software_config()
     index = 0
     missing_index = 0
     missing_software=''
-    for row in existing_csv[1:]:  # skip header line
+    for row in existing_software_config[1:]:  # skip header line
         software_name = row[0]
         software_dir = row[1]
         index = index + 1
-        if existing_csv[index][1]=='' or os.path.isdir(software_dir) == False or check_inputExternalProgramFile(calling_script, software_dir, software_name) == False:
+        if existing_software_config[index][1]=='' or os.path.isdir(software_dir) == False or check_inputExternalProgramFile(calling_script, software_dir, software_name) == False:
             missing_index = missing_index +1
             print("MISSING SOFTWARE", str(software_name).upper())
             missing_software = missing_software + '  ' + str(missing_index) + '. ' + str(software_name).upper() + '\n\n'
@@ -336,14 +418,14 @@ def save_software_config(new_csv,package):
 # return software_dir, missing_software
 def get_external_software_dir(calling_script, package, silent=False, only_check_missing=False):
     # get a list of software in software-config.csv
-    existing_csv = get_existing_software_config()
+    existing_software_config = get_existing_software_config()
     software_dir = ''
     software_name = ''
     index = 0
     errorFound = False
     Cancel = False
 
-    missing_software = get_missing_external_software_list(calling_script, existing_csv)
+    missing_software = get_missing_external_software_list(calling_script, existing_software_config)
 
     archive_location_warning = '\n\nDO NOT MOVE THE EXTERNAL SOFTWARE FOLDER INSIDE THE NLP SUITE FOLDER OR IT MAY BE OVERWRITTEN IN CASE YOU NEED TO RE-INSTALL THE SUITE.'
     if package == '':
@@ -368,7 +450,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             message = download_install_package_msg
 
     # get any existing software_config csv file
-    for row in existing_csv[1:]:  # skip header line
+    for row in existing_software_config[1:]:  # skip header line
         index = index + 1
         software_name = row[0]
         software_dir = row[1]
@@ -396,7 +478,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
 
         if errorFound:
             software_dir = ''
-            existing_csv[index][1] = software_dir
+            existing_software_config[index][1] = software_dir
             # if you are checking for a specific package and the directory is NOT found
             #   return None; no point continuing
             if (package.lower()!='') and (package.lower() in software_name.lower()):
@@ -430,7 +512,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                 # software_dir = None
                 software_dir = ''
             else:
-                for (index, row) in enumerate(existing_csv[1:]): # skip header row
+                for (index, row) in enumerate(existing_software_config[1:]): # skip header row
                     if exit_for_loop:
                         break
                     index = index + 1
@@ -510,28 +592,18 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
 
 # DOWNLOAD open software download website
 
-                        # check internet connection
-                        if not IO_internet_util.check_internet_availability_warning('NLP_menu_main'):
-                            return
+                        open_url(software_name, software_download)
 
-                        # open software download website
-                        webbrowser.open_new(software_download)
+# DOWNLOAD JAVA for CoreNLP, Gephi, MALLET
 
-# DOWNLOAD JAVA for CoreNLP or Gephi
-
-                        if software_name == 'Stanford CoreNLP' or software_name == 'Gephi':
+                        if software_name == 'Stanford CoreNLP' or software_name == 'Gephi' or software_name == 'MALLET':
                             # since Stanford CoreNLP and Gephi need Java, check for Java installation
                             errorFound, error_code, system_output = check_java_installation(software_name)
-                            if platform == 'win32':
-                                java_download = 'https://www.oracle.com/java/technologies/downloads/#java8-windows'
-                            else:
-                                java_download = 'https://www.oracle.com/java/technologies/downloads/#java8-mac'
+                            url = 'https://www.oracle.com/java/technologies/downloads/archive/'
                             # errorFound=True # for testing
                             if errorFound:
-                                Java_required=software_name + ' requires the freeware Java (by Oracle) installed on our machine.\n\nTo dowanload Java from the Oracle website, you will need to sign in in your Oracle account (you must create a free Oracle account if you do not have one).\n\nThe NLP Suite will now open the Java website on JDK8... JDK8 seems to work best with Stanford CoreNP on some machines. But on most machines higher Java releases also work.\n\nWhichever Java version you install, you need the JDK version, Java Development Kit.\n\nDownload Java JDK and run the executable.'
-                                mb.showwarning(title='Java',
-                                                message=Java_required)
-                                webbrowser.open_new(java_download)
+                                Java_required = software_name + ' requires the freeware Java (by Oracle) installed on our machine.\n\nTo download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one).\n\nThe NLP Suite will open the Java download website.\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable.'
+                                open_url('Java', url, ask_to_open = True, message_title = 'Java', message = Java_required)
 
 # DOWNLOAD Microsoft Visual Studio C++ for SENNA
 
@@ -539,13 +611,10 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                             # Microsoft Visual Studio C++ must be downloaded for Windows machines;
                             #   on Mac it is built into the OS
                             if platform=='win32':
-                                title='Microsoft Visual Studio C++'
-                                message='SENNA (and Python WordCloud) require the freeware Visual Studio C++ (Community edition) installed on our Windows machine. If you haven\'t already installed it, please do so now.\n\nThe downloaded file is an executable file that opens an installer.\n\nDo you want to install Visual Studio C++?'
-                                answer = tk.messagebox.askyesnocancel(title, message)
-                                if answer:
-                                    download_studio='https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019'
-
-                                    webbrowser.open_new(download_studio)
+                                url = 'https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019'
+                                title = 'Microsoft Visual Studio C++'
+                                message = 'SENNA (and Python WordCloud) require the freeware Visual Studio C++ (Community edition) installed on our Windows machine. If you haven\'t already installed it, please do so now.\n\nThe downloaded file is an executable file that opens an installer.\n\nDo you want to install Visual Studio C++?'
+                                open_url(title, url, ask_to_open = True, message_title = title, message = message)
 
 # INSTALLING -------------------------------------------------------------------------------
 #                   if not answer:  # answer = True downloading and installing; you have already warned the user
@@ -594,10 +663,10 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                 if not check_inputExternalProgramFile(calling_script, software_dir, software_name):
                                     software_dir = None
 
-                            # update the array existing_csv with the value of software_dir
+                            # update the array existing_software_config with the value of software_dir
                             if software_dir != '' and software_dir != None:
-                                existing_csv[index][1] = software_dir
-                                save_software_config(existing_csv, software_name)
+                                existing_software_config[index][1] = software_dir
+                                save_software_config(existing_software_config, software_name)
                             # exit when you are considering a specific software (package)
                             if package.lower()!='':
                                 if package.lower() in software_name.lower():

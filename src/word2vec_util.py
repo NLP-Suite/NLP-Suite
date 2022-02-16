@@ -6,6 +6,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"word2vec_main.py",['o
     sys.exit(0)
 
 
+from sys import platform
 import os
 import tkinter as tk
 import pandas as pd
@@ -13,6 +14,8 @@ import tkinter.messagebox as mb
 
 import GUI_IO_util
 import IO_files_util
+import IO_user_interface_util
+import IO_csv_util
 
 #Gensim
 import gensim
@@ -35,37 +38,31 @@ import spacy
 try:
     spacy.load('en_core_web_sm')
 except:
-    mb.showerror(title='Library error', message='The Gensim tool could not find the English language spacy library. This needs to be installed. At command promp type:\npython -m spacy download en_core_web_sm\n\nYOU MAY HAVE TO RUN THE COMMAND AS ADMINISTRATOR.\n\nHOW DO YOU DO THAT?'
-        '\n\nIn Mac, at terminal, type sudo python -m spacy download en_core_web_sm'
-        '\n\nIn Windows, click on left-hand start icon in task bar'
-        '\n  Scroll down to Anaconda' 
-        '\n  Click on the dropdown arrow to display available options'
-        '\n  Right click on Anaconda Prompt'
-        '\n  Click on More'
-        '\n  Click on Run as Administrator'
-        '\n  At the command prompt, Enter "conda activate NLP" (if NLP is your environment)'
-        '\n  Then enter: "python -m spacy download en_core_web_sm" and Return'
-        '\n\nThis imports the package.')
+    if platform == 'darwin':
+        msg = '\n\nAt terminal, type sudo python -m spacy download en_core_web_sm'
+    if platform == 'win32':
+        msg = '\n\nClick on left-hand start icon in task bar' + \
+                '\n  Scroll down to Anaconda' + \
+                '\n  Click on the dropdown arrow to display available options' + \
+                '\n  Right click on Anaconda Prompt' + \
+                '\n  Click on More' + \
+                '\n  Click on Run as Administrator' + \
+                '\n  At the command prompt, Enter "conda activate NLP" (if NLP is your environment)' + \
+                '\n  Then enter: "python -m spacy download en_core_web_sm" and Return'
+    msg = msg + '\n\nThis imports the package.'
+    mb.showerror(title='Library error', message='The Gensim tool could not find the English language spacy library. This needs to be installed. At command promp type:\npython -m spacy download en_core_web_sm\n\nYOU MAY HAVE TO RUN THE COMMAND AS ADMINISTRATOR.\n\nHOW DO YOU DO THAT?' + msg)
     sys.exit(0)
 
 nlp = spacy.load('en_core_web_sm')
 
 def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                         remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var,
+                        vis_menu_var, keywords_var,
                         word_vector=None):
-
-    filesToOpen = []
-
-    numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
-    if numFiles == 0:
-        mb.showerror(title='Number of files error',
-                     message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a different directory and try again.')
-        return
-
     ## list for csv file
     word = []
     lemmatized_word = []
-    unlemmatized_word =[]
+    unlemmatized_word = []
     sentenceID = []
     sentence = []
     documentID = []
@@ -76,17 +73,41 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     all_input_docs = {}
     dId = 0
-    for doc in os.listdir(inputDir):
+
+    filesToOpen = []
+
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
+                                                   'Started running Word2Vec at', True)
+
+    if len(inputFilename)>0:
+        doc = inputFilename
         if doc.endswith('.txt'):
-            with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
+            with open(doc, 'r', encoding='utf-8', errors='ignore') as file:
                 dId += 1
                 text = file.read()
-                print('importing ' + str(dId) + '/' + str(numFiles) + ' file')
+                print('importing single file')
                 documentID.append(dId)
-                document.append(os.path.join(inputDir, doc))
+                document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
                 all_input_docs[dId] = text
 
-    document_df = pd.DataFrame({'documentID': documentID, 'document': document})
+    else:
+        numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
+        if numFiles == 0:
+            mb.showerror(title='Number of files error',
+                        message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a different directory and try again.')
+            return
+
+        for doc in os.listdir(inputDir):
+            if doc.endswith('.txt'):
+                with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
+                    dId += 1
+                    text = file.read()
+                    print('importing ' + str(dId) + '/' + str(numFiles) + ' file')
+                    documentID.append(dId)
+                    document.append(os.path.join(inputDir, doc))
+                    all_input_docs[dId] = text
+
+    document_df = pd.DataFrame({'Document ID': documentID, 'Document': document})
     document_df = document_df.astype('str')
 
     documentID = []
@@ -104,7 +125,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                 sentence.append(sent)
                 word.append(w)
 
-    sentence_df = pd.DataFrame({'word': word, 'sentence': sentence, 'sentenceID': sentenceID, 'documentID': documentID})
+    sentence_df = pd.DataFrame({'Word': word, 'Sentence': sentence, 'Sentence ID': sentenceID, 'Document ID': documentID})
     sentence_df = sentence_df.astype(str)
 
     if remove_stopwords_var == True:
@@ -128,13 +149,13 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         else:
             sentences_out.append([token for token in doc])
 
-    word_df = pd.DataFrame({'word': unlemmatized_word})
+    word_df = pd.DataFrame({'Word': unlemmatized_word})
     if (len(lemmatized_word)>0):
-        word_df['lemmatized_word'] = lemmatized_word
+        word_df['Lemmatized word'] = lemmatized_word
 
     word_df = word_df.astype(str)
     word_df = word_df.drop_duplicates()
-    sent_word_df = pd.merge(sentence_df, word_df, on='word', how='inner')
+    sent_word_df = pd.merge(sentence_df, word_df, on='Word', how='inner')
     sent_word_df = sent_word_df.astype(str)
 
 
@@ -146,6 +167,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     print('learning architecture: ', sg_menu_var)
 
     ## train model
+
     print('training word2vec model...')
     model = gensim.models.Word2Vec(
         sentences=sentences_out,
@@ -162,25 +184,54 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     ## visualization
     print('visualizing...')
 
-    #pca = PCA(n_components=2)
-    #xys = pca.fit_transform(word_vector_list)
-    tsne = TSNE(n_components=2)
-    xys = tsne.fit_transform(word_vector_list)
+    if vis_menu_var == 'Plot all word vectors':
 
-    xs = xys[:, 0]
-    ys = xys[:, 1]
-    word = words.keys()
+        tsne = TSNE(n_components=2)
+        xys = tsne.fit_transform(word_vector_list)
 
-    tsne_df = pd.DataFrame({'word': word, 'x': xs, 'y': ys})
-    fig = plot_interactive_graph(tsne_df)
+        xs = xys[:, 0]
+        ys = xys[:, 1]
+        word = words.keys()
+
+        tsne_df = pd.DataFrame({'Word': word, 'x': xs, 'y': ys})
+        fig = plot_interactive_graph(tsne_df)
+
+    else:
+
+        keywords_list = [x.strip() for x in keywords_var.split(',')]
+        result_word = []
+
+        for keyword in keywords_list:
+            sim_words = model.wv.most_similar(keyword, topn=30)
+            sim_words = append_list(sim_words, keyword)
+            result_word.extend(sim_words)
+
+        similar_word = [word[0] for word in result_word]
+        similarity = [word[1] for word in result_word]
+        labels = [word[2] for word in result_word]
+
+        sim_word_vector_list = [word_vectors[sw] for sw in similar_word]
+
+
+        tsne = TSNE(n_components=2, perplexity=30)
+        xys = tsne.fit_transform(sim_word_vector_list)
+        xs = xys[:, 0]
+        ys = xys[:, 1]
+
+        print(similar_word)
+
+        tsne_df = pd.DataFrame({'Word': similar_word, 'x': xs, 'y': ys, 'similarity': similarity, 'label': labels})
+        fig = plot_similar_graph(tsne_df)
 
     ## saving output
     print('saving output...')
 
-    ### graph
-    fileName = os.path.join(outputDir, "NLP_Gensim_Word2Vec_graph.html")
-    fig.write_html(fileName)
-    filesToOpen.append(fileName)
+
+    ### write output html graph
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word2Vec')
+    # outputFilename = os.path.join(outputDir, outputFilename)
+    fig.write_html(outputFilename)
+    filesToOpen.append(outputFilename)
 
     ### csv file
     word_vector_df = pd.DataFrame()
@@ -188,26 +239,30 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         word_vector_df = word_vector_df.append(pd.Series([v, word_vectors[v]]), ignore_index=True)
 
     if(lemmatize_var == True):
-        word_vector_df.columns = ['lemmatized_word', 'vector']
+        word_vector_df.columns = ['Lemmatized word', 'Vector']
         word_vector_df = word_vector_df.astype(str)
-        sent_word_vector = pd.merge(word_vector_df, sent_word_df, on='lemmatized_word', how='inner')
+        sent_word_vector = pd.merge(word_vector_df, sent_word_df, on='Lemmatized word', how='inner')
     else:
-        word_vector_df.columns = ['word', 'vector']
+        word_vector_df.columns = ['Word', 'Vector']
         word_vector_df = word_vector_df.astype(str)
-        sent_word_vector = pd.merge(word_vector_df, sent_word_df, on='word', how='inner')
+        sent_word_vector = pd.merge(word_vector_df, sent_word_df, on='Word', how='inner')
 
     sent_word_vector = sent_word_vector.astype(str)
-    result_df = pd.merge(document_df, sent_word_vector, on='documentID', how='inner')
-    result_df = result_df.sort_values(by=["documentID","sentenceID"])
+    result_df = pd.merge(document_df, sent_word_vector, on='Document ID', how='inner')
+    result_df = result_df.sort_values(by=["Document ID","Sentence ID"])
 
     if (lemmatize_var == True):
-        result_df = result_df[["word", "lemmatized_word", "vector", "sentenceID", "sentence", "documentID", "document"]]
+        result_df = result_df[["Word", "Lemmatized word", "Vector", "Sentence ID", "Sentence", "Document ID", "Document"]]
     else:
-        result_df = result_df[["word", "vector", "sentenceID", "sentence", "documentID", "document"]]
+        result_df = result_df[["Word", "Vector", "Sentence ID", "Sentence", "Document ID", "Document"]]
 
-    fileName = os.path.join(outputDir, "NLP_Gensim_Word2Vec_list.csv")
-    result_df.to_csv(fileName, index=False)
-    filesToOpen.append(fileName)
+    # write csv file
+    outputFilename = outputFilename.replace(".html", ".csv")
+    result_df.to_csv(outputFilename, index=False)
+    filesToOpen.append(outputFilename)
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+                                       'Finished running Word2Vec at', True, '', True, startTime)
 
     return filesToOpen
 
@@ -234,11 +289,31 @@ def remove_stopwords(sentences):
 
 def remove_stopwords_df(sentence_df):
     for idx, row in sentence_df.iterrows():
-        if row['word'] in stop_words:
+        if row['Word'] in stop_words:
             sentence_df.drop(idx, inplace=True)
     return sentence_df
 
 def plot_interactive_graph(tsne_df):
     fig = px.scatter(tsne_df, x = "x", y = "y",
+                     text = "Word",
+                     hover_name = "Word")
+    return fig
+
+def append_list(sim_words, words):
+    list_of_words = []
+
+    for i in range(len(sim_words)):
+        sim_words_list = list(sim_words[i])
+        sim_words_list.append(words)
+        sim_words_tuple = tuple(sim_words_list)
+        list_of_words.append(sim_words_tuple)
+
+    return list_of_words
+
+def plot_similar_graph(tsne_df):
+    fig = px.scatter(tsne_df, x = "x", y = "y",
+                     text = "word",
+                     color = "label",
+                     size = "similarity",
                      hover_name = "word")
     return fig
