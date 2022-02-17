@@ -1,4 +1,4 @@
-# Written by Tony Chen Gu
+# Written by Tony Chen Gu Feb 2022
 
 from fileinput import filename
 import sys
@@ -58,22 +58,63 @@ def plot_bar_chart(x_label, height, fileName, outputDir, chartTitle):
     plt.show()
     return
 
+
+#plot bar chart with plotly
+#fileName is a csv file with data to be plotted 
+#x_label indicates the column name of x axis from the data
+#height indicates the column name of y axis from the data
+#the output file would be a html file with hover over effect names by the chart title
+#duplicates allowed, would add up the counts
 def plot_bar_chart_px(x_label, height, fileName, outputDir, chartTitle):
     data = pd.read_csv(fileName, encoding='utf-8')
     fig = px.bar(data, x=x_label, y=height)
     fig.update_layout(title=chartTitle)
     fig.show()
     savepath = os.path.join(outputDir, chartTitle + '.html')
-    fig.write_html(savepath)
+    #fig.write_html(savepath)
     return
 
+#plot pie chart with plotly
+#fileName is a csv file with data to be plotted 
+#x_label indicates the column name of x axis from the data
+#height indicates the column name of y axis from the data
+#the output file would be a html file with hover over effect names by the chart title
+#duplicates allowed, would add up the counts
 def plot_pie_chart_px(x_label, height, fileName, outputDir, chartTitle):
     data = pd.read_csv(fileName, encoding='utf-8')
     fig = px.pie(data, values=height, names=x_label)
     fig.update_layout(title=chartTitle)
     fig.show()
     savepath = os.path.join(outputDir, chartTitle + '.html')
-    fig.write_html(savepath)
+    #fig.write_html(savepath)
+    return
+
+#plot scatter chart with plotly
+#fileName is a csv file with data to be plotted
+#x_label indicates the column name of x axis from the data    COULD BE A DISCRETE VARIABLE
+#y_label indicates the column name of y axis from the data    COULD BE A DISCRETE VARIABLE
+#the output file would be a html file with hover over effect names by the chart title
+def plot_scatter_chart_px(x_label, y_label, fileName, outputDir, chartTitle):
+    data = pd.read_csv(fileName, encoding='utf-8')
+    fig = px.scatter(data, x=x_label, y=y_label)
+    fig.update_layout(title=chartTitle)
+    fig.show()
+    savepath = os.path.join(outputDir, chartTitle + '.html')
+    #fig.write_html(savepath)
+    return
+
+#plot scatter chart with plotly
+#fileName is a csv file with data to be plotted
+#theta_label indicates the column name of the "feature" from the data    SHOULD BE A DISCRETE VARIABLE
+#r_label indicates the column name of the value of the feature from the data    CANNOT BE A DISCRETE VARIABLE
+#the output file would be a html file with hover over effect names by the chart title
+def plot_radar_chart_px(theta_label, r_label, fileName, outputDir, chartTitle):
+    data = pd.read_csv(fileName, encoding='utf-8')
+    fig = px.line_polar(data, r=r_label, theta=theta_label, line_close=True)
+    fig.update_layout(title=chartTitle)
+    fig.show()
+    savepath = os.path.join(outputDir, chartTitle + '.html')
+    #fig.write_html(savepath)
     return
 
 #debug use
@@ -85,7 +126,7 @@ def main():
     fileName =  'C:/Users/Tony Chen/Desktop/NLP_working/Test Input/bar_test_data.csv'
     outputDir = 'D:/'
     #plot_bar_chart(x_label, height, fileName, outputDir, chartTitle, hover_label)
-    plot_pie_chart_px(x_label, height, fileName, outputDir, chartTitle)
+    plot_radar_chart_px(x_label, height, fileName, outputDir, chartTitle)
 
 if __name__ == "__main__":
     main()
