@@ -63,7 +63,17 @@ def plot_bar_chart_px(x_label, height, fileName, outputDir, chartTitle):
     fig = px.bar(data, x=x_label, y=height)
     fig.update_layout(title=chartTitle)
     fig.show()
-    #fig.write_image(outputDir + chartTitle + '.png')
+    savepath = os.path.join(outputDir, chartTitle + '.html')
+    fig.write_html(savepath)
+    return
+
+def plot_pie_chart_px(x_label, height, fileName, outputDir, chartTitle):
+    data = pd.read_csv(fileName, encoding='utf-8')
+    fig = px.pie(data, values=height, names=x_label)
+    fig.update_layout(title=chartTitle)
+    fig.show()
+    savepath = os.path.join(outputDir, chartTitle + '.html')
+    fig.write_html(savepath)
     return
 
 #debug use
@@ -73,9 +83,9 @@ def main():
     hover_label = 'count'
     chartTitle = 'test chart'
     fileName =  'C:/Users/Tony Chen/Desktop/NLP_working/Test Input/bar_test_data.csv'
-    outputDir = 'd:/'
+    outputDir = 'D:/'
     #plot_bar_chart(x_label, height, fileName, outputDir, chartTitle, hover_label)
-    plot_bar_chart_px(x_label, height, fileName, outputDir, chartTitle)
+    plot_pie_chart_px(x_label, height, fileName, outputDir, chartTitle)
 
 if __name__ == "__main__":
     main()
