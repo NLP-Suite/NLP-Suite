@@ -49,6 +49,7 @@ spacy_langdetect
 langid
 
 #used by Stanford_CoreNLP.py and other functions
+psutil
 unicode
 unidecode
 pycorenlp

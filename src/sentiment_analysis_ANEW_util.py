@@ -30,7 +30,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Sentiment Analysis ANEW",['nltk','os','csv','argparse','pandas','tkinter','numpy','time'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"Sentiment Analysis ANEW",['stanza','os','csv','argparse','pandas','tkinter','numpy','time'])==False:
     sys.exit(0)
 
 import csv
@@ -39,8 +39,7 @@ import numpy as np #np
 import time
 import argparse
 
-from nltk import tokenize
-from nltk import word_tokenize
+from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import pandas as pd
 import tkinter.messagebox as mb
 
@@ -48,14 +47,9 @@ import IO_csv_util
 import IO_files_util
 import GUI_IO_util
 
-IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
-# check WordNet
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
-from nltk.stem.wordnet import WordNetLemmatizer
-# check stopwords
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/stopwords','stopwords')
-from nltk.corpus import stopwords
-stops = set(stopwords.words("english"))
+fin = open('../lib/wordLists/stopwords.txt', 'r')
+stops = set(fin.read().splitlines())
+
 anew = GUI_IO_util.sentiment_libPath + os.sep + "EnglishShortenedANEW.csv"
 if not os.path.isfile(anew):
     print("The file "+anew+" could not be found. The ANEW sentiment analysis routine expects a csv dictionary file 'EnglishShortenedANEW.csv' in a directory 'lib' expected to be a subdirectory of the directory where the sentiment_analysis_ANEW.py script is stored.\n\nPlease, check your lib directory and try again.")
@@ -90,7 +84,8 @@ def analyzefile(input_file, output_dir, output_file, csvfile, mode, Document_ID,
         return
 
     # otherwise, split into sentences
-    sentences = tokenize.sent_tokenize(fulltext)
+    # sentences = tokenize.sent_tokenize(fulltext)
+    sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
     # # check each word in sentence for sentiment and write to output_file
     # with open(output_file, 'w', encoding='utf-8',errors='ignore', newline='') as csvfile:
 
@@ -124,7 +119,8 @@ def analyzefile(input_file, output_dir, output_file, csvfile, mode, Document_ID,
         d_list = []  # holds dominance scores
 
         # search for each valid word's sentiment in ANEW
-        words = word_tokenize(s.lower())
+        # words = word_tokenize(s.lower())
+        words = word_tokenize_stanza(stanzaPipeLine(s.lower()))
         filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
         for index, w in enumerate(filtered_words):
             # don't process stops
@@ -140,10 +136,11 @@ def analyzefile(input_file, output_dir, output_file, csvfile, mode, Document_ID,
                 j -= 1
 
             # lemmatize word
-            lmtzr = WordNetLemmatizer()
-            lemma = lmtzr.lemmatize(w, pos='v')
-            if lemma == w:
-                lemma = lmtzr.lemmatize(w, pos='n')
+            # lmtzr = WordNetLemmatizer()
+            # lemma = lmtzr.lemmatize(w, pos='v')
+            # if lemma == w:
+            #     lemma = lmtzr.lemmatize(w, pos='n')
+            lemma = lemmatize_stanza(stanzaPipeLine(w))
 
             total_words += 1
 

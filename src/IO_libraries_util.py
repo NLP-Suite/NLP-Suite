@@ -5,7 +5,6 @@ import os
 import tkinter as tk
 import tkinter.messagebox as mb
 import subprocess
-import psutil
 from psutil import virtual_memory
 from typing import List
 import requests
@@ -167,6 +166,23 @@ def check_avaialable_memory(software):
     #                         return errorFound, error_code, system_output
 
 
+# for now the java_version as a single version number, e.g., 8 or 17, is not used
+def get_java_version(system_output):
+    java_version = system_output.split('\r\n')[0]
+    java_version = java_version.split(' ')[2]
+    java_version = java_version.split('.')[0]
+    java_version = java_version.replace("\"","")
+    return java_version
+
+def check_windows_64_bits():
+    errorFound = False
+    if 'PROCESSOR_ARCHITEW6432' in os.environ:
+        mb.showwraning(title='Fatal error',message='You are not running a Windows 64-bits machine as required by Stanford CoreNLP.\n\nThis will cause an error running Stanford CoreNLP: Could not create the Java Virtual Machine.')
+        errorFound = True
+    if not os.environ['PROCESSOR_ARCHITECTURE'].endswith('64'):
+        errorFound = True
+    return errorFound
+
 # return errorFound, error_code, system_output
 def check_java_installation(script):
     errorFound = False
@@ -176,6 +192,12 @@ def check_java_installation(script):
     error_code = 1 # should be 0 if Java is installed
     system_output = '' # This is what you see when you run "java -version" in your command line
 
+    # unnecessary
+    # if platform == 'win32':
+    #     errorFound = check_windows_64_bits()
+    #     if errorFound:
+    #         return errorFound, error_code, system_output
+
     try:
         # if you are testing new Java install/uninstall ...
         #   YOU MUST CLOSE PyCharm to run correctly the next command
@@ -183,21 +205,17 @@ def check_java_installation(script):
         error_code = java_output.returncode  # Should be 0 if java installed
         system_output = java_output.stderr.decode(
             'utf-8')  # This is what you see when you run "java -version" in your command line
-        
-        # for now the java_version as a single version number, e.g., 8 or 17, is not used
-        # java_version = system_output.split('\r\n')[0]
-        # java_version = java_version.split(' ')[2]
-        # java_version = java_version.split('.')[0]
-        # java_version = java_version.replace("\"","")
+        # get_java_version(system_output)
     except:
         error_code = 1
 
     url = 'https://www.oracle.com/java/technologies/downloads/archive/'
     title = 'Java error'
 
-    if error_code != 0 and ("not recognized" in system_output or system_output == ''):
-        message = 'A test for Java returned a non-zero error code ' + str(
-                error_code) + ' and Java not recognized (You can check this in command line by typing Java -version).'
+    if error_code != 0:
+        if ("not recognized" in system_output) or (system_output == ''):
+            message = 'A test for Java returned a non-zero error code ' + str(
+                    error_code) + ' and Java not recognized (You can check this in command line by typing Java -version).'
 
         if system_output != '':
             message = message + ' with the following system error: ' + system_output + '\n\n'
@@ -207,7 +225,7 @@ def check_java_installation(script):
             message = message + \
                 '\n\nJAVA IS NOT INSTALLED IN YOUR MACHINE.\n\n'
         message = message + script + ' is a Java script that requires the freeware Java (by Oracle) installed on our machine.\n\n' \
-                'THE ROGRAM WILL EXIT.' \
+                'THE PROGRAM WILL EXIT.' \
                 '\n\nTo download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one).'\
                 '\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable.' \
                 '\n\nDO YOU WANT TO OPEN THE JAVA DOWNLOAD WEBSITE AND INSTALL JAVA NOW? (You must be connected to the internet)'

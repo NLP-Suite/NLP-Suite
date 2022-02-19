@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 import tensorflow_hub as hub
 
+from stanza_functions import stanzaPipeLine, sent_tokenize_stanza
+
 # Based on this colab notebook on Semantic Similarity analysis with TensorFlow Hub's Universal Sentence Encoder
 # https://colab.research.google.com/github/tensorflow/hub/blob/master/examples/colab/semantic_similarity_with_tf_hub_universal_encoder.ipynb#scrollTo=BnvjATdy64eR 
 
@@ -28,7 +30,8 @@ for file in NYTtxt_files:
         data = f.read()
 
     # TODO: Level at which encoding happens (word / sentence / paragraph)
-    sentences = tokenizer.tokenize(data) # Convert input string to list of sentences with tokenizer
+    # sentences = tokenizer.tokenize(data) # Convert input string to list of sentences with tokenizer
+    sentences = sent_tokenize_stanza(stanzaPipeLine(data))
     
     # TODO: hardcoded, grab first n sentences 
     embed_sentences = sentences[3:23] + sentences[-20:]

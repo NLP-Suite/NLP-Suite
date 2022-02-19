@@ -6,13 +6,12 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Newspaper titles",['os','re','nltk','glob','pandas','string','tkinter'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"Newspaper titles",['os','re','stanza','glob','pandas','string','tkinter'])==False:
     sys.exit(0)
 
 import glob
 import os
-from nltk.tokenize import sent_tokenize
-import pandas as pd
+from stanza_functions import stanzaPipeLine, sent_tokenize_stanza
 import string
 import tkinter.messagebox as mb
 import re
@@ -226,7 +225,8 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles):
                         else:
                             out.write(paragraph)
                     else:
-                        for one in sent_tokenize(paragraph):#.decode('utf-8')):
+                        # for one in sent_tokenize(paragraph):#.decode('utf-8')):
+                        for one in sent_tokenize_stanza(stanzaPipeLine(paragraph)):
                             out.write(one)#.encode('utf-8'))
                             out.write(' ')
                         out.write('\n')
@@ -262,7 +262,8 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles):
                     if isTitle(paragraph,Title_length_limit):
                         title.append(paragraph)
                     else:
-                        for one in sent_tokenize(paragraph):#.decode('utf-8')):
+                        # for one in sent_tokenize(paragraph):#.decode('utf-8')):
+                        for one in sent_tokenize_stanza(stanzaPipeLine(paragraph)):
                             out.write(one)
                             out.write(' ')
                         out.write('\n')

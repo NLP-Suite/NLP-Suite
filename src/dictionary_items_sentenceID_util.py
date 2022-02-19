@@ -2,20 +2,14 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"dictionary_items_SentenceID",['nltk','csv','tkinter','os','collections','itertools'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"dictionary_items_SentenceID",['stanza','csv','tkinter','os','collections','itertools'])==False:
     sys.exit(0)
 
 import tkinter as tk
 import tkinter.messagebox as mb
 import collections
-from collections import Counter
 import os
-import csv
-import nltk
-from nltk import tokenize
-from nltk import word_tokenize
-# from gensim.utils import lemmatize
-from itertools import groupby
+from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import pandas as pd
 
 import Excel_util
@@ -56,12 +50,13 @@ def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,creat
             text = (open(file, "r", encoding="utf-8",errors='ignore').read())
             #Process each word in txt
             Sentence_ID = 0
-            sentences = tokenize.sent_tokenize(text)
+            # sentences = tokenize.sent_tokenize(text)
+            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
             # word  frequency sentenceID DocumentID FileName
             for each_sentence in sentences:
                 In = []
                 Sentence_ID += 1
-                token=nltk.word_tokenize(each_sentence)
+                token = word_tokenize_stanza(stanzaPipeLine(each_sentence))
                 for word in token:
                     for dict_word in dic:
                         if word == dict_word[0].rstrip():
@@ -93,12 +88,13 @@ def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,creat
             text = (open(file, "r", encoding="utf-8", errors='ignore').read())
             # Process each word in txt
             Sentence_ID = 0
-            sentences = tokenize.sent_tokenize(text)
+            # sentences = tokenize.sent_tokenize(text)
+            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
             # word  frequency sentenceID DocumentID FileName
             for each_sentence in sentences:
                 In = []
                 Sentence_ID += 1
-                token = nltk.word_tokenize(each_sentence)
+                token = word_tokenize_stanza(stanzaPipeLine(each_sentence))
                 for word in token:
                     for dict_word in dic_value:
                         if word == dict_word.rstrip():
