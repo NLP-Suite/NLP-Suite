@@ -23,7 +23,7 @@ Getting started
 
 Moving or Renaming your NLP-Suite folder
 	
-	
+		If you rename your NLP Suite folder or move it to a different location (e.g., from Desktop to Documents) and you are using the Desktop icon too run the NLP Suite, you will need to change the target path of the icon. How? Right click on the icon, click on Properties, edit the Target value.
 
 Installing the NLP Suite in three easy steps
  
@@ -115,25 +115,34 @@ Useful Anaconda & pip commands
 
 			If you run the command conda list from the anaconda prompt, rather than from a specific environment, you will list all installed packages in all environments.
 
+		6. Uninstall Python
+
+			conda uninstall Python
+
 	pip commands
 
 		The pip command: What is pip?  
 
 		pip is a package-management system written in Python used to install and manage software packages. Thus, if you open a command line/prompt and type
 
-		1. install a Python packages
+
+		1. upgrade pip to latest version
+		
+			python -m pip install --upgrade pip
+		
+		2. install a Python packages
 
 			pip install pandas
 
 			will install the pandas package
 
-		2. uninstall a Python packages
+		3. uninstall a Python packages
 		
 			pip uninstall pandas
 
 			will uninstall a package (e.g., pandas)
 
-		3. install a Python package version  
+		4. install a Python package version  
 
 			Python scripts are VERY sensitive to the package version used to create the script. To ensure that the package will work on your computer, use the following command to install the required package version. 
 
@@ -143,13 +152,13 @@ Useful Anaconda & pip commands
 
 			will install a specific version of a package (e.g., pandas 1.2.1)
 
-		4. Permission error with pip install
+		5. Permission error with pip install
 
 			The installation of some packages (e.g., pdfminer.six) may give you a permission error. In that case, add --user to the pip command, for instance, 
 
 			pip install pdfminer.six --user
 
-		5. More errors with pip command
+		6. More errors with pip command
 
 			If, after installing a package via pip install, the NLP Suite warns you that the package you have just installed is not installed, you have probably installed the package in the wrong environment (e.g., base) and not in NLP.
 
@@ -159,7 +168,7 @@ Useful Anaconda & pip commands
 
 			If you installed pandas in the base environment, it will not be recognized by the NLP Suite. You need to uninstall it from the base environment and install it in the NLP environment after activating the NLP environmant via conda activate NLP.
 
-		6. Show the version of Python package
+		7. Show the version of Python package
 
 			pip show pandas
 
@@ -171,5 +180,16 @@ Useful Anaconda & pip commands
 
 			where Python
 			
-		will give the list of all the locations where Python is installed
+			will give the list of all the locations where Python is installed
 
+		2. Python version
+		
+			python --version
+			
+			will tell you which Python version you are running
+
+		3. Java version
+		
+			java -version
+			
+			will tell you which Java version you are running

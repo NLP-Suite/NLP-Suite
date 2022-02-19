@@ -14,15 +14,14 @@ import Excel_util
 import IO_libraries_util
 import IO_user_interface_util
 
-if IO_libraries_util.install_all_packages("html_annotator_extractor_util",['os','tkinter','re','csv','ntpath','nltk'])==False:
+if IO_libraries_util.install_all_packages("html_annotator_extractor_util",['os','tkinter','re','csv','ntpath'])==False:
     sys.exit(0)
 
 import re
 import os
 import csv
 import ntpath
-import nltk
-from nltk.tokenize import sent_tokenize, word_tokenize
+from stanza_functions import stanzaPipeLine, sent_tokenize_stanza
 
 import GUI_util
 
@@ -46,7 +45,8 @@ def gatherAnnotations(inputFile, tags, mustInclude='<p>', cleanMultiples=True):
     # text = (open(inputFil, "r", encoding="utf-8", errors='ignore').read())
     text = (open(inputFile, "r", encoding="utf-8", errors='ignore').read())
     # split into sentences
-    sentences = nltk.sent_tokenize(text)
+    # sentences = nltk.sent_tokenize(text)
+    sentences = sent_tokenize_stanza(stanzaPipeLine(text))
     #for each_sentence in sentences:
     Sentence_ID = 0
     sentence_cleaned=''

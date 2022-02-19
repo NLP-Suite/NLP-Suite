@@ -12,8 +12,9 @@ from collections import Counter
 import os
 import csv
 import nltk
-from nltk import tokenize
-from nltk import word_tokenize
+#from nltk import tokenize
+#from nltk import word_tokenize
+from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 # from gensim.utils import lemmatize
 from itertools import groupby
 import pandas as pd
@@ -68,12 +69,14 @@ def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,creat
             text = (open(file, "r", encoding="utf-8",errors='ignore').read())
             #Process each word in txt
             Sentence_ID = 0
-            sentences = tokenize.sent_tokenize(text)
+            # sentences = tokenize.sent_tokenize(text)
+            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
             # word  frequency sentenceID DocumentID FileName
             for each_sentence in sentences:
                 In = []
                 Sentence_ID += 1
-                token=nltk.word_tokenize(each_sentence)
+                # token=nltk.word_tokenize(each_sentence)
+                token = word_tokenize_stanza(stanzaPipeLine(each_sentence))
                 for word in token:
                     for dict_word in dic:
                         if word == dict_word[0].rstrip():
@@ -105,12 +108,14 @@ def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,creat
             text = (open(file, "r", encoding="utf-8", errors='ignore').read())
             # Process each word in txt
             Sentence_ID = 0
-            sentences = tokenize.sent_tokenize(text)
+            # sentences = tokenize.sent_tokenize(text)
+            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
             # word  frequency sentenceID DocumentID FileName
             for each_sentence in sentences:
                 In = []
                 Sentence_ID += 1
-                token = nltk.word_tokenize(each_sentence)
+                # token = nltk.word_tokenize(each_sentence)
+                token = word_tokenize_stanza(stanzaPipeLine(each_sentence))
                 for word in token:
                     for dict_word in dic_value:
                         if word == dict_word.rstrip():
@@ -240,9 +245,11 @@ def extract_sentence_length(inputFilename, inputDir, outputDir):
             print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
             with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
                 text = inputFile.read().replace("\n", " ")
-                sentences = tokenize.sent_tokenize(text)
+                # sentences = tokenize.sent_tokenize(text)
+                sentences = sent_tokenize_stanza(stanzaPipeLine(text))
                 for sentence in sentences:
-                    tokens = nltk.word_tokenize(sentence)
+                    # tokens = nltk.word_tokenize(sentence)
+                    tokens = word_tokenize_stanza(stanzaPipeLine(sentence))
                     if len(tokens)>100:
                         long_sentences=long_sentences+1
                     sentenceID=sentenceID+1
@@ -291,7 +298,8 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
         with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
             text = inputFile.read().replace("\n", " ")
         with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(outputFilename_extract_minus, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_minus:
-            sentences = tokenize.sent_tokenize(text)
+            # sentences = tokenize.sent_tokenize(text)
+            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
             for sentence in sentences:
                 sentenceSV = sentence
                 nextSentence = False
@@ -647,7 +655,8 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
             # write csv files ____________________________________________
 
             # split into sentences
-            sentences = nltk.sent_tokenize(text)
+            # sentences = nltk.sent_tokenize(text)
+            sentences = sentences = sent_tokenize_stanza(stanzaPipeLine(text))
             # analyze each sentence in text for readability
             sentenceID = 0  # to store sentence index
             for sent in sentences:

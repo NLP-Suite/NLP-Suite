@@ -111,7 +111,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     document_df = document_df.astype('str')
 
     documentID = []
-    print('tokenizing...')
+    print('Tokenizing...')
     for idx, txt in enumerate(all_input_docs.items()):
         sentences = sent_tokenize(txt[1])
         sId = 0
@@ -129,7 +129,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     sentence_df = sentence_df.astype(str)
 
     if remove_stopwords_var == True:
-        print('removing stopwords..')
+        print('Removing stopwords..')
         ## sentence_df = remove_stopwords_df(sentence_df)
         word_list = list(remove_stopwords(word_list))
     else:
@@ -137,7 +137,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     ## lemmatize
     if lemmatize_var == True:
-        print('lemmatizing...')
+        print('Lemmatizing...')
 
     sentences_out = []
     for word_in_sent in word_list:
@@ -168,7 +168,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     ## train model
 
-    print('training word2vec model...')
+    print('Training Word2Vec model...')
     model = gensim.models.Word2Vec(
         sentences=sentences_out,
         sg = sg_var,
@@ -182,7 +182,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     word_vector_list = [word_vectors[v] for v in words]
 
     ## visualization
-    print('visualizing...')
+    print('Visualizing via t-SNE...')
 
     if vis_menu_var == 'Plot all word vectors':
 
@@ -202,10 +202,17 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         result_word = []
 
         for keyword in keywords_list:
-            sim_words = model.wv.most_similar(keyword, topn=30)
+            try:
+                sim_words = model.wv.most_similar(keyword, topn=30)
+            except:
+                IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Keyword',
+                                                   '"' + keyword + '" keyword not in the corpus. Keyword skipped...')
+                continue
             sim_words = append_list(sim_words, keyword)
             result_word.extend(sim_words)
-
+        if len(result_word)==0:
+            mb.showwarning(title="No words found",message="None of the keywords entered were found in the corpus.\n\nRoutine aborted.")
+            return
         similar_word = [word[0] for word in result_word]
         similarity = [word[1] for word in result_word]
         labels = [word[2] for word in result_word]
@@ -224,7 +231,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         fig = plot_similar_graph(tsne_df)
 
     ## saving output
-    print('saving output...')
+    print('Saving output...')
 
 
     ### write output html graph
