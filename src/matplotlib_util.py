@@ -85,7 +85,7 @@ def plot_bar_chart_px(x_label, fileName, outputDir, chartTitle, height = None):
         height = x_label+"_count"
         data = get_frequencies(data, x_label)
     fig = px.bar(data,x=x_label,y=height)
-    fig.update_layout(title=chartTitle)
+    fig.update_layout(title=chartTitle, title_x=0.5)
     fig.show()
     savepath = os.path.join(outputDir, chartTitle + '.html')
     fig.write_html(savepath)
@@ -100,7 +100,7 @@ def plot_bar_chart_px(x_label, fileName, outputDir, chartTitle, height = None):
 def plot_pie_chart_px(x_label, fileName, outputDir, chartTitle, height = None):
     data = pd.read_csv(fileName, encoding='utf-8')
     fig = px.pie(data, values=height, names=x_label)
-    fig.update_layout(title=chartTitle)
+    fig.update_layout(title=chartTitle, title_x=0.5)
     fig.show()
     savepath = os.path.join(outputDir, chartTitle + '.html')
     #fig.write_html(savepath)
@@ -114,7 +114,7 @@ def plot_pie_chart_px(x_label, fileName, outputDir, chartTitle, height = None):
 def plot_scatter_chart_px(x_label, y_label, fileName, outputDir, chartTitle):
     data = pd.read_csv(fileName, encoding='utf-8')
     fig = px.scatter(data, x=x_label, y=y_label)
-    fig.update_layout(title=chartTitle)
+    fig.update_layout(title=chartTitle, title_x=0.5)
     fig.show()
     savepath = os.path.join(outputDir, chartTitle + '.html')
     #fig.write_html(savepath)
@@ -128,7 +128,7 @@ def plot_scatter_chart_px(x_label, y_label, fileName, outputDir, chartTitle):
 def plot_radar_chart_px(theta_label, r_label, fileName, outputDir, chartTitle):
     data = pd.read_csv(fileName, encoding='utf-8')
     fig = px.line_polar(data, r=r_label, theta=theta_label, line_close=True)
-    fig.update_layout(title=chartTitle)
+    fig.update_layout(title=chartTitle, title_x=0.5)
     fig.show()
     savepath = os.path.join(outputDir, chartTitle + '.html')
     #fig.write_html(savepath)
