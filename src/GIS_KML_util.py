@@ -4,7 +4,7 @@ import GUI_util
 import IO_libraries_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "GIS_KML_util",
-								['tkinter', 'csv', 'simplekml', 'datetime']) == False:
+										  ['tkinter', 'csv', 'simplekml', 'datetime']) == False:
 	sys.exit(0)
 
 import tkinter.messagebox as mb
@@ -44,8 +44,8 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 				 name_var_list, scale_var_list, color_var_list, color_style_var_list,
 				 bold_var_list, italic_var_list,
 				 description_var_list, description_csv_field_var_list, colorize=True):
-	startTime=IO_user_interface_util.timed_alert(window, 3000, 'GIS kml generator', 'Started generating KML file at',
-									   True, '', True,'',True)
+	startTime = IO_user_interface_util.timed_alert(window, 3000, 'GIS kml generator', 'Started generating KML file at',
+												   True, '', True, '', True)
 
 	colorList = ['93730E', '503DD3', '3C2D66', '3B817B', 'ED6651', '1F4825', '786A53', 'E90167', '7A2FCA', 'AA711C',
 				 '22C7BE', 'D263DC', '7C67DC', 'E57143', 'BFE20F', 'F31BBD', '98F0BD', 'D393A7', '09C7A1', 'B50971',
@@ -91,11 +91,12 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 	index = 0
 	j = 0
 	# index_list = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile, encodingValue, locationColumnName)
-	index_list, data, headers = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile, encodingValue, locationColumnName)
+	index_list, data, headers = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile, encodingValue,
+																locationColumnName)
 	# Icon selection
 	icon_url = GIS_Google_pin_util.pin_icon_select(icon_var_list[j], specific_icon_var_list[j])
 
-	if len(index_list)==0:
+	if len(index_list) == 0:
 		return ''
 	if group_number_var <= 1:
 		numberOfRecords = IO_csv_util.GetNumberOfRecordInCSVFile(inputGeocodedCsvFile, encodingValue)
@@ -160,9 +161,11 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 				pnt = kml.newpoint(coords=[(row[2], row[1])])  # wants to be read in in lng, lat order
 				pnt.style.iconstyle.icon.href = icon_url
 				pnt = GIS_Google_pin_util.pin_customizer(inputFilename, pnt, index, index_list, locationColumnName,
-														 group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
+														 group_var, group_number_var, group_values_entry_var_list,
+														 group_label_entry_var_list,
 														 icon_var_list, specific_icon_var_list, icon_url,
-														 name_var_list, scale_var_list, color_var_list, color_style_var_list,
+														 name_var_list, scale_var_list, color_var_list,
+														 color_style_var_list,
 														 bold_var_list, italic_var_list,
 														 description_var_list, description_csv_field_var_list,
 														 j=0, data=data, headers=headers)
@@ -183,7 +186,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 			data, headers = IO_csv_util.get_csv_data(inputFilename, withHeader_var)  # get the data and header
 			# get the column name and its column num that we are splitting groups based on
 			icon_csv_field_var_name = icon_csv_field_var
-			
+
 			for m in range(len(headers)):
 				if icon_csv_field_var_name == headers[m]:
 					icon_csv_field_var_name_num = m
@@ -205,13 +208,13 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 						for w in range(len(specified_values_temp)):
 							specified_values.append(specified_values_temp[w])
 							specified_values_raw.clear()
-													
+
 				duplicates = []
 				for s in range(len(values_raw_temp)):
 					for r in range(len(specified_values)):
 						if values_raw_temp[s] == specified_values[r]:
 							duplicates.append(values_raw_temp[s])
-				
+
 				for t in range(len(duplicates)):
 					values_raw.remove(duplicates[t])
 
@@ -231,7 +234,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 				for a in range(len(values)):
 					if values[a] == data[n][icon_csv_field_var_name_num]:
 						values_row_num.append(n)
-			
+
 			index = 0
 			inputfile = csv.reader(open(inputGeocodedCsvFile, 'r', encoding=encodingValue, errors='ignore'))
 			for row in inputfile:
@@ -246,14 +249,17 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 							locationColumnNumber + 1])])  # wants to be read in in lng, lat order
 						pnt.style.iconstyle.icon.href = icon_url
 						pnt = GIS_Google_pin_util.pin_customizer(inputFilename, pnt, index, index_list,
-													 group_var, group_values_entry_var_list, group_label_entry_var_list,
-													 icon_var_list, specific_icon_var_list, icon_url,
-													 name_var_list, scale_var_list,
-													 color_var_list, color_style_var_list,
-													 description_location_var_name, description_var_list, description_csv_field_var_list,
-													 bold_var_list, italic_var_list, group_number_var, j=0)
-				index = index + 1	
-	IO_user_interface_util.timed_alert(window, 3000, 'GIS kml generator', 'Finished generating KML file at', True, '', True, startTime, True)
+																 group_var, group_values_entry_var_list,
+																 group_label_entry_var_list,
+																 icon_var_list, specific_icon_var_list, icon_url,
+																 name_var_list, scale_var_list,
+																 color_var_list, color_style_var_list,
+																 description_location_var_name, description_var_list,
+																 description_csv_field_var_list,
+																 bold_var_list, italic_var_list, group_number_var, j=0)
+				index = index + 1
+	IO_user_interface_util.timed_alert(window, 3000, 'GIS kml generator', 'Finished generating KML file at', True, '',
+									   True, startTime, True)
 	try:
 		kml.save(kmloutputFilename)
 	except:
