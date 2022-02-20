@@ -107,7 +107,7 @@ lemmatize_var.set(1)
 lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,lemmatize_checkbox)
 ##
-sg_lb = tk.Label(window,text='Select the learning architecture')
+sg_lb = tk.Label(window,text='Select the training model architecture')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sg_lb,True)
 sg_menu_var.set('Skip-Gram')
 sg_menu = tk.OptionMenu(window,sg_menu_var, 'Skip-Gram','CBOW')
@@ -178,19 +178,20 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
                                   "Help",
                                   "Please, tick the checkbox to lemmatize nouns (using the singular version instead of plural, e.g., ox iinstead of oxen, child instead of children) and verbs (using the infinitive form instead of any verb forms, e.g., go gor going, went, goes).")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 3),
-                                  "Help", "-")
+                                  "Help",
+                                  "Please, using the dropdown menu, select the preferred model architecture for training Word2Vec: Skip-Gram and CBOW (Continuous Bag of Words).\n\nWhich model is better?\n\nAccording to the original paper by Mikolov et al. (2013) Skip-Gram works well with small datasets, and can better represent less frequent words. However, CBOW is found to train faster than Skip-Gram, and can better represent more frequent words.\n\nMikolov, Tomas, Kai Chen, Greg Corrado, and Jeffrey Dean. 2013. 'Efficient Estimation of Word Representations in Vector Space' arXiv:1301.3781.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 4),
                                   "Help",
-                                  "Vector size refers to the dimensionality of the word vectors.\n\nIf you have a large corpus (> billions of tokens), you can go up to 100-300 dimensions.\n\nIn general, word vectors with more dimensions give better results.")
+                                  "'Vector size' refers to the dimensionality of the word vectors. If you have a large corpus (> billions of tokens), you can go up to 100-300 dimensions. Generally word vectors with more dimensions give better results.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 5),
                                   "Help",
-                                  "Window size refers to the maximum distance between the current and predicted word within a sentence, in other words, how many words come before and after your given word.")
+                                  "'Window size' refers to the maximum distance between the current and predicted word within a sentence. In other words, how many words come before and after your given word.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 6),
                                   "Help",
-                                  "Minimum count refers to the minimum frequency threshold.\n\nThe words with total frequency lower than the selected value will be ignored.")
+                                  "'Minimum count' refers to the minimum frequency threshold. The words with total frequency lower than this will be ignored.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 7),
-                                  "Help",
-                                  "Using the dropdown menu, select the option you want to use in running WordNet.\n\nSelect \'Plot all word vectors\' if you want to use ALL the words in your input file(s).\n\nSelect \'Clustering of word vectors\' if you want to focus on selected keywords. THE KEYWORDS MUST BE CONTAINED IN THE INPUT FILE(S).\n\nA good analysis strategy is to run Word2Vec for all words first, then re-run the algorithm on a special subset of keywords.")
+                                  "Help", GUI_IO_util.msg_openOutputFiles)
+                                  # "Help", "Please, using the dropdown menu, select the architecture to be used in training Word2Vec: CBOW (Continuous Bag-of-Words) and Skip-gram. Both approaches are based on neural networks. Generally, CBOW is much faster and with slightly better accuracy for larger corpora. Skip-gram is better for smaller corpora.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 8),
                                   "Help",
                                   "Enter comma-separated keywords you want to focus on for semantic similarity. The words MUST be in the file(s) you are analyzing.")
