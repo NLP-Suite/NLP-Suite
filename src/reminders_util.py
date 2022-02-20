@@ -77,6 +77,9 @@ message_Mallet_installation = 'The MALLET topic modelling tool requires a copy o
 title_options_topic_modelling_number_of_topics = ['Topic modelling: Number of topics']
 message_topic_modelling_number_of_topics = 'You are running the topic modelling algorithm with the default value of 20 topics.\n\nYOU ARE STRONGLY ADVISED to run the algorithm repeatedly with different number of topics (e.g., 50, 40 30, 20, 10). You should then select the number of topics that gives you the best set of topics with no or minimum word overlap across topics. When running Gensim, the topic circles displayed in the Intertopic Distance Map (via multidimensional scaling) should be scattered throughout the four quadrants and should not be overlapping.'
 
+title_options_Word2Vec = ['Word2Vec HTML visual']
+message_Word2Vec = 'The Word2Vec HTML visual may be very messy.\n\nDepending upon the number of words displayed, it will be impossible to see anything but a black blotch.\n\nIf that happens, with your mouse, draw an area you want to focus on in the Cartesian plane where the image is displayed. It will re-displayed with a much clearer focus. You can repeat that operation in the new display to further zoom in.\n\nYOU CAN GO BACK TO THE ORIGINAL DISPLAY BY CLICKING THE REFRESH BUTTON IN YOUR BROWSER.'
+
 title_options_CoreNLP_Sentiment_Analysis_system_requirements = ['Stanford CoreNLP Sentiment Analysis system requirements']
 message_CoreNLP_Sentiment_Analysis_system_requirements = 'The Stanford CoreNLP Sentiment Analysis tool requires two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/'
 
