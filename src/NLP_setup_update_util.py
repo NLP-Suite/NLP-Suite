@@ -59,3 +59,10 @@ def update_self(window,GitHub_release_version):
         # mb.warning(e);  # or print(e)
         mb.showwarning(title='Git fatal error',
                    message="Git encountered an error in executing the command 'Repository('.').head.shorthand.\n\nError: " + str(e) + "\n\nUpdate aborted.")
+
+        os.system("git init .. ")
+        os.system("git remote add -t \* -f origin https://github.com/NLP-Suite/NLP-Suite.git")
+        os.system("git checkout -f current-stable")
+        os.system("git add -A .")
+        os.system("git stash")
+        os.system("git pull -f origin current-stable")

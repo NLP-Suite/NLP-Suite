@@ -29,7 +29,7 @@ def transform_format(val):
     else:
         return val
 
-def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizontal, lemmatize, stopwords, punctuation, lowercase, collocation, differentPOS_differentColors,
+def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizontal, font, lemmatize, stopwords, punctuation, lowercase, collocation, differentPOS_differentColors,
         prepare_image_var,selectedImage, use_contour_only,
         differentColumns_differentColors, csvField_color_list, openOutputFiles, doNotCreateIntermediateFiles):
     if len(visualization_tools)==0 and differentColumns_differentColors==False:
@@ -88,7 +88,7 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
         import wordclouds_util
         if not IO_internet_util.check_internet_availability_warning("wordclouds_main.py"):
             return
-        wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_contour_only, prefer_horizontal, lemmatize, stopwords, punctuation, lowercase, differentPOS_differentColors,differentColumns_differentColors, csvField_color_list,doNotCreateIntermediateFiles,openOutputFiles, collocation)
+        wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_contour_only, prefer_horizontal, font, lemmatize, stopwords, punctuation, lowercase, differentPOS_differentColors,differentColumns_differentColors, csvField_color_list,doNotCreateIntermediateFiles,openOutputFiles, collocation)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 
@@ -97,6 +97,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             wordclouds_var.get(),
                             prefer_horizontal_var.get(),
+                            font_var.get(),
                             lemmatize_var.get(),
                             stopwords_var.get(),
                             punctuation_var.get(),
@@ -163,6 +164,7 @@ csv_field_var=tk.StringVar()
 differentColumns_differentColors_var = tk.IntVar()
 doNotCreateIntermediateFiles_var = tk.IntVar() #when an entire directory is processed; could lead to an enourmus number of output files
 wordclouds_var=tk.StringVar()
+font_var=tk.StringVar()
 prepare_image_var = tk.IntVar()
 selectedImage_var=tk.StringVar()
 use_contour_only_var = tk.IntVar()
@@ -173,6 +175,7 @@ csvField_color_list=[]
 
 def clear(e):
     wordclouds_var.set('Python WordCloud')
+    font_var.set('Calibri')
     differentColumns_differentColors_var.set(0)
     differentColumns_differentColors_checkbox.config(state='normal')
     selectedImage_var.set('')
@@ -226,43 +229,50 @@ def warnUser(*args):
                        message='You have selected to visualize words only horizontally in the wordcloud image. Some of the lower-frequency words may need to be dropped from the wordclouds image since there may not be enough room for their display.\n\nCombining horizontal and vertical displays maximizes the number of words visualized in the wordcloud image.')
 prefer_horizontal_var.trace('w',warnUser)
 
+font_var.set('Calibri')
+font_lb = tk.Label(window, text='Font')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,font_lb, True)
+font = tk.OptionMenu(window,font_var,'Arial','Calibri','Tahoma', 'Times New Roman','Verdana')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+160, y_multiplier_integer,font,True)
+font.config(state='disabled')
+
 lemmatize_checkbox = tk.Checkbutton(window, variable=lemmatize_var,
                                                        onvalue=1, offvalue=0)
 
 lemmatize_checkbox.config(text="Lemmas")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+140,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+290,
                                                y_multiplier_integer, lemmatize_checkbox, True)
 
 stopwords_checkbox = tk.Checkbutton(window, variable=stopwords_var,
                                                        onvalue=1, offvalue=0)
 
 stopwords_checkbox.config(text="Stopwords")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+230,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+380,
                                                y_multiplier_integer, stopwords_checkbox, True)
 
 punctuation_checkbox = tk.Checkbutton(window, variable=punctuation_var,
                                                        onvalue=1, offvalue=0)
 
 punctuation_checkbox.config(text="Punctuation")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+340,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+490,
                                                y_multiplier_integer, punctuation_checkbox, True)
 
 lowercase_checkbox = tk.Checkbutton(window, variable=lowercase_var,
                                                        onvalue=1, offvalue=0)
 
 lowercase_checkbox.config(text="Lowercase")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+460,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+610,
                                                y_multiplier_integer, lowercase_checkbox, True)
 
 collocation_checkbox = tk.Checkbutton(window, variable=collocation_var,
                                                        onvalue=1, offvalue=0)
 
 collocation_checkbox.config(text="Collocation")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+580,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+730,
                                                y_multiplier_integer, collocation_checkbox, True)
 
-differentPOS_differentColors_checkbox.config(text="Different colors by POS tags (nouns, verbs, adverbs, adjectives)")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+680,
+differentPOS_differentColors_checkbox.config(text="Different colors by POS tags")
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+850,
                                                y_multiplier_integer, differentPOS_differentColors_checkbox)
 
 menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())

@@ -329,7 +329,7 @@ def processCsvColumns(doc, inputDir, outputDir, openOutputFiles,csvField_color_l
             filesToOpen.append(tempOutputfile)
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
-def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_contour_only, prefer_horizontal, lemmatize, exclude_stopwords, exclude_punctuation, lowercase, differentPOS_differentColors, differentColumns_differentColors, csvField_color_list, doNotListIndividualFiles,openOutputFiles, collocation):
+def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_contour_only, prefer_horizontal, font, lemmatize, exclude_stopwords, exclude_punctuation, lowercase, differentPOS_differentColors, differentColumns_differentColors, csvField_color_list, doNotListIndividualFiles,openOutputFiles, collocation):
     # https://www.geeksforgeeks.org/generating-word-cloud-python/
     # Python program to generate WordCloud
     # for a more sophisticated Python script see
