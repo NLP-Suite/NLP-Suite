@@ -25,7 +25,7 @@ from collections import Counter
 import tkinter.messagebox as mb
 
 import CoNLL_util
-import Excel_util
+import charts_Excel_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
@@ -77,7 +77,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
         filesToOpen.append(function_words_stats_file_name)
 
         if createExcelCharts==True:
-            Excel_outputFilename= Excel_util.create_excel_chart(GUI_util.window,
+            Excel_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
                                           data_to_be_plotted=[pronouns_stats],
                                           inputFilename=function_words_stats_file_name,
                                           outputDir=outputDir,
@@ -89,7 +89,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
                 filesToOpen.append(Excel_outputFilename)
 
             # line plot by sentence index
-            outputFiles=Excel_util.compute_csv_column_frequencies(GUI_util.window,
+            outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
                                                                          function_words_list_file_name,
                                                                          '',
                                                                          outputDir,
@@ -136,7 +136,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
         filesToOpen.append(function_words_stats_file_name)
 
         if createExcelCharts==True:
-            Excel_outputFilename= Excel_util.create_excel_chart(GUI_util.window,
+            Excel_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
                                           data_to_be_plotted=[prepositions_stats],
                                           inputFilename=function_words_stats_file_name,
                                           outputDir=outputDir,
@@ -148,7 +148,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
                 filesToOpen.append(Excel_outputFilename)
 
             # line plot by sentence index
-            outputFiles=Excel_util.compute_csv_column_frequencies(GUI_util.window,
+            outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
                                                                          function_words_list_file_name,
                                                                          '',
                                                                          outputDir,
@@ -197,7 +197,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
         filesToOpen.append(function_words_stats_file_name)
 
         if createExcelCharts==True:
-            Excel_outputFilename= Excel_util.create_excel_chart(GUI_util.window,
+            Excel_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
                                           data_to_be_plotted=[article_stats],
                                           inputFilename=function_words_stats_file_name,
                                           outputDir=outputDir,
@@ -209,11 +209,11 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
                 filesToOpen.append(Excel_outputFilename)
 
 
-            # Excel_util.create_excel_chart(GUI_util.window,[article_stats],function_words_stats_file_name,
+            # charts_Excel_util.create_excel_chart(GUI_util.window,[article_stats],function_words_stats_file_name,
             # "Article Analysis",["pie"])
 
             # line plot by sentence index
-            outputFiles=Excel_util.compute_csv_column_frequencies(GUI_util.window,
+            outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
                                                                          function_words_list_file_name,
                                                                          '',
                                                                          outputDir,
@@ -257,7 +257,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
         filesToOpen.append(function_words_stats_file_name)
 
         if createExcelCharts==True:
-            Excel_outputFilename = Excel_util.create_excel_chart(GUI_util.window,
+            Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
                                                                  data_to_be_plotted=[conjunction_stats],
                                                                  inputFilename=function_words_stats_file_name,
                                                                  outputDir=outputDir,
@@ -270,10 +270,10 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
 
             # function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, outputDir, '.xlsx', 'FW', 'Conjunctions', 'stats_pie_chart')
             # filesToOpen.append(function_words_stats_file_name)
-            # Excel_outputFilename =Excel_util.create_excel_chart(GUI_util.window,[conjunction_stats],function_words_stats_file_name,"Conjunction Analysis",["pie"])
+            # Excel_outputFilename =charts_Excel_util.create_excel_chart(GUI_util.window,[conjunction_stats],function_words_stats_file_name,"Conjunction Analysis",["pie"])
 
             # line plot by sentence index
-            outputFiles=Excel_util.compute_csv_column_frequencies(GUI_util.window,
+            outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
                                                                          function_words_list_file_name,
                                                                          '',
                                                                          outputDir,
@@ -318,7 +318,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
         filesToOpen.append(function_words_stats_file_name)
 
         if createExcelCharts==True:
-            Excel_outputFilename = Excel_util.create_excel_chart(GUI_util.window,
+            Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
                                                                  data_to_be_plotted=[auxiliary_stats],
                                                                  inputFilename=function_words_stats_file_name,
                                                                  outputDir=outputDir,
@@ -333,7 +333,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
 
             # line plots by sentence index
 
-            outputFiles=Excel_util.compute_csv_column_frequencies(GUI_util.window,
+            outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
                                                                          function_words_list_file_name,
                                                                          '',
                                                                          outputDir,

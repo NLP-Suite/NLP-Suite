@@ -1,14 +1,7 @@
 import pandas as pd
 import IO_libraries_util
 import GUI_util
-import nltk
-import nltk.data
-
-# check punkt
-IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
-# check WordNet
-IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/WordNet', 'WordNet')
-from nltk.stem.wordnet import WordNetLemmatizer
+from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 # import stanza
 # stanza.download('en')
@@ -16,7 +9,7 @@ from nltk.stem.wordnet import WordNetLemmatizer
 
 import IO_files_util
 import IO_user_interface_util
-import Excel_util
+import charts_Excel_util
 import IO_csv_util
 import reminders_util
 
@@ -162,7 +155,7 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
 
 def visualize_Excel_chart(createExcelCharts, inputFilename, outputDir, filesToOpen, columns_to_be_plotted,
                               chartType, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label):
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel=outputFileNameType,
                                                   chart_type_list=[chartType],
                                                   chart_title=chartTitle,
@@ -189,7 +182,6 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
     unfiltered_svo = df.to_dict('index')
     filtered_svo = {}
     num_rows = df.shape[0]
-    lemmatizer = WordNetLemmatizer()
 
     # Generating filter dicts
     if filter_s_fileName:
@@ -209,11 +201,11 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
             # words = stannlp(df.loc[i, 'S'])
             # ((word.pos == "VERB") or (word.pos == "NN") or (word.pos == "NNS")):
             # subject = words.lemma
-            subject = lemmatizer.lemmatize(unfiltered_svo[i]['S'], 'n')
+            subject = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['S']))
         if not pd.isna(unfiltered_svo[i]['V']):
-            verb = lemmatizer.lemmatize(unfiltered_svo[i]['V'], 'v')
+            verb = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['V']))
         if not pd.isna(unfiltered_svo[i]['O']):
-            object = lemmatizer.lemmatize(unfiltered_svo[i]['O'], 'n')
+            object = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['O']))
 
         # The s_set, v_set, and o_set are sets. The “in” in set is equivalent to “==” in string.
         if subject and filter_s_fileName and subject not in s_set:

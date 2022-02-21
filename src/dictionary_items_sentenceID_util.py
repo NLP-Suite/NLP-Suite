@@ -12,7 +12,7 @@ import os
 from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import pandas as pd
 
-import Excel_util
+import charts_Excel_util
 import IO_csv_util
 import IO_files_util
 
@@ -119,7 +119,7 @@ def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,creat
         IO_csv_util.list_to_csv(window,DictionaryList,outputFilename)
         outputFilename=IO_files_util.generate_output_file_name(file, '', outputDir, '.xlsx', str(Sentence_ID) + '-Dict_value', 'chart', '', '', '', False, True)
         filesToOpen.append(outputFilename)
-        Excel_util.create_excel_chart(GUI_util.window,[DictionaryList],outputFilename,chartTitle,["bar"])
+        charts_Excel_util.create_excel_chart(GUI_util.window,[DictionaryList],outputFilename,chartTitle,["bar"])
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)

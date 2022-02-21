@@ -18,7 +18,7 @@ import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
 import CoNLL_util
-import Excel_util
+import charts_Excel_util
 import statistics_csv_util
 import Stanford_CoreNLP_tags_util
 
@@ -159,7 +159,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
         # pie charts -----------------------------------------------------------------------------------------------
 
-        Excel_outputFilename = Excel_util.create_excel_chart(GUI_util.window,
+        Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
                                                              data_to_be_plotted=[noun_postag_stats],
                                                              inputFilename=noun_postag_stats_file_name,
                                                              outputDir=outputDir,
@@ -170,7 +170,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         if Excel_outputFilename != "":
             filesToOpen.append(Excel_outputFilename)
 
-        Excel_outputFilename = Excel_util.create_excel_chart(GUI_util.window,
+        Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
                                                              data_to_be_plotted=[noun_deprel_stats],
                                                              inputFilename=noun_deprel_stats_file_name,
                                                              outputDir=outputDir,
@@ -181,7 +181,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         if Excel_outputFilename != "":
             filesToOpen.append(Excel_outputFilename)
 
-        Excel_outputFilename = Excel_util.create_excel_chart(GUI_util.window,
+        Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
                                                              data_to_be_plotted=[noun_ner_stats],
                                                              inputFilename=noun_ner_stats_file_name,
                                                              outputDir=outputDir,
@@ -196,7 +196,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
         # line plots by sentence index -----------------------------------------------------------------------------------------------
 
-        outputFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window,
+        outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
                                                                        noun_postag_file_name,
                                                                        '',
                                                                        outputDir,
@@ -208,7 +208,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 
-        outputFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window,
+        outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
                                                                        noun_deprel_file_name,
                                                                        '',
                                                                        outputDir,
@@ -221,7 +221,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 
-        outputFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window,
+        outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
                                                                        noun_ner_file_name,
                                                                        '',
                                                                        outputDir,

@@ -37,7 +37,7 @@ import subprocess
 from sys import platform
 
 import IO_files_util
-import Excel_util
+import charts_Excel_util
 import file_type_converter_util
 import IO_user_interface_util
 
@@ -262,7 +262,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, OptimizeInterva
         xAxis = 'Topic #'
         yAxis = 'Topic weight'
         fileName = Keys_FileName
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, fileName, outputDir,
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, fileName, outputDir,
                                                   'Mallet_TM',
                                                   chart_type_list=["bar"],
                                                   chart_title=chartTitle,

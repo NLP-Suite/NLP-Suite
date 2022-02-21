@@ -64,12 +64,26 @@ def update_self(window,GitHub_release_version):
         # removes git
         NLPPath = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + os.sep + os.pardir)
         git_folder = NLPPath + os.sep + '.git'
-        # .git is readonly need to change to avoid permission error
-        os.chmod(git_folder, stat.S_IRWXU) # O Others O Owner
-        os.remove(git_folder)
+        # check that .git folder exists
+        if os.path.exists(git_folder):
+            # .git is readonly need to change to avoid permission error
+            os.chmod(git_folder, stat.S_IRWXU) # O Others U Owner
+            try:
+                os.remove(git_folder)
+                if os.path.exists(git_folder):
+                    print("The folder STILL exists after remove")
+            except Exception as e:
+                if 'PermissionError' in str(e):
+                    message = "The algorithm encountered a permission error in deleting the .git subfolder of your main NLP Suite folder (" + NLPPath + ").\n\nPlease, make sure that you do not have the ,git subfolder open and try again.\n\nUpdate aborted."
+                    print(message)
+                    mb.showwarning(title='.git subfolder permission error',
+                                   message=message)
+
         # reinitializes git & pulls current-stable
         os.system("git init .. ")
-        os.system("git remote add -t \* -f origin https://github.com/NLP-Suite/NLP-Suite.git")
+        # os.system("git remote add -t \* -f origin https://github.com/NLP-Suite/NLP-Suite.git")
+        # os.system("git remote add -f origin https://github.com/NLP-Suite/NLP-Suite.git")
+        os.system("git remote add -m current-stable -f origin https://github.com/NLP-Suite/NLP-Suite.git")
         os.system("git checkout -f current-stable")
         os.system("git add -A .")
         os.system("git stash")

@@ -40,7 +40,7 @@ from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize
 from itertools import groupby
 import textstat
 
-import Excel_util
+import charts_Excel_util
 import IO_files_util
 import IO_csv_util
 
@@ -316,7 +316,7 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             columns_to_be_plotted=[[1,3]]
             hover_label=['Document']
             inputFilename=outputFilenameCSV
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='',
                                                       chart_type_list=["bar"],
                                                       # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
@@ -335,7 +335,7 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             columns_to_be_plotted=[[1,4]]
             hover_label=['Document']
             inputFilename=outputFilenameCSV
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='',
                                                       chart_type_list=["bar"],
                                                       # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
@@ -486,7 +486,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
             if bySentenceID == True:
                 columns_to_be_plotted=[[2,2]]
                 hover_label=[str(index+1)+'-grams']
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                           outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
                                                           chart_type_list=["line"],
                                                           chart_title=chartTitle + str(index+1) + '-grams',
@@ -507,7 +507,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                 #             reverse_column_position_for_series_label=False,
                 #             series_label_list=[], second_y_var=0, second_yAxis_label=''):
 
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                           outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
                                                           chart_type_list=["bar"],
                                                           chart_title=chartTitle + str(index+1) + '-grams',
@@ -516,7 +516,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                 if Excel_outputFilename != "":
                     filesToOpen.append(Excel_outputFilename)
 
-                # excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir, csv_outputFilename,
+                # excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir, csv_outputFilename,
                 # chart_type_list=["bar"], chart_title=chartTitle + str(index+1) + '-grams', column_xAxis_label_var='', column_yAxis_label_var='Frequency', outputExtension = '.xlsm', label1='n-grams_'+str(index+1)+'_'+fn,label2='bar',label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=0, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[str(index+1)+'-grams'], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
                 # if excel_outputFilename != "":
                 #     filesToOpen.append(excel_outputFilename)
@@ -873,7 +873,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
         columns_to_be_plotted = [[1, 1]]
         hover_label = []
         inputFilename = outputFilename
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='punct_stats',
                                                   chart_type_list=["bar"],
                                                   # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
@@ -888,7 +888,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
         columns_to_be_plotted = [[2,2]]
         hover_label = []
         inputFilename = outputFilename
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='punct_doc_stats',
                                                   chart_type_list=["bar"],
                                                   # chart_title='Corpus statistics\nCorpus directory: '+inputDir,

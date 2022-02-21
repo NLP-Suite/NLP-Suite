@@ -57,7 +57,7 @@ nlp = spacy.load('en_core_web_sm')
 
 def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                         remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var,
-                        vis_menu_var, keywords_var,
+                        vis_menu_var, dim_menu_var, keywords_var,
                         word_vector=None):
     ## list for csv file
     word = []
@@ -186,15 +186,29 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     if vis_menu_var == 'Plot all word vectors':
 
-        tsne = TSNE(n_components=2)
-        xys = tsne.fit_transform(word_vector_list)
+        if dim_menu_var == '2D':
 
-        xs = xys[:, 0]
-        ys = xys[:, 1]
-        word = words.keys()
+            tsne = TSNE(n_components=2)
+            xys = tsne.fit_transform(word_vector_list)
 
-        tsne_df = pd.DataFrame({'Word': word, 'x': xs, 'y': ys})
-        fig = plot_interactive_graph(tsne_df)
+            xs = xys[:, 0]
+            ys = xys[:, 1]
+            word = words.keys()
+
+            tsne_df = pd.DataFrame({'Word': word, 'x': xs, 'y': ys})
+            fig = plot_interactive_graph(tsne_df)
+
+        else:
+
+            tsne = TSNE(n_components=3)
+            xyzs = tsne.fit_transform(word_vector_list)
+            xs = xyzs[:, 0]
+            ys = xyzs[:, 1]
+            zs = xyzs[:, 2]
+            word = words.keys()
+
+            tsne_df = pd.DataFrame({'Word': word, 'x': xs, 'y': ys, 'z': zs})
+            fig = plot_interactive_3D_graph(tsne_df)
 
     else:
 
@@ -219,16 +233,31 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
         sim_word_vector_list = [word_vectors[sw] for sw in similar_word]
 
+        if dim_menu_var == '2D':
 
-        tsne = TSNE(n_components=2, perplexity=30)
-        xys = tsne.fit_transform(sim_word_vector_list)
-        xs = xys[:, 0]
-        ys = xys[:, 1]
+            tsne = TSNE(n_components=2, perplexity=30)
+            xys = tsne.fit_transform(sim_word_vector_list)
+            xs = xys[:, 0]
+            ys = xys[:, 1]
 
-        print(similar_word)
+            print(similar_word)
 
-        tsne_df = pd.DataFrame({'Word': similar_word, 'x': xs, 'y': ys, 'similarity': similarity, 'label': labels})
-        fig = plot_similar_graph(tsne_df)
+            tsne_df = pd.DataFrame({'Word': similar_word, 'x': xs, 'y': ys, 'similarity': similarity, 'label': labels})
+            fig = plot_similar_graph(tsne_df)
+
+        else:
+
+            tsne = TSNE(n_components=3, perplexity=30)
+            xyzs = tsne.fit_transform(sim_word_vector_list)
+            xs = xyzs[:, 0]
+            ys = xyzs[:, 1]
+            zs = xyzs[:, 2]
+
+            print(similar_word)
+
+            tsne_df = pd.DataFrame({'Word': similar_word, 'x': xs, 'y': ys, 'z': zs, 'similarity': similarity, 'label': labels})
+            fig = plot_similar_3D_graph(tsne_df)
+
 
     ## saving output
     print('Saving output...')
@@ -306,6 +335,12 @@ def plot_interactive_graph(tsne_df):
                      hover_name = "Word")
     return fig
 
+def plot_interactive_3D_graph(tsne_df):
+    fig = px.scatter_3d(tsne_df, x = "x", y = "y", z="z",
+                     text = "Word",
+                     hover_name = "Word")
+    return fig
+
 def append_list(sim_words, words):
     list_of_words = []
 
@@ -319,8 +354,16 @@ def append_list(sim_words, words):
 
 def plot_similar_graph(tsne_df):
     fig = px.scatter(tsne_df, x = "x", y = "y",
-                     text = "word",
+                     text = "Word",
                      color = "label",
                      size = "similarity",
-                     hover_name = "word")
+                     hover_name = "Word")
+    return fig
+
+def plot_similar_3D_graph(tsne_df):
+    fig = px.scatter_3d(tsne_df, x = "x", y = "y", z = "z",
+                     text = "Word",
+                     color = "label",
+                     size = "similarity",
+                     hover_name = "Word")
     return fig

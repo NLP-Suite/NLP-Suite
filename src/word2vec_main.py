@@ -17,7 +17,7 @@ import word2vec_util
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
         remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var,
-        vis_menu_var, keywords_var):
+        vis_menu_var, dim_menu_var, keywords_var):
 
     ## if statements for any requirements
 
@@ -25,7 +25,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
         mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
         return
     filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
-                             remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var, vis_menu_var, keywords_var)
+                             remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var, vis_menu_var, dim_menu_var, keywords_var)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -43,6 +43,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 window_var.get(),
                                 min_count_var.get(),
                                 vis_menu_var.get(),
+                                dim_menu_var.get(),
                                 keywords_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -96,52 +97,56 @@ vector_size_var=tk.IntVar()
 window_var=tk.IntVar()
 min_count_var=tk.IntVar()
 vis_menu_var=tk.StringVar()
+dim_menu_var=tk.StringVar()
 keywords_var=tk.StringVar()
 
-##
+## option for stopwords
 remove_stopwords_var.set(1)
 remove_stopwords_checkbox = tk.Checkbutton(window, text='Remove stopwords', variable=remove_stopwords_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,remove_stopwords_checkbox)
-##
+## option for Lemmatization
 lemmatize_var.set(1)
 lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,lemmatize_checkbox)
-##
+## option for model architecture
 sg_lb = tk.Label(window,text='Select the training model architecture')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sg_lb,True)
 sg_menu_var.set('Skip-Gram')
 sg_menu = tk.OptionMenu(window,sg_menu_var, 'Skip-Gram','CBOW')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+30,y_multiplier_integer,sg_menu)
-##
+## option for vector size
 vector_size_lb = tk.Label(window,text='Vector size')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,vector_size_lb,True)
 vector_size_var.set(100)
 vector_size_entry = tk.Entry(window,width=5,textvariable=vector_size_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,vector_size_entry)
-##
+## option for window size
 window_lb = tk.Label(window,text='Window size')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,window_lb,True)
 window_var.set(5)
 window_entry = tk.Entry(window,width=5,textvariable=window_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,window_entry)
-##
+## option for minimum count
 min_count_lb = tk.Label(window,text='Minimum count')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,min_count_lb,True)
 min_count_var.set(5)
 min_count_entry = tk.Entry(window,width=5,textvariable=min_count_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,min_count_entry)
-##
+## option for visualization method
 vis_var_lb = tk.Label(window,text='Select the visualization method')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,vis_var_lb,True)
 vis_menu_var.set('Plot all word vectors')
 vis_menu = tk.OptionMenu(window,vis_menu_var, 'Plot all word vectors', 'Clustering of word vectors')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+20,y_multiplier_integer,vis_menu)
-
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,vis_menu, True)
+#### 2D or 3D plot
+dim_menu_var.set('2D')
+dim_menu = tk.OptionMenu(window,dim_menu_var, '2D', '3D')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+240,y_multiplier_integer,dim_menu)
+#### entry for clustering keywords
 keywords_var.set('')
 keywords_lb = tk.Label(window, text='Keywords')
 cluster_var_entry = tk.Entry(window,width=10,textvariable=keywords_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+30,y_multiplier_integer,keywords_lb,True)
-
 keywords_entry = tk.Entry(window, textvariable=keywords_var)
 keywords_entry.configure(state='disabled',width=100)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,keywords_entry)

@@ -40,7 +40,7 @@ import fuzzywuzzy
 from fuzzywuzzy import fuzz
 
 import file_cleaner_util
-import Excel_util
+import charts_Excel_util
 import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
@@ -119,7 +119,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         columns_to_be_plotted = [[2,2]]
         hover_label=['']
         inputFilename=outputFilename
-        Excel_outputFileName = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        Excel_outputFileName = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                    outputFileLabel='NLTK_spell',
                                                    chart_type_list=["bar"],
                                                    chart_title='Misspelled/Unusual Words Frequency',
@@ -144,7 +144,7 @@ def generate_simple_csv(Dataframe):
     pass
 
 def createChart(inputFilename,outputDir,columns_to_be_plotted,hover_label):
-    Excel_outputFileName = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+    Excel_outputFileName = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                               outputFileLabel='Leven_spell',
                                               chart_type_list=["pie"],
                                               chart_title='Frequency of Potential Typos',
@@ -906,7 +906,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
         chart_title='Frequency of Languages Detected by 3 Algorithms'
         hover_label=['LANGDETECT', 'SPACY', 'LANGID']
         inputFilename = outputFilenameCSV
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='_bar_chart',
                                                   chart_type_list=["bar"],
                                                   chart_title=chart_title,
