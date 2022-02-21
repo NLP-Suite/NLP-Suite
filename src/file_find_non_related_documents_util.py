@@ -11,27 +11,19 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Find Non-related Documents",['nltk','stanfordcorenlp','os','tkinter','glob'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"Find Non-related Documents",['stanza','stanfordcorenlp','os','tkinter','glob'])==False:
     sys.exit(0)
 
 from stanfordcorenlp import StanfordCoreNLP
 import os
 from glob import glob
-import nltk
 
 import GUI_IO_util
 import IO_files_util
 import IO_csv_util
 
-# check WordNet
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
-from nltk.stem.wordnet import WordNetLemmatizer
-
-lemmatizer = WordNetLemmatizer()
-
-lemmatizer = WordNetLemmatizer()
+from stanza_functions import stanzaPipeLine, lemmatize_stanza
 filesToOpen = []
-
 
 #This fuction reads the social actor list from the same directory
 #and save that into a set called "my_soc_actors"
@@ -65,7 +57,8 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, num_doc):
             # find out all the nouns
             if (pos == 'NN' or pos == 'NNS' ):
                 # lemma_word to check if is social actor
-                lemma_word = lemmatizer.lemmatize(word.lower())
+                # lemma_word = lemmatizer.lemmatize(word.lower())
+                lemma_word = lemmatize_stanza(stanzaPipeLine(word.lower()))
                 if lemma_word in soc_acts:
                     #add into the list. 
                     if lemma_word in keywords[fileName]:
@@ -76,7 +69,8 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, num_doc):
                         keywords[fileName][lemma_word] = 1
         for wordNER, pos in nlp.ner(fcontent):
             if (pos == 'LOCATION' or pos == 'DATE' or pos == 'ORGANIZATION' or pos == 'PERSON'):
-                lemma_NER = lemmatizer.lemmatize(wordNER.lower())
+                # lemma_NER = lemmatizer.lemmatize(wordNER.lower())
+                lemma_NER = lemmatize_stanza(stanzaPipeLine(wordNER.lower()))
                 if lemma_NER not in postag_seen:
                     if lemma_NER in keywords[fileName]:
                         keywords[fileName][lemma_NER] = keywords[fileName][lemma_NER] + 1

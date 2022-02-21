@@ -26,12 +26,14 @@ Uses concreteness measures by Brysbaert, Marc, Amy Beth Warriner, and Victor Kup
 # add parameter to exclude duplicates? also mean or median analysis
 
 import sys
+
+from py import process
 import GUI_util
 import IO_libraries_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "Concreteness Analysis",
-										  ['nltk', 'os', 'csv', 'statistics', 'argparse', 'pandas', 'tkinter',
-										   'time']) == False:
+										  ['os', 'csv', 'statistics', 'argparse', 'pandas', 'tkinter',
+										   'time', 'stanza']) == False:
 	sys.exit(0)
 
 import csv
@@ -42,24 +44,15 @@ import argparse
 import pandas as pd
 import tkinter.messagebox as mb
 
-from nltk import tokenize
-from nltk import word_tokenize
 
-# check Punkt
-IO_libraries_util.import_nltk_resource(GUI_util.window, 'tokenizers/punkt', 'punkt')
-# check WordNet
-IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/WordNet', 'WordNet')
-from nltk.stem.wordnet import WordNetLemmatizer
-
-# check stopwords
-IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/stopwords', 'stopwords')
-
-from nltk.corpus import stopwords
+from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 import GUI_IO_util
 import IO_csv_util
 
-stops = set(stopwords.words("english"))
+fin = open('../lib/wordLists/stopwords.txt', 'r')
+stops = set(fin.read().splitlines())
+
 ratings = GUI_IO_util.concreteness_libPath + os.sep + "Concreteness_ratings_Brysbaert_et_al_BRM.csv"
 if not os.path.isfile(ratings):
 	print(
@@ -94,7 +87,9 @@ def analyzefile(input_file, output_dir, output_file, mode, documentID, documentN
 		return
 
 	# otherwise, split into sentences
-	sentences = tokenize.sent_tokenize(fulltext)
+	# sentences = tokenize.sent_tokenize(fulltext)
+	sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
+
 	i = 1  # to store sentence index
 	# check each word in sentence for concreteness and write to output_file
 
@@ -108,7 +103,8 @@ def analyzefile(input_file, output_dir, output_file, mode, documentID, documentN
 
 		# search for each valid word's concreteness ratings
 		# words = nlp.pos_tag(s.lower())
-		words = word_tokenize(s.lower())
+		# words = word_tokenize(s.lower())
+		words = word_tokenize_stanza(stanzaPipeLine(s.lower()))
 
 		filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
 		for index, w in enumerate(filtered_words):
@@ -117,10 +113,11 @@ def analyzefile(input_file, output_dir, output_file, mode, documentID, documentN
 				continue
 
 			# lemmatize word
-			lmtzr = WordNetLemmatizer()
-			lemma = lmtzr.lemmatize(w, pos='v')
-			if lemma == w:
-				lemma = lmtzr.lemmatize(w, pos='n')
+			# lmtzr = WordNetLemmatizer()
+			# lemma = lmtzr.lemmatize(w, pos='v')
+			lemma = lemmatize_stanza(stanzaPipeLine(w))
+			# if lemma == w:
+			# 	lemma = lmtzr.lemmatize(w, pos='n')
 
 			all_words.append(str(lemma))
 

@@ -17,9 +17,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"file_splitter_ByKeywo
 import os
 import pandas as pd
 import csv
-from nltk.data import load
-# from nltk import tokenize
-from nltk.tokenize import sent_tokenize, word_tokenize
+from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 from nltk.corpus import wordnet#lemmatization
 #https://wordnet.princeton.edu/documentation/morphy7wn
@@ -39,7 +37,8 @@ def run(inputFilename, outputPath, keyword, first_occurrence, lemmatization = Tr
     for letter in keyword:
         if letter == '<' or letter == '>' or letter ==':' or letter =='"' or letter =='/' or letter =='\\' or letter =='|' or letter =='?' or letter =='*':
             title_keyword = keyword.replace(letter,"")
-    kwtokens = word_tokenize(keyword.lower())
+    # kwtokens = word_tokenize(keyword.lower())
+    kwtokens = word_tokenize_stanza(stanzaPipeLine(keyword.lower()))
     kwlist = []#list of list which includes conjugated forms of each token in keyword phrase
     default_conjugator = mlconjug.Conjugator(language='en')
     if first_occurrence == True:
@@ -80,7 +79,8 @@ def run(inputFilename, outputPath, keyword, first_occurrence, lemmatization = Tr
         f = open(inputFilename, "r",encoding='utf-8',errors='ignore')
         docText = f.read()
         f.close()
-        sentences_ = sent_tokenize(docText)#the list of sentneces in corpus
+        # sentences_ = sent_tokenize(docText)#the list of sentneces in corpus
+        sentences_ = sent_tokenize_stanza(stanzaPipeLine(docText))#the list of sentneces in corpus
         subfileindex = 1
         subfilePath = outputPath+os.sep+title+"_"+str(subfileindex)+'.txt'
         if first_occurrence == True:
@@ -90,7 +90,8 @@ def run(inputFilename, outputPath, keyword, first_occurrence, lemmatization = Tr
         sentence_index = 1
 
         for sent in sentences_: 
-            tokens_ = word_tokenize(sent)
+            # tokens_ = word_tokenize(sent)
+            tokens_ = word_tokenize_stanza(stanzaPipeLine(sent))
             kwindex = 0
             kw = False
             for token in tokens_: 

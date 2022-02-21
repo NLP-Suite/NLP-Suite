@@ -16,6 +16,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"NLP_setup_update_util
     sys.exit(0)
 
 import os
+import stat
 from pygit2 import Repository
 import tkinter.messagebox as mb
 
@@ -53,9 +54,23 @@ def update_self(window,GitHub_release_version):
                            message=message_update)
             print(message_update)
         else:
-            print("\nYou are not working on the 'current-stable' branch of the NLP Suite. You are on the '" + Repository('.').head.shorthand + "' branch'. Update aborted to avoid overwriting your branch.")
+            print("\nYou are not working on the 'current-stable' branch of the NLP Suite. You are on the '" + Repository('.').head.shorthand + "' branch. Update aborted to avoid overwriting your branch.")
     except Exception as e:
-        print('Git fatal error :' + e)
+        print('Git fatal error:' + str(e))
         # mb.warning(e);  # or print(e)
         mb.showwarning(title='Git fatal error',
-                   message="Git encountered an error in executing the command 'Repository('.').head.shorthand.\n\nError: " + e + "\n\nUpdate aborted.")
+                   message="Git encountered an error in executing the command 'Repository('.').head.shorthand.\n\nError: " + str(e) + "\n\nUpdate aborted.")
+
+        # removes git
+        NLPPath = os.path.normpath(os.path.dirname(os.path.abspath(__file__)) + os.sep + os.pardir)
+        git_folder = NLPPath + os.sep + '.git'
+        # .git is readonly need to change to avoid permission error
+        os.chmod(git_folder, stat.S_IRWXU) # O Others O Owner
+        os.remove(git_folder)
+        # reinitializes git & pulls current-stable
+        os.system("git init .. ")
+        os.system("git remote add -t \* -f origin https://github.com/NLP-Suite/NLP-Suite.git")
+        os.system("git checkout -f current-stable")
+        os.system("git add -A .")
+        os.system("git stash")
+        os.system("git pull -f origin current-stable")

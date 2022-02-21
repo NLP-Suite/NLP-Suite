@@ -94,8 +94,8 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 			if (sentenceID==1 and documentID==1) or (row[9]!=sentenceID and row[10]==documentID):
 				currentRecord, sentence_str = CoNLL_util.compute_sentence(conllFile,currentRecord,row[9],row[10])
 			if row[filenamePositionInCoNLLTable] in currList:
-				# No need to display the filename in Description when only one file is processed 
-				# A blank value for the filename will be checked in Description to avoid displaying it 
+				# No need to display the filename in Description when only one file is processed
+				# A blank value for the filename will be checked in Description to avoid displaying it
 				if numDocs!=1:
 					# currList.append(row[filenamePositionInCoNLLTable]) #append filename
 					if "=dressforhyperlink" in str(row[filenamePositionInCoNLLTable]):
@@ -114,7 +114,7 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 					tempLocation=row[1]
 					continue
 				else:
-					if tempLocation!='': #we are on the next row 
+					if tempLocation!='': #we are on the next row
 						currList.append(tempLocation + ' ' + row[1]) #col 1 is the FORM value
 						tempLocation=''
 					else:
@@ -187,4 +187,3 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 		return
 	IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Finished extracting locations from csv file at", True, '', True, startTime, True)
 	return sorted(locList)
-
