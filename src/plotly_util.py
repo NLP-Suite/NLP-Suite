@@ -1,8 +1,14 @@
-# Written by Tony Chen Gu Feb 2022
+# Written by Tony Chen Gu in Feb 2022
+# Contact: chentony2011@hotmail.com
 
 import pandas as pd
 import plotly.express as px
 import os
+
+## NOTE:
+## some graphing functions has a column placed at the end
+## these functions supports the feature of getting frequencies of the categorical variables
+## the static_flag is used to indicate whether the chart is static or not
 
 # get frequencies of categorical variables
 def get_frequencies(data, variable):
