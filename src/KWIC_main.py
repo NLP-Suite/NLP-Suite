@@ -48,7 +48,7 @@ import csv
 import Help_util
 import TIPS_util
 import IO_files_util
-import Excel_util
+import charts_Excel_util
 import IO_csv_util
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -306,7 +306,7 @@ def search(searchWord, searchSize, position, inputKWICfile, within, outFile, ran
             #sort will not work with headers; headers inserted after
             leftKWIC=stats_visuals_util.sort_data(leftKWIC,1,True)
             leftKWIC.insert(0,["KWIC (left-hand tokens)","Counts"])
-            Excel_util.create_excel_chart(window,"bar","Left-hand tokens for " + searchWord,[leftKWIC],KWIC_search_output_filename_stats,20)
+            charts_Excel_util.create_excel_chart(window,"bar","Left-hand tokens for " + searchWord,[leftKWIC],KWIC_search_output_filename_stats,20)
             filesToOpen.append(KWIC_search_output_filename_stats)
         else:
             IO_user_interface_util.timed_alert(window, 3000, 'Searching KWIC Table', 'There are no left-hand words for the searched keyword: ' + searchWord)
@@ -317,7 +317,7 @@ def search(searchWord, searchSize, position, inputKWICfile, within, outFile, ran
             #sort will not work with headers; headers inserted after
             rightKWIC=stats_visuals_util.sort_data(rightKWIC,1,True)
             rightKWIC.insert(0,["KWIC (right-hand tokens)","Counts"])
-            Excel_util.create_excel_chart(window,"bar","Right-hand tokens for " + searchWord,[rightKWIC],KWIC_search_output_filename_stats,20)
+            charts_Excel_util.create_excel_chart(window,"bar","Right-hand tokens for " + searchWord,[rightKWIC],KWIC_search_output_filename_stats,20)
             filesToOpen.append(KWIC_search_output_filename_stats)
         else:
             IO_user_interface_util.timed_alert(window, 3000, 'Searching KWIC Table', 'There are no right-hand words for the searched keyword: ' + searchWord)

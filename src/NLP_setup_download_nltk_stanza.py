@@ -1,4 +1,4 @@
-import nltk
+# import nltk
 import ssl
 import stanza
 
@@ -9,5 +9,5 @@ except AttributeError:
 else:
     ssl._create_default_https_context = _create_unverified_https_context
 
-nltk.download('all')
+# nltk.download('all')
 stanza.download('en')

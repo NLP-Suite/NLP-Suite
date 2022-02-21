@@ -57,7 +57,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     # else:
     # 	df = pd.DataFrame(data, columns=['Word', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
     # if NER_sentence_var == 1:
-    # 	df = Excel_util.add_missing_IDs(df)
+    # 	df = charts_Excel_util.add_missing_IDs(df)
 
     # if inputDir!='':
     # 	output_filename = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'NER_extractor_dir')

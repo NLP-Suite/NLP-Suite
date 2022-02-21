@@ -15,7 +15,7 @@ from subprocess import call
 
 import IO_files_util
 import IO_user_interface_util
-import Excel_util
+import charts_Excel_util
 import lib_util
 import GUI_IO_util
 import reminders_util
@@ -125,7 +125,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[2,4]]
                 hover_label=['Sentence']
                 # inputFilename = outputFilename
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                           outputFileLabel='CoreNLP_sent',
                                                           chart_type_list=["line"],
                                                           chart_title='Stanford CoreNLP - Sentiment Scores by Sentence Index',
@@ -139,7 +139,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[5,5]]
                 hover_label=[]
                 # inputFilename = inputFilename
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                           outputFileLabel='CoreNLP_SA',
                                                           chart_type_list=["bar"],
                                                           chart_title='Stanford CoreNLP - Sentiment Scores',
@@ -165,7 +165,7 @@ def run(inputFilename,inputDir,outputDir,
                                                  True)
                     call("python shape_of_stories_main.py", shell=True)
 
-                # outputFilenameXlsm1 = Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputQuotefilePath, chart_type_list = ["bar"], chart_title=
+                # outputFilenameXlsm1 = charts_Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputQuotefilePath, chart_type_list = ["bar"], chart_title=
                 # "Stanford CoreNLP (Sentiment Value)", column_xAxis_label_var = 'Sentiment value',
                 # column_yAxis_label_var = 'Frequency of sentiment value',outputExtension = '.xlsm',
                 # label1='SC',label2='CoreNLP_Sentiment',label3='bar',label4='chart',label5='',
@@ -209,7 +209,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[2,4]]
                 hover_label=['Sentence']
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='Hedo_sent',
                                                       chart_type_list=["line"],
                                                       chart_title='Hedonometer - Sentiment Scores by Sentence Index',
@@ -223,7 +223,7 @@ def run(inputFilename,inputDir,outputDir,
             columns_to_be_plotted = [[5,5]]
             hover_label=[]
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='Hedo_sent',
                                                       chart_type_list=["bar"],
                                                       chart_title='Hedonometer - Sentiment Scores',
@@ -258,7 +258,7 @@ def run(inputFilename,inputDir,outputDir,
             hover_label=['Sentence']
 
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='SentiWordNet_sent',
                                                       chart_type_list=["line"],
                                                       chart_title='SentiWordNet - Sentiment Scores by Sentence Index',
@@ -271,7 +271,7 @@ def run(inputFilename,inputDir,outputDir,
 
             columns_to_be_plotted = [[5,5]]
             hover_label=[]
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='SentiWordNet_sent',
                                                       chart_type_list=["bar"],
                                                       chart_title='SentiWordNet - Sentiment Scores',
@@ -308,7 +308,7 @@ def run(inputFilename,inputDir,outputDir,
             hover_label=['Sentence']
             # inputFilename = outputFilename
 
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='VADER_sent',
                                                       chart_type_list=["line"],
                                                       chart_title='VADER - Sentiment Scores by Sentence Index',
@@ -322,7 +322,7 @@ def run(inputFilename,inputDir,outputDir,
             columns_to_be_plotted = [[5,5]]
             hover_label=[]
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='VADER_sent',
                                                       chart_type_list=["bar"],
                                                       chart_title='VADER - Sentiment Scores',
@@ -357,7 +357,7 @@ def run(inputFilename,inputDir,outputDir,
                 hover_label=['Sentence','Sentence','Sentence']
 
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_sent',
                                                       chart_type_list=["line"],
                                                       chart_title='ANEW - Sentiment Scores by Sentence Index',
@@ -375,7 +375,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[5,5]]
             hover_label=[]
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_sent',
                                                       chart_type_list=["bar"],
                                                       chart_title='ANEW - Sentiment Scores',
@@ -394,7 +394,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[7,7]]
             hover_label=[]
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_arous',
                                                       chart_type_list=["bar"],
                                                       chart_title='ANEW - Arousal Scores',
@@ -413,7 +413,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[9,9]]
             hover_label=[]
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_dom',
                                                       chart_type_list=["bar"],
                                                       chart_title='ANEW - Dominance Scores',

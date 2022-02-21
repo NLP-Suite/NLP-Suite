@@ -23,7 +23,7 @@ import CoNLL_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
-import Excel_util
+import charts_Excel_util
 import Stanford_CoreNLP_tags_util
 import reminders_util
 
@@ -191,7 +191,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	filesToOpen.append(verb_stats_file_name)
 
 	if createExcelCharts == True:
-		Excel_outputFilename = Excel_util.create_excel_chart(GUI_util.window,
+		Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
 															 data_to_be_plotted=[voice_stats],
 															 inputFilename=verb_stats_file_name,
 															 outputDir=outputDir,
@@ -205,7 +205,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 			filesToOpen.append(Excel_outputFilename)
 
 		# line plots by sentence index
-		# outputFiles = Excel_util.compute_csv_column_frequencies(window=GUI_util.window,
+		# outputFiles = charts_Excel_util.compute_csv_column_frequencies(window=GUI_util.window,
 		# 														inputFilename=verb_file_name,
 		# 														inputDataFrame='',
 		# 														outputDir=outputDir,
@@ -295,7 +295,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 	filesToOpen.append(verb_stats_file_name)
 
 	if createExcelCharts == True:
-		Excel_outputFilename = Excel_util.create_excel_chart(GUI_util.window,
+		Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
 															 data_to_be_plotted=[modality_stats],
 															 inputFilename=verb_stats_file_name,
 															 outputDir=outputDir,
@@ -308,7 +308,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 			filesToOpen.append(Excel_outputFilename)
 
 		# line plots by sentence index
-		outputFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window,
+		outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
 																verb_file_name,
 																'',
 																outputDir,
@@ -380,7 +380,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 	if createExcelCharts == True:
 
-		Excel_outputFilename = Excel_util.create_excel_chart(GUI_util.window,
+		Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
 															 data_to_be_plotted=[tense_stats],
 															 inputFilename=verb_stats_file_name,
 															 outputDir=outputDir,
@@ -394,7 +394,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 			filesToOpen.append(Excel_outputFilename)
 
 		# line plots by sentence index
-		outputFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window,
+		outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
 																verb_file_name,
 																'',
 																outputDir,

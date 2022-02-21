@@ -26,11 +26,11 @@ from nltk.tree import Tree
 from nltk.draw import TreeView
 from PIL import Image
 
-import Excel_util
+import charts_Excel_util
 import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
-import Excel_util
+import charts_Excel_util
 import statistics_csv_util
 import TIPS_util
 import GUI_IO_util
@@ -140,7 +140,7 @@ def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,creat
         IO_csv_util.list_to_csv(window,DictionaryList,outputFilename)
         outputFilename=IO_files_util.generate_output_file_name(file, inputDir, outputDir, '.xlsx', str(Sentence_ID) + '-Dict_value', 'chart', '', '', '', False, True)
         filesToOpen.append(outputFilename)
-        Excel_util.create_excel_chart(GUI_util.window,[DictionaryList],outputFilename,chartTitle,["bar"])
+        charts_Excel_util.create_excel_chart(GUI_util.window,[DictionaryList],outputFilename,chartTitle,["bar"])
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -201,11 +201,11 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_v
                 for i in range(Row_list[index+1][4]-1,Row_list[index][4],-1):
                     Row_list.insert(index+1,['','','','',i,Row_list[index][5],Row_list[index][6]])
     df = pd.DataFrame(Row_list,index=['Form','Lemma','POStag','WordNet Category','Sentence ID','Document ID','Document'])
-    df = Excel_util.add_missing_IDs(df)
+    df = charts_Excel_util.add_missing_IDs(df)
     df.to_csv(outputFilename,index=False)
 
     if createExcelCharts:
-        outputFiles=Excel_util.compute_csv_column_frequencies(GUI_util.window,
+        outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
                                                  ConnlTable,
                                                  df,
                                                  outputDir,
@@ -423,7 +423,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
         # sentence length
         columns_to_be_plotted = [[2, 4]]
 
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                   outputFileLabel='SentComp',
                                                   chart_type_list=["line"],
                                                   chart_title='Sentence Length (in Number of Words) by Sentence Index',
@@ -434,7 +434,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
         if Excel_outputFilename != "":
             filesToOpen.append(Excel_outputFilename)
 
-        # outputFilenameXLSM_1 = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        # outputFilenameXLSM_1 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
         # outputFilename,
         #                                           chart_type_list=["line"],
         #                                           chart_title="Sentence Length (in Number of Words) by Sentence Index",
@@ -454,7 +454,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
         # Yngve and Frazier scores
         columns_to_be_plotted = [[2, 5], [2, 7]]
 
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                   outputFileLabel='SentComp',
                                                   chart_type_list=["line"],
                                                   chart_title='"Sentence Complexity (Yngve and Frazier Scores by Sentence Index)',
@@ -466,7 +466,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
             filesToOpen.append(Excel_outputFilename)
 
 
-        # outputFilenameXLSM_2 = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir, outputFilename,
+        # outputFilenameXLSM_2 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir, outputFilename,
         #                                           chart_type_list=["line"],
         #                                           chart_title="Sentence Complexity (Yngve and Frazier Scores by Sentence Index)",
         #                                           column_xAxis_label_var='Sentence index',
@@ -483,7 +483,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
         # Yngve and Frazier sums
         columns_to_be_plotted = [[2, 6], [2, 8]]
 
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                   outputFileLabel='SentComp',
                                                   chart_type_list=["line"],
                                                   chart_title='"Sentence Complexity (Yngve and Frazier Sums by Sentence Index)',
@@ -494,7 +494,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
         if Excel_outputFilename != "":
             filesToOpen.append(Excel_outputFilename)
 
-        # outputFilenameXLSM_3 = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir, outputFilename,
+        # outputFilenameXLSM_3 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir, outputFilename,
         #                                           chart_type_list=["line"],
         #                                           chart_title="Sentence Complexity (Yngve and Frazier Sums by Sentence Index)",
         #                                           column_xAxis_label_var='Sentence index',
@@ -761,7 +761,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                 columns_to_be_plotted = [[2, 5], [2, 6], [2, 7], [2, 9], [2, 10], [2, 11]]
                 hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
 
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
+                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
                                                           outputFileLabel='READ',
                                                           chart_type_list=["line"],
                                                           chart_title='Text Readability',
@@ -772,7 +772,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                 if Excel_outputFilename != "":
                     filesToOpen.append(Excel_outputFilename)
 
-                # outputFilenameXLSM_1 = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                # outputFilenameXLSM_1 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                 #                                           outputFilenameCsv, chart_type_list=["line"],
                 #                                           chart_title="Text Readability",
                 #                                           column_xAxis_label_var='Sentence Index',
@@ -789,7 +789,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 
                 columns_to_be_plotted = [[2, 13]]
                 hover_label = ['Sentence']
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
+                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
                                                           outputFileLabel='READ',
                                                           chart_type_list=["line"],
                                                           chart_title='Text Readability',
@@ -801,7 +801,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                     filesToOpen.append(Excel_outputFilename)
 
 
-                # outputFilenameXLSM_2 = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                # outputFilenameXLSM_2 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                 #                                           outputFilenameCsv, chart_type_list=["line"],
                 #                                           chart_title="Text Readability",
                 #                                           column_xAxis_label_var='Sentence Index',
@@ -820,7 +820,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
             columns_to_be_plotted = [[0, 12]]
             hover_label = []
 
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
                                                       outputFileLabel='READ',
                                                       chart_type_list=["bar"],
                                                       chart_title='Frequency of Sentences by Readability Consensus of Grade Level',
@@ -830,7 +830,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
-            # outputFilenameXLSM_3 = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            # outputFilenameXLSM_3 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
             #                                           outputFilenameCsv, chart_type_list=["bar"],
             #                                           chart_title="Frequency of Sentences by Readability Consensus of Grade Level",
             #                                           column_xAxis_label_var='', column_yAxis_label_var='Frequency',
