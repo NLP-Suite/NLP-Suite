@@ -19,6 +19,7 @@ import os
 import stat
 from pygit2 import Repository
 import tkinter.messagebox as mb
+import shutil
 
 def update_self(window,GitHub_release_version):
     """
@@ -69,9 +70,10 @@ def update_self(window,GitHub_release_version):
             # .git is readonly need to change to avoid permission error
             os.chmod(git_folder, stat.S_IRWXU) # O Others U Owner
             try:
-                os.remove(git_folder)
+                shutil.rmtree(git_folder)
                 if os.path.exists(git_folder):
-                    print("The folder STILL exists after remove")
+                    print("The folder STILL exists after remove. The delete .git directory did not work.")
+                    return
             except Exception as e:
                 if 'PermissionError' in str(e):
                     message = "The algorithm encountered a permission error in deleting the .git subfolder of your main NLP Suite folder (" + NLPPath + ").\n\nPlease, make sure that you do not have the ,git subfolder open and try again.\n\nUpdate aborted."
