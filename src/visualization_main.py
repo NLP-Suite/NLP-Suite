@@ -107,7 +107,7 @@ menu_values = []
 dynamic_network_field_var = tk.IntVar()
 
 Excel_button = tk.Button(window, text='Open Excel GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
-                               command=lambda: call("python Excel_charts_main.py", shell=True))
+                               command=lambda: call("python charts_Excel_main.py", shell=True))
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                Excel_button)
 

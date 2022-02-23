@@ -17,7 +17,7 @@ import pandas as pd
 import csv
 
 import reminders_util
-import Excel_util
+import charts_Excel_util
 import IO_files_util
 import IO_user_interface_util
 import data_manager_util
@@ -70,13 +70,13 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_v
                 for i in range(Row_list[index+1][4]-1,Row_list[index][4],-1):
                     Row_list.insert(index+1,['','','','',i,Row_list[index][5],Row_list[index][6]])
     df = pd.DataFrame(Row_list,index=['word','lemma','postag','WordNet Category','Sentence ID','Document ID','Document'])
-    df = Excel_util.add_missing_IDs(df)
+    df = charts_Excel_util.add_missing_IDs(df)
     # Row_list.insert(0, ['word','lemma','postag','WordNet Category','SentenceID','DocumentID','Document'])
     #IO_util.list_to_csv('',Row_list,outputFilename)
     df.to_csv(outputFilename,index=False)
 
     if createExcelCharts:
-        outputFiles=Excel_util.compute_csv_column_frequencies(GUI_util.window,
+        outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
                                     ConnlTable,
                                     df,
                                     outputDir,
@@ -208,7 +208,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb
         hover_label=['Word']
         inputFilename = outputFilenameCSV1_new
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='',
                                                   chart_type_list=["bar"],
                                                   chart_title=chart_title,
@@ -244,7 +244,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
             chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)'
             hover_label=[]
             inputFilename = outputFilenameCSV3_new
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='',
                                                       chart_type_list=["bar"],
                                                       chart_title=chart_title,

@@ -39,7 +39,7 @@ import file_splitter_ByLength_util
 import file_splitter_merged_util
 import IO_files_util
 import IO_user_interface_util
-import Excel_util
+import charts_Excel_util
 import html_annotator_dictionary_util
 import SVO_enhanced_dependencies_util # Enhanced++ dependencies
 import reminders_util
@@ -534,7 +534,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # output_format=['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document','Date']
                     output_format.append("Date")
                 # if NER_sentence_var == 1:
-                #     df = Excel_util.add_missing_IDs(df)
+                #     df = charts_Excel_util.add_missing_IDs(df)
                 df = pd.DataFrame(run_output, columns=output_format)
                 #count the number of corefed pronouns (COREF annotator)
                 if annotator_chosen == 'coref table':
@@ -1702,7 +1702,7 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesT
 
 def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen, columns_to_be_plotted, chartType, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label):
     if createExcelCharts == True:
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel=outputFileNameType,
                                                   chart_type_list=[chartType],
                                                   chart_title=chartTitle,
@@ -1716,7 +1716,7 @@ def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen,
         # by sentence index
         #
         #     # line plots by sentence index
-        #     outputFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window,
+        #     outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
         #                                                                    inputFilename,
         #                                                                    '',
         #                                                                    outputDir,
@@ -1760,10 +1760,10 @@ def check_pronouns(window, config_filename, inputFilename, outputDir, createExce
             for w in sorted(pronouns_count, key=pronouns_count.get, reverse=True):
                 data_to_be_plotted.append([w, pronouns_count[w]])
             data_to_be_plotted = [data_to_be_plotted]
-            Excel_outputFilename = Excel_util.create_excel_chart(window, data_to_be_plotted, inputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.create_excel_chart(window, data_to_be_plotted, inputFilename, outputDir,
                                                       "Personal_Pronouns_bar", "Frequency Distribution of Personal Pronouns",
                                                       ["bar"], "Personal Pronouns", "Frequency")
-            # Excel_outputFilename = Excel_util.create_excel_chart(window, data_to_be_plotted, svo_file_name, outputDir,
+            # Excel_outputFilename = charts_Excel_util.create_excel_chart(window, data_to_be_plotted, svo_file_name, outputDir,
             #                                           "Personal_Pronouns_bar", "Frequency Distribution of Personal Pronouns",
             #                                           ["bar"], "Personal Pronouns", "Frequencies",
             #                                           [], False, [], 0, "")

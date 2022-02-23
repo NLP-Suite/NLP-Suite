@@ -6,7 +6,7 @@ import pandas as pd
 import csv
 import numpy as np
 import pprint
-from nltk.tokenize import sent_tokenize, word_tokenize
+from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 import IO_files_util
 import IO_csv_util

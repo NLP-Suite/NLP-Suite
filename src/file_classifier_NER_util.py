@@ -19,7 +19,7 @@ import GUI_IO_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
-import Excel_util
+import charts_Excel_util
 
 from stanza_functions import stanzaPipeLine, lemmatize_stanza
 
@@ -223,7 +223,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createExc
         columns_to_be_plotted = [[3, 3]]
         hover_label=''
         inputFilename = outputFilename
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='SSR_NER_home',
                                                   chart_type_list=["pie"],
                                                   chart_title='Frequency Distribution of Find a Home Outcome',
