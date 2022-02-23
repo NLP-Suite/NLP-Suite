@@ -383,7 +383,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
     global filesToOpen
     filesToOpen=[]
 
-    font = 'IMPRISHA.TTF'
+    #font = 'IMPRISHA.TTF'
     font = get_font_path(font)
 
     transformed_image_mask=[]
