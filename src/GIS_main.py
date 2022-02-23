@@ -603,8 +603,6 @@ def activate_Google_API_geocode(*args):
     if geocoder_var.get()=='Google':
         key = GIS_pipeline_util.getGoogleAPIkey('Google-geocode-API_config.csv')
         if key=='' or key==None:
-            mb.showwarning(title='Warning',
-                           message="No Google geocoder API key was entered. The geocoder option has been reset to 'Nominatim.'")
             geocoder_var.set('Nominatim')
             geocoder='Nominatim'
         area.configure(state='disabled')
@@ -695,8 +693,6 @@ def activate_Google_API_Google_Maps(*args):
         key = GIS_pipeline_util.getGoogleAPIkey('Google-Maps-API_config.csv')
         if key == '' or key == None:
             GIS_package_var.set('Google Earth Pro')
-            mb.showwarning(title='Warning',
-                           message="No Google Maps API key was entered. The software package option has been reset to 'Google Earth Pro.'")
 GIS_package_var.trace('w',activate_Google_API_Google_Maps)
 
 def display_reminder(*args):
