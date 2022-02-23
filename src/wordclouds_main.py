@@ -19,6 +19,7 @@ import IO_files_util
 import GUI_IO_util
 import IO_csv_util
 import reminders_util
+import wordclouds_util
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'#for mac users to solve one error: https://stackoverflow.com/questions/53014306/error-15-initializing-libiomp5-dylib-but-found-libiomp5-dylib-already-initial
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -229,12 +230,15 @@ def warnUser(*args):
                        message='You have selected to visualize words only horizontally in the wordcloud image. Some of the lower-frequency words may need to be dropped from the wordclouds image since there may not be enough room for their display.\n\nCombining horizontal and vertical displays maximizes the number of words visualized in the wordcloud image.')
 prefer_horizontal_var.trace('w',warnUser)
 
-font_var.set('Calibri')
+font_list = wordclouds_util.get_font_list()
+
+font_var.set('Default')
 font_lb = tk.Label(window, text='Font')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,font_lb, True)
-font = tk.OptionMenu(window,font_var,'Arial','Calibri','Tahoma', 'Times New Roman','Verdana')
+#font = tk.OptionMenu(window,font_var,'Arial','Calibri','Tahoma', 'Times New Roman','Verdana')
+font = tk.OptionMenu(window,font_var,*font_list)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+160, y_multiplier_integer,font,True)
-font.config(state='disabled')
+#font.config(state='disabled')
 
 lemmatize_checkbox = tk.Checkbutton(window, variable=lemmatize_var,
                                                        onvalue=1, offvalue=0)

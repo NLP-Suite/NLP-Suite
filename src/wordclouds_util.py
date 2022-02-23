@@ -30,6 +30,49 @@ import ntpath #to split the path from filename
 import IO_files_util
 import IO_user_interface_util
 
+#written by Tony Chen Gu Feb 22, 2022
+#this function is to tell whether the machine is Mac or Windows
+def get_os_type():
+    if os.name == 'posix':
+        return 'Mac'
+    else:
+        return 'Windows'
+
+#get the font installation location on the machine base on the OS
+def get_font_installed():
+    os_type = get_os_type()
+    if os_type == 'Mac':
+        #location where Mac OS X stores the fonts
+        font_path = '/Library/Fonts/'
+    else:
+        #location where Windows stores the fonts
+        font_path = 'C:/Windows/Fonts/'
+    return font_path
+
+#get list of font installed on the machine
+def get_font_list():
+    font_list = os.listdir(get_font_installed())
+    #the Default should be the first font in the list
+    #it means not specifying any font for the python wordcloud, the font_path will be set to None
+    font_list = [font[:-4] for font in font_list if font.endswith('.ttf') or font.endswith('.otf') or font.endswith('.TTF') or font.endswith('.OTF')]
+    font_list.insert(0, 'Default')
+    return font_list
+
+#when users select the font, try both ttf and otf
+#if none of them works, use the default font
+#TODO: should give a error message (pop up window) telling them the font file is lost, using default now
+def get_font_path(font):
+    if font == 'Default':
+        return None
+    font_list = os.listdir(get_font_installed())
+    word_len = len(font)
+    for item in font_list:
+        if item[:word_len] == font:
+            return item
+    #return none if none of the file matches the font
+    #should give a error here
+    return None
+
 #Added by Tony
 #change the transparent pixel to white
 #user could use the website such as https://www.remove.bg/ to remove the background
@@ -190,16 +233,16 @@ def processColorList(currenttext, color_to_words, csvField_color_list, myfile):
     return currenttext, color_to_words
 
 # add bg_image_flag parameter to indicate whether to add background image
-def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transformed_image_mask,collocation,prefer_horizontal, bg_image = None,bg_image_flag = False):
+def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transformed_image_mask,collocation,prefer_horizontal, bg_image = None,bg_image_flag = False, font = None):
     # stopwords dealt with in main function
     stopwords=''
     c_wid = 0 if bg_image_flag else 3
     if len(transformed_image_mask) != 0:
         wc = WordCloud(collocations=collocation,width = 800, height = 800, max_words=1000, prefer_horizontal=prefer_horizontal, stopwords = stopwords, mask=transformed_image_mask,
-                       contour_width=c_wid, contour_color='firebrick', background_color ='white').generate(text)
+                       contour_width=c_wid, contour_color='firebrick', background_color ='white', font_path = font).generate(text)
     else:
         wc = WordCloud(collocations=collocation, width=800, height=800, max_words=1000,prefer_horizontal=prefer_horizontal,stopwords = stopwords, contour_width=c_wid,
-                        background_color='white').generate(text)
+                        background_color='white', font_path = font).generate(text)
     default_color = "(169, 169, 169)" # dark grey; black is 0,0,0
     grouped_color_func = GroupedColorFunc(color_to_words, default_color)
     wc.recolor(color_func=grouped_color_func)
@@ -228,7 +271,7 @@ def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transforme
         wc.to_file(output_file_name)
     return output_file_name
 
-def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True):
+def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None):
 
     comment_words = ' '
     # stopwords = set(STOPWORDS)
@@ -255,7 +298,8 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
                         contour_color='firebrick',
                         #min_font_size = 10, collocations=collocation).generate(comment_words)
                         #min_font_size = 10, collocations=collocation).generate(textToProcess)
-                        collocations = collocation).generate(textToProcess)
+                        collocations = collocation,
+                        font_path = font).generate(textToProcess)
     else:
         wordcloud = WordCloud(width = 800, height = 800,
                         background_color ='white', 
@@ -265,7 +309,8 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
                         contour_width=c_wid,
                         #min_font_size = 10, collocations=collocation).generate(comment_words)
                         #min_font_size = 10, collocations = collocation).generate(textToProcess)
-                        collocations = collocation).generate(textToProcess)
+                        collocations = collocation,
+                        font_path = font).generate(textToProcess)
     if doNotListIndividualFiles==True:
         plt.title(inputDir)
         output_file_name=IO_files_util.generate_output_file_name('', inputDir, outputDir, '.png', 'WC', 'img')
@@ -337,6 +382,9 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
     #   they provide code to display wc in a selected image
     global filesToOpen
     filesToOpen=[]
+
+    font = 'IMPRISHA.TTF'
+    font = get_font_path(font)
 
     transformed_image_mask=[]
 
@@ -543,9 +591,9 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
         if doNotListIndividualFiles==False or len(inputFilename)>0:
             if differentPOS_differentColors:
                 tempOutputfile = display_wordCloud_sep_color(doc, outputDir, textToProcess, color_to_words,
-                                                             transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only)
+                                                             transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only, font = font)
             else:
-                tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only)
+                tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only , font = font)
             filesToOpen.append(tempOutputfile)
             # write an output txt file that can be used for internet wordclouds services
             if lemmatize or exclude_stopwords:
@@ -555,9 +603,9 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
 
     if len(inputDir)>0:
         if differentPOS_differentColors:
-            tempOutputfile=display_wordCloud_sep_color(inputDir, outputDir, combinedtext, color_to_words, transformed_image_mask, collocation, prefer_horizontal,bg_image=img, bg_image_flag = use_contour_only)
+            tempOutputfile=display_wordCloud_sep_color(inputDir, outputDir, combinedtext, color_to_words, transformed_image_mask, collocation, prefer_horizontal,bg_image=img, bg_image_flag = use_contour_only, font = font)
         else:
-            tempOutputfile=display_wordCloud(inputDir,inputDir,outputDir,combinedtext, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image=img, bg_image_flag = use_contour_only)
+            tempOutputfile=display_wordCloud(inputDir,inputDir,outputDir,combinedtext, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image=img, bg_image_flag = use_contour_only, font = font)
         filesToOpen.append(tempOutputfile)
         # write an output txt file that can be used for internet wordclouds services
         if lemmatize or exclude_stopwords:
@@ -586,3 +634,13 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
         mb.showwarning(title='Too many wordclouds files to open',
                        message='The Python 3 wordclouds algorithm has produced ' + str(openOutputFiles) + ' image files, too many to open automatically.\n\nPlease, check your output directory for ' + str(openOutputFiles) + ' wordclouds image files produced.')
     # plt.show()
+
+    #=======================================================================================================================
+    #Debug use
+    #=======================================================================================================================
+# def main():
+#     a = get_font_list()
+#     print("123")
+
+# if __name__ == "__main__":
+#     main()
