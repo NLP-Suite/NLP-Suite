@@ -23,6 +23,7 @@ import shutil
 
 import IO_user_interface_util
 
+# returns True when error found
 def update_self(window,GitHub_release_version):
     """
     Update the current script to the latest version.
@@ -46,7 +47,7 @@ def update_self(window,GitHub_release_version):
         subprocess.call(["git", "pull"])
     except:
         if not IO_libraries_util.open_url('Git', url, ask_to_open=True, message_title='Git installation', message=message_Git):
-            return
+            return True
     try:
         if Repository('.').head.shorthand == 'current-stable':
             print("Updating the NLP Suite...")
@@ -56,10 +57,10 @@ def update_self(window,GitHub_release_version):
             print(message_update)
             mb.showwarning(title='Warning',
                            message=message_update)
-            return
+            return True
         else:
             print("\nYou are not working on the 'current-stable' branch of the NLP Suite. You are on the '" + Repository('.').head.shorthand + "' branch. Update aborted to avoid overwriting your branch.")
-            return
+            return True
     except Exception as e:
         print('Git fatal error:' + str(e))
         mb.showwarning(title='Git fatal error',
@@ -76,7 +77,7 @@ def update_self(window,GitHub_release_version):
                 shutil.rmtree(git_folder)
                 if os.path.exists(git_folder):
                     print("The .git folder STILL exists after remove. The delete .git folder did not work.\n\nPlease, delete manually the .git folder and try again.\n\nUpdate aborted.")
-                    return
+                    return True
             except Exception as e:
                 if 'PermissionError' in str(e):
                     message = "The algorithm encountered a permission error in deleting the .git subfolder of your main NLP Suite folder (" + NLPPath + ").\n\nPlease, make sure that you do not have the ,git folder open and try again.\n\nYou may also delete manually the .git folder and try again.\n\nUpdate aborted."
@@ -87,12 +88,15 @@ def update_self(window,GitHub_release_version):
         IO_user_interface_util.timed_alert('', 3000, '.git reinitialization and files update',
                                            'Started running NLP Suite auto-update at', True, 'Please be patient...')
 
-        # reinitializes git & pulls current-stable
-        os.system("git init .. ")
-        # os.system("git remote add -t \* -f origin https://github.com/NLP-Suite/NLP-Suite.git")
-        # os.system("git remote add -f origin https://github.com/NLP-Suite/NLP-Suite.git")
-        os.system("git remote add -m current-stable -f origin https://github.com/NLP-Suite/NLP-Suite.git")
-        os.system("git checkout -f current-stable")
-        os.system("git add -A .")
-        os.system("git stash")
-        os.system("git pull -f origin current-stable")
+        try:
+            # reinitializes git & pulls current-stable
+            os.system("git init .. ")
+            # os.system("git remote add -t \* -f origin https://github.com/NLP-Suite/NLP-Suite.git")
+            # os.system("git remote add -f origin https://github.com/NLP-Suite/NLP-Suite.git")
+            os.system("git remote add -m current-stable -f origin https://github.com/NLP-Suite/NLP-Suite.git")
+            os.system("git checkout -f current-stable")
+            os.system("git add -A .")
+            os.system("git stash")
+            os.system("git pull -f origin current-stable")
+        except:
+            return True

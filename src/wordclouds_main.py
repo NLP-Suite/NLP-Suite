@@ -229,12 +229,26 @@ def warnUser(*args):
                        message='You have selected to visualize words only horizontally in the wordcloud image. Some of the lower-frequency words may need to be dropped from the wordclouds image since there may not be enough room for their display.\n\nCombining horizontal and vertical displays maximizes the number of words visualized in the wordcloud image.')
 prefer_horizontal_var.trace('w',warnUser)
 
-font_var.set('Calibri')
+import wordclouds_util
+font_list = wordclouds_util.get_font_list()
+
+font_var.set('Default')
 font_lb = tk.Label(window, text='Font')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,font_lb, True)
-font = tk.OptionMenu(window,font_var,'Arial','Calibri','Tahoma', 'Times New Roman','Verdana')
+
+font = ttk.Combobox(window, width = 15, textvariable = font_var)
+font['values'] = font_list
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+160, y_multiplier_integer,font,True)
 font.config(state='disabled')
+
+# display_font_var=tk.StringVar()
+# display_font=tk.Entry(window, width=15,textvariable=display_font_var)
+# display_font.config(state='normal')
+# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,display_font)
+#
+# def display_font(*args):
+#     display_font_var.set(font_var.get())
+# font_var.trace('w', display_font)
 
 lemmatize_checkbox = tk.Checkbutton(window, variable=lemmatize_var,
                                                        onvalue=1, offvalue=0)

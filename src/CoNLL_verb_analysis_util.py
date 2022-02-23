@@ -177,9 +177,9 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	df = pd.read_csv(verb_file_name, header=None)
 	# modified by Siyan Pu November 2021
 	# temporary headers added, not sure why the voice_list doesn't have headers
-	df.to_csv(verb_file_name,
-			  header=["A", "FORM", "Lemma", "Postag", "B", "C", "D", "E", "F", "G", "Sentence ID", "Document ID", "H",
-					  "Verb Voice"])
+	# df.to_csv(verb_file_name,
+	# 		  header=["A", "FORM", "Lemma", "Postag", "B", "C", "D", "E", "F", "G", "Sentence ID", "Document ID", "H",
+	# 				  "Verb Voice"])
 
 	if errorFound == True:
 		return

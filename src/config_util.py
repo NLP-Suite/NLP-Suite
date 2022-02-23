@@ -205,7 +205,10 @@ def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_displ
         run_button_state="disabled"
     else:
         run_button_state="normal"
-    window.focus_force()
+    try:
+        window.focus_force()
+    except:
+        pass
     return run_button_state, answer
 
 # every IO widget, files or directories, have a line in the config file

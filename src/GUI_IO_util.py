@@ -265,15 +265,23 @@ def GUI_settings(IO_setup_display_brief,GUI_width,GUI_height_brief,GUI_height_fu
 #   in these cases (e.g., narrative_analysis_main, there are no I/O options to save
 def exit_window(window,config_filename, scriptName, config_input_output_numeric_options,current_config_input_output_alphabetic_options, local_release_version, GitHub_release_version):
     import atexit
-    def exit_handler():
-        from NLP_setup_update_util import update_self
-        if GitHub_release_version != local_release_version:
-            update_self(window, GitHub_release_version)
-        else:
-            print(
-                '\nYour NLP Suite is already up-to-date with the release available on GitHub (' + GitHub_release_version + ').')
+    # def exit_handler():
+    from NLP_setup_update_util import update_self
+    # set equal to test
+    # local_release_version = GitHub_release_version
+    if GitHub_release_version != local_release_version:
+        errorFound = update_self(window, GitHub_release_version)
+    else:
+        # should test for stack and not print if 'NLP_menu_main' or 'NLP_welcome_main' are open
+        # import inspect
+        # inspect.stack() will return the stack information
+        # ScriptName = inspect.stack()[1]
+        # if not "IO_setup_main.py" in ScriptName:
+        #     print("ScriptName", ScriptName)
+        print(
+            '\nYour NLP Suite is up-to-date with the release available on GitHub (' + GitHub_release_version + ').')
 
-    atexit.register(exit_handler)
+    # atexit.register(exit_handler)
 
     if not 'NLP_menu_main' in scriptName and 'NLP_welcome_main' not in scriptName:
         saved_config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file(config_filename, config_input_output_numeric_options)
