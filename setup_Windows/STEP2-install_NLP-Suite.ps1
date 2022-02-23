@@ -1,4 +1,4 @@
-Write-Host "STEP2 will take a while to install. Please, be patient and wait for the message Installation Completed!"
+Write-Host "STEP2 will take a while to install. STEP2 isntalls Python and all Python and Java packages used by the NLP Suite. Please, be patient and wait for the message Installation Completed!"
 Write-Host ""
 Write-Host "STEP2 relies on Git. If you have not done so already, please download Git at this link https://git-scm.com/downloads (select the Windows link; it will automatically detect whether your machine is 32-bit or 64-bit on the top line Click here to download the latest...). Run the downloaded exe file."
 Write-Host ""
@@ -9,7 +9,7 @@ if ( $AREYOUSURE -ne "y") {
 
 cd "${PSScriptRoot}\..\"
 
-conda create -n NLP -y
+conda create -n NLP python=3.7 -y
 conda activate NLP
 
 conda install pytorch torchvision cudatoolkit -c pytorch
@@ -28,7 +28,7 @@ $Shortcut.IconLocation = "${PSScriptRoot}\logo.ico"
 $Shortcut.Save()
 
 git init ..
-git remote add -t \* -f origin https://github.com/NLP-Suite/NLP-Suite.git
+git remote add -m current-stable -f origin https://github.com/NLP-Suite/NLP-Suite.git
 git checkout -f current-stable
 git add -A .
 git stash

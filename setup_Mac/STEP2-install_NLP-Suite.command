@@ -1,4 +1,4 @@
-echo "STEP2 will take a while to install. Please, be patient and wait for the message Installation Completed!"
+echo "STEP2 will take a while to install. STEP2 isntalls Python and all Python and Java packages used by the NLP Suite. Please, be patient and wait for the message Installation Completed!"
 echo
 echo "STEP2 relies on Git. If you have not done so already, please download Git at this link https://git-scm.com/downloads (select the macOS link and then download and install Xcode (if space allows; if you have limited disk space, use the binary installer)."
 echo
@@ -14,7 +14,7 @@ done
 cd "$(dirname "$0")"
 
 git init ..
-git remote add -t \* -f origin https://github.com/NLP-Suite/NLP-Suite.git
+git remote add -m current-stable -f origin https://github.com/NLP-Suite/NLP-Suite.git
 git checkout -f current-stable
 git add -A .
 git stash
@@ -28,7 +28,7 @@ if test -f $HOME/anaconda/bin/activate; then
     source $HOME/anaconda/bin/activate
 fi
 
-conda create -y -n NLP python=3.9
+conda create -y -n NLP python=3.7
 conda activate NLP
 
 conda install pytorch torchvision cudatoolkit -c pytorch
