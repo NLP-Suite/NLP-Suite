@@ -22,26 +22,33 @@ import config_util
 import IO_user_interface_util
 
 # Google_config: 'Google-geocode-API_config.csv' or 'Google-Maps-API_config.csv'
-def getGoogleAPIkey(Google_config):
+def getGoogleAPIkey(Google_config, display_key=False):
     configFilePath = os.path.join(GUI_IO_util.configPath, Google_config)
     configAPIKey = []
     if os.path.isfile(configFilePath):
         f_config = open(configFilePath, 'r', encoding='utf-8', errors='ignore')
         configAPIKey = f_config.readlines()
-    if len(configAPIKey) == 0:
+    if len(configAPIKey) == 0 or display_key:
         if 'Maps' in Google_config:
             msg='Maps'
         else:
             msg='geocoder'
-        mb.showwarning('Warning',
-                       'Google ' + msg + ' requires an API key.\n\nGoogle requires two separate API keys for the Google geocoder and Google Maps.\n\nYou can get the keys free of charge at the Google website console.developers.google.com/apis. Then, paste the API key in the Google API popup widget, save it by pressing OK. YOU WILL ONLY HAVE TO ENTER THE GOOGLE API KEY ONCE AND THE NLP SUITE WILL SAVE THE KEY FOR YOU IN A GOOGLE API CONFIG FILE AND READ IT EVERY TIME IT IS NEEDED.\n\nPLEASE, read the TIPS_NLP_Google API Key.pdf for help.')
-        key=''
+        if len(configAPIKey) == 0:
+            mb.showwarning('Warning',
+                           'Google ' + msg + ' requires an API key.\n\nGoogle requires two separate API keys for the Google geocoder and Google Maps.\n\nYou can get the keys free of charge at the Google website console.developers.google.com/apis. Then, paste the API key in the Google API popup widget, save it by pressing OK. YOU WILL ONLY HAVE TO ENTER THE GOOGLE API KEY ONCE AND THE NLP SUITE WILL SAVE THE KEY FOR YOU IN A GOOGLE API CONFIG FILE AND READ IT EVERY TIME IT IS NEEDED.\n\nPLEASE, read the TIPS_NLP_Google API Key.pdf for help.')
         if 'Maps' in Google_config:
             config_type='Maps'
         else:
             config_type = 'geocoder'
-        key, string_out = GUI_IO_util.enter_value_widget("Enter the Google " + config_type + " API key",
-                                                               'Enter', 1, '', 'API key', '')
+        if display_key and len(configAPIKey) > 0:
+            key=configAPIKey[0]
+        else:
+            key=''
+        if key=='':
+            message = "Enter the Google " + config_type + " API key"
+        else:
+            message = "Enter a new Google " + config_type + " API key if you want to change the key"
+        key, string_out = GUI_IO_util.enter_value_widget(message, 'Enter', 1, key, 'API key', key)
         # save the API key
         if key!='':
             config_util.Google_API_Config_Save(Google_config, key)

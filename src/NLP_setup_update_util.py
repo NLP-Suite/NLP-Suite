@@ -21,6 +21,8 @@ from pygit2 import Repository
 import tkinter.messagebox as mb
 import shutil
 
+import IO_user_interface_util
+
 def update_self(window,GitHub_release_version):
     """
     Update the current script to the latest version.
@@ -51,14 +53,15 @@ def update_self(window,GitHub_release_version):
             os.system("git add -A . ")
             os.system("git stash")
             os.system("git pull -f origin")
+            print(message_update)
             mb.showwarning(title='Warning',
                            message=message_update)
-            print(message_update)
+            return
         else:
             print("\nYou are not working on the 'current-stable' branch of the NLP Suite. You are on the '" + Repository('.').head.shorthand + "' branch. Update aborted to avoid overwriting your branch.")
+            return
     except Exception as e:
         print('Git fatal error:' + str(e))
-        # mb.warning(e);  # or print(e)
         mb.showwarning(title='Git fatal error',
                    message="Git encountered an error in executing the command 'Repository('.').head.shorthand.\n\nError: " + str(e) + "\n\nUpdate aborted.")
 
@@ -72,14 +75,17 @@ def update_self(window,GitHub_release_version):
             try:
                 shutil.rmtree(git_folder)
                 if os.path.exists(git_folder):
-                    print("The folder STILL exists after remove. The delete .git directory did not work.")
+                    print("The .git folder STILL exists after remove. The delete .git folder did not work.\n\nPlease, delete manually the .git folder and try again.\n\nUpdate aborted.")
                     return
             except Exception as e:
                 if 'PermissionError' in str(e):
-                    message = "The algorithm encountered a permission error in deleting the .git subfolder of your main NLP Suite folder (" + NLPPath + ").\n\nPlease, make sure that you do not have the ,git subfolder open and try again.\n\nUpdate aborted."
+                    message = "The algorithm encountered a permission error in deleting the .git subfolder of your main NLP Suite folder (" + NLPPath + ").\n\nPlease, make sure that you do not have the ,git folder open and try again.\n\nYou may also delete manually the .git folder and try again.\n\nUpdate aborted."
                     print(message)
-                    mb.showwarning(title='.git subfolder permission error',
+                    mb.showwarning(title='.git folder permission error',
                                    message=message)
+
+        IO_user_interface_util.timed_alert('', 3000, '.git reinitialization and files update',
+                                           'Started running NLP Suite auto-update at', True, 'Please be patient...')
 
         # reinitializes git & pulls current-stable
         os.system("git init .. ")
