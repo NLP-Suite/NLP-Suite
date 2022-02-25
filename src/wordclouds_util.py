@@ -194,6 +194,7 @@ def SVOWordCloud(svoFile, doc, outputDir, transformed_image_mask, prefer_horizon
             color_list[green_code].append(" ".join(["".join(filter(str.isalnum, s)) for s in row["O"].lower().split(" ")]))
     words_count_dict = Counter(words_list)
     # print (words_count_dict)
+    max_words = 100
     if len(transformed_image_mask) != 0:
         wc = WordCloud(width = 800, height = 800, max_words=max_words, prefer_horizontal=prefer_horizontal, mask=transformed_image_mask,
                        contour_width=3, contour_color='firebrick', background_color ='white').generate_from_frequencies(words_count_dict)
@@ -236,7 +237,7 @@ def processColorList(currenttext, color_to_words, csvField_color_list, myfile):
     return currenttext, color_to_words
 
 # add bg_image_flag parameter to indicate whether to add background image
-def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transformed_image_mask,collocation,prefer_horizontal, bg_image = None,bg_image_flag = False, font = None, max_words = 200):
+def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transformed_image_mask,collocation,prefer_horizontal, bg_image = None,bg_image_flag = False, font = None, max_words = 100):
     # stopwords dealt with in main function
     stopwords=''
     c_wid = 0 if bg_image_flag else 3
@@ -274,7 +275,7 @@ def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transforme
         wc.to_file(output_file_name)
     return output_file_name
 
-def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None, max_words=200):
+def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None, max_words=100):
 
     comment_words = ' '
     # stopwords = set(STOPWORDS)
@@ -293,7 +294,7 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
     if len(transformed_image_mask)!=0:
         wordcloud = WordCloud(width = 800, height = 800,
                         background_color ='white', 
-                        max_words=200,
+                        max_words=100,
                         mask=transformed_image_mask,
                         prefer_horizontal=prefer_horizontal,
                         # stopwords = stopwords,
