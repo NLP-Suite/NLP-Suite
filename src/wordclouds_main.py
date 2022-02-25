@@ -81,14 +81,6 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
         if not IO_libraries_util.open_url(visualization_tools, url, message_title='', message='', config_filename='',
                      reminder_title='', reminder_message=''):
             return
-        # status_code = requests.get(url).status_code
-        # if status_code != 200:
-        #     mb.showwarning(title='Warning',
-        #                    message='Oops! It appears that the website www.wordle.net that traditionally hosted Wordle is no longer available.\n\nWordle was the fiirst wordclouds algorithm developed by Jonathan Feinberg at IBM Research in 2005, 2008 and subsequently followed by several other applications.\n\nPlease, use one of these freeware applications hosted by the NLP Suite, including the Python package WordCloud.')
-        # else:
-        #     reminders_util.checkReminder(config_filename, reminders_util.title_options_wordclouds,
-        #                                  reminders_util.message_wordclouds, True)
-        #     webbrowser.open_new(url)
     elif visualization_tools=="Python WordCloud":
         import wordclouds_util
         if not IO_internet_util.check_internet_availability_warning("wordclouds_main.py"):
@@ -248,7 +240,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 # font.config(state='disabled')
 
 max_words_var=tk.StringVar()
-max_words_var.set(200)
+max_words_var.set(100)
 
 max_words_lb = tk.Label(window, text='Max no. of words')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,max_words_lb,True)
