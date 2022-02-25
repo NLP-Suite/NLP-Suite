@@ -65,9 +65,9 @@ def run(inputFilename, outputDir, openOutputFiles,
         locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName)
 
     # Word is the header from Stanford CoreNLP NER annotator
-    if not 'Location' in headers and not 'Word' in headers:
+    if not 'Location' in headers and not 'Word' in headers and not 'NER' in headers :
         mb.showwarning(title='Warning',
-                       message="The selected input csv file does not contain the word 'Location' in its headers.\n\nThe GIS algorithms expect in input either\n   1. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location') already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nPlease, select the appropriate input csv file and try again.")
+                       message="The selected input csv file does not contain the word 'Location' or 'NER' in its headers.\n\nThe GIS algorithms expect in input either\n   1. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location') already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nPlease, select the appropriate input csv file and try again.")
         return
 
     # if restrictions_checker(inputFilename,inputIsCoNLL,numColumns,withHeader,headers,locationColumnName)==False:
@@ -91,11 +91,15 @@ def run(inputFilename, outputDir, openOutputFiles,
                                  reminders_util.message_geocoder, True)
 
     country_bias = ''
+    area_var = ''
+    restrict = False
     filesToOpen, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,config_filename,
                                        inputFilename, outputDir,
                                        geocoder, 'Google Earth Pro',
                                        datePresent,
                                        country_bias,
+                                       area_var,
+                                       restrict,
                                        locationColumnName,
                                        encodingValue,
                                        group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
@@ -112,6 +116,16 @@ def run(inputFilename, outputDir, openOutputFiles,
     # IO_files_util.open_kmlFile(kmloutputFilename)
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+
+# def run(inputFilename, outputDir, openOutputFiles,
+#             encoding_var,
+#             locationColumnName,
+#             date_var, date_format_var,
+#             group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
+#             icon_var_list, specific_icon_var_list,
+#             name_var_list, scale_var_list, color_var_list, color_style_var_list,
+#             description_csv_field_var, bold_var_list, italic_var_list,
+#             description_var_list, description_csv_field_var_list):
 
 run_script_command=lambda: run(GUI_util.inputFilename.get(),GUI_util.output_dir_path.get(),GUI_util.open_csv_output_checkbox.get(),
                 encoding_var.get(),

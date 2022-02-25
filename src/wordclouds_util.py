@@ -1,3 +1,6 @@
+# written by Cynthia Dong November 2019
+# edited by Tony Chen Gu Spring 2022
+
 import sys
 import GUI_util
 import IO_libraries_util
@@ -192,10 +195,10 @@ def SVOWordCloud(svoFile, doc, outputDir, transformed_image_mask, prefer_horizon
     words_count_dict = Counter(words_list)
     # print (words_count_dict)
     if len(transformed_image_mask) != 0:
-        wc = WordCloud(width = 800, height = 800, max_words=1000, prefer_horizontal=prefer_horizontal, mask=transformed_image_mask,
+        wc = WordCloud(width = 800, height = 800, max_words=max_words, prefer_horizontal=prefer_horizontal, mask=transformed_image_mask,
                        contour_width=3, contour_color='firebrick', background_color ='white').generate_from_frequencies(words_count_dict)
     else:
-        wc = WordCloud(width=800, height=800, max_words=1000, prefer_horizontal=prefer_horizontal, contour_width=3,
+        wc = WordCloud(width=800, height=800, max_words=max_words, prefer_horizontal=prefer_horizontal, contour_width=3,
                         background_color='white').generate_from_frequencies(words_count_dict)
     grouped_color_func = GroupedColorFunc(color_list, default_code)
     wc.recolor(color_func=grouped_color_func)
@@ -233,15 +236,15 @@ def processColorList(currenttext, color_to_words, csvField_color_list, myfile):
     return currenttext, color_to_words
 
 # add bg_image_flag parameter to indicate whether to add background image
-def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transformed_image_mask,collocation,prefer_horizontal, bg_image = None,bg_image_flag = False, font = None):
+def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transformed_image_mask,collocation,prefer_horizontal, bg_image = None,bg_image_flag = False, font = None, max_words = 200):
     # stopwords dealt with in main function
     stopwords=''
     c_wid = 0 if bg_image_flag else 3
     if len(transformed_image_mask) != 0:
-        wc = WordCloud(collocations=collocation,width = 800, height = 800, max_words=1000, prefer_horizontal=prefer_horizontal, stopwords = stopwords, mask=transformed_image_mask,
+        wc = WordCloud(collocations=collocation,width = 800, height = 800, max_words=max_words, prefer_horizontal=prefer_horizontal, stopwords = stopwords, mask=transformed_image_mask,
                        contour_width=c_wid, contour_color='firebrick', background_color ='white', font_path = font).generate(text)
     else:
-        wc = WordCloud(collocations=collocation, width=800, height=800, max_words=1000,prefer_horizontal=prefer_horizontal,stopwords = stopwords, contour_width=c_wid,
+        wc = WordCloud(collocations=collocation, width=800, height=800, max_words=max_words,prefer_horizontal=prefer_horizontal,stopwords = stopwords, contour_width=c_wid,
                         background_color='white', font_path = font).generate(text)
     default_color = "(169, 169, 169)" # dark grey; black is 0,0,0
     grouped_color_func = GroupedColorFunc(color_to_words, default_color)
@@ -271,7 +274,7 @@ def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transforme
         wc.to_file(output_file_name)
     return output_file_name
 
-def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None):
+def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None, max_words=200):
 
     comment_words = ' '
     # stopwords = set(STOPWORDS)
@@ -290,7 +293,7 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
     if len(transformed_image_mask)!=0:
         wordcloud = WordCloud(width = 800, height = 800,
                         background_color ='white', 
-                        max_words=1000,
+                        max_words=200,
                         mask=transformed_image_mask,
                         prefer_horizontal=prefer_horizontal,
                         # stopwords = stopwords,
@@ -303,7 +306,7 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
     else:
         wordcloud = WordCloud(width = 800, height = 800,
                         background_color ='white', 
-                        max_words=1000,
+                        max_words=max_words,
                         prefer_horizontal=prefer_horizontal,
                         # stopwords = stopwords,
                         contour_width=c_wid,
@@ -374,7 +377,7 @@ def processCsvColumns(doc, inputDir, outputDir, openOutputFiles,csvField_color_l
             filesToOpen.append(tempOutputfile)
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
-def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_contour_only, prefer_horizontal, font, lemmatize, exclude_stopwords, exclude_punctuation, lowercase, differentPOS_differentColors, differentColumns_differentColors, csvField_color_list, doNotListIndividualFiles,openOutputFiles, collocation):
+def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_contour_only, prefer_horizontal, font, max_words, lemmatize, exclude_stopwords, exclude_punctuation, lowercase, differentPOS_differentColors, differentColumns_differentColors, csvField_color_list, doNotListIndividualFiles,openOutputFiles, collocation):
     # https://www.geeksforgeeks.org/generating-word-cloud-python/
     # Python program to generate WordCloud
     # for a more sophisticated Python script see
@@ -406,7 +409,12 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
         # In order to create a shape for your wordcloud, first, you need to find a PNG file to become the mask.
         # Not all mask images have the same format resulting in different outcomes, hence making the WordCloud function not working properly.
         # The way the masking functions works is that it requires all white part of the mask should be 255 not 0 (integer type). This value represents the "intensity" of the pixel. Values of 255 are pure white, whereas values of 1 are black. Here, you can use the provided function below to transform your mask if your mask has the same format as above. Notice if you have a mask that the background is not 0, but 1 or 2, adjust the function to match your mask.
-        img = Image.open(selectedImage)
+        try:
+            img = Image.open(selectedImage)
+        except:
+            mb.showwarning(title='Image file error',
+                           message="An error was encountered opening the input image file\n\n" + selectedImage + "\n\nPlease, use another image file and try again.")
+            return
         img = changeTransparentToWhite(img)
         image_mask = np.array(img)
         print("Image_mask (SHOULD ALL BE 0 VALUES)",image_mask)
@@ -591,9 +599,9 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
         if doNotListIndividualFiles==False or len(inputFilename)>0:
             if differentPOS_differentColors:
                 tempOutputfile = display_wordCloud_sep_color(doc, outputDir, textToProcess, color_to_words,
-                                                             transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only, font = font)
+                                                             transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
             else:
-                tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only , font = font)
+                tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only , font = font, max_words = max_words)
             filesToOpen.append(tempOutputfile)
             # write an output txt file that can be used for internet wordclouds services
             if lemmatize or exclude_stopwords:
@@ -603,9 +611,9 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
 
     if len(inputDir)>0:
         if differentPOS_differentColors:
-            tempOutputfile=display_wordCloud_sep_color(inputDir, outputDir, combinedtext, color_to_words, transformed_image_mask, collocation, prefer_horizontal,bg_image=img, bg_image_flag = use_contour_only, font = font)
+            tempOutputfile=display_wordCloud_sep_color(inputDir, outputDir, combinedtext, color_to_words, transformed_image_mask, collocation, prefer_horizontal,bg_image=img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
         else:
-            tempOutputfile=display_wordCloud(inputDir,inputDir,outputDir,combinedtext, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image=img, bg_image_flag = use_contour_only, font = font)
+            tempOutputfile=display_wordCloud(inputDir,inputDir,outputDir,combinedtext, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image=img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
         filesToOpen.append(tempOutputfile)
         # write an output txt file that can be used for internet wordclouds services
         if lemmatize or exclude_stopwords:

@@ -311,11 +311,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                 if lemmatize_verbs:
                     # tempOutputFiles[0] is the filename with lemmatized SVO values
                     # we want to aggregate with WordNet the verbs in column 'V'
-                    outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0],outputDir,'',['V'])
                     # check that SVO output file contains records
                     if IO_csv_util.GetNumberOfRecordInCSVFile(tempOutputFiles[0], encodingValue='utf-8') > 1:
+                        outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['V'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'VERB',
                                                                openOutputFiles, createExcelCharts)
+                        os.remove(outputFilename)
+                        if output != None:
+                            filesToOpen.extend(output)
+                        outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['S', 'O'])
+                        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'NOUN',
+                                                               openOutputFiles, createExcelCharts)
+                        os.remove(outputFilename)
                         if output != None:
                             filesToOpen.extend(output)
                     else:
@@ -449,7 +456,29 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
                 if output != None:
                     filesToOpen.extend(output)
-
+            
+            if lemmatize_verbs:
+                # tempOutputFiles[0] is the filename with lemmatized SVO values
+                # we want to aggregate with WordNet the verbs in column 'V'
+                # check that SVO output file contains records
+                if IO_csv_util.GetNumberOfRecordInCSVFile(tempOutputFiles[0], encodingValue='utf-8') > 1:
+                    outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['V'])
+                    output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
+                                                                             config_filename, 'VERB',
+                                                                             openOutputFiles, createExcelCharts)
+                    os.remove(outputFilename)
+                    if output != None:
+                        filesToOpen.extend(output)
+                    outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['S', 'O'])
+                    output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
+                                                                             config_filename, 'NOUN',
+                                                                             openOutputFiles, createExcelCharts)
+                    os.remove(outputFilename)
+                    if output != None:
+                        filesToOpen.extend(output)
+                else:
+                    reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
+                                                 reminders_util.message_no_SVO_records, True)
             filesToOpen.extend(tempOutputFiles)
             pronoun_files = Stanford_CoreNLP_annotator_util.check_pronouns(window, config_filename, tempOutputFiles[0],
                                                                            outputDir, createExcelCharts, "SVO")
