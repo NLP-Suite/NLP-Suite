@@ -237,7 +237,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         outputFilenameCSV3_new = data_manager_util.export_csv_to_csv_txt(outputDir,operation_results_text_list,'.csv',[0,1])
 
         if outputFilenameCSV3_new != "":
-            filesToOpen.append(outputFilenameCSV3_new)
+            os.remove(outputFilenameCSV3_new)
 
         if createExcelCharts:
             columns_to_be_plotted = [[1, 1]]

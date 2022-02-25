@@ -633,6 +633,9 @@ def pin_description(inputFilename, pnt, data, headers, geo_index, index_list, de
 	if 'Document ID' in headers:
 		nDocs = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename, 'GIS_Google_pin', 'Document ID')
 
+	if description_location_var_name=='NER':
+		description_location_var_name='Location'
+
 	document_num = 0
 	documents = []
 	names = []

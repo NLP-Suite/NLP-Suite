@@ -345,7 +345,76 @@ def display_txt_file_options(*args):
 inputFilename.trace('w',display_txt_file_options)
 input_main_dir_path.trace('w',display_txt_file_options)
 
+def check_csv_file_headers(csv_file):
+    cannotRun=False
+    NER_extractor=False
+    geocode_locations=False
+    location_menu=''
+    inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(
+        csv_file_var.get())
+    if inputIsCoNLL:
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_Google_Earth_CoNLL,
+                                     reminders_util.message_Google_Earth_CoNLL, True)
 
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_input_csv_file,
+                                     reminders_util.message_input_csv_file, True)
+        location_menu_var.set('NER')
+        location_menu='NER'
+        location_field.config(state='disabled')
+    if 'Location' in headers and not 'Latitude' in headers:
+        geocode_locations_var.set(1)
+        geocode_locations_checkbox.configure(state='disabled')
+        location_menu_var.set('Location') #RF
+        location_menu='Location' #RF
+    elif 'Latitude' in headers and 'Longitude' in headers:
+        geocode_locations_var.set(0)
+        geocode_locations_checkbox.configure(state='disabled')
+        geocode_locations=False
+        location_menu_var.set('Location') #RF
+        location_menu='Latitude'
+    # Word is the header from Stanford CoreNLP NER annotator
+    elif not 'Location' in headers and not 'Word' in headers and not 'NER' in headers:
+        mb.showwarning(title='Warning',
+                       message="The selected input csv file does not contain the word 'Location' in its headers.\n\nThe GIS algorithms expect in input either\n   1. txt file(s) from which to extract locations (via Stanford CoreNLP NER annotator) to be geocoded and mapped;\n   2. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location'; the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location')';\n      c. already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nPlease, select the appropriate input csv file and try again. Or simply run the complete pipeline, going from text to maps, with txt file(s) in input.")
+        csv_file_var.set('')
+        NER_extractor_var.set(1)
+        NER_extractor = True
+        NER_extractor_checkbox.config(state='disabled')
+        # cannotRun = True
+        # return cannotRun
+    else:
+        geocode_locations_var.set(1)
+        geocode_locations=True
+        NER_extractor_var.set(1)
+        NER_extractor = True
+
+    if inputIsGeocoded:
+        geocode_locations_var.set(0)
+        geocode_locations_checkbox.configure(state='disabled')
+        geocode_locations=0
+        geocode_locations_checkbox.config(state='disabled')
+    else:
+        if location_menu_var.get()=='':
+            mb.showwarning(title='Warning',
+                           message="You have selected the 'GEOCODE locations' option, but you have not selected the column containing location names.\n\nYou cannot geocode without selecting the column containing locations to be coded.")
+            cannotRun=True
+        elif geocoder_var.get() == '':
+            mb.showwarning(title='Warning', message='No geocoder service option selected.\n\nThe GIS script will exit.')
+            cannotRun=True
+        elif geocode_locations_var.get() == False:
+            if map_locations_var.get() == True:
+                mb.showwarning(title='Warning',
+                               message="You have selected the 'MAP locations' option, but the current csv input file is not geocoded and the 'GEOCODE location' widget is unchecked.\n\nYou cannot map without geocoding.")
+                # geocode_locations_var.set(1)
+                # geocode_locations_checkbox.configure(state='disabled')
+                cannotRun=True
+
+    if map_locations_var.get()==False and inputIsGeocoded==True:
+        mb.showwarning(title='Warning',
+                       message="The 'MAP locations' checkbox is ticked off with a csv file of geocoded locations in input.\n\nThere is nothing to do for the GIS pipeline...")
+        cannotRun = True
+
+    return cannotRun, NER_extractor, geocode_locations, location_menu
 
 def display_csv_file_options():
     cannotRun = False
@@ -360,89 +429,7 @@ def display_csv_file_options():
     if GIS_package2_var.get() == False:
         GIS_package_var.set('Google Earth Pro & Google Maps')
 
-    # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
-    if IO_csv_util.rename_header(csv_file_var.get(), "Word", "Location")==False:
-        return
-    location_menu_var.set('Location')
-    inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(
-        csv_file_var.get())
-    if inputIsGeocoded:
-        geocode_locations_var.set(0)
-        geocode_locations_checkbox.configure(state='disabled')
-        geocode_locations=0
-        geocode_locations_checkbox.config(state='disabled')
-
-    if map_locations_var.get()==False and inputIsGeocoded==True:
-        mb.showwarning(title='Warning',
-                       message="The 'MAP locations' checkbox is ticked off with a csv file of geocoded locations in input.\n\nThere is nothing to do for the GIS pipeline...")
-        cannotRun = True
-        return cannotRun
-
-    location_field.config(state='normal')
-
-    NER_extractor_var.set(0)
-    NER_extractor=False
-    if 'Location' in headers and not 'Latitude' in headers:
-        geocode_locations_var.set(1)
-        geocode_locations_checkbox.configure(state='disabled')
-        location_menu_var.set('Location') #RF
-        location_menu='Location' #RF
-    elif 'Latitude' in headers and 'Longitude' in headers:
-        geocode_locations_var.set(0)
-        geocode_locations_checkbox.configure(state='disabled')
-        geocode_locations=False
-        location_menu_var.set('Location') #RF
-        location_menu='Latitude'
-    elif 'postag' and 'deprel' in str(headers).lower():
-        location_menu_var.set('Location') #RF
-        location_menu='Location' #RF
-        # location_menu='NER' #RF
-        # Word is the header from Stanford CoreNLP NER annotator
-    elif not 'Location' in headers and not 'Word' in headers:
-        mb.showwarning(title='Warning',
-                       message="The selected input csv file does not contain the word 'Location' in its headers.\n\nThe GIS algorithms expect in input either\n   1. txt file(s) from which to extract locations (via Stanford CoreNLP NER annotator) to be geocoded and mapped;\n   2. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location'; the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location')';\n      c. already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nPlease, select the appropriate input csv file and try again. Or simply run the complete pipeline, going from text to maps, with txt file(s) in input.")
-        csv_file_var.set('')
-        NER_extractor_var.set(1)
-        NER_extractor = True
-        NER_extractor_checkbox.config(state='disabled')
-        #
-        # cannotRun = True
-        return cannotRun
-    else:
-        geocode_locations_var.set(1)
-        geocode_locations=True
-        NER_extractor_var.set(1)
-        NER_extractor = True
-
-    if inputIsGeocoded == False: #and fromSelectInputCSV==False
-        if location_menu_var.get()=='':
-            mb.showwarning(title='Warning',
-                           message="You have selected the 'GEOCODE locations' option, but you have not selected the column containing location names.\n\nYou cannot geocode without selecting the column containing locations to be coded.")
-            cannotRun=True
-            return cannotRun
-        elif geocoder_var.get() == '':
-            mb.showwarning(title='Warning', message='No geocoder service option selected.\n\nThe GIS script will exit.')
-            cannotRun=True
-            return cannotRun
-        elif geocode_locations_var.get() == False:
-            if map_locations_var.get() == True:
-                mb.showwarning(title='Warning',
-                               message="You have selected the 'MAP locations' option, but the current csv input file is not geocoded and the 'GEOCODE location' widget is unchecked.\n\nYou cannot map without geocoding.")
-                # geocode_locations_var.set(1)
-                # geocode_locations_checkbox.configure(state='disabled')
-                cannotRun=True
-                return cannotRun
-    else:
-        geocode_locations_var.set(0)
-        geocode_locations_checkbox.config(state='disabled')
-
-    if inputIsCoNLL == True:
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_Google_Earth_CoNLL,
-                                     reminders_util.message_Google_Earth_CoNLL, True)
-
-    reminders_util.checkReminder(config_filename, reminders_util.title_options_input_csv_file,
-                                 reminders_util.message_input_csv_file, True)
-
+    cannotRun, NER_extractor, geocode_locations, location_menu = check_csv_file_headers(csv_file_var.get())
 
     return cannotRun
 
@@ -739,7 +726,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
-readMe_message="This Python 3 script allows users to go from text to map in three steps:\n\n1. EXTRACT locations from a text file using Stanford CoreNLP NER extractor (NER values: CITY, STATE_OR_PROVINCE, COUNTRY);\n2. GEOCODE locations, previously extracted, using Nominatim or Google (an API is needed for Google);\n3. MAP locations, previously geocoded, using a selected GIS package (e.g., Google Earth Pro; Google Maps to produce heat maps; Google Maps requires an API key).\n\nOptions are preset and\or disabled depending upon the input type (directory or file; txt or csv file; csv CoNLL file or list of locations to be geocoded or already geocoded).\n\nAll three steps can be selected and carried out in sequence in a pipeline, going automatically from text to map."
+readMe_message="This Python 3 script allows users to go from text to map in three steps:\n\n1. EXTRACT locations from a text file using Stanford CoreNLP NER extractor (NER values: CITY, STATE_OR_PROVINCE, COUNTRY);\n2. GEOCODE locations, previously extracted, using Nominatim or Google (an API is needed for Google);\n3. MAP locations, previously geocoded, using a selected GIS package (e.g., Google Earth Pro; Google Maps to produce heat maps; Google Maps requires an API key).\n\nOptions are preset and\or disabled depending upon the input type (directory or file; txt or csv file; csv CoNLL file or list of locations to be geocoded or already geocoded).\n\nAll three steps can be selected and carried out in sequence in a pipeline, going automatically from text to map.\n\nIn INPUT, the script can either take:\n   1. A CoNLL table produced by Stanford_CoreNLP.py and use the NER (Named Entity Recognition) values of LOCATION (STATE, PROVINCE, CITY, COUNTRY), values for geocoding;\n   2. a csv file that contains location names to be geocoded (e.g., Chicago);\n   2. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location')."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
