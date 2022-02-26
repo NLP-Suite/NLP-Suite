@@ -22,7 +22,7 @@ import reminders_util
 # https://www.geeksforgeeks.org/create-find-and-replace-features-in-tkinter-text-widget/
 def createCompareWindow(origin_display, coref_display, origin_non_coref, root, result):
     top = Toplevel(root)
-    top.title("Comparing result from {0} (Edit text on the right hand side and Save)".format('Neural Network'))
+    top.title("Comparing result from {0} (Edit text on the right hand side and Save) - in BLUE pronouns not done; in YELLOW & RED pronouns done".format('Neural Network'))
 
     # adding of single line text box
     topFrame = tk.Frame(top)
