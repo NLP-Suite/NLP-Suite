@@ -33,7 +33,7 @@ import wordclouds_util
 import IO_csv_util
 import Stanford_CoreNLP_coreference_util
 import Stanford_CoreNLP_annotator_util
-import semantic_role_labeling_senna
+import SVO_SRL_SENNA_util
 import reminders_util
 import knowledge_graphs_WordNet_util
 
@@ -392,14 +392,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         # TODO must filter SVO results by social actors if the user selected that option
         #   both options run correctly for CoreNLP ++
         svo_SENNA_files = []
-        svo_SENNA_file = semantic_role_labeling_senna.run_senna(inputFilename, inputDir, outputDir, openOutputFiles,
-                                                                createExcelCharts=True)
+        svo_SENNA_file = SVO_SRL_SENNA_util.run_senna(inputFilename, inputDir, outputDir, openOutputFiles,
+                                                                createExcelCharts)
         if len(svo_SENNA_file) > 0:
             svo_SENNA_file = svo_SENNA_file[0]
 
         if save_intermediate_file:
             for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
-                svo_SENNA_files += semantic_role_labeling_senna.run_senna(inputFilename=file, inputDir='',
+                svo_SENNA_files += SVO_SRL_SENNA_util.run_senna(inputFilename=file, inputDir='',
                                                                           outputDir=os.path.join(outputDir,
                                                                                                  outputSVODir),
                                                                           openOutputFiles=openOutputFiles,
@@ -407,28 +407,35 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         else:
             svo_SENNA_files = [svo_SENNA_file]
 
+        filesToOpen.extend(svo_SENNA_files)
+
         # Filtering SVO
-        if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
+
+        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_SENNA_files:
                 output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
                 if output != None:
                     filesToOpen.extend(output)
 
-        filesToOpen.extend(svo_SENNA_files)
-
         for file in svo_SENNA_files:
             svo_result_list.append(file)
 
+        # testing that SENNA output directory is not empty, probably because the data matrix is too large for the computer memory
+
+        # # Getting the list of directories
+        if len(os.listdir(outputSVODir))==0:
+            mb.showwarning(title='Warning',message='It looks like the SENNA algorithm did not produce any output. The output directory\n' + outputSVODir + '\nis empty.\n\nDepending upon the input corpus size, the SENNA output data matrix may simply be too big for the memory available on your machine (all the more true for an 8GB machine).')
+
     # next lines create summaries of comparative results from CoreNLP and SENNA
     if SENNA_SVO_extractor_var and CoreNLP_SVO_extractor_var:
-        if svo_CoreNLP_merged_file and svo_SENNA_file:
-            CoreNLP_PlusPlus_file = svo_CoreNLP_merged_file
-            freq_csv = SVO_util.count_frequency_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
-            combined_csv = SVO_util.combine_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
-            filesToOpen.extend(freq_csv)
-            filesToOpen.append(combined_csv)
-
+        if len(os.listdir(outputSVODir)) > 0:
+            if svo_CoreNLP_merged_file and svo_SENNA_file:
+                CoreNLP_PlusPlus_file = svo_CoreNLP_merged_file
+                freq_csv = SVO_util.count_frequency_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
+                combined_csv = SVO_util.combine_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
+                filesToOpen.extend(freq_csv)
+                filesToOpen.append(combined_csv)
 
 # CoreNLP OpenIE _____________________________________________________
 
@@ -894,23 +901,14 @@ def activateFilters(*args):
     google_earth_checkbox.configure(state='normal')
     if CoreNLP_SVO_extractor_var.get() == True or SENNA_SVO_extractor_var.get() == True or \
             CoreNLP_OpenIE_var.get() == True:
-        # SVO_extractor_checkbox.configure(state='normal')
-        # SENNA_SVO_extractor_checkbox.configure(state='normal')
         subjects_checkbox.configure(state='normal')
         verbs_checkbox.configure(state='normal')
         objects_checkbox.configure(state='normal')
-    if CoreNLP_SVO_extractor_var.get() == True or SENNA_SVO_extractor_var.get() == True or CoreNLP_OpenIE_var.get()==True:
-        # CoreNLP_SVO_extractor_checkbox.configure(state='normal')
-        # SENNA_SVO_extractor_checkbox.configure(state='disabled')
-        subjects_checkbox.configure(state='normal')
-        verbs_checkbox.configure(state='normal')
-        objects_checkbox.configure(state='normal')
-    # if CoreNLP_SVO_extractor_var.get() == False and SENNA_SVO_extractor_var.get() == True:
-    #     # CoreNLP_SVO_extractor_checkbox.configure(state='disabled')
-    #     # SENNA_SVO_extractor_checkbox.configure(state='normal')
-    #     subjects_checkbox.configure(state='normal')
-    #     verbs_checkbox.configure(state='normal')
-    #     objects_checkbox.configure(state='normal')
+        filter_subjects_var.set(1)
+        filter_verbs_var.set(1)
+        filter_objects_var.set(0)
+        activate_filter_dictionaries()
+
     if CoreNLP_SVO_extractor_var.get() == False and SENNA_SVO_extractor_var.get() == False and \
             CoreNLP_OpenIE_var.get()==False:
         CoreNLP_SVO_extractor_checkbox.configure(state='normal')
@@ -918,6 +916,9 @@ def activateFilters(*args):
         filter_subjects_var.set(0)
         filter_verbs_var.set(0)
         filter_objects_var.set(0)
+
+        activate_filter_dictionaries()
+
         subjects_checkbox.configure(state='disabled')
         verbs_checkbox.configure(state='disabled')
         objects_checkbox.configure(state='disabled')
@@ -927,6 +928,7 @@ def activateFilters(*args):
         gephi_checkbox.configure(state='disabled')
         wordcloud_checkbox.configure(state='disabled')
         google_earth_checkbox.configure(state='disabled')
+    # SENNA does not produce geocodable locations
     if CoreNLP_SVO_extractor_var.get()==False and CoreNLP_OpenIE_var.get()==False and SENNA_SVO_extractor_var.get()==True:
         google_earth_checkbox.configure(state='disabled')
         google_earth_var.set(0)
@@ -934,6 +936,23 @@ def activateFilters(*args):
 CoreNLP_SVO_extractor_var.trace('w', activateFilters)
 SENNA_SVO_extractor_var.trace('w', activateFilters)
 CoreNLP_OpenIE_var.trace('w', activateFilters)
+
+def activate_filter_dictionaries(*args):
+    if not filter_subjects_var.get():
+        subjects_dict_var.set('')
+    else:
+        subjects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
+    if not filter_verbs_var.get():
+        verbs_dict_var.set('')
+    else:
+        verbs_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-action-list.csv'))
+    if not filter_objects_var.get():
+        objects_dict_var.set('')
+    else:
+        objects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
+filter_subjects_var.trace('w',activate_filter_dictionaries)
+filter_verbs_var.trace('w',activate_filter_dictionaries)
+filter_objects_var.trace('w',activate_filter_dictionaries)
 
 def getDictFile(checkbox_var, dict_var, checkbox_value, dictFile):
     filePath = ''
