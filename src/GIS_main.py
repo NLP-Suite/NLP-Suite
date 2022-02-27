@@ -361,11 +361,15 @@ def check_csv_file_headers(csv_file):
         location_menu_var.set('NER')
         location_menu='NER'
         location_field.config(state='disabled')
-    if 'Location' in headers and not 'Latitude' in headers:
+    if ('Location' in headers  and not 'Latitude' in headers) or "Word" in headers:
         geocode_locations_var.set(1)
         geocode_locations_checkbox.configure(state='disabled')
-        location_menu_var.set('Location') #RF
-        location_menu='Location' #RF
+        if "Word" in headers:
+            location_menu_var.set('Word') #RF
+            location_menu='Word' #RF
+        else:
+            location_menu_var.set('Location') #RF
+            location_menu='Location' #RF
     elif 'Latitude' in headers and 'Longitude' in headers:
         geocode_locations_var.set(0)
         geocode_locations_checkbox.configure(state='disabled')
