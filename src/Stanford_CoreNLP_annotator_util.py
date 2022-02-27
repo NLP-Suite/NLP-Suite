@@ -898,7 +898,7 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                         NER.append(temp)
                     else:
                         NER.append(temp)
-            result.append(temp)
+                result.append(temp)
 
     #    disconnect the next lines because they are causing more problems than solutions
     # index = 0

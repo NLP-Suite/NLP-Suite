@@ -65,7 +65,7 @@ def run(inputFilename, outputDir, openOutputFiles,
         locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName)
 
     # Word is the header from Stanford CoreNLP NER annotator
-    if not 'Location' in headers and not 'Word' in headers and not 'NER' in headers :
+    if not 'Location' in headers and not 'Word' in headers and not 'NER' in headers:
         mb.showwarning(title='Warning',
                        message="The selected input csv file does not contain the word 'Location' or 'NER' in its headers.\n\nThe GIS algorithms expect in input either\n   1. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location') already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nPlease, select the appropriate input csv file and try again.")
         return
