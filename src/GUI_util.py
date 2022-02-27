@@ -828,9 +828,9 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         #     else:
         #         print('\nYour NLP Suite is already up-to-date with the release available on GitHub (' + GitHub_release_version_var.get() + ').')
         # local_release_version is the release on the local machine
-        local_release_version = local_release_version.strip('\n')
         # local_release_version = "2.5.3" # used to test
         # GitHub_release_version_var is the release available on GitHub
+        local_release_version = local_release_version.strip('\n')
         GitHub_release_version = GitHub_release_version_var.get()
         GitHub_release_version = GitHub_release_version.strip('\n')
         GitHub_release_version = GitHub_release_version.strip('\r')

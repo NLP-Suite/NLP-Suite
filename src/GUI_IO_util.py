@@ -269,7 +269,7 @@ def exit_window(window,config_filename, scriptName, config_input_output_numeric_
         from NLP_setup_update_util import update_self
         try:
             # set equal to test
-            local_release_version = GitHub_release_version
+            # local_release_version = GitHub_release_version
             if GitHub_release_version != local_release_version:
                 errorFound = update_self(window, GitHub_release_version)
             else:
