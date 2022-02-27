@@ -975,17 +975,22 @@ def process_json_coref(config_filename,documentID, document, sentenceID, json, *
                     corenlp_output['sentences'][target_sentence - 1]['tokens'][target_token]['word'] = antecedent[
                         'text']
 
+    # when possessive pronouns are substituted by an antecedent noun, the noun must be followed by 's
+    #   unless the noun already has the gerundive 's
+    #   Mary took her exam; Mary took Mary's exam
     def get_resolved(corenlp_output, sentenceID):
         """ get the "resolved" output as String """
         result = ''
-        possessives = ['hers', 'his', 'their', 'theirs']
+        # possessive pronouns: my, mine, his, her(s), its, our(s), their, yours
+        possessives = ["her", "hers", "his", "its", "our", "ours", "their", "theirs", "yours"]
         for sentence in corenlp_output['sentences']:
             sentenceID += 1
             for token in sentence['tokens']:
                 output_word = token['word']
                 # check lemmas as well as tags for possessive pronouns in case of tagging errors
                 if token['lemma'] in possessives or token['pos'] == 'PRP$':
-                    output_word += "'s"  # add the possessive morpheme
+                    if not "'s" in output_word:
+                        output_word += "'s"  # add the possessive morpheme
                 output_word += token['after']
                 result = result + output_word
 
@@ -1734,9 +1739,13 @@ def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen,
 
 def check_pronouns(window, config_filename, inputFilename, outputDir, createExcelCharts, option):
     df = pd.read_csv(inputFilename)
-    personal_pronouns = ["i", "me", "you", "she", "her", "he", "him", "we", "us", "they", "them"]
+    # pronoun cases:
+    #   nominative: I, you, he/she, it, we, they
+    #   objective: me, you, him, her, it, them
+    #   possessive: my, mine, his/her(s), its, our(s), their, yours
+    personal_pronouns = ["i", "you", "he", "she", "it", "we", "they", "me", "her", "him", "us", "them", "my", "mine", "hers", "his", "its", "our", "ours", "their", "yours"]
     total_count = 0
-    pronouns_count = {"i": 0, "me": 0, "you": 0, "she": 0, "her": 0, "he": 0, "him": 0, "we": 0, "us": 0, "they": 0, "them": 0}
+    pronouns_count = {"i": 0, "you": 0, "he": 0, "she": 0, "it": 0, "we": 0, "they": 0, "me": 0, "her": 0, "him": 0, "us": 0, "them": 0, "my": 0, "mine": 0, "hers": 0, "his": 0, "its": 0, "our": 0, "ours": 0, "their": 0, "yours": 0}
     return_files = []
     for _, row in df.iterrows():
         if option == "SVO":

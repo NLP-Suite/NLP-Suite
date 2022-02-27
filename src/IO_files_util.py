@@ -340,6 +340,8 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen):
         IO_user_interface_util.timed_alert(window, 2000, 'Warning',
                     'Opening ' + str(len(filesToOpen)) + ' output ' + singularPlural + '... Please wait...', False,'',True,'',True)
         for file in filesToOpen:
+            if file == None:
+                continue
             if os.path.isfile(file):
                 if file.endswith('.kml'):
                     open_kmlFile(window, file)
