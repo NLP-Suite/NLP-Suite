@@ -80,7 +80,7 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, root, r
         top.update()
 
     def exit_btn():
-        msgbox_save = tk.messagebox.askyesnocancel("Finish Manual Editing", "Do you want to quit manual editing without saving changes?")
+        msgbox_save = tk.messagebox.askyesnocancel("Finish Manual Editing", "Do you want to QUIT manual editing without saving changes?")
         if msgbox_save:
             top.destroy()
             top.update()
@@ -127,8 +127,12 @@ starters = "(Mr|Mrs|Ms|Dr|He\s|She\s|It\s|They\s|Their\s|Our\s|We\s|But\s|Howeve
 acronyms = "([A-Z][.][A-Z][.](?:[A-Z][.])?)"
 websites = "[.](com|net|org|io|gov|edu)"
 digits = "([0-9])"
-personal_pronouns = [" i ", " me ", " my ", " you ", " she ", " her ", " he ", " him ",
-                     " we ", " us ", " they ", " them ", " he's ", " she's "]
+# personal_pronouns = [" i ", " me ", " my ", " you ", " she ", " her ", " he ", " him ",
+#                      " we ", " us ", " they ", " them ", " he's ", " she's "]
+
+personal_pronouns = ["i", "you", "he", "she", "it", "we", "they", "me", "her", "him", "us", "them", "my", "mine",
+                     "hers", "his", "its", "our", "ours", "their", "yours", "myself", "yourself", "himself", "herself",
+                     "oneself", "itself", "ourselves", "yourselves", "themselves"]
 
 def split_into_sentences(text):
     text = " " + text + "  "
