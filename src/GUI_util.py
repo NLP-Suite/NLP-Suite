@@ -691,8 +691,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     #   in this case config_input_output_numeric_options = [0,0,0,0]
     if config_input_output_numeric_options!= [0,0,0,0] and \
             not 'NLP_menu_main' in scriptName and \
-            not "IO_setup_main" in scriptName and \
-            not "Stanford_CoreNLP_coreference_main" in scriptName:
+            not "IO_setup_main" in scriptName:
         #open output csv files widget defined above since it is used earlier
         open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Automatically open ALL output files", "Do NOT automatically open ALL output files"))
         open_csv_output_label.configure(text="Automatically open ALL output files")

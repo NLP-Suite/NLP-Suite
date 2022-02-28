@@ -44,6 +44,7 @@ websites = "[.](com|net|org|io|gov)"
 
 
 def run(inputFilename, inputDir, outputDir,
+        openOutputFiles, createExcelCharts,
         memory_var,
         document_length_var,
         limit_sentence_length_var,
@@ -129,7 +130,6 @@ def run(inputFilename, inputDir, outputDir,
     if continue_manual_Coref_var:
             error = Stanford_CoreNLP_coreference_util.manualCoref(inputFilename, corefed_txt_file, corefed_txt_file)
 
-    openOutputFiles = True
     if openOutputFiles == True and len(filesToOpen) > 0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
@@ -137,6 +137,8 @@ def run(inputFilename, inputDir, outputDir,
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
+                                 GUI_util.open_csv_output_checkbox.get(),
+                                 GUI_util.create_Excel_chart_output_checkbox.get(),
                                  memory_var.get(),
                                  document_length_var.get(),
                                  limit_sentence_length_var.get(),
@@ -155,8 +157,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=470, # height at brief display
-                             GUI_height_full=550, # height at full display
+                             GUI_height_brief=510, # height at brief display
+                             GUI_height_full=590, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -385,6 +387,8 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
                                   "Please, tick the checkbox if you wish to automatically split files that may be too long to bring in memory for original vs. coreferenced files.\n\nIn INPUT the algorithm expects the coreferenced merged file (selected via the button 'Select INPUT corefed txt file').\n\nIn OUTPUT the algorithm will save the split individual files into a subfolder of the the output directory."+ GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
                                   "Please, tick the checkboxes if you wish to run manually corefence a previously coreferenced file.\n\nIn INPUT the algorithm expects the original txt file(s) (selected in either the 'Default I/O configuration' or the 'Alternative I/O configuration') and the previously coreferenced file (selected via the button 'Select INPUT corefed txt file').\n\nIn OUTPUT the algorithm will save the same newly manually coreferenced file."+ GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
+                                  GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
              GUI_IO_util.get_y_step())
