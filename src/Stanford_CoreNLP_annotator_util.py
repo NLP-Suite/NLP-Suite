@@ -326,7 +326,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
         #   which has a maximum 100,000 characters doc size limit
         if ("SVO" in annotator_params or "OpenIE" in annotator_params) and "coref" in docName.split("_"):
             split_file = file_splitter_merged_util.run(docName, "<@#", "#@>", outputDir)
-            split_file = IO_files_util.getFileList("", split_file[0], fileType=".txt")
+            if len(split_file)>1:
+                split_file = IO_files_util.getFileList("", split_file[0], fileType=".txt")
         else:
             split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName,'',document_length)
         nSplitDocs = len(split_file)
@@ -434,19 +435,16 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     sub_result = routine(config_filename, split_docID, doc, sentenceID, CoreNLP_output, **kwargs)
                 else:
                     sub_result = routine(config_filename,docID, docName, sentenceID, CoreNLP_output, **kwargs)
-                # #count the number of pronouns
-                # if annotator_chosen == 'coref table':
-                #     pronouns_count += count_pronoun(CoreNLP_output)
-                # sentenceID = new_sentenceID
 
                 if output_format == 'text':
                     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
                                                                              'CoreNLP_'+ str(annotator_chosen))
-                    with open(outputFilename, "a+", encoding='utf-8', errors='ignore') as text_file:
+                    with open(outputFilename, "a+", encoding='utf-8', errors='ignore') as output_text_file:
+                        # insert the separators <@# #@> in the the output file so that the file can then be split on the basis of these characters
                         if processing_doc != docTitle:
-                            text_file.write("\n<@#" + docTitle + "#@>\n")
+                            output_text_file.write("\n<@#" + docTitle + "#@>\n")
                             processing_doc = docTitle
-                        text_file.write(sub_result)
+                        output_text_file.write(sub_result)
                     if outputFilename not in filesToOpen:
                         filesToOpen.append(outputFilename)
                 else:
@@ -893,7 +891,7 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                                 # date did not match required format
                                 norm_date = ""
                         except:
-                            print("normalizedNER not found.")
+                            print("normalizedNER not available.")
                             norm_date = ""
                         temp.append(norm_date)
                         NER.append(temp)
@@ -1282,11 +1280,11 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
         for token in sentence['tokens']:
             if token["ner"] == "TIME" or token["ner"] == "DATE":
                 T.append(token["word"])
-                T_S.append(token['normalizedNER'])
-                # try:
-                #     T_S.append(token['normalizedNER'])
-                # except:
-                #     print("normalizedNER not found.")
+                # T_S.append(token['normalizedNER'])
+                try:
+                    T_S.append(token['normalizedNER'])
+                except:
+                    print("normalizedNER not available.")
             if token["ner"] == "PERSON":
                 P.append(token["word"])
 
