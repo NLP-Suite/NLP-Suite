@@ -50,8 +50,8 @@ message_no_SVO_records = 'The SVO algorithms have not extracted any SVOs. If you
 title_options_SVO_someone = ['SVO Someone?']
 message_SVO_someone = 'The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., "A beautiful car was bought"), a subject is automatically added as Someone?.'
 
-title_options_CoreNLP_personal_pronouns = ['CoreNLP Personal pronouns']
-message_CoreNLP_personal_pronouns = 'The CoreNLP algorithms have detected the presence of personal pronouns (e.g., he, she). You should run the coreference annotator to resolve the coreferences.'
+title_options_CoreNLP_pronouns = ['CoreNLP pronouns']
+message_CoreNLP_pronouns = 'The CoreNLP algorithms have detected the presence of pronouns (e.g., he, she). You should run the coreference annotator to resolve the coreferences.'
 
 title_options_GIS_Nominatim = ['GIS Nominatim geocoder']
 message_GIS_Nominatim = "If the Nominatim geocoder service exits with the error 'too many requests', you can break up the csv location file and process each subfile for geocoding as normal csv files."

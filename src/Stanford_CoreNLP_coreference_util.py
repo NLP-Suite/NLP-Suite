@@ -130,8 +130,14 @@ digits = "([0-9])"
 # personal_pronouns = [" i ", " me ", " my ", " you ", " she ", " her ", " he ", " him ",
 #                      " we ", " us ", " they ", " them ", " he's ", " she's "]
 
-personal_pronouns = ["i", "you", "he", "she", "it", "we", "they", "me", "her", "him", "us", "them", "my", "mine",
-                     "hers", "his", "its", "our", "ours", "their", "yours", "myself", "yourself", "himself", "herself",
+# pronoun cases:
+#   nominative: I, you, he/she, it, we, they
+#   objective: me, you, him, her, it, them
+#   possessive: my, mine, his/her(s), its, our(s), their, your, yours
+#   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves
+
+pronouns = ["i", "you", "he", "she", "it", "we", "they", "me", "her", "him", "us", "them", "my", "mine",
+                     "hers", "his", "its", "our", "ours", "their", "your", "yours", "myself", "yourself", "himself", "herself",
                      "oneself", "itself", "ourselves", "yourselves", "themselves"]
 
 def split_into_sentences(text):
@@ -215,7 +221,7 @@ def compare_results(origin_text,corefed_text):
         corefed_display.append(corefed_display_tuple)
 
         non_coref = []
-        for pronoun in personal_pronouns:
+        for pronoun in pronouns:
             match = [(a.start(), a.end()) for a in list(re.finditer(pronoun, origin_sentences[i].lower()))]
             for m in match:
                 # check if this match overlap with any text that is already highlighted

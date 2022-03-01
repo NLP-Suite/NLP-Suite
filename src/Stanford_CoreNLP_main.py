@@ -153,11 +153,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                  True)
 
                     call("python CoNLL_table_analyzer_main.py", shell=True)
-            # call personal pronoun analysis
-            if annotator == "parser (pcfg)" or annotator == "parser (nn)":
-                pronoun_files = Stanford_CoreNLP_annotator_util.check_pronouns(window, config_filename, tempOutputFiles[0], outputDir,
-                                                           createExcelCharts, "CoNLL")
-                filesToOpen.extend(pronoun_files)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
