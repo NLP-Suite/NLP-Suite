@@ -43,7 +43,8 @@ NLP_Suite_data_file_handling_tools_menu = 'Data manager (csv files via Pandas)',
 'File classifier (dumb classifier via embedded date) (file name)', \
 'File-type converter (csv, docx, pdf, rtf --> txt)', \
 'File matcher (file name)',\
-'File manager (List, Rename, Copy, Move, Delete, Count, Split)', 'SQL database (via SQLite)'
+'File manager (List, Rename, Copy, Move, Delete, Count, Split)', 'SQL database (via SQLite)', \
+'Search (ALL options)'
 
 NLP_Suite_pre_processing_tools_menu = 'File checker (file content)', \
 'File checker (file content utf-8 encoding)', 'File checker (file name)', \
@@ -52,7 +53,7 @@ NLP_Suite_pre_processing_tools_menu = 'File checker (file content)', \
 'File cleaner (Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation)', \
 'File cleaner (Pronominal resolution via CoreNLP)', 'File finder (file name)', \
 'File merger (file content)', 'File splitter (file content)', 'File splitter (file name)', \
-'File search (file content for n-grams & co-occurrences; N-grams viewer)', \
+'Search (ALL options)', 'File search (file content for n-grams & co-occurrences; N-grams viewer)', \
 'File search (file content for words/collocations)', 'File-type converter (csv, docx, pdf, rtf --> txt)', \
 'Find non-related documents', 'Language detection', 'Newspaper article/Document titles', \
 'Similarities between documents (via Java Lucene)', 'Similarities between documents (via Python difflib)', \
@@ -79,7 +80,7 @@ NLP_Suite_corpus_document_tools_menu = 'Stanford CoreNLP', 'CoNLL table analyzer
 'CoreNLP annotator - coreference (pronominal)', 'Knowledge graphs: DBpedia & YAGO', 'HTML annotator',\
 'HTML annotator extractor',  'Annotator - hedge/uncertainty', 'Narrative analysis', 'Style analysis', \
 'Sentiment analysis', 'Gender guesser', 'Geographic maps: From texts to maps', 'Geographic maps: Google Earth Pro', \
-'NER (Named Entity Recognition) extractor', 'N-grams (word & character)', 'Nominalization', 'Search CoNLL table', \
+'NER (Named Entity Recognition) extractor', 'N-grams (word & character)', 'Nominalization', 'Search (ALL options)', 'Search CoNLL table', \
 'Search text file(s) for n-grams & co-occurrences (N-grams viewer)', 'Search text file(s) for words/collocations', 'Sentence complexity', \
 'Sentence/text readability (via textstat)', 'Similarities between words (Levenshtein distance)', 'Spelling checkers', \
 'Spelling checker cleaner (Find & Replace string)', 'Semantic analysis (via TensorFlow)', 'SRL Semantic Role Labeling', \
