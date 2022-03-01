@@ -80,7 +80,7 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, root, r
         top.update()
 
     def exit_btn():
-        msgbox_save = tk.messagebox.askyesnocancel("Finish Manual Editing", "Do you want to quit manual editing without saving changes?")
+        msgbox_save = tk.messagebox.askyesnocancel("Finish Manual Editing", "Do you want to QUIT manual editing without saving changes?")
         if msgbox_save:
             top.destroy()
             top.update()
@@ -127,8 +127,18 @@ starters = "(Mr|Mrs|Ms|Dr|He\s|She\s|It\s|They\s|Their\s|Our\s|We\s|But\s|Howeve
 acronyms = "([A-Z][.][A-Z][.](?:[A-Z][.])?)"
 websites = "[.](com|net|org|io|gov|edu)"
 digits = "([0-9])"
-personal_pronouns = [" i ", " me ", " my ", " you ", " she ", " her ", " he ", " him ",
-                     " we ", " us ", " they ", " them ", " he's ", " she's "]
+# personal_pronouns = [" i ", " me ", " my ", " you ", " she ", " her ", " he ", " him ",
+#                      " we ", " us ", " they ", " them ", " he's ", " she's "]
+
+# pronoun cases:
+#   nominative: I, you, he/she, it, we, they
+#   objective: me, you, him, her, it, them
+#   possessive: my, mine, his/her(s), its, our(s), their, your, yours
+#   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves
+
+pronouns = ["i", "you", "he", "she", "it", "we", "they", "me", "her", "him", "us", "them", "my", "mine",
+                     "hers", "his", "its", "our", "ours", "their", "your", "yours", "myself", "yourself", "himself", "herself",
+                     "oneself", "itself", "ourselves", "yourselves", "themselves"]
 
 def split_into_sentences(text):
     text = " " + text + "  "
@@ -211,7 +221,7 @@ def compare_results(origin_text,corefed_text):
         corefed_display.append(corefed_display_tuple)
 
         non_coref = []
-        for pronoun in personal_pronouns:
+        for pronoun in pronouns:
             match = [(a.start(), a.end()) for a in list(re.finditer(pronoun, origin_sentences[i].lower()))]
             for m in match:
                 # check if this match overlap with any text that is already highlighted

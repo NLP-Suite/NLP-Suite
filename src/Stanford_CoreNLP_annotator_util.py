@@ -203,10 +203,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
     #collecting input txt files
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     nDocs = len(inputDocs)
-    # for file in inputDocs:
-    #     listOfFiles = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,'Stanford CoreNLP',file)
-    #     files.extend(listOfFiles)
-    #     nDocs = len(files)
     if nDocs==0:
         return filesToOpen
 
@@ -222,7 +218,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
     param_string_NN = ''
     # param_list = []
     # param_list_NN = []
-    pronouns_count = 0#count the number of prounouns in the input, measure the coreference rate
     corefed_pronouns = 0#pronouns that are corefed
     for annotator in annotator_params:
         if "gender" in annotator or "quote" in annotator or "coref" in annotator or "SVO" in annotator or "OpenIE" in annotator or ("parser" in annotator and "nn" in annotator):
@@ -331,7 +326,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
         #   which has a maximum 100,000 characters doc size limit
         if ("SVO" in annotator_params or "OpenIE" in annotator_params) and "coref" in docName.split("_"):
             split_file = file_splitter_merged_util.run(docName, "<@#", "#@>", outputDir)
-            split_file = IO_files_util.getFileList("", split_file[0], fileType=".txt")
+            if len(split_file)>1:
+                split_file = IO_files_util.getFileList("", split_file[0], fileType=".txt")
         else:
             split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName,'',document_length)
         nSplitDocs = len(split_file)
@@ -439,19 +435,16 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     sub_result = routine(config_filename, split_docID, doc, sentenceID, CoreNLP_output, **kwargs)
                 else:
                     sub_result = routine(config_filename,docID, docName, sentenceID, CoreNLP_output, **kwargs)
-                #count the number of pronouns
-                if annotator_chosen == 'coref table':
-                    pronouns_count += count_pronoun(CoreNLP_output)
-                # sentenceID = new_sentenceID
 
                 if output_format == 'text':
                     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
                                                                              'CoreNLP_'+ str(annotator_chosen))
-                    with open(outputFilename, "a+", encoding='utf-8', errors='ignore') as text_file:
+                    with open(outputFilename, "a+", encoding='utf-8', errors='ignore') as output_text_file:
+                        # insert the separators <@# #@> in the the output file so that the file can then be split on the basis of these characters
                         if processing_doc != docTitle:
-                            text_file.write("\n<@#" + docTitle + "#@>\n")
+                            output_text_file.write("\n<@#" + docTitle + "#@>\n")
                             processing_doc = docTitle
-                        text_file.write(sub_result)
+                        output_text_file.write(sub_result)
                     if outputFilename not in filesToOpen:
                         filesToOpen.append(outputFilename)
                 else:
@@ -518,7 +511,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     #     outputFilename_tag = 'Multi-tags'
                 outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                                  'CoreNLP_NER_'+outputFilename_tag)
-            elif "parser" in annotator_chosen:#CoNLL
+            elif "parser" in annotator_chosen:
                 outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CoreNLP', 'CoNLL')
 
             elif output_format != 'text':
@@ -540,7 +533,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 if annotator_chosen == 'coref table':
                     corefed_pronouns = df.shape[0]
                 df.to_csv(outputFilename, index=False)
-
     # print("Length of Files to Open after generating files: ", len(filesToOpen))
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
@@ -609,6 +601,19 @@ def CoreNLP_annotate(config_filename,inputFilename,
                             if key == "gender_var" and value == True:
                                 filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, kwargs["gender_filename"],
                                                                   filesToOpen, genderCol=["S Gender", "O Gender"], wordCol=["S", "O"])
+                if "coref table" in str(annotator_params) or "parser" in str(annotator_params) or "SVO" in str(annotator_params):
+                    if "coref table" in str(annotator_params):
+                        param = "coref table"
+                    if "parser" in str(annotator_params):
+                        param = "CoNLL"
+                    if "SVO" in str(annotator_params):
+                        param = "SVO"
+                    pronoun_files = check_pronouns(config_filename, filesToVisualize[j],
+                                             outputDir,
+                                             createExcelCharts, param, corefed_pronouns)
+                    if len(pronoun_files)>0:
+                        filesToOpen.extend(pronoun_files)
+
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))
     if len(filesError)>0:
@@ -627,12 +632,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                            'CoreNLP_speed_assessment')
     df = pd.DataFrame(speed_assessment, columns=speed_assessment_format)
     df.to_csv(speed_csv, index=False)
-    # filesToOpen.append(speed_csv) # NO NEED TO OPEN THE SPED ASSESSMENT FILE; NOT A FILE FOR USERS
-    if pronouns_count > 0 and corefed_pronouns > 0:
-        mb.showwarning(title='Coreference results',message="Number of pronouns: " + str(pronouns_count) + "\nNumber of coreferenced pronouns: " + str(corefed_pronouns) + "\nPronouns coreference rate: " + str(round((corefed_pronouns/pronouns_count)*100, 2)) + "%")
-        print("Number of pronouns: ", pronouns_count)
-        print("Number of coreferenced pronouns: ", corefed_pronouns)
-        print("Pronouns coreference rate: ", str(round((corefed_pronouns/pronouns_count)*100, 2)) + "%")
     if len(inputDir) != 0:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Output warning', 'The output filename generated by Stanford CoreNLP is the name of the directory processed in input, rather than any individual file in the directory. The output file(s) include all ' + str(nDocs) + ' files in the input directory processed by CoreNLP.\n\nThe different files are listed in the output csv file under the headers \'Document ID\' and \'Document\'.')
 
@@ -892,7 +891,7 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                                 # date did not match required format
                                 norm_date = ""
                         except:
-                            print("normalizedNER not found.")
+                            print("normalizedNER not available.")
                             norm_date = ""
                         temp.append(norm_date)
                         NER.append(temp)
@@ -982,7 +981,7 @@ def process_json_coref(config_filename,documentID, document, sentenceID, json, *
         """ get the "resolved" output as String """
         result = ''
         # possessive pronouns: my, mine, his, her(s), its, our(s), their, yours
-        possessives = ["her", "hers", "his", "its", "our", "ours", "their", "theirs", "yours"]
+        possessives = ["her", "hers", "his", "its", "our", "ours", "their", "theirs", "your", "yours"]
         for sentence in corenlp_output['sentences']:
             sentenceID += 1
             for token in sentence['tokens']:
@@ -1281,11 +1280,11 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
         for token in sentence['tokens']:
             if token["ner"] == "TIME" or token["ner"] == "DATE":
                 T.append(token["word"])
-                T_S.append(token['normalizedNER'])
-                # try:
-                #     T_S.append(token['normalizedNER'])
-                # except:
-                #     print("normalizedNER not found.")
+                # T_S.append(token['normalizedNER'])
+                try:
+                    T_S.append(token['normalizedNER'])
+                except:
+                    print("normalizedNER not available.")
             if token["ner"] == "PERSON":
                 P.append(token["word"])
 
@@ -1639,6 +1638,7 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
             if extract_date_from_filename_var:
                 temp.append(date_str)
             result.append(temp)
+
             # print("Row in the CSV: ")
             # print(temp)
             # if dateInclude == 1 and dateStr!='DATE ERROR!!!':
@@ -1651,7 +1651,6 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
             #     return result, recordIDateStr)
 
     return result, recordID
-
 
 
 def similar_string_floor_filter(str1, str2):
@@ -1737,46 +1736,63 @@ def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen,
 
     return filesToOpen
 
-def check_pronouns(window, config_filename, inputFilename, outputDir, createExcelCharts, option):
+def check_pronouns(config_filename, inputFilename, outputDir, createExcelCharts, option, corefed_pronouns):
+    return_files = []
     df = pd.read_csv(inputFilename)
+    if df.empty:
+        return return_files
     # pronoun cases:
     #   nominative: I, you, he/she, it, we, they
     #   objective: me, you, him, her, it, them
-    #   possessive: my, mine, his/her(s), its, our(s), their, yours
-    personal_pronouns = ["i", "you", "he", "she", "it", "we", "they", "me", "her", "him", "us", "them", "my", "mine", "hers", "his", "its", "our", "ours", "their", "yours"]
+    #   possessive: my, mine, his/her(s), its, our(s), their, your, yours
+    #   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves
+    pronouns = ["i", "you", "he", "she", "it", "we", "they", "me", "her", "him", "us", "them", "my", "mine", "hers", "his", "its", "our", "ours", "their", "your", "yours", "myself", "yourself", "himself", "herself", "oneself", "itself", "ourselves", "yourselves", "themselves"]
     total_count = 0
-    pronouns_count = {"i": 0, "you": 0, "he": 0, "she": 0, "it": 0, "we": 0, "they": 0, "me": 0, "her": 0, "him": 0, "us": 0, "them": 0, "my": 0, "mine": 0, "hers": 0, "his": 0, "its": 0, "our": 0, "ours": 0, "their": 0, "yours": 0}
-    return_files = []
+    pronouns_count = {"i": 0, "you": 0, "he": 0, "she": 0, "it": 0, "we": 0, "they": 0, "me": 0, "her": 0, "him": 0, "us": 0, "them": 0, "my": 0, "mine": 0, "hers": 0, "his": 0, "its": 0, "our": 0, "ours": 0, "their": 0, "your": 0, "yours": 0, "myself": 0, "yourself": 0, "himself": 0, "herself": 0, "oneself": 0, "itself": 0, "ourselves": 0, "yourselves": 0, "themselves": 0}
     for _, row in df.iterrows():
         if option == "SVO":
-            if (not pd.isna(row["S"])) and (row["S"].lower() in personal_pronouns):
+            if (not pd.isna(row["S"])) and (row["S"].lower() in pronouns):
                 total_count+=1
                 pronouns_count[row["S"].lower()] += 1
-            if (not pd.isna(row["O"])) and (row["O"].lower() in personal_pronouns):
+            if (not pd.isna(row["O"])) and (row["O"].lower() in pronouns):
                 total_count+=1
                 pronouns_count[row["O"].lower()] += 1
         elif option == "CoNLL":
-            if (not pd.isna(row["Form"])) and (row["Form"].lower() in personal_pronouns):
+            if (not pd.isna(row["Form"])) and (row["Form"].lower() in pronouns):
                 total_count+=1
                 pronouns_count[row["Form"].lower()] += 1
+        elif option == "coref table":
+            if (not pd.isna(row["Pronoun"])):
+                total_count += 1
+                try:
+                    # some pronouns extracted by CoreNLP coref as such may not be in the list
+                    #   e.g., "we both" leading to error
+                    pronouns_count[row["Pronoun"].lower()] += 1
+                except:
+                    continue
         else:
             print ("Wrong Option value!")
             return []
     if total_count > 0:
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_personal_pronouns,
-                                     reminders_util.message_CoreNLP_personal_pronouns, True)
+        if option != "coref table":
+            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_pronouns,
+                                         reminders_util.message_CoreNLP_pronouns, True)
+        else:
+            mb.showwarning(title='Coreference results', message="Number of pronouns: " + str(
+                total_count) + "\nNumber of coreferenced pronouns: " + str(
+                corefed_pronouns) + "\nPronouns coreference rate: " + str(
+                round((corefed_pronouns / total_count) * 100, 2)) + "%")
+            print("Number of pronouns: ", total_count)
+            print("Number of coreferenced pronouns: ", corefed_pronouns)
+            print("Pronouns coreference rate: ", str(round((corefed_pronouns / total_count) * 100, 2)) + "%")
         if createExcelCharts:
-            data_to_be_plotted = [["Personal Pronouns Value", "Personal Pronouns Count"], ["Total Count", total_count]]
+            data_to_be_plotted = [["Pronoun", "Pronoun Count"], ["Total Count", total_count]]
             for w in sorted(pronouns_count, key=pronouns_count.get, reverse=True):
                 data_to_be_plotted.append([w, pronouns_count[w]])
             data_to_be_plotted = [data_to_be_plotted]
-            Excel_outputFilename = charts_Excel_util.create_excel_chart(window, data_to_be_plotted, inputFilename, outputDir,
-                                                      "Personal_Pronouns_bar", "Frequency Distribution of Personal Pronouns",
-                                                      ["bar"], "Personal Pronouns", "Frequency")
-            # Excel_outputFilename = charts_Excel_util.create_excel_chart(window, data_to_be_plotted, svo_file_name, outputDir,
-            #                                           "Personal_Pronouns_bar", "Frequency Distribution of Personal Pronouns",
-            #                                           ["bar"], "Personal Pronouns", "Frequencies",
-            #                                           [], False, [], 0, "")
+            Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window, data_to_be_plotted, inputFilename, outputDir,
+                                                      "Pronouns_bar", "Frequency Distribution of Pronouns",
+                                                      ["bar"], "Pronouns", "Frequency")
             return_files.append(Excel_outputFilename)
     return return_files
 
