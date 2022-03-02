@@ -1,4 +1,4 @@
-**NLP Suite**
+NLP Suite
 
 For information on the NLP Suite and how to install it, please visit the Wiki NLP Suite GitHub pages at https://github.com/NLP-Suite/NLP-Suite/wiki
 
