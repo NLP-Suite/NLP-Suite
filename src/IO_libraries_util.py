@@ -302,7 +302,7 @@ def check_CoreNLPVersion(CoreNLPdir,calling_script=''):
             local_version = f[:-4].split("-")[2]
             if github_version != local_version:
                 mb.showwarning("Warning", "Oops! Your local Stanford CoreNLP version is " + local_version +
-                               ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nPlease update.")
+                               ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nYour current version of Stanford CoreNLP will run anyway, but you should update to the latest release.")
                 if calling_script != 'NLP_menu_main':
                     get_external_software_dir('calling_script', 'Stanford CoreNLP', silent=False, only_check_missing=False)
                 return False
