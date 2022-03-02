@@ -991,8 +991,10 @@ def process_json_coref(config_filename,documentID, document, sentenceID, json, *
                     if not "'s" in output_word:
                         output_word += "'s"  # add the possessive morpheme
                 output_word += token['after']
+                if output_word == ". ":
+                    if result[-1] == ".":
+                        continue
                 result = result + output_word
-
             check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         return result

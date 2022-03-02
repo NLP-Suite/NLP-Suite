@@ -52,8 +52,6 @@ GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_nu
 window=GUI_util.window
 config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
 config_filename=GUI_util.config_filename
-inputDir =GUI_util.input_main_dir_path
-outputDir =GUI_util.output_dir_path
 
 GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 
@@ -66,10 +64,10 @@ window.bind("<Escape>", clear)
 
 y_multiplier_integer = 0
 
-open_word_search_GUI_button = tk.Button(window, text='Open GUI for words/collocations searches',width=40,command=lambda: call("python NGrams_CoOccurrences_Viewer_main.py", shell=True))
+open_word_search_GUI_button = tk.Button(window, text='Open GUI for words/collocations searches',width=40,command=lambda: call("python file_search_byWord_main.py", shell=True))
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_word_search_GUI_button)
 
-open_CoNLL_search_GUI_button = tk.Button(window, text='Open GUI for CoNLL table searches',width=40,command=lambda: call("python NGrams_CoOccurrences_Viewer_main.py", shell=True))
+open_CoNLL_search_GUI_button = tk.Button(window, text='Open GUI for CoNLL table searches',width=40,command=lambda: call("python CoNLL_table_analyzer_main.py", shell=True))
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_CoNLL_search_GUI_button)
 
 open_nGram_VIEWER_search_GUI_button = tk.Button(window, text='Open GUI for N-grams/co-occurrences searches',width=40,command=lambda: call("python NGrams_CoOccurrences_Viewer_main.py", shell=True))
