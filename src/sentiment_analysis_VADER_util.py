@@ -184,11 +184,13 @@ def analyzefile(input_file, output_dir, output_file, mode, Document_ID, Document
             #     lemma = lmtzr.lemmatize(w, pos='n')
             lemma = lemmatize_stanza(stanzaPipeLine(w))
 
-        writer.writerow({'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'Sentence ID': i,
-                            'Sentence': s,
-                            Sentiment_measure: sentiment,
-                            Sentiment_label: label,
-                            })
+        writer.writerow({
+                         Sentiment_measure: sentiment,
+                         Sentiment_label: label,
+                         'Sentence ID': i,
+                         'Sentence': s,
+                         'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
+        })
 
         # if mode == 'mean' or mode == 'median':
         #     writer.writerow({'Sentence ID': i,
@@ -245,7 +247,7 @@ def main(input_file, input_dir, output_dir, output_file, mode):
         global Sentiment_measure, Sentiment_label
         Sentiment_measure='Sentiment score'
         Sentiment_label='Sentiment label'
-        fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence', Sentiment_measure, Sentiment_label]
+        fieldnames = [Sentiment_measure, Sentiment_label,'Sentence ID', 'Sentence', 'Document ID', 'Document']
         global writer
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()

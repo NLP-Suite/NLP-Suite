@@ -203,7 +203,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                                        openOutputFiles,
                                                                        createExcelCharts,
                                                                        [[1, 4]],
-                                                                       ['Noun POS Tags'], ['FORM', 'Sentence', 'Document ID', 'Sentence ID','Document'],
+                                                                       ['Noun POS Tags'], ['FORM', 'Sentence ID','Sentence', 'Document ID','Document'],
                                                                        'NVA', 'line')
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
@@ -215,7 +215,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                                        openOutputFiles,
                                                                        createExcelCharts,
                                                                        [[1, 4]],
-                                                                       ['Noun DEPREL Tags'],['FORM', 'Sentence'],['Document ID', 'Sentence ID','Document'],
+                                                                       ['Noun DEPREL Tags'],['FORM', 'Sentence'],['Sentence ID','Document ID', 'Document'],
                                                                        'NVA','line')
 
         if len(outputFiles)>0:
@@ -228,7 +228,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                                        openOutputFiles,
                                                                        createExcelCharts,
                                                                        [[1, 4]],
-                                                                       ['Noun NER Tags'], ['FORM', 'Sentence'], ['Document ID', 'Sentence ID', 'Document'],
+                                                                       ['Noun NER Tags'], ['FORM', 'Sentence'], ['Sentence ID', 'Document ID', 'Document'],
                                                                        'NVA','line')
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)

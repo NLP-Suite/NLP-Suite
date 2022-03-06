@@ -336,8 +336,8 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
 
     df = input_df
     new_df = pd.DataFrame(
-        columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'S(NP)', 'O(NP)', 'PERSON', 'LOCATION',
-                 'TIME', 'NEGATION', 'Sentence'])
+        columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'S(NP)', 'O(NP)', 'PERSON', 'LOCATION',
+                 'TIME', 'NEGATION',  'Sentence ID', 'Sentence', 'Document ID', 'Document'])
     document_id, sent_id = 0, 0
     sentence_start_index = extract_sentence_index(df)
 
@@ -352,7 +352,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
         # Iterating each column (the first 4 rows are irrelevant)
         for col_index in range(4, len(df.columns)):
             # Result dict
-            SVO = {'S': [], 'V': [], 'O': [], 'PERSON': [], 'LOCATION': [], 'TIME': [], 'NEGATION': [], 'S(NP)': [],
+            SVO = {'Subject (S)': [], 'Verb (V)': [], 'Object (O)': [], 'PERSON': [], 'LOCATION': [], 'TIME': [], 'NEGATION': [], 'S(NP)': [],
                    'O(NP)': []}
             noun_postag = {'PRP', 'NN', 'NNS', 'NNP', 'WP'}
 
@@ -380,10 +380,10 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
                 df.iloc[key, col_index] = mapping[key]
 
             # Append new row to new df
-            if SVO['V']:
-                SVO['S'] = ' '.join(SVO['S'])
-                SVO['V'] = ' '.join(SVO['V'])
-                SVO['O'] = ' '.join(SVO['O'])
+            if SVO['Verb (V)']:
+                SVO['Subject (S)'] = ' '.join(SVO['Subject (S)'])
+                SVO['Verb (V)'] = ' '.join(SVO['Verb (V)'])
+                SVO['Object (O)'] = ' '.join(SVO['Object (O)'])
                 SVO['PERSON'] = ', '.join(SVO['PERSON'])
                 SVO['LOCATION'] = ', '.join(SVO['LOCATION'])
                 SVO['TIME'] = ' '.join(SVO['TIME'])
@@ -394,10 +394,10 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
 
                 formatted_input_file_name = IO_csv_util.dressFilenameForCSVHyperlink(df.iloc[sentence_index, 1])
                 new_row = pd.DataFrame(
-                    [[document_id, sent_id, formatted_input_file_name, SVO['S'], SVO['V'], SVO['O'], SVO['S(NP)'],
+                    [[document_id, sent_id, formatted_input_file_name, SVO['Subject (S)'], SVO['Verb (V)'], SVO['Object (O)'], SVO['S(NP)'],
                       SVO['O(NP)'], SVO['PERSON'], SVO['LOCATION'], SVO['TIME'], SVO['NEGATION'], sentence]],
-                    columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'S(NP)', 'O(NP)', 'PERSON',
-                             'LOCATION', 'TIME', 'NEGATION', 'Sentence'])
+                    columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'S(NP)', 'O(NP)', 'PERSON',
+                             'LOCATION', 'TIME', 'NEGATION', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
                 new_df = new_df.append(new_row, ignore_index=True)
         sent_id += 1
 

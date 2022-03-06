@@ -248,15 +248,15 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                     tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
                                                                           [[11, 5], [11, 7], [11, 9]],
                                                                           ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
-                                                                          ['SEARCHED TOKEN (FORM)', 'Sentence'],
-                                                                          ['Document ID', 'Sentence ID', 'Document'],
+                                                                          ['SEARCHED TOKEN (FORM)', 'Sentence ID','Sentence'],
+                                                                          ['Document ID', 'Document'],
                                                                           openOutputFiles, createExcelCharts, 'QC', 'line')
                 else:
                     tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
                                                                           [[11, 5], [11, 7], [11, 9]],
                                                                           ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
-                                                                          ['SEARCHED TOKEN (LEMMA)', 'Sentence'],
-                                                                          ['Document ID', 'Sentence ID', 'Document'],
+                                                                          ['SEARCHED TOKEN (LEMMA)', 'Sentence ID','Sentence'],
+                                                                          ['Document ID', 'Document'],
                                                                           openOutputFiles, createExcelCharts, 'QC', 'line')
                 filesToOpen.extend(tempFiles)
 

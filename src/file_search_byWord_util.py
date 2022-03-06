@@ -61,10 +61,10 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
         if csvExist:
             csvFile.truncate(0)
             writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position",
-                             "Frequency of occurrence", "Document ID", "Document", "Sentence ID", "Sentence"])
+                             "Frequency of occurrence", "Sentence ID", "Sentence", "Document ID", "Document"])
         else:
             writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position",
-                             "Frequency of occurrence", "Document ID", "Document", "Sentence ID", "Sentence"])
+                             "Frequency of occurrence", "Sentence ID", "Sentence", "Document ID", "Document"])
         csvFile.close()
     for file in files:
         isFirstOcc = True

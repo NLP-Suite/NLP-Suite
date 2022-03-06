@@ -212,7 +212,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_v
                                                  openOutputFiles,
                                                  createExcelCharts,
                                                  [[4,5]],
-                                                 ['WordNet Category'],['Form'], ['Document ID','Sentence ID','Document'],
+                                                 ['WordNet Category'],['Form'], ['Sentence ID','Document ID','Document'],
                                                 )
         if len(outputFiles) > 0:
             filesToOpen.extend(outputFiles)
@@ -233,7 +233,7 @@ def extract_sentence_length(inputFilename, inputDir, outputDir):
     long_sentences = 0
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'sentence_length')
-    csv_headers=['Document ID','Sentence ID','Sentence length (in words)','Sentence','Document']
+    csv_headers=['Sentence length (in words)','Sentence ID','Sentence','Document ID','Document']
 
     with open(outputFilename, 'w', newline = "", encoding='utf-8', errors='ignore') as csvOut:
         writer = csv.writer(csvOut)
@@ -543,7 +543,8 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
     filesToOpen.append(outputFilenameTxt)
     filesToOpen.append(outputFilenameCsv)
 
-    fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence',
+    fieldnames = ['Sentence ID', 'Sentence',
+                  'Document ID', 'Document',
                   'Flesch Reading Ease formula',
                   'Flesch-Kincaid Grade Level',
                   'Fog Scale (Gunning FOG Formula)',
@@ -733,7 +734,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                     sortOrder = 25
                 # rowValue=[[documentID,file,sentenceID,sent,str1,str2,str3,str4,str5,str6,str7,str8,str9,sortOrder]]
                 rowValue = [
-                    [documentID, IO_csv_util.dressFilenameForCSVHyperlink(file), sentenceID, sent, str1, str2, str3,
+                    [sentenceID, sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file), str1, str2, str3,
                      str4, str5, str6, str7, str8, str9, sortOrder]]
                 writer = csv.writer(outputCsvFile)
                 writer.writerows(rowValue)

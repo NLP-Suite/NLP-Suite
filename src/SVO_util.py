@@ -134,15 +134,15 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
     :param outputDir: the output directory name; used for generating output file name
     :return: the name of the output csv file
     """
-    columns = ['Tool', 'Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'LOCATION', 'TIME', 'Sentence']
+    columns = ['Tool', 'Subject (S)', 'Verb (V)', 'Object (O)', 'LOCATION', 'TIME', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
     combined_df = pd.DataFrame(columns=columns)
     dfs = [(pd.read_csv(CoreNLP_svo), 'CoreNLP ++'), (pd.read_csv(senna_svo), 'Senna')]
 
     for df, df_name in dfs:
         for i in range(len(df)):
             new_row = [df_name, df.loc[i, 'Document ID'], df.loc[i, 'Sentence ID'], df.loc[i, 'Document'],
-                       df.loc[i, 'S'],
-                       df.loc[i, 'V'], df.loc[i, 'O'], df.loc[i, 'LOCATION'],
+                       df.loc[i, 'Subject (S)'],
+                       df.loc[i, 'Verb (V)'], df.loc[i, 'Object (O)'], df.loc[i, 'LOCATION'],
                        df.loc[i, 'TIME'], df.loc[i, 'Sentence']]
             combined_df = combined_df.append(pd.DataFrame([new_row], columns=columns), ignore_index=True)
 
@@ -201,11 +201,11 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
             # words = stannlp(df.loc[i, 'S'])
             # ((word.pos == "VERB") or (word.pos == "NN") or (word.pos == "NNS")):
             # subject = words.lemma
-            subject = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['S']))
+            subject = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['Subject (S)']))
         if not pd.isna(unfiltered_svo[i]['V']):
-            verb = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['V']))
+            verb = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['Verb (V)']))
         if not pd.isna(unfiltered_svo[i]['O']):
-            object = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['O']))
+            object = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['Object (O)']))
 
         # The s_set, v_set, and o_set are sets. The “in” in set is equivalent to “==” in string.
         if subject and filter_s_fileName and subject not in s_set:
@@ -218,11 +218,11 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
         # the next line does NOT replace the original SVO;
         #   must replace SVO with the values computed above: subject, verb, object
         if lemmatize_s:
-            unfiltered_svo[i]['S'] = subject
+            unfiltered_svo[i]['Subject (S)'] = subject
         if lemmatize_v:
-            unfiltered_svo[i]['V'] = verb
+            unfiltered_svo[i]['Verb (V)'] = verb
         if lemmatize_o:
-            unfiltered_svo[i]['O'] = object
+            unfiltered_svo[i]['Object (O)'] = object
 
         filtered_svo[i] = unfiltered_svo[i]
 
