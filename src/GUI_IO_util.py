@@ -267,12 +267,26 @@ def exit_window(window,config_filename, scriptName, config_input_output_numeric_
     import atexit
     def exit_handler():
         from NLP_setup_update_util import update_self
-        if GitHub_release_version != local_release_version:
-            update_self(window, GitHub_release_version)
-        else:
-            print(
-                '\nYour NLP Suite is already up-to-date with the release available on GitHub (' + GitHub_release_version + ').')
-
+        try:
+            # set equal to test
+            # local_release_version = GitHub_release_version
+            if GitHub_release_version != local_release_version:
+                errorFound = update_self(window, GitHub_release_version)
+            else:
+                # should test for stack and not print if 'NLP_menu_main' or 'NLP_welcome_main' are open
+                # import psutil
+                # proc = psutil.Process()
+                # print(proc.open_files())
+                # import inspect
+                # inspect.stack() will return the stack information
+                # ScriptName = inspect.stack()
+                # if not "IO_setup_main.py" in ScriptName:
+                #     print("ScriptName", ScriptName)
+                print(
+                    '\nYour NLP Suite is up-to-date with the release available on GitHub (' + GitHub_release_version + ').')
+        except Exception as e:
+            print(str(e))
+    # when closing NLP Suite via terminal
     atexit.register(exit_handler)
 
     if not 'NLP_menu_main' in scriptName and 'NLP_welcome_main' not in scriptName:

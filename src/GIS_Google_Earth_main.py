@@ -65,9 +65,9 @@ def run(inputFilename, outputDir, openOutputFiles,
         locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName)
 
     # Word is the header from Stanford CoreNLP NER annotator
-    if not 'Location' in headers and not 'Word' in headers:
+    if not 'Location' in headers and not 'Word' in headers and not 'NER' in headers:
         mb.showwarning(title='Warning',
-                       message="The selected input csv file does not contain the word 'Location' in its headers.\n\nThe GIS algorithms expect in input either\n   1. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location') already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nPlease, select the appropriate input csv file and try again.")
+                       message="The selected input csv file does not contain the word 'Location' or 'NER' in its headers.\n\nThe GIS algorithms expect in input either\n   1. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location') already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nPlease, select the appropriate input csv file and try again.")
         return
 
     # if restrictions_checker(inputFilename,inputIsCoNLL,numColumns,withHeader,headers,locationColumnName)==False:
@@ -91,11 +91,15 @@ def run(inputFilename, outputDir, openOutputFiles,
                                  reminders_util.message_geocoder, True)
 
     country_bias = ''
+    area_var = ''
+    restrict = False
     filesToOpen, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,config_filename,
                                        inputFilename, outputDir,
                                        geocoder, 'Google Earth Pro',
                                        datePresent,
                                        country_bias,
+                                       area_var,
+                                       restrict,
                                        locationColumnName,
                                        encodingValue,
                                        group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
@@ -112,6 +116,16 @@ def run(inputFilename, outputDir, openOutputFiles,
     # IO_files_util.open_kmlFile(kmloutputFilename)
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+
+# def run(inputFilename, outputDir, openOutputFiles,
+#             encoding_var,
+#             locationColumnName,
+#             date_var, date_format_var,
+#             group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
+#             icon_var_list, specific_icon_var_list,
+#             name_var_list, scale_var_list, color_var_list, color_style_var_list,
+#             description_csv_field_var, bold_var_list, italic_var_list,
+#             description_var_list, description_csv_field_var_list):
 
 run_script_command=lambda: run(GUI_util.inputFilename.get(),GUI_util.output_dir_path.get(),GUI_util.open_csv_output_checkbox.get(),
                 encoding_var.get(),
@@ -1014,7 +1028,7 @@ help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get
              GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
-readMe_message = "This Python 3 script relies on the Python Geopy library to geocode locations, i.e., finding a locaton latitude and longitude so that it can be mapped using Google Earth Pro.\n\nYOU MUST DOWNLOAD AND INSTALL THE FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro.\n\nIn INPUT, the script can either take:\n   1. A CoNLL table produced by Stanford_CoreNLP.py and use the NER (Named Entity Recognition) values of LOCATION (STATE, PROVINCE, CITY, COUNTRY), values for geocoding;\n   2. a csv file that contains location names to be geocoded (e.g., Chicago);\n   2. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location').\n\nWhen a CoNLL file is used, if the file contains a date, the script can automatically process a wide variety of date formats: day, month, and year in numeric form and in different order, year in 2 or 4 digit form, and month in numeric or alphabetic form and, in the latter case, in 3 or full characters (e.g., Jan or January).\n\nThe current release of the script relies on Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe script prepares the kml file to be displayed in Google Earth Pro.\n\nThe script can also be used to compute geographic distances between locations, in both kilometers and miles, by either geodesic distance or by great circle distance. Distances will be visualized in Excel charts."
+readMe_message = "This Python 3 script relies on the Python Geopy library to geocode locations, i.e., finding a locaton latitude and longitude so that it can be mapped using Google Earth Pro.\n\nYOU MUST DOWNLOAD AND INSTALL THE FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro.\n\nIn INPUT, the script can either take:\n   1. A CoNLL table produced by Stanford CoreNLP parser and use the NER (Named Entity Recognition) values of LOCATION, CITY, STATE-OR-PROVINCE, COUNTRY, values for geocoding;\n   2. a csv file, however created (e.g., CoreNLP NER annotator), containing a list of locations to be geocoded (e.g., Chicago);\n   2. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location').\n\nWhen a CoNLL file is used, if the file contains a date, the script can automatically process a wide variety of date formats: day, month, and year in numeric form and in different order, year in 2 or 4 digit form, and month in numeric or alphabetic form and, in the latter case, in 3 or full characters (e.g., Jan or January).\n\nThe current release of the script relies on Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe script prepares the kml file to be displayed in Google Earth Pro.\n\nThe script can also be used to compute geographic distances between locations, in both kilometers and miles, by either geodesic distance or by great circle distance. Distances will be visualized in Excel charts."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)

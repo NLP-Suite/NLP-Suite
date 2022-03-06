@@ -419,6 +419,10 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
 # config_filename can be either the Default value or the GUI_specific value depending on IO_setup_menu_var.get()
 def activateRunButton(config_filename,IO_setup_display_brief,scriptName,silent = False):
     global run_button_state, answer
+    if config_input_output_numeric_options == [0,0,0,0]:
+        run_button_state = 'disabled'
+        run_button.configure(state=run_button_state)
+        return
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
     # if answer:
     # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
@@ -648,7 +652,7 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     #	5 for txt, html (used in annotator)
     #	6 for txt, csv (used in SVO)
 
-    if not 'NLP_menu_main' in scriptName:
+    if not 'NLP_menu_main' in scriptName and config_input_output_numeric_options!=[0,0,0,0]:
         if not IO_setup_display_brief:
             IO_config_setup_full(window, y_multiplier_integer)
         else:
@@ -691,8 +695,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     #   in this case config_input_output_numeric_options = [0,0,0,0]
     if config_input_output_numeric_options!= [0,0,0,0] and \
             not 'NLP_menu_main' in scriptName and \
-            not "IO_setup_main" in scriptName and \
-            not "Stanford_CoreNLP_coreference_main" in scriptName:
+            not "IO_setup_main" in scriptName:
         #open output csv files widget defined above since it is used earlier
         open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Automatically open ALL output files", "Do NOT automatically open ALL output files"))
         open_csv_output_label.configure(text="Automatically open ALL output files")
@@ -828,9 +831,9 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         #     else:
         #         print('\nYour NLP Suite is already up-to-date with the release available on GitHub (' + GitHub_release_version_var.get() + ').')
         # local_release_version is the release on the local machine
-        local_release_version = local_release_version.strip('\n')
         # local_release_version = "2.5.3" # used to test
         # GitHub_release_version_var is the release available on GitHub
+        local_release_version = local_release_version.strip('\n')
         GitHub_release_version = GitHub_release_version_var.get()
         GitHub_release_version = GitHub_release_version.strip('\n')
         GitHub_release_version = GitHub_release_version.strip('\r')

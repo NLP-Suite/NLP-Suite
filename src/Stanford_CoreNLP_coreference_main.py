@@ -22,7 +22,6 @@ from subprocess import call
 
 import GUI_IO_util
 import IO_files_util
-import IO_user_interface_util
 import GUI_util
 import Stanford_CoreNLP_coreference_util
 import file_splitter_merged_util
@@ -45,6 +44,7 @@ websites = "[.](com|net|org|io|gov)"
 
 
 def run(inputFilename, inputDir, outputDir,
+        openOutputFiles, createExcelCharts,
         memory_var,
         document_length_var,
         limit_sentence_length_var,
@@ -89,8 +89,9 @@ def run(inputFilename, inputDir, outputDir,
 
         # inputFilename and inputDir are the original txt files to be coreferenced
         # 2 items are returned: filename string and true/False for error
-        file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir, outputCorefedDir,
-                                       True, True,
+        file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
+                                       outputCorefedDir,
+                                       openOutputFiles, createExcelCharts,
                                        memory_var,
                                        Manual_Coref_var)
         if error_indicator != 0:
@@ -105,6 +106,9 @@ def run(inputFilename, inputDir, outputDir,
             inputDir = outputCorefedDir
 
         if len(file_open) > 0:
+            mb.showwarning("Output directory",
+                           "All output files have been saved to a subdirectory of the selected output directory at\n\n" + str(
+                               outputCorefedDir))
             filesToOpen.extend(file_open)
 
     # split merged coreferenced file  --------------------------------------------------------------------------------------------------------
@@ -126,10 +130,15 @@ def run(inputFilename, inputDir, outputDir,
     if continue_manual_Coref_var:
             error = Stanford_CoreNLP_coreference_util.manualCoref(inputFilename, corefed_txt_file, corefed_txt_file)
 
+    if openOutputFiles == True and len(filesToOpen) > 0:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
+                                 GUI_util.open_csv_output_checkbox.get(),
+                                 GUI_util.create_Excel_chart_output_checkbox.get(),
                                  memory_var.get(),
                                  document_length_var.get(),
                                  limit_sentence_length_var.get(),
@@ -148,8 +157,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=470, # height at brief display
-                             GUI_height_full=550, # height at full display
+                             GUI_height_brief=510, # height at brief display
+                             GUI_height_full=590, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -340,20 +349,12 @@ activateCoRefOptions()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
+TIPS_lookup = {'Stanford CoreNLP coreference resolution': "TIPS_NLP_Stanford CoreNLP coreference resolution.pdf",
                'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'Stanford CoreNLP memory issues':'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
-               'Stanford CoreNLP date extractor': 'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
-               'Stanford CoreNLP OpenIE': 'TIPS_NLP_Stanford CoreNLP OpenIE.pdf',
-               'Stanford CoreNLP parser': 'TIPS_NLP_Stanford CoreNLP parser.pdf',
-               'Stanford CoreNLP enhanced dependencies parser (SVO)':'TIPS_NLP_Stanford CoreNLP enhanced dependencies parser (SVO).pdf',
-               'CoNLL table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
-               'Stanford CoreNLP coreference resolution': "TIPS_NLP_Stanford CoreNLP coreference resolution.pdf",
-               "Google Earth Pro": "TIPS_NLP_Google Earth Pro.pdf", "Geocoding": "TIPS_NLP_Geocoding.pdf",
-               "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf"}
-               # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
-TIPS_options = 'SVO extraction and visualization', 'utf-8 encoding', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'CoNLL table', 'Stanford CoreNLP coreference resolution', 'Google Earth Pro', 'Geocoding', 'Gephi network graphs' #, 'Java download install run'
+               'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf'}
 
+TIPS_options = 'Stanford CoreNLP coreference resolution', 'utf-8 encoding', 'Stanford CoreNLP memory issues', 'csv files - Problems & solutions'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
@@ -370,26 +371,30 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
                                       GUI_IO_util.msg_IO_setup)
 
+#    top.title("Comparing result from {0} (Edit text on the right hand side and Save) - in BLUE pronouns not done; in YELLOW & RED pronouns done".format('Neural Network'))
+
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+1), "Help",
                                   "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+ GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
                                   "The Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+ GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
-                                  "Please, tick the checkbox if you wish to run the Stanford CoreNLP neural network annotator for pronominal coreference resolution.\n\nPlease, BE PATIENT. Depending upon number and size of processed files, the algorithm can be very slow.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox to run the Stanford CoreNLP coreference resolution annotator using the Neural Network approach.\n\nOnly pronominal, and not nominal, coreference resolution is implemented for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nPlease, BE PATIENT. Depending upon size and number of documents to be coreferenced the algorithm may take a long a time.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
-                                  "Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nThe option is not available with a directory in input.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nThe option is not available with a directory in input.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\nIn output, the manual coreference algorithm will display the original text on the left, highlighting in BLUE the pronouns not coreferenced by CoreNLP, and in YELLOW the coreferenced pronouns, and the coreferenced text on the right, highlighting in the RED the coreferenced pronoun." + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
                                   "Please, use the 'Select INPUT corefed TXT file' button to select a previosuly coreferenced file for further manual coreference.\n\nYou can use the little square widget to the right of the button to open the selected input coref txt file for inspection."+ GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
                                   "Please, tick the checkbox if you wish to automatically split files that may be too long to bring in memory for original vs. coreferenced files.\n\nIn INPUT the algorithm expects the coreferenced merged file (selected via the button 'Select INPUT corefed txt file').\n\nIn OUTPUT the algorithm will save the split individual files into a subfolder of the the output directory."+ GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
                                   "Please, tick the checkboxes if you wish to run manually corefence a previously coreferenced file.\n\nIn INPUT the algorithm expects the original txt file(s) (selected in either the 'Default I/O configuration' or the 'Alternative I/O configuration') and the previously coreferenced file (selected via the button 'Select INPUT corefed txt file').\n\nIn OUTPUT the algorithm will save the same newly manually coreferenced file."+ GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
+                                  GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
              GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
-readMe_message = "This set of Python 3 scripts extract automatically most of the elements of a story grammar and visualize the results in network graphs and GIS maps. A story grammar – basically, the 5Ws + H of modern journalism: Who, What, When, Where, Why, and How – provides the basic building blocks of narrative.\n\nThe set of scripts assembled here for this purpose ranges from testing for utf-8 compliance of the input text, to resolution for pronominal coreference, extraction of normalized NER dates (WHEN), visualized in various Excel charts, extraction, geocoding, and mapping in Google Earth Pro of NER locations.\n\nAt the heart of the SVO approach are two scripts, one based on the Stanford CoreNLP enhanced dependencies parser and another script based on SENNA. For passive sentences, the pipeline swaps S and O to transform the triplet into active voice. Thus, the WHO, WHAT (WHOM) are extracted from a text. Each component of the SVO triplet can be filtered via specific dictionaries (e.g., filtering for social actors and social actions, only). The set of SVO triplets are then visualized in dynamic network graphs (via Gephi).\n\nThe WHY and HOW of narrative are still beyond the reach of the current set of SVO scripts.\n\nIn INPUT the scripts expect a txt file to run utf-8 check, coreference resolution, date extraction, and CoreNLP. You can also enter a csv file, the output of a previous run with CoreNLP/SENNA (_svo.csv/_SVO_Result) marked file) if all you want to do is to visualize results.\n\nIn OUTPUT, the scripts will produce several csv files, a png image file, and a KML file depending upon the options selected."
+readMe_message = "This set of Python 3 scripts implement a Stanford CoreNLP neural network approach to coreference resolution for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nThe NLP Suite implements only PRONOMINAL coreference but NOT NOMINAL.\n\nIn INPUT the scripts expect either a single txt file or a set of txt files in a directory.\n\nIn OUTPUT, the scripts will produce a coreferenced txt file. If manual edit is selected, the script will also display a split-screen file for manual editing. On the left-hand side, pronouns cross-referenced by CoreNLP are tagged in YELLOW; pronouns NOT cross-referenced by CoreNLP are tagged in BLUE. On the right-hand side, pronouns cross-referenced by CoreNLP are tagged in RED, with the pronouns replaced by the referenced nouns.\n\nThe user can edit any unresolved or wrongly resolved pronominal cases directly on the right panel, as if it were any text editor and then save the changes."
 readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
                                                    GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,'Stanford_CoreNLP_coreference_main')

@@ -95,11 +95,12 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
             document_index += 1
 
     senna_df = pd.DataFrame(formatted_table, columns=['Col %s' % i for i in range(len(formatted_table[0]))])
-    print(senna_df)
+    print('SENNA data matrix\n\n', senna_df)
     # Result of SENNA
 
-    convert_to_svo(senna_df, SENNA_output_file_name, createExcelCharts, filter_svo)
-    filesToOpen.append(SENNA_output_file_name)
+    SENNA_output_file_name = convert_to_svo(senna_df, SENNA_output_file_name)
+    if SENNA_output_file_name!='' and SENNA_output_file_name!=None:
+        filesToOpen.append(SENNA_output_file_name)
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                        'Finished running SENNA to extract SVOs at', True)
     return filesToOpen
@@ -321,7 +322,7 @@ def extract_svo(clause, SVO, mapping, df, noun_postag):
                 SVO['V'].append(word)
 
 
-def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCharts: bool, filter_svo: tuple) -> str:
+def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
     """
     Converts a csv file with SRL results to SVO results
     :param input_df: a df file with SRL results
@@ -330,6 +331,8 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
     :param filter_svo: a tuple with three strings, each representing a dictionary file for filtering s, v or o
     :return: the path of the output file
     """
+
+    print("\nConverting SENNA data matrix to NLP Suite SVO output format. Please, be patient...")
 
     df = input_df
     new_df = pd.DataFrame(
@@ -398,9 +401,12 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
                 new_df = new_df.append(new_row, ignore_index=True)
         sent_id += 1
 
-    if createExcelCharts:
+    # save SVO data frame as csv file
+    try:
         new_df.to_csv(output_file_name, index=False)
-
+    except:
+        print("The SENNA SVO script encountered an error in saving the csv file output. Depending upon the size of your corpus, you may not have enough memory on your machine.")
+        output_file_name =''
     return output_file_name
 
 
@@ -408,5 +414,5 @@ if __name__ == '__main__':
     dir_name = ''
     file_name = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/test.txt'
     output_dir = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/'
-    run_senna(file_name, dir_name, output_dir, openOutputFiles=False, createExcelCharts=False)
+    run_senna(file_name, dir_name, output_dir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts)
     # get_verb_root('taking')

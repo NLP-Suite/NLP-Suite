@@ -24,12 +24,24 @@ import IO_internet_util
 # pillow is the Python 3 version of PIL which was an older Python 2 version
 # PIL being the commmon module for both packages, you need to check for PIL and trap PIL to tell the user to install pillow
 
-def install_all_packages(window, calling_script, modules_to_try):
-    if platform == 'darwin':
-        error_msg = "\n\nIf after installing the package in the right environment you still get an error, make sure your Mac is running zsh rather than bash. The NLP Suite expects zsh.\n\nPlease, read the TIPS_NLP_Anaconda NLP environment pip.pdf"
-    else:
-        error_msg = "\n\nPlease, read the TIPS_NLP_Anaconda NLP environment pip.pdf"
+def which_shell():
+    """
+    Checks for the default shell, and returns the shell variant for Windows, macOS, and major Linux operating systems.
+    :rtype: str - The type of shell. (e.g., "bash", "zsh", etc.)
+    """
+    shell = os.path.split(os.environ['SHELL'])[-1]
+    if shell != 'zsh':
+        error_msg = 'You are running shell ' + str(
+            shell) + '\n\nSince the release of macOS 10.15 (Catalina) on October 7, 2019, the default macOS shell has been switched from bash to zsh. The NLP Suite has been optimized for zsh not bash. The algorithm will exit.\n\nPlease, read carefully the TIPS_NLP_Anaconda NLP environment pip.pdf on how to change shell to zsh.'
+        answer = tk.messagebox.askyesno("MacOS shell error",
+                                        error_msg + "\n\nDo you want to open the TIPS file now?")
+        if answer:
+            TIPS_util.open_TIPS('TIPS_NLP_Anaconda NLP environment pip.pdf')
+    return shell
 
+# return false if missing modules
+def install_all_packages(window, calling_script, modules_to_try):
+    errorFound = False
     missingModules = []
     for module in modules_to_try:
         # import module
@@ -52,6 +64,12 @@ def install_all_packages(window, calling_script, modules_to_try):
                 # rename the module to the package to be installed
                 missingModules = ['pillow' if x == 'PIL' else x for x in missingModules]
     if missingModules:
+        errorFound = True
+        error_msg = "\n\nPlease, read the TIPS_NLP_Anaconda NLP environment pip.pdf"
+        if platform == 'darwin':
+            shell = which_shell()
+            if shell != 'zsh':
+                return False
         # root = tk.Tk()
         # root.withdraw()
         window.withdraw()
@@ -59,10 +77,18 @@ def install_all_packages(window, calling_script, modules_to_try):
             msg = missingModules[0]
         elif len(missingModules) > 1:
             msg = 'each of the listed modules'
-        mb.showwarning(title='Module import error',
-                       message="FATAL ERROR. Please, read carefully. The NLP Suite will exit.\n\nThe script '" + calling_script + "' needs to import the following modules:\n\n" + ', '.join(
-                           missingModules) + "\n\nPlease, in command prompt/terminal, type\nNLP\nif you have run STEP3-NLP environment) otherwise\n conda activate NLP\nto activate the right NLP environment (NLP case sensitive) where to install the package, then use the command\npip install " + str(
-                           msg) + "\nand try again." + error_msg)
+
+        message = "FATAL ERROR. Please, read carefully. The NLP Suite will exit.\n\nThe script '" + \
+                  calling_script + "' needs to import the following modules:\n\n" + ', '.join(missingModules) + \
+                  "\n\nPlease, in command prompt/terminal, type\nNLP\nif you have run STEP3-NLP environment) otherwise" + \
+                  "\nconda activate NLP\nto activate the right NLP environment (NLP case sensitive) where to install the package, then use the command" + \
+                  "\npip install " + str(msg) + "\nand try again."
+
+        answer = tk.messagebox.askyesno("Module import error",
+                                        message + "\n\nDo you want to open the TIPS file now?")
+        if answer:
+            TIPS_util.open_TIPS('TIPS_NLP_Anaconda NLP environment pip.pdf')
+
         if 'stanfordnlp' or 'stanza' in missingModules:
             # sys.version_info is the Python version
             if (sys.version_info[0] < 3) or (sys.version_info[0] == 3 and sys.version_info[1] < 6):
@@ -76,7 +102,6 @@ def install_all_packages(window, calling_script, modules_to_try):
                                    message="The module 'stanza' requires a Python version 3.6 or higher. You are currently running version " +
                                            sys.version_info[0] + "." + sys.version_info[
                                                0] + ".\n\nTo install Python with Anaconda, in command prompt/terminal type 'Conda install Python=3.7'.")
-                return False
             # https://stackoverflow.com/questions/56239310/could-not-find-a-version-that-satisfies-the-requirement-torch-1-0-0
             # for more recent torch and torchvision, see https://pytorch.org/get-started/previous-versions/
             # for most recent torch and torchvision, see https://pytorch.org/get-started/locally/
@@ -87,10 +112,8 @@ def install_all_packages(window, calling_script, modules_to_try):
             if 'stanza' in missingModules:
                 mb.showwarning(title='Warning',
                                message="To install 'stanza' you will need to FIRST install 'torch' and 'torchvision' by typing:\n\nconda install pytorch torchvision cudatoolkit -c pytorch\n\nMAKE SURE TO INCLUDE THE HTTPS COMPONENT AFTER -f OR YOU WILL GET THE ERROR: -f option requires 1 argument.\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanza' and 'stanza.download('en')'. At your command prompt/terminal or terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanza\n\nWhen done type:\n\nstanza.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!\n\nYOU MUST ALSO BE IN THE NLP ENVIRONMENT!")
-        return False
         # install(e.name)
-    return True
-
+    return not errorFound
 
 # modules_to_try has the following format: ['re','glob',...]
 # https://stackoverflow.com/questions/48097428/how-to-check-and-install-missing-modules-in-python-at-time-of-execution
@@ -279,7 +302,7 @@ def check_CoreNLPVersion(CoreNLPdir,calling_script=''):
             local_version = f[:-4].split("-")[2]
             if github_version != local_version:
                 mb.showwarning("Warning", "Oops! Your local Stanford CoreNLP version is " + local_version +
-                               ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nPlease update.")
+                               ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nYour current version of Stanford CoreNLP will run anyway, but you should update to the latest release.")
                 if calling_script != 'NLP_menu_main':
                     get_external_software_dir('calling_script', 'Stanford CoreNLP', silent=False, only_check_missing=False)
                 return False

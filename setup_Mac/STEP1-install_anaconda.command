@@ -9,6 +9,7 @@ while true; do
         [Nn]* ) echo "Setup Aborted." && exit;;
         * ) echo "Please answer yes or no.";;
     esac
+done
 donecd "$(dirname "$0")"
 xcode-select --install
 if test -f $HOME/anaconda3/bin/activate; then

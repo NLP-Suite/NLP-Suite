@@ -1,6 +1,6 @@
 @echo off
 setlocal
-ECHO STEP1 will install Anaconda3 and Python on your machine. If these applications are already installed on your machine, the script will exit.
+ECHO STEP1 will install Anaconda3 on your machine. If these applications are already installed on your machine, the script will exit.
 ECHO:
 ECHO Please, be patient and wait for the message Installation completed! 
 echo(
