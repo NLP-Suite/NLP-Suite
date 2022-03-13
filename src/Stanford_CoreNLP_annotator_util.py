@@ -181,7 +181,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
         'sentiment': ['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
-        'quote': ['Number of Quotes', 'Speakers', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
+        'quote': ['Speakers', 'Number of Quotes', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         'coref': 'text',
         'coref table': ["Pronoun", "Reference", "Reference Start ID in Sentence",
                         "First Reference Sentence ID", "First Reference Sentence", "Pronoun Start ID in Reference Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
@@ -600,7 +600,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         for key, value in kwargs.items():
                             if key == "gender_var" and value == True:
                                 filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, kwargs["gender_filename"],
-                                                                  filesToOpen, genderCol=["S Gender", "O Gender"], wordCol=["S", "O"])
+                                                                  filesToOpen, genderCol=["S Gender", "O Gender"], wordCol=["Subject (S)", "Object (O)"])
                 if "coref table" in str(annotator_params) or "parser" in str(annotator_params) or "SVO" in str(annotator_params):
                     if "coref table" in str(annotator_params):
                         param = "coref table"
@@ -1134,10 +1134,10 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
         check_sentence_length(len(sentence_data['tokens']), sentenceID, config_filename)
 
         if extract_date_from_filename_var:
-            temp = [number_of_quotes, str(speakers[quoted_sent_id][0]), date_str,sentenceID,
+            temp = [str(speakers[quoted_sent_id][0]), number_of_quotes, date_str, sentenceID,
                     complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         else:
-            temp = [ number_of_quotes, str(speakers[quoted_sent_id][0]), sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
+            temp = [str(speakers[quoted_sent_id][0]), number_of_quotes, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         result.append(temp)
     return result
 
@@ -1195,7 +1195,8 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         raw_quote_info = process_json_quote(config_filename, documentID, document, sentenceID, json, **kwargs)
         quote_info = []
         for row in raw_quote_info:
-            quote_info.append([row[0], row[2], row[4], row[5]])
+            # quote_info.append([row[0], row[1], row[2], row[3], row[4], row[5]])
+            quote_info.append([row[0], row[1], row[2], row[4]])
 
     SVO_enhanced_dependencies = []
     SVO_brief = []
@@ -1224,11 +1225,12 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         #CYNTHIA: " ".join(L) => "; ".join(L)
         # ; added list of locations in SVO output (e.g., Los Angeles; New York; Washington)
         for row in SVO:
-            SVO_brief.append([sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2]])
+            # SVO_brief.append([sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2]])
+            SVO_brief.append([row[0], row[1], row[2], sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             if extract_date_from_filename_var:
-                SVO_enhanced_dependencies.append([sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), date_str])
+                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), date_str, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             else:
-                SVO_enhanced_dependencies.append([sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S)])
+                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             nidx += 1
         # for each sentence, get locations
         if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:
@@ -1251,9 +1253,9 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
 
     if quote_var:
         SVO_df = pd.DataFrame(SVO_brief, columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
-        quote_df = pd.DataFrame(quote_info, columns=["Number of Quotes", "Speakers", "Sentence ID", "Document ID"])
+        quote_df = pd.DataFrame(quote_info, columns=["Speakers", "Number of Quotes", "Sentence ID", "Document ID"])
         merge_df = pd.merge(SVO_df, quote_df, on=["Sentence ID", "Document ID"], how='left')
-        merge_df = merge_df[['Subject (S)', 'Verb (V)', 'Object (O)', "Number of Quotes", "Speakers", "Sentence ID", 'Sentence', "Document ID", "Document"]]
+        merge_df = merge_df[['Subject (S)', 'Verb (V)', 'Object (O)', "Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]]
         merge_df = merge_df.drop_duplicates()
         merge_df.to_csv(kwargs["quote_filename"], index=False, mode="a")
 
@@ -1755,12 +1757,12 @@ def check_pronouns(config_filename, inputFilename, outputDir, createExcelCharts,
     pronouns_count = {"i": 0, "you": 0, "he": 0, "she": 0, "it": 0, "we": 0, "they": 0, "me": 0, "her": 0, "him": 0, "us": 0, "them": 0, "my": 0, "mine": 0, "hers": 0, "his": 0, "its": 0, "our": 0, "ours": 0, "their": 0, "your": 0, "yours": 0, "myself": 0, "yourself": 0, "himself": 0, "herself": 0, "oneself": 0, "itself": 0, "ourselves": 0, "yourselves": 0, "themselves": 0}
     for _, row in df.iterrows():
         if option == "SVO":
-            if (not pd.isna(row["Subject (S)"])) and (row["Subject (S)"].lower() in pronouns):
+            if (not pd.isna(row["Subject (S)"])) and (str(row["Subject (S)"]).lower() in pronouns):
                 total_count+=1
-                pronouns_count[row["Subject (S)"].lower()] += 1
-            if (not pd.isna(row["Object (O)"])) and (row["Object (O)"].lower() in pronouns):
+                pronouns_count[str(row["Subject (S)"]).lower()] += 1
+            if (not pd.isna(row["Object (O)"])) and (str(row["Object (O)"]).lower() in pronouns):
                 total_count+=1
-                pronouns_count[row["Object (O)"].lower()] += 1
+                pronouns_count[str(row["Object (O)"]).lower()] += 1
         elif option == "CoNLL":
             if (not pd.isna(row["Form"])) and (row["Form"].lower() in pronouns):
                 total_count+=1

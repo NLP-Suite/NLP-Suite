@@ -283,7 +283,7 @@ def exit_window(window,config_filename, scriptName, config_input_output_numeric_
                 # if not "IO_setup_main.py" in ScriptName:
                 #     print("ScriptName", ScriptName)
                 print(
-                    '\nYour NLP Suite is up-to-date with the release available on GitHub (' + GitHub_release_version + ').')
+                    '\nYour NLP Suite is up-to-date with the latest release available on GitHub (' + GitHub_release_version + ').')
         except Exception as e:
             print(str(e))
     # when closing NLP Suite via terminal

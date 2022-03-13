@@ -23,7 +23,7 @@ import tkinter.messagebox as mb
 import inspect
 from subprocess import call
 # import webbrowser
-import atexit
+# import atexit
 
 import config_util
 import reminders_util
@@ -190,7 +190,7 @@ def get_GitHub_release(silent = False):
     except:
         if not silent:
             mb.showwarning(title='Internet connection error', message="The attempt to connect to GitHub failed.\n\nIt is not possible to check the latest release of the NLP Suite at this time. You can continue run your current release and try again later.")
-        return '0.0.0'
+        GitHub_newest_release = '0.0.0'
     return GitHub_newest_release
 
 def check_GitHub_release(local_release_version: str, silent = False):
