@@ -120,7 +120,7 @@ def Sentence_searcher(list_all_sents, Document_ID, sent_id):
 def sort_output_list(label, _voice_sorted_):
     output_list = [
         [label, 'TOKEN_INDEX', 'FORM', 'LEMMA', 'POSTAG', 'POSTAG-DESCRIPTION', 'DEPREL', 'DEPREL-DESCRIPTION',
-         'CLAUSAL TAG', 'CLAUSAL TAG-DESCRIPTION', 'Sentence ID', 'Document ID', 'Document', 'Sentence']]
+         'CLAUSAL TAG', 'CLAUSAL TAG-DESCRIPTION', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
     #the earlier new CoNLL routine always had the extra header date, whether there or not;
     #   so need to test not to break the code
 
@@ -187,8 +187,8 @@ def compute_sentence(CoNLL_table, recordID, sentenceID, documentID):
     """
     # Open ConLL
     df = pd.read_csv(io.open(CoNLL_table, 'rb'), sep=',', index_col=False)
-    df = df[df["Document ID"] == documentID]
     df = df[df["Sentence ID"] == sentenceID]
+    df = df[df["Document ID"] == documentID]
     rows = []  # Store data
     sent_str = ""  # Build string
     index = recordID
@@ -243,8 +243,8 @@ def compute_sentence_table(CoNLL_table, output_path):
             doc_id = row[documentID_position]
 
     # Construct and save the table
-    col_names = ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Sentence length (Number of words/tokens)',
-                 'Sentence length (Number of characters)']
+    col_names = ['Sentence length (Number of words/tokens)',
+                 'Sentence length (Number of characters)', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
     df2 = pd.DataFrame(columns=col_names, data=rows)
 
     output_fileName = os.path.join(output_path, CoNLL_table[:-4] + "_sentence" + ".csv")

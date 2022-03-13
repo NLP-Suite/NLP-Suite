@@ -111,7 +111,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
                                                                          [[8,8]],
                                                                          ['CLAUSE TAGS'],
                                                                             ['FORM','Sentence'],
-                                                                           ['Document ID','Sentence ID'],
+                                                                           ['Sentence ID','Document ID'],
                                                                          'CA','line')
             if len(Excel_outputFilename)>0:
                 filesToOpen.extend(Excel_outputFilename)

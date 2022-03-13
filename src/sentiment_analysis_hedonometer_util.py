@@ -119,12 +119,14 @@ def analyzefile(input_file, output_dir, output_file, mode, Document_ID, Document
 
 
         if len(found_words) == 0:  # no words found for this sentence
-            writer.writerow({'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'Sentence ID': i,
-                            'Sentence': s,
+            writer.writerow({
                             # Sentiment_measure: 0,
                             # Sentiment_label: "",
                             'Sentiment (Mean score)': 0,
                             'Sentiment (Mean value)': "",
+                            'Sentence ID': i,
+                            'Sentence': s,
+                            'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
                             })
             i += 1
             continue
@@ -161,32 +163,34 @@ def analyzefile(input_file, output_dir, output_file, mode, Document_ID, Document
                     label_median = "neutral"
 
             if mode == 'mean':
-                writer.writerow({'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'Sentence ID': i,
-                                 'Sentence': s,
+                writer.writerow({
                                  'Sentiment (Mean score)': sentiment_mean,
                                  'Sentiment (Mean value)': label_mean,
                                  'Found Words': ("%d out of %d" % (len(found_words), total_words)),
-                                 'Word List': ', '.join(found_words)
-                                 })
+                                 'Word List': ', '.join(found_words),
+                })
             elif mode == 'median':
-                writer.writerow({'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'Sentence ID': i,
-                                 'Sentence': s,
-                                 'Sentiment (Median score)':sentiment_median,
+                writer.writerow({'Sentiment (Median score)':sentiment_median,
                                  'Sentiment (Median value)': label_median,
                                  'Found Words': ("%d out of %d" % (len(found_words), total_words)),
-                                 'Word List': ', '.join(found_words)
-                                 })
-            elif mode == 'both':
-                writer.writerow({'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document),
+                                 'Word List': ', '.join(found_words),
                                  'Sentence ID': i,
                                  'Sentence': s,
+                                 'Document ID': Document_ID,
+                                 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
+                                 })
+            elif mode == 'both':
+                writer.writerow({
                                  'Sentiment (Mean score)': sentiment_mean,
                                  'Sentiment (Mean value)': label_mean,
                                  'Sentiment (Median score)': sentiment_median,
                                  'Sentiment (Median value)': label_median,
                                  'Found Words': ("%d out of %d" % (len(found_words), total_words)),
-                                 'Word List': ', '.join(found_words)
-                                 })
+                                 'Word List': ', '.join(found_words),
+                                'Sentence ID': i,
+                                'Sentence': s,
+                                'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
+                })
 
         i += 1
     return output_file #LINE ADDED
@@ -210,12 +214,12 @@ def main(input_file, input_dir, output_dir, output_file, mode):
 
     with open(output_file, 'w', encoding='utf-8',errors='ignore', newline='') as csvfile:
         if (mode == 'both'):
-            fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Sentiment (Mean score)', 'Sentiment (Mean value)','Sentiment (Median score)', 'Sentiment (Median value)', 'Found Words', 'Word List']
+            fieldnames = ['Sentiment (Mean score)', 'Sentiment (Mean value)','Sentiment (Median score)', 'Sentiment (Median value)', 'Found Words', 'Word List', 'Sentence ID', 'Sentence','Document ID', 'Document']
         else:
             if mode == 'mean':
-                fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Sentiment (Mean score)', 'Sentiment (Mean value)', 'Found Words', 'Word List']
+                fieldnames = ['Sentiment (Mean score)', 'Sentiment (Mean value)', 'Found Words', 'Word List', 'Sentence ID', 'Sentence','Document ID', 'Document']
             elif mode == 'median':
-                fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Sentiment (Median score)', 'Sentiment (Median value)', 'Found Words', 'Word List']
+                fieldnames = ['Sentiment (Median score)', 'Sentiment (Median value)', 'Found Words', 'Word List', 'Sentence ID', 'Sentence','Document ID', 'Document']
         global writer
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()

@@ -104,7 +104,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, output_dir_path,openOutputFiles,cre
     if writeCSV=='':
         return
     writer = csv.writer(writeCSV)
-    writer.writerow(['Document ID','Document','Sentence ID','Sentence','Word','Annotation Type'])
+    writer.writerow(['Word','Annotation Type','Sentence ID','Sentence','Document ID','Document'])
     # TODO Add document ID and sentence
     for file in annotatedHtmlFiles:
         # examples of how sentence is constructed are in def dataframe_byNER in Stanford_CoreNLP_NER_extractor_util.py
