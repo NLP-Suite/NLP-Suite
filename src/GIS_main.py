@@ -734,6 +734,9 @@ readMe_message="This Python 3 script allows users to go from text to map in thre
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
+reminders_util.checkReminder(config_filename, reminders_util.title_options_GIS_default,
+                             reminders_util.message_GIS_default, True)
+
 # routine_options = reminders_util.getReminders_list(config_filename)
 result = reminders_util.checkReminder(config_filename,
                               reminders_util.title_options_GIS_GUI,

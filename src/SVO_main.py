@@ -1067,24 +1067,25 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
-               'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
-               'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
+TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
+               'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
+               'Stanford CoreNLP performance & accuracy':'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',
                'Stanford CoreNLP memory issues':'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
                'Stanford CoreNLP date extractor': 'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
                'Stanford CoreNLP OpenIE': 'TIPS_NLP_Stanford CoreNLP OpenIE.pdf',
                'Stanford CoreNLP parser': 'TIPS_NLP_Stanford CoreNLP parser.pdf',
                'Stanford CoreNLP enhanced dependencies parser (SVO)':'TIPS_NLP_Stanford CoreNLP enhanced dependencies parser (SVO).pdf',
-               'SENNA': 'TIPS_NLP_SVO SENNA.pdf',
-               'CoNLL table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'Stanford CoreNLP coreference resolution': "TIPS_NLP_Stanford CoreNLP coreference resolution.pdf",
+               'CoNLL table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
+               'SENNA': 'TIPS_NLP_SVO SENNA.pdf',
                "Google Earth Pro": "TIPS_NLP_Google Earth Pro.pdf",
                "Geocoding": "TIPS_NLP_Geocoding.pdf",
                "Geocoding: How to Improve Nominatim":"TIPS_NLP_Geocoding Nominatim.pdf",
                "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf"}
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
-TIPS_options = 'SVO extraction and visualization', 'utf-8 encoding', 'Excel - Enabling Macros', 'csv files - Problems & solutions', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'SENNA', 'CoNLL table', 'Stanford CoreNLP coreference resolution', 'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
+TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'csv files - Problems & solutions', 'SVO extraction and visualization', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Stanford CoreNLP coreference resolution', 'SENNA', 'CoNLL table',  'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
 
 
 # add all the lines lines to the end to every special GUI
@@ -1138,11 +1139,14 @@ readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 def warnUser(*args):
+    reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_default,
+                                 reminders_util.message_SVO_default, True)
     if GUI_util.input_main_dir_path.get() != '':
         reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_corpus,
                                      reminders_util.message_SVO_corpus, True)
         # manual_Coref_var.set(0)
         # manual_Coref_checkbox.configure(state='disabled')
+
 
 GUI_util.input_main_dir_path.trace('w', warnUser)
 
