@@ -234,8 +234,8 @@ def compute_sentence_table(CoNLL_table, output_path):
             else:
                 sent_str = sent_str + " " + str(row[1])
         else:  # End the sentence, add it to the array and move onto the next one
-            arr = [doc_id, current_file, sent_index, sent_str, len(sent_str.split(" ")),
-                   len(list(sent_str))]  # Save the data
+            arr = [len(sent_str.split(" ")),
+                   len(list(sent_str)), sent_index, sent_str, doc_id, current_file]  # Save the data
             rows.append(arr)
             sent_index = row[sentenceID_position]
             sent_str = row[1]
