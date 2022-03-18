@@ -262,10 +262,10 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
                 counter_nominalized_list.insert(0,['Nominalized verb', 'Frequency'])
                 counter_noun_list.insert(0,['Noun', 'Frequency'])
 
-                result1.insert(0, ['Document ID', 'Document', 'Sentence ID', 'Sentence',
-                                   'Number of words in sentence', 'Nominalized verbs',
+                result1.insert(0, ['Number of words in sentence', 'Nominalized verbs',
                                    'Number of nominalizations in sentence',
-                                   'Percentage of nominalizations in sentence'])
+                                   'Percentage of nominalizations in sentence',
+                                   'Sentence ID', 'Sentence', 'Document ID', 'Document'])
 
                 # compute frequency of most common nominalized verbs
                 for word, freq in nominalized_cnt.most_common():
@@ -337,8 +337,8 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
             output_filename_dir_noun_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'noun_freq', '', '', '', False, True)
             output_filename_dir_nominalized_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'nominal_freq', '', '', '', False, True)
 
-            result2.insert(0, ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of words in sentence', 'Nominalized verbs',
-                               'Number of nominalizations in sentence', 'Percentage of nominalizations in sentence'])
+            result2.insert(0, ['Number of words in sentence', 'Nominalized verbs',
+                               'Number of nominalizations in sentence', 'Percentage of nominalizations in sentence','Sentence ID', 'Sentence', 'Document ID', 'Document'])
             list_to_csv(output_filename_bySentenceIndex, result2)
             filesToOpen.append(output_filename_bySentenceIndex)
 

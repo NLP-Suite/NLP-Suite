@@ -293,7 +293,11 @@ WordNet_download = "https://wordnet.princeton.edu/download/current-version"
 # the function checks that if Stanford CoreNLP version matches with the latest downloadable version
 def check_CoreNLPVersion(CoreNLPdir,calling_script=''):
     # get latest downloadable version
-    response = requests.get("https://api.github.com/repos/stanfordnlp/CoreNLP/releases/latest")
+    try:
+        response = requests.get("https://api.github.com/repos/stanfordnlp/CoreNLP/releases/latest")
+    except:
+        # no internet
+        return False
     github_version = response.json()["name"][1:]
     # get local stanford corenlp version
     onlyfiles = [f for f in os.listdir(CoreNLPdir) if os.path.isfile(os.path.join(CoreNLPdir, f))]

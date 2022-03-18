@@ -229,8 +229,7 @@ def analyzefile(input_file, output_dir, output_file, csvfile, mode, Document_ID,
                 dominance_label = 'very much in control'
 
             if mode == 'mean':
-                writer.writerow({'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'Sentence ID': i,
-                                 'Sentence': s,
+                writer.writerow({
                                  'Sentiment (Mean score)': Sentiment_mean_score,
                                  'Sentiment (Mean value)': sentiment_label,
                                  'Arousal (Mean score)': Arousal_mean_score,
@@ -238,11 +237,13 @@ def analyzefile(input_file, output_dir, output_file, csvfile, mode, Document_ID,
                                  'Dominance (Mean score)': Dominance_mean_score,
                                  'Dominance (Mean value)': dominance_label,
                                  'Found Words': ("%d out of %d" % (len(found_words), total_words)),
-                                 'Word List': ', '.join(found_words)
-                                 })
+                                 'Word List': ', '.join(found_words),
+                                'Sentence ID': i,
+                                'Sentence': s,
+                                'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
+                })
             elif mode == 'median':
-                writer.writerow({'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'Sentence ID': i,
-                                 'Sentence': s,
+                writer.writerow({
                                  'Sentiment (Median score)':Sentiment_median_score,
                                  'Sentiment (Median value)': sentiment_label,
                                  'Arousal (Median score)':Arousal_median_score,
@@ -250,11 +251,13 @@ def analyzefile(input_file, output_dir, output_file, csvfile, mode, Document_ID,
                                  'Dominance (Median score)':Dominance_median_score,
                                  'Dominance (Median value)': dominance_label,
                                  'Found Words': ("%d out of %d" % (len(found_words), total_words)),
-                                 'Word List': ', '.join(found_words)
-                                 })
-            elif mode == 'both':
-                writer.writerow({'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'Sentence ID': i,
+                                 'Word List': ', '.join(found_words),
+                                 'Sentence ID': i,
                                  'Sentence': s,
+                                  'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
+                                  })
+            elif mode == 'both':
+                writer.writerow({
                                  'Sentiment (Mean score)': Sentiment_mean_score,
                                  'Sentiment (Mean value)': sentiment_label,
                                  'Arousal (Mean score)': Arousal_mean_score,
@@ -268,7 +271,11 @@ def analyzefile(input_file, output_dir, output_file, csvfile, mode, Document_ID,
                                  'Dominance (Median score)':Dominance_median_score,
                                  'Dominance (Median value)': dominance_label,
                                  'Found Words': ("%d out of %d" % (len(found_words), total_words)),
-                                 'Word List': ', '.join(found_words)
+                                 'Word List': ', '.join(found_words),
+                                 'Sentence ID': i,
+                                 'Sentence': s,
+                                 'Document ID': Document_ID,
+                                 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
                                  })
 
                 i += 1
@@ -300,23 +307,26 @@ def main(input_file, input_dir, output_dir,output_file, mode):
     fileNamesToPass.append(output_file)
     with open(output_file, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         if mode == 'mean':
-            fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence',
+            fieldnames = [
                           'Sentiment (Mean score)', 'Sentiment (Mean value)',
                           'Arousal (Mean score)', 'Arousal (Mean value)',
-                          'Dominance (Mean score)', 'Dominance (Mean value)', 'Found Words', 'Word List']
+                          'Dominance (Mean score)', 'Dominance (Mean value)', 'Found Words', 'Word List',
+                           'Sentence ID', 'Sentence', 'Document ID', 'Document']
         elif mode == 'median':
-            fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence',
+            fieldnames = [
                           'Sentiment (Median score)', 'Sentiment (Median value)',
                           'Arousal (Median score)', 'Arousal (Median value)',
-                          'Dominance (Median score)', 'Dominance (Median value)', 'Found Words', 'Word List']
+                          'Dominance (Median score)', 'Dominance (Median value)', 'Found Words', 'Word List',
+                          'Sentence ID', 'Sentence', 'Document ID', 'Document']
         elif mode == 'both':
-            fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence',
+            fieldnames = [
                           'Sentiment (Mean score)', 'Sentiment (Mean value)', 'Sentiment (Median score)',
                           'Sentiment (Median value)',
                           'Arousal (Mean score)', 'Arousal (Mean value)', 'Arousal (Median score)',
                           'Arousal (Median value)',
                           'Dominance (Mean score)', 'Dominance (Mean value)', 'Dominance (Median score)',
-                          'Dominance (Median value)', 'Found Words', 'Word List']
+                          'Dominance (Median value)', 'Found Words', 'Word List',
+                           'Sentence ID', 'Sentence','Document ID', 'Document']
         global writer
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()

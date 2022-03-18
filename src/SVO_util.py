@@ -49,24 +49,39 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
     senna_df = pd.read_csv(senna_csv)
     open_ie_svo, open_ie_sv, senna_svo, senna_sv = set(), set(), set(), set()
 
+    # S, V, O are in loc 0, 1, 2
+
     # Adding each row of SVO into the corresponding sets
     for i in range(len(CoreNLP_df)):
-        if pd.notnull(CoreNLP_df.iloc[i, 4]):
-            if not pd.isnull(CoreNLP_df.iloc[i, 5]) and not pd.isnull(CoreNLP_df.iloc[i, 3]):
-                open_ie_svo.add(generate_key(S=CoreNLP_df.iloc[i, 3], V=CoreNLP_df.iloc[i, 4], O=CoreNLP_df.iloc[i, 5]))
-            elif not pd.isnull(CoreNLP_df.iloc[i, 3]):
-                open_ie_sv.add(generate_key(S=CoreNLP_df.iloc[i, 3], V=CoreNLP_df.iloc[i, 4], O=''))
+        # if pd.notnull(CoreNLP_df.iloc[i, 4]):
+        #     if not pd.isnull(CoreNLP_df.iloc[i, 5]) and not pd.isnull(CoreNLP_df.iloc[i, 3]):
+        #         open_ie_svo.add(generate_key(S=CoreNLP_df.iloc[i, 3], V=CoreNLP_df.iloc[i, 4], O=CoreNLP_df.iloc[i, 5]))
+        #     elif not pd.isnull(CoreNLP_df.iloc[i, 3]):
+        #         open_ie_sv.add(generate_key(S=CoreNLP_df.iloc[i, 3], V=CoreNLP_df.iloc[i, 4], O=''))
+        if pd.notnull(CoreNLP_df.iloc[i, 1]):
+            if not pd.isnull(CoreNLP_df.iloc[i, 2]) and not pd.isnull(CoreNLP_df.iloc[i, 1]):
+                open_ie_svo.add(
+                    generate_key(S=CoreNLP_df.iloc[i, 0], V=CoreNLP_df.iloc[i, 1], O=CoreNLP_df.iloc[i, 2]))
+            elif not pd.isnull(CoreNLP_df.iloc[i, 0]):
+                open_ie_sv.add(generate_key(S=CoreNLP_df.iloc[i, 0], V=CoreNLP_df.iloc[i, 1], O=''))
+
             # elif not pd.isnull(CoreNLP_df.iloc[i, 5]):
             #     open_ie_sv.add(generate_key(S='', V=CoreNLP_df.iloc[i, 4], O=CoreNLP_df.iloc[i, 5]))
             # else:
             #     open_ie_sv.add(generate_key(S='', V=CoreNLP_df.iloc[i, 4], O=''))
 
     for i in range(len(senna_df)):
-        if pd.notnull(senna_df.iloc[i, 4]):
-            if not pd.isnull(senna_df.iloc[i, 3]) and not pd.isnull(senna_df.iloc[i, 5]):  # Has S, V, O
-                senna_svo.add(generate_key(S=senna_df.iloc[i, 3], V=senna_df.iloc[i, 4], O=senna_df.iloc[i, 5]))
-            elif not pd.isnull(senna_df.iloc[i, 3]):  # Has S, V
-                senna_sv.add(generate_key(S=senna_df.iloc[i, 3], V=senna_df.iloc[i, 4], O=''))
+        # if pd.notnull(senna_df.iloc[i, 4]):
+        #     if not pd.isnull(senna_df.iloc[i, 3]) and not pd.isnull(senna_df.iloc[i, 5]):  # Has S, V, O
+        #         senna_svo.add(generate_key(S=senna_df.iloc[i, 3], V=senna_df.iloc[i, 4], O=senna_df.iloc[i, 5]))
+        #     elif not pd.isnull(senna_df.iloc[i, 3]):  # Has S, V
+        #         senna_sv.add(generate_key(S=senna_df.iloc[i, 3], V=senna_df.iloc[i, 4], O=''))
+        if pd.notnull(senna_df.iloc[i, 1]): # VERB
+            if not pd.isnull(senna_df.iloc[i, 0]) and not pd.isnull(senna_df.iloc[i, 2]):  # Has S and O
+                senna_svo.add(generate_key(S=senna_df.iloc[i, 0], V=senna_df.iloc[i, 1], O=senna_df.iloc[i, 2]))
+            elif not pd.isnull(senna_df.iloc[i, 0]):  # Has S, V NO O
+                senna_sv.add(generate_key(S=senna_df.iloc[i, 0], V=senna_df.iloc[i, 1], O=''))
+
             # elif not pd.isnull(senna_df.iloc[i, 5]):  # Has V, O
             #     senna_sv.add(generate_key(S='', V=senna_df.iloc[i, 4], O=senna_df.iloc[i, 5]))
             # else:  # Has V
@@ -95,15 +110,15 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
     same, diff = [], []
 
     for svo in same_svo:
-        splitted_svo = svo.split(',')
-        s, v = splitted_svo[0], splitted_svo[1]
-        o = splitted_svo[2] if len(splitted_svo) >= 3 else ''
+        split_svo = svo.split(',')
+        s, v = split_svo[0], split_svo[1]
+        o = split_svo[2] if len(split_svo) >= 3 else ''
         same.append((s, v, o))
 
     for svo in diff_svo:
-        splitted_svo = svo.split(',')
-        s, v = splitted_svo[0], splitted_svo[1]
-        o = splitted_svo[2] if len(splitted_svo) >= 3 else ''
+        split_svo = svo.split(',')
+        s, v = split_svo[0], split_svo[1]
+        o = split_svo[2] if len(split_svo) >= 3 else ''
         tool = 'SENNA' if svo in senna_svo or svo in senna_sv else 'CoreNLP ++'
         diff.append((s, v, o, tool))
 
@@ -134,16 +149,15 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
     :param outputDir: the output directory name; used for generating output file name
     :return: the name of the output csv file
     """
-    columns = ['Tool', 'Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'LOCATION', 'TIME', 'Sentence']
+    columns = ['Tool', 'Subject (S)', 'Verb (V)', 'Object (O)', 'Negation', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
     combined_df = pd.DataFrame(columns=columns)
     dfs = [(pd.read_csv(CoreNLP_svo), 'CoreNLP ++'), (pd.read_csv(senna_svo), 'Senna')]
 
     for df, df_name in dfs:
         for i in range(len(df)):
-            new_row = [df_name, df.loc[i, 'Document ID'], df.loc[i, 'Sentence ID'], df.loc[i, 'Document'],
-                       df.loc[i, 'S'],
-                       df.loc[i, 'V'], df.loc[i, 'O'], df.loc[i, 'LOCATION'],
-                       df.loc[i, 'TIME'], df.loc[i, 'Sentence']]
+            new_row = [df_name, df.loc[i, 'Subject (S)'],
+                       df.loc[i, 'Verb (V)'], df.loc[i, 'Object (O)'], df.loc[i, 'Negation'], df.loc[i, 'Location'],
+                       df.loc[i, 'Person'], df.loc[i, 'Time'], df.loc[i, 'Sentence ID'], df.loc[i, 'Sentence'], df.loc[i, 'Document ID'], df.loc[i, 'Document']]
             combined_df = combined_df.append(pd.DataFrame([new_row], columns=columns), ignore_index=True)
 
     combined_df.sort_values(by=['Document ID', 'Sentence ID'], inplace=True)
@@ -197,15 +211,15 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
     # Adding rows to filtered df
     for i in range(num_rows):
         subject, verb, object = '', '', ''
-        if not pd.isna(unfiltered_svo[i]['S']):
+        if not pd.isna(unfiltered_svo[i]['Subject (S)']):
             # words = stannlp(df.loc[i, 'S'])
             # ((word.pos == "VERB") or (word.pos == "NN") or (word.pos == "NNS")):
             # subject = words.lemma
-            subject = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['S']))
-        if not pd.isna(unfiltered_svo[i]['V']):
-            verb = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['V']))
-        if not pd.isna(unfiltered_svo[i]['O']):
-            object = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['O']))
+            subject = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['Subject (S)']))
+        if not pd.isna(unfiltered_svo[i]['Verb (V)']):
+            verb = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['Verb (V)']))
+        if not pd.isna(unfiltered_svo[i]['Object (O)']):
+            object = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['Object (O)']))
 
         # The s_set, v_set, and o_set are sets. The “in” in set is equivalent to “==” in string.
         if subject and filter_s_fileName and subject not in s_set:
@@ -218,11 +232,11 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
         # the next line does NOT replace the original SVO;
         #   must replace SVO with the values computed above: subject, verb, object
         if lemmatize_s:
-            unfiltered_svo[i]['S'] = subject
+            unfiltered_svo[i]['Subject (S)'] = subject
         if lemmatize_v:
-            unfiltered_svo[i]['V'] = verb
+            unfiltered_svo[i]['Verb (V)'] = verb
         if lemmatize_o:
-            unfiltered_svo[i]['O'] = object
+            unfiltered_svo[i]['Object (O)'] = object
 
         filtered_svo[i] = unfiltered_svo[i]
 

@@ -95,7 +95,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
                                                                          outputDir,
                                                                          openOutputFiles, createExcelCharts,
                                                                          [[1,4]],
-                                                                         ['PRONOUNS'],['FORM','Sentence'], ['Document ID','Sentence ID','Document'],
+                                                                         ['PRONOUNS'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
                                                                          'FW','line')
             if len(outputFiles) > 0:
                 filesToOpen.extend(outputFiles)
@@ -154,7 +154,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
                                                                          outputDir,
                                                                          openOutputFiles,createExcelCharts,
                                                                          [[1,4]],
-                                                                         ['PREPOSITIONS'],['FORM','Sentence'], ['Document ID','Sentence ID','Document'],
+                                                                         ['PREPOSITIONS'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
                                                                          'FW','line')
             if len(outputFiles) > 0:
                 filesToOpen.extend(outputFiles)
@@ -218,7 +218,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
                                                                          '',
                                                                          outputDir,
                                                                          openOutputFiles, createExcelCharts,
-                                                                         [[1,4]],['ARTICLES'],['FORM','Sentence'], ['Document ID','Sentence ID','Document'],
+                                                                         [[1,4]],['ARTICLES'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
                                                                          'FW','line')
             if len(outputFiles) > 0:
                 filesToOpen.extend(outputFiles)
@@ -279,7 +279,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
                                                                          outputDir,
                                                                          openOutputFiles, createExcelCharts,
                                                                          [[1,4]],
-                                                                         ['CONJUNCTIONS'],['FORM','Sentence'], ['Document ID','Sentence ID','Document'],
+                                                                         ['CONJUNCTIONS'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
                                                                          'FW','line')
             if len(outputFiles) > 0:
                 filesToOpen.extend(outputFiles)
@@ -339,7 +339,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
                                                                          outputDir,
                                                                          openOutputFiles,createExcelCharts,
                                                                          [[1, 4]],
-                                                                         ['AUXILIARIES'],['FORM','Sentence'], ['Document ID','Sentence ID','Document'],
+                                                                         ['AUXILIARIES'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
                                                                          'FW','line')
             if len(outputFiles) > 0:
                 filesToOpen.extend(outputFiles)

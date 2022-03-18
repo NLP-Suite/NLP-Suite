@@ -313,13 +313,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                     # we want to aggregate with WordNet the verbs in column 'V'
                     # check that SVO output file contains records
                     if IO_csv_util.GetNumberOfRecordInCSVFile(tempOutputFiles[0], encodingValue='utf-8') > 1:
-                        outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['V'])
+                        outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Verb (V)'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'VERB',
                                                                openOutputFiles, createExcelCharts)
                         os.remove(outputFilename)
                         if output != None:
                             filesToOpen.extend(output)
-                        outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['S', 'O'])
+                        outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'NOUN',
                                                                openOutputFiles, createExcelCharts)
                         os.remove(outputFilename)
@@ -344,8 +344,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         #   provide a bar chart of WordNet verb categories for the subject
 
         toProcess_list = []
-        field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Location', 'Person', 'Time',
-                       'Time stamp', 'Sentence']
+        field_names = ['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time',
+                       'Time stamp', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
         if isFile & Coref:
             # ANY CHANGES IN THE COREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
             # NLP_CoreNLP_coref_The Three Little Pigs-svoResult-woFilter.txt
@@ -429,7 +429,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         if len(os.listdir(outputSVODir)) > 0:
             if svo_CoreNLP_merged_file and svo_SENNA_file:
                 CoreNLP_PlusPlus_file = svo_CoreNLP_merged_file
-                freq_csv = SVO_util.count_frequency_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
+                freq_csv, compare_outout_name = SVO_util.count_frequency_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
                 combined_csv = SVO_util.combine_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
                 filesToOpen.extend(freq_csv)
                 filesToOpen.append(combined_csv)
@@ -466,14 +466,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                 # we want to aggregate with WordNet the verbs in column 'V'
                 # check that SVO output file contains records
                 if IO_csv_util.GetNumberOfRecordInCSVFile(tempOutputFiles[0], encodingValue='utf-8') > 1:
-                    outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['V'])
+                    outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Verb (V)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
                                                                              config_filename, 'VERB',
                                                                              openOutputFiles, createExcelCharts)
                     os.remove(outputFilename)
                     if output != None:
                         filesToOpen.extend(output)
-                    outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['S', 'O'])
+                    outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
                                                                              config_filename, 'NOUN',
                                                                              openOutputFiles, createExcelCharts)
@@ -497,19 +497,19 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
             if inputFilename[-4:] == ".csv":
                 if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1:  # including headers; file is empty
-                    gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputDir, inputFilename, "S", "V", "O",
+                    gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputDir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
                                                        "Sentence ID")
                     filesToOpen.append(gexf_file)
                 else:
                     if IO_csv_util.GetNumberOfRecordInCSVFile(
                             svo_result_list[0]) > 1:  # including headers; file is empty
                         gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputDir, svo_result_list[0],
-                                                           "S", "V", "O", "Sentence ID")
+                                                           "Subject (S)", "Verb (V)", "Object (O)", "Sentence ID")
                         filesToOpen.append(gexf_file)
             else:  # txt input file
                 for f in svo_result_list:
                     if IO_csv_util.GetNumberOfRecordInCSVFile(f) > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], outputDir, f, "S", "V", "O",
+                        gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], outputDir, f, "Subject (S)", "Verb (V)", "Object (O)",
                                                            "Sentence ID")
                         if "CoreNLP" in f or "SENNA_SVO" in f:
                             filesToOpen.append(gexf_file)
@@ -1067,24 +1067,25 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
-               'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
-               'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
+TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
+               'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
+               'Stanford CoreNLP performance & accuracy':'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',
                'Stanford CoreNLP memory issues':'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
                'Stanford CoreNLP date extractor': 'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
                'Stanford CoreNLP OpenIE': 'TIPS_NLP_Stanford CoreNLP OpenIE.pdf',
                'Stanford CoreNLP parser': 'TIPS_NLP_Stanford CoreNLP parser.pdf',
                'Stanford CoreNLP enhanced dependencies parser (SVO)':'TIPS_NLP_Stanford CoreNLP enhanced dependencies parser (SVO).pdf',
-               'SENNA': 'TIPS_NLP_SVO SENNA.pdf',
-               'CoNLL table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'Stanford CoreNLP coreference resolution': "TIPS_NLP_Stanford CoreNLP coreference resolution.pdf",
+               'CoNLL table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
+               'SENNA': 'TIPS_NLP_SVO SENNA.pdf',
                "Google Earth Pro": "TIPS_NLP_Google Earth Pro.pdf",
                "Geocoding": "TIPS_NLP_Geocoding.pdf",
                "Geocoding: How to Improve Nominatim":"TIPS_NLP_Geocoding Nominatim.pdf",
                "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf"}
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
-TIPS_options = 'SVO extraction and visualization', 'utf-8 encoding', 'Excel - Enabling Macros', 'csv files - Problems & solutions', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'SENNA', 'CoNLL table', 'Stanford CoreNLP coreference resolution', 'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
+TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'csv files - Problems & solutions', 'SVO extraction and visualization', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Stanford CoreNLP coreference resolution', 'SENNA', 'CoNLL table',  'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
 
 
 # add all the lines lines to the end to every special GUI
@@ -1138,11 +1139,14 @@ readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 def warnUser(*args):
+    reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_default,
+                                 reminders_util.message_SVO_default, True)
     if GUI_util.input_main_dir_path.get() != '':
         reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_corpus,
                                      reminders_util.message_SVO_corpus, True)
         # manual_Coref_var.set(0)
         # manual_Coref_checkbox.configure(state='disabled')
+
 
 GUI_util.input_main_dir_path.trace('w', warnUser)
 

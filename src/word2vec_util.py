@@ -125,7 +125,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                 sentence.append(sent)
                 word.append(w)
 
-    sentence_df = pd.DataFrame({'Word': word, 'Sentence': sentence, 'Sentence ID': sentenceID, 'Document ID': documentID})
+    sentence_df = pd.DataFrame({'Word': word, 'Sentence ID': sentenceID, 'Sentence': sentence, 'Document ID': documentID})
     sentence_df = sentence_df.astype(str)
 
     if remove_stopwords_var == True:
@@ -197,6 +197,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
             tsne_df = pd.DataFrame({'Word': word, 'x': xs, 'y': ys})
             fig = plot_interactive_graph(tsne_df)
+            fig_words = plot_interactive_graph_words(tsne_df)
 
         else:
 
@@ -209,6 +210,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
             tsne_df = pd.DataFrame({'Word': word, 'x': xs, 'y': ys, 'z': zs})
             fig = plot_interactive_3D_graph(tsne_df)
+            fig_words = plot_interactive_3D_graph_words(tsne_df)
 
     else:
 
@@ -244,6 +246,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
             tsne_df = pd.DataFrame({'Word': similar_word, 'x': xs, 'y': ys, 'similarity': similarity, 'label': labels})
             fig = plot_similar_graph(tsne_df)
+            fig_words = 'none'
 
         else:
 
@@ -257,6 +260,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
             tsne_df = pd.DataFrame({'Word': similar_word, 'x': xs, 'y': ys, 'z': zs, 'similarity': similarity, 'label': labels})
             fig = plot_similar_3D_graph(tsne_df)
+            fig_words = 'none'
 
 
     ## saving output
@@ -264,8 +268,13 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
 
     ### write output html graph
+
+    if not fig_words == 'none':
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '_words.html', 'Word2Vec')
+        fig_words.write_html(outputFilename)
+        filesToOpen.append(outputFilename)
+
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word2Vec')
-    # outputFilename = os.path.join(outputDir, outputFilename)
     fig.write_html(outputFilename)
     filesToOpen.append(outputFilename)
 
@@ -331,11 +340,21 @@ def remove_stopwords_df(sentence_df):
 
 def plot_interactive_graph(tsne_df):
     fig = px.scatter(tsne_df, x = "x", y = "y",
+                     hover_name = "Word")
+    return fig
+
+def plot_interactive_graph_words(tsne_df):
+    fig = px.scatter(tsne_df, x = "x", y = "y",
                      text = "Word",
                      hover_name = "Word")
     return fig
 
 def plot_interactive_3D_graph(tsne_df):
+    fig = px.scatter_3d(tsne_df, x = "x", y = "y", z="z",
+                     hover_name = "Word")
+    return fig
+
+def plot_interactive_3D_graph_words(tsne_df):
     fig = px.scatter_3d(tsne_df, x = "x", y = "y", z="z",
                      text = "Word",
                      hover_name = "Word")
@@ -362,8 +381,8 @@ def plot_similar_graph(tsne_df):
 
 def plot_similar_3D_graph(tsne_df):
     fig = px.scatter_3d(tsne_df, x = "x", y = "y", z = "z",
-                     text = "Word",
                      color = "label",
                      size = "similarity",
                      hover_name = "Word")
     return fig
+

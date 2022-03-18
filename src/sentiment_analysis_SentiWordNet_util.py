@@ -142,11 +142,11 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
             sentiment = 1
             label = "negative"
 
-        writer.writerow({'Document ID': documentID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(documentName), 'Sentence ID': sentenceID,
-                            'Sentence': s,
-                            Sentiment_measure: sentiment,
+        writer.writerow({Sentiment_measure: sentiment,
                             Sentiment_label: label,
-                            })
+                         'Sentence ID': sentenceID,
+                         'Sentence': s,
+                         'Document ID': documentID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(documentName)})
 
         sentenceID += 1
     # csvfile.close()
@@ -175,7 +175,7 @@ def main(inputFilename, input_dir, outputDir, output_file, mode):
         global Sentiment_measure, Sentiment_label
         Sentiment_measure='Sentiment score'
         Sentiment_label='Sentiment value'
-        fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence', Sentiment_measure, Sentiment_label]
+        fieldnames = [Sentiment_measure, Sentiment_label,'Sentence ID', 'Sentence','Document ID', 'Document']
         global writer
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()

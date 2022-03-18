@@ -559,14 +559,14 @@ def output_list(list_queried, searchedCoNLLField, documentId_position):
                         'SEARCHED TOKEN DEPREL-DESCRIPTION', 'Co-occurring token (' + searchedCoNLLField + ')',
                         'Co-occurring token POSTAG', 'Co-occurring token POSTAG-DESCRIPTION',
                         'Co-occurring token DEPREL', 'Co-occurring token DEPREL-DESCRIPTION', 'is_HEAD',
-                        'Sentence ID', 'Document ID', 'Document', 'Sentence']]
+                        'Sentence ID', 'Sentence', 'Document ID', 'Document']]
         for item in list_queried:
             output_list.append([item[8], item[9], CoNLL_util.find_full_postag(item[8], item[9]), item[10],
                                 CoNLL_util.find_full_deprel(item[8],
                                                                item[10]), item[0], item[1],
                                 CoNLL_util.find_full_postag(item[0], item[1]), item[2],
                                 CoNLL_util.find_full_deprel(item[0], item[2]),
-                                item[3], item[5], item[4], item[6], item[7]])
+                                item[3], item[5], item[7], item[4], item[6]])
     return output_list
 
 

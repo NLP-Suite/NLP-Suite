@@ -176,20 +176,20 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'Lemma': ["ID", "Form", "Lemma", "Record ID", "Sentence ID", "Document ID", "Document"],
         'POS':[['Verbs'],['Nouns']],
         'All POS':["ID", "Form", "POStag", "Record ID", "Sentence ID", "Document ID", "Document"],
-        'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document'],
+        'NER': ['Word', 'NER Value', 'tokenBegin', 'tokenEnd', 'Sentence ID', 'Sentence', 'Document ID','Document'],
         # TODO NER with date for dynamic GIS; modified below
         # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
-        'sentiment': ['Document ID', 'Document','Sentence ID', 'Sentence', 'Sentiment score', 'Sentiment label'],
+        'sentiment': ['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
-        'quote': ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of Quotes', 'Speakers'],
+        'quote': ['Speakers', 'Number of Quotes', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         'coref': 'text',
         'coref table': ["Pronoun", "Reference", "Reference Start ID in Sentence",
                         "First Reference Sentence ID", "First Reference Sentence", "Pronoun Start ID in Reference Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
-        'gender':['Word', 'Gender', 'Sentence','Sentence ID', 'Document ID', 'Document'],
+        'gender':['Word', 'Gender', 'Sentence ID', 'Sentence','Document ID', 'Document'],
         'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
-        'SVO':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Negation","Location",'Person','Time','Time normalized NER','Sentence'],
-        'OpenIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Location", 'Person', 'Time',
-                   'Time normalized NER', 'Sentence'],
+        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Time','Time normalized NER','Sentence ID', 'Sentence','Document ID', 'Document'],
+        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Location", 'Person', 'Time',
+                   'Time normalized NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         # Chen
         # added Deps column
         'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
@@ -600,7 +600,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         for key, value in kwargs.items():
                             if key == "gender_var" and value == True:
                                 filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, kwargs["gender_filename"],
-                                                                  filesToOpen, genderCol=["S Gender", "O Gender"], wordCol=["S", "O"])
+                                                                  filesToOpen, genderCol=["S Gender", "O Gender"], wordCol=["Subject (S)", "Object (O)"])
                 if "coref table" in str(annotator_params) or "parser" in str(annotator_params) or "SVO" in str(annotator_params):
                     if "coref table" in str(annotator_params):
                         param = "coref table"
@@ -868,8 +868,8 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         for ner in sentence['entitymentions']:
-            temp = [ner['text'], ner['ner'], sentenceID, complete_sent,  ner['tokenBegin'],
-                    ner['tokenEnd'],documentID,
+            temp = [ner['text'], ner['ner'], ner['tokenBegin'],
+                    ner['tokenEnd'],sentenceID, complete_sent,  documentID,
                     IO_csv_util.dressFilenameForCSVHyperlink(document)]
             # check in NER value column
             if temp[1] in request_NER:
@@ -949,9 +949,9 @@ def process_json_sentiment(config_filename,documentID, document, sentenceID,json
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         if extract_date_from_filename_var:
-            temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentence['index'] + 1, text, sentence["sentimentValue"], sentence["sentiment"].lower(), date_str]
+            temp = [sentence["sentimentValue"], sentence["sentiment"].lower(), date_str, sentence['index'] + 1, text,documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         else:
-            temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentence['index'] + 1, text, sentence["sentimentValue"], sentence["sentiment"].lower()]
+            temp = [sentence["sentimentValue"], sentence["sentiment"].lower(), sentence['index'] + 1, text, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         sentiment.append(temp)
     return sentiment
 
@@ -982,13 +982,16 @@ def process_json_coref(config_filename,documentID, document, sentenceID, json, *
         result = ''
         # possessive pronouns: my, mine, his, her(s), its, our(s), their, yours
         possessives = ["her", "hers", "his", "its", "our", "ours", "their", "theirs", "your", "yours"]
+        pronouns = ["i", "you", "he", "she", "it", "we", "they", "me", "her", "him", "us", "them", "my", "mine",
+                             "hers", "his", "its", "our", "ours", "their", "your", "yours", "myself", "yourself", "himself", "herself",
+                             "oneself", "itself", "ourselves", "yourselves", "themselves"]
         for sentence in corenlp_output['sentences']:
             sentenceID += 1
             for token in sentence['tokens']:
                 output_word = token['word']
                 # check lemmas as well as tags for possessive pronouns in case of tagging errors
                 if token['lemma'] in possessives or token['pos'] == 'PRP$':
-                    if not "'s" in output_word:
+                    if not "'s" in output_word and output_word not in pronouns:
                         output_word += "'s"  # add the possessive morpheme
                 output_word += token['after']
                 if output_word == ". ":
@@ -1131,17 +1134,16 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
         check_sentence_length(len(sentence_data['tokens']), sentenceID, config_filename)
 
         if extract_date_from_filename_var:
-            temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentenceID,
-                    complete_sent, number_of_quotes, str(speakers[quoted_sent_id][0]),date_str]
+            temp = [str(speakers[quoted_sent_id][0]), number_of_quotes, date_str, sentenceID,
+                    complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         else:
-            temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentenceID,
-                    complete_sent, number_of_quotes, str(speakers[quoted_sent_id][0])]
+            temp = [str(speakers[quoted_sent_id][0]), number_of_quotes, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         result.append(temp)
     return result
 
 def process_json_sentence(config_filename, documentID, document, sentenceID, json, **kwargs):
     temp = []
-    # ['Document ID', 'Document', 'Sentence ID', 'Sentence'],
+    # [ 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
     for sentence in json['sentences']:  # traverse output of each sentence
         sentence_length=0
         number_punctuations = 0
@@ -1193,7 +1195,8 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         raw_quote_info = process_json_quote(config_filename, documentID, document, sentenceID, json, **kwargs)
         quote_info = []
         for row in raw_quote_info:
-            quote_info.append([row[0], row[2], row[4], row[5]])
+            # quote_info.append([row[0], row[1], row[2], row[3], row[4], row[5]])
+            quote_info.append([row[0], row[1], row[2], row[4]])
 
     SVO_enhanced_dependencies = []
     SVO_brief = []
@@ -1222,11 +1225,12 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         #CYNTHIA: " ".join(L) => "; ".join(L)
         # ; added list of locations in SVO output (e.g., Los Angeles; New York; Washington)
         for row in SVO:
-            SVO_brief.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], complete_sent])
+            # SVO_brief.append([sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2]])
+            SVO_brief.append([row[0], row[1], row[2], sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             if extract_date_from_filename_var:
-                SVO_enhanced_dependencies.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),complete_sent, date_str])
+                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), date_str, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             else:
-                SVO_enhanced_dependencies.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),complete_sent])
+                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             nidx += 1
         # for each sentence, get locations
         if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:
@@ -1238,20 +1242,20 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
 
     # merge gender information with SVO information
     if gender_var:
-        SVO_df = pd.DataFrame(SVO_brief, columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Sentence'])
-        gender_df = pd.DataFrame(gender_info, columns=["S", "S Gender", "Sentence ID", "Document ID"])
-        merge_df = pd.merge(SVO_df, gender_df, on=["Document ID", "Sentence ID", "S"], how='left')
-        gender_df = pd.DataFrame(gender_info, columns=["O", "O Gender", "Sentence ID", "Document ID"])
-        merge_df = pd.merge(merge_df, gender_df, on=["Document ID", "Sentence ID", "O"], how='left')
-        merge_df = merge_df[['Document ID', 'Sentence ID', 'Document', 'S', 'S Gender', 'V', 'O', 'O Gender', 'Sentence']]
+        SVO_df = pd.DataFrame(SVO_brief, columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+        gender_df = pd.DataFrame(gender_info, columns=["Subject (S)", "S Gender", "Sentence ID", "Document ID"])
+        merge_df = pd.merge(SVO_df, gender_df, on=["Subject (S)", "Sentence ID", "Document ID"], how='left')
+        gender_df = pd.DataFrame(gender_info, columns=["Object (O)", "O Gender", "Sentence ID", "Document ID"])
+        merge_df = pd.merge(merge_df, gender_df, on=["Object (O)", "Sentence ID", "Document ID"], how='left')
+        merge_df = merge_df[['Subject (S)', 'S Gender', 'Verb (V)', 'Object (O)', 'O Gender', 'Sentence ID','Sentence', 'Document ID', 'Document']]
         merge_df = merge_df.drop_duplicates()
         merge_df.to_csv(kwargs["gender_filename"], index=False, mode="a")
 
     if quote_var:
-        SVO_df = pd.DataFrame(SVO_brief, columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Sentence'])
-        quote_df = pd.DataFrame(quote_info, columns=["Document ID", "Sentence ID", "Number of Quotes", "Speakers"])
-        merge_df = pd.merge(SVO_df, quote_df, on=["Document ID", "Sentence ID"], how='left')
-        merge_df = merge_df[["Document ID", "Sentence ID", "Document", "S", "V", "O", "Number of Quotes", "Speakers", 'Sentence']]
+        SVO_df = pd.DataFrame(SVO_brief, columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+        quote_df = pd.DataFrame(quote_info, columns=["Speakers", "Number of Quotes", "Sentence ID", "Document ID"])
+        merge_df = pd.merge(SVO_df, quote_df, on=["Sentence ID", "Document ID"], how='left')
+        merge_df = merge_df[['Subject (S)', 'Verb (V)', 'Object (O)', "Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]]
         merge_df = merge_df.drop_duplicates()
         merge_df.to_csv(kwargs["quote_filename"], index=False, mode="a")
 
@@ -1322,9 +1326,9 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
         if len(container) > 0:
             for row in container:
                 if extract_date_from_filename_var:
-                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],"; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),complete_sent, date_str])
+                    openIE.append([row[0], row[1], row[2],"; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),date_str, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
                 else:
-                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],"; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),complete_sent])
+                    openIE.append([row[0], row[1], row[2],"; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
         # for each sentence, get locations
         if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:
             # produce an intermediate location file
@@ -1753,12 +1757,12 @@ def check_pronouns(config_filename, inputFilename, outputDir, createExcelCharts,
     pronouns_count = {"i": 0, "you": 0, "he": 0, "she": 0, "it": 0, "we": 0, "they": 0, "me": 0, "her": 0, "him": 0, "us": 0, "them": 0, "my": 0, "mine": 0, "hers": 0, "his": 0, "its": 0, "our": 0, "ours": 0, "their": 0, "your": 0, "yours": 0, "myself": 0, "yourself": 0, "himself": 0, "herself": 0, "oneself": 0, "itself": 0, "ourselves": 0, "yourselves": 0, "themselves": 0}
     for _, row in df.iterrows():
         if option == "SVO":
-            if (not pd.isna(row["S"])) and (row["S"].lower() in pronouns):
+            if (not pd.isna(row["Subject (S)"])) and (str(row["Subject (S)"]).lower() in pronouns):
                 total_count+=1
-                pronouns_count[row["S"].lower()] += 1
-            if (not pd.isna(row["O"])) and (row["O"].lower() in pronouns):
+                pronouns_count[str(row["Subject (S)"]).lower()] += 1
+            if (not pd.isna(row["Object (O)"])) and (str(row["Object (O)"]).lower() in pronouns):
                 total_count+=1
-                pronouns_count[row["O"].lower()] += 1
+                pronouns_count[str(row["Object (O)"]).lower()] += 1
         elif option == "CoNLL":
             if (not pd.isna(row["Form"])) and (row["Form"].lower() in pronouns):
                 total_count+=1
@@ -1775,6 +1779,7 @@ def check_pronouns(config_filename, inputFilename, outputDir, createExcelCharts,
         else:
             print ("Wrong Option value!")
             return []
+    pronouns_count["I"] = pronouns_count.pop("i")
     if total_count > 0:
         if option != "coref table":
             reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_pronouns,

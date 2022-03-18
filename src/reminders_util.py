@@ -44,6 +44,9 @@ message_SVO_corpus = 'You have selected to work with a set of txt files in a dir
 title_options_SVO_output = ['SVO output']
 message_SVO_output = 'Depending upon the options you select, the SVO pipeline will produce in output different types of files: cvf files, wordcloud image, Google Earth Pro map, and Gephi network graph.\n\nWhile cvf and png files are easy to read, less so are Google Earth Pro kml files and, particularly, Gephi gexf files.\n\nPLEASE, read the Gephi TIPS file before you run the SVO pipeline.'
 
+title_options_SVO_default = ['SVO default visualization options']
+message_SVO_default = 'The SVO algorithms use default settings for visualizing results in Python Wordclouds and Google Earth Pro. If you want to customize the visualization options, please, use the Wordclouds GUI and the GIS Google Earth GUI with the csv files produced by SVO in input.'
+
 title_options_no_SVO_records = ['No SVO records extracted']
 message_no_SVO_records = 'The SVO algorithms have not extracted any SVOs. If you have selected to filter Subject and/or Verb, the filtering algorithms may have excluded available records.\n\nYou may want to untick either/both checkboxes and try again.'
 
@@ -183,6 +186,9 @@ message_NGrams = 'subprocess.call(cmd) error\n\nIf the VIEWER you are running ex
 
 title_options_GIS_GUI = ['GIS GUI options']
 message_GIS_GUI = 'The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv.\n\nWith a TXT file, NER extraction via Stanford CoreNLP must be first performed.\n\nWith a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.'
+
+title_options_GIS_default = ['GIS default visualization options']
+message_GIS_default = 'The Google Earth Pro visualization options in the GIS GUI are set by default. If you want to customize Google Earth Pro, please, use the GIS Google Earth GUI with the list of locations or of geocoded locations produced by the GIS pipeline as csv files.'
 
 title_options_geocoder = ["GIS geocoder"]
 message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.'
