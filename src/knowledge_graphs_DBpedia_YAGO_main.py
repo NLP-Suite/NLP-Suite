@@ -5,6 +5,7 @@
 import sys
 import GUI_util
 import IO_libraries_util
+import knowledge_graphs_DBpedia_util_chen
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"knowledge_graphs_DBpedia_YAGO_main.py",['os','tkinter','subprocess'])==False:
     sys.exit(0)
@@ -60,7 +61,11 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
         #http://mappings.DBpedia.org/server/ontology/classes/
         mb.showwarning(title='Warning',
                        message='The DBpedia script is still under development. Regardless of the ontology class you select, it will process \'Thing\' as the class.\n\nWatch this space... Coming soon...')
-        filesToOpen = knowledge_graphs_DBpedia_util.DBpedia_annotate(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, DBpedia_YAGO_class_list, confidence_level)
+        # filesToOpen = knowledge_graphs_DBpedia_util.DBpedia_annotate(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, DBpedia_YAGO_class_list, confidence_level)
+        # filesToOpen = knowledge_graphs_DBpedia_util.DBpedia_annotate(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, DBpedia_YAGO_class_list, confidence_level)
+        filesToOpen = knowledge_graphs_DBpedia_util_chen.DBpedia_annotate(inputFilename, input_main_dir_path,
+                                                                     output_dir_path,
+                                                                     DBpedia_YAGO_class_list)
     elif knowledge_graphs_YAGO_var==True:
         if not IO_internet_util.check_internet_availability_warning('knowledge_graphs_DBpedia_YAGO_main.py'):
             return

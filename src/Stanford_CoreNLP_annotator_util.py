@@ -188,7 +188,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'gender':['Word', 'Gender', 'Sentence ID', 'Sentence','Document ID', 'Document'],
         'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
         'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Time','Time normalized NER','Sentence ID', 'Sentence','Document ID', 'Document'],
-        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Location", 'Person', 'Time',
+        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Location", 'Person', 'Time',
                    'Time normalized NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         # Chen
         # added Deps column
@@ -1273,6 +1273,7 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
     for sentence in json['sentences']:
         entitymentions = sentence['entitymentions']
         complete_sent = ''
+        N = []  # list that stores the Negation information appear in sentences
         L = []  # list that stores the location information appear in sentences
         NER_value = []
         T = []  # list that stores the time information appear in sentences
@@ -1326,9 +1327,10 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
         if len(container) > 0:
             for row in container:
                 if extract_date_from_filename_var:
-                    openIE.append([row[0], row[1], row[2],"; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),date_str, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                    openIE.append([row[0], row[1], row[2], 'N/A', "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),date_str, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
                 else:
-                    openIE.append([row[0], row[1], row[2],"; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                    openIE.append([row[0], row[1], row[2], 'N/A', "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                # nidx += 1
         # for each sentence, get locations
         if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:
             # produce an intermediate location file
