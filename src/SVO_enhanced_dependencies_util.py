@@ -335,9 +335,7 @@ def verb_root(verb_list, conj_word, token, sent_data):#extract subject, object, 
         if len(negation_list) > 0:
             if negation_list[0] == True and conj_word == "or":
                 negation = True
-            
-            
-        
+
         if s_set == False and s != 'Someone?':#setting potential subject
             s_set = True
             s_share = s
@@ -395,7 +393,7 @@ def pred_root(token, gov_dict, sent_data):# returns one triplet of subject-link 
 def content_negation(content, sent_data):
     if isinstance(content, list):
         for index in content:
-            negation =  negation_detect(sent_data[index], sent_data)
+            negation = negation_detect(sent_data[index], sent_data)
     else:
         negation = negation_detect(sent_data[content], sent_data)
     return negation
