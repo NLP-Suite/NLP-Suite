@@ -828,11 +828,8 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 		columns=['Sentence length (No. of words)', 'Yngve score', 'Yngve sum', 'Frazier score', 'Frazier sum',
 				 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
 	for idx, txt in enumerate(all_input_docs.items()):
-		# this is the standard way of displaying the processing files in NLP Suite;
-		# 	your code is not standard
 		_, tail = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document[idx]))
 		print("Processing file " + str(idx + 1) + "/" + str(numFiles) + ' ' + tail)
-		# print(f'Running Sentence Complexity on {idx + 1} / {numFiles}')
 		doc = nlp(txt[1])
 		for i, sentence in enumerate(doc.sentences):
 			sent = str(sentence.constituency)
