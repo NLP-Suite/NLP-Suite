@@ -229,16 +229,17 @@ pydict["Newspaper article/Document titles"] = ["file_checker_converter_cleaner_m
 pydict["N-grams (word & character)"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["N-grams viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Nominalization"] = ["nominalization_main.py", 1]
-pydict["Search (ALL options)"] = ["search_ALL_main.py", 1]
+pydict["Search (ALL options GUI)"] = ["search_ALL_main.py", 1]
 pydict["Search CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Search text file(s) for n-grams & co-occurrences (N-grams viewer)"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Search text file(s) for words/collocations"] = ["file_search_byWord_main.py", 1]
-pydict["Sentence analysis (An overall GUI)"] = ["sentence_analysis_main.py", 1]
+pydict["Sentence analysis (ALL options)"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence complexity"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence/text readability (via textstat)"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence visualization: Dependency tree viewer (png graphs)"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence visualization: Dynamic sentence network viewer (Gephi graphs)"] = ["", 0]  # not available
 pydict["Sentiment analysis"] = ["sentiment_analysis_main.py", 1]
+pydict["Sentiments/emotions (ALL options GUI)"] = ["sentiments_emotions_ALL_main.py", 1]
 pydict["Shape of stories"] = ["shape_of_stories_main.py", 1]
 pydict["Similarities between documents (via Java Lucene)"] = ["social_science_research_main.py", 1]
 pydict["Similarities between documents (via Python difflib)"] = ["", 0]  # not available
@@ -413,7 +414,7 @@ sentence_tools_lb = tk.Label(window, text='SENTENCE Analysis Tools')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                sentence_tools_lb, True)
 sentence_tools_menu = ttk.Combobox(window, width = 90, textvariable = sentence_tools_var)
-sentence_tools_menu['values'] = ['Sentence analysis (An overall GUI)']
+sentence_tools_menu['values'] = ['Sentence analysis (ALL options)']
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, sentence_tools_menu)
 
 

@@ -39,7 +39,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         memory_var,
         document_length_var,
         limit_sentence_length_var,
-        manual_Coref, open_GUI, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, single_quote,
+        manual_Coref, open_GUI, language_var, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, single_quote,
         CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var):
 
     filesToOpen = []
@@ -64,6 +64,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     if CoreNLP_annotators_var == True and 'Coreference PRONOMINAL resolution' in CoreNLP_annotators_menu_var:
         if IO_libraries_util.check_inputPythonJavaProgramFile("Stanford_CoreNLP_coReference_util.py") == False:
             return
+        if language_var!='English' and language_var!='Chinese':
+            mb.showwarning(title='Language',message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
+            return
+
         # if "Neural" in CoreNLP_annotators_menu_var:
         #     CoRef_Option = 'Neural Network'
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
@@ -89,8 +93,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             return
 
         if parser and parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
+            if language_var == 'German' or language_var == 'Hungarian':
+                mb.showwarning(title='Language',
+                               message='The Stanford CoreNLP Probabilistic Context Free Grammar (PCFG) is not available for German and Hungarian.')
+                return
             annotator='parser (pcfg)'
         elif parser_menu_var == 'Neural Network':
+            if language_var == 'Arabic' or language_var == 'Hungarian':
+                mb.showwarning(title='Language',
+                               message='The Stanford CoreNLP Neural Network dependency parsing is not available for Arabic and Hungarian.')
+                return
             annotator='parser (nn)'
         else:
             if CoreNLP_annotators_var and CoreNLP_annotators_menu_var != '':
@@ -101,22 +113,46 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                 elif 'Sentence splitter (with sentence length)' in CoreNLP_annotators_menu_var:
                     annotator = 'Sentence'
                 elif 'Lemma annotator' in CoreNLP_annotators_menu_var:
+                    if language_var != 'English':
+                        mb.showwarning(title='Language',
+                                       message='The Stanford CoreNLP lemmatizer is only available for English.')
+                        return
                     annotator = 'Lemma'
                 elif 'POS annotator' in CoreNLP_annotators_menu_var:
                     annotator = 'All POS'
                 elif 'Gender' in CoreNLP_annotators_menu_var:
+                    if language_var != 'English':
+                        mb.showwarning(title='Language',
+                                       message='The Stanford CoreNLP gender annotator is only available for English.')
+                        return
                     annotator = 'gender'
                 elif 'Quote' in CoreNLP_annotators_menu_var:
+                    if language_var != 'English':
+                        mb.showwarning(title='Language',
+                                       message='The Stanford CoreNLP quote annotator is only available for English.')
+                        return
                     annotator = 'quote'
                 elif 'Normalized' in CoreNLP_annotators_menu_var:
                     annotator = 'normalized-date'
                 elif '*' in CoreNLP_annotators_menu_var:
                     annotator = ['gender','normalized-date','quote']
                 elif 'Sentiment analysis' in CoreNLP_annotators_menu_var:
+                    if language_var != 'English':
+                        mb.showwarning(title='Language',
+                                       message='The Stanford CoreNLP sentiment analysis annotator is only available for English.')
+                        return
                     annotator = ['sentiment']
                 elif 'SVO' in CoreNLP_annotators_menu_var:
+                    if language_var == 'Arabic' or language_var == 'Hungarian':
+                        mb.showwarning(title='Language',
+                                       message='The Stanford CoreNLP SVO annotator is not available for Arabic and Hungarian.')
+                        return
                     annotator = ['SVO']
                 elif 'OpenIE' in CoreNLP_annotators_menu_var:
+                    if language_var != 'English':
+                        mb.showwarning(title='Language',
+                                       message='The Stanford CoreNLP OpenIE annotator is only available for English.')
+                        return
                     annotator = ['OpenIE']
                 else:
                     return
@@ -169,6 +205,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  limit_sentence_length_var.get(),
                                  manual_Coref_var.get(),
                                  open_GUI_var.get(),
+                                 language_var.get(),
                                  parser_var.get(),
                                  parser_menu_var.get(),
                                  fileName_embeds_date.get(),
@@ -189,8 +226,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=480, # height at brief display
-                             GUI_height_full=560, # height at full display
+                             GUI_height_brief=520, # height at brief display
+                             GUI_height_full=600, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -229,6 +266,7 @@ def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
+language_var = tk.StringVar()
 memory_var = tk.IntVar()
 date_extractor_var = tk.IntVar()
 CoreNLP_gender_annotator_var = tk.IntVar()
@@ -357,6 +395,15 @@ def check_CoreNLP_dateFields(*args):
 
 fileName_embeds_date.trace('w', check_CoreNLP_dateFields)
 
+language_lb = tk.Label(window,text='Language')
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
+                                               y_multiplier_integer, language_lb, True)
+
+language_var.set('English')
+language_menu = tk.OptionMenu(window, language_var, 'English', 'Arabic','Chinese','German','Hungarian','Italian','Spanish')
+language_menu.configure(state="disabled")
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100,
+                                               y_multiplier_integer, language_menu)
 
 parser_var.set(1)
 parser_checkbox = tk.Checkbutton(window, text='CoreNLP parser', variable=parser_var, onvalue=1, offvalue=0)
@@ -502,6 +549,7 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
                'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
+               'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
                'CoNLL Table': 'TIPS_NLP_Stanford CoreNLP CoNLL table.pdf',
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
                'Noun Analysis': "IPS_NLP_Noun Analysis.pdf",
@@ -509,7 +557,7 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                'Function Words Analysis': 'TIPS_NLP_Function Words Analysis.pdf',
                'Clause Analysis': 'TIPS_NLP_Clause analysis.pdf'}
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf',
-TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'csv files - Problems & solutions', 'Stanford CoreNLP performance & accuracy', 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'Stanford CoreNLP OpenIE', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'NER (Named Entity Recognition)', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'English Language Benchmarks' #, 'Java download install run'
+TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'csv files - Problems & solutions', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy', 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'Stanford CoreNLP OpenIE', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'NER (Named Entity Recognition)', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'English Language Benchmarks' #, 'Java download install run'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
@@ -534,16 +582,18 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
                                   "Please, tick the checkbox if your filenames embed a date (e.g., The New York Times_12-23-1992).\n\nWhen the date option is ticked, the script will add a date field to the CoNLL table. The date field will be used by other NLP scripts (e.g., Ngrams).\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the follwing information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
+                                  "Please, using the dropdown menu, select the language to be used: English, Arabic, Chinese, German, Hungarian, Italian, or Spanish.\n\nNot all annotators are available for all languages, in fact, most are not. Please, read the TIPS file TIPS_NLP_Stanford CoreNLP supported languages.pdf"+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
                                   "Please, tick the checkbox if you wish to use the CoreNLP parser to obtain a CoNLL table (CoNLL U format).\n\nThe CoNLL table is the basis of many of the NLP analyses: noun & verb analysis, function words, clause analysis, query CoNLL.\n\nYou have a choice between two types of papers:\n   1. the recommended default Probabilistic Context Free Grammar (PCFG) parser;\n   2. a Neural-network dependency parser.\n\nThe neural network approach is more accurate but much slower.\n\nIn output the scripts produce a CoNLL table with the following 9 fields: ID, FORM, LEMMA, POSTAG, NER (23 classes), HEAD, DEPREL, DEPS, CLAUSAL TAGS (the neural-network parser does not produce clausal tags).\n\nThe following fields will be automatically added to the standard 9 fields of a CoNLL table (CoNLL U format): RECORD NUMBER, DOCUMENT ID, SENTENCE ID, DOCUMENT (INPUT filename), DATE (if the filename embeds a date).\n\nIf you suspect that CoreNLP may have given faulty results for some sentences, you can test those sentences directly on the Stanford CoreNLP website at https://corenlp.run")
     # GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
     #                               "Please, tick the checkbox if you wish to compute a sentence table with various sentence statistics.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
-                                  "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the CoreNLP parser results contained in the CoNLL table.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
+                                  "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the CoreNLP parser results contained in the CoNLL table.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
                                   "Please, using the dropdown menu, select one of the many other annotators available through Stanford CoreNLP: Coreference pronominal resolution, DepRel, POS, NER (Named Entity Recognition), NER normalized date. gender, quote, and sentiment analysis.\n\nANNOTATORS MARKED AS NEURAL NETWORK ARE MORE ACCURATE, BUT SLOW AND REQUIRE A GREAT DEAL OF MEMORY.\n\n1.  PRONOMINAL co-reference resolution refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'. CoreNLP can resolve other cases but the algorithm here is restricted to pronominal resolution.\n\nThe co-reference resolution checkbox is disabled when selected an entire directory in input. The co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nTick the checkbox Manually edit coreferenced document if you wish to resolve manually cases of unresolved or wrongly resolved coreferences. MANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\nTick the Open GUI checkbox to open the specialized GUI for pronominal coreference resolution.\n\n2.  The CoreNLP NER annotator recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\n3.  The NER NORMALIZED DATE annotator extracts standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\n4.  The CoreNLP coref GENDER annotator extracts the gender of both first names and personal pronouns (he, him, his, she, her, hers) using a neural network approach. This annotator requires a great deal of memory. So, please, adjust the memory allowing as much memory as you can afford.\n\n5.  The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker. The default CoreNLP parameter is DOUBLE quotes. If you want to process both DOUBLE and SINGLE quotes, plase tick the checkbox 'Include single quotes.'\n\n6.  The SENTIMENT ANALYSIS annotator computes the sentiment values (negative, neutral, positive) of each sentence in a text.\n\n6.  The OpenIE (Open Information Extraction) annotator extracts  open-domain relation triples, representing a subject, a relation, and the object of the relation.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files annd Excel charts. The Gender annotator will also produce an html file with male tags displayed in blue and female tags displayed in red. The Coreference annotator will produce txt-format copies of the same input txt files but co-referenced.\n\Select * to run Gender annotator (Neural Network), Normalized NER date, and Quote/dialogue annotator (Neural Network).")
     # GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
     #                               "Please, using the dropdown menu, select the type of Stanford coreference you wish to use for coreference Resolution (Neural Network is slowest but most accurate; recommended!\n\nThe co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nWhile CoreNLP can resolve different coreference types (e.g., nominal, pronominal), the SVO script filters only pronominal types. Pronominal coreference refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'.\n\nPlease, select the memory size Stanford CoreNLP will use to resolve coreference. Default = 6. Lower this value if CoreNLP runs out of resources. Increase the value for larger files.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
                                   GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
