@@ -205,24 +205,23 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 			filesToOpen.append(Excel_outputFilename)
 
 		# line plots by sentence index
-		# outputFiles = charts_Excel_util.compute_csv_column_frequencies(window=GUI_util.window,
-		# 														inputFilename=verb_file_name,
-		# 														inputDataFrame='',
-		# 														outputDir=outputDir,
-		# 														openOutputFiles=openOutputFiles,
-		# 														createExcelCharts=createExcelCharts,
-		# 														columns_to_be_plotted=[[1, 4]],
-		# 														select_col='Verb Voice',
-		# 														hover_col=['FORM'],
-		# 														group_col=['Sentence ID'
-		# 																   ],
-		# 														fileNameType='NVA',
-		# 														chartType='line',
-		# 														count_var=0)
-		# if len(outputFiles) > 0:
-		# 	filesToOpen.extend(outputFiles)
-		# if outputFiles != "":
-		# 	filesToOpen.append(outputFiles)
+		outputFiles = charts_Excel_util.compute_csv_column_frequencies(window=GUI_util.window,
+																inputFilename=verb_file_name,
+																inputDataFrame='',
+																outputDir=outputDir,
+																openOutputFiles=openOutputFiles,
+																createExcelCharts=createExcelCharts,
+																columns_to_be_plotted=[[1, 4]],
+																select_col='Verb Voice',
+																hover_col=['FORM'],
+																group_col=['Sentence ID'],
+																fileNameType='NVA',
+																chartType='line',
+																count_var=0)
+		if len(outputFiles) > 0:
+			filesToOpen.extend(outputFiles)
+		if outputFiles != "":
+			filesToOpen.append(outputFiles)
 
 	return filesToOpen
 
