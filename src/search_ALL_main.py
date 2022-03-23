@@ -21,7 +21,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
-GUI_label='Graphical User Interface (GUI) for ALL searches available in the NLP Suite'
+GUI_label='Graphical User Interface (GUI) for ALL Searches Available in the NLP Suite'
 head, scriptName = os.path.split(os.path.basename(__file__))
 IO_setup_display_brief=True
 config_filename = ''

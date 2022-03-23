@@ -69,8 +69,8 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
     for file in files:
         isFirstOcc = True
         docIndex += 1
-        print("Processing file " + str(docIndex) + "/" + str(nFile) + " " + file)
-        # print("file",file)
+        _, tail = os.path.split(file)
+        print("Processing file " + str(docIndex) + "/" + str(nFile) + ' ' + tail)
         if search_by_dictionary:
             break
         if search_by_search_keywords:
@@ -96,7 +96,8 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
             f.close()
             if search_within_sentence:
                 # sentences_ = sent_tokenize(docText)  # the list of sentences in corpus
-                sentences_ = sent_tokenize_stanza(stanzaPipeLine(docText))
+                # sentences_ = sent_tokenize_stanza(stanzaPipeLine(docText))
+                sentences_ = stanzaPipeLine(docText).sentences
                 sentence_index = 0
                 for sent in sentences_:
                     if len(sent) == 0:
@@ -106,7 +107,8 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                     if not case_sensitive:
                         sent = sent.lower()
                     # tokens_ = word_tokenize(sent)
-                    tokens_ = word_tokenize_stanza(stanzaPipeLine(sent))
+                    # tokens_ = word_tokenize_stanza(stanzaPipeLine(sent))
+                    tokens_ = [token.text for token in sentences_.tokens]
                     for keyword in search_keyword:
                         if keyword in sent:
                             if isFirstOcc:
@@ -148,13 +150,15 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                                     form = search_keywords_list
                                     writer.writerow(
                                         [keyword, form, first_occurrence_index, len(sentences_), percent_position, frequency,
+                                         sentence_index, sent,
                                          docIndex,
-                                         IO_csv_util.dressFilenameForCSVHyperlink(file), sentence_index, len(sentences_), sent])
+                                         IO_csv_util.dressFilenameForCSVHyperlink(file)])
                                 else:
                                     writer.writerow(
                                         [keyword, '', first_occurrence_index, len(sentences_), percent_position, frequency,
+                                        sentence_index, sent,
                                          docIndex,
-                                         IO_csv_util.dressFilenameForCSVHyperlink(file), sentence_index, len(sentences_), sent])
+                                         IO_csv_util.dressFilenameForCSVHyperlink(file)])
                         else:
                             continue
             else:
@@ -195,50 +199,58 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                                 form = search_keywords_list
                                 writer.writerow(
                                     [keyword, form, "N/A", "N/A", "N/A", frequency,
+                                    "N/A", "N/A",
                                      docIndex,
-                                     IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
+                                     IO_csv_util.dressFilenameForCSVHyperlink(file)])
                             else:
                                 writer.writerow(
                                     [keyword, '', "N/A", "N/A", "N/A", frequency,
+                                     "N/A", "N/A",
                                      docIndex,
-                                     IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
+                                     IO_csv_util.dressFilenameForCSVHyperlink(file)])
                         else:
                             if lemmatize:
                                 form = search_keywords_list
                                 writer.writerow(
                                     [keyword, form, "N/A", "N/A", "N/A", "NOT FOUND",
+                                     "N/A", "N/A",
                                      docIndex,
-                                     IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
+                                     IO_csv_util.dressFilenameForCSVHyperlink(file)])
                             else:
                                 writer.writerow(
                                     [keyword, '', "N/A", "N/A", "N/A", "NOT FOUND",
+                                     "N/A", "N/A",
                                      docIndex,
-                                     IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
+                                     IO_csv_util.dressFilenameForCSVHyperlink(file)])
                     elif keyword in list(wordCounter.keys()):
                         search_keywords_found = True
                         if lemmatize:
                             form = search_keywords_list
                             writer.writerow(
                                 [keyword, form, "N/A", "N/A", "N/A", wordCounter[keyword],
+                                "N/A", "N/A",
                                  docIndex,
-                                 IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
+                                 IO_csv_util.dressFilenameForCSVHyperlink(file)])
                         else:
                             writer.writerow(
                                 [keyword, '', "N/A", "N/A", "N/A", wordCounter[keyword],
+                                 "N/A", "N/A",
                                  docIndex,
-                                 IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
+                                 IO_csv_util.dressFilenameForCSVHyperlink(file)])
                     else:
                         if lemmatize:
                             form = search_keywords_list
                             writer.writerow(
                                 [keyword, form, "N/A", "N/A", "N/A", "NOT FOUND",
+                                 "N/A", "N/A",
                                  docIndex,
-                                 IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
+                                 IO_csv_util.dressFilenameForCSVHyperlink(file)])
                         else:
                             writer.writerow(
                                 [keyword, '', "N/A", "N/A", "N/A", "NOT FOUND",
+                                "N/A", "N/A",
                                  docIndex,
-                                 IO_csv_util.dressFilenameForCSVHyperlink(file), "N/A", "N/A"])
+                                 IO_csv_util.dressFilenameForCSVHyperlink(file)])
 
     if search_keywords_found == False:
         mb.showwarning(title='Search string(s) not found',

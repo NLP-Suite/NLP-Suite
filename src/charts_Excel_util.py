@@ -682,6 +682,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     if 'line' in chart_type_list:
         from openpyxl.chart import (
             LineChart,
+            Reference,
             Series,
         )
     if 'scatter' in chart_type_list:

@@ -5,6 +5,7 @@
 import sys
 import GUI_util
 import IO_libraries_util
+import knowledge_graphs_DBpedia_util_chen
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"knowledge_graphs_DBpedia_YAGO_main.py",['os','tkinter','subprocess'])==False:
     sys.exit(0)
@@ -60,7 +61,11 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
         #http://mappings.DBpedia.org/server/ontology/classes/
         mb.showwarning(title='Warning',
                        message='The DBpedia script is still under development. Regardless of the ontology class you select, it will process \'Thing\' as the class.\n\nWatch this space... Coming soon...')
-        filesToOpen = knowledge_graphs_DBpedia_util.DBpedia_annotate(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, DBpedia_YAGO_class_list, confidence_level)
+        # filesToOpen = knowledge_graphs_DBpedia_util.DBpedia_annotate(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, DBpedia_YAGO_class_list, confidence_level)
+        # filesToOpen = knowledge_graphs_DBpedia_util.DBpedia_annotate(inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, DBpedia_YAGO_class_list, confidence_level)
+        filesToOpen = knowledge_graphs_DBpedia_util_chen.DBpedia_annotate(inputFilename, input_main_dir_path,
+                                                                     output_dir_path,
+                                                                     DBpedia_YAGO_class_list)
     elif knowledge_graphs_YAGO_var==True:
         if not IO_internet_util.check_internet_availability_warning('knowledge_graphs_DBpedia_YAGO_main.py'):
             return
@@ -132,7 +137,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                                                  y_multiplier_integer_add=2, # to be added for full display
                                                  increment=2) # to be added for full display
 
-GUI_label='Graphical User Interface (GUI) for HTML annotating documents using the knowledge graphs DBpedia & YAGO'
+GUI_label='Graphical User Interface (GUI) for HTML Annotating Documents Using the Knowledge Graphs (KG) DBpedia & YAGO'
 head, scriptName = os.path.split(os.path.basename(__file__))
 config_filename = scriptName.replace('main.py', 'config.csv')
 
