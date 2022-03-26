@@ -85,8 +85,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'No TIPS available':''}
-TIPS_options='No TIPS available'
+TIPS_lookup = {'The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf','Sentiment Analysis':"TIPS_NLP_Sentiment Analysis.pdf"}
+TIPS_options='The world of emotions and sentiments','Sentiment Analysis'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons

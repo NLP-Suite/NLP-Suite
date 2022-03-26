@@ -430,7 +430,7 @@ def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, output
     Excel_outputFilename = []
 
     # TODO remove return when calling function w/o headers are fixed
-    # return Excel_outputFilename
+    return Excel_outputFilename
 
     if len(inputDataFrame) != 0:
         data = inputDataFrame
