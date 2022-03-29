@@ -205,7 +205,10 @@ def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_displ
         run_button_state="disabled"
     else:
         run_button_state="normal"
-    window.focus_force()
+    try:
+        window.focus_force()
+    except:
+        pass
     return run_button_state, answer
 
 # every IO widget, files or directories, have a line in the config file
@@ -216,7 +219,6 @@ def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_displ
 # input_output_options[2] 0 NO input secondary dir
 # input_output_options[3] 0 NO output dir
 def write_config_file(window, config_filename, config_input_output_numeric_options, config_input_output_alphabetic_options, silent=False):
-    print('IN def write_config_file')
     # check that the config directory exists inside the NLP main directory
     if os.path.isdir(GUI_IO_util.configPath) == False:
         try:

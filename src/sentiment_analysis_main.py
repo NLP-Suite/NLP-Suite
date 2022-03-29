@@ -15,7 +15,7 @@ from subprocess import call
 
 import IO_files_util
 import IO_user_interface_util
-import Excel_util
+import charts_Excel_util
 import lib_util
 import GUI_IO_util
 import reminders_util
@@ -79,7 +79,7 @@ def run(inputFilename,inputDir,outputDir,
         hedonometer_var=1
         vader_var=1
         anew_var=1
-    elif SA_algorithm_var=='Stanford CoreNLP':
+    elif SA_algorithm_var=='Stanford CoreNLP (Neural Network)':
         CoreNLP_var=1
     elif SA_algorithm_var=='SentiWordNet':
         SentiWordNet_var=1
@@ -125,7 +125,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[2,4]]
                 hover_label=['Sentence']
                 # inputFilename = outputFilename
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                           outputFileLabel='CoreNLP_sent',
                                                           chart_type_list=["line"],
                                                           chart_title='Stanford CoreNLP - Sentiment Scores by Sentence Index',
@@ -139,7 +139,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[5,5]]
                 hover_label=[]
                 # inputFilename = inputFilename
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                           outputFileLabel='CoreNLP_SA',
                                                           chart_type_list=["bar"],
                                                           chart_title='Stanford CoreNLP - Sentiment Scores',
@@ -165,7 +165,7 @@ def run(inputFilename,inputDir,outputDir,
                                                  True)
                     call("python shape_of_stories_main.py", shell=True)
 
-                # outputFilenameXlsm1 = Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputQuotefilePath, chart_type_list = ["bar"], chart_title=
+                # outputFilenameXlsm1 = charts_Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputQuotefilePath, chart_type_list = ["bar"], chart_title=
                 # "Stanford CoreNLP (Sentiment Value)", column_xAxis_label_var = 'Sentiment value',
                 # column_yAxis_label_var = 'Frequency of sentiment value',outputExtension = '.xlsm',
                 # label1='SC',label2='CoreNLP_Sentiment',label3='bar',label4='chart',label5='',
@@ -209,7 +209,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[2,4]]
                 hover_label=['Sentence']
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='Hedo_sent',
                                                       chart_type_list=["line"],
                                                       chart_title='Hedonometer - Sentiment Scores by Sentence Index',
@@ -223,7 +223,7 @@ def run(inputFilename,inputDir,outputDir,
             columns_to_be_plotted = [[5,5]]
             hover_label=[]
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='Hedo_sent',
                                                       chart_type_list=["bar"],
                                                       chart_title='Hedonometer - Sentiment Scores',
@@ -258,7 +258,7 @@ def run(inputFilename,inputDir,outputDir,
             hover_label=['Sentence']
 
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='SentiWordNet_sent',
                                                       chart_type_list=["line"],
                                                       chart_title='SentiWordNet - Sentiment Scores by Sentence Index',
@@ -271,7 +271,7 @@ def run(inputFilename,inputDir,outputDir,
 
             columns_to_be_plotted = [[5,5]]
             hover_label=[]
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='SentiWordNet_sent',
                                                       chart_type_list=["bar"],
                                                       chart_title='SentiWordNet - Sentiment Scores',
@@ -308,7 +308,7 @@ def run(inputFilename,inputDir,outputDir,
             hover_label=['Sentence']
             # inputFilename = outputFilename
 
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='VADER_sent',
                                                       chart_type_list=["line"],
                                                       chart_title='VADER - Sentiment Scores by Sentence Index',
@@ -322,7 +322,7 @@ def run(inputFilename,inputDir,outputDir,
             columns_to_be_plotted = [[5,5]]
             hover_label=[]
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='VADER_sent',
                                                       chart_type_list=["bar"],
                                                       chart_title='VADER - Sentiment Scores',
@@ -357,7 +357,7 @@ def run(inputFilename,inputDir,outputDir,
                 hover_label=['Sentence','Sentence','Sentence']
 
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_sent',
                                                       chart_type_list=["line"],
                                                       chart_title='ANEW - Sentiment Scores by Sentence Index',
@@ -375,7 +375,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[5,5]]
             hover_label=[]
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_sent',
                                                       chart_type_list=["bar"],
                                                       chart_title='ANEW - Sentiment Scores',
@@ -394,7 +394,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[7,7]]
             hover_label=[]
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_arous',
                                                       chart_type_list=["bar"],
                                                       chart_title='ANEW - Arousal Scores',
@@ -413,7 +413,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[9,9]]
             hover_label=[]
             # inputFilename = outputFilename
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_dom',
                                                       chart_type_list=["bar"],
                                                       chart_title='ANEW - Dominance Scores',
@@ -453,8 +453,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=400, # height at brief display
-                             GUI_height_full=480, # height at full display
+                             GUI_height_brief=440, # height at brief display
+                             GUI_height_full=520, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -519,7 +519,7 @@ median_checkbox = tk.Checkbutton(window, text='Calculate sentence median', varia
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+200,y_multiplier_integer,median_checkbox)
 
 def display_reminder(*args):
-    if SA_algorithm_var.get()=='Stanford CoreNLP':
+    if SA_algorithm_var.get()=='Stanford CoreNLP (Neural Network)':
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_SA_CoreNLP_system_requirements,
                                      reminders_util.message_SA_CoreNLP_system_requirements,
@@ -543,7 +543,7 @@ def display_reminder(*args):
         return
 SA_algorithm_var.trace('w',display_reminder)
 
-SA_algorithms=['*','Stanford CoreNLP','ANEW','hedonometer','SentiWordNet','VADER']
+SA_algorithms=['*','Stanford CoreNLP (Neural Network)','ANEW','hedonometer','SentiWordNet','VADER']
 
 SA_algorithm_var.set('*')
 SA_algorithm_lb = tk.Label(window, text='Select sentiment analysis algorithm')
@@ -555,14 +555,14 @@ y_multiplier_integerSV=y_multiplier_integer-1
 
 def activate_memory_var(*args):
     global memory_var
-    if SA_algorithm_var.get()=='Stanford CoreNLP' or SA_algorithm_var.get()=='*':
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integerSV,
+    if SA_algorithm_var.get()=='Stanford CoreNLP (Neural Network)' or SA_algorithm_var.get()=='*':
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+600, y_multiplier_integerSV,
                                                        memory_var_lb, True)
 
         memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
         memory_var.pack()
         memory_var.set(6)
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+570,
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+670,
                                                        y_multiplier_integer, memory_var)
     else:
         memory_var_lb.place_forget() #invisible
@@ -580,9 +580,12 @@ shape_of_stories_var.set(0)
 shape_of_stories_checkbox = tk.Checkbutton(window, text='Do sentiments fluctuate across documents (Open \'Shape of stories\' GUI)', variable=shape_of_stories_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,shape_of_stories_checkbox)
 
+ALL_options_button = tk.Button(window, text='Sentiments/emotions (ALL options GUI)', command=lambda: call("python sentiments_emotions_ALL_main.py", shell=True))
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,ALL_options_button)
+
 def activate_SOS(*args):
     # the Shape of Stories is only available when processing a directory and using oreNLP
-    if input_main_dir_path.get()=='' or (SA_algorithm_var.get()!='Stanford CoreNLP' and SA_algorithm_var.get()!='*'):
+    if input_main_dir_path.get()=='' or (SA_algorithm_var.get()!='Stanford CoreNLP (Neural Network)' and SA_algorithm_var.get()!='*'):
         shape_of_stories_checkbox.config(state='disabled')
     else:
         shape_of_stories_checkbox.config(state='normal')
@@ -615,9 +618,9 @@ activate_SOS()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Sentiment Analysis':"TIPS_NLP_Sentiment Analysis.pdf"}
+TIPS_lookup = {'The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf','Sentiment Analysis':"TIPS_NLP_Sentiment Analysis.pdf"}
 # 'Java download install run':'TIPS_NLP_Java download install run.pdf'
-TIPS_options='Sentiment Analysis' #,'Java download install run'
+TIPS_options='The world of emotions and sentiments','Sentiment Analysis' #,'Java download install run'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
@@ -636,6 +639,8 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help", "Please, tick the checkbox to display a line plot of sentiment scores by sentence index across a specific document.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help", "Please, tick the checkbox to open the 'Shape of stories' GUI. The 'Shape of stories' algorithms will compute and visualize the \'shape of stories\' of a set of sentiment scores across different documents using different data reduction methods: Hiererchical Clustering, Singular Value Decomposition, Non-Negative Matrix Factorization.\n\nThe 'Shape of stories' GUI is only available when computing sentiment scores via Stanford CoreNLP on a corpus of txt files in an input directory.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help",GUI_IO_util.msg_openOutputFiles)
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
+                              "Please, click on the button to open the GUI for ALL options to analyze emotions/sentiments available in the NLP Suite.")
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message

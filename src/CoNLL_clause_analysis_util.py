@@ -18,7 +18,7 @@ import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
 import CoNLL_util
-import Excel_util
+import charts_Excel_util
 import statistics_csv_util
 import Stanford_CoreNLP_tags_util
 
@@ -87,7 +87,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
              return
 
         if createExcelCharts==True:
-            Excel_outputFilename= Excel_util.create_excel_chart(GUI_util.window,
+            Excel_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
                                           data_to_be_plotted=[clausal_stats],
                                           inputFilename=clausal_analysis_stats_file_name,
                                           outputDir=outputDir,
@@ -102,7 +102,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
             return filesToOpen # to avoid code breaking in plot by sentence index
 
             # line plot by sentence index
-            Excel_outputFilename=Excel_util.compute_csv_column_frequencies(GUI_util.window,
+            Excel_outputFilename=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
                                                                          clausal_analysis_file_name,
                                                                          '',
                                                                          outputDir,
@@ -111,19 +111,19 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
                                                                          [[8,8]],
                                                                          ['CLAUSE TAGS'],
                                                                             ['FORM','Sentence'],
-                                                                           ['Document ID','Sentence ID'],
+                                                                           ['Sentence ID','Document ID'],
                                                                          'CA','line')
             if len(Excel_outputFilename)>0:
                 filesToOpen.extend(Excel_outputFilename)
 
-            # output_df= Excel_util.add_missing_IDs(clausal_analysis_file_name)
+            # output_df= charts_Excel_util.add_missing_IDs(clausal_analysis_file_name)
             # # overwrite original file having added any missing document ID and sentence ID
             # output_df.to_csv(clausal_analysis_file_name,index=False)
             #
             columns_to_be_plotted = [[1, 8]]
             hover_label = ['CLAUSAL TAG-DESCRIPTION']
             inputFilename = clausal_analysis_file_name
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted,
                                                       inputFilename, outputDir,
                                                       outputFileLabel='CoNLL_Clause',
                                                       chart_type_list=["line"],

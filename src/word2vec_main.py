@@ -12,28 +12,21 @@ import tkinter.messagebox as mb
 import GUI_IO_util
 import IO_files_util
 import word2vec_util
-import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
         remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var,
-        vis_menu_var, keywords_var):
+        vis_menu_var, dim_menu_var, keywords_var):
 
     ## if statements for any requirements
 
     if 'Clustering' in vis_menu_var and keywords_var=='':
-        mb.showwarning(title='Missing keywords',message='The algorithm requires a list of comma-separated keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
+        mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
         return
     filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
-                             remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var, vis_menu_var, keywords_var)
+                             remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var, vis_menu_var, dim_menu_var, keywords_var)
 
-    reminders_util.checkReminder('*',
-                                 reminders_util.title_options_Word2Vec,
-                                 reminders_util.message_Word2Vec,
-                                 True)
-
-    title_options_Word2Vec = ['Word2Vec HTML visual']
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
@@ -50,6 +43,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 window_var.get(),
                                 min_count_var.get(),
                                 vis_menu_var.get(),
+                                dim_menu_var.get(),
                                 keywords_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -103,52 +97,56 @@ vector_size_var=tk.IntVar()
 window_var=tk.IntVar()
 min_count_var=tk.IntVar()
 vis_menu_var=tk.StringVar()
+dim_menu_var=tk.StringVar()
 keywords_var=tk.StringVar()
 
-##
+## option for stopwords
 remove_stopwords_var.set(1)
 remove_stopwords_checkbox = tk.Checkbutton(window, text='Remove stopwords', variable=remove_stopwords_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,remove_stopwords_checkbox)
-##
+## option for Lemmatization
 lemmatize_var.set(1)
 lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,lemmatize_checkbox)
-##
-sg_lb = tk.Label(window,text='Select the learning architecture')
+## option for model architecture
+sg_lb = tk.Label(window,text='Select the training model architecture')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sg_lb,True)
 sg_menu_var.set('Skip-Gram')
 sg_menu = tk.OptionMenu(window,sg_menu_var, 'Skip-Gram','CBOW')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+30,y_multiplier_integer,sg_menu)
-##
+## option for vector size
 vector_size_lb = tk.Label(window,text='Vector size')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,vector_size_lb,True)
 vector_size_var.set(100)
 vector_size_entry = tk.Entry(window,width=5,textvariable=vector_size_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,vector_size_entry)
-##
+## option for window size
 window_lb = tk.Label(window,text='Window size')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,window_lb,True)
 window_var.set(5)
 window_entry = tk.Entry(window,width=5,textvariable=window_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,window_entry)
-##
+## option for minimum count
 min_count_lb = tk.Label(window,text='Minimum count')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,min_count_lb,True)
 min_count_var.set(5)
 min_count_entry = tk.Entry(window,width=5,textvariable=min_count_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,min_count_entry)
-##
+## option for visualization method
 vis_var_lb = tk.Label(window,text='Select the visualization method')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,vis_var_lb,True)
 vis_menu_var.set('Plot all word vectors')
 vis_menu = tk.OptionMenu(window,vis_menu_var, 'Plot all word vectors', 'Clustering of word vectors')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+20,y_multiplier_integer,vis_menu)
-
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,vis_menu, True)
+#### 2D or 3D plot
+dim_menu_var.set('2D')
+dim_menu = tk.OptionMenu(window,dim_menu_var, '2D', '3D')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+240,y_multiplier_integer,dim_menu)
+#### entry for clustering keywords
 keywords_var.set('')
 keywords_lb = tk.Label(window, text='Keywords')
 cluster_var_entry = tk.Entry(window,width=10,textvariable=keywords_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+30,y_multiplier_integer,keywords_lb,True)
-
 keywords_entry = tk.Entry(window, textvariable=keywords_var)
 keywords_entry.configure(state='disabled',width=100)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,keywords_entry)
@@ -178,21 +176,37 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
         GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help", "Please, tick the checkbox to exclude stopwords from the analyzes (e.g, determiners, personal and possessive pronouns, auxiliaries).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help", "Please, tick the checkbox to lemmatize nouns (using the singular version instead of plural, e.g., ox iinstead of oxen, child instead of children) and verbs (using the infinitive form instead of any verb forms, e.g., go gor going, went, goes).")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 3),"Help", "-")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 4), "Help", "Vector size refers to the dimensionality of the word vectors.\n\nIf you have a large corpus (> billions of tokens), you can go up to 100-300 dimensions.\n\nIn general, word vectors with more dimensions give better results.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 5), "Help", "Window size refers to the maximum distance between the current and predicted word within a sentence, in other words, how many words come before and after your given word.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 6), "Help", "Minimum count refers to the minimum frequency threshold.\n\nThe words with total frequency lower than the selected value will be ignored.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 7), "Help","Using the dropdown menu, select the option you want to use in running WordNet.\n\nSelect \'Plot all word vectors\' if you want to use ALL the words in your input file(s).\n\nSelect \'Clustering of word vectors\' if you want to focus on selected keywords. THE KEYWORDS MUST BE CONTAINED IN THE INPUT FILE(S).\n\nA good analysis strategy is to run Word2Vec for all words first, then re-run the algorithm on a special subset of keywords.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 1),
+                                  "Help",
+                                  "Please, tick the checkbox to exclude stopwords from the analyzes (e.g, determiners, personal and possessive pronouns, auxiliaries).")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 2),
+                                  "Help",
+                                  "Please, tick the checkbox to lemmatize nouns (using the singular version instead of plural, e.g., ox iinstead of oxen, child instead of children) and verbs (using the infinitive form instead of any verb forms, e.g., go gor going, went, goes).")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 3),
+                                  "Help",
+                                  "Please, using the dropdown menu, select the preferred model architecture for training Word2Vec: Skip-Gram and CBOW (Continuous Bag of Words).\n\nWhich model is better?\n\nAccording to the original paper by Mikolov et al. (2013) Skip-Gram works well with small datasets, and can better represent less frequent words. However, CBOW is found to train faster than Skip-Gram, and can better represent more frequent words.\n\nMikolov, Tomas, Kai Chen, Greg Corrado, and Jeffrey Dean. 2013. 'Efficient Estimation of Word Representations in Vector Space' arXiv:1301.3781.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 4),
+                                  "Help",
+                                  "'Vector size' refers to the dimensionality of the word vectors. If you have a large corpus (> billions of tokens), you can go up to 100-300 dimensions. Generally word vectors with more dimensions give better results.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 5),
+                                  "Help",
+                                  "'Window size' refers to the maximum distance between the current and predicted word within a sentence. In other words, how many words come before and after your given word.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 6),
+                                  "Help",
+                                  "'Minimum count' refers to the minimum frequency threshold. The words with total frequency lower than this will be ignored.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 7),
+                                  "Help", GUI_IO_util.msg_openOutputFiles)
+                                  # "Help", "Please, using the dropdown menu, select the architecture to be used in training Word2Vec: CBOW (Continuous Bag-of-Words) and Skip-gram. Both approaches are based on neural networks. Generally, CBOW is much faster and with slightly better accuracy for larger corpora. Skip-gram is better for smaller corpora.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 8),
-                                  "Help", "Enter comma-separated keywords you want to focus on for semantic similarity. The words MUST be in the file(s) you are analyzing.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment + 9),"Help",GUI_IO_util.msg_openOutputFiles)
+                                  "Help",
+                                  "Enter comma-separated keywords you want to focus on for semantic similarity. The words MUST be in the file(s) you are analyzing.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 9),
+                                  "Help", GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
-readMe_message="This Python 3 script analyzes file(s) with Gensim Word2Vec .\n\nIn INPUT the algorith can take a single txt file or a set of files in a directory.\n\nIn OUTPUT the algorithm produces two types of files:\n   1. a csv file;\n   2. an HTML file that visualizes a T-SNE graph of semantic distances between words. YOU CAN ENLARGE A TYPICAL MESSY DISPLAY BY SELECTING WITH YOUR MOUSE AN AREA OF INTEREST OF THE GRAPH. Hit REFRESH to go back to the original display."
+readMe_message="This Python 3 script analyzes a set of documents for Word2Vec with Gensim."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 

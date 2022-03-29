@@ -39,7 +39,7 @@ import file_splitter_ByLength_util
 import file_splitter_merged_util
 import IO_files_util
 import IO_user_interface_util
-import Excel_util
+import charts_Excel_util
 import html_annotator_dictionary_util
 import SVO_enhanced_dependencies_util # Enhanced++ dependencies
 import reminders_util
@@ -86,6 +86,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
     CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_annotator', 'Stanford CoreNLP')
     if CoreNLPdir== None:
         return filesToOpen
+    # check the version of CoreNLP
+    IO_libraries_util.check_CoreNLPVersion(CoreNLPdir)
 
     # check for Java
     errorFound, error_code, system_output=IO_libraries_util.check_java_installation('Stanford CoreNLP')
@@ -174,20 +176,20 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'Lemma': ["ID", "Form", "Lemma", "Record ID", "Sentence ID", "Document ID", "Document"],
         'POS':[['Verbs'],['Nouns']],
         'All POS':["ID", "Form", "POStag", "Record ID", "Sentence ID", "Document ID", "Document"],
-        'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document'],
+        'NER': ['Word', 'NER Value', 'tokenBegin', 'tokenEnd', 'Sentence ID', 'Sentence', 'Document ID','Document'],
         # TODO NER with date for dynamic GIS; modified below
         # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
-        'sentiment': ['Document ID', 'Document','Sentence ID', 'Sentence', 'Sentiment score', 'Sentiment label'],
+        'sentiment': ['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
-        'quote': ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of Quotes', 'Speakers'],
+        'quote': ['Speakers', 'Number of Quotes', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         'coref': 'text',
         'coref table': ["Pronoun", "Reference", "Reference Start ID in Sentence",
                         "First Reference Sentence ID", "First Reference Sentence", "Pronoun Start ID in Reference Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
-        'gender':['Word', 'Gender', 'Sentence','Sentence ID', 'Document ID', 'Document'],
+        'gender':['Word', 'Gender', 'Sentence ID', 'Sentence','Document ID', 'Document'],
         'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
-        'SVO':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Negation","Location",'Person','Time','Time normalized NER','Sentence'],
-        'OpenIE':['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', "Location", 'Person', 'Time',
-                   'Time normalized NER', 'Sentence'],
+        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Time','Time normalized NER','Sentence ID', 'Sentence','Document ID', 'Document'],
+        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Location", 'Person', 'Time',
+                   'Time normalized NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         # Chen
         # added Deps column
         'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
@@ -201,10 +203,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
     #collecting input txt files
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     nDocs = len(inputDocs)
-    # for file in inputDocs:
-    #     listOfFiles = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,'Stanford CoreNLP',file)
-    #     files.extend(listOfFiles)
-    #     nDocs = len(files)
     if nDocs==0:
         return filesToOpen
 
@@ -220,7 +218,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
     param_string_NN = ''
     # param_list = []
     # param_list_NN = []
-    pronouns_count = 0#count the number of prounouns in the input, measure the coreference rate
     corefed_pronouns = 0#pronouns that are corefed
     for annotator in annotator_params:
         if "gender" in annotator or "quote" in annotator or "coref" in annotator or "SVO" in annotator or "OpenIE" in annotator or ("parser" in annotator and "nn" in annotator):
@@ -329,7 +326,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
         #   which has a maximum 100,000 characters doc size limit
         if ("SVO" in annotator_params or "OpenIE" in annotator_params) and "coref" in docName.split("_"):
             split_file = file_splitter_merged_util.run(docName, "<@#", "#@>", outputDir)
-            split_file = IO_files_util.getFileList("", split_file[0], fileType=".txt")
+            if len(split_file)>1:
+                split_file = IO_files_util.getFileList("", split_file[0], fileType=".txt")
         else:
             split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName,'',document_length)
         nSplitDocs = len(split_file)
@@ -437,19 +435,16 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     sub_result = routine(config_filename, split_docID, doc, sentenceID, CoreNLP_output, **kwargs)
                 else:
                     sub_result = routine(config_filename,docID, docName, sentenceID, CoreNLP_output, **kwargs)
-                #count the number of pronouns
-                if annotator_chosen == 'coref table':
-                    pronouns_count += count_pronoun(CoreNLP_output)
-                # sentenceID = new_sentenceID
 
                 if output_format == 'text':
                     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
                                                                              'CoreNLP_'+ str(annotator_chosen))
-                    with open(outputFilename, "a+", encoding='utf-8', errors='ignore') as text_file:
+                    with open(outputFilename, "a+", encoding='utf-8', errors='ignore') as output_text_file:
+                        # insert the separators <@# #@> in the the output file so that the file can then be split on the basis of these characters
                         if processing_doc != docTitle:
-                            text_file.write("\n<@#" + docTitle + "#@>\n")
+                            output_text_file.write("\n<@#" + docTitle + "#@>\n")
                             processing_doc = docTitle
-                        text_file.write(sub_result)
+                        output_text_file.write(sub_result)
                     if outputFilename not in filesToOpen:
                         filesToOpen.append(outputFilename)
                 else:
@@ -516,7 +511,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     #     outputFilename_tag = 'Multi-tags'
                 outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                                  'CoreNLP_NER_'+outputFilename_tag)
-            elif "parser" in annotator_chosen:#CoNLL
+            elif "parser" in annotator_chosen:
                 outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CoreNLP', 'CoNLL')
 
             elif output_format != 'text':
@@ -532,13 +527,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # output_format=['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document','Date']
                     output_format.append("Date")
                 # if NER_sentence_var == 1:
-                #     df = Excel_util.add_missing_IDs(df)
+                #     df = charts_Excel_util.add_missing_IDs(df)
                 df = pd.DataFrame(run_output, columns=output_format)
                 #count the number of corefed pronouns (COREF annotator)
                 if annotator_chosen == 'coref table':
                     corefed_pronouns = df.shape[0]
                 df.to_csv(outputFilename, index=False)
-
     # print("Length of Files to Open after generating files: ", len(filesToOpen))
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
@@ -606,7 +600,20 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         for key, value in kwargs.items():
                             if key == "gender_var" and value == True:
                                 filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, kwargs["gender_filename"],
-                                                                  filesToOpen, genderCol=["S Gender", "O Gender"], wordCol=["S", "O"])
+                                                                  filesToOpen, genderCol=["S Gender", "O Gender"], wordCol=["Subject (S)", "Object (O)"])
+                if "coref table" in str(annotator_params) or "parser" in str(annotator_params) or "SVO" in str(annotator_params):
+                    if "coref table" in str(annotator_params):
+                        param = "coref table"
+                    if "parser" in str(annotator_params):
+                        param = "CoNLL"
+                    if "SVO" in str(annotator_params):
+                        param = "SVO"
+                    pronoun_files = check_pronouns(config_filename, filesToVisualize[j],
+                                             outputDir,
+                                             createExcelCharts, param, corefed_pronouns)
+                    if len(pronoun_files)>0:
+                        filesToOpen.extend(pronoun_files)
+
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))
     if len(filesError)>0:
@@ -625,11 +632,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                            'CoreNLP_speed_assessment')
     df = pd.DataFrame(speed_assessment, columns=speed_assessment_format)
     df.to_csv(speed_csv, index=False)
-    # filesToOpen.append(speed_csv) NO NEED TO OPEN THE SPED ASSESSMENT FILE; NOT A FILE FOR USERS
-    if pronouns_count > 0 and corefed_pronouns > 0:
-        print("Number of pronouns: ", pronouns_count)
-        print("Corefed pronouns: ", corefed_pronouns)
-        print("Pronouns coreference rate: "+ str((corefed_pronouns/pronouns_count)*100) + "%")
     if len(inputDir) != 0:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Output warning', 'The output filename generated by Stanford CoreNLP is the name of the directory processed in input, rather than any individual file in the directory. The output file(s) include all ' + str(nDocs) + ' files in the input directory processed by CoreNLP.\n\nThe different files are listed in the output csv file under the headers \'Document ID\' and \'Document\'.')
 
@@ -842,6 +844,7 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
     # print("With date embed in titles: ", extract_date_from_filename_var)
     # print("With date embed in text contents: ", extract_date_from_text_var)
     NER = []
+    result = []
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
     if date_str!='':
@@ -865,8 +868,8 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         for ner in sentence['entitymentions']:
-            temp = [ner['text'], ner['ner'], sentenceID, complete_sent,  ner['tokenBegin'],
-                    ner['tokenEnd'],documentID,
+            temp = [ner['text'], ner['ner'], ner['tokenBegin'],
+                    ner['tokenEnd'],sentenceID, complete_sent,  documentID,
                     IO_csv_util.dressFilenameForCSVHyperlink(document)]
             # check in NER value column
             if temp[1] in request_NER:
@@ -888,37 +891,38 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                                 # date did not match required format
                                 norm_date = ""
                         except:
-                            print("normalizedNER not found.")
+                            print("normalizedNER not available.")
                             norm_date = ""
                         temp.append(norm_date)
                         NER.append(temp)
                     else:
                         NER.append(temp)
-    result = []
-    index = 0
-    while index < len(NER):
-        temp = NER[index]
-        if NER[index][1] == 'CITY':
-            if index < len(NER)-1: # NER[index + 1] would break the code
-                # check if a city is followed by EITHER state/province OR country e.g., Atlanta, Georgia or Atlanta, United States
-                if NER[index + 1][1] == 'STATE_OR_PROVINCE' or NER[index + 1][1] == 'COUNTRY':
-                    temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
-                    index = index + 1
-                    # check if a city and state/province are also followed by country e.g., Atlanta, Georgia, United States
-                    if index < len(NER) - 1:
-                        if NER[index + 1][1] == 'COUNTRY':
-                            temp[0] = temp[0] + ', ' + NER[index + 1][0]
-                            index = index + 1
-        elif NER[index][1] == 'STATE_OR_PROVINCE':
-            if index < len(NER)-1: # NER[index + 1] would break the code
-                # check if a state/province  is followed by a country e.g., Georgia, United States
-                if NER[index + 1][1] == 'COUNTRY':
-                    temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
-                    index = index + 1
-        result.append(temp)
-        index = index + 1
-    return result
+                result.append(temp)
 
+    #    disconnect the next lines because they are causing more problems than solutions
+    # index = 0
+    # while index < len(NER):
+    #     temp = NER[index]
+    #     if NER[index][1] == 'CITY':
+    #         if index < len(NER)-1: # NER[index + 1] would break the code
+    #             # check if a city is followed by EITHER state/province OR country e.g., Atlanta, Georgia or Atlanta, United States
+    #             if NER[index + 1][1] == 'STATE_OR_PROVINCE' or NER[index + 1][1] == 'COUNTRY':
+    #                 temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
+    #                 index = index + 1
+    #                 # check if a city and state/province are also followed by country e.g., Atlanta, Georgia, United States
+    #                 if index < len(NER) - 1:
+    #                     if NER[index + 1][1] == 'COUNTRY':
+    #                         temp[0] = temp[0] + ', ' + NER[index + 1][0]
+    #                         index = index + 1
+    #     elif NER[index][1] == 'STATE_OR_PROVINCE':
+    #         if index < len(NER)-1: # NER[index + 1] would break the code
+    #             # check if a state/province  is followed by a country e.g., Georgia, United States
+    #             if NER[index + 1][1] == 'COUNTRY':
+    #                 temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
+    #                 index = index + 1
+    #     result.append(temp)
+    #     index = index + 1
+    return result
 
 def process_json_sentiment(config_filename,documentID, document, sentenceID,json, **kwargs):
     print("   Processing Json output file for SENTIMENT annotator")
@@ -945,9 +949,9 @@ def process_json_sentiment(config_filename,documentID, document, sentenceID,json
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         if extract_date_from_filename_var:
-            temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentence['index'] + 1, text, sentence["sentimentValue"], sentence["sentiment"].lower(), date_str]
+            temp = [sentence["sentimentValue"], sentence["sentiment"].lower(), date_str, sentence['index'] + 1, text,documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         else:
-            temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentence['index'] + 1, text, sentence["sentimentValue"], sentence["sentiment"].lower()]
+            temp = [sentence["sentimentValue"], sentence["sentiment"].lower(), sentence['index'] + 1, text, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         sentiment.append(temp)
     return sentiment
 
@@ -970,20 +974,30 @@ def process_json_coref(config_filename,documentID, document, sentenceID, json, *
                     corenlp_output['sentences'][target_sentence - 1]['tokens'][target_token]['word'] = antecedent[
                         'text']
 
+    # when possessive pronouns are substituted by an antecedent noun, the noun must be followed by 's
+    #   unless the noun already has the gerundive 's
+    #   Mary took her exam; Mary took Mary's exam
     def get_resolved(corenlp_output, sentenceID):
         """ get the "resolved" output as String """
         result = ''
-        possessives = ['hers', 'his', 'their', 'theirs']
+        # possessive pronouns: my, mine, his, her(s), its, our(s), their, yours
+        possessives = ["her", "hers", "his", "its", "our", "ours", "their", "theirs", "your", "yours"]
+        pronouns = ["i", "you", "he", "she", "it", "we", "they", "me", "her", "him", "us", "them", "my", "mine",
+                             "hers", "his", "its", "our", "ours", "their", "your", "yours", "myself", "yourself", "himself", "herself",
+                             "oneself", "itself", "ourselves", "yourselves", "themselves"]
         for sentence in corenlp_output['sentences']:
             sentenceID += 1
             for token in sentence['tokens']:
                 output_word = token['word']
                 # check lemmas as well as tags for possessive pronouns in case of tagging errors
                 if token['lemma'] in possessives or token['pos'] == 'PRP$':
-                    output_word += "'s"  # add the possessive morpheme
+                    if not "'s" in output_word and output_word not in pronouns:
+                        output_word += "'s"  # add the possessive morpheme
                 output_word += token['after']
+                if output_word == ". ":
+                    if result[-1] == ".":
+                        continue
                 result = result + output_word
-
             check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         return result
@@ -1120,17 +1134,16 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
         check_sentence_length(len(sentence_data['tokens']), sentenceID, config_filename)
 
         if extract_date_from_filename_var:
-            temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentenceID,
-                    complete_sent, number_of_quotes, str(speakers[quoted_sent_id][0]),date_str]
+            temp = [str(speakers[quoted_sent_id][0]), number_of_quotes, date_str, sentenceID,
+                    complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         else:
-            temp = [documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), sentenceID,
-                    complete_sent, number_of_quotes, str(speakers[quoted_sent_id][0])]
+            temp = [str(speakers[quoted_sent_id][0]), number_of_quotes, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         result.append(temp)
     return result
 
 def process_json_sentence(config_filename, documentID, document, sentenceID, json, **kwargs):
     temp = []
-    # ['Document ID', 'Document', 'Sentence ID', 'Sentence'],
+    # [ 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
     for sentence in json['sentences']:  # traverse output of each sentence
         sentence_length=0
         number_punctuations = 0
@@ -1182,7 +1195,8 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         raw_quote_info = process_json_quote(config_filename, documentID, document, sentenceID, json, **kwargs)
         quote_info = []
         for row in raw_quote_info:
-            quote_info.append([row[0], row[2], row[4], row[5]])
+            # quote_info.append([row[0], row[1], row[2], row[3], row[4], row[5]])
+            quote_info.append([row[0], row[1], row[2], row[4]])
 
     SVO_enhanced_dependencies = []
     SVO_brief = []
@@ -1211,11 +1225,12 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         #CYNTHIA: " ".join(L) => "; ".join(L)
         # ; added list of locations in SVO output (e.g., Los Angeles; New York; Washington)
         for row in SVO:
-            SVO_brief.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], complete_sent])
+            # SVO_brief.append([sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2]])
+            SVO_brief.append([row[0], row[1], row[2], sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             if extract_date_from_filename_var:
-                SVO_enhanced_dependencies.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),complete_sent, date_str])
+                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), date_str, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             else:
-                SVO_enhanced_dependencies.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),complete_sent])
+                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             nidx += 1
         # for each sentence, get locations
         if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:
@@ -1227,20 +1242,20 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
 
     # merge gender information with SVO information
     if gender_var:
-        SVO_df = pd.DataFrame(SVO_brief, columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Sentence'])
-        gender_df = pd.DataFrame(gender_info, columns=["S", "S Gender", "Sentence ID", "Document ID"])
-        merge_df = pd.merge(SVO_df, gender_df, on=["Document ID", "Sentence ID", "S"], how='left')
-        gender_df = pd.DataFrame(gender_info, columns=["O", "O Gender", "Sentence ID", "Document ID"])
-        merge_df = pd.merge(merge_df, gender_df, on=["Document ID", "Sentence ID", "O"], how='left')
-        merge_df = merge_df[['Document ID', 'Sentence ID', 'Document', 'S', 'S Gender', 'V', 'O', 'O Gender', 'Sentence']]
+        SVO_df = pd.DataFrame(SVO_brief, columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+        gender_df = pd.DataFrame(gender_info, columns=["Subject (S)", "S Gender", "Sentence ID", "Document ID"])
+        merge_df = pd.merge(SVO_df, gender_df, on=["Subject (S)", "Sentence ID", "Document ID"], how='left')
+        gender_df = pd.DataFrame(gender_info, columns=["Object (O)", "O Gender", "Sentence ID", "Document ID"])
+        merge_df = pd.merge(merge_df, gender_df, on=["Object (O)", "Sentence ID", "Document ID"], how='left')
+        merge_df = merge_df[['Subject (S)', 'S Gender', 'Verb (V)', 'Object (O)', 'O Gender', 'Sentence ID','Sentence', 'Document ID', 'Document']]
         merge_df = merge_df.drop_duplicates()
         merge_df.to_csv(kwargs["gender_filename"], index=False, mode="a")
 
     if quote_var:
-        SVO_df = pd.DataFrame(SVO_brief, columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'Sentence'])
-        quote_df = pd.DataFrame(quote_info, columns=["Document ID", "Sentence ID", "Number of Quotes", "Speakers"])
-        merge_df = pd.merge(SVO_df, quote_df, on=["Document ID", "Sentence ID"], how='left')
-        merge_df = merge_df[["Document ID", "Sentence ID", "Document", "S", "V", "O", "Number of Quotes", "Speakers", 'Sentence']]
+        SVO_df = pd.DataFrame(SVO_brief, columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+        quote_df = pd.DataFrame(quote_info, columns=["Speakers", "Number of Quotes", "Sentence ID", "Document ID"])
+        merge_df = pd.merge(SVO_df, quote_df, on=["Sentence ID", "Document ID"], how='left')
+        merge_df = merge_df[['Subject (S)', 'Verb (V)', 'Object (O)', "Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]]
         merge_df = merge_df.drop_duplicates()
         merge_df.to_csv(kwargs["quote_filename"], index=False, mode="a")
 
@@ -1258,6 +1273,7 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
     for sentence in json['sentences']:
         entitymentions = sentence['entitymentions']
         complete_sent = ''
+        N = []  # list that stores the Negation information appear in sentences
         L = []  # list that stores the location information appear in sentences
         NER_value = []
         T = []  # list that stores the time information appear in sentences
@@ -1271,11 +1287,11 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
         for token in sentence['tokens']:
             if token["ner"] == "TIME" or token["ner"] == "DATE":
                 T.append(token["word"])
-                T_S.append(token['normalizedNER'])
-                # try:
-                #     T_S.append(token['normalizedNER'])
-                # except:
-                #     print("normalizedNER not found.")
+                # T_S.append(token['normalizedNER'])
+                try:
+                    T_S.append(token['normalizedNER'])
+                except:
+                    print("normalizedNER not available.")
             if token["ner"] == "PERSON":
                 P.append(token["word"])
 
@@ -1311,9 +1327,10 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
         if len(container) > 0:
             for row in container:
                 if extract_date_from_filename_var:
-                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],"; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),complete_sent, date_str])
+                    openIE.append([row[0], row[1], row[2], 'N/A', "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),date_str, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
                 else:
-                    openIE.append([documentID, sentenceID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2],"; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),complete_sent])
+                    openIE.append([row[0], row[1], row[2], 'N/A', "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                # nidx += 1
         # for each sentence, get locations
         if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:
             # produce an intermediate location file
@@ -1629,6 +1646,7 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
             if extract_date_from_filename_var:
                 temp.append(date_str)
             result.append(temp)
+
             # print("Row in the CSV: ")
             # print(temp)
             # if dateInclude == 1 and dateStr!='DATE ERROR!!!':
@@ -1641,7 +1659,6 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
             #     return result, recordIDateStr)
 
     return result, recordID
-
 
 
 def similar_string_floor_filter(str1, str2):
@@ -1698,7 +1715,7 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesT
 
 def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen, columns_to_be_plotted, chartType, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label):
     if createExcelCharts == True:
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel=outputFileNameType,
                                                   chart_type_list=[chartType],
                                                   chart_title=chartTitle,
@@ -1712,7 +1729,7 @@ def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen,
         # by sentence index
         #
         #     # line plots by sentence index
-        #     outputFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window,
+        #     outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
         #                                                                    inputFilename,
         #                                                                    '',
         #                                                                    outputDir,
@@ -1727,42 +1744,64 @@ def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen,
 
     return filesToOpen
 
-def check_pronouns(window, config_filename, inputFilename, outputDir, createExcelCharts, option):
-    df = pd.read_csv(inputFilename)
-    personal_pronouns = ["i", "me", "you", "she", "her", "he", "him", "we", "us", "they", "them"]
-    total_count = 0
-    pronouns_count = {"i": 0, "me": 0, "you": 0, "she": 0, "her": 0, "he": 0, "him": 0, "we": 0, "us": 0, "they": 0, "them": 0}
+def check_pronouns(config_filename, inputFilename, outputDir, createExcelCharts, option, corefed_pronouns):
     return_files = []
+    df = pd.read_csv(inputFilename)
+    if df.empty:
+        return return_files
+    # pronoun cases:
+    #   nominative: I, you, he/she, it, we, they
+    #   objective: me, you, him, her, it, them
+    #   possessive: my, mine, his/her(s), its, our(s), their, your, yours
+    #   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves
+    pronouns = ["i", "you", "he", "she", "it", "we", "they", "me", "her", "him", "us", "them", "my", "mine", "hers", "his", "its", "our", "ours", "their", "your", "yours", "myself", "yourself", "himself", "herself", "oneself", "itself", "ourselves", "yourselves", "themselves"]
+    total_count = 0
+    pronouns_count = {"i": 0, "you": 0, "he": 0, "she": 0, "it": 0, "we": 0, "they": 0, "me": 0, "her": 0, "him": 0, "us": 0, "them": 0, "my": 0, "mine": 0, "hers": 0, "his": 0, "its": 0, "our": 0, "ours": 0, "their": 0, "your": 0, "yours": 0, "myself": 0, "yourself": 0, "himself": 0, "herself": 0, "oneself": 0, "itself": 0, "ourselves": 0, "yourselves": 0, "themselves": 0}
     for _, row in df.iterrows():
         if option == "SVO":
-            if (not pd.isna(row["S"])) and (row["S"].lower() in personal_pronouns):
+            if (not pd.isna(row["Subject (S)"])) and (str(row["Subject (S)"]).lower() in pronouns):
                 total_count+=1
-                pronouns_count[row["S"].lower()] += 1
-            if (not pd.isna(row["O"])) and (row["O"].lower() in personal_pronouns):
+                pronouns_count[str(row["Subject (S)"]).lower()] += 1
+            if (not pd.isna(row["Object (O)"])) and (str(row["Object (O)"]).lower() in pronouns):
                 total_count+=1
-                pronouns_count[row["O"].lower()] += 1
+                pronouns_count[str(row["Object (O)"]).lower()] += 1
         elif option == "CoNLL":
-            if (not pd.isna(row["Form"])) and (row["Form"].lower() in personal_pronouns):
+            if (not pd.isna(row["Form"])) and (row["Form"].lower() in pronouns):
                 total_count+=1
                 pronouns_count[row["Form"].lower()] += 1
+        elif option == "coref table":
+            if (not pd.isna(row["Pronoun"])):
+                total_count += 1
+                try:
+                    # some pronouns extracted by CoreNLP coref as such may not be in the list
+                    #   e.g., "we both" leading to error
+                    pronouns_count[row["Pronoun"].lower()] += 1
+                except:
+                    continue
         else:
             print ("Wrong Option value!")
             return []
+    pronouns_count["I"] = pronouns_count.pop("i")
     if total_count > 0:
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_personal_pronouns,
-                                     reminders_util.message_CoreNLP_personal_pronouns, True)
+        if option != "coref table":
+            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_pronouns,
+                                         reminders_util.message_CoreNLP_pronouns, True)
+        else:
+            mb.showwarning(title='Coreference results', message="Number of pronouns: " + str(
+                total_count) + "\nNumber of coreferenced pronouns: " + str(
+                corefed_pronouns) + "\nPronouns coreference rate: " + str(
+                round((corefed_pronouns / total_count) * 100, 2)) + "%")
+            print("Number of pronouns: ", total_count)
+            print("Number of coreferenced pronouns: ", corefed_pronouns)
+            print("Pronouns coreference rate: ", str(round((corefed_pronouns / total_count) * 100, 2)) + "%")
         if createExcelCharts:
-            data_to_be_plotted = [["Personal Pronouns Value", "Personal Pronouns Count"], ["Total Count", total_count]]
+            data_to_be_plotted = [["Pronoun", "Pronoun Count"], ["Total Count", total_count]]
             for w in sorted(pronouns_count, key=pronouns_count.get, reverse=True):
                 data_to_be_plotted.append([w, pronouns_count[w]])
             data_to_be_plotted = [data_to_be_plotted]
-            Excel_outputFilename = Excel_util.create_excel_chart(window, data_to_be_plotted, inputFilename, outputDir,
-                                                      "Personal_Pronouns_bar", "Frequency Distribution of Personal Pronouns",
-                                                      ["bar"], "Personal Pronouns", "Frequency")
-            # Excel_outputFilename = Excel_util.create_excel_chart(window, data_to_be_plotted, svo_file_name, outputDir,
-            #                                           "Personal_Pronouns_bar", "Frequency Distribution of Personal Pronouns",
-            #                                           ["bar"], "Personal Pronouns", "Frequencies",
-            #                                           [], False, [], 0, "")
+            Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window, data_to_be_plotted, inputFilename, outputDir,
+                                                      "Pronouns_bar", "Frequency Distribution of Pronouns",
+                                                      ["bar"], "Pronouns", "Frequency")
             return_files.append(Excel_outputFilename)
     return return_files
 

@@ -15,13 +15,13 @@ import tkinter.messagebox as mb
 import nltk
 
 # check averaged_perceptron_tagger
-IO_libraries_util.import_nltk_resource(GUI_util.window,'taggers/averaged_perceptron_tagger','averaged_perceptron_tagger')
+#IO_libraries_util.import_nltk_resource(GUI_util.window,'taggers/averaged_perceptron_tagger','averaged_perceptron_tagger')
 # check punkt
-IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
+#IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
 # check WordNet
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
 
-from nltk import tokenize
+from stanza_functions import stanzaPipeLine, sent_tokenize_stanza
 # MUST use this  version or code will break no longer true; pywsd~=1.2.4 pip install pywsd~=1.2.4; even try pip install pywsd=1.2.2
 #   or this version pip install pywsd==1.0.2
 # https://github.com/alvations/pywsd/issues/65
@@ -39,7 +39,7 @@ from collections import Counter
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
-import Excel_util
+import charts_Excel_util
 import GUI_IO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -52,7 +52,9 @@ import GUI_IO_util
 #count #includes word='NO NOMINALIZATION'
 #count1 #excludes word='NO NOMINALIZATION'
 def nominalized_verb_detection(docID,doc,sent):
-    sentences = tokenize.sent_tokenize(sent)
+    # sentences = tokenize.sent_tokenize(sent)
+    sentences = sent_tokenize_stanza(stanzaPipeLine(sent))
+
     result = []
     result1 = []
     verbs = []
@@ -260,10 +262,10 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
                 counter_nominalized_list.insert(0,['Nominalized verb', 'Frequency'])
                 counter_noun_list.insert(0,['Noun', 'Frequency'])
 
-                result1.insert(0, ['Document ID', 'Document', 'Sentence ID', 'Sentence',
-                                   'Number of words in sentence', 'Nominalized verbs',
+                result1.insert(0, ['Number of words in sentence', 'Nominalized verbs',
                                    'Number of nominalizations in sentence',
-                                   'Percentage of nominalizations in sentence'])
+                                   'Percentage of nominalizations in sentence',
+                                   'Sentence ID', 'Sentence', 'Document ID', 'Document'])
 
                 # compute frequency of most common nominalized verbs
                 for word, freq in nominalized_cnt.most_common():
@@ -310,7 +312,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
                 #     xAxis='Sentence index'
                 #     yAxis='Number of nominalizations in sentence'
                 #     hover_label=''
-                #     Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, output_filename_bySentenceIndex, outputDir,
+                #     Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, output_filename_bySentenceIndex, outputDir,
                 #                                               '',
                 #                                               chart_type_list=["line"],
                 #                                               chart_title=chartTitle,
@@ -321,12 +323,12 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
                 #         filesToOpen.append(Excel_outputFilename)
                 #
                 #     # pie chart of nominalized verbs
-                #     Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window,[counter_nominalized_list],fname,outputDir,'NOM_Verb',"Nominalized verbs",["pie"])
+                #     Excel_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window,[counter_nominalized_list],fname,outputDir,'NOM_Verb',"Nominalized verbs",["pie"])
                 #     if len(Excel_outputFilename) > 0:
                 #         filesToOpen.append(Excel_outputFilename)
                 #
                 #     # pie chart of nouns
-                #     Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window,[counter_noun_list],fname,outputDir,'NOM_noun',"Nouns",["pie"])
+                #     Excel_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window,[counter_noun_list],fname,outputDir,'NOM_noun',"Nouns",["pie"])
                 #     if len(Excel_outputFilename) > 0:
                 #         filesToOpen.append(Excel_outputFilename)
 
@@ -335,8 +337,8 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
             output_filename_dir_noun_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'noun_freq', '', '', '', False, True)
             output_filename_dir_nominalized_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'nominal_freq', '', '', '', False, True)
 
-            result2.insert(0, ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of words in sentence', 'Nominalized verbs',
-                               'Number of nominalizations in sentence', 'Percentage of nominalizations in sentence'])
+            result2.insert(0, ['Number of words in sentence', 'Nominalized verbs',
+                               'Number of nominalizations in sentence', 'Percentage of nominalizations in sentence','Sentence ID', 'Sentence', 'Document ID', 'Document'])
             list_to_csv(output_filename_bySentenceIndex, result2)
             filesToOpen.append(output_filename_bySentenceIndex)
 
@@ -362,14 +364,14 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNo
 
             if createExcelCharts == True:
                 # pie chart of nominalized verbs
-                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], output_filename_dir_nominalized_frequencies,
+                Excel_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], output_filename_dir_nominalized_frequencies,
                                             outputDir,'NOM_verb',
                                             "Nominalized verbs", ["pie"])
                 if len(Excel_outputFilename) > 0:
                     filesToOpen.append(Excel_outputFilename)
 
                 # pie chart of nouns
-                Excel_outputFilename=Excel_util.create_excel_chart(GUI_util.window, [counter_noun_list], output_filename_dir_noun_frequencies,
+                Excel_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window, [counter_noun_list], output_filename_dir_noun_frequencies,
                                             outputDir,'NOM_noun',
                                             "Nouns", ["pie"])
                 if len(Excel_outputFilename) > 0:

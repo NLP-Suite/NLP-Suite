@@ -5,6 +5,7 @@
 import os
 import pandas as pd
 import tkinter.messagebox as mb
+import tkinter as tk
 
 import IO_files_util
 import IO_csv_util
@@ -17,31 +18,48 @@ import GIS_KML_util
 import GIS_Google_Maps_util
 import IO_libraries_util
 import config_util
+import TIPS_util
 
 # The script is used by SVO_main and by Google_Earth_main to run a csv file that 1. needs geocoding; 2. mapping geocoded location onto Google Earth Pro.
 import IO_user_interface_util
 
 # Google_config: 'Google-geocode-API_config.csv' or 'Google-Maps-API_config.csv'
-def getGoogleAPIkey(Google_config):
+def getGoogleAPIkey(Google_config, display_key=False):
     configFilePath = os.path.join(GUI_IO_util.configPath, Google_config)
     configAPIKey = []
     if os.path.isfile(configFilePath):
         f_config = open(configFilePath, 'r', encoding='utf-8', errors='ignore')
         configAPIKey = f_config.readlines()
-    if len(configAPIKey) == 0:
+    if len(configAPIKey) == 0 or display_key:
         if 'Maps' in Google_config:
             msg='Maps'
+            config_file = 'Google-Maps-API_config.csv'
         else:
             msg='geocoder'
-        mb.showwarning('Warning',
-                       'Google ' + msg + ' requires an API key.\n\nGoogle requires two separate API keys for the Google geocoder and Google Maps.\n\nYou can get the keys free of charge at the Google website console.developers.google.com/apis. Then, paste the API key in the Google API popup widget, save it by pressing OK. YOU WILL ONLY HAVE TO ENTER THE GOOGLE API KEY ONCE AND THE NLP SUITE WILL SAVE THE KEY FOR YOU IN A GOOGLE API CONFIG FILE AND READ IT EVERY TIME IT IS NEEDED.\n\nPLEASE, read the TIPS_NLP_Google API Key.pdf for help.')
-        key=''
+            config_file = 'Google-geocode-API_config.csv'
+        if len(configAPIKey) == 0:
+            message = 'No config file ' + config_file + ' was found in the config subfolder of the NLP-SUIte.\n\nGoogle ' + msg + ' requires an API key (in fact, Google requires two separate free API keys, one for Google geocoder, the other for Google Maps).'
+            if 'geocode' in Google_config:
+                message = message + '\n\nWithout a Google geocoder API key you can only geocode locations with Nominatim.'
+            if 'Maps' in Google_config:
+                message = message + '\n\nWithout a Google Maps API key you can only map locations in Google Earth Pro.'
+            message = message + '\n\nPlease, read the TIPS file TIPS_NLP_Google API Key.pdf on how to obtain free Google API keys.\n\nWould you like to open the TIPS file now?'
+            answer = tk.messagebox.askyesno("Warning",message)
+            if answer:
+                TIPS_util.open_TIPS('TIPS_NLP_Google API Key.pdf')
         if 'Maps' in Google_config:
             config_type='Maps'
         else:
             config_type = 'geocoder'
-        key, string_out = GUI_IO_util.enter_value_widget("Enter the Google " + config_type + " API key",
-                                                               'Enter', 1, '', 'API key', '')
+        if display_key and len(configAPIKey) > 0:
+            key=configAPIKey[0]
+        else:
+            key=''
+        if key=='':
+            message = "Enter the Google " + config_type + " API key"
+        else:
+            message = "Enter a new Google " + config_type + " API key if you want to change the key"
+        key, string_out = GUI_IO_util.enter_value_widget(message, 'Enter', 1, key, 'API key', key)
         # save the API key
         if key!='':
             config_util.Google_API_Config_Save(Google_config, key)

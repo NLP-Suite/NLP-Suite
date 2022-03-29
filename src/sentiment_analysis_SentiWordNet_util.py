@@ -36,20 +36,23 @@ import IO_files_util
 
 from nltk.corpus import wordnet as wn
 from nltk.corpus import sentiwordnet as swn
-from nltk import tokenize
+# from nltk import tokenize
 from nltk import word_tokenize, pos_tag
+from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 # if SentiWordNet fails, run: "python -m nltk.downloader all"
 
-IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
+# IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
 # check WordNet
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
-from nltk.stem.wordnet import WordNetLemmatizer
-lemmatizer = WordNetLemmatizer()
+# IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
+# from nltk.stem.wordnet import WordNetLemmatizer
+# lemmatizer = WordNetLemmatizer()
 # check stopwords
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/stopwords','stopwords')
-from nltk.corpus import stopwords
-stops = set(stopwords.words("english"))
+# IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/stopwords','stopwords')
+# from nltk.corpus import stopwords
+# stops = set(stopwords.words("english"))
+fin = open('../lib/wordLists/stopwords.txt', 'r')
+stops = set(fin.read().splitlines())
 
 def penn_to_wn(tag):
     """
@@ -92,7 +95,8 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
         print('Empty file ', inputFilename)
         return
 
-    sentences = tokenize.sent_tokenize(fulltext)  # split text into sentences
+    # sentences = tokenize.sent_tokenize(fulltext)  # split text into sentences
+    sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
 
     # SentiWordNet Interface http://www.nltk.org/howto/sentiwordnet.html
     # SentiSynsets
@@ -103,7 +107,8 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
     # analyze each sentence s for sentiment
     sentenceID = 1
     for s in sentences:
-        tagged_sentence = pos_tag(word_tokenize(s))
+        # tagged_sentence = pos_tag(word_tokenize(s))
+        tagged_sentence = pos_tag(word_tokenize_stanza(stanzaPipeLine(s)))
         sentiment = 0
         tokens_count = 0
         label = ""
@@ -112,7 +117,8 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
             if wn_tag not in (wn.NOUN, wn.ADJ, wn.ADV):
                 continue
 
-            lemma = lemmatizer.lemmatize(word, pos=wn_tag)
+            # lemma = lemmatizer.lemmatize(word, pos=wn_tag)
+            lemma = lemmatize_stanza(stanzaPipeLine(word))
             if not lemma:
                 continue
 
@@ -136,11 +142,11 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
             sentiment = 1
             label = "negative"
 
-        writer.writerow({'Document ID': documentID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(documentName), 'Sentence ID': sentenceID,
-                            'Sentence': s,
-                            Sentiment_measure: sentiment,
+        writer.writerow({Sentiment_measure: sentiment,
                             Sentiment_label: label,
-                            })
+                         'Sentence ID': sentenceID,
+                         'Sentence': s,
+                         'Document ID': documentID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(documentName)})
 
         sentenceID += 1
     # csvfile.close()
@@ -169,7 +175,7 @@ def main(inputFilename, input_dir, outputDir, output_file, mode):
         global Sentiment_measure, Sentiment_label
         Sentiment_measure='Sentiment score'
         Sentiment_label='Sentiment value'
-        fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence', Sentiment_measure, Sentiment_label]
+        fieldnames = [Sentiment_measure, Sentiment_label,'Sentence ID', 'Sentence','Document ID', 'Document']
         global writer
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()

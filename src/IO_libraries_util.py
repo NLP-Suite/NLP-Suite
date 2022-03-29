@@ -5,7 +5,6 @@ import os
 import tkinter as tk
 import tkinter.messagebox as mb
 import subprocess
-import psutil
 from psutil import virtual_memory
 from typing import List
 import requests
@@ -25,12 +24,24 @@ import IO_internet_util
 # pillow is the Python 3 version of PIL which was an older Python 2 version
 # PIL being the commmon module for both packages, you need to check for PIL and trap PIL to tell the user to install pillow
 
-def install_all_packages(window, calling_script, modules_to_try):
-    if platform == 'darwin':
-        error_msg = "\n\nIf after installing the package in the right environment you still get an error, make sure your Mac is running zsh rather than bash. The NLP Suite expects zsh.\n\nPlease, read the TIPS_NLP_Anaconda NLP environment pip.pdf"
-    else:
-        error_msg = "\n\nPlease, read the TIPS_NLP_Anaconda NLP environment pip.pdf"
+def which_shell():
+    """
+    Checks for the default shell, and returns the shell variant for Windows, macOS, and major Linux operating systems.
+    :rtype: str - The type of shell. (e.g., "bash", "zsh", etc.)
+    """
+    shell = os.path.split(os.environ['SHELL'])[-1]
+    if shell != 'zsh':
+        error_msg = 'You are running shell ' + str(
+            shell) + '\n\nSince the release of macOS 10.15 (Catalina) on October 7, 2019, the default macOS shell has been switched from bash to zsh. The NLP Suite has been optimized for zsh not bash. The algorithm will exit.\n\nPlease, read carefully the TIPS_NLP_Anaconda NLP environment pip.pdf on how to change shell to zsh.'
+        answer = tk.messagebox.askyesno("MacOS shell error",
+                                        error_msg + "\n\nDo you want to open the TIPS file now?")
+        if answer:
+            TIPS_util.open_TIPS('TIPS_NLP_Anaconda NLP environment pip.pdf')
+    return shell
 
+# return false if missing modules
+def install_all_packages(window, calling_script, modules_to_try):
+    errorFound = False
     missingModules = []
     for module in modules_to_try:
         # import module
@@ -53,6 +64,12 @@ def install_all_packages(window, calling_script, modules_to_try):
                 # rename the module to the package to be installed
                 missingModules = ['pillow' if x == 'PIL' else x for x in missingModules]
     if missingModules:
+        errorFound = True
+        error_msg = "\n\nPlease, read the TIPS_NLP_Anaconda NLP environment pip.pdf"
+        if platform == 'darwin':
+            shell = which_shell()
+            if shell != 'zsh':
+                return False
         # root = tk.Tk()
         # root.withdraw()
         window.withdraw()
@@ -60,10 +77,18 @@ def install_all_packages(window, calling_script, modules_to_try):
             msg = missingModules[0]
         elif len(missingModules) > 1:
             msg = 'each of the listed modules'
-        mb.showwarning(title='Module import error',
-                       message="FATAL ERROR. Please, read carefully. The NLP Suite will exit.\n\nThe script '" + calling_script + "' needs to import the following modules:\n\n" + ', '.join(
-                           missingModules) + "\n\nPlease, in command prompt/terminal, type\nNLP\nif you have run STEP3-NLP environment) otherwise\n conda activate NLP\nto activate the right NLP environment (NLP case sensitive) where to install the package, then use the command\npip install " + str(
-                           msg) + "\nand try again." + error_msg)
+
+        message = "FATAL ERROR. Please, read carefully. The NLP Suite will exit.\n\nThe script '" + \
+                  calling_script + "' needs to import the following modules:\n\n" + ', '.join(missingModules) + \
+                  "\n\nPlease, in command prompt/terminal, type\nNLP\nif you have run STEP3-NLP environment) otherwise" + \
+                  "\nconda activate NLP\nto activate the right NLP environment (NLP case sensitive) where to install the package, then use the command" + \
+                  "\npip install " + str(msg) + "\nand try again."
+
+        answer = tk.messagebox.askyesno("Module import error",
+                                        message + "\n\nDo you want to open the TIPS file now?")
+        if answer:
+            TIPS_util.open_TIPS('TIPS_NLP_Anaconda NLP environment pip.pdf')
+
         if 'stanfordnlp' or 'stanza' in missingModules:
             # sys.version_info is the Python version
             if (sys.version_info[0] < 3) or (sys.version_info[0] == 3 and sys.version_info[1] < 6):
@@ -77,7 +102,6 @@ def install_all_packages(window, calling_script, modules_to_try):
                                    message="The module 'stanza' requires a Python version 3.6 or higher. You are currently running version " +
                                            sys.version_info[0] + "." + sys.version_info[
                                                0] + ".\n\nTo install Python with Anaconda, in command prompt/terminal type 'Conda install Python=3.7'.")
-                return False
             # https://stackoverflow.com/questions/56239310/could-not-find-a-version-that-satisfies-the-requirement-torch-1-0-0
             # for more recent torch and torchvision, see https://pytorch.org/get-started/previous-versions/
             # for most recent torch and torchvision, see https://pytorch.org/get-started/locally/
@@ -88,10 +112,8 @@ def install_all_packages(window, calling_script, modules_to_try):
             if 'stanza' in missingModules:
                 mb.showwarning(title='Warning',
                                message="To install 'stanza' you will need to FIRST install 'torch' and 'torchvision' by typing:\n\nconda install pytorch torchvision cudatoolkit -c pytorch\n\nMAKE SURE TO INCLUDE THE HTTPS COMPONENT AFTER -f OR YOU WILL GET THE ERROR: -f option requires 1 argument.\n\nAFTER the successful installation of 'torch' and 'torchvision', you will need to install 'stanza' and 'stanza.download('en')'. At your command prompt/terminal or terminal, type:\n\npython\n\nThen at the >>> type:\n\nimport stanza\n\nWhen done type:\n\nstanza.download('en')\n\nWhen done type:\n\nexit().\n\nYOU MUST BE CONNECTED TO THE INTERNET TO INSTALL MODULES!\n\nYOU MUST ALSO BE IN THE NLP ENVIRONMENT!")
-        return False
         # install(e.name)
-    return True
-
+    return not errorFound
 
 # modules_to_try has the following format: ['re','glob',...]
 # https://stackoverflow.com/questions/48097428/how-to-check-and-install-missing-modules-in-python-at-time-of-execution
@@ -167,6 +189,23 @@ def check_avaialable_memory(software):
     #                         return errorFound, error_code, system_output
 
 
+# for now the java_version as a single version number, e.g., 8 or 17, is not used
+def get_java_version(system_output):
+    java_version = system_output.split('\r\n')[0]
+    java_version = java_version.split(' ')[2]
+    java_version = java_version.split('.')[0]
+    java_version = java_version.replace("\"","")
+    return java_version
+
+def check_windows_64_bits():
+    errorFound = False
+    if 'PROCESSOR_ARCHITEW6432' in os.environ:
+        mb.showwraning(title='Fatal error',message='You are not running a Windows 64-bits machine as required by Stanford CoreNLP.\n\nThis will cause an error running Stanford CoreNLP: Could not create the Java Virtual Machine.')
+        errorFound = True
+    if not os.environ['PROCESSOR_ARCHITECTURE'].endswith('64'):
+        errorFound = True
+    return errorFound
+
 # return errorFound, error_code, system_output
 def check_java_installation(script):
     errorFound = False
@@ -176,6 +215,12 @@ def check_java_installation(script):
     error_code = 1 # should be 0 if Java is installed
     system_output = '' # This is what you see when you run "java -version" in your command line
 
+    # unnecessary
+    # if platform == 'win32':
+    #     errorFound = check_windows_64_bits()
+    #     if errorFound:
+    #         return errorFound, error_code, system_output
+
     try:
         # if you are testing new Java install/uninstall ...
         #   YOU MUST CLOSE PyCharm to run correctly the next command
@@ -183,21 +228,17 @@ def check_java_installation(script):
         error_code = java_output.returncode  # Should be 0 if java installed
         system_output = java_output.stderr.decode(
             'utf-8')  # This is what you see when you run "java -version" in your command line
-        
-        # for now the java_version as a single version number, e.g., 8 or 17, is not used
-        # java_version = system_output.split('\r\n')[0]
-        # java_version = java_version.split(' ')[2]
-        # java_version = java_version.split('.')[0]
-        # java_version = java_version.replace("\"","")
+        # get_java_version(system_output)
     except:
         error_code = 1
 
     url = 'https://www.oracle.com/java/technologies/downloads/archive/'
     title = 'Java error'
 
-    if error_code != 0 and ("not recognized" in system_output or system_output == ''):
-        message = 'A test for Java returned a non-zero error code ' + str(
-                error_code) + ' and Java not recognized (You can check this in command line by typing Java -version).'
+    if error_code != 0:
+        if ("not recognized" in system_output) or (system_output == ''):
+            message = 'A test for Java returned a non-zero error code ' + str(
+                    error_code) + ' and Java not recognized (You can check this in command line by typing Java -version).'
 
         if system_output != '':
             message = message + ' with the following system error: ' + system_output + '\n\n'
@@ -207,7 +248,7 @@ def check_java_installation(script):
             message = message + \
                 '\n\nJAVA IS NOT INSTALLED IN YOUR MACHINE.\n\n'
         message = message + script + ' is a Java script that requires the freeware Java (by Oracle) installed on our machine.\n\n' \
-                'THE ROGRAM WILL EXIT.' \
+                'THE PROGRAM WILL EXIT.' \
                 '\n\nTo download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one).'\
                 '\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable.' \
                 '\n\nDO YOU WANT TO OPEN THE JAVA DOWNLOAD WEBSITE AND INSTALL JAVA NOW? (You must be connected to the internet)'
@@ -248,6 +289,28 @@ Google_Earth_download = "https://www.google.com/earth/download/gep/agree.html?hl
 MALLET_download = "http://mallet.cs.umass.edu/download.php"
 SENNA_download = "https://ronan.collobert.com/senna/download.html"
 WordNet_download = "https://wordnet.princeton.edu/download/current-version"
+
+# the function checks that if Stanford CoreNLP version matches with the latest downloadable version
+def check_CoreNLPVersion(CoreNLPdir,calling_script=''):
+    # get latest downloadable version
+    try:
+        response = requests.get("https://api.github.com/repos/stanfordnlp/CoreNLP/releases/latest")
+    except:
+        # no internet
+        return False
+    github_version = response.json()["name"][1:]
+    # get local stanford corenlp version
+    onlyfiles = [f for f in os.listdir(CoreNLPdir) if os.path.isfile(os.path.join(CoreNLPdir, f))]
+    for f in onlyfiles:
+        if f.startswith("stanford-corenlp-"):
+            local_version = f[:-4].split("-")[2]
+            if github_version != local_version:
+                mb.showwarning("Warning", "Oops! Your local Stanford CoreNLP version is " + local_version +
+                               ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nYour current version of Stanford CoreNLP will run anyway, but you should update to the latest release.")
+                if calling_script != 'NLP_menu_main':
+                    get_external_software_dir('calling_script', 'Stanford CoreNLP', silent=False, only_check_missing=False)
+                return False
+    return True
 
 # the function checks that external programs (e.g., Gephi, StanfordCoreNLP) have been properly installed
 def check_inputExternalProgramFile(calling_script, software_dir, programName):
@@ -355,7 +418,7 @@ def open_url(website_name, url, ask_to_open = False, message_title='', message='
     webbrowser.open_new_tab(url)
     return True
 
-def update_software_config_fields(existing_software_config: list) -> list:
+def initialize_software_config_fields(existing_software_config: list) -> list:
     """
 
     @param existing_software_config: current csv file in list format, similar to sample_csv below
@@ -374,6 +437,13 @@ def update_software_config_fields(existing_software_config: list) -> list:
             existing_software_config.append(sample_csv[index])
     return existing_software_config
 
+def delete_software_config(existing_software_config, software):
+    for (index, row) in enumerate(existing_software_config):
+        if row[0] == software:
+            (existing_software_config[index])[1]=''
+            break
+    return existing_software_config
+
 def get_existing_software_config():
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
     # FIXED: must insert the new package into software-config.csv when the package is missing in the user csv file
@@ -382,7 +452,7 @@ def get_existing_software_config():
         existing_software_config = list(csv.reader(csv_file, delimiter=','))
     except:
         existing_software_config = list()
-    update_software_config_fields(existing_software_config)
+        existing_software_config = initialize_software_config_fields(existing_software_config)
     return existing_software_config
 
 # gets a list of the external software: CoreNLP, SENNA, WordNet, MALLET, Google Earth Pro, Gephi
@@ -402,7 +472,7 @@ def get_missing_external_software_list(calling_script, existing_software_config)
             missing_software = missing_software + '  ' + str(missing_index) + '. ' + str(software_name).upper() + '\n\n'
     return missing_software
 
-def save_software_config(new_csv,package):
+def save_software_config(new_csv, package):
     software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
     with open(software_config, 'w+', newline='') as csv_file:
         writer = csv.writer(csv_file)
@@ -488,12 +558,20 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             continue
 
         if (not errorFound) and (package!='') and (calling_script=='NLP_menu'):
-
-            mb.showwarning(title=package,
-                           message='The external software ' + package + ' is up-to-date and correctly installed at ' + software_dir)
-            # if you are checking for a specific package and that is found return the appropriate directory
-            if (package!=''):
-                return software_dir, missing_software
+            if package == 'Stanford CoreNLP':
+                check_CoreNLPVersion(software_dir, calling_script)
+                # software_dir = ''
+                # missing_software = package
+            answer = tk.messagebox.askyesno(title=package, message='The external software ' + package + ' is already installed at ' + software_dir + '\n\nDo you want to re-install the software?')
+            if answer == True:
+                # initialize_software_config_fields(existing_software_config, package)
+                delete_software_config(existing_software_config, package)
+                missing_software = package
+                software_dir = ''
+            else:
+                # if you are checking for a specific package and that is found return the appropriate directory
+                if (package!=''):
+                    return software_dir, missing_software
 
     # check for missing external software
     if len(missing_software) > 0:
@@ -524,8 +602,10 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                         continue
 
 # Setup user messages for the various types of external software and platforms
-
-                    if platform == 'darwin':
+                    # in Mac, Gephi and Google Earth Pro are installed in Applications
+                    if platform == 'darwin' and (software_name != 'Google Earth Pro' and software_name != 'Gephi'):
+                        message2 = "You will be asked next to select the directory (NOT Mac Applications!) where the software " + software_name.upper() + " was installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
+                    if platform == 'darwin' and (software_name == 'Google Earth Pro' or software_name == 'Gephi'):
                         message2 = "You will be asked next to select the Mac Applications directory where the software " + software_name.upper() + " was installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
                     if platform == 'win32':
                         message2 = "You will be asked next to select the directory where the software " + software_name.upper() + " was installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."

@@ -10,19 +10,18 @@ import sys
 
 import GUI_IO_util
 import IO_files_util
-import Excel_util
+import charts_Excel_util
 import IO_libraries_util
 import IO_user_interface_util
 
-if IO_libraries_util.install_all_packages("html_annotator_extractor_util",['os','tkinter','re','csv','ntpath','nltk'])==False:
+if IO_libraries_util.install_all_packages("html_annotator_extractor_util",['os','tkinter','re','csv','ntpath'])==False:
     sys.exit(0)
 
 import re
 import os
 import csv
 import ntpath
-import nltk
-from nltk.tokenize import sent_tokenize, word_tokenize
+from stanza_functions import stanzaPipeLine, sent_tokenize_stanza
 
 import GUI_util
 
@@ -46,7 +45,8 @@ def gatherAnnotations(inputFile, tags, mustInclude='<p>', cleanMultiples=True):
     # text = (open(inputFil, "r", encoding="utf-8", errors='ignore').read())
     text = (open(inputFile, "r", encoding="utf-8", errors='ignore').read())
     # split into sentences
-    sentences = nltk.sent_tokenize(text)
+    # sentences = nltk.sent_tokenize(text)
+    sentences = sent_tokenize_stanza(stanzaPipeLine(text))
     #for each_sentence in sentences:
     Sentence_ID = 0
     sentence_cleaned=''
@@ -104,7 +104,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, output_dir_path,openOutputFiles,cre
     if writeCSV=='':
         return
     writer = csv.writer(writeCSV)
-    writer.writerow(['Document ID','Document','Sentence ID','Sentence','Word','Annotation Type'])
+    writer.writerow(['Word','Annotation Type','Sentence ID','Sentence','Document ID','Document'])
     # TODO Add document ID and sentence
     for file in annotatedHtmlFiles:
         # examples of how sentence is constructed are in def dataframe_byNER in Stanford_CoreNLP_NER_extractor_util.py
@@ -150,7 +150,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, output_dir_path,openOutputFiles,cre
     #     hover_label=['']
     #     chartType='bar'
     #     fileNameType='html_extr'
-    #     excel_outputFilename_1 = Excel_util.run_all(columns_to_be_plotted, csvFile, output_dir_path, csvFile, chart_type_list=[chartType], chart_title=chartTitle, column_xAxis_label_var='', column_yAxis_label_var='Frequencies', outputExtension = '.xlsm', label1=fileNameType,label2=chartType,label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
+    #     excel_outputFilename_1 = charts_Excel_util.run_all(columns_to_be_plotted, csvFile, output_dir_path, csvFile, chart_type_list=[chartType], chart_title=chartTitle, column_xAxis_label_var='', column_yAxis_label_var='Frequencies', outputExtension = '.xlsm', label1=fileNameType,label2=chartType,label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
     #     if excel_outputFilename_1 != "":
     #         filesToOpen.append(excel_outputFilename_1)
 

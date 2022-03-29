@@ -18,7 +18,7 @@ from scipy import stats
 
 import IO_files_util
 import IO_csv_util
-import Excel_util
+import charts_Excel_util
 
 #column_to_be_counted is the column number (starting 0 in data_list for which a count is required)
 #column_name is the name that will appear as the chart name
@@ -248,7 +248,7 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
 
             if createExcelCharts:
                 # columns_to_be_plotted = [[1, 2]] # hard code Yi
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel=fileNameType,
                                                       chart_type_list=chartType,
                                                       chart_title='',
@@ -270,7 +270,7 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
             filesToOpen.append(output_file_name)
             if createExcelCharts:
                 # columns_to_be_plotted = [[1, 2]] # hard code Yi
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel=fileNameType,
                                                       chart_type_list=chartType,
                                                       chart_title='',
@@ -281,7 +281,7 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
                     filesToOpen.append(Excel_outputFilename)
 
                 # # columns_to_be_plotted = [[1, 2]] # hard code Yi
-                # Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                # Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                 #                                       outputFileLabel=fileNameType,
                 #                                       chart_type_list=[chartType],
                 #                                       chart_title='',
@@ -318,7 +318,7 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
 
         if createExcelCharts:
             # columns_to_be_plotted = [[1, 2]] # hard code Yi
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel=fileNameType,
                                                       chart_type_list=chartType,
                                                       chart_title='',
@@ -329,7 +329,7 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
             
         # need change, put run_all
         # if createExcelCharts:
-        #     filesToOpen=Excel_util.prepare_csv_data_for_chart(window,
+        #     filesToOpen=charts_Excel_util.prepare_csv_data_for_chart(window,
         #                                                         inputFilename, data, outputDir,
         #                                                         selected_col,
         #                                                         Hover_over_header, group_col, fileNameType,

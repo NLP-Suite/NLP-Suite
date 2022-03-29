@@ -215,7 +215,7 @@ pydict["File splitter (file content)"] = ["file_splitter_main.py", 1]
 pydict["File splitter (file name)"] = ["file_splitter_main.py", 1]
 pydict["File manager (List, Rename, Copy, Move, Delete, Count, Split)"] = ["file_manager_main.py", 1]
 pydict["Find non-related documents"] = ["social_science_research_main.py", 1]
-pydict["Excel charts"] = ["Excel_charts_main.py", 1]
+pydict["Excel charts"] = ["charts_Excel_main.py", 1]
 pydict["Network graphs (Gephi)"] = ["visualization_main.py", 1]  # ["", 0] not available
 pydict["Geographic maps: Geocoding & maps"] = ["GIS_main.py", 1]
 pydict["Geographic maps: Google Earth Pro"] = ["GIS_Google_Earth_main.py", 1]
@@ -229,15 +229,17 @@ pydict["Newspaper article/Document titles"] = ["file_checker_converter_cleaner_m
 pydict["N-grams (word & character)"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["N-grams viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Nominalization"] = ["nominalization_main.py", 1]
+pydict["Search (ALL options GUI)"] = ["search_ALL_main.py", 1]
 pydict["Search CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Search text file(s) for n-grams & co-occurrences (N-grams viewer)"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Search text file(s) for words/collocations"] = ["file_search_byWord_main.py", 1]
-pydict["Sentence analysis (An overall GUI)"] = ["sentence_analysis_main.py", 1]
+pydict["Sentence analysis (ALL options)"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence complexity"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence/text readability (via textstat)"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence visualization: Dependency tree viewer (png graphs)"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence visualization: Dynamic sentence network viewer (Gephi graphs)"] = ["", 0]  # not available
 pydict["Sentiment analysis"] = ["sentiment_analysis_main.py", 1]
+pydict["Sentiments/emotions (ALL options GUI)"] = ["sentiments_emotions_ALL_main.py", 1]
 pydict["Shape of stories"] = ["shape_of_stories_main.py", 1]
 pydict["Similarities between documents (via Java Lucene)"] = ["social_science_research_main.py", 1]
 pydict["Similarities between documents (via Python difflib)"] = ["", 0]  # not available
@@ -311,7 +313,7 @@ def setup_external_programs_checkbox(software):
     global software_dir
     silent = False
     only_check_missing = False
-    if setup_software_OK_checkbox_var.get()==0:
+    if setup_software_OK_checkbox_var.get()==0 or software != '':
         if software_dir == None and software == '':
             return
         software_dir, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software, silent, only_check_missing)
@@ -412,7 +414,7 @@ sentence_tools_lb = tk.Label(window, text='SENTENCE Analysis Tools')
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                sentence_tools_lb, True)
 sentence_tools_menu = ttk.Combobox(window, width = 90, textvariable = sentence_tools_var)
-sentence_tools_menu['values'] = ['Sentence analysis (An overall GUI)']
+sentence_tools_menu['values'] = ['Sentence analysis (ALL options)']
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, sentence_tools_menu)
 
 

@@ -31,13 +31,15 @@ def run(inputfile, separator_begin, separator_end, outputDir):
     nFiles=0
     head, tail = os.path.split(inputfile)
     tail=tail[:-4]
-    # create a subdirectory in the output directory
-    outputPath = outputDir + os.sep + tail + "_split"
-    if not IO_files_util.make_directory(outputPath):
-        return
     file = open(inputfile, "r", encoding="utf-8", errors='ignore')
     fileContent = file.read()
     count_begin = fileContent.count(separator_begin)
+    if count_begin == 0: # not a merged file with separators; return silently the inputfile
+        return [inputfile]
+    # create a subdirectory in the output directory
+    outputPath = outputDir + os.sep + tail + "_split"
+    if not IO_files_util.make_directory(outputPath):
+        return outputPath, nFiles
     if separator_begin==separator_end:
         count_begin=count_begin/2
     count_end = fileContent.count(separator_end)

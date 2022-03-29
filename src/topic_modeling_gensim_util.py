@@ -46,7 +46,7 @@ warnings.filterwarnings("ignore",category=DeprecationWarning)
 
 import IO_files_util
 import IO_user_interface_util
-import Excel_util
+import charts_Excel_util
 import reminders_util
 
 #whether stopwordst were already downloaded can be tested, see stackoverflow
@@ -206,7 +206,7 @@ def malletModelling(MalletDir, outputDir, createExcelCharts, corpus,num_topics, 
     # columns_to_be_plotted = [[1, 3]]
     # hover_label = 'Topic_Keywords'
     # inputFilename = fileName
-    # Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+    # Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
     #                                           outputFileLabel='TM_Gensim',
     #                                           chart_type_list=["bar"],
     #                                           chart_title='Number of Documents per Topic',
@@ -241,7 +241,7 @@ def malletModelling(MalletDir, outputDir, createExcelCharts, corpus,num_topics, 
     # columns_to_be_plotted = [[1, 2]]
     # hover_label = 'Topic keywords'
     # inputFilename = fileName
-    # Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+    # Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
     #                                           outputFileLabel='TM_Gensim',
     #                                           chart_type_list=["bar"],
     #                                           chart_title='Percentage Contribution of Each Topic',
@@ -307,7 +307,7 @@ def malletModelling(MalletDir, outputDir, createExcelCharts, corpus,num_topics, 
     # columns_to_be_plotted = [[1, 2]]
     # hover_label = 'Topic keywords'
     # inputFilename = fileName
-    # Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+    # Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
     #                                           outputFileLabel='TM_Gensim',
     #                                           chart_type_list=["bar"],
     #                                           chart_title='Percentage Contribution of Each Topic',

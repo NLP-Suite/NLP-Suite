@@ -26,7 +26,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Sentiment Analysis HEDONOMETER",['nltk','json','os','csv','argparse','tkinter','time'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"Sentiment Analysis HEDONOMETER",['stanza','json','os','csv','argparse','tkinter','time'])==False:
     sys.exit(0)
 
 import os
@@ -36,20 +36,13 @@ import statistics
 import time
 import argparse
 import tkinter.messagebox as mb
-from nltk import tokenize
-from nltk import word_tokenize
+from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 import IO_csv_util
 import GUI_IO_util
 
-IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
-# check WordNet
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
-from nltk.stem.wordnet import WordNetLemmatizer
-# check stopwords
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/stopwords','stopwords')
-from nltk.corpus import stopwords
-stops = set(stopwords.words("english"))
+fin = open('../lib/wordLists/stopwords.txt', 'r')
+stops = set(fin.read().splitlines())
 database = GUI_IO_util.sentiment_libPath + os.sep + "hedonometer.json"
 if not os.path.isfile(database):
     print("The file './lib/hedonometer.json' could not be found. The hedonemeter sentiment analysis routine expects a JSON dictionary file 'hedonometer.json' in a directory 'lib' expected to be a subdirectory of the directory where the sentiment_analysis_hedonometer.py script is stored.\n\nPlease, check your lib directory and try again.")
@@ -80,7 +73,9 @@ def analyzefile(input_file, output_dir, output_file, mode, Document_ID, Document
         return
 
     # otherwise, split into sentences
-    sentences = tokenize.sent_tokenize(fulltext)
+    # sentences = tokenize.sent_tokenize(fulltext)
+    sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
+
     i = 1 # to store sentence index
     # check each word in sentence for sentiment and write to output_file
     # analyze each sentence for sentiment
@@ -91,7 +86,8 @@ def analyzefile(input_file, output_dir, output_file, mode, Document_ID, Document
         v_list = []  # holds valence scores
 
         # search for each valid word's sentiment in hedonometer database
-        words = word_tokenize(s.lower())
+        # words = word_tokenize(s.lower())
+        words = word_tokenize_stanza(stanzaPipeLine(s.lower()))
         filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
         for index, w in enumerate(filtered_words):
             # don't process stops
@@ -107,10 +103,11 @@ def analyzefile(input_file, output_dir, output_file, mode, Document_ID, Document
                 j -= 1
 
             # lemmatize word
-            lmtzr = WordNetLemmatizer()
-            lemma = lmtzr.lemmatize(w, pos='v')
-            if lemma == w:
-                lemma = lmtzr.lemmatize(w, pos='n')
+            # lmtzr = WordNetLemmatizer()
+            # lemma = lmtzr.lemmatize(w, pos='v')
+            # if lemma == w:
+            #     lemma = lmtzr.lemmatize(w, pos='n')
+            lemma = lemmatize_stanza(stanzaPipeLine(w))
 
             total_words += 1
 
@@ -122,12 +119,14 @@ def analyzefile(input_file, output_dir, output_file, mode, Document_ID, Document
 
 
         if len(found_words) == 0:  # no words found for this sentence
-            writer.writerow({'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'Sentence ID': i,
-                            'Sentence': s,
+            writer.writerow({
                             # Sentiment_measure: 0,
                             # Sentiment_label: "",
                             'Sentiment (Mean score)': 0,
                             'Sentiment (Mean value)': "",
+                            'Sentence ID': i,
+                            'Sentence': s,
+                            'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
                             })
             i += 1
             continue
@@ -164,32 +163,34 @@ def analyzefile(input_file, output_dir, output_file, mode, Document_ID, Document
                     label_median = "neutral"
 
             if mode == 'mean':
-                writer.writerow({'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'Sentence ID': i,
-                                 'Sentence': s,
+                writer.writerow({
                                  'Sentiment (Mean score)': sentiment_mean,
                                  'Sentiment (Mean value)': label_mean,
                                  'Found Words': ("%d out of %d" % (len(found_words), total_words)),
-                                 'Word List': ', '.join(found_words)
-                                 })
+                                 'Word List': ', '.join(found_words),
+                })
             elif mode == 'median':
-                writer.writerow({'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'Sentence ID': i,
-                                 'Sentence': s,
-                                 'Sentiment (Median score)':sentiment_median,
+                writer.writerow({'Sentiment (Median score)':sentiment_median,
                                  'Sentiment (Median value)': label_median,
                                  'Found Words': ("%d out of %d" % (len(found_words), total_words)),
-                                 'Word List': ', '.join(found_words)
-                                 })
-            elif mode == 'both':
-                writer.writerow({'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document),
+                                 'Word List': ', '.join(found_words),
                                  'Sentence ID': i,
                                  'Sentence': s,
+                                 'Document ID': Document_ID,
+                                 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
+                                 })
+            elif mode == 'both':
+                writer.writerow({
                                  'Sentiment (Mean score)': sentiment_mean,
                                  'Sentiment (Mean value)': label_mean,
                                  'Sentiment (Median score)': sentiment_median,
                                  'Sentiment (Median value)': label_median,
                                  'Found Words': ("%d out of %d" % (len(found_words), total_words)),
-                                 'Word List': ', '.join(found_words)
-                                 })
+                                 'Word List': ', '.join(found_words),
+                                'Sentence ID': i,
+                                'Sentence': s,
+                                'Document ID': Document_ID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
+                })
 
         i += 1
     return output_file #LINE ADDED
@@ -213,12 +214,12 @@ def main(input_file, input_dir, output_dir, output_file, mode):
 
     with open(output_file, 'w', encoding='utf-8',errors='ignore', newline='') as csvfile:
         if (mode == 'both'):
-            fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Sentiment (Mean score)', 'Sentiment (Mean value)','Sentiment (Median score)', 'Sentiment (Median value)', 'Found Words', 'Word List']
+            fieldnames = ['Sentiment (Mean score)', 'Sentiment (Mean value)','Sentiment (Median score)', 'Sentiment (Median value)', 'Found Words', 'Word List', 'Sentence ID', 'Sentence','Document ID', 'Document']
         else:
             if mode == 'mean':
-                fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Sentiment (Mean score)', 'Sentiment (Mean value)', 'Found Words', 'Word List']
+                fieldnames = ['Sentiment (Mean score)', 'Sentiment (Mean value)', 'Found Words', 'Word List', 'Sentence ID', 'Sentence','Document ID', 'Document']
             elif mode == 'median':
-                fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Sentiment (Median score)', 'Sentiment (Median value)', 'Found Words', 'Word List']
+                fieldnames = ['Sentiment (Median score)', 'Sentiment (Median value)', 'Found Words', 'Word List', 'Sentence ID', 'Sentence','Document ID', 'Document']
         global writer
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()

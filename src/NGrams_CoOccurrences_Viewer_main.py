@@ -17,7 +17,7 @@ from subprocess import call
 import IO_user_interface_util
 import GUI_IO_util
 import IO_files_util
-import Excel_util
+import charts_Excel_util
 import statistics_txt_util
 import reminders_util
 import IO_csv_util
@@ -268,7 +268,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             i += 1
             j += 1
         hover_label = []
-        Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                                   'n-grams_viewer',
                                                   chart_type_list=["line"],
                                                   chart_title=chartTitle, column_xAxis_label_var=xAxis,
@@ -288,7 +288,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         hover_label = []
         if xAxis == 'Document':
             columns_to_be_plotted = [[1, 1]]
-            Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                                       'Co-Occ_viewer',
                                                       chart_type_list=["pie"],
                                                       chart_title=chartTitle, column_xAxis_label_var=xAxis,
@@ -296,7 +296,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                       count_var=1)
         # else:
         #     columns_to_be_plotted = [[0, 1]]
-        #     Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+        #     Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
         #                                               'Co-Occ_viewer',
         #                                               chart_type_list=["line"],
         #                                               chart_title=chartTitle, column_xAxis_label_var=xAxis,

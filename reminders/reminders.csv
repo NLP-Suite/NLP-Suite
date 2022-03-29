@@ -72,3 +72,4 @@ GIS,GIS GUI options,"The options available on the GUI have been automatically se
 With a TXT file, NER extraction via Stanford CoreNLP must be first performed.
 
 With a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.",No,No
+CoNLL_table_analyzer,CoNLL table - Verb modality,"The categories of Verb modality (Obligation, Will/would, Can/may) computed from the CoNLL table are NOT mutually exclusive. The same verb may appear in several categories.",Yes,No

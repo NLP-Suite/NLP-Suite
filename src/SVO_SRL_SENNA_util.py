@@ -95,11 +95,12 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
             document_index += 1
 
     senna_df = pd.DataFrame(formatted_table, columns=['Col %s' % i for i in range(len(formatted_table[0]))])
-    print(senna_df)
+    print('SENNA data matrix\n\n', senna_df)
     # Result of SENNA
 
-    convert_to_svo(senna_df, SENNA_output_file_name, createExcelCharts, filter_svo)
-    filesToOpen.append(SENNA_output_file_name)
+    SENNA_output_file_name = convert_to_svo(senna_df, SENNA_output_file_name)
+    if SENNA_output_file_name!='' and SENNA_output_file_name!=None:
+        filesToOpen.append(SENNA_output_file_name)
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                        'Finished running SENNA to extract SVOs at', True)
     return filesToOpen
@@ -183,9 +184,9 @@ def extract_sentence_index(senna_df: pd.DataFrame):
 
 def check_ner(ner: str, word: str, SVO: dict):
     if ner == 'LOC':
-        SVO['LOCATION'].append(word)
+        SVO['Location'].append(word)
     elif ner == 'PER':
-        SVO['PERSON'].append(word)
+        SVO['Person'].append(word)
 
 
 def get_verb_root(verb: str):
@@ -238,9 +239,9 @@ def extract_column_labels(sent_len, SVO, mapping, df, sent_col, start_index):
             last_label = word_label.split('-')[-1]
             mapping.update({word_index: last_label})
         elif word_label[-3:] == 'TMP':
-            SVO['TIME'].append(word)
+            SVO['Time'].append(word)
         elif word_label[-3:] == 'NEG' or word.lower() == 'never':
-            SVO['NEGATION'].append(word)
+            SVO['Negation'].append(word)
 
 
 def extract_svo(clause, SVO, mapping, df, noun_postag):
@@ -255,17 +256,17 @@ def extract_svo(clause, SVO, mapping, df, noun_postag):
             word = df.iloc[key, 2]
             postag = df.iloc[key, 3]
             ner = df.iloc[key, 4]
-            if mapping[key] != 'V':  # S
+            if mapping[key] != 'Verb (V)':  # S
                 if postag in noun_postag and (not s_has_noun or s_cont_noun):
                     s_has_noun = s_cont_noun = True
-                    SVO['S'].append(word)
+                    SVO['Subject (S)'].append(word)
                 else:
                     s_cont_noun = False
                 SVO['S(NP)'].append(word)
 
                 check_ner(ner, word, SVO)
             else:  # V
-                SVO['V'].append(word)
+                SVO['Verb (V)'].append(word)
 
     # S-V-O or O-V-S Structures
     else:
@@ -286,11 +287,11 @@ def extract_svo(clause, SVO, mapping, df, noun_postag):
                     if before_verb > after_verb:  # O
                         if not o_has_noun or o_cont_noun:
                             o_has_noun = o_cont_noun = True
-                            SVO['O'].append(word)
+                            SVO['Object (O)'].append(word)
                     else:  # S
                         if not s_has_noun or s_cont_noun:
                             s_has_noun = s_cont_noun = True
-                            SVO['S'].append(word)
+                            SVO['Subject (S)'].append(word)
                 else:
                     o_cont_noun = s_cont_noun = False
                 if before_verb > after_verb:  # O
@@ -304,11 +305,11 @@ def extract_svo(clause, SVO, mapping, df, noun_postag):
                     if before_verb > after_verb:
                         if not s_has_noun or s_cont_noun:
                             s_has_noun = s_cont_noun = True
-                            SVO['S'].append(word)
+                            SVO['Subject (S)'].append(word)
                     else:
                         if not o_has_noun or o_cont_noun:
                             o_has_noun = o_cont_noun = True
-                            SVO['O'].append(word)
+                            SVO['Object (O)'].append(word)
                 else:
                     s_cont_noun = o_cont_noun = False
                 if before_verb > after_verb:
@@ -318,10 +319,10 @@ def extract_svo(clause, SVO, mapping, df, noun_postag):
 
                 check_ner(ner, word, SVO)
             else:
-                SVO['V'].append(word)
+                SVO['Verb (V)'].append(word)
 
 
-def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCharts: bool, filter_svo: tuple) -> str:
+def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
     """
     Converts a csv file with SRL results to SVO results
     :param input_df: a df file with SRL results
@@ -331,10 +332,12 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
     :return: the path of the output file
     """
 
+    print("\nConverting SENNA data matrix to NLP Suite SVO output format. Please, be patient...")
+
     df = input_df
     new_df = pd.DataFrame(
-        columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'S(NP)', 'O(NP)', 'PERSON', 'LOCATION',
-                 'TIME', 'NEGATION', 'Sentence'])
+        columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'S(NP)', 'O(NP)', 'Negation',  'Location', 'Person',
+                 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
     document_id, sent_id = 0, 0
     sentence_start_index = extract_sentence_index(df)
 
@@ -349,7 +352,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
         # Iterating each column (the first 4 rows are irrelevant)
         for col_index in range(4, len(df.columns)):
             # Result dict
-            SVO = {'S': [], 'V': [], 'O': [], 'PERSON': [], 'LOCATION': [], 'TIME': [], 'NEGATION': [], 'S(NP)': [],
+            SVO = {'Subject (S)': [], 'Verb (V)': [], 'Object (O)': [], 'Negation': [], 'Location': [],'Person': [], 'Time': [], 'S(NP)': [],
                    'O(NP)': []}
             noun_postag = {'PRP', 'NN', 'NNS', 'NNP', 'WP'}
 
@@ -377,30 +380,33 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str, createExcelCha
                 df.iloc[key, col_index] = mapping[key]
 
             # Append new row to new df
-            if SVO['V']:
-                SVO['S'] = ' '.join(SVO['S'])
-                SVO['V'] = ' '.join(SVO['V'])
-                SVO['O'] = ' '.join(SVO['O'])
-                SVO['PERSON'] = ', '.join(SVO['PERSON'])
-                SVO['LOCATION'] = ', '.join(SVO['LOCATION'])
-                SVO['TIME'] = ' '.join(SVO['TIME'])
-                SVO['NEGATION'] = ', '.join(SVO['NEGATION'])
+            if SVO['Verb (V)']:
+                SVO['Subject (S)'] = ' '.join(SVO['Subject (S)'])
+                SVO['Verb (V)'] = ' '.join(SVO['Verb (V)'])
+                SVO['Object (O)'] = ' '.join(SVO['Object (O)'])
+                SVO['Negation'] = '; '.join(SVO['Negation'])
+                SVO['Location'] = '; '.join(SVO['Location'])
+                SVO['Person'] = '; '.join(SVO['Person'])
+                SVO['Time'] = ' '.join(SVO['Time'])
                 SVO['S(NP)'] = ' '.join(SVO['S(NP)'])
                 SVO['O(NP)'] = ' '.join(SVO['O(NP)'])
                 # print(SVO)
 
                 formatted_input_file_name = IO_csv_util.dressFilenameForCSVHyperlink(df.iloc[sentence_index, 1])
                 new_row = pd.DataFrame(
-                    [[document_id, sent_id, formatted_input_file_name, SVO['S'], SVO['V'], SVO['O'], SVO['S(NP)'],
-                      SVO['O(NP)'], SVO['PERSON'], SVO['LOCATION'], SVO['TIME'], SVO['NEGATION'], sentence]],
-                    columns=['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'S(NP)', 'O(NP)', 'PERSON',
-                             'LOCATION', 'TIME', 'NEGATION', 'Sentence'])
+                    [[SVO['Subject (S)'], SVO['Verb (V)'], SVO['Object (O)'], SVO['S(NP)'],
+                      SVO['O(NP)'], SVO['Negation'], SVO['Location'], SVO['Person'], SVO['Time'], sent_id, sentence, document_id, formatted_input_file_name]],
+                    columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'S(NP)', 'O(NP)', 'Negation', 'Location',
+                             'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
                 new_df = new_df.append(new_row, ignore_index=True)
         sent_id += 1
 
-    if createExcelCharts:
+    # save SVO data frame as csv file
+    try:
         new_df.to_csv(output_file_name, index=False)
-
+    except:
+        print("The SENNA SVO script encountered an error in saving the csv file output. Depending upon the size of your corpus, you may not have enough memory on your machine.")
+        output_file_name =''
     return output_file_name
 
 
@@ -408,5 +414,5 @@ if __name__ == '__main__':
     dir_name = ''
     file_name = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/test.txt'
     output_dir = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/'
-    run_senna(file_name, dir_name, output_dir, openOutputFiles=False, createExcelCharts=False)
+    run_senna(file_name, dir_name, output_dir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts)
     # get_verb_root('taking')

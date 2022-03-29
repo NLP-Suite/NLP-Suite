@@ -8,7 +8,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"File splitter by TOC",['os','io','re','ntpath','tkinter','shutil'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"File splitter by TOC",['os','io','re','ntpath','tkinter','shutil','stanza'])==False:
     sys.exit(0)
 
 import io
@@ -19,7 +19,7 @@ import ntpath
 import shutil
 
 import GUI_util
-from nltk.tokenize import sent_tokenize, word_tokenize
+from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 import IO_user_interface_util
 import reminders_util
@@ -110,7 +110,7 @@ def splitDocument_byLength(window, config_filename, filename_path,output_path=''
                 sf.write(text[splits[i-1]+1:splits[i]+1])
                 filesToReturn.append(SplitFile)
             sf.close()
-        if 'SVO' in config_filename or 'NER' in config_filename or 'CoreNLP' in config_filename:
+        if 'SVO' in config_filename or 'NER' in config_filename or 'CoreNLP' in config_filename or 'coref' in config_filename:
             reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_split_files,
                                          reminders_util.message_CoreNLP_split_files, True)
         else:
@@ -134,9 +134,9 @@ def split_byLength(window,input_path,filename,output_path, maxLength, inSentence
     title = docname.partition('.')[0]#get the title of the file(without path and .txt)
     with open(filename, 'r',encoding='utf-8',errors='ignore') as F:
         text = F.read()
-        sentences = sent_tokenize(text)#sentnece list of the input txt
+        sentences = sent_tokenize_stanza(stanzaPipeLine(text)) #sentnece list of the input txt
     F.close()
-    if maxLength > len(word_tokenize(text)):
+    if maxLength > len(word_tokenize_stanza(stanzaPipeLine(text))):
         IO_user_interface_util.timed_alert(window, 3000, 'File split warning', 'The length of file ' + filename + ' is less than ' + str(maxLength))
         subfile = open(output_path+"/"+title+"_1"+".txt", 'w',encoding='utf-8',errors='ignore')
         subfile.write(text)
@@ -145,7 +145,7 @@ def split_byLength(window,input_path,filename,output_path, maxLength, inSentence
     subfileIndex = 1
     l = 0
     for sent in sentences:
-        words = word_tokenize(sent)
+        words = word_tokenize_stanza(stanzaPipeLine(sent))
         if l + len(words) < maxLength:
             splitText += sent + " "
             l += len(words)
@@ -175,14 +175,14 @@ def split_byLength(window,input_path,filename,output_path, maxLength, inSentence
                 else:
                     subsent = ''
                     restsent = sent
-                    while len(word_tokenize(subsent)) <= diff:#check each same word until the previous text reached the maxLength
+                    while len(word_tokenize_stanza(stanzaPipeLine(text))) <= diff:#check each same word until the previous text reached the maxLength
                         subsent += restsent.partition(words[diff-1])[0]+restsent.partition(words[diff-1])[1]
                         restsent = restsent.partition(words[diff-1])[2]
                     subfile = open(output_path+"/"+title+"_"+str(subfileIndex)+".txt", 'w',encoding='utf-8',errors='ignore')
                     subfile.write(splitText + subsent)
                     subfileIndex += 1
                     splitText = restsent + " "
-                    l = len(word_tokenize(restsent))
+                    l = len(word_tokenize_stanza(stanzaPipeLine(restsent)))
                     
     if len(splitText) > 0:
         subfile = open(output_path+"/"+title+"_"+str(subfileIndex)+".txt", 'w',encoding='utf-8',errors='ignore')

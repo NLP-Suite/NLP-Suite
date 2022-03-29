@@ -26,7 +26,7 @@ import CoNLL_util
 import sentence_analysis_util
 import concreteness_analysis_util
 import lib_util
-import Excel_util
+import charts_Excel_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -228,7 +228,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                 else:
                     columns_to_be_plotted = [[2, 4]]
                     hover_label = ['Sentence']
-                Excel_outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                           outputFileLabel='Concret',
                                                           chart_type_list=["line"],
                                                           chart_title='Concreteness Scores by Sentence Index',
@@ -239,7 +239,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                 if Excel_outputFilename != "":
                     filesToOpen.append(Excel_outputFilename)
 
-                # outputFilename = Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                # outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                 #                                     outputFilename, chart_type_list=["line"],
                 #                                     chart_title="Concreteness Scores by Sentence Index",
                 #                                     column_xAxis_label_var='Sentence index',
@@ -521,8 +521,8 @@ activate_options()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Style analysis':'TIPS_NLP_Style analysis.pdf','English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf','Clause analysis':'TIPS_NLP_Clause analysis.pdf','Sentence complexity':'TIPS_NLP_Sentence complexity.pdf','Text readability':'TIPS_NLP_Text readability.pdf','CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf", 'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf", 'DEPREL (Stanford Dependency Relations)': "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf", 'NLP Searches': "TIPS_NLP_NLP Searches.pdf",'N-Grams (word & character)':"TIPS_NLP_Ngrams (word & character).pdf",'NLP Ngram and Word Co-Occurrence VIEWER':"TIPS_NLP_Ngram and Word Co-Occurrence VIEWER.pdf",'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf','Language concreteness':'TIPS_NLP_Language concreteness analysis.pdf','Yule measures of vocabulary richness':'TIPS_NLP_Yule - Measures of vocabulary richness.pdf'}
-TIPS_options='Style analysis', 'English Language Benchmarks', 'Clause analysis', 'Sentence complexity', 'Text readability','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Language concreteness','Yule measures of vocabulary richness'
+TIPS_lookup = {'Style analysis':'TIPS_NLP_Style analysis.pdf','English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf','Clause analysis':'TIPS_NLP_Clause analysis.pdf','Sentence complexity':'TIPS_NLP_Sentence complexity.pdf','Text readability':'TIPS_NLP_Text readability.pdf','CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf", 'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf", 'DEPREL (Stanford Dependency Relations)': "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf", 'NLP Searches': "TIPS_NLP_NLP Searches.pdf",'N-Grams (word & character)':"TIPS_NLP_Ngrams (word & character).pdf",'NLP Ngram and Word Co-Occurrence VIEWER':"TIPS_NLP_Ngram and Word Co-Occurrence VIEWER.pdf",'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf','Language concreteness':'TIPS_NLP_Language concreteness analysis.pdf','Yule measures of vocabulary richness':'TIPS_NLP_Yule - Measures of vocabulary richness.pdf','The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf'}
+TIPS_options='Style analysis', 'English Language Benchmarks', 'Clause analysis', 'Sentence complexity', 'Text readability','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Language concreteness','Yule measures of vocabulary richness','The world of emotions and sentiments'
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.

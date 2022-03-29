@@ -5,7 +5,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Excel_util",['csv','tkinter','os','collections','openpyxl'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"charts_Excel_util",['csv','tkinter','os','collections','openpyxl'])==False:
     sys.exit(0)
 
 import tkinter.messagebox as mb
@@ -80,7 +80,7 @@ def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_
     return data_to_be_plotted
 
 # best approach when all the columns to be plotted are already in the file
-#   otherwise, use Excel_util.compute_csv_column_frequencies
+#   otherwise, use charts_Excel_util.compute_csv_column_frequencies
 # only one hover-over column per series can be selected
 # each series plotted has its own hover-over column
 #   if the column is the same (e.g., sentence), this must be repeated as many times as there are series 
@@ -342,7 +342,7 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 #         temp_str = '%s' + '\n%s' * (len(hover_col) - 1)
 #         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col), axis=1)
 #         data.drop(hover_col, axis=1, inplace=True)
-#     return Excel_util.prepare_csv_data_for_chart(window, inputFilename, data, output_dir, select_col,
+#     return charts_Excel_util.prepare_csv_data_for_chart(window, inputFilename, data, output_dir, select_col,
 #                                                                 Hover_over_header, group_col, fileNameType, chartType,
 #                                                                 openOutputFiles, createExcelCharts, count_var)
 
@@ -542,7 +542,7 @@ def prepare_csv_data_for_chart(window,inputfile, inputDataFrame, outputpath, sel
                                                   hover_info_column_list=hover_label,
                                                   count_var=count_var)
 
-        # excel_outputFileName_2 = Excel_util.run_all(columns_to_be_plotted, inputfile, outputpath, outputCsvfilename,
+        # excel_outputFileName_2 = charts_Excel_util.run_all(columns_to_be_plotted, inputfile, outputpath, outputCsvfilename,
         #                                               chart_type_list=[chartType],
         #                                               chart_title='Frequency Distribution of '+ ','.join(select_col),
         #                                               column_xAxis_label_var='Sentence Index',
@@ -682,6 +682,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     if 'line' in chart_type_list:
         from openpyxl.chart import (
             LineChart,
+            Reference,
             Series,
         )
     if 'scatter' in chart_type_list:

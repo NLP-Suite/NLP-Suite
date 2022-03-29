@@ -10,6 +10,7 @@ import csv
 import tkinter.messagebox as mb
 import pandas as pd
 import os
+import stat
 
 
 #if any column header contains just numbers the function will return FALSE

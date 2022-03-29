@@ -14,7 +14,7 @@ import GUI_IO_util
 import CoNLL_util
 import CoNLL_table_search_util
 import statistics_csv_util
-import Excel_util
+import charts_Excel_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
@@ -245,18 +245,18 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
 
                 # line plot by sentence index
                 if searchedCoNLLField == 'FORM':
-                    tempFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
+                    tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
                                                                           [[11, 5], [11, 7], [11, 9]],
                                                                           ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
-                                                                          ['SEARCHED TOKEN (FORM)', 'Sentence'],
-                                                                          ['Document ID', 'Sentence ID', 'Document'],
+                                                                          ['SEARCHED TOKEN (FORM)', 'Sentence ID','Sentence'],
+                                                                          ['Document ID', 'Document'],
                                                                           openOutputFiles, createExcelCharts, 'QC', 'line')
                 else:
-                    tempFiles = Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
+                    tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
                                                                           [[11, 5], [11, 7], [11, 9]],
                                                                           ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
-                                                                          ['SEARCHED TOKEN (LEMMA)', 'Sentence'],
-                                                                          ['Document ID', 'Sentence ID', 'Document'],
+                                                                          ['SEARCHED TOKEN (LEMMA)', 'Sentence ID','Sentence'],
+                                                                          ['Document ID', 'Document'],
                                                                           openOutputFiles, createExcelCharts, 'QC', 'line')
                 filesToOpen.extend(tempFiles)
 
@@ -268,7 +268,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                 errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
                 if errorFound == True:
                     return
-                output_file_name_xlsx = Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename,
+                output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename,
                                                                       outputDir, "QueryCoNLL_POS",
                                                                       "Searched token POStag Values (" + searchField_kw + ")",
                                                                       ["pie"])
@@ -282,7 +282,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                 errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
                 if errorFound == True:
                     return
-                output_file_name_xlsx = Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
+                output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
                                                                       "QueryCoNLL_DepRel",
                                                                       "Searched token DEPrel Values (" + searchField_kw + ")",
                                                                       ["pie"])
@@ -296,7 +296,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                 errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
                 if errorFound == True:
                     return
-                output_file_name_xlsx = Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
+                output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
                                                                       "QueryCoNLL_CoOcc_POS",
                                                                       "Co-token POStag Values (" + searchField_kw + ")",
                                                                       ["pie"])
@@ -311,7 +311,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                 if errorFound:
                     return
 
-                output_file_name_xlsx = Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
+                output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
                                                                       "QueryCoNLL_CoOcc_DEP",
                                                                       "Co-token DEPrel Values (" + searchField_kw + ")",
                                                                       ["pie"])

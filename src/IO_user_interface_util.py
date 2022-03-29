@@ -85,7 +85,9 @@ def timed_alert(window, timeout, message_title, message_text, time_needed=False,
     if not silent:
         if not 'Finished' in message_text and not 'Opening' in message_text:
             message_text = message_text + '\n\nYou can follow the algorithm in command line.'
-        top_message = tk.Toplevel(window)
+
+        # top_message = tk.Toplevel(window)
+        top_message = tk.Toplevel()
         top_message.title(message_title)
         # windowHeight=len(message_text)
         # print("windowHeight",windowHeight)
@@ -100,7 +102,8 @@ def timed_alert(window, timeout, message_title, message_text, time_needed=False,
         button = tk.Button(top_message, text="OK", command=top_message.destroy)
         button.pack()
         top_message.wait_window()
-        window.focus_force()
+        if window != '': # set to '' in NLP_setup_update_util since the GUI.window has already been closed
+            window.focus_force()
     return time.time()
 
 def input_output_save(script):

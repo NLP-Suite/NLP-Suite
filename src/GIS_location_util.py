@@ -64,9 +64,8 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 
 #the CoNLL table includes the filename; the position in the table varies with old and new CoNLL
 # returns filename, location, sentence, date (if present)
-# called by GIS_Google_Earth_util
 def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,split_locations_suffix,datePresent):
-	filenamePositionInCoNLLTable=11
+	filenamePositionInCoNLLTable=12
 	startTime=IO_user_interface_util.timed_alert(window, 2000, 'NER locations extraction', "Started extracting NER locations from CoNLL table at",
 												 True,'', True, '', True)
 	print("NER location extractions from CoNLL table started.")
@@ -91,11 +90,11 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 	for index, row in dt.iterrows():
 		if row[4] in ['LOCATION','STATE_OR_PROVINCE','CITY','COUNTRY']: #col 4 is NER
 			# do NOT compute the same sentence for the same document
-			if (sentenceID==1 and documentID==1) or (row[9]!=sentenceID and row[10]==documentID):
-				currentRecord, sentence_str = CoNLL_util.compute_sentence(conllFile,currentRecord,row[9],row[10])
+			if (sentenceID==1 and documentID==1) or (row[10]!=sentenceID and row[11]==documentID):
+				currentRecord, sentence_str = CoNLL_util.compute_sentence(conllFile,currentRecord,row[10],row[11])
 			if row[filenamePositionInCoNLLTable] in currList:
-				# No need to display the filename in Description when only one file is processed 
-				# A blank value for the filename will be checked in Description to avoid displaying it 
+				# No need to display the filename in Description when only one file is processed
+				# A blank value for the filename will be checked in Description to avoid displaying it
 				if numDocs!=1:
 					# currList.append(row[filenamePositionInCoNLLTable]) #append filename
 					if "=dressforhyperlink" in str(row[filenamePositionInCoNLLTable]):
@@ -114,7 +113,7 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 					tempLocation=row[1]
 					continue
 				else:
-					if tempLocation!='': #we are on the next row 
+					if tempLocation!='': #we are on the next row
 						currList.append(tempLocation + ' ' + row[1]) #col 1 is the FORM value
 						tempLocation=''
 					else:
@@ -138,7 +137,7 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 				# There are various ways to alter strftime so that it handles pre-1900 dates
 				if currList!=['']: # do NOT append the date to an empty list
 					if datePresent==True:
-						currList.append(row[12]) #col 12 is the date, IFF present
+						currList.append(row[13]) #col 12 is the date, IFF present
 					else:
 						currList.append('')
 			if currList!=[''] and len(currList)>1: # sometimes only the filename is printed; no location
@@ -147,9 +146,9 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 			print("Processing NER location " + str(index)+"/"+str(numRecords)+ " " + str(sentenceID)+"/"+str(documentID) + "   " + str(currList)+ "\n")
 			currList = []
 			if row[9]!=sentenceID:
-				sentenceID=row[9]
+				sentenceID=row[10]
 			if row[10]!=documentID:
-				documentID=row[10]
+				documentID=row[11]
 	if len(locList)==0:
 		mb.showwarning(title='NER locations', message="There are no NER tags for 'LOCATION','STATE_OR_PROVINCE','CITY','COUNTRY' in your CoNLL file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.")
 	else:
@@ -181,10 +180,9 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 				if datePresent == True:
 					locList.append([row[locationColumnNumber], row[dateColumnNumber]])
 				else:
-					locList.append([row[locationColumnNumber]])
+					locList.append([row[locationColumnNumber],[index],[0]])
 	if len(locList)==0:
 		mb.showwarning(title='Locations', message="There are no locations in your input file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.\n\nNo map via Google Earth Pro can be done.")
 		return
 	IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Finished extracting locations from csv file at", True, '', True, startTime, True)
 	return sorted(locList)
-

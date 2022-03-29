@@ -49,6 +49,7 @@ spacy_langdetect
 langid
 
 #used by Stanford_CoreNLP.py and other functions
+psutil
 unicode
 unidecode
 pycorenlp
@@ -67,7 +68,7 @@ stanfordnlp
 # VADER (sentimentt analysis)
 twython
 
-#used by Excel_util.py for visualzing Excel charts
+#used by charts_Excel_util.py for visualzing Excel charts
 openpyxl~=3.0.6
 
 #used by GIS_main.py for generating Google Earth KML files, wordclouds_main

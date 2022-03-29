@@ -14,11 +14,13 @@ import tkinter.messagebox as mb
 # import requests
 # import webbrowser
 
+
 import IO_internet_util
 import IO_files_util
 import GUI_IO_util
 import IO_csv_util
 import reminders_util
+import wordclouds_util
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'#for mac users to solve one error: https://stackoverflow.com/questions/53014306/error-15-initializing-libiomp5-dylib-but-found-libiomp5-dylib-already-initial
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -29,7 +31,8 @@ def transform_format(val):
     else:
         return val
 
-def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizontal, lemmatize, stopwords, punctuation, lowercase, collocation, differentPOS_differentColors,
+def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizontal, font,
+        max_words, lemmatize, stopwords, punctuation, lowercase, collocation, differentPOS_differentColors,
         prepare_image_var,selectedImage, use_contour_only,
         differentColumns_differentColors, csvField_color_list, openOutputFiles, doNotCreateIntermediateFiles):
     if len(visualization_tools)==0 and differentColumns_differentColors==False:
@@ -54,6 +57,9 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
             # if not IO_internet_util.check_internet_availability_warning(visualization_tools):
             #     return
             # webbrowser.open_new_tab('https://www.remove.bg/')
+            # https://www.adobe.com/express/feature/image/remove-background
+            # https://express.adobe.com/tools/remove-background
+            # https://www.slazzer.com/upload
             url = 'https://www.remove.bg/'
             if not IO_libraries_util.open_url('remove.bg', url):
                 return
@@ -76,19 +82,11 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
         if not IO_libraries_util.open_url(visualization_tools, url, message_title='', message='', config_filename='',
                      reminder_title='', reminder_message=''):
             return
-        # status_code = requests.get(url).status_code
-        # if status_code != 200:
-        #     mb.showwarning(title='Warning',
-        #                    message='Oops! It appears that the website www.wordle.net that traditionally hosted Wordle is no longer available.\n\nWordle was the fiirst wordclouds algorithm developed by Jonathan Feinberg at IBM Research in 2005, 2008 and subsequently followed by several other applications.\n\nPlease, use one of these freeware applications hosted by the NLP Suite, including the Python package WordCloud.')
-        # else:
-        #     reminders_util.checkReminder(config_filename, reminders_util.title_options_wordclouds,
-        #                                  reminders_util.message_wordclouds, True)
-        #     webbrowser.open_new(url)
     elif visualization_tools=="Python WordCloud":
         import wordclouds_util
         if not IO_internet_util.check_internet_availability_warning("wordclouds_main.py"):
             return
-        wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_contour_only, prefer_horizontal, lemmatize, stopwords, punctuation, lowercase, differentPOS_differentColors,differentColumns_differentColors, csvField_color_list,doNotCreateIntermediateFiles,openOutputFiles, collocation)
+        wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_contour_only, prefer_horizontal, font, int(max_words), lemmatize, stopwords, punctuation, lowercase, differentPOS_differentColors,differentColumns_differentColors, csvField_color_list,doNotCreateIntermediateFiles,openOutputFiles, collocation)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 
@@ -97,6 +95,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             wordclouds_var.get(),
                             prefer_horizontal_var.get(),
+                            font_var.get(),
+                            max_words_var.get(),
                             lemmatize_var.get(),
                             stopwords_var.get(),
                             punctuation_var.get(),
@@ -163,6 +163,7 @@ csv_field_var=tk.StringVar()
 differentColumns_differentColors_var = tk.IntVar()
 doNotCreateIntermediateFiles_var = tk.IntVar() #when an entire directory is processed; could lead to an enourmus number of output files
 wordclouds_var=tk.StringVar()
+font_var=tk.StringVar()
 prepare_image_var = tk.IntVar()
 selectedImage_var=tk.StringVar()
 use_contour_only_var = tk.IntVar()
@@ -173,6 +174,7 @@ csvField_color_list=[]
 
 def clear(e):
     wordclouds_var.set('Python WordCloud')
+    font_var.set('Default')
     differentColumns_differentColors_var.set(0)
     differentColumns_differentColors_checkbox.config(state='normal')
     selectedImage_var.set('')
@@ -226,43 +228,64 @@ def warnUser(*args):
                        message='You have selected to visualize words only horizontally in the wordcloud image. Some of the lower-frequency words may need to be dropped from the wordclouds image since there may not be enough room for their display.\n\nCombining horizontal and vertical displays maximizes the number of words visualized in the wordcloud image.')
 prefer_horizontal_var.trace('w',warnUser)
 
+import wordclouds_util
+font_list = wordclouds_util.get_font_list()
+
+font_var.set('Default')
+font_lb = tk.Label(window, text='Font')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,font_lb, True)
+
+font = ttk.Combobox(window, width = 15, textvariable = font_var)
+font['values'] = font_list
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+160, y_multiplier_integer,font,True)
+# font.config(state='disabled')
+
+max_words_var=tk.StringVar()
+max_words_var.set(100)
+
+max_words_lb = tk.Label(window, text='Max no. of words')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,max_words_lb,True)
+max_words=tk.Entry(window, width=4,textvariable=max_words_var)
+max_words.config(state='normal')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+420, y_multiplier_integer,max_words,True)
+
 lemmatize_checkbox = tk.Checkbutton(window, variable=lemmatize_var,
                                                        onvalue=1, offvalue=0)
 
 lemmatize_checkbox.config(text="Lemmas")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+140,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+3290,
                                                y_multiplier_integer, lemmatize_checkbox, True)
 
 stopwords_checkbox = tk.Checkbutton(window, variable=stopwords_var,
                                                        onvalue=1, offvalue=0)
 
 stopwords_checkbox.config(text="Stopwords")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+230,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+480,
                                                y_multiplier_integer, stopwords_checkbox, True)
 
 punctuation_checkbox = tk.Checkbutton(window, variable=punctuation_var,
                                                        onvalue=1, offvalue=0)
 
 punctuation_checkbox.config(text="Punctuation")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+340,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+590,
                                                y_multiplier_integer, punctuation_checkbox, True)
 
 lowercase_checkbox = tk.Checkbutton(window, variable=lowercase_var,
                                                        onvalue=1, offvalue=0)
 
 lowercase_checkbox.config(text="Lowercase")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+460,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+710,
                                                y_multiplier_integer, lowercase_checkbox, True)
 
 collocation_checkbox = tk.Checkbutton(window, variable=collocation_var,
                                                        onvalue=1, offvalue=0)
 
 collocation_checkbox.config(text="Collocation")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+580,
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+830,
                                                y_multiplier_integer, collocation_checkbox, True)
 
-differentPOS_differentColors_checkbox.config(text="Different colors by POS tags (nouns, verbs, adverbs, adjectives)")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+680,
+differentPOS_differentColors_checkbox.config(text="Different colors by POS tags")
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+950,
                                                y_multiplier_integer, differentPOS_differentColors_checkbox)
 
 menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
@@ -507,7 +530,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
                                       GUI_IO_util.msg_IO_setup)
 
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help","Please, using the dropdown menu, select the word cloud service you want to use to generate a worldcloud.\n\nFor 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle' you must be connected to the internet. You will also need to copy/paste text or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file.\n\nThe Python algorithm uses Andreas Mueller's Python package WordCloud (https://amueller.github.io/word_cloud/) can be run without internet connection.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files or a csv CoNLL table file.\n\nIn OUTPUT the algorithm creates word cloud image file(s).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","\n\nThe filter options are only available when selecting Python as the wordcloud service to use. When available,\n\n   1. tick the 'Horizonal' checkbox if you wish to display words in the wordcloud horizonally only;\n   2. tick the 'Lemmas' checkbox if you wish to lemmatize the words in the input file(s);\n   3. tick the 'Stopwords' checkbox if you wish to exclude from processing stopwords present in the input file(s);\n   4. tick the 'Punctuation' checkbox if you wish to exclude from processing punctuation symbols present in the input file(s);\n   5. tick the 'Lowercase' checkbox if you wish to convert all words to lowercase to avoid having some words capitalized simly because they are the first words in a sentence;\n   6. tick the 'Collocation' checkbox if you wish to keep together common combinations of words (South Carolina; White House);\n   7. tick the 'Different colors for different POS tags' checkbox if you wish to display different POSTAG values (namely, nouns, verbs, adjectives, and adverbs) in different colors (RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, and GREY for ADVERBS; YELLOW for any other POS tags). For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values).\n\nStanford CoreNLP STANZA will be used to tokenize sentences, lemmatize words, and compute POS tags. Depending upon the number of files processed and length of files, the process can be time consuming. Please, be patient.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","\n\nThe filter options are only available when selecting Python as the wordcloud service to use. When available,\n\n   1. tick the 'Horizonal' checkbox if you wish to display words in the wordcloud horizonally only;\n   2. select the preferred font;\n   3. enter the maximum number of words to be displayed;\n   4. tick the 'Lemmas' checkbox if you wish to lemmatize the words in the input file(s);\n   5. tick the 'Stopwords' checkbox if you wish to exclude from processing stopwords present in the input file(s);\n   6. tick the 'Punctuation' checkbox if you wish to exclude from processing punctuation symbols present in the input file(s);\n   7. tick the 'Lowercase' checkbox if you wish to convert all words to lowercase to avoid having some words capitalized simly because they are the first words in a sentence;\n   8. tick the 'Collocation' checkbox if you wish to keep together common combinations of words (South Carolina; White House);\n   9. tick the 'Different colors for different POS tags' checkbox if you wish to display different POSTAG values (namely, nouns, verbs, adjectives, and adverbs) in different colors (RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, and GREY for ADVERBS; YELLOW for any other POS tags). For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values).\n\nStanford CoreNLP STANZA will be used to tokenize sentences, lemmatize words, and compute POS tags. Depending upon the number of files processed and length of files, the process can be time consuming. Please, be patient.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help","Please, tick the checkbox to open the web service Removebg (https://www.remove.bg/) that will prepare an image for use in the Python wordcloud algorithm, removing all image background and turning it into white.\n\nYou can then use the output png image file to create the wordcloud (see the widget 'Select png image' file).\n\nYOU MUST BE CONNECTED TO THE INTERNET.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help","Please, select a png image file to be used to dislay the word cloud in the image.\n\nThe image must have a white background.\n\nYou can use the image file created via removebg (see the widget 'Prepare image').\n\nClick on the button to the right of the widget 'Select png image file' to open the file.\n\nTick the checkbox 'Use image contour only' if you want to use the contour of the image rather than the full image.")
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help","Please, tick the checkbox if you wish to run the Python 3 Andreas Mueller's package WordCloud (https://amueller.github.io/word_cloud/) and assign different colors to the values of different columns of a csv file.\n\nThus, if, from a file, you have extracted SVOs (Subjects, Verbs, Objects) or POSTAG values (nouns, verbs, and adjectives), saving these values in in different columns, this function will allow you to display the values in the different columns in different, user-selected colors (e.g., RED for the column of NOUNS, BLUE for the column of VERBS).\n\nThe wordcloud algorithm can color all the values of a column differently from all the values of another column. The algorithm is NOT setup to color differently the different values within a column (to accomplish this goal, you would need to manipulate first the csv file; for instance, if the input file is a CoNLL table, you could extract all the NER values COUNTRY, CITY, and STATE_OR_PROVINCE and the NER value PERSON and ORGANIZATION, save them as two separate columns, and then use this new csv file in the current wordcloud algorithm).\n\nIn INPUT the algorithm expects a single csv file (e.g., a CoNLL table) rather than a text file or a directory.\n\nIn OUTPUT the algorithm creates a word cloud image file.")

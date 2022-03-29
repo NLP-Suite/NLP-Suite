@@ -78,12 +78,12 @@ def conj_string(subjects, sent_data): # connect multiple conjugates into a singl
             if isinstance(subj_gov[key], list):
                 if subj_gov[key] == subjects[1:]:
                     for i in range(1, len(subjects) - 1):
-                        result = result +  ", " + sent_data[subjects[i]]['word']
+                        result = result + ", " + sent_data[subjects[i]]['word']
                     result = result + ", " + conj + " " + sent_data[subjects[-1]]['word']
                     break
             else: 
                 if len(subjects) == 2 and subjects[-1] == subj_gov[key]:
-                    result = result +  " " + conj + " " + sent_data[subjects[-1]]['word']
+                    result = result + " " + conj + " " + sent_data[subjects[-1]]['word']
                     break
     if result != start_result:
         return result
@@ -335,9 +335,7 @@ def verb_root(verb_list, conj_word, token, sent_data):#extract subject, object, 
         if len(negation_list) > 0:
             if negation_list[0] == True and conj_word == "or":
                 negation = True
-            
-            
-        
+
         if s_set == False and s != 'Someone?':#setting potential subject
             s_set = True
             s_share = s
@@ -395,7 +393,7 @@ def pred_root(token, gov_dict, sent_data):# returns one triplet of subject-link 
 def content_negation(content, sent_data):
     if isinstance(content, list):
         for index in content:
-            negation =  negation_detect(sent_data[index], sent_data)
+            negation = negation_detect(sent_data[index], sent_data)
     else:
         negation = negation_detect(sent_data[content], sent_data)
     return negation
