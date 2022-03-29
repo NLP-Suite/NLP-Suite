@@ -253,37 +253,37 @@ def verb_modality_data_preparation(data):
 	return dat, verb_modality_stats
 
 # modality compute frequencies of modality categories
-def verb_modality_compute_categories(data, data_divided_sents):
-	num_obligation_mod = 0
-	num_will_would_mod = 0
-	num_can_may_mod = 0
-	num_unclassified = 0
-	verb_modality_list = []
-	obligation_keywords = ['must', 'need', 'form', 'should', 'ought', 'shall']
-	will_would_keywords = ['will', 'would', 'll', '\'d']
-	can_may_keywords = ['can', 'could', 'may', 'might']
+# def verb_modality_compute_categories(data, data_divided_sents):
+# 	num_obligation_mod = 0
+# 	num_will_would_mod = 0
+# 	num_can_may_mod = 0
+# 	num_unclassified = 0
+# 	verb_modality_list = []
+# 	obligation_keywords = ['must', 'need', 'form', 'should', 'ought', 'shall']
+# 	will_would_keywords = ['will', 'would', 'll', '\'d']
+# 	can_may_keywords = ['can', 'could', 'may', 'might']
 
-	try:
-		verb_postags = ['MD']
-		obligation_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in obligation_keywords)]
-		will_would_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in will_would_keywords)]
-		can_may_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in can_may_keywords)]
+# 	try:
+# 		verb_postags = ['MD']
+# 		obligation_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in obligation_keywords)]
+# 		will_would_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in will_would_keywords)]
+# 		can_may_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in can_may_keywords)]
 
-		verb_modality_list = [['Verb Modality', 'Frequencies'],
-					  ['Obligation', len(obligation_list)],
-					  ['Will/would', len(will_would_list)],
-					  ['Can/may', len(can_may_list)]]
+# 		verb_modality_list = [['Verb Modality', 'Frequencies'],
+# 					  ['Obligation', len(obligation_list)],
+# 					  ['Will/would', len(will_would_list)],
+# 					  ['Can/may', len(can_may_list)]]
 
-		obligation_counter = len(obligation_list)
-		will_would_counter = len(will_would_list)
-		can_may_counter = len(can_may_list)
+# 		obligation_counter = len(obligation_list)
+# 		will_would_counter = len(will_would_list)
+# 		can_may_counter = len(can_may_list)
 
-		return obligation_counter, will_would_counter, can_may_counter, obligation_list, will_would_list
-	except:
-		print("ERROR: INPUT MUST BE THE CoNLL TABLE CONTAINING THE SENTENCE ID. Program will exit.")
-		mb.showinfo("ERROR",
-					"INPUT MUST BE THE MERGED CoNLL TABLE CONTAINING THE SENTENCE ID. Please use the merge option when generating your CoNLL table in the StanfordCoreNLP.py routine. Program will exit.")
-		return
+# 		return obligation_counter, will_would_counter, can_may_counter, obligation_list, will_would_list
+# 	except:
+# 		print("ERROR: INPUT MUST BE THE CoNLL TABLE CONTAINING THE SENTENCE ID. Program will exit.")
+# 		mb.showinfo("ERROR",
+# 					"INPUT MUST BE THE MERGED CoNLL TABLE CONTAINING THE SENTENCE ID. Please use the merge option when generating your CoNLL table in the StanfordCoreNLP.py routine. Program will exit.")
+# 		return
 
 def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles,
 						createExcelCharts):
@@ -294,12 +294,6 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 
 	filesToOpen = []  # Store all files that are to be opened once finished
 
-	# obligation_stats, will_would_stats, can_may_stats, obligation_list, will_would_list = verb_modality_compute_categories(data, data_divided_sents)
-	# # must be sorted in descending order
-	# modality_stats = [['Verb Modality', 'Frequencies'],
-	# 				  ['Obligation', obligation_stats],
-	# 				  ['Will/would', will_would_stats],
-	# 				  ['Can/may', can_may_stats]]
 	obligation_list, modality_stats = verb_modality_data_preparation(data)
 	df = pd.read_csv(verb_file_name, header=None)
 	# output file names
@@ -340,9 +334,8 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 		# temporary headers added, not sure why the verb_voice_list doesn't have headers
 		df = pd.read_csv(verb_file_name, header=None)
 		df.to_csv(verb_file_name,
-				  header=["A", "FORM", "Lemma", "Postag", "B", "C", "D", "E", "F", "G", "Sentence ID", "Document ID",
-						  "H",
-						  "Verb Modality"])
+				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+					  "Verb Modality"])
 
 		# line plots by sentence index
 		outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
@@ -362,27 +355,64 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 
 
 # VERB TENSE ----------------------------------------------------------------------------------------------
+# written by Tony Chen Gu Mar 2022
+# add an extra column describing verb tense
+def verb_modality_data_preparation(data):
+	dat = []
+	vbg_counter = 0
+	vbd_counter = 0
+	vbn_counter = 0
+	vbp_counter = 0
+	vb_counter = 0
+	verb_tense_list = ['VBG', 'VBD', 'VB', 'VBN', 'VBP']
+	
+	for i in data:
+		if(i[3] in verb_tense_list):
+			tense = i[3]
+			if(tense == 'VBG'):
+				tense_col = 'Gerundive'
+				vbg_counter+=1
+			elif(tense == 'VBD'):
+				tense_col = 'Past'
+				vbd_counter+=1
+			elif(tense == 'VB'):
+				tense_col = 'Infinitive'
+				vb_counter+=1
+			elif(tense == 'VBN'):
+				tense_col = 'Past Principle/Passive'
+				vbn_counter+=1
+			elif(tense == 'VBP'):
+				tense_col = 'Present'
+				vbp_counter+=1
+			dat.append(i+[tense_col])
+	verb_tense_stats = [['Verb Tense', 'Frequencies'],
+					['Gerundive', vbg_counter],
+					['Infinitive', vbg_counter],
+					['Past', vbd_counter],
+					['Past Principle/Passive', vbn_counter],
+					['Present', vbp_counter]]
+	return dat, verb_modality_stats
 
 # tense analysis; compute frequencies
-def verb_tense_compute_frequencies(data, data_divided_sents):
-	global postag_counter
-	verb_future_list = []
-	verb_gerundive_list = []
-	verb_infinitive_list = []
-	verb_past_list = []
-	verb_past_principle_list = []
-	verb_present_list = []
-	# must be sorted in descending order
-	form_list, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
-	verb_tense_stats = [['Verb Tense', 'Frequencies'],
-				   # ['Future', postag_counter['VBD']],
-				   ['Gerundive', postag_counter['VBG']],
-				   ['Infinitive', postag_counter['VB']],
-				   ['Past', postag_counter['VBD']],
-				   ['Past Principle/Passive', postag_counter['VBN']],
-				   ['Present', postag_counter['VBP']]]
+# def verb_tense_compute_frequencies(data, data_divided_sents):
+# 	global postag_counter
+# 	verb_future_list = []
+# 	verb_gerundive_list = []
+# 	verb_infinitive_list = []
+# 	verb_past_list = []
+# 	verb_past_principle_list = []
+# 	verb_present_list = []
+# 	# must be sorted in descending order
+# 	form_list, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
+# 	verb_tense_stats = [['Verb Tense', 'Frequencies'],
+# 				   # ['Future', postag_counter['VBD']],
+# 				   ['Gerundive', postag_counter['VBG']],
+# 				   ['Infinitive', postag_counter['VB']],
+# 				   ['Past', postag_counter['VBD']],
+# 				   ['Past Principle/Passive', postag_counter['VBN']],
+# 				   ['Present', postag_counter['VBP']]]
 
-	return verb_tense_list, verb_tense_stats
+# 	return verb_tense_list, verb_tense_stats
 
 
 def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
@@ -391,14 +421,16 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 	# inputFilename = GUI_util.inputFilename.get()
 	# outputDir = GUI_util.outputFilename.get()
-	form_list, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
-	verb_tense_stats = [['Verb Tense', 'Frequencies'],
-				   # ['Future', postag_counter['VBD']],
-				   ['Gerundive', postag_counter['VBG']],
-				   ['Infinitive', postag_counter['VB']],
-				   ['Past', postag_counter['VBD']],
-				   ['Past Principle/Passive', postag_counter['VBN']],
-				   ['Present', postag_counter['VBP']]]
+	# form_list, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
+	# verb_tense_stats = [['Verb Tense', 'Frequencies'],
+	# 			   # ['Future', postag_counter['VBD']],
+	# 			   ['Gerundive', postag_counter['VBG']],
+	# 			   ['Infinitive', postag_counter['VB']],
+	# 			   ['Past', postag_counter['VBD']],
+	# 			   ['Past Principle/Passive', postag_counter['VBN']],
+	# 			   ['Present', postag_counter['VBP']]]
+	
+	verb_tense_list, verb_tense_stats = verb_modality_data_preparation(data)
 
 	# output file names
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Tense',
@@ -410,7 +442,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	# 								 CoNLL_util.sort_output_list('Verb Tense', tense_list),
 	# 								 verb_file_name)
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-										 postag_list,
+										 verb_tense_list,
 										 verb_file_name)
 	if errorFound == True:
 		return
@@ -438,25 +470,24 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 		# # modified by Siyan Pu November 2021
 		# # temporary headers added, not sure why the verb_voice_list doesn't have headers
-		# df = pd.read_csv(verb_file_name, header=None)
-		# df.to_csv(verb_file_name,
-		# 		  header=["A", "FORM", "Lemma", "Postag", "B", "C", "D", "E", "F", "G", "Sentence ID", "Document ID",
-		# 				  "H",
-		# 				  "Verb Tense"])
-		#
-		# # line plots by sentence index
-		# outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
-		# 														verb_file_name,
-		# 														'',
-		# 														outputDir,
-		# 														openOutputFiles,
-		# 														createExcelCharts,
-		# 														[[1, 4]],
-		# 														['Verb Tense'], ['FORM', 'Sentence'],
-		# 														['Document ID', 'Sentence ID', 'Document'],
-		# 														'NVA', 'line')
-		# if len(outputFiles) > 0:
-		# 	filesToOpen.extend(outputFiles)
+		df = pd.read_csv(verb_file_name, header=None)
+		df.to_csv(verb_file_name,
+				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+					  "Verb Tense"])
+		
+		# line plots by sentence index
+		outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+																verb_file_name,
+																'',
+																outputDir,
+																openOutputFiles,
+																createExcelCharts,
+																[[1, 4]],
+																['Verb Tense'], ['FORM', 'Sentence'],
+																['Document ID', 'Sentence ID', 'Document'],
+																'NVA', 'line')
+		if len(outputFiles) > 0:
+			filesToOpen.extend(outputFiles)
 
 	return filesToOpen
 
@@ -492,12 +523,12 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
 #=======================================================================================================================
 #Debug use
 #=======================================================================================================================
-def main():
-	file = "C:/Users/Tony Chen/Desktop/NLP_working/Test Input/conll_chn.csv"
-	# debug use
-	data, header = IO_csv_util.get_csv_data(file, True)
-	# end debug use
-	a,b = verb_modality_data_preparation(data)
+# def main():
+# 	file = "C:/Users/Tony Chen/Desktop/NLP_working/Test Input/conll_chn.csv"
+# 	# debug use
+# 	data, header = IO_csv_util.get_csv_data(file, True)
+# 	# end debug use
+# 	a,b = verb_modality_data_preparation(data)
 
-if __name__ == "__main__":
-	main()
+# if __name__ == "__main__":
+# 	main()
