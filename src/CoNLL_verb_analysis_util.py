@@ -178,7 +178,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	# temporary headers added, not sure why the verb_voice_list doesn't have headers
 	df = pd.read_csv(verb_file_name, header=None)
 	df.to_csv(verb_file_name,
-			  header=["A", "FORM", "Lemma", "Postag", "B", "C", "D", "E", "F", "G", "Sentence ID", "Document ID", "H",
+			  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "Verb Voice"])
 
 	if errorFound == True:
@@ -211,21 +211,13 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 																outputDir=outputDir,
 																openOutputFiles=openOutputFiles,
 																createExcelCharts=createExcelCharts,
-<<<<<<< HEAD
-																columns_to_be_plotted=[[1, 4]],
-=======
 																columns_to_be_plotted=[[11, 14], [11, 14]],
->>>>>>> e1ba5d8c906c18b105dd2dfceb5be77a00f30e35
 																select_col='Verb Voice',
 																hover_col=['FORM'],
 																group_col=['Sentence ID'],
 																fileNameType='NVA',
 																chartType='line',
-<<<<<<< HEAD
-																count_var=0)
-=======
 																count_var=1)
->>>>>>> e1ba5d8c906c18b105dd2dfceb5be77a00f30e35
 		if len(outputFiles) > 0:
 			filesToOpen.extend(outputFiles)
 		if outputFiles != "":
@@ -235,6 +227,30 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 
 # VERB MODALITY ----------------------------------------------------------------------------------------------
+# written by Tony Chen Gu Mar 2022
+# add an extra column describing verb modality
+def verb_modality_data_preparation(data):
+	obl_row = []
+	will_row = []
+	can_row = []
+	verb_postags = ['MD']
+	obligation_keywords = ['must', 'need', 'form', 'should', 'ought', 'shall']
+	will_would_keywords = ['will', 'would', 'll', '\'d']
+	can_may_keywords = ['can', 'could', 'may', 'might']
+
+	for i in data:
+		if(i[1] in obligation_keywords and i[3] in verb_postags):
+			obl_row.append(i+["Obligation"])
+		elif(i[1] in will_would_keywords and i[3] in verb_postags):
+			will_row.append(i+["Will/Would"])
+		elif(i[1] in can_may_keywords and i[3] in verb_postags):
+			can_row.append(i+["Can/May"])
+	dat = obl_row + will_row + can_row
+	verb_modality_stats = [['Verb Modality', 'Frequencies'],
+				  ['Obligation', len(obl_row)],
+				  ['Will/Would', len(will_row)],
+				  ['Can/May', len(can_row)]]
+	return dat, verb_modality_stats
 
 # modality compute frequencies of modality categories
 def verb_modality_compute_categories(data, data_divided_sents):
@@ -252,9 +268,6 @@ def verb_modality_compute_categories(data, data_divided_sents):
 		obligation_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in obligation_keywords)]
 		will_would_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in will_would_keywords)]
 		can_may_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in can_may_keywords)]
-		# verb_voice_list = [['Verb Voice', 'Frequencies'],
-		# 			  ['Passive', len(auxp_VBN_organize)],
-		# 			  ['Active', len(aux_VBN_organize) + len(_active_)]]
 
 		verb_modality_list = [['Verb Modality', 'Frequencies'],
 					  ['Obligation', len(obligation_list)],
@@ -281,13 +294,14 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 
 	filesToOpen = []  # Store all files that are to be opened once finished
 
-	obligation_stats, will_would_stats, can_may_stats, obligation_list, will_would_list = verb_modality_compute_categories(data, data_divided_sents)
-	# must be sorted in descending order
-	modality_stats = [['Verb Modality', 'Frequencies'],
-					  ['Obligation', obligation_stats],
-					  ['Will/would', will_would_stats],
-					  ['Can/may', can_may_stats]]
-
+	# obligation_stats, will_would_stats, can_may_stats, obligation_list, will_would_list = verb_modality_compute_categories(data, data_divided_sents)
+	# # must be sorted in descending order
+	# modality_stats = [['Verb Modality', 'Frequencies'],
+	# 				  ['Obligation', obligation_stats],
+	# 				  ['Will/would', will_would_stats],
+	# 				  ['Can/may', can_may_stats]]
+	obligation_list, modality_stats = verb_modality_data_preparation(data)
+	df = pd.read_csv(verb_file_name, header=None)
 	# output file names
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
 															 'Verb Modality', 'list')
@@ -324,25 +338,25 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 
 		# modified by Siyan Pu November 2021
 		# temporary headers added, not sure why the verb_voice_list doesn't have headers
-		# df = pd.read_csv(verb_file_name, header=None)
-		# df.to_csv(verb_file_name,
-		# 		  header=["A", "FORM", "Lemma", "Postag", "B", "C", "D", "E", "F", "G", "Sentence ID", "Document ID",
-		# 				  "H",
-		# 				  "Verb Modality"])
+		df = pd.read_csv(verb_file_name, header=None)
+		df.to_csv(verb_file_name,
+				  header=["A", "FORM", "Lemma", "Postag", "B", "C", "D", "E", "F", "G", "Sentence ID", "Document ID",
+						  "H",
+						  "Verb Modality"])
 
 		# line plots by sentence index
-		# outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
-		# 														verb_file_name,
-		# 														'',
-		# 														outputDir,
-		# 														openOutputFiles,
-		# 														createExcelCharts,
-		# 														[[1, 4]],
-		# 														['Verb Modality'], ['FORM', 'Sentence'],
-		# 														['Document ID', 'Sentence ID', 'Document'],
-		# 														'NVA', 'line')
-		# if len(outputFiles) > 0:
-		# 	filesToOpen.extend(outputFiles)
+		outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+																verb_file_name,
+																'',
+																outputDir,
+																openOutputFiles,
+																createExcelCharts,
+																[[1, 4]],
+																['Verb Modality'], ['FORM', 'Sentence'],
+																['Document ID', 'Sentence ID', 'Document'],
+																'NVA', 'line')
+		if len(outputFiles) > 0:
+			filesToOpen.extend(outputFiles)
 
 	return filesToOpen
 
@@ -474,3 +488,16 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
 									   '', True, startTime, True)
 
 	return filesToOpen
+
+#=======================================================================================================================
+#Debug use
+#=======================================================================================================================
+def main():
+	file = "C:/Users/Tony Chen/Desktop/NLP_working/Test Input/conll_chn.csv"
+	# debug use
+	data, header = IO_csv_util.get_csv_data(file, True)
+	# end debug use
+	a,b = verb_modality_data_preparation(data)
+
+if __name__ == "__main__":
+	main()
