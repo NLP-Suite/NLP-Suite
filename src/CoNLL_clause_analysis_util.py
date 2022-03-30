@@ -55,6 +55,55 @@ def clause_compute_frequencies(data, data_divided_sents):
                          ['Phrase-level (PP - Prepositional Phrase)', clausal_counter['PP']]]
 
     return clause_stats
+    # written by Tony Chen Gu Mar 2022
+    # add an extra column describing verb tense
+def clause_data_preparation(data):
+    dat = []
+    vbg_counter = 0
+    vbd_counter = 0
+    vbn_counter = 0
+    vbp_counter = 0
+    vb_counter = 0
+    clause_list = ['S','SBAR', 'SBARQ', 'SINV', 'NP', 'VVP', 'ADJP', 'ADVP', 'PP']
+
+    for i in data:
+        if(i[8] in clause_list):
+            tense = i[8]
+            if(tense == 'SBAR'):
+                tense_col = 'Clause introduced by a (possibly empty) subordinating conjunction'
+                vbg_counter+=1
+            elif(tense == 'SBARQ'):
+                tense_col = 'Direct question introduced by a wh-word or a wh-phrase'
+                vbd_counter+=1
+            elif(tense == 'SINV'):
+                tense_col = 'Inverted declarative sentence'
+                vb_counter+=1
+            elif(tense == 'NP'):
+                tense_col = 'Noun Phrase'
+                vbn_counter+=1
+            elif(tense == 'VVP'):
+                tense_col = 'Verb Phrase'
+                vbp_counter+=1
+            elif(tense == 'ADJP'):
+                tense_col = 'Adjective Phrase'
+                vbp_counter+=1
+            elif(tense == 'ADVP'):
+                tense_col = 'Adverb Phrase'
+                vbp_counter+=1
+            elif(tense == 'PP'):
+                tense_col = 'Prepositional Phrase'
+                vbp_counter+=1
+            elif(tense == 'S'):
+                tense_col = 'Sentence'
+                vbp_counter+=1
+            dat.append(i+[tense_col])
+    clause_stats = [['Verb Tense', 'Frequencies'],
+                    ['Gerundive', vbg_counter],
+                    ['Infinitive', vbg_counter],
+                    ['Past', vbd_counter],
+                    ['Past Principle/Passive', vbn_counter],
+                    ['Present', vbp_counter]]
+    return dat, clause_stats
 
 def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,openOutputFiles,createExcelCharts):
 

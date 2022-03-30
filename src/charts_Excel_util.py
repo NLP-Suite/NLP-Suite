@@ -429,9 +429,6 @@ def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, output
     container = []
     Excel_outputFilename = []
 
-    # TODO remove return when calling function w/o headers are fixed
-    return Excel_outputFilename
-
     if len(inputDataFrame) != 0:
         data = inputDataFrame
     else:
@@ -468,7 +465,7 @@ def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, output
         data.drop(hover_col, axis=1, inplace=True)
     # data.to_csv('freq.csv',index=False)
 
-    freq_output = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'freq')
+    freq_output = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'freq!nmbnmb')
     data.to_csv(freq_output, index=False)
     if createExcelCharts:
         # xAxis='Sentence index'
