@@ -410,7 +410,6 @@ def compute_csv_column_frequencies_NEW(window, inputFileName, inputDataFrame, ou
                                                                 openOutputFiles, createExcelCharts, count_var)
 
 
-
 # Siyan Pu November 2021
 # group_col and hover_col are lists with multiple items, if so wished
 # select_col is also a list BUT with one item only
@@ -467,26 +466,27 @@ def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, output
 
     freq_output = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'freq!nmbnmb')
     data.to_csv(freq_output, index=False)
-    if createExcelCharts:
-        # xAxis='Sentence index'
-        # chartTitle='Frequency distribution'
-        # columns_to_be_plotted=[[1,3]]
+    Excel_outputFilename = run_all()
+    # if createExcelCharts:
+    #     # xAxis='Sentence index'
+    #     # chartTitle='Frequency distribution'
+    #     # columns_to_be_plotted=[[1,3]]
 
-        # Excel_outputFilename=prepare_csv_data_for_chart(window, inputFilename, data, outputDir, select_col, Hover_over_header, group_col,
-        #                            fileNameType, chartType, openOutputFiles, createExcelCharts, count_var)
-        data = data.pivot_table(index=group_col[0], columns=select_col, values='Frequency',
-                                fill_value=0).reset_index().rename_axis(None, axis=1)
-        data_to_be_plotted = data.iloc[:, 0:4].T.reset_index().values.T.tolist()
+    #     # Excel_outputFilename=prepare_csv_data_for_chart(window, inputFilename, data, outputDir, select_col, Hover_over_header, group_col,
+    #     #                            fileNameType, chartType, openOutputFiles, createExcelCharts, count_var)
+    #     data = data.pivot_table(index=group_col[0], columns=select_col, values='Frequency',
+    #                             fill_value=0).reset_index().rename_axis(None, axis=1)
+    #     data_to_be_plotted = data.iloc[:, 0:4].T.reset_index().values.T.tolist()
 
-        Excel_outputFilename = create_excel_chart(window,
-                                                  data_to_be_plotted=[data_to_be_plotted],
-                                                  inputFilename=freq_output,
-                                                  outputDir=outputDir,
-                                                  scriptType=fileNameType,
-                                                  chartTitle='Frequency Distribution by Sentence',
-                                                  chart_type_list=[chartType],
-                                                  column_xAxis_label='Sentence index',
-                                                  column_yAxis_label='Frequency')
+    #     Excel_outputFilename = create_excel_chart(window,
+    #                                               data_to_be_plotted=[data_to_be_plotted],
+    #                                               inputFilename=freq_output,
+    #                                               outputDir=outputDir,
+    #                                               scriptType=fileNameType,
+    #                                               chartTitle='Frequency Distribution by Sentence',
+    #                                               chart_type_list=[chartType],
+    #                                               column_xAxis_label='Sentence index',
+    #                                               column_yAxis_label='Frequency')
 
     return Excel_outputFilename  # 2 files
 
