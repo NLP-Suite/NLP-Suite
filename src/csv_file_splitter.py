@@ -6,18 +6,19 @@ import shutil
 import IO_csv_util
 
 # split the csv file by document ID
-# should at least contain a colmun called 'document_id'
+# should at least contain a colmun called 'Document ID'
 # the script would group by it and then save them seperately
-def split_conll_by_document_id(file_name):
+def split_NLP_Suite_csv_output_by_document_id(file_name):
     df = pd.read_csv(file_name)
     base_name = file_name[:-4] + "_Document_"
     grouped = df.groupby(['Document ID'])
     for name, group in grouped:
         group.to_csv(base_name + str(name) + '.csv', index=False)
+    return
 
 
-# split the corpus by document ID, should have a conll table already
-# table: path to the conll table
+# split the corpus by document ID, should have a csv file output already, containing a column called 'Document ID'
+# table: path to the NLP Suite output csv file
 # id_list: a list of document ID  eg: '1,2,3'  split by ','
 # corpus_location: the location of the corpus
 # folder_name: the name of the folder to save the sub corpus
@@ -39,6 +40,7 @@ def split_corpus_by_document_id(table, id_list, corpus_location, folder_name):
             id_list.remove(int(i[id_index])) # no longer find for it
         if len(id_list) == 0:
             break
+    return
 
 #===============================================DEBUG USE=====================================================
 # def main():
