@@ -408,8 +408,19 @@ def compute_csv_column_frequencies_NEW(window, inputFileName, inputDataFrame, ou
     return prepare_csv_data_for_chart(window, inputFileName, data, output_dir, select_col,
                                                                 Hover_over_header, group_col, fileNameType, chartType,
                                                                 openOutputFiles, createExcelCharts, count_var)
-
-
+# group col should be from smallest group to largest group
+#
+def compute_csv_column_frquencies1(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createExcelCharts,
+                                        columns_to_be_plotted,
+                                        select_col, hover_col, group_col,
+                                       fileNameType='CSV', chartType='line'):
+    #data,header = IO_csv_util.get_csv_data(inputFilename, True)
+    data = inputDataFrame[select_col+group_col]
+    for group in group_col:
+        data = data.groupby(group)[select_col].apply(list).to_dict()
+    for i in data:
+        #i["Frequency"] = len(i[list])
+    return
 # Siyan Pu November 2021
 # group_col and hover_col are lists with multiple items, if so wished
 # select_col is also a list BUT with one item only
@@ -466,6 +477,7 @@ def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, output
 
     freq_output = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'freq!nmbnmb')
     data.to_csv(freq_output, index=False)
+    print('freq_output: ', freq_output)
     Excel_outputFilename = run_all()
     # if createExcelCharts:
     #     # xAxis='Sentence index'

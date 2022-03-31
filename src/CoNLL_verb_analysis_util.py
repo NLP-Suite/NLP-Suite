@@ -172,12 +172,14 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	data_prep = verb_voice_data_preparation(data)
 
 	verb_voice_list, voice_stats, vocie_pass, voice_aux, vocie_act = voice_output(data_prep, data_divided_sents)
-
+	df_pass = pd.DataFrame(vocie_pass, columns=['Sentence ID', 'Word', 'Lemma', 'POS', 'Morph', 'Deprel', 'Head',
 	# output file names
-	verb_file_name_aux = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice aux',
-															 'list')
-	verb_file_name_pass = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice pass','list')
-	verb_file_name_act = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice act','list')
+	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice',
+	 														 'list')
+	# verb_file_name_aux = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice aux',
+	# 														 'list')
+	# verb_file_name_pass = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice pass','list')
+	# verb_file_name_act = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice act','list')
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
 																   'Verb Voice', 'stats')
 
@@ -186,38 +188,25 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	# 								 verb_file_name)
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
 										 vocie_pass,
-										 verb_file_name_pass)
+										 verb_file_name)
 	if errorFound == True:
 		return
-	filesToOpen.append(verb_file_name_pass)
-	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-										 voice_aux,
-										 verb_file_name_aux)
-			
-	if errorFound == True:
-		return
-	filesToOpen.append(verb_file_name_aux)	
-	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-										 vocie_act,
-										 verb_file_name_act)
-	if errorFound == True:
-		return
-	filesToOpen.append(verb_file_name_act)
+	filesToOpen.append(verb_file_name)
 
 	# modified by Siyan Pu November 2021
 	# temporary headers added, not sure why the verb_voice_list doesn't have headers
-	df = pd.read_csv(verb_file_name_pass, header=None)
-	df.to_csv(verb_file_name_pass,
+	df = pd.read_csv(verb_file_name, header=None)
+	df.to_csv(verb_file_name,
 			  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "Verb Voice"])
-	df = pd.read_csv(verb_file_name_aux, header=None)
-	df.to_csv(verb_file_name_aux,
-			  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "Verb Voice"])
-	df = pd.read_csv(verb_file_name_act, header=None)
-	df.to_csv(verb_file_name_act,
-			  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "Verb Voice"])
+	# df = pd.read_csv(verb_file_name_aux, header=None)
+	# df.to_csv(verb_file_name_aux,
+	# 		  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+	# 				  "Verb Voice"])
+	# df = pd.read_csv(verb_file_name_act, header=None)
+	# df.to_csv(verb_file_name_act,
+	# 		  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+	# 				  "Verb Voice"])
 
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window, voice_stats, verb_stats_file_name)
 	if errorFound == True:
@@ -240,7 +229,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 		# line plots by sentence index
 		outputFiles = charts_Excel_util.compute_csv_column_frequencies(window=GUI_util.window,
-																inputFilename=verb_file_name_aux,
+																inputFilename=verb_file_name,
 																inputDataFrame='',
 																outputDir=outputDir,
 																openOutputFiles=openOutputFiles,
@@ -252,32 +241,32 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 																fileNameType='NVA',
 																chartType='line',
 																count_var=1)
-		outputFiles = charts_Excel_util.compute_csv_column_frequencies(window=GUI_util.window,
-																inputFilename=verb_file_name_pass,
-																inputDataFrame='',
-																outputDir=outputDir,
-																openOutputFiles=openOutputFiles,
-																createExcelCharts=createExcelCharts,
-																columns_to_be_plotted=[[11, 14], [11, 14]],
-																select_col='Verb Voice',
-																hover_col=['FORM'],
-																group_col=['Sentence ID'],
-																fileNameType='NVA',
-																chartType='line',
-																count_var=1)
-		outputFiles = charts_Excel_util.compute_csv_column_frequencies(window=GUI_util.window,
-																inputFilename=verb_file_name_act,
-																inputDataFrame='',
-																outputDir=outputDir,
-																openOutputFiles=openOutputFiles,
-																createExcelCharts=createExcelCharts,
-																columns_to_be_plotted=[[11, 14], [11, 14]],
-																select_col='Verb Voice',
-																hover_col=['FORM'],
-																group_col=['Sentence ID'],
-																fileNameType='NVA',
-																chartType='line',
-																count_var=1)
+		# outputFiles = charts_Excel_util.compute_csv_column_frequencies(window=GUI_util.window,
+		# 														inputFilename=verb_file_name_pass,
+		# 														inputDataFrame='',
+		# 														outputDir=outputDir,
+		# 														openOutputFiles=openOutputFiles,
+		# 														createExcelCharts=createExcelCharts,
+		# 														columns_to_be_plotted=[[11, 14], [11, 14]],
+		# 														select_col='Verb Voice',
+		# 														hover_col=['FORM'],
+		# 														group_col=['Sentence ID'],
+		# 														fileNameType='NVA',
+		# 														chartType='line',
+		# 														count_var=1)
+		# outputFiles = charts_Excel_util.compute_csv_column_frequencies(window=GUI_util.window,
+		# 														inputFilename=verb_file_name_act,
+		# 														inputDataFrame='',
+		# 														outputDir=outputDir,
+		# 														openOutputFiles=openOutputFiles,
+		# 														createExcelCharts=createExcelCharts,
+		# 														columns_to_be_plotted=[[11, 14], [11, 14]],
+		# 														select_col='Verb Voice',
+		# 														hover_col=['FORM'],
+		# 														group_col=['Sentence ID'],
+		# 														fileNameType='NVA',
+		# 														chartType='line',
+		# 														count_var=1)
 		if len(outputFiles) > 0:
 			filesToOpen.extend(outputFiles)
 		if outputFiles != "":
