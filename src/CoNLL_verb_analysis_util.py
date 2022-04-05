@@ -154,14 +154,27 @@ def voice_output(voice_word_list, data_divided_sents):
 	voice_act = sorted(voice_act, key=lambda x: int(x[recordID_position]))  # sort in ascending record id order
 	return voice_sorted, voice_stats, voice_pass, voice_act_aux, voice_act
 
-def merge_voice(voice_pass, voice_act_aux, voice_act,length):
-	df = pd.DataFrame(0, index=range(1,length), columns=['Sentence ID', 'Passive','Active Auxiliary', 'Active'])
-	id = 0
-	for i in df:
-		i['Sentence ID'] = id
-		id += 1
-	for i in voice_pass:
-		df.loc['Passive',]
+def merge_voice(data, group_col, series, outputDir, inputFilename, topic_name = ""):
+	col_to_plot = []
+	for i in len(data):
+		series_title = data[i][series][1]
+		headers = group_col.append(series_title)
+		verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', headers, 'Verb Voice','list')
+		data[i].groupby(group_col).apply(list).to_csv(verb_file_name)
+		data[i] = pd.read_csv(verb_file_name)
+		col_to_plot.append(series_title)
+	if(len(data)!=1):
+		plot_data = data[0]
+		for i in 1:len(data):
+			pd.merge(plot_data, data[i], on=group_col, how='outer')
+  	else:
+		plot_data = data[0]
+  	file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', headers, topic_name,'frequency_merged')	
+	plot_data.to_csv(file_name,headers)
+	return plot_data
+   
+		
+     
 
 
 def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
@@ -172,7 +185,12 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	data_prep = verb_voice_data_preparation(data)
 
 	verb_voice_list, voice_stats, vocie_pass, voice_aux, vocie_act = voice_output(data_prep, data_divided_sents)
-	df_pass = pd.DataFrame(vocie_pass, columns=['Sentence ID', 'Word', 'Lemma', 'POS', 'Morph', 'Deprel', 'Head',
+	df_pass = pd.DataFrame(vocie_pass, columns=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document", "Verb Voice"])
+	df_aux = pd.DataFrame(voice_aux, columns=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document", "Verb Voice"])
+	df_act = pd.DataFrame(vocie_act, columns=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document", "Verb Voice"])
+	plot_data[0] = df_act
+	plot_data[1] = df_aux
+	plot_data[2] = df_pass
 	# output file names
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice',
 	 														 'list')
