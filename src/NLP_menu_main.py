@@ -229,6 +229,7 @@ pydict["Newspaper article/Document titles"] = ["file_checker_converter_cleaner_m
 pydict["N-grams (word & character)"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["N-grams viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Nominalization"] = ["nominalization_main.py", 1]
+pydict["Sample data (ALL options GUI)"] = ["sample_data_ALL_main.py", 1]
 pydict["Search (ALL options GUI)"] = ["search_ALL_main.py", 1]
 pydict["Search CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Search text file(s) for n-grams & co-occurrences (N-grams viewer)"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]

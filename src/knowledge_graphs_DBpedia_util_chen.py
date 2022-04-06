@@ -11,6 +11,13 @@ from SPARQLWrapper import SPARQLWrapper, JSON, XML
 import IO_files_util
 
 sparql = SPARQLWrapper("http://dbpedia.org/sparql")
+# this will avoid an SSL certificate error ONLY for a specific url file
+import ssl
+url_certificate = ssl.SSLContext()  # Only for url
+ssl._create_default_https_context = ssl._create_unverified_context
+# this will renew the SSL certificate indefinitely
+# pip install pyOpenSSL
+# pip install requests[security]
 
 stanza.download('en')
 stannlp = stanza.Pipeline(lang='en', processors='tokenize,ner,mwt,pos,lemma')
