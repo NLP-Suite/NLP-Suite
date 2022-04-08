@@ -42,7 +42,8 @@ def run(inputFilename,inputDir, outputDir,
     string_value_var,
     blankLine_var,
     number_var,
-    post_num_string_value_var,    
+    post_num_string_value_var,
+    split_csv_by_documentID_var,
     menu_option):
 
     if inputDir=='' and inputFilename!='':
@@ -151,7 +152,13 @@ def run(inputFilename,inputDir, outputDir,
         elif number_var:
             import file_splitter_ByNumber_util
             file_splitter_ByNumber_util.run(file, outputDir, post_num_string_value_var)
-
+        elif split_csv_by_documentID_var:
+            if file[-4:]!='.csv':
+                mb.showwarning(title='Warning',message="The 'split by Document ID' function expects in input a csv file with at least one field labeled 'Document ID'.\n\nPlerase, select a csv file and try again.")
+                return
+            else:
+                import file_splitter_ByDocumentID_csv_util
+                file_splitter_ByDocumentID_csv_util.split_NLP_Suite_csv_output_by_document_id(file,outputDir)
     # IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end", "Finished running '" + menu_option + "' at", True)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
@@ -180,6 +187,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             blankLine_var.get(),
                             number_var.get(),
                             post_num_string_value_var.get(),
+                            split_csv_by_documentID_var.get(),
                             menu_option)
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -192,8 +200,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=600, # height at brief display
-                             GUI_height_full=680, # height at full display
+                             GUI_height_brief=640, # height at brief display
+                             GUI_height_full=720, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -249,21 +257,20 @@ extract_sentences_search_words_var = tk.StringVar()
 blankLine_var = tk.IntVar()
 number_var = tk.IntVar()
 post_num_string_value_var = tk.StringVar()
-
+split_csv_by_documentID_var = tk.IntVar()
 
 def clear(e):
     GUI_util.clear("Escape")
-
 
 window.bind("<Escape>", clear)
 
 # setup GUI widgets
 
-utf8_var.set(1)
+utf8_var.set(0)
 utf8_checkbox = tk.Checkbutton(window, text='Check input corpus for utf-8 encoding', variable=utf8_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,utf8_checkbox,True)
 
-ASCII_var.set(1)
+ASCII_var.set(0)
 ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,ASCII_checkbox)
 
@@ -413,7 +420,6 @@ number_checkbox = tk.Checkbutton(window, text='Split by a line that starts with 
                                  variable=number_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                number_checkbox, True)
-
 # post_num is the string behind each number
 # (if the numbers in the txt are in the form of "1. ", "2. ", then the post_num should be ". ")
 
@@ -428,6 +434,11 @@ post_num_string_value.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 500, y_multiplier_integer,
                                                post_num_string_value)
 
+split_csv_by_documentID_var.set(0)
+split_csv_by_documentID_checkbox = tk.Checkbutton(window, text='Split csv merged file into separate files by Document ID',
+                                 variable=split_csv_by_documentID_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               split_csv_by_documentID_checkbox)
 
 def activate_allOptions(*args):
     global menu_option
@@ -620,6 +631,8 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+9), "Help",
                                   "Please, tick the checkbox to split a txt file into separate files using a number at the start of the line (like a bullet point) as the criterion for splitting.\n\nIn INPUT, the script can either take a single file or a directory. \n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+10), "Help",
+                                  "Please, tick the checkbox to split a merged csv file containing several different 'Document ID' and 'Document' into separate csv files one for each 'Document ID' and 'Document'.\n\nIn INPUT, the function expects a single merged csv file containing the fields 'Document ID' and 'Document'.\n\nIn OUTPUT, the function will create multiple csv files (as many as 'Document ID's in the INPUT merged csv file).")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+11), "Help",
                                   GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),

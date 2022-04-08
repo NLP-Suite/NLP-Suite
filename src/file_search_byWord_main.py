@@ -111,17 +111,17 @@ search_options_list=[]
 def clear(e):
     GUI_util.clear("Escape")
     search_options_list.clear()
-    search_options_menu_var.set('Case sensitive')
+    search_options_menu_var.set('Case sensitive (default)')
     keyword_value_var.set('')
 window.bind("<Escape>", clear)
 
 
 #setup GUI widgets
 
-search_options_menu_var.set('Case sensitive')
+search_options_menu_var.set('Case sensitive (default)')
 search_options_menu_lb = tk.Label(window, text='Search options')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,search_options_menu_lb,True)
-search_options_menu = tk.OptionMenu(window, search_options_menu_var, 'Case sensitive','Case insensitive','Lemmatize', 'Search within sentence')
+search_options_menu = tk.OptionMenu(window, search_options_menu_var, 'Case sensitive (default)','Case insensitive','Lemmatize', 'Search within sentence (default)', 'Search within document')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,search_options_menu, True)
 
 add_search_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_search_var())
@@ -135,7 +135,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory
 
 def reset_search_options_list():
     search_options_list.clear()
-    search_options_menu_var.set('Case sensitive')
+    search_options_menu_var.set('Case sensitive (default)')
     search_options_menu.configure(state='normal')
 
 def show_search_options_list():
@@ -156,7 +156,7 @@ def activate_search_options(*args):
             return
         # remove the case option, when a different one is selected
         if 'insensitive' in search_options_menu_var.get() and 'sensitive' in str(search_options_list):
-            search_options_list.remove('Case sensitive')
+            search_options_list.remove('Case sensitive (default)')
         if 'sensitive' in search_options_menu_var.get() and 'insensitive' in str(search_options_list):
             search_options_list.remove('Case insensitive')
         if search_options_menu_var.get()=='Lemmatize':
@@ -168,7 +168,7 @@ def activate_search_options(*args):
                 show_search_button.configure(state='normal')
                 return
         search_options_list.append(search_options_menu_var.get())
-        search_options_menu.configure(state="disabled")
+        # search_options_menu.configure(state="disabled")
         add_search_button.configure(state='normal')
         reset_search_button.configure(state='normal')
         show_search_button.configure(state='normal')

@@ -2,7 +2,7 @@
     Read in html file with words previously annotated via the annotation builders
     gather text between annotation tags
     output aggregate data to cvs table, clean files NO HTML OUTPUT 
-    Last updated: July 18, 2019
+    Last updated: July 18, 2019, April 2022
     by Jack Hester
     rewritten by Roberto Franzosi, Zhangyi Pan
 """
@@ -85,7 +85,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createExc
     if writeCSV=='':
         return
     writer = csv.writer(writeCSV)
-    writer.writerow(['Document','Word','Annotation Type'])
+    writer.writerow(['Word','Annotation Type','Document ID','Document'])
     for file in annotatedHtmlFiles:
         i=i+1
         print("Processing html annotated file " + str(i) + "/" + str(nFile), file)
@@ -93,9 +93,9 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createExc
         dictionaryWordList = gatherAnnotations(file, ['<span',"</span>"],'',True)
         fileName = ntpath.basename(file)
         for word in DBpediaWordList:
-            writer.writerow([IO_csv_util.dressFilenameForCSVHyperlink(fileName), word,'DBpedia'])
+            writer.writerow([word,'DBpedia',i,IO_csv_util.dressFilenameForCSVHyperlink(fileName)])
         for word in dictionaryWordList:
-            writer.writerow([fileName, word,'Dictionary'])
+            writer.writerow([word,'Dictionary',i,IO_csv_util.dressFilenameForCSVHyperlink(fileName)])
 
         # combinedList=[]
         # for word in dictionaryWordList:

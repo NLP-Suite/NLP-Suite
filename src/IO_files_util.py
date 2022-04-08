@@ -39,7 +39,6 @@ os.chdir(dir_path)
 # insert the src dir
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
-
 # check if a directory exists, remove if it does, and create
 def make_directory(newDirectory):
     createDir = True
