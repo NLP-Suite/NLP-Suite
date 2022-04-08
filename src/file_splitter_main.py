@@ -87,8 +87,8 @@ def run(inputFilename,inputDir, outputDir,
         elif split_mergedFile:
             subDir=''
             nFiles=0
-            import file_splitter_merged_util
-            subDir, nFiles=file_splitter_merged_util.run(file,
+            import file_splitter_merged_txt_util
+            subDir, nFiles=file_splitter_merged_txt_util.run(file,
                                           split_mergedFile_separator_entry_begin,
                                           split_mergedFile_separator_entry_end,
                                           outputDir)

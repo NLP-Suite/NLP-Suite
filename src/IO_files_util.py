@@ -40,11 +40,17 @@ os.chdir(dir_path)
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
 # check if a directory exists, remove if it does, and create
-def make_directory(newDirectory):
+def make_directory(newDirectory,ask=False):
     createDir = True
     # Got permission denied error if the folder is read-only.
     # Updates permission automatically
     if os.path.exists(newDirectory):
+        if ask:
+            result = mb.askyesno('Directory already exists',
+                                        'There already exists a directory\n\n' + newDirectory + '\n\nThis directory will be replaced.\n\nAre you sure you want to continue?')
+            if not result:
+                createDir = False
+                return createDir
         shutil.rmtree(newDirectory)
     try:
         os.chmod(Path(newDirectory).parent.absolute(), 0o755)
