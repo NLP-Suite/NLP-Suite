@@ -61,6 +61,8 @@ Document = []
 Phrase = []
 Ontology_class = []
 URL_link = []
+Html_link = []
+
 
 def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotationTypes, colors, confidence_level=0.5):
 
@@ -263,12 +265,47 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
         df.to_csv((csvname),index=False)
 
         filesToOpen.append(outFilename)
-        filesToOpen.append(csvname)
+        for k in range(len(Document)-len(Html_link)):
+            Html_link.append(outFilename)
+
+    from datetime import datetime
+    from datetime import date
+    csvname = "DBpedia_output_" + date.today().strftime("%b_%d_%Y") + "_" + datetime.now().strftime("%H_%M_%S") + ".csv"
+    csvname = os.path.join(outputDir, csvname)
+    # generate CSV file
+    df = generate_csv()
+    df.to_csv((csvname), index=False)
+
+    filesToOpen.append(csvname)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running DBpedia Knowledge Graph at',
                                        True, '', True, startTime)
 
     return filesToOpen
+
+
+def generate_csv():
+    HyperLinkedURL = []
+    for link in URL_link:
+        hyperLink = IO_csv_util.dressFilenameForCSVHyperlink(link)
+        HyperLinkedURL.append(hyperLink)
+    HyperLinkedDoc = []
+    for doc in Document:
+        hyperLinkedDoc = IO_csv_util.dressFilenameForCSVHyperlink(doc)
+        HyperLinkedDoc.append(hyperLinkedDoc)
+    Html_Hyper_Links = []
+    for html in Html_link:
+        hyperlinkedHtml = IO_csv_util.dressFilenameForCSVHyperlink(html)
+        Html_Hyper_Links.append(hyperlinkedHtml)
+
+    df = pd.DataFrame(list(zip(Phrase, HyperLinkedURL, Ontology_class, HyperLinkedDoc,Html_Hyper_Links)),
+                      columns=['Token', 'URL', 'Ontology class', 'Document', 'Html'])
+
+
+
+    return df
+
+
 
 
 def map_color_ont(colors, ont_list):
@@ -349,6 +386,7 @@ def update_csv(ta, type, doc,link):
     Phrase.append(phrase)
     Ontology_class.append(type)
     URL_link.append(link)
+
     return
 
 

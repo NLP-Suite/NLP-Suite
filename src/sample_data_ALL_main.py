@@ -1,4 +1,4 @@
-# written by Roberto Franzosi October 2019, edited Spring 2020
+# written by Roberto Franzosi April 2022
 
 import GUI_util
 
@@ -7,14 +7,19 @@ import tkinter as tk
 import os
 import tkinter.messagebox as mb
 
+import IO_files_util
 import GUI_IO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run():
-    print()
+def run(selectedFile, inputDir, outputDir):
+    import sample_corpus_util
+    sample_corpus_util.sample_corpus_by_document_id(selectedFile, inputDir, outputDir)
+
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-run_script_command=lambda: run()
+run_script_command=lambda: run(selectedFile_var.get(),
+                               GUI_util.input_main_dir_path.get(),
+                               GUI_util.output_dir_path.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -25,12 +30,12 @@ GUI_util.run_button.configure(command=run_script_command)
 GUI_label='Graphical User Interface (GUI) for ALL Data Sampling Options Available in the NLP Suite'
 head, scriptName = os.path.split(os.path.basename(__file__))
 IO_setup_display_brief=True
-config_filename = ''
+config_filename = scriptName.replace('main.py', 'config.csv')
 
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=360, # height at brief display
-                             GUI_height_full=440, # height at full display
+                             GUI_height_brief=400, # height at brief display
+                             GUI_height_full=480, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -46,7 +51,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 #   input dir
 #   input secondary dir
 #   output dir
-config_input_output_numeric_options=[0,0,0,0]
+config_input_output_numeric_options=[0,1,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -56,6 +61,8 @@ config_filename=GUI_util.config_filename
 
 GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 
+selectedFile_var=tk.StringVar()
+
 def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
@@ -63,23 +70,37 @@ window.bind("<Escape>", clear)
 
 #setup GUI widgets
 
-y_multiplier_integer = 0
-
 def option_not_available():
     mb.showwarning(title='Warning',
                    message='The selected option is not available yet.\n\nSorry!')
 
-open_word_search_GUI_button = tk.Button(window, text='Sample files by date in filename',width=70,command=lambda: option_not_available())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_word_search_GUI_button)
+sample_by_date_button = tk.Button(window, text='Sample files by date in filename',width=70,command=lambda: option_not_available())
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_by_date_button)
 
-open_CoNLL_search_GUI_button = tk.Button(window, text='Sample files by Document ID in csv file',width=70,command=lambda: call("python CoNLL_table_analyzer_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_CoNLL_search_GUI_button)
+def get_file(window,title,fileType):
+    selectedFile_var.set('')
+    initialFolder = os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
+    if len(filePath)>0:
+        selectedFile_var.set(filePath)
 
-open_nGram_VIEWER_search_GUI_button = tk.Button(window, text='Sample sentences by Document ID and other fields values in csv file (Open GUI)',width=70,command=lambda: call("python data_manager_main.py.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_nGram_VIEWER_search_GUI_button)
+sample_by_documentID_button = tk.Button(window, text='Sample files by Document ID in csv file',width=70,command=lambda: get_file(window,'Select INPUT csv file', [("csv files", "*.csv")]))
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_by_documentID_button,True)
 
-open_WordNet_search_GUI_button = tk.Button(window, text='Split csv merged file into separate files by Document ID',width=70,command=lambda: call("python knowledge_graphs_WordNet_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_WordNet_search_GUI_button)
+# setup a button to open Windows Explorer on open the csv file
+openFile_button = tk.Button(window, width=3, text='',
+                                 command=lambda: IO_files_util.openFile(window,
+                                                                        selectedFile_var.get()))
+y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+500, y_multiplier_integer,
+                                               openFile_button, True)
+
+selectedFile_var.set('')
+selectedFile=tk.Entry(window, width=90,textvariable=selectedFile_var)
+selectedFile.config(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+560, y_multiplier_integer,selectedFile)
+
+sample_sentences_by_documentID_button = tk.Button(window, text='Sample sentences by Document ID and other fields values in csv file (Open GUI)',width=70,command=lambda: call("python data_manager_main.py", shell=True))
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_sentences_by_documentID_button)
 
 export_csv_field_GUI_button = tk.Button(window, text='Export csv field content to csv/txt file (Open GUI)',width=70,command=lambda: call("python data_manager_main.py", shell=True))
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,export_csv_field_GUI_button)
@@ -94,20 +115,28 @@ TIPS_options='No TIPS available'
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",
-                                  "Please, click on the button to open the GUI for searching words and collocations in text file(s).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",
-                                  "Please, click on the button to open the GUI for searching a CoNLL table.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",
-                                  "Please, click on the button to open the GUI for an N-grams/Co_occurrences VIEWER similar to Google Ngrams Viewer (https://books.google.com/ngrams) but applied to your own corpus.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 3, "Help",
-                                  "Please, click on the button to split a merged csv file containing several different 'Document ID' and 'Document' into separate csv files one for each 'Document ID' and 'Document'.\n\nIn INPUT, the function expects a single merged csv file containing the fields 'Document ID' and 'Document'.\n\nIn OUTPUT, the function will create multiple csv files (as many as 'Document ID's in the INPUT merged csv file).")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 4, "Help",
+    if not IO_setup_display_brief:
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", inputFileMsg+GUI_IO_util.msg_openFile)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", inputDirTXTCSVMsg+GUI_IO_util.msg_openExplorer)
+        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", GUI_IO_util.msg_outputDirectory)
+    else:
+        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+                                      GUI_IO_util.msg_IO_setup)
+
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help",
+                                  "Please, click on the button to sample your corpus by dates embedded in the filename.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help",
+                                  "Please, click on the button to sample your corpus by copying the files listed under 'Document' in a csv file.\nAfter clicking the button you will be prompted to select the input scv file. After selecting the csv file, you can clisk on the little button to open the file for inspection.\n\nIn INPUT the function expects:\n   1. a directory containing the files to be sampled; the directory is selected above in the INPUT/OUTPUT configuration;\n   2. a csv file containing a list of documents under the header 'Document' that will be used to sample; this csv file can be generated in a number of ways, e.g., using the 'Data Manager' GUI with the option to 'Extract field(s) from csv file' in a file generated by any of the NLP Suite scripts.\n\nIn OUTPUT the function will copy the sampled files to a sub-folder of the output folder.")
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help",
+                                  "Please, click on the button to open the GUI for extracting sentences from a csv file by Document ID (and other fields) and exporting content to a csv or txt files.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 4), "Help",
                                   "Please, click on the button to open the GUI for extracting field(s) from a csv file and exporting content to a csv or txt files.")
+    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 5), "Help",
+                                  GUI_IO_util.msg_openOutputFiles)
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
-readMe_message="The GUI allows you to access all the specialized searches available in the NLP Suite."
+readMe_message="The GUI allows you to access various functions for sampling your data (your corpus in particular)."
 readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 

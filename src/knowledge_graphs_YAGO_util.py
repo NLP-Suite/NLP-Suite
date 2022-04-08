@@ -40,7 +40,7 @@ Sentence = []
 phrase = []
 link = []
 ont = []
-
+Html_Doc = []
 
 
 # This is the main function
@@ -74,7 +74,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     if nFile == 0:
         return
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running YAGO Knowledge Graph at', True,
-                        'Annotating types: ' + str(categories) + " with associated colors: " + str(colorls),
+                        '\nAnnotating types: ' + str(categories) + " with associated colors: " + str(colorls),
                                                  True, '', False)
     i=0
     docID=1
@@ -82,15 +82,16 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
             head, tail = os.path.split(file)
             splitHtmlFileList = []
             i = i + 1
-            print("Processing file " + str(i) + "/" + str(nFile) + " " + tail)
+            # print("Processing file " + str(i) + "/" + str(nFile) + " " + tail)
             listOfFiles=[file]
             subFile = 0
             for doc in listOfFiles:
                 subFile = subFile + 1
                 subFilename = os.path.join(outputDir,"NLP_YAGO_annotated_" + str(os.path.split(doc)[1]).split('.txt')[0]+str(subFile) + "_" + str(len(listOfFiles))+ '.html')
                 splitHtmlFileList.append(subFilename)
-                # head, tail = os.path.split(subFilename)
-                # print("   Processing split-file " + str(subFile) + "/" + str(len(listOfFiles)) + " " + tail)
+                head, tail = os.path.split(subFilename)
+                print("   Processing split-file " + str(subFile) + "/" + str(len(listOfFiles)) + " " + tail)
+
                 contents = open(doc, 'r', encoding='utf-8', errors='ignore').read()
                 contents =' '.join(contents.split()) #reformat content
                 contents = contents.replace('\0', '')  # remove null bytes
@@ -125,8 +126,10 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
                         infile.close()
                         os.remove(htmlDoc)  # delete temporary split html file from output directory
                 outfile.close()
-            filesToOpen.append(outFilename)
 
+            filesToOpen.append(outFilename)
+            for i in range(len(Document) - len(Html_Doc)):
+                Html_Doc.append(IO_csv_util.dressFilenameForCSVHyperlink(outFilename))
 
             # print(outFilename)
             # TODO Sentence ID must start from1 rather than CS 0
@@ -137,8 +140,8 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
             if diff>0:DocumentID.extend([docID]*diff)
             docID = docID + 1
     # save csv output file
-    df = pd.DataFrame(list(zip(phrase,ont, link,sentID,Sentence,DocumentID, Document)),
-                      columns=['Token','Ontology class','url','Sentence ID','Sentence', 'Document ID','Document'])
+    df = pd.DataFrame(list(zip(phrase,ont, link,sentID,Sentence,DocumentID, Document, Html_Doc)),
+                      columns=['Token','Ontology class','url','Sentence ID','Sentence', 'Document ID','Document', 'Html File'])
     # df = pd.DataFrame(list(zip(DocumentID, Document,sentID,Sentence,phrase,link,ont)),columns=['Document ID','Document','Sentence ID','Sentence', 'Token','html','Ontology class'])
     from datetime import datetime
     from datetime import date
@@ -149,6 +152,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                        'Finished running YAGO Knowledge Graph at',
                                        True, '', True, startTime, False)
+    dict.clear()
     return filesToOpen
 
 def estimate_time(parsed_doc,num_cats,word_bag):
@@ -398,5 +402,6 @@ def obtain_results_df(querystring):
     results_df=results_df[cols]
     results_df=results_df.rename(columns=lambda x:str(int(re.search('w(.*).value',x).group(1))))
     return results_df
+
 
 # YAGO_annotate('C:\\Users\\angel\PycharmProjects\BINLP\src\Three_Littles_Pigs.txt','','C:\\Users\\angel\PycharmProjects\BINLP\src',[],'blue',['green'])

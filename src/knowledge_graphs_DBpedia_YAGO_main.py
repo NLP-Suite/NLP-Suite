@@ -34,8 +34,8 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
         DBpedia_YAGO_color_list,
         bold_DBpedia_YAGO_var):
 
-    filesToOpen=[]
-    # DBpedia_YAGO_color_list = []
+    # if not DBpedia_YAGO_color_map:
+    #     mb.showwarning(title='Warning', message="You haven't selected any ontology classes, by default we will annotated everything we could.")
 
     if knowledge_graphs_DBpedia_var==True or knowledge_graphs_YAGO_var==True:
         import IO_internet_util
@@ -48,19 +48,33 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
         if inputFilename!='' and inputFilename[-4:]!='.txt':
             mb.showwarning(title='Warning', message='You have selected to annotate your corpus, but the input file is not of type .txt as required by the selected annotator.\n\nPlease, select a .txt file (or a directory) and try again.')
             return
-        if sub_class_entry!='' and DBpedia_YAGO_class_list==[]:
-            mb.showwarning(title='Warning', message='You have selected to annotate your corpus using the keywords "' + sub_class_entry + '" but it looks like you have forgotten to press OK.\n\nPlease, press OK and try again (or delete YOUR keyword(s) by pressing ESCape)')
-            return
-        if DBpedia_YAGO_class_list==[]:
-            mb.showwarning(title='Warning', message='You have selected to annotate your corpus but it looks like you have not selected any Ontology class or entered an Ontology sub-class.\n\nPlease, using the dropdown menu, select an Ontology class or enter a sub-class and try again.')
-            return
+        # if DBpedia_YAGO_class_list==[]:
+        #     mb.showwarning(title='Warning', message='You have selected to annotate your corpus but it looks like you have not selected any Ontology class or entered an Ontology sub-class.\n\nRemember to press the + button to add your selections')
+        #     return
 
-    set_color_list()
-    temp = [a for a in DBpedia_YAGO_color_list if a != "|"]
-    colorls = []
-    for i in range(len(temp)):
-        if (i % 2 == 1):
-            colorls.append(temp[i])
+    ontology_list = list(DBpedia_YAGO_color_map.keys())
+    # print(DBpedia_YAGO_color_map)
+    colorls = list(DBpedia_YAGO_color_map.values())
+
+    def final_check():
+        # if class contains values, the user forgot to press + (which would empty the two widgets)
+        #   not to lose the values, these are automatically appended (could also ask the user to confirm)
+        if ontology_class_var.get()!='' and ontology_class_var.get() not in str(ontology_list):
+            ontology_list.append(ontology_class_var.get())
+        # if sub-class contains values, the user forgot to press + (which would empty the two widgets)
+        #   not to lose the values, these are automatically appended (could also ask the user to confirm)
+        if sub_class_entry_var.get()!='' and sub_class_entry_var.get() not in str(ontology_list):
+            ontology_list.append(sub_class_entry_var.get())
+        # if class and sub-class contain values, the user forgot to press + (which would empty the two widgets)
+        #   not to lose the values, these are automatically appended (could also ask the user to confirm)
+        if ontology_class_var.get()!='' or sub_class_entry_var.get() != '':
+            if color_palette_DBpedia_YAGO_var.get()!='' and color_palette_DBpedia_YAGO_var.get() not in str(colorls):
+                colorls.append(color_palette_DBpedia_YAGO_var.get())
+            else:
+                colorls.append('blue')
+        if not ontology_list: # if nothing selected, annotate everything
+            ontology_list.append('Thing')
+            colorls.append('blue')
 
     if knowledge_graphs_DBpedia_var==True:
         if not IO_internet_util.check_internet_availability_warning('knowledge_graphs_DBpedia_YAGO_main.py'):
@@ -70,11 +84,11 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
         import knowledge_graphs_DBpedia_util
         # for a complete list of annotator types:
         #http://mappings.DBpedia.org/server/ontology/classes/
-        # mb.showwarning(title='Warning',
-        #                message='The DBpedia script is still under development. Regardless of the ontology class you select, it will process \'Thing\' as the class.\n\nWatch this space... Coming soon...')
+        final_check()
         filesToOpen = knowledge_graphs_DBpedia_util.DBpedia_annotate(inputFilename, input_main_dir_path,
                                                                      output_dir_path,0,
-                                                                     DBpedia_YAGO_class_list, colorls, confidence_level)
+                                                                     ontology_list, colorls, confidence_level)
+
     elif knowledge_graphs_YAGO_var==True:
         if not IO_internet_util.check_internet_availability_warning('knowledge_graphs_DBpedia_YAGO_main.py'):
             return
@@ -85,9 +99,10 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
         #http://mappings.DBpedia.org/server/ontology/classes/
 
         color1 = 'black'
+        final_check()
 
         filesToOpen = knowledge_graphs_YAGO_util.YAGO_annotate(inputFilename, input_main_dir_path, output_dir_path,
-                                                                DBpedia_YAGO_class_list, color1, colorls)
+                                                                ontology_list, color1, colorls)
 
     else:
         mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options and try again.')
@@ -176,6 +191,7 @@ window.bind("<Escape>", clear)
 
 DBpedia_YAGO_class_list=[]
 DBpedia_YAGO_color_list=[]
+DBpedia_YAGO_color_map = {}
 
 knowledge_graphs_DBpedia_var=tk.IntVar() # to annotate a document using DBpedia
 knowledge_graphs_YAGO_var=tk.IntVar() # to annotate a document using YAGO
@@ -303,34 +319,6 @@ databases_menu = tk.OptionMenu(window,databases_var,*DB_menu_options)
 databases_menu.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100,y_multiplier_integer,databases_menu,True)
 
-add_class_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_class_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,add_class_button, True)
-
-def activate_class_var(*args):
-    if ontology_class_var.get()!='':
-        ontology_class_var.set('')
-        color_palette_DBpedia_YAGO_var.set('')
-        add_class_button.configure(state='normal')
-        set_color_list()
-    else:
-        add_class_button.configure(state='disabled')
-    ontology_class.configure(state='normal')
-
-reset_class_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: clear_DBpedia_YAGO_class_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate+30,y_multiplier_integer,reset_class_button,True)
-
-def show_class_color_list():
-    if len(DBpedia_YAGO_color_list)==0:
-        if len(DBpedia_YAGO_class_list)==0:
-            mb.showwarning(title='Warning', message='There are no currently selected combinations of ontology class and color.')
-        else:
-            mb.showwarning(title='Warning',
-                           message='The currently selected ontology class list\n  ' + str(DBpedia_YAGO_class_list) + '\nhas no colors associated with it.')
-    else:
-        mb.showwarning(title='Warning', message='The currently selected combination of ontology classes and colors are:\n\n' + ','.join(DBpedia_YAGO_color_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
-
-show_class_color_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_class_color_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate+80,y_multiplier_integer,show_class_color_button,True)
 
 #activated when pressing the RESET button
 
@@ -339,17 +327,35 @@ def clear_DBpedia_YAGO_class_list():
     sub_class_entry_var.set('')
     DBpedia_YAGO_class_list.clear()
     DBpedia_YAGO_color_list.clear()
+    DBpedia_YAGO_color_map.clear()
     color_palette_DBpedia_YAGO_var.set('')
     confidence_level_var.set('.5')
     reset_class_button.configure(state='disabled')
     activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry)
 
 def accept_DBpedia_YAGO_list():
+    #press OK
     global DBpedia_YAGO_class_list
     if sub_class_entry_var.get()!='':
-        #TODO
-        #what if user enter , followed by a space? most likely event...
-        DBpedia_YAGO_class_list=[str(x) for x in sub_class_entry_var.get().split(',') if x]
+        color = color_palette_DBpedia_YAGO_var.get()
+        if not color:
+            color = 'blue'
+        for token in sub_class_entry_var.get().split(' '):
+            if token:
+                DBpedia_YAGO_class_list.append(token)
+                DBpedia_YAGO_color_map[token] = color
+        # print(DBpedia_YAGO_color_map)
+
+        DBpedia_YAGO_color_list.append(color)
+        # DBpedia_YAGO_class_list=[str(x) for x in sub_class_entry_var.get().split(',') if x]
+    elif ontology_class_var.get() != '':
+
+        color = color_palette_DBpedia_YAGO_var.get()
+        if not color:
+            color = 'blue'
+        DBpedia_YAGO_color_map[ontology_class_var.get()] = color
+        DBpedia_YAGO_class_list.append(ontology_class_var.get())
+        DBpedia_YAGO_color_list.append(color)
     else:
         mb.showwarning(title='Warning', message='You have pressed the OK button, but you must first select your class(es).\n\nPlease, select the class(es) and try again.')
 
@@ -362,7 +368,7 @@ YAGO_ontology_class_menu = constants_util.YAGO_ontology_class_menu
 DBpedia_ontology_class_menu = constants_util.DBpedia_ontology_class_menu
 
 ontology_class_lb = tk.Label(window, text='Class')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+85,y_multiplier_integer,ontology_class_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+180,y_multiplier_integer,ontology_class_lb,True)
 ontology_class_var.set('')
 # to jump to an item in the list that starts with a specific letter (e.g., without) by pressing that letter (e.g., w)
 # https://stackoverflow.com/questions/32747592/can-you-have-a-tkinter-drop-down-menu-that-can-jump-to-an-entry-by-typing
@@ -378,31 +384,66 @@ elif sys.platform == 'darwin':
 
 ontology_class = ttk.Combobox(window, width = ontology_width, textvariable = ontology_class_var)
 ontology_class['values'] = DBpedia_ontology_class_menu
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+140, y_multiplier_integer,ontology_class,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+230, y_multiplier_integer,ontology_class,True)
 ontology_class.configure(state='disabled')
 
 sub_class_entry_lb = tk.Label(window, text='Sub-class')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 370,y_multiplier_integer,sub_class_entry_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+470,y_multiplier_integer,sub_class_entry_lb,True)
 
-sub_class_entry = tk.Entry(window,width=25,textvariable=sub_class_entry_var)
+sub_class_entry = tk.Entry(window,width=35,textvariable=sub_class_entry_var)
 sub_class_entry.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+ 450,y_multiplier_integer,sub_class_entry,True)
-
-OK_button = tk.Button(window, text='OK', width=3,height=1,state='disabled',command=lambda: accept_DBpedia_YAGO_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+ 630,y_multiplier_integer,OK_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+550,y_multiplier_integer,sub_class_entry,True)
 
 color_palette_DBpedia_YAGO_var.set('')
 color_palette_DBpedia_YAGO_lb = tk.Label(window, text='Color')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+680,y_multiplier_integer,color_palette_DBpedia_YAGO_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+780,y_multiplier_integer,color_palette_DBpedia_YAGO_lb,True)
 color_palette_DBpedia_YAGO_menu = tk.OptionMenu(window, color_palette_DBpedia_YAGO_var,'black','blue','green','pink','red','yellow')
 color_palette_DBpedia_YAGO_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+730, y_multiplier_integer,color_palette_DBpedia_YAGO_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+830, y_multiplier_integer,color_palette_DBpedia_YAGO_menu,True)
 
 bold_DBpedia_YAGO_var.set(1)
 bold_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text='Bold', state='disabled',variable=bold_DBpedia_YAGO_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+830,y_multiplier_integer,bold_DBpedia_YAGO_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+900,y_multiplier_integer,bold_DBpedia_YAGO_checkbox,True)
+
+def activate_class_var(*args):
+    if ontology_class_var.get() or sub_class_entry_var.get():
+        accept_DBpedia_YAGO_list()  # get current vale and stores into the dict
+        ontology_class_var.set('')
+        color_palette_DBpedia_YAGO_var.set('')
+        sub_class_entry_var.set('')
+        add_class_button.configure(state='normal')
+        show_class_color_button.configure(state='normal')
+    else:
+        add_class_button.configure(state='disabled')
+    ontology_class.configure(state='normal')
+
+reset_class_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: clear_DBpedia_YAGO_class_list())
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+970,y_multiplier_integer,reset_class_button,True)
+
+def show_class_color_list():
+    # if len(DBpedia_YAGO_color_list)==0:
+    #     if len(DBpedia_YAGO_class_list)==0:
+    #         mb.showwarning(title='Warning', message='There are no currently selected combinations of ontology class and color.')
+    #     else:
+    #         mb.showwarning(title='Warning',
+    #                        message='The currently selected ontology class list\n  ' + str(DBpedia_YAGO_class_list) + '\nhas no colors associated with it.')
+    if not DBpedia_YAGO_color_map:
+        mb.showwarning(title='Warning',
+                       message='There are no currently selected combinations of ontology class and color.')
+    else:
+        class_color_string = ""
+        for ont in DBpedia_YAGO_color_map.keys():
+            class_color_string = class_color_string + ont + ":" + DBpedia_YAGO_color_map[ont] + "\n"
+        # mb.showwarning(title='Warning', message='The currently selected combination of ontology classes and colors are:\n\n' + ','.join(DBpedia_YAGO_color_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+        mb.showwarning(title='Warning', message='The currently selected combination of ontology classes and colors are:\n\n' + class_color_string + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+
+show_class_color_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_class_color_list())
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+1035,y_multiplier_integer,show_class_color_button,True)
 
 firstTime = False
+
+add_class_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_class_var())
+y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+1100,y_multiplier_integer,add_class_button)
 
 # https://www.python.org/download/mac/tcltk/
 # https://stackoverflow.com/questions/24207870/cant-reenable-menus-in-python-tkinter-on-mac
@@ -449,7 +490,7 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
                                          reminders_util.message_DBpedia_YAGO,
                                          True)
         firstTime=True
-        databases_menu.configure(state="normal")
+        # databases_menu.configure(state="normal")
         ontology_class.configure(state='normal')
         sub_class_entry.configure(state="normal")
     else:
@@ -476,7 +517,6 @@ def activate_class_options(*args):
             color_palette_DBpedia_YAGO_menu.configure(state='normal')
             if color_palette_DBpedia_YAGO_var.get() != '':
                 add_class_button.configure(state='normal')
-                OK_button.configure(state="normal")
             # color palette ONLY available when selecting a major ontology class from the dropdown menu
             # color_palette_DBpedia_YAGO_menu.configure(state='normal')
         else:
@@ -485,52 +525,28 @@ def activate_class_options(*args):
         reset_class_button.configure(state='normal')
         if sub_class_entry_var.get() != '':
             ontology_class.configure(state='disabled')
-            OK_button.configure(state="normal")
         else:
             ontology_class.configure(state='normal')
-            OK_button.configure(state="disabled")
 ontology_class_var.trace ('w',activate_class_options)
 
 def activate_OK_buttton(*args):
-    if ontology_class_var.get() != '' and color_palette_DBpedia_YAGO_var.get() != '':
-        OK_button.configure(state="normal")
+    if ontology_class_var.get() != '' or sub_class_entry_var.get() != '':
+        add_class_button.config(state="normal")
     if sub_class_entry_var.get() != '':
         ontology_class.configure(state='disabled')
-        OK_button.configure(state="normal")
         color_palette_DBpedia_YAGO_menu.configure(state='normal')
         reset_class_button.configure(state='normal')
-    else:
-        ontology_class.configure(state='normal')
-        OK_button.configure(state="disabled")
-        color_palette_DBpedia_YAGO_menu.configure(state='disabled')
-        # reset_class_button.configure(state='disabled')
+    if not ontology_class_var.get() and not sub_class_entry_var.get():
+        add_class_button.config(state="disabled")
 sub_class_entry_var.trace('w',activate_OK_buttton)
-
-def set_color_list():
-    if len(DBpedia_YAGO_color_list) == 0 or len(DBpedia_YAGO_color_list)!=len(DBpedia_YAGO_class_list)*4:  # no colors entered; use blue as default for all selected classes
-        for i in range(len(DBpedia_YAGO_class_list)):
-            # if len(DBpedia_YAGO_color_list) == len(DBpedia_YAGO_class_list)*4:
-            try:
-                if DBpedia_YAGO_color_list[i] == DBpedia_YAGO_class_list[i]:
-                    continue
-            except:
-                pass
-            DBpedia_YAGO_color_list.append(DBpedia_YAGO_class_list[i])
-            DBpedia_YAGO_color_list.append("|")
-            if color_palette_DBpedia_YAGO_var.get()!='':
-                DBpedia_YAGO_color_list.append(color_palette_DBpedia_YAGO_var.get())
-            else:
-                DBpedia_YAGO_color_list.append('blue')
-            DBpedia_YAGO_color_list.append("|")
+ontology_class_var.trace('w', activate_OK_buttton)
 
 def activate_class_color_combo(*args):
     if color_palette_DBpedia_YAGO_var.get()!='':
         state = str(color_palette_DBpedia_YAGO_menu['state'])
         # 'active' for mac; 'normal' for windows
         if state != 'disabled': # normal/active
-            set_color_list()
             color_palette_DBpedia_YAGO_menu.configure(state='disabled')
-            OK_button.configure(state='normal')
             add_class_button.configure(state='normal')
             reset_class_button.configure(state='normal')
             show_class_color_button.configure(state='normal')
@@ -557,7 +573,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
                                   GUI_IO_util.msg_IO_setup)
 
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+1),"Help", 'Please, tick the appropriate checkbox if you wish to run the Python 3 annotator_DBpedia script or annotator_YAGO script to annotate the input corpus by terms found in either DBpedia or YAGO.\n\nDBpedia will allow you to set confidence levels for your annotation (.5 is the recommended default value in a range between 0 and 1). THE HIGHER THE CONFIDENCE LEVEL THE LESS LIKELY YOU ARE TO FIND DBpedia ENTRIES; THE LOWER THE LEVEL AND THE MORE LIKELY YOU ARE TO FIND EXTRANEOUS ENTRIES.\n\nDBpedia and YAGO are enormous databases (DB for database) designed to extract structured content from the information created in Wikipedia, Wikidata and other knowledge bases. DBpedia and YAGO allow users to semantically query relationships and properties of Wikipedia data (including links to other related datasets) via a large ontology of search values (for a complete listing, see the TIPS files TIPS_NLP_DBpedia Ontology Classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf).\n\nFor more information, see https://wiki.DBpedia.org/ and https://yago-knowledge.org/.\n\nIn INPUT the scripts expect one or more txt files.\n\nIn OUTPUT the scripts generate as many annotated html files as selected in input.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+2),"Help", 'Once you tick the DBpedia checkbox, the options on this line will become available.\n\nUsing the class dropdown menu, also select the DPpedia or YAGO ontology class you wish to use. IF NO CLASS IS SELECTED, ALL CLASSES WILL BE PROCESSED, WITH \'THING\' AS THE DEFAULT CLASS.\n\nThe class dropdown menu only includes the main classes in the DBpedia or YAGO ontology. For specific sub-classes, please, get the values from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf and enter them, comma-separated, in Ontology sub-class field. CLICK OK AFTER ENTERING THE SUB-CLASS VALUES.\n\nYAGO DOES NOT USE THE COMPLETE SCHEMA CLASSES AND SUB-CLASSES. PLEASE, REFER TO THE REDUCED LIST FOR ALL THE SCHEMA CLASSES USED.\n\nYou can test the resulting annotations directly on DBpedia Spotlight at https://www.dbpedia-spotlight.org/demo/\n\nYou can select a specific color for a specific ontology class (Press the \'Show\' widget to display the combination of seleted values). The choice of colors is available only when selecting main ontology classes from the dropdown menu and not for sub-classes.\n\nPress + for multiple selections.\nPress RESET (or ESCape) to delete all values entered and start fresh.\nPress Show to display all selected values.\n\nThe + Reset and Show widgets become available only after selecting both an ontology class and its associated color.')
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+2),"Help", 'Once you tick the DBpedia or YAGO checkbox, the options on this line will become available.\n\nUsing the class dropdown menu, select the DPpedia or YAGO ontology class you wish to use.\n Press the + button to add another selection.\n IF NO CLASS IS SELECTED, ALL CLASSES WILL BE PROCESSED, WITH \'THING\' AS THE DEFAULT CLASS.\n\nThe class dropdown menu only includes the main classes in the DBpedia or YAGO ontology. For specific sub-classes, please, get the values from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf and enter them, comma-separated, in Ontology sub-class field. CLICK + AFTER ENTERING CLASS AND/OR SUB-CLASS VALUES.\n\nYAGO DOES NOT USE THE COMPLETE SCHEMA CLASSES AND SUB-CLASSES. PLEASE, REFER TO THE REDUCED LIST FOR ALL THE SCHEMA CLASSES USED.\n\nYou can test the resulting annotations directly on DBpedia Spotlight at https://www.dbpedia-spotlight.org/demo/\n\nYou can select a specific color for a specific ontology class (Press the \'Show\' widget to display the combination of seleted values).\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\nPress SHOW to display all selected values (the SHOW button only becomes available afyter pressing the + button to confirm your choices).\n\nThe RESET, SHOW, and + widgets become available only after selecting an ontology class or sub-class.')
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+3),"Help",GUI_IO_util.msg_openOutputFiles)
 
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
