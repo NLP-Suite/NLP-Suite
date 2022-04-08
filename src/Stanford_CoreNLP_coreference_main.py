@@ -24,7 +24,7 @@ import GUI_IO_util
 import IO_files_util
 import GUI_util
 import Stanford_CoreNLP_coreference_util
-import file_splitter_merged_util
+import file_splitter_merged_txt_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -121,7 +121,7 @@ def run(inputFilename, inputDir, outputDir,
     if split_coreferenced_files_var:
         subDir = ''
         nFiles = 0
-        subDir, nFiles = file_splitter_merged_util.run(corefed_txt_file_var.get(),
+        subDir, nFiles = file_splitter_merged_txt_util.run(corefed_txt_file_var.get(),
                                                        '<@#',
                                                        '#@>',
                                                        outputDir)
