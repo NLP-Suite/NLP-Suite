@@ -74,6 +74,7 @@ NLP_Suite_data_file_handling_tools_menu = 'Data manager (csv files via Pandas)',
 'File-type converter (csv, docx, pdf, rtf -- txt)', \
 'File matcher (file name)',\
 'File manager (List, Rename, Copy, Move, Delete, Count, Split)', 'SQL database (via SQLite)', \
+'Sample data (ALL options GUI)', \
 'Search (ALL options GUI)'
 
 NLP_Suite_pre_processing_tools_menu = 'File checker (file content)', \

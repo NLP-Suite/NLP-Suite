@@ -257,12 +257,12 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
         df = pd.DataFrame(list(zip(Phrase,HyperLinkedURL,Ontology_class,HyperLinkedDoc)),columns=['Token','URL','Ontology class','Document'])
        
         # generate CSV file
-
-        from datetime import datetime
-        from datetime import date
-        csvname= "DBpedia_output_"+date.today().strftime("%b_%d_%Y")+"_"+datetime.now().strftime("%H_%M_%S")+".csv"
-        csvname = os.path.join(outputDir,csvname)
-        df.to_csv((csvname),index=False)
+        #
+        # from datetime import datetime
+        # from datetime import date
+        # csvname= "DBpedia_output_"+date.today().strftime("%b_%d_%Y")+"_"+datetime.now().strftime("%H_%M_%S")+".csv"
+        # csvname = os.path.join(outputDir,csvname)
+        # df.to_csv((csvname),index=False)
 
         filesToOpen.append(outFilename)
         for k in range(len(Document)-len(Html_link)):
@@ -277,7 +277,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
     df.to_csv((csvname), index=False)
 
     filesToOpen.append(csvname)
-
+    clear_cache()
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running DBpedia Knowledge Graph at',
                                        True, '', True, startTime)
 
@@ -374,6 +374,17 @@ def extract_html(content, annotationTypes, doc, url_num):
 
     new_html = prev + post
     return new_html
+
+
+def clear_cache():
+    colormap.clear()
+
+    Document.clear()
+    Phrase.clear()
+    Ontology_class.clear()
+    URL_link.clear()
+    Html_link.clear()
+
 
 
 def update_csv(ta, type, doc,link):
