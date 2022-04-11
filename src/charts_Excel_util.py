@@ -287,31 +287,90 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 # select_col should be one colmun name
 # group_col should be a list of column names eg sentence id, document id
 # the input should be saved to a csv file first
-def compute_csv_column_frquencies(inputFilename, group_col, select_col, method_name, outputDir, graph = True, complete_sentece = False):
-    if(complete_sentece and ("Sentence ID" in group_col)):
-        # should be an error message
-        print("Should include Sentence ID in the group_col")
+def compute_csv_column_frquencies1(inputFilename, group_col, select_col, outputDir, filesToOpen, graph = True, complete_sid = False):
     cols = group_col + select_col
-    data,header = IO_csv_util.get_csv_data(inputFilename, True)
-    data = pd.DataFrame(data,columns=header)
-    cols_to_be_plotted = data[select_col].unique()
+    try:
+        data,header = IO_csv_util.get_csv_data(inputFilename, True)
+        data = pd.DataFrame(data, columns=header)
+    except:
+        # an error message about unable to read the file
+        print("Error: cannot read the file")
+        return
+    #data = CoNLL_verb_analysis_util.verb_voice_data_preparation(data)
+    #data,stats,pas,aux,act = CoNLL_verb_analysis_util.voice_output(data, group_col)
+    #data = pd.DataFrame(data,columns=header+["Verb Voice"])
+    try:
+        print(data[select_col])
+        print(data[group_col])
+    except:
+        # an error message about wrong csv file without the necessary columns
+        print("Please select the correct csv file, with correct columns")
+        return
+    name = outputDir + os.path.splitext(os.path.basename(inputFilename))[0] + "temp_frequencies.csv"
+    data.to_csv(name)
+    if(complete_sid):
+        complete_sentence_index(name)
     data = data.groupby(cols).size().to_frame("count")
-    # TODO: need to rewrite the file naming part
-    # need to reread it to convert to dataframe
-    data.to_csv("C:/Users/Tony Chen/Desktop/NLP_working/Test Output/test_out1.csv")
-    data = pd.read_csv("C:/Users/Tony Chen/Desktop/NLP_working/Test Output/test_out1.csv")
+    data.to_csv(name)
+    data = pd.read_csv(name)
     data = data.pivot(index = group_col, columns = select_col, values = "count")
     data = data.fillna(0)
     print(data)
-    type(data)
-    data.to_csv("C:/Users/Tony Chen/Desktop/NLP_working/Test Output/test_out2.csv")
+    data.to_csv(name)
+    print(name)
     if(graph):
         #TODO: need filename generation and chartTitle generation
-        xlsxFilename = "test_multi_line.xlsx"
+        data = pd.read_csv(name,header=0)
+        cols_to_be_plotted = []
+        for i in range(1,len(data.columns)):
+            cols_to_be_plotted.append([0,i])
         chartTitle = "test_multi_line"
-        Excel_outputFilename = run_all(cols_to_be_plotted,xlsxFilename,outputDir,
-                                       method_name, chart_type_list=["line"], 
-                                       chart_title=chartTitle, column_xAxis_label_var=["Sentence ID"])
+        Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
+                                        "frequency_multi-line_chart", chart_type_list=["line"], 
+                                        chart_title=chartTitle, column_xAxis_label_var="Sentence ID")
+        if Excel_outputFilename != "":
+            filesToOpen.append(Excel_outputFilename)
+    return
+
+# remove comments before variable begin with d_id to enable complete document id function
+# need to have a document id column and sentence id column
+# would complete the file (make document id and sentence id continuous) and padding zero values for the added rows
+def complete_sentence_index(file_path):
+    data = pd.read_csv(file_path)
+    try:
+        print(data["Sentence ID"])
+    except:
+        print("Only enable complete sentence index when there is a Sentence ID column in the csv file")
+        return
+    if(len(data) == 1):
+        return data
+    data2 = pd.DataFrame(columns = data.columns.values.tolist())
+    # d_id = 1
+    s_id = 1
+    for i in range(len(data)):
+        s_id_max = data.iloc[i]["Sentence ID"]
+        # d_id_max = data.iloc[i]["Document ID"]
+        # reset the sentence id when switch the document
+        # deafut d_id increse by 1 to detect and other not included document
+        # if(d_id != d_id_max):
+        #     d_id += 1
+        #     s_id = 1
+        # padding document id when it's not continuous
+        # while(d_id < d_id_max):
+        #     temp = pd.DataFrame({"Document ID":[d_id],"Sentence ID":[1]})
+        #     data2 =pd.concat([data2,temp])
+        #     d_id += 1
+        #     s_id = 2
+        # padding sentence id when it's not continuous
+        while(s_id < s_id_max):
+            temp = pd.DataFrame({"Sentence ID":[s_id]})
+            data2 =pd.concat([data2,temp])
+            s_id += 1
+        data2 =pd.concat([data2,data.iloc[[i]].copy(deep=True)])
+        s_id += 1
+        # fill the added sentence id with 0 values
+    data2 = data2.fillna(0)
+    data2.to_csv(file_path, index = False)
     return
             
 
