@@ -284,10 +284,12 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
     return data_to_be_plotted
 
 # Tony Chen Gu at April 2022
-# select_col should be one colmun name
-# group_col should be a list of column names eg sentence id, document id
+# select_col should be one colmun name eg: ['Verb Voice']
+# group_col should be a list of column names eg ['Sentence ID']
+# enable complete_sid to make sentence index continuous
+# enable graph to make a multiline graph
 # the input should be saved to a csv file first
-def compute_csv_column_frquencies1(inputFilename, group_col, select_col, outputDir, filesToOpen, graph = True, complete_sid = False):
+def compute_csv_column_frquencies(inputFilename, group_col, select_col, outputDir, graph = True, complete_sid = True):
     cols = group_col + select_col
     try:
         data,header = IO_csv_util.get_csv_data(inputFilename, True)
@@ -310,9 +312,11 @@ def compute_csv_column_frquencies1(inputFilename, group_col, select_col, outputD
     data.to_csv(name)
     if(complete_sid):
         complete_sentence_index(name)
+    # group by both group col and select cols and get a row named count to count the number of frequencies
     data = data.groupby(cols).size().to_frame("count")
     data.to_csv(name)
     data = pd.read_csv(name)
+    # transform the data by the select colmuns
     data = data.pivot(index = group_col, columns = select_col, values = "count")
     data = data.fillna(0)
     print(data)
@@ -328,10 +332,9 @@ def compute_csv_column_frquencies1(inputFilename, group_col, select_col, outputD
         Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
                                         "frequency_multi-line_chart", chart_type_list=["line"], 
                                         chart_title=chartTitle, column_xAxis_label_var="Sentence ID")
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
-    return
+    return Excel_outputFilename
 
+# not very efficient
 # remove comments before variable begin with d_id to enable complete document id function
 # need to have a document id column and sentence id column
 # would complete the file (make document id and sentence id continuous) and padding zero values for the added rows
