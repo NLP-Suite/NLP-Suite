@@ -45,8 +45,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
         return
 
     if sentence_complexity_var==True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
-            return
         filesToOpen=sentence_analysis_util.sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts)
         if filesToOpen==None:
             return
@@ -76,10 +74,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
             mb.showwarning(title='No search words entered', message='You have selected to extract sentences from input file(s). You MUST enter specific words to be used to extract the sentences from input.\n\nPlease enter the word(s) and try again.')
             return
 
-        outputFile=sentence_analysis_util.extract_sentences(inputFilename, inputDir, outputDir, search_words_var)
-
-        if len(outputFile)>0:
-            filesToOpen.append(outputFile)
+        sentence_analysis_util.extract_sentences(inputFilename, inputDir, outputDir, search_words_var)
 
     IO_files_util.runScript_fromMenu_option(script_to_run,IO_values,inputFilename,inputDir, outputDir, openOutputFiles,createExcelCharts)
 
@@ -222,6 +217,7 @@ visualize_bySentenceIndex_lb = tk.Label(window, text='Select visualization optio
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,visualize_bySentenceIndex_lb,True)
 visualize_bySentenceIndex_menu = tk.OptionMenu(window,visualize_bySentenceIndex_options_var,'*','Clause analysis by sentence index (via CoNLL)','Noun analysis by sentence index (via CoNLL)','Verb analysis by sentence index (via CoNLL)','Function words analysis by sentence index (via CoNLL)','Sentence complexity by sentence index','Sentence/text readability by sentence index (via textstat)','N-grams (word & character) by sentence index','Hapax legomena (once-occurring words) by sentence index','Unusual words (via NLTK) by sentence index','Short words by sentence index','Vowel words by sentence index','Annotated gender names by sentence index', 'Annotated words (DBpedia, YAGO, dictionary) by sentence index','Sentiment analysis by sentence index','Concreteness analysis by sentence index', 'Words/collocations by sentence index','WordNet categories by sentence index','Time by sentence index','Location by sentence index')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,visualize_bySentenceIndex_menu)
+visualize_bySentenceIndex_menu.configure(state='disabled')
 
 sentence_complexity_var.set(0)
 sentence_complexity_checkbox = tk.Checkbutton(window, text='Sentence complexity', variable=sentence_complexity_var, onvalue=1, offvalue=0)
@@ -258,7 +254,10 @@ def activate_visualize_bySentenceIndex_options(*args):
     if visualize_bySentenceIndex_var.get()==False:
         visualize_bySentenceIndex_menu.configure(state='disabled')
     else:
-        visualize_bySentenceIndex_menu.configure(state='normal')
+        # temporarily disabled
+        mb.showwarning(title='Option disabled',message='The selected option is temporarily disabled.\n\nSorry!')
+        visualize_bySentenceIndex_menu.configure(state='disabled')
+        # visualize_bySentenceIndex_menu.configure(state='normal')
 visualize_bySentenceIndex_var.trace('w',activate_visualize_bySentenceIndex_options)
 
 activate_visualize_bySentenceIndex_options()
@@ -293,7 +292,7 @@ def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help",'Please, tick the checkbox if you wish to run the Java Sentence_Complexity.jar script to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure.\n\nThe Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\nIn INPUT, the script expects a txt file, rather than a CoNLL table.'+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help",'Please, tick the checkbox if you wish to run the Python 3 sentence_text_readability function to compute various measures of text readability, also closely associated to the sentence clause structure.\n\n  12 readability score requires HIGHSCHOOL education;\n  16 readability score requires COLLEGE education;\n  18 readability score requires MASTER education;\n  24 readability score requires DOCTORAL education;\n  >24 readability score requires POSTDOC education.\n\nIn INPUT, the script expects a txt file, rather than a CoNLL table.\n\nIn OUTPUT, the script produces a txt file with readability scores for an entire text and a csv file with readability scores for each sentence in a text.'+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help",'Please, tick the checkbox if you wish to visualize the sentence structure as a png image of the dependency tree.'+GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help","Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words).\n\nThe widget 'Words in sentence' will become available once you select the option. You will need to enter there the words/set of words that a sentence must contain in order to be extracted from input and saved in output. Words/set of words must be entered in DOUBLE QUOTES (e.g., \"The New York Times\") and comma separated (e.g., \"The New York Times\" , \"The Boston Globe\"). When running the script, the script will ask you if you want to process the search word(s) as case sensitive (thus, if you opt for case sensitive searches, a sentence containing the word 'King' will not be selected in output if in the widget 'Word(s) in sentence' you have entered 'king').\n\nIn INPUT, the script expects a single txt file or a directory.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract.txt and containing, for each input file, all the sentences that have the search word(s);\n2. files ending with _extract_minus.txt and containing, for each input file, the sentences that do NOT have the search word(s)."+GUI_IO_util.msg_Esc)
+    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help","Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words).\n\nThe widget 'Words in sentence' will become available once you select the option. You will need to enter there the words/set of words that a sentence must contain in order to be extracted from input and saved in output. Words/set of words must be entered in DOUBLE QUOTES (e.g., \"The New York Times\") and comma separated (e.g., \"The New York Times\" , \"The Boston Globe\"). When running the script, the script will ask you if you want to process the search word(s) as case sensitive (thus, if you opt for case sensitive searches, a sentence containing the word 'King' will not be selected in output if in the widget 'Word(s) in sentence' you have entered 'king').\n\nIn INPUT, the script expects a single txt file or a directory.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract.txt and containing, for each input file, all the sentences that have the search word(s);\n2. files ending with _extract_minus.txt and containing, for each input file, the sentences that do NOT have the search word(s).\n\nOutput files are saved in two subdirectories 'sentences\extract' and 'sentences\extract_minus' of the output directory."+GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help",GUI_IO_util.msg_openOutputFiles)
 help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
 

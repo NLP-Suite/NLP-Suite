@@ -329,7 +329,11 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen):
         return
     if len(filesToOpen) == 0:
         return
-    filesToOpen = list(set(filesToOpen))
+    if filesToOpen != list:
+        if isinstance(filesToOpen, set):
+            filesToOpen = list(set(filesToOpen))
+        else:
+            filesToOpen = list(filesToOpen)
     if len(filesToOpen) == 1:
         singularPlural = 'file'
     else:
