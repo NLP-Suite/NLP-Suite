@@ -73,3 +73,8 @@ With a TXT file, NER extraction via Stanford CoreNLP must be first performed.
 
 With a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.",No,No
 CoNLL_table_analyzer,CoNLL table - Verb modality,"The categories of Verb modality (Obligation, Will/would, Can/may) computed from the CoNLL table are NOT mutually exclusive. The same verb may appear in several categories.",Yes,No
+NGrams_CoOccurrences_Viewer,subprocess.call(cmd) error,"subprocess.call(cmd) error
+
+If the VIEWER you are running exits with an error code about a file not found, most likely your selected INPUT & OUTPUT directory options are too long for Windows to handle.
+
+You may need to move your input and output folders so as to have a shorter path (e.g., desktop).",Yes,No
