@@ -293,6 +293,7 @@ def extract_sentence_length(inputFilename, inputDir, outputDir):
 
 # wordList is a string
 def extract_sentences(input_file, input_dir, output_dir, inputString):
+	filesToOpen=[]
 	inputDocs = IO_files_util.getFileList(input_file, input_dir, fileType='.txt')
 	Ndocs = len(inputDocs)
 	if Ndocs == 0:
@@ -309,7 +310,11 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
 		# Append ', ' to the end of search_words_var so that literal_eval creates a list
 		inputString += ', '
 	# convert the string inputString to a list []
-	wordList = ast.literal_eval(inputString)
+	try:
+		wordList = ast.literal_eval(inputString)
+	except:
+		mb.showwarning(title='Search error',message='The search function encountered an error. If you have entered multi-word expressions (e.g. beautiful girl make sure to enclose them in double quotes "beautiful girl"). Also, make sure to separate single-word expressions, with a comma (e.g., go, come).')
+		return
 	caseSensitive = mb.askyesno("Python", "Do you want to process your search word(s) as case sensitive?")
 
 	fileID = 0
@@ -317,19 +322,30 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
 	file_extract_minus_written = False
 	nDocsExtractOutput = 0
 	nDocsExtractMinusOutput = 0
+	new_out_dir_sentences=os.path.join(output_dir,'sentences')
+	new_out_dir_extract=os.path.join(new_out_dir_sentences,'extract')
+	new_out_dir_extract_minus=os.path.join(new_out_dir_sentences,'extract_minus')
+	if not IO_files_util.make_directory(new_out_dir_sentences, True):
+		return
+	if not IO_files_util.make_directory(new_out_dir_extract, True):
+		return
+	if not IO_files_util.make_directory(new_out_dir_extract_minus, True):
+		return
 	for doc in inputDocs:
-		outputFilename_extract = doc[:-4] + "_extract.txt"
-		outputFilename_extract_minus = doc[:-4] + "_extract_minus.txt"
 		wordFound = False
 		fileID = fileID + 1
 		head, tail = os.path.split(doc)
 		print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
 		with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
 			text = inputFile.read().replace("\n", " ")
+		outputFilename_extract = os.path.join(new_out_dir_extract,tail[:-4]) + "_extract.txt"
+		outputFilename_extract_minus = os.path.join(new_out_dir_extract_minus,tail[:-4]) + "_extract_minus.txt"
 		with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
 				outputFilename_extract_minus, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_minus:
 			# sentences = tokenize.sent_tokenize(text)
 			sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+			n_sentences_extract = 0
+			n_sentences_extract_minus = 0
 			for sentence in sentences:
 				sentenceSV = sentence
 				nextSentence = False
@@ -342,24 +358,30 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
 						sentence = sentence.lower()
 						word = word.lower()
 					if word in sentence:
+						n_sentences_extract += 1
 						outputFile_extract.write(sentenceSV + " ")  # write out original sentence
 						file_extract_written = True
 						wordFound = True
 						nextSentence = True
 					# if none of the words in wordList are found in a sentence write the sentence to the extract_minus file
 					if wordFound == False:
+						n_sentences_extract_minus += 1
 						outputFile_extract_minus.write(sentenceSV + " ")  # write out original sentence
 						file_extract_minus_written = True
 		if file_extract_written == True:
-			filesToOpen.append(outputFilename_extract)
+			# filesToOpen.append(outputFilename_extract)
 			nDocsExtractOutput += 1
 			file_extract_written = False
 		outputFile_extract.close()
+		if n_sentences_extract == 0: # remove empty file
+			os.remove(outputFilename_extract)
 		if file_extract_minus_written:
-			filesToOpen.append(outputFilename_extract_minus)
+			# filesToOpen.append(outputFilename_extract_minus)
 			nDocsExtractMinusOutput += 1
 			file_extract_minus_written = False
 		outputFile_extract_minus.close()
+		if n_sentences_extract_minus == 0: # remove empty file
+			os.remove(outputFilename_extract_minus)
 	if Ndocs == 1:
 		msg1 = str(Ndocs) + " file was"
 	else:
@@ -375,9 +397,8 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
 	mb.showwarning("Warning", msg1 + " processed in input.\n\n" +
 				   msg2 + " written with _extract in the filename.\n\n" +
 				   msg3 + " written with _extract_minus in the filename.\n\n" +
-				   "Files were written to the output directory " + output_dir +
-				   "\n\nPlease, check the output directory for filenames ending with _extract.txt and _extract_minus.txt.")
-
+				   "Files were written to the subdirectiries " + new_out_dir_extract + " and " + new_out_dir_extract_minus + " of the output directory." +
+				   "\n\nPlease, check the output subdirectories for filenames ending with _extract.txt and _extract_minus.txt.")
 
 # https://pypi.org/project/textstat/
 def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts):
@@ -406,9 +427,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 	filesToOpen.append(outputFilenameTxt)
 	filesToOpen.append(outputFilenameCsv)
 
-	fieldnames = ['Sentence ID', 'Sentence',
-				  'Document ID', 'Document',
-				  'Flesch Reading Ease formula',
+	fieldnames = ['Flesch Reading Ease formula',
 				  'Flesch-Kincaid Grade Level',
 				  'Fog Scale (Gunning FOG Formula)',
 				  'SMOG (Simple Measure of Gobbledygook) Index',
@@ -417,7 +436,9 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 				  'Linsear Write Formula',
 				  'Dale-Chall Readability Score',
 				  'Overall readability consensus',
-				  'Grade level']
+				  'Grade level',
+				  'Sentence ID', 'Sentence',
+				  'Document ID', 'Document']
 
 	with open(outputFilenameCsv, 'w', encoding='utf-8', errors='ignore', newline='') as outputCsvFile:
 		writer = csv.DictWriter(outputCsvFile, fieldnames=fieldnames)
@@ -597,8 +618,8 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 					sortOrder = 25
 				# rowValue=[[documentID,file,sentenceID,sent,str1,str2,str3,str4,str5,str6,str7,str8,str9,sortOrder]]
 				rowValue = [
-					[sentenceID, sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file), str1, str2, str3,
-					 str4, str5, str6, str7, str8, str9, sortOrder]]
+					[str1, str2, str3, str4, str5, str6, str7, str8, str9, sortOrder,
+					 sentenceID, sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)]]
 				writer = csv.writer(outputCsvFile)
 				writer.writerows(rowValue)
 		# at least 12th grade level HIGH-SCHOOL EDUCATION
@@ -790,7 +811,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 
 	filesToOpen = []
 
-	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
+	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
 												   'Started running Sentence Complexity at', True)
 	if len(inputFilename) > 0:
 		doc = inputFilename
