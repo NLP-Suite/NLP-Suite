@@ -37,6 +37,16 @@ cla_open_csv = False  # if run from command line, will check if they want to ope
     SUPPORTING COMMANDS FOR MAIN FUNCTIONS
 """
 
+# Written by Tony Apr 2022
+# prepare data in a given way
+# in the tag_pos position of the data, find if it is in a given list of tags
+# add a column in the end describing the tag the extract the row from data
+def data_preperation(data, tag_list, name_list, tag_pos):
+    dat = []
+    for tok in data:
+        if tok[tag_pos] in tag_list:
+            dat.append(tok+[name_list[tag_list.index(tok[tag_pos])]])
+    return dat
 
 # to avoid key value error
 
