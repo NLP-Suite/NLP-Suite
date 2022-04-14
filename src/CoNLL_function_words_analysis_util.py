@@ -100,7 +100,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
 															outputDir=outputDir,
 															select_col=['PRONOUNS'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Verb Modality")
+															chartTitle="Frequency Distribution of Pronoun")
             # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',
@@ -169,7 +169,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
 															outputDir=outputDir,
 															select_col=['PREPOSITIONS'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Verb Modality")
+															chartTitle="Frequency Distribution of Prepositions")
             
             # line plot by sentence index
             # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
@@ -246,7 +246,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
 															outputDir=outputDir,
 															select_col=['ARTICLES'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Verb Modality")
+															chartTitle="Frequency Distribution of Articles")
             # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',
@@ -317,7 +317,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
 															outputDir=outputDir,
 															select_col=['CONJUNCTIONS'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Verb Modality")
+															chartTitle="Frequency Distribution of Conjunctions")
             # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',
@@ -387,7 +387,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
 															outputDir=outputDir,
 															select_col=['AUXILIARIES'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Verb Modality")
+															chartTitle="Frequency Distribution of Auxiliary Verbs")
             # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',

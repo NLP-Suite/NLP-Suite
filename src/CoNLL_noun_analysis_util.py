@@ -2,6 +2,7 @@
 Python 3 script
 author: Jian Chen, January 2019, based on original vba code by Roberto Franzosi
 modified by Jack Hester and Roberto Franzosi, February, June 2019, November 2021
+modified by Tony Apr 2022
 """
 
 import sys
@@ -13,6 +14,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL Table Analyzer
     sys.exit(0)
 
 from collections import Counter
+import pandas as pd
 
 import IO_files_util
 import IO_csv_util
@@ -72,21 +74,28 @@ def noun_POSTAG_DEPREL_compute_frequencies(data, data_divided_sents):
     list_nouns_ner = []
 
     # must all be sorted in descending order
-
+    list_nouns_postag = data_preperation(data, ['NN', 'NNS', 'NNP', 'NNPS'],
+     ['Noun singular/mass (NN)', 'Noun plural (NNS)', 'Proper noun singular (NNP)', 'Proper noun plural (NNPS)'], 3)
     noun_postag_stats = [['Noun POS Tags', 'Frequencies'],
                          ['Proper noun singular (NNP)', postag_counter['NNP']],
                          ['Proper noun plural (NNPS)', postag_counter['NNPS']],
                          ['Noun singular/mass (NN)', postag_counter['NN']],
                          ['Noun plural (NNS)', postag_counter['NNS']]]
 
+    list_nouns_deprel = data_preperation(data, ['obj','iobj','nsubj','nsubj:pass','csubj','csubj:pass'],
+    ['Object (obj)','Indirect object (iobj)','Nominal subject (nsubj)','Nominal passive subject (nsubj:pass)'
+    'Clausal subject (csubj)','Clausal passive subject (csubj:pass)'],6)
+
     noun_deprel_stats = [['Noun DEPREL Tags', 'Frequencies'],
                          ['Object (obj)', deprel_counter['obj']],
                          ['Indirect object (iobj)', deprel_counter['iobj']],
-                         ['Nominal subject (nsubj', deprel_counter['nsubj']],
+                         ['Nominal subject (nsubj)', deprel_counter['nsubj']],
                          ['Nominal passive subject (nsubj:pass)', deprel_counter['nsubj:pass']],
                          ['Clausal subject (csubj)', deprel_counter['csubj']],
                          ['Clausal passive subject (csubj:pass)', deprel_counter['csubj:pass']]]
 
+    list_nouns_ner = data_preperation(data, ['COUNTRY','CITY','LOCATION','PERSON','ORGANIZATION','STATE_OR_PROVINCE'],
+    ['COUNTRY','CITY','LOCATION','PERSON','ORGANIZATION','STATE_OR_PROVINCE'],4)
     noun_ner_stats = [['Noun NER Tags', 'Frequencies'],
         ['COUNTRY', ner_counter['COUNTRY']],
         ['CITY', ner_counter['CITY']],
@@ -108,8 +117,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
     postag_list, postag_counter, deprel_list, deprel_counter, ner_list, ner_counter = compute_stats(data)
 
-    noun_postag, noun_deprel, noun_ner, \
-    noun_postag_stats, noun_deprel_stats, noun_ner_stats = noun_POSTAG_DEPREL_compute_frequencies(data,
+    noun_postag, noun_deprel, noun_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats = noun_POSTAG_DEPREL_compute_frequencies(data,
                                                                                                   data_divided_sents)
     # output file names
     noun_postag_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
@@ -132,13 +140,21 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                          noun_postag_file_name)
     if errorFound == True:
         return filesToOpen
+    df = pd.read_csv(noun_postag_file_name, header=None)
+    df.to_csv(noun_postag_file_name,
+				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+					  "Noun POS Tags"])
     filesToOpen.append(noun_postag_file_name)
-
+    
     errorFound = IO_csv_util.list_to_csv(GUI_util.window,
                                          CoNLL_util.sort_output_list('Noun DEPREL Tags', noun_deprel),
                                          noun_deprel_file_name)
     if errorFound == True:
         return filesToOpen
+    df = pd.read_csv(noun_deprel_file_name, header=None)
+    df.to_csv(noun_deprel_file_name,
+				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+					  "Noun DEPREL Tags"])
     filesToOpen.append(noun_deprel_file_name)
 
     errorFound = IO_csv_util.list_to_csv(GUI_util.window,
@@ -146,6 +162,10 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                          noun_ner_file_name)
     if errorFound == True:
         return filesToOpen
+    df = pd.read_csv(noun_ner_file_name, header=None)
+    df.to_csv(noun_ner_file_name,
+				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+					  "Noun NER Tags"])
     filesToOpen.append(noun_ner_file_name)
 
     # save csv frequency files ----------------------------------------------------------------------------------------
@@ -202,44 +222,59 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         if Excel_outputFilename != "":
             filesToOpen.append(Excel_outputFilename)
 
-        return filesToOpen # to avoid code breaking in plot by sentence index
+        # return filesToOpen # to avoid code breaking in plot by sentence index
 
         # line plots by sentence index -----------------------------------------------------------------------------------------------
-
-        outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
-                                                                       noun_postag_file_name,
-                                                                       '',
-                                                                       outputDir,
-                                                                       openOutputFiles,
-                                                                       createExcelCharts,
-                                                                       [[1, 4]],
-                                                                       ['Noun POS Tags'], ['FORM', 'Sentence ID','Sentence', 'Document ID','Document'],
-                                                                       'NVA', 'line')
+        outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=noun_postag_file_name,
+															outputDir=outputDir,
+															select_col=['Noun POS Tags'],
+															group_col=['Sentence ID'],
+															chartTitle="Frequency Distribution of Noun POS Tags")
+        # outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+        #                                                                noun_postag_file_name,
+        #                                                                '',
+        #                                                                outputDir,
+        #                                                                openOutputFiles,
+        #                                                                createExcelCharts,
+        #                                                                [[1, 4]],
+        #                                                                ['Noun POS Tags'], ['FORM', 'Sentence ID','Sentence', 'Document ID','Document'],
+        #                                                                'NVA', 'line')
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 
-        outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
-                                                                       noun_deprel_file_name,
-                                                                       '',
-                                                                       outputDir,
-                                                                       openOutputFiles,
-                                                                       createExcelCharts,
-                                                                       [[1, 4]],
-                                                                       ['Noun DEPREL Tags'],['FORM', 'Sentence'],['Sentence ID','Document ID', 'Document'],
-                                                                       'NVA','line')
+        outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=noun_deprel_file_name,
+															outputDir=outputDir,
+															select_col=['Noun DEPREL Tags'],
+															group_col=['Sentence ID'],
+															chartTitle="Frequency Distribution of Noun DEPREL Tags")
+        # outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+        #                                                                noun_deprel_file_name,
+        #                                                                '',
+        #                                                                outputDir,
+        #                                                                openOutputFiles,
+        #                                                                createExcelCharts,
+        #                                                                [[1, 4]],
+        #                                                                ['Noun DEPREL Tags'],['FORM', 'Sentence'],['Sentence ID','Document ID', 'Document'],
+        #                                                                'NVA','line')
 
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 
-        outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
-                                                                       noun_ner_file_name,
-                                                                       '',
-                                                                       outputDir,
-                                                                       openOutputFiles,
-                                                                       createExcelCharts,
-                                                                       [[1, 4]],
-                                                                       ['Noun NER Tags'], ['FORM', 'Sentence'], ['Sentence ID', 'Document ID', 'Document'],
-                                                                       'NVA','line')
+
+        outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=noun_ner_file_name,
+															outputDir=outputDir,
+															select_col=['Noun NER Tags'],
+															group_col=['Sentence ID'],
+															chartTitle="Frequency Distribution of Noun NER Tags")
+        # outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+        #                                                                noun_ner_file_name,
+        #                                                                '',
+        #                                                                outputDir,
+        #                                                                openOutputFiles,
+        #                                                                createExcelCharts,
+        #                                                                [[1, 4]],
+        #                                                                ['Noun NER Tags'], ['FORM', 'Sentence'], ['Sentence ID', 'Document ID', 'Document'],
+        #                                                                'NVA','line')
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 
