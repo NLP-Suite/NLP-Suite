@@ -103,11 +103,12 @@ def clause_data_preparation(data):
                 tense_col = 'Sentence'
                 s_counter+=1
             dat.append(i+[tense_col])
+            
     clause_stats = [['Clause Tags', 'Frequencies'],
                          ['Clause-level (S - Sentence)', s_counter],
                          ['Clause-level (SBAR - Clause introduced by a (possibly empty) subordinating conjunction)', sbar_counter],
                          ['Clause-level (SBARQ - Direct question introduced by a wh-word or a wh-phrase)', sbarq_counter],
-                         ['Clause-level (SINV - Inverted declarative sentence, i.e. one in which the subject follows the tensed verb or modal)', clausal_counter['SINV']],
+                         ['Clause-level (SINV - Inverted declarative sentence, i.e. one in which the subject follows the tensed verb or modal)', sinv_counter],
                          ['Phrase-level (NP - Noun Phrase)', np_counter],
                          ['Phrase-level (VP - Verb Phrase)', vp_counter],
                          ['Phrase-level (ADJP - Adjective Phrase)', adjp_counter],

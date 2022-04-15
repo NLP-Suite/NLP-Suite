@@ -106,11 +106,11 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         import CoNLL_noun_analysis_util
         outputFiles = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, data_divided_sents,
                                                           openOutputFiles, createExcelCharts)
-        if outputFiles != None:
-            # only open the chart files
-            filesToOpen.append(outputFiles[6])
-            filesToOpen.append(outputFiles[7])
-            filesToOpen.append(outputFiles[8])
+        # if outputFiles != None:
+        #     # only open the chart files
+        #     filesToOpen.append(outputFiles[6])
+        #     filesToOpen.append(outputFiles[7])
+        #     filesToOpen.append(outputFiles[8])
 
         right_hand_side = True
 
@@ -120,11 +120,11 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         outputFiles = CoNLL_verb_analysis_util.verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents,
                                                           openOutputFiles, createExcelCharts)
 
-        # only open the chart files
-        if outputFiles != None:
-            filesToOpen.append(outputFiles[2])
-            filesToOpen.append(outputFiles[5])
-            filesToOpen.append(outputFiles[7])
+        # # only open the chart files
+        # if outputFiles != None:
+        #     filesToOpen.append(outputFiles[2])
+        #     filesToOpen.append(outputFiles[5])
+        #     filesToOpen.append(outputFiles[7])
 
         right_hand_side = True
 
@@ -245,19 +245,31 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
 
                 # line plot by sentence index
                 if searchedCoNLLField == 'FORM':
-                    tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
-                                                                          [[11, 5], [11, 7], [11, 9]],
-                                                                          ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
-                                                                          ['SEARCHED TOKEN (FORM)', 'Sentence ID','Sentence'],
-                                                                          ['Document ID', 'Document'],
-                                                                          openOutputFiles, createExcelCharts, 'QC', 'line')
+                    tempFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=output_file_name,
+															outputDir=outputDir,
+															select_col=['SEARCHED TOKEN POSTAG-DESCRIPTION'],
+															group_col=['Document ID'],
+															chartTitle="Frequency Distribution of SEARCHED TOKEN (FORM)",
+                                                            complete_sid=False)
+                    # tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
+                    #                                                       [[11, 5], [11, 7], [11, 9]],
+                    #                                                       ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
+                    #                                                       ['SEARCHED TOKEN (FORM)', 'Sentence ID','Sentence'],
+                    #                                                       ['Document ID', 'Document'],
+                    #                                                       openOutputFiles, createExcelCharts, 'QC', 'line')
                 else:
-                    tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
-                                                                          [[11, 5], [11, 7], [11, 9]],
-                                                                          ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
-                                                                          ['SEARCHED TOKEN (LEMMA)', 'Sentence ID','Sentence'],
-                                                                          ['Document ID', 'Document'],
-                                                                          openOutputFiles, createExcelCharts, 'QC', 'line')
+                    tempFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=output_file_name,
+															outputDir=outputDir,
+															select_col=['SEARCHED TOKEN POSTAG-DESCRIPTION'],
+															group_col=['Document ID'],
+															chartTitle="Frequency Distribution of SEARCHED TOKEN (LEMMA)",
+                                                            complete_sid=False)
+                    # tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
+                    #                                                       [[11, 5], [11, 7], [11, 9]],
+                    #                                                       ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
+                    #                                                       ['SEARCHED TOKEN (LEMMA)', 'Sentence ID','Sentence'],
+                    #                                                       ['Document ID', 'Document'],
+                    #                                                       openOutputFiles, createExcelCharts, 'QC', 'line')
                 filesToOpen.extend(tempFiles)
 
                 output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',

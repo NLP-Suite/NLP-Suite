@@ -47,7 +47,11 @@ def data_preperation(data, tag_list, name_list, tag_pos):
     dat = []
     for tok in data:
         if tok[tag_pos] in tag_list:
-            dat.append(tok+[name_list[tag_list.index(tok[tag_pos])]])
+            try:
+                dat.append(tok+[name_list[tag_list.index(tok[tag_pos])]])
+            except:
+                print("???")
+    dat = sorted(dat, key=lambda x: int(x[recordID_position]))
     return dat
 
 # to avoid key value error
@@ -83,7 +87,7 @@ def noun_POSTAG_DEPREL_compute_frequencies(data, data_divided_sents):
                          ['Noun plural (NNS)', postag_counter['NNS']]]
 
     list_nouns_deprel = data_preperation(data, ['obj','iobj','nsubj','nsubj:pass','csubj','csubj:pass'],
-    ['Object (obj)','Indirect object (iobj)','Nominal subject (nsubj)','Nominal passive subject (nsubj:pass)'
+    ['Object (obj)','Indirect object (iobj)','Nominal subject (nsubj)','Nominal passive subject (nsubj:pass)',
     'Clausal subject (csubj)','Clausal passive subject (csubj:pass)'],6)
 
     noun_deprel_stats = [['Noun DEPREL Tags', 'Frequencies'],
@@ -135,9 +139,12 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
     # save csv files -------------------------------------------------------------------------------------------------
 
+    # errorFound = IO_csv_util.list_to_csv(GUI_util.window,
+    #                                      CoNLL_util.sort_output_list('Noun POS Tags', noun_postag),
+    #                                      noun_postag_file_name)
     errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                         CoNLL_util.sort_output_list('Noun POS Tags', noun_postag),
-                                         noun_postag_file_name)
+                                          noun_postag,
+                                          noun_postag_file_name)
     if errorFound == True:
         return filesToOpen
     df = pd.read_csv(noun_postag_file_name, header=None)
@@ -146,9 +153,12 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 					  "Noun POS Tags"])
     filesToOpen.append(noun_postag_file_name)
     
+    # errorFound = IO_csv_util.list_to_csv(GUI_util.window,
+    #                                      CoNLL_util.sort_output_list('Noun DEPREL Tags', noun_deprel),
+    #                                      noun_deprel_file_name)
     errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                         CoNLL_util.sort_output_list('Noun DEPREL Tags', noun_deprel),
-                                         noun_deprel_file_name)
+                                          noun_deprel,
+                                          noun_deprel_file_name)
     if errorFound == True:
         return filesToOpen
     df = pd.read_csv(noun_deprel_file_name, header=None)
@@ -157,9 +167,12 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 					  "Noun DEPREL Tags"])
     filesToOpen.append(noun_deprel_file_name)
 
+    # errorFound = IO_csv_util.list_to_csv(GUI_util.window,
+    #                                      CoNLL_util.sort_output_list('Noun NER Tags', noun_ner),
+    #                                      noun_ner_file_name)
     errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                         CoNLL_util.sort_output_list('Noun NER Tags', noun_ner),
-                                         noun_ner_file_name)
+                                          noun_ner,
+                                          noun_ner_file_name)
     if errorFound == True:
         return filesToOpen
     df = pd.read_csv(noun_ner_file_name, header=None)

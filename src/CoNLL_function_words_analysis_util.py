@@ -422,6 +422,7 @@ def data_preperation(data, tag_list, name_list, tag_pos):
     for tok in data:
         if tok[tag_pos] in tag_list:
             dat.append(tok+[name_list[tag_list.index(tok[tag_pos])]])
+    dat = sorted(dat, key=lambda x: int(x[9]))
     return dat
 
 #pronouns with output
