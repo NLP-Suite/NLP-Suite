@@ -1,5 +1,5 @@
 I/O configuration label,Path
-Input csv CoNLL filename with path,C:/Users/Tony Chen/Desktop/NLP_working/Test Input/conll_chn.csv
+Input csv CoNLL filename with path,C:/Users/Tony Chen/Desktop/NLP_working/Test Input/conll_eng.csv
 Input files directory,
 Input files secondary directory,
 Output files directory,C:/Users/Tony Chen/Desktop/NLP_working/Test Output
