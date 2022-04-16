@@ -427,9 +427,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 	filesToOpen.append(outputFilenameTxt)
 	filesToOpen.append(outputFilenameCsv)
 
-	fieldnames = ['Sentence ID', 'Sentence',
-				  'Document ID', 'Document',
-				  'Flesch Reading Ease formula',
+	fieldnames = ['Flesch Reading Ease formula',
 				  'Flesch-Kincaid Grade Level',
 				  'Fog Scale (Gunning FOG Formula)',
 				  'SMOG (Simple Measure of Gobbledygook) Index',
@@ -438,7 +436,9 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 				  'Linsear Write Formula',
 				  'Dale-Chall Readability Score',
 				  'Overall readability consensus',
-				  'Grade level']
+				  'Grade level',
+				  'Sentence ID', 'Sentence',
+				  'Document ID', 'Document']
 
 	with open(outputFilenameCsv, 'w', encoding='utf-8', errors='ignore', newline='') as outputCsvFile:
 		writer = csv.DictWriter(outputCsvFile, fieldnames=fieldnames)
@@ -618,8 +618,8 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 					sortOrder = 25
 				# rowValue=[[documentID,file,sentenceID,sent,str1,str2,str3,str4,str5,str6,str7,str8,str9,sortOrder]]
 				rowValue = [
-					[sentenceID, sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file), str1, str2, str3,
-					 str4, str5, str6, str7, str8, str9, sortOrder]]
+					[str1, str2, str3, str4, str5, str6, str7, str8, str9, sortOrder,
+					 sentenceID, sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)]]
 				writer = csv.writer(outputCsvFile)
 				writer.writerows(rowValue)
 		# at least 12th grade level HIGH-SCHOOL EDUCATION
@@ -811,7 +811,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 
 	filesToOpen = []
 
-	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
+	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
 												   'Started running Sentence Complexity at', True)
 	if len(inputFilename) > 0:
 		doc = inputFilename

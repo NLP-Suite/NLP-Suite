@@ -5,7 +5,8 @@ Created on Wed Jun 10 21:37:40 2020
 
 @author: claude
 rewritten by Roberto October 2021
-complted by Austin Cai October 2021
+extended by Austin Cai October 2021
+extended by Mino Cha April 2022
 
 """
 
@@ -44,11 +45,11 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
     search_keywords_found = False
     search_within_sentence = False
     for search_option in search_options_list:
-        if search_option == 'Case sensitive':
+        if search_option == 'Case sensitive (default)':
             case_sensitive = True
         if search_option == 'Case insensitive':
                 case_sensitive = False
-        elif search_option == "Search within sentence":
+        elif search_option == "Search within sentence (default)":
             search_within_sentence = True
         elif search_option == "Lemmatize":  # not available yet
             lemmatize = True
@@ -75,8 +76,8 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
             break
         if search_by_search_keywords:
             output_dir_path = inputDir + os.sep + "search_result_csv"
-            if not os.path.exists(output_dir_path):
-                os.mkdir(output_dir_path)
+            # if not os.path.exists(output_dir_path):
+            #     os.mkdir(output_dir_path)
             if file[-4:] != '.txt':
                 continue
         if not case_sensitive:
@@ -96,10 +97,10 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
             f.close()
             if search_within_sentence:
                 # sentences_ = sent_tokenize(docText)  # the list of sentences in corpus
-                # sentences_ = sent_tokenize_stanza(stanzaPipeLine(docText))
                 sentences_ = stanzaPipeLine(docText).sentences
+                sentences = [sentence.text for sentence in sentences_]
                 sentence_index = 0
-                for sent in sentences_:
+                for sent in sentences:
                     if len(sent) == 0:
                         sentence_index += 1
                         continue
@@ -107,8 +108,7 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                     if not case_sensitive:
                         sent = sent.lower()
                     # tokens_ = word_tokenize(sent)
-                    # tokens_ = word_tokenize_stanza(stanzaPipeLine(sent))
-                    tokens_ = [token.text for token in sentences_.tokens]
+                    tokens_ = [token.text for token in sentences_[sentence_index-1].tokens]
                     for keyword in search_keyword:
                         if keyword in sent:
                             if isFirstOcc:
@@ -260,5 +260,3 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end",
                                        "Finished running the file search script at", True)
     return outputFileName
-
-

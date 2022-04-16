@@ -3,25 +3,40 @@
 import os
 import shutil
 import tkinter.messagebox as mb
+import pandas as pd
 
 import IO_files_util
-import IO_csv_util
 
 # sample the corpus by document ID, should have a csv file output already, containing a column called 'Document ID'
 # table: path to the NLP Suite output csv file
 # corpus_location: the location of the corpus
 # folder_name: the name of the folder to save the sub corpus
-def sample_corpus_by_document_id(table, corpus_location, folder_name):
-    data,header = IO_csv_util.get_csv_data(table, True)
-    target_dir = os.path.join(corpus_location, folder_name)
-    IO_files_util.make_directory(target_dir)
+def sample_corpus_by_document_id(table, corpus_location):
+    data = pd.read_csv(table)
+    try:
+        print(data['Document'])
+    except:
+        mb.showwarning(title='Warning',
+                       message="The selected csv INPUT file\n\n" + table + "\n\ndoes not contain the expected field header 'Document.'\n\nPlease, select the appropriate csv file and try again.")
+        return
+    target_dir = os.path.join(corpus_location, 'sampleDir')
+    createDir = IO_files_util.make_directory(target_dir,True)
+    if not createDir:
+        return
     doc_loc = set(data['Document'])
     not_found = []
-    for i in doc_loc:
+    for doc in doc_loc:
         try:
-            shutil.copy2(os.path.join(corpus_location, i['Document'][12:-2]), target_dir)
+            shutil.copy2(os.path.join(corpus_location, doc), target_dir)
         except FileNotFoundError:
-            not_found.append(i['Document'][12:-2])
+            not_found.append(doc)
+    if len(not_found)>0:
+        pd.DataFrame(not_found).to_csv(os.path.join(target_dir, "unmatched files.csv"), index=False)
+        extra_msg = "\n\n" + str(len(not_found)) + " files were not found in the input directory and were not copied."
+    else:
+        extra_msg = ""
+    mb.showwarning(title='Warning',
+                   message="The sample function successfully copied " + str(len(doc_loc)) + " files to the sub-folder " + target_dir + extra_msg)
     return
 
 #===============================================DEBUG USE=====================================================

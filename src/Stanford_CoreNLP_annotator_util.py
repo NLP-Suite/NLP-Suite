@@ -36,7 +36,7 @@ import time
 import Stanford_CoreNLP_clause_util
 import IO_csv_util
 import file_splitter_ByLength_util
-import file_splitter_merged_util
+import file_splitter_merged_txt_util
 import IO_files_util
 import IO_user_interface_util
 import charts_Excel_util
@@ -325,7 +325,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         # if the file is too long, it needs splitting to allow processing by the Stanford CoreNLP
         #   which has a maximum 100,000 characters doc size limit
         if ("SVO" in annotator_params or "OpenIE" in annotator_params) and "coref" in docName.split("_"):
-            split_file = file_splitter_merged_util.run(docName, "<@#", "#@>", outputDir)
+            split_file = file_splitter_merged_txt_util.run(docName, "<@#", "#@>", outputDir)
             if len(split_file)>1:
                 split_file = IO_files_util.getFileList("", split_file[0], fileType=".txt")
         else:
