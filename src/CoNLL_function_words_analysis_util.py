@@ -67,8 +67,9 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
             return filesToOpen
         
         pronouns_list,pronouns_stats, pronouns_data = stats_pronouns_output(data,data_divided_sents)
-        pronous_list = pronouns_data
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('PRONOUNS',pronouns_list), function_words_list_file_name)
+        pronouns_list = pronouns_data
+        errorFound=IO_csv_util.list_to_csv(GUI_util.window,pronouns_list, function_words_list_file_name)
+        #errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('PRONOUNS',pronouns_list), function_words_list_file_name)
         if errorFound==True:
             return filesToOpen
         filesToOpen.append(function_words_list_file_name)
@@ -138,7 +139,8 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
        
         prepositions_list,prepositions_stats, preposition_data = stats_prepositions_output(data,data_divided_sents)
         prepositions_list = preposition_data
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('PREPOSITIONS',prepositions_list), function_words_list_file_name)
+        errorFound=IO_csv_util.list_to_csv(GUI_util.window,prepositions_list, function_words_list_file_name)
+        #errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('PREPOSITIONS',prepositions_list), function_words_list_file_name)
         if errorFound==True:
             return filesToOpen
         filesToOpen.append(function_words_list_file_name)
@@ -210,7 +212,8 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
         # output files
         article_list,article_stats,article_data =  stats_articles_output(data,data_divided_sents)
         article_list = article_data
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('ARTICLES',article_list), function_words_list_file_name)
+        errorFound=IO_csv_util.list_to_csv(GUI_util.window,article_list, function_words_list_file_name)
+        # errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('ARTICLES',article_list), function_words_list_file_name)
         if errorFound==True:
             return filesToOpen
         filesToOpen.append(function_words_list_file_name)
@@ -281,7 +284,8 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
 
         conjunction_list,conjunction_stats,conjunction_data =  stats_conjunctions_output(data,data_divided_sents)
         conjunction_list = conjunction_data
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('CONJUNCTIONS',conjunction_list), function_words_list_file_name)
+        errorFound=IO_csv_util.list_to_csv(GUI_util.window,conjunction_list, function_words_list_file_name)
+        #errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('CONJUNCTIONS',conjunction_list), function_words_list_file_name)
         if errorFound==True:
             return filesToOpen
         filesToOpen.append(function_words_list_file_name)
@@ -353,7 +357,8 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
             return filesToOpen
         auxiliary_list,auxiliary_stats,auxiliary_data =  stats_auxiliaries_output(data,data_divided_sents)
         auxiliary_list = auxiliary_data
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('AUXILIARIES',auxiliary_list), function_words_list_file_name)
+        errorFound=IO_csv_util.list_to_csv(GUI_util.window,auxiliary_list, function_words_list_file_name)
+        # errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('AUXILIARIES',auxiliary_list), function_words_list_file_name)
         if errorFound==True:
             return filesToOpen
         filesToOpen.append(function_words_list_file_name)

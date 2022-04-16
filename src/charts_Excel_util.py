@@ -308,7 +308,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         # an error message about wrong csv file without the necessary columns
         print("Please select the correct csv file, with correct columns")
         return
-    name = outputDir + os.path.splitext(os.path.basename(inputFilename))[0] + "temp_frequencies.csv"
+    name = outputDir + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
     data.to_csv(name)
     if(complete_sid):
         complete_sentence_index(name)
