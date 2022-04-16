@@ -283,6 +283,99 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
         data_to_be_plotted.append(data.iloc[:,gp])
     return data_to_be_plotted
 
+# Tony Chen Gu at April 2022
+# select_col should be one colmun name eg: ['Verb Voice']
+# group_col should be a list of column names eg ['Sentence ID']
+# enable complete_sid to make sentence index continuous
+# enable graph to make a multiline graph
+# the input should be saved to a csv file first
+def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle, graph = True, complete_sid = True):
+    cols = group_col + select_col
+    try:
+        data,header = IO_csv_util.get_csv_data(inputFilename, True)
+        data = pd.DataFrame(data, columns=header)
+    except:
+        # an error message about unable to read the file
+        print("Error: cannot read the file")
+        return
+    #data = CoNLL_verb_analysis_util.verb_voice_data_preparation(data)
+    #data,stats,pas,aux,act = CoNLL_verb_analysis_util.voice_output(data, group_col)
+    #data = pd.DataFrame(data,columns=header+["Verb Voice"])
+    try:
+        print(data[select_col])
+        print(data[group_col])
+    except:
+        # an error message about wrong csv file without the necessary columns
+        print("Please select the correct csv file, with correct columns")
+        return
+    name = outputDir + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
+    data.to_csv(name)
+    if(complete_sid):
+        complete_sentence_index(name)
+    # group by both group col and select cols and get a row named count to count the number of frequencies
+    data = data.groupby(cols).size().to_frame("count")
+    data.to_csv(name)
+    data = pd.read_csv(name)
+    # transform the data by the select colmuns
+    data = data.pivot(index = group_col, columns = select_col, values = "count")
+    data = data.fillna(0)
+    print(data)
+    data.to_csv(name)
+    print(name)
+    if(graph):
+        #TODO: need filename generation and chartTitle generation
+        data = pd.read_csv(name,header=0)
+        cols_to_be_plotted = []
+        for i in range(1,len(data.columns)):
+            cols_to_be_plotted.append([0,i])
+        Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
+                                        "frequency_multi-line_chart", chart_type_list=["line"], 
+                                        chart_title=chartTitle, column_xAxis_label_var="Sentence ID")
+    return Excel_outputFilename
+
+# not very efficient
+# remove comments before variable begin with d_id to enable complete document id function
+# need to have a document id column and sentence id column
+# would complete the file (make document id and sentence id continuous) and padding zero values for the added rows
+def complete_sentence_index(file_path):
+    data = pd.read_csv(file_path)
+    try:
+        print(data["Sentence ID"])
+    except:
+        print("Only enable complete sentence index when there is a Sentence ID column in the csv file")
+        return
+    if(len(data) == 1):
+        return data
+    data2 = pd.DataFrame(columns = data.columns.values.tolist())
+    # d_id = 1
+    s_id = 1
+    for i in range(len(data)):
+        s_id_max = data.iloc[i]["Sentence ID"]
+        # d_id_max = data.iloc[i]["Document ID"]
+        # reset the sentence id when switch the document
+        # deafut d_id increse by 1 to detect and other not included document
+        # if(d_id != d_id_max):
+        #     d_id += 1
+        #     s_id = 1
+        # padding document id when it's not continuous
+        # while(d_id < d_id_max):
+        #     temp = pd.DataFrame({"Document ID":[d_id],"Sentence ID":[1]})
+        #     data2 =pd.concat([data2,temp])
+        #     d_id += 1
+        #     s_id = 2
+        # padding sentence id when it's not continuous
+        while(s_id < s_id_max):
+            temp = pd.DataFrame({"Sentence ID":[s_id]})
+            data2 =pd.concat([data2,temp])
+            s_id += 1
+        data2 =pd.concat([data2,data.iloc[[i]].copy(deep=True)])
+        s_id += 1
+        # fill the added sentence id with 0 values
+    data2 = data2.fillna(0)
+    data2.to_csv(file_path, index = False)
+    return
+            
+
 #columns_to_be_plotted is the list of columns pairs (x-axis and y-axis) 
 #   where both x-axis is always the same and both correspond to the numeric values of the column position starting at 0
 #   it has the format [[0,2],[0,5],...]
@@ -408,88 +501,97 @@ def compute_csv_column_frequencies_NEW(window, inputFileName, inputDataFrame, ou
     return prepare_csv_data_for_chart(window, inputFileName, data, output_dir, select_col,
                                                                 Hover_over_header, group_col, fileNameType, chartType,
                                                                 openOutputFiles, createExcelCharts, count_var)
-
-
-
+# group col should be from smallest group to largest group
+#
+# def compute_csv_column_frquencies1(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createExcelCharts,
+#                                         columns_to_be_plotted,
+#                                         select_col, hover_col, group_col,
+#                                        fileNameType='CSV', chartType='line'):
+#     #data,header = IO_csv_util.get_csv_data(inputFilename, True)
+#     data = inputDataFrame[select_col+group_col]
+#     for group in group_col:
+#         data = data.groupby(group)[select_col].apply(list).to_dict()
+#     for i in data:
+#         i["Frequency"] = len(i[list])
+#     return
 # Siyan Pu November 2021
 # group_col and hover_col are lists with multiple items, if so wished
 # select_col is also a list BUT with one item only
 # called from WordNet.py, CoNLL_*, Stanford_CoreNLP_date_annotator
 # the function exits immediately because it no longer works
-def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createExcelCharts,
-                                        columns_to_be_plotted,
-                                        select_col, hover_col, group_col,
-                                       fileNameType='CSV', chartType='line', count_var=0):
+# def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createExcelCharts,
+#                                         columns_to_be_plotted,
+#                                         select_col, hover_col, group_col,
+#                                        fileNameType='CSV', chartType='line', count_var=0):
 
 
-    # outputCsvfilename = IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
-    # outputCsvfilename = inputFilename[:-4]+"_stats.csv" #IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
+#     # outputCsvfilename = IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
+#     # outputCsvfilename = inputFilename[:-4]+"_stats.csv" #IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
 
-    tempFiles=[]
-    container = []
-    Excel_outputFilename = []
+#     tempFiles=[]
+#     container = []
+#     Excel_outputFilename = []
 
-    # TODO remove return when calling function w/o headers are fixed
-    return Excel_outputFilename
+#     if len(inputDataFrame) != 0:
+#         data = inputDataFrame
+#     else:
+#         with open(inputFilename, encoding='utf-8', errors='ignore') as infile:
+#             reader = csv.reader(x.replace('\0', '') for x in infile)
+#             headers = next(reader)
+#         header_indices = [i for i, item in enumerate(headers) if item]
+#         data = pd.read_csv(inputFilename, usecols=header_indices, encoding='utf-8')
 
-    if len(inputDataFrame) != 0:
-        data = inputDataFrame
-    else:
-        with open(inputFilename, encoding='utf-8', errors='ignore') as infile:
-            reader = csv.reader(x.replace('\0', '') for x in infile)
-            headers = next(reader)
-        header_indices = [i for i, item in enumerate(headers) if item]
-        data = pd.read_csv(inputFilename, usecols=header_indices, encoding='utf-8')
+#     for col in hover_col:
+#         temp = group_col.copy()
+#         temp.append(col)
+#         c = data.groupby(group_col)[col].apply(list).to_dict()
+#     container.append(c)
+#     temp = group_col.copy()
+#     temp.append(select_col)
+#     data = data.groupby(temp).size().reset_index(name='Frequency')
+#     for index, row in data.iterrows():
+#         if row[select_col] == '':
+#             data.at[index, 'Frequency'] = 0
+#     hover_header = ', '.join(hover_col)
+#     Hover_over_header = ['Hover_over: ' + hover_header]
+#     if len(hover_col) != 0:
+#         for index, hover in enumerate(hover_col):
+#             df = pd.Series(container[index]).reset_index()
+#             temp = group_col.copy()
+#             temp.append(hover)
+#             df.columns = temp
+#             data = data.merge(df, how='left', left_on=group_col, right_on=group_col)
+#         temp_str = '%s' + '\n%s' * (len(hover_col) - 1)
 
-    for col in hover_col:
-        temp = group_col.copy()
-        temp.append(col)
-        c = data.groupby(group_col)[col].apply(list).to_dict()
-    container.append(c)
-    temp = group_col.copy()
-    temp.append(select_col)
-    data = data.groupby(temp).size().reset_index(name='Frequency')
-    for index, row in data.iterrows():
-        if row[select_col] == '':
-            data.at[index, 'Frequency'] = 0
-    hover_header = ', '.join(hover_col)
-    Hover_over_header = ['Hover_over: ' + hover_header]
-    if len(hover_col) != 0:
-        for index, hover in enumerate(hover_col):
-            df = pd.Series(container[index]).reset_index()
-            temp = group_col.copy()
-            temp.append(hover)
-            df.columns = temp
-            data = data.merge(df, how='left', left_on=group_col, right_on=group_col)
-        temp_str = '%s' + '\n%s' * (len(hover_col) - 1)
+#         # data.to_csv('data.csv',index=False)
+#         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col), axis=1)
+#         data.drop(hover_col, axis=1, inplace=True)
+#     # data.to_csv('freq.csv',index=False)
 
-        # data.to_csv('data.csv',index=False)
-        data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col), axis=1)
-        data.drop(hover_col, axis=1, inplace=True)
-    # data.to_csv('freq.csv',index=False)
+#     freq_output = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'freq!nmbnmb')
+#     data.to_csv(freq_output, index=False)
+#     print('freq_output: ', freq_output)
+#     Excel_outputFilename = run_all()
+    # if createExcelCharts:
+    #     # xAxis='Sentence index'
+    #     # chartTitle='Frequency distribution'
+    #     # columns_to_be_plotted=[[1,3]]
 
-    freq_output = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'freq')
-    data.to_csv(freq_output, index=False)
-    if createExcelCharts:
-        # xAxis='Sentence index'
-        # chartTitle='Frequency distribution'
-        # columns_to_be_plotted=[[1,3]]
+    #     # Excel_outputFilename=prepare_csv_data_for_chart(window, inputFilename, data, outputDir, select_col, Hover_over_header, group_col,
+    #     #                            fileNameType, chartType, openOutputFiles, createExcelCharts, count_var)
+    #     data = data.pivot_table(index=group_col[0], columns=select_col, values='Frequency',
+    #                             fill_value=0).reset_index().rename_axis(None, axis=1)
+    #     data_to_be_plotted = data.iloc[:, 0:4].T.reset_index().values.T.tolist()
 
-        # Excel_outputFilename=prepare_csv_data_for_chart(window, inputFilename, data, outputDir, select_col, Hover_over_header, group_col,
-        #                            fileNameType, chartType, openOutputFiles, createExcelCharts, count_var)
-        data = data.pivot_table(index=group_col[0], columns=select_col, values='Frequency',
-                                fill_value=0).reset_index().rename_axis(None, axis=1)
-        data_to_be_plotted = data.iloc[:, 0:4].T.reset_index().values.T.tolist()
-
-        Excel_outputFilename = create_excel_chart(window,
-                                                  data_to_be_plotted=[data_to_be_plotted],
-                                                  inputFilename=freq_output,
-                                                  outputDir=outputDir,
-                                                  scriptType=fileNameType,
-                                                  chartTitle='Frequency Distribution by Sentence',
-                                                  chart_type_list=[chartType],
-                                                  column_xAxis_label='Sentence index',
-                                                  column_yAxis_label='Frequency')
+    #     Excel_outputFilename = create_excel_chart(window,
+    #                                               data_to_be_plotted=[data_to_be_plotted],
+    #                                               inputFilename=freq_output,
+    #                                               outputDir=outputDir,
+    #                                               scriptType=fileNameType,
+    #                                               chartTitle='Frequency Distribution by Sentence',
+    #                                               chart_type_list=[chartType],
+    #                                               column_xAxis_label='Sentence index',
+    #                                               column_yAxis_label='Frequency')
 
     return Excel_outputFilename  # 2 files
 
