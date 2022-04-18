@@ -31,7 +31,7 @@ def text_generate(inputFilename, inputDir):
                 with open(os.path.join(folder, filename), 'r', encoding='utf-8', errors='ignore') as src:
                     text = src.read().replace("\n", " ")
                 # sentences = tokenize.sent_tokenize(text)
-                sentences = sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+                sentences = sent_tokenize_stanza(stanzaPipeLine(text))
                 # articles.append([sentences, filename])
                 articles.append([sentences, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
                 # name, sentence, sentenceID, documentID, documentName

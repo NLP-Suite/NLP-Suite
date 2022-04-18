@@ -103,7 +103,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
         text=open(file, 'r', encoding='utf-8',errors='ignore').read()
         # put filename in bold
         tail='<b>' + tail + '</b>'
-        writeout.append(tail + '<br />\n')  # add the filename and a hard return
+        writeout.append('<@#' + tail +'#@>' +'<br />\n')  # add the embedded filename (embedded  in <@# so that the merged file can be split) and a hard return
         termID = 0
         term_intextID = 0
         if len(csvValue_color_list) == 0:

@@ -100,10 +100,6 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
                 contents = contents.replace("\\", '')
                 contents = contents.replace("/", ' or ')
 
-                # IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'YAGO pre-processing and running-time estimation',
-                #                                    'The YAGO annotator is pre-processing your file and estimating the time required to annotate your file.\n\nThis may take several minutes. Please, be patient.',
-                #                                    False,'',True)
-
                 if numberOfAnnotations==0: # default annotation, when no annotation was selected by user
                     html_content=annotate_default(contents,categories,color1,"blue",doc) # TODO should be colorls
                 else:
@@ -164,7 +160,7 @@ def estimate_time(parsed_doc,num_cats,word_bag):
     est=num2/5+num2*(num_cats-1)/2+len(a)/15
     time1.append(time.time())
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'YAGO Knowledge Graph',
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'YAGO Knowledge Graph',
         'Estimated time of YAGO query for the current document is: ' + str(est//60)+' mins and '+str(round(est%60,2))+' secs.\n\n'\
         '   Number of tokens in document: ' +str(len(a)) +'\n'\
         '   Number of tokens to be queried: ' +str(num2) +'\n'\

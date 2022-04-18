@@ -798,7 +798,7 @@ def sentence_structure_tree(inputFilename, outputDir):
 		else:
 			cf.print_to_file(outputDir + '/' + os.path.basename(inputFilename) + '_' + str(sentenceID) + '_tree.ps')
 
-# written by Mino Cha March 2022
+# written by Mino Cha March/April 2022
 def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts):
 	## list for csv file
 	documentID = []
@@ -807,13 +807,13 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 
 	all_input_docs = {}
 	dId = 0
-	numFiles = 0
 
 	filesToOpen = []
 
-	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
+	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
 												   'Started running Sentence Complexity at', True)
 	if len(inputFilename) > 0:
+		numFiles = 1
 		doc = inputFilename
 		if doc.endswith('.txt'):
 			with open(doc, 'r', encoding='utf-8', errors='ignore') as file:
@@ -822,35 +822,32 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 				print('importing single file')
 				documentID.append(dId)
 				document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
-				documentName.append(doc)
 				all_input_docs[dId] = text
-				numFiles = 1
 	else:
 		numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
 		if numFiles == 0:
 			mb.showerror(title='Number of files error',
 						 message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a different directory and try again.')
 			return
+
 		for doc in os.listdir(inputDir):
 			if doc.endswith('.txt'):
 				with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
 					dId += 1
 					text = file.read()
-					print('importing ' + str(dId) + '/' + str(numFiles) + ' file')
+					print('Importing ' + str(dId) + '/' + str(numFiles) + ' file')
 					documentID.append(dId)
 					document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
-					documentName.append(doc)
 					all_input_docs[dId] = text
 	document_df = pd.DataFrame({'Document ID': documentID, 'Document': document})
 	document_df = document_df.astype('str')
 
-	nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,constituency')
+	nlp = stanza.Pipeline(lang='en', processors='tokenize,pos, constituency')
 	op = pd.DataFrame(
 		columns=['Sentence length (No. of words)', 'Yngve score', 'Yngve sum', 'Frazier score', 'Frazier sum',
 				 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
 	for idx, txt in enumerate(all_input_docs.items()):
-		_, tail = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document[idx]))
-		print("Processing file " + str(idx + 1) + "/" + str(numFiles) + ' ' + tail)
+		print(f'Running Sentence Complexity on {idx + 1} / {numFiles}')
 		doc = nlp(txt[1])
 		for i, sentence in enumerate(doc.sentences):
 			sent = str(sentence.constituency)

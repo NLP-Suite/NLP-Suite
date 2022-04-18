@@ -70,7 +70,7 @@ def clause_data_preparation(data):
     adjp_counter = 0
     advp_counter = 0
     pp_counter = 0
-    clause_list = ['S','SBAR', 'SBARQ', 'SINV', 'NP', 'VVP', 'ADJP', 'ADVP', 'PP']
+    clause_list = ['S','SBAR', 'SBARQ', 'SINV', 'NP', 'VP', 'ADJP', 'ADVP', 'PP']
 
     for i in data:
         if(i[8] in clause_list):
