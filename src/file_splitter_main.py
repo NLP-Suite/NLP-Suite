@@ -56,12 +56,12 @@ def run(inputFilename,inputDir, outputDir,
         return
 
     if utf8_var==True:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
                             'Started running utf8 compliance test at', True)
         file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
 
     if ASCII_var==True:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 7000, 'Analysis start',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
                             'Started running characters conversion at', True)
         file_cleaner_util.convert_quotes(GUI_util.window,inputFilename, inputDir)
 
@@ -287,12 +287,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 
 
 def display_split_mergedFile_separator(y_multiplier_integer):
-    split_mergedFile_separator_entry_begin_var.set("<@#")
+    split_mergedFile_separator_entry_begin_var.set("<#@")
     split_mergedFile_separator_entry_begin.configure(state="disabled")
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 440, y_multiplier_integer,
                                                    split_mergedFile_separator_entry_begin, True)
 
-    split_mergedFile_separator_entry_end_var.set("@#>")
+    split_mergedFile_separator_entry_end_var.set("#@>")
     split_mergedFile_separator_entry_end.configure(state="disabled")
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 520, y_multiplier_integer,
                                                    split_mergedFile_separator_entry_end)

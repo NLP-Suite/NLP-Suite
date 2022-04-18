@@ -194,9 +194,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         # added Deps column
         'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
         # neural network parser does not contain clause tags
-        'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Record ID", "Sentence ID", "Document ID", "Document"]
-        # 'parser (nn)': ["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
-        #                 "Sentence ID", "Document ID", "Document"]
+        'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
     }
     param_number = 0
     param_number_NN = 0
@@ -302,6 +300,14 @@ def CoreNLP_annotate(config_filename,inputFilename,
         reminders_util.checkReminder(config_filename,
             reminders_util.title_options_CoreNLP_POS_NER_maxlen,
             reminders_util.message_CoreNLP_POS_NER_maxlen,
+            True)
+
+    # CLAUSAL TAGS (the neural-network parser does not produce clausal tags)
+
+    if 'parser (nn)' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+            reminders_util.title_options_CoreNLP_nn_parser,
+            reminders_util.message_CoreNLP_nn_parser,
             True)
 
     if 'quote' in str(annotator_params):
@@ -1640,9 +1646,8 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
             depID += 1
             if pcfg:
                 temp.append(cur_clause[clauseID][0])
-            # neural network parser does not contain clause tags
-            # else:
-            #     temp.append("")
+            else: # neural network parser does not contain clause tags
+                temp.append("")
             # temp.append(" ")
             clauseID += 1
             temp.append(str(recordID))
@@ -1700,7 +1705,7 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
     else:
         df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False)
 
-
+# the gender annotator displays results in an html file
 def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesToOpen, genderCol=["Gender"], wordCol=[]):
     for col in genderCol:
         if col not in IO_csv_util.get_csvfile_headers(dictFilename, False):
