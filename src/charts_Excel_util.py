@@ -290,6 +290,7 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 # enable graph to make a multiline graph
 # the input should be saved to a csv file first
 def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle, graph = True, complete_sid = True):
+    complete_sid = False
     cols = group_col + select_col
     try:
         data,header = IO_csv_util.get_csv_data(inputFilename, True)
