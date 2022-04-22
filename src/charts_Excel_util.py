@@ -832,6 +832,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     else:
         outputExtension = '.xlsx'
 
+    if "_" + scriptType + "_" in inputFilename: # do not repeat the same name
+        scriptType=''
     Excel_outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, outputExtension, scriptType, chart_type_list[0],'chart')
 
     n = len(data_to_be_plotted)
