@@ -721,11 +721,15 @@ def get_yules_k_i(s):
 def yule(window, inputFilename, inputDir, outputDir, hideMessage=False):
     # yule's I measure (the inverse of yule's K measure)
     # higher number is higher diversity - richer vocabulary
-
+    filesToOpen = []
+    Yule_value_list=[]
+    headers = ["Yule's K Value", "Document ID", "Document"]
     index = 0
     inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 
     Ndocs=str(len(inputDocs))
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Yule K')
+    Yule_value_list.insert(0, headers)
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         d = {}
@@ -754,18 +758,28 @@ def yule(window, inputFilename, inputDir, outputDir, hideMessage=False):
         # print results
         if inputFilename!='' and hideMessage==False:
             mb.showinfo(title='Results', message='The value for the vocabulary richness statistics (word type/token ratio or Yule’s K) is: '+str(result) + '\n\nThe higher the value (0-100) and the richer is the vocabulary.')
-        print('   Yule’s K value: ' + str(result) + ' Value range: 0-100 (higher value, richer vocabulary)')
+
+        # print('   Yule’s K value: ' + str(result) + ' Value range: 0-100 (higher value, richer vocabulary)')
+        temp = [result,index,IO_csv_util.dressFilenameForCSVHyperlink(doc)]
+        Yule_value_list.append(temp)
+    IO_error=IO_csv_util.list_to_csv(window, Yule_value_list, outputFilename)
+    if not IO_error:
+        filesToOpen.append(outputFilename)
+
+    return filesToOpen
+
 
 def print_results(window, words, class_word_list, header, inputFilename, outputDir, excludestowords, fileLabel, hideMessage, filesToOpen):
     if excludestowords:
         stopMsg="(excluding stopwords)"
     else:
         stopMsg="(including stopwords)"
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', fileLabel)
-    class_word_list.insert(0, header,IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))
-    IO_error=IO_csv_util.list_to_csv(window, class_word_list, outputFilename)
-    if IO_error:
-        outputFilename=''
+    # outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', fileLabel)
+    # # class_word_list.insert(0, header,IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))
+    # class_word_list.insert(0, header)
+    # IO_error=IO_csv_util.list_to_csv(window, class_word_list, outputFilename)
+    # if IO_error:
+    #     outputFilename=''
 
     if hideMessage==False:
         # do not count header
@@ -780,6 +794,7 @@ def print_results(window, words, class_word_list, header, inputFilename, outputD
         filesToOpen.append(outputFilename)
     return filesToOpen
 
+
 def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, createExcelCharts, processType='', excludeStopWords=True,word_length=3):
     filesToOpen=[]
     index = 0
@@ -788,10 +803,11 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     question_punctuation=0
     punctuation_docs=[]
 
+    word_list=[]
+
     inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 
     Ndocs=str(len(inputDocs))
-    word_list=[]
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         index = index + 1
@@ -811,36 +827,32 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
         else:
             hideMessage = True
         if processType=='' or "short" in processType.lower():
-            header='Short words (<4 chars)'
+            header = ['Short words (<4 chars)','Document ID','Document']
             fileLabel='short_words'
             # exclude numbers from list
-            word_list = [word for word in words if word and len(word) <= int(word_length) and word.isalpha()]
-            filesToOpen=print_results(window, words, word_list, header, inputFilename, outputDir, excludeStopWords, fileLabel, hideMessage, filesToOpen)
-            # filesToOpen.append(outputFilename)
+            for word in words:
+                if word and len(word) <= int(word_length) and word.isalpha():
+                    word_list.append([word, index, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
         if processType=='' or "capital" in processType.lower():
-            header='Initial-capital words'
+            header = ['Initial-capital words','Document ID','Document']
             fileLabel='init_cap_words'
-            word_list = [word for word in words if
-                               word and word[
-                                   0].isupper()]
-            filesToOpen=print_results(window, words, word_list, header, inputFilename, outputDir, excludeStopWords, fileLabel, hideMessage, filesToOpen)
-            # if outputFilename!='':
-            #     filesToOpen.append(outputFilename)
+            for word in words:
+                if word and word and word[0].isupper():
+                    word_list.append([word, index, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
         if processType=='' or "vowel" in processType.lower():
-            header='Vowel words'
+            header = ['Vowel words','Document ID','Document']
             fileLabel='vowel_words'
-            word_list = [word for word in words if word and word[0] in "aeiou" and word.isalpha()]
-            filesToOpen=print_results(window, words, word_list, header, inputFilename, outputDir, excludeStopWords, fileLabel, hideMessage, filesToOpen)
-            # if outputFilename!='':
-            #     filesToOpen.append(outputFilename)
+            for word in words:
+                if word and word and word[0] in "aeiou" and word.isalpha():
+                    word_list.append([word, index, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
         if processType == '' or "punctuation" in processType.lower():
             header = ['Word','Punctuation symbols of pathos (?!)','Document ID','Document']
             fileLabel = 'punctuation'
             for word in words:
-                punctuation =''
+                punctuation = ''
                 character_index=0
-                for i in word:
-                    if '!' in i or '?' in i:
+                for character in word:
+                    if '!' in character or '?' in character:
                         punctuation=word[character_index:len(word)]
                         continue
                     character_index = character_index + 1
@@ -855,52 +867,55 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     elif '?' in punctuation:
                         question_punctuation=question_punctuation+1
 
-    mb.showinfo(title='Results', message="Combinations of ! and ? punctuation symbols were used " + str(multiple_punctuation) + \
+            if createExcelCharts == True:
+                outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                         fileLabel)
+                columns_to_be_plotted = [[1, 1]]
+                hover_label = []
+                inputFilename = outputFilename
+                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                          outputFileLabel=fileLabel,
+                                                          chart_type_list=["bar"],
+                                                          chart_title='Frequency of Punctuation Symbols of Pathos (?!)\nBy Document ID',
+                                                          column_xAxis_label_var='Punctuation symbols of pathos (?!)',
+                                                          hover_info_column_list=hover_label,
+                                                          count_var=True)
+                if Excel_outputFilename != "":
+                    filesToOpen.append(Excel_outputFilename)
+
+                # should also provide a bar chart of the frequency of distinct documents by punctuation symbol
+                columns_to_be_plotted = [[2,2]]
+                hover_label = []
+                inputFilename = outputFilename
+                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                          outputFileLabel=fileLabel,
+                                                          chart_type_list=["bar"],
+                                                          # chart_title='Frequency of ' + str(Ndocs) + ' Documents with Punctuation Symbols of Pathos (?!) (By Document ID)',
+                                                          chart_title='Frequency of Punctuation Symbols of Pathos (?!) By Document ID',
+                                                          column_xAxis_label_var='Document ID',
+                                                          hover_info_column_list=hover_label,
+                                                          count_var=True)
+                if Excel_outputFilename != "":
+                    filesToOpen.append(Excel_outputFilename)
+
+    if processType == '' or "punctuation" in processType.lower():
+        mb.showinfo(title='Results', message="Combinations of ! and ? punctuation symbols were used " + str(multiple_punctuation) + \
                         " times.\n\n! punctuation symbols were used " + str(exclamation_punctuation) + \
                         " times.\n\n? punctuation symbols were used " + str(question_punctuation) + \
                         " times.\n\n\nPunctuation symbols of pathos (!?) were used in " + str(len(punctuation_docs)) + " separate documents out of " + str(Ndocs) + " documents.\n\nCHECK COMMAND LINE FOR A COPY OF THESE RESULTS.")
 
-    print("\nCombinations of ! and ? punctuation symbols were used " + str(multiple_punctuation) + \
-                        " times.\n\n! punctuation symbols were used " + str(exclamation_punctuation) + \
-                        " times.\n\n? punctuation symbols were used " + str(question_punctuation) + \
-                        " times.\n\nPunctuation symbols of pathos (!?) were used in " + str(len(punctuation_docs)) + " separate documents out of " + str(Ndocs) + " documents.")
+        print("\nCombinations of ! and ? punctuation symbols were used " + str(multiple_punctuation) + \
+                            " times.\n\n! punctuation symbols were used " + str(exclamation_punctuation) + \
+                            " times.\n\n? punctuation symbols were used " + str(question_punctuation) + \
+                            " times.\n\nPunctuation symbols of pathos (!?) were used in " + str(len(punctuation_docs)) + " separate documents out of " + str(Ndocs) + " documents.")
+
+    word_list.insert(0, header)
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', fileLabel)
-    word_list.insert(0, header)
-    IO_error = IO_csv_util.list_to_csv(window, word_list, outputFilename)
-
-    if createExcelCharts == True:
-        columns_to_be_plotted = [[1, 1]]
-        hover_label = []
-        inputFilename = outputFilename
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                  outputFileLabel='punct_stats',
-                                                  chart_type_list=["bar"],
-                                                  # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
-                                                  chart_title='Frequency of Punctuation Symbols of Pathos (?!)',
-                                                  column_xAxis_label_var='Punctuation symbols of pathos (?!)',
-                                                  hover_info_column_list=hover_label,
-                                                  count_var=True)
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
-
-        # should also provide a bar chart of the frequency of distinct documents by punctuation symbol
-        columns_to_be_plotted = [[2,2]]
-        hover_label = []
-        inputFilename = outputFilename
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                  outputFileLabel='punct_doc_stats',
-                                                  chart_type_list=["bar"],
-                                                  # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
-                                                  chart_title='Frequency of ' + str(Ndocs) + ' Documents with Punctuation Symbols of Pathos (?!)',
-                                                  column_xAxis_label_var='Punctuation symbols of pathos (?!)',
-                                                  hover_info_column_list=hover_label,
-                                                  count_var=True)
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
-
+    IO_error=IO_csv_util.list_to_csv(window, word_list, outputFilename)
     if not IO_error:
         filesToOpen.append(outputFilename)
+
     return filesToOpen
 
 # n is n most common words

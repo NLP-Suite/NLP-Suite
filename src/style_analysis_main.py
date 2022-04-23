@@ -106,8 +106,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
         elif 'Punctuation' in vocabulary_analysis_menu_var:
             filesToOpen=statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,'punctuation')
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
-            statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
-        if '*' == vocabulary_analysis_menu_var or '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
+            filesToOpen=statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
+        if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
             tempFiles=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, False, createExcelCharts)
             if len(tempFiles)>0:
                 filesToOpen.extend(tempFiles)
@@ -204,12 +204,11 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                                                               outputDir, ngramsNumber, normalize, excludePunctuation, ngramType, openOutputFiles,
                                                               createExcelCharts,
                                                               bySentenceIndex_var)
-        if '*' in ngrams_analysis_menu_var or 'POSTAG' in ngrams_analysis_menu_var:
+        if '*' in ngrams_analysis_menu_var or 'Repetition' in ngrams_analysis_menu_var or 'POSTAG' in ngrams_analysis_menu_var or 'DEPREL' in ngrams_analysis_menu_var or 'NER' in ngrams_analysis_menu_var:
             mb.showwarning('Warning','The selected option is not available yet.\n\nSorry!')
-        if '*' in ngrams_analysis_menu_var or 'DEPREL' in ngrams_analysis_menu_var:
-            mb.showwarning('Warning','The selected option is not available yet.\n\nSorry!')
-        if '*' in ngrams_analysis_menu_var or 'NER' in ngrams_analysis_menu_var:
-            mb.showwarning('Warning','The selected option is not available yet.\n\nSorry!')
+            if 'Repetition' in ngrams_analysis_menu_var:
+                mb.showwarning('Warning','Do check out the repetition finder algorithm in the CoNLL Table Analyzer GUI.')
+            return
         if ngrams_analysis_menu_var=='':
             mb.showwarning('Warning', 'No option has been selected for N-grams analysis.\n\nPlease, select an option and try again.')
             return
