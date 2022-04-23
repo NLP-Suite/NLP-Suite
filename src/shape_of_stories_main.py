@@ -544,8 +544,15 @@ videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
 #'Data reduction algorithms: Parameters formulae','Hierarchical clustering','Singular Value Decomposition','Non-negative Matrix Factorization (NMF)
-TIPS_lookup = {'Shape of stories':'TIPS_NLP_Shape of stories.pdf','Data reduction algorithms: Parameters formulae':'TIPS_NLP_Data reduction algorithms: Parameters formulae.pdf','Hierarchical clustering':'Data reduction algorithms: Hierarchical clustering.pdf','Singular Value Decomposition':'Data reduction algorithms: Singular Value Decomposition.pdf','Non-negative Matrix Factorization (NMF)':'TIPS_NLP_Shape of stories - Non-Negative Matrix Factorization (NMF).pdf','Sentiment analysis':'TIPS_NLP_Sentiment analysis.pdf'}
-TIPS_options='Shape of stories','Sentiment analysis'
+TIPS_lookup = {'Shape of stories':'TIPS_NLP_Shape of stories.pdf',
+               'Data reduction algorithms: Parameters formulae':'TIPS_NLP_Data reduction algorithms Parameters formulae.pdf',
+               'Data reduction algorithms: Hierarchical clustering (HC)':'TIPS_NLP_Data reduction algorithms_Hierarchical clustering (HC).pdf',
+               'Data reduction algorithms: Singular Value Decomposition (SVD)':'TIPS_NLP_Data reduction algorithms_Singular Value Decomposition (SVD).pdf',
+               'Data reduction algorithms: Non-negative Matrix Factorization (NMF)':'TIPS_NLP_Data reduction algorithms_Non-negative Matrix Factorization (NMF).pdf',
+               'Shape of stories: Best topic estimation':'TIPS_NLP_Shape of stories_Best topic estimation.pdf',
+               'Sentiment analysis':'TIPS_NLP_Sentiment analysis.pdf',
+               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf'}
+TIPS_options='Shape of stories','Sentiment analysis','Data reduction algorithms: Parameters formulae','Data reduction algorithms: Hierarchical clustering (HC)','Data reduction algorithms: Singular Value Decomposition (SVD)','Data reduction algorithms: Non-negative Matrix Factorization (NMF)','Shape of stories: Best topic estimation','Excel smoothing data series'
 
 def display_reminder(*args):
     if best_topic_estimation_var.get():
