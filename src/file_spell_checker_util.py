@@ -31,6 +31,7 @@ import math
 from langdetect import DetectorFactory, detect, detect_langs
 import spacy
 from spacy_langdetect import LanguageDetector
+from spacy.language import Language
 import langid
 from langid.langid import LanguageIdentifier, model
 import csv
@@ -432,7 +433,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs
                 processed_word_list.append(word)#Angel
 
     #df = pd.DataFrame(header_row_list_to_check, columns=headers1)
-    df = pd.DataFrame(header_row_list_final, columns=headers1) 
+    df = pd.DataFrame(header_row_list_final, columns=headers1)
     for index, row in df.iterrows():
         if row['Similar-word frequency in directory'] != None:
             tmp = df[df['Words'] == row['Similar word in directory']]
@@ -681,7 +682,7 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
     fileID = 0
 
     autocorrect_df = pd.DataFrame({'Original': [],
-                                    'Corrected': [],      
+                                    'Corrected': [],
                                     "Document ID":[],
                                     "Document": []})
 
@@ -833,10 +834,11 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             # print('   LANGDETECT',value[0],value[1])  # [cs:0.7142840957132709, pl:0.14285810606233737, sk:0.14285779665739756]
             currentLine = ['LANGDETECT', language, probability]
 
-            nlp = spacy.load('en_core_web_sm')
-            nlp.add_pipe(LanguageDetector(), name='language_detector', last=True)
+            nlp_spacy = spacy.load('en_core_web_sm')
+            Language.factory("language_detector", func=get_lang_detector)
+            nlp_spacy.add_pipe('language_detector', last=True)
             try:
-                doc = nlp(text)
+                doc = nlp_spacy(text)
             except:
                 if filename!=filenameSV: # do not count the same document twice in this and the other algorithm that follows
                     docErrors_unknown = docErrors_unknown + 1
@@ -918,3 +920,6 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+
+def get_lang_detector(nlp, name):
+    return LanguageDetector()
