@@ -453,6 +453,10 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
                                      command=lambda: IO_files_util.openFile(window, inputFilename.get()))
     openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_file_button_brief,
                                y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+
+    openInputFile_button.bind('<Enter>', lambda e: e.widget.config(bg='red',text='Open input file'))
+    openInputFile_button.bind('<Leave>', lambda e: e.widget.config(bg='#F0F0F0',text=''))
+
     def open_directory():
         open_dir = input_main_dir_path.get()
         if input_main_dir_path.get()!='':
@@ -468,11 +472,17 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
     openInputDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_inputDir_button_brief,
                                y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
 
+    openInputDirectory_button.bind('<Enter>', lambda e: e.widget.config(bg='red',text='Open input directory'))
+    openInputDirectory_button.bind('<Leave>', lambda e: e.widget.config(bg='#F0F0F0',text=''))
+
     # setup a button to open Windows Explorer on the selected OUTPUT directory
     openOutputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
     openOutputDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_outputDir_button_brief,
                                y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+
+    openOutputDirectory_button.bind('<Enter>', lambda e: e.widget.config(bg='red',text='Open output directory'))
+    openOutputDirectory_button.bind('<Leave>', lambda e: e.widget.config(bg='#F0F0F0',text=''))
 
     def openConfigFile():
         if 'Default' in IO_setup_menu_var.get():  # GUI_util.GUI_util.IO_setup_menu_var.get()
@@ -485,6 +495,9 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
                                      command=lambda: openConfigFile())
     openInputConfigFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_config_file_button_brief,
                                y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+
+    openInputConfigFile_button.bind('<Enter>', lambda e: e.widget.config(bg='red',text='Open config file of Input/Output options'))
+    openInputConfigFile_button.bind('<Leave>', lambda e: e.widget.config(bg='#F0F0F0',text=''))
 
 def IO_config_setup_full (window, y_multiplier_integer):
     if 'Default' in IO_setup_menu_var.get():
