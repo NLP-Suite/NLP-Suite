@@ -73,8 +73,9 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         df = pd.read_csv(inputFilename)
         data_files = [df]
         # print(csv_file_field_list)
-        outputFiles: list = extract_from_csv(path=[inputFilename], output_path=outputDir, data_files=data_files,
-                                                 csv_file_field_list=csv_file_field_list)
+        # outputFiles: list = IO_csv_util.extract_from_csv(path=[inputFilename], output_path=outputDir, data_files=data_files,
+        #                                          csv_file_field_list=csv_file_field_list)
+        outputFiles: list = IO_csv_util.extract_from_csv(inputFilename,outputDir, data_files,csv_file_field_list)
         if outputFiles != None:
             filesToOpen.extend(outputFiles)
 
@@ -247,7 +248,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                 if searchedCoNLLField == 'FORM':
                     tempFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=output_file_name,
 															outputDir=outputDir,
-															select_col=['SEARCHED TOKEN POSTAG-DESCRIPTION'],
+															select_col=['SEARCHED TOKEN (FORM)'],
 															group_col=['Document ID'],
 															chartTitle="Frequency Distribution of SEARCHED TOKEN (FORM)",
                                                             complete_sid=False)

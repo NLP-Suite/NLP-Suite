@@ -310,17 +310,17 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         return
     name = outputDir + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
     data.to_csv(name)
-    if(complete_sid):
-        complete_sentence_index(name)
     # group by both group col and select cols and get a row named count to count the number of frequencies
     data = data.groupby(cols).size().to_frame("count")
     data.to_csv(name)
     data = pd.read_csv(name)
     # transform the data by the select colmuns
     data = data.pivot(index = group_col, columns = select_col, values = "count")
-    data = data.fillna(0)
     print(data)
     data.to_csv(name)
+    if(complete_sid):
+        print("Completeing sentence index...")
+        complete_sentence_index(name)
     print(name)
     if(graph):
         #TODO: need filename generation and chartTitle generation
@@ -333,7 +333,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
                                         chart_title=chartTitle, column_xAxis_label_var="Sentence ID")
     return Excel_outputFilename
 
-# not very efficient
+# Tony Chen Gu written at April 2022 mortified at May 2022
 # remove comments before variable begin with d_id to enable complete document id function
 # need to have a document id column and sentence id column
 # would complete the file (make document id and sentence id continuous) and padding zero values for the added rows
@@ -346,35 +346,14 @@ def complete_sentence_index(file_path):
         return
     if(len(data) == 1):
         return data
-    data2 = pd.DataFrame(columns = data.columns.values.tolist())
-    # d_id = 1
-    s_id = 1
-    for i in range(len(data)):
-        s_id_max = data.iloc[i]["Sentence ID"]
-        # d_id_max = data.iloc[i]["Document ID"]
-        # reset the sentence id when switch the document
-        # deafut d_id increse by 1 to detect and other not included document
-        # if(d_id != d_id_max):
-        #     d_id += 1
-        #     s_id = 1
-        # padding document id when it's not continuous
-        # while(d_id < d_id_max):
-        #     temp = pd.DataFrame({"Document ID":[d_id],"Sentence ID":[1]})
-        #     data2 =pd.concat([data2,temp])
-        #     d_id += 1
-        #     s_id = 2
-        # padding sentence id when it's not continuous
-        while(s_id < s_id_max):
-            temp = pd.DataFrame({"Sentence ID":[s_id]})
-            data2 =pd.concat([data2,temp])
-            s_id += 1
-        data2 =pd.concat([data2,data.iloc[[i]].copy(deep=True)])
-        s_id += 1
-        # fill the added sentence id with 0 values
-    data2 = data2.fillna(0)
-    data2.to_csv(file_path, index = False)
+    max_sid = max(data["Sentence ID"])+1
+    sid_list = list(range(1, max_sid))
+    df_sid = pd.DataFrame (sid_list, columns = ['Sentence ID'])
+    # use merge to accelerate the process
+    data = data.merge(right = df_sid, how = "right", on = "Sentence ID")
+    data = data.fillna(0)
+    data.to_csv(file_path, index = False)
     return
-            
 
 #columns_to_be_plotted is the list of columns pairs (x-axis and y-axis) 
 #   where both x-axis is always the same and both correspond to the numeric values of the column position starting at 0
