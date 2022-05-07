@@ -193,7 +193,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
         # Chen
         # added Deps column
         'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
-        'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps","Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
+        # neural network parser does not contain clause tags
+        'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
     }
     param_number = 0
     param_number_NN = 0
@@ -299,6 +300,14 @@ def CoreNLP_annotate(config_filename,inputFilename,
         reminders_util.checkReminder(config_filename,
             reminders_util.title_options_CoreNLP_POS_NER_maxlen,
             reminders_util.message_CoreNLP_POS_NER_maxlen,
+            True)
+
+    # CLAUSAL TAGS (the neural-network parser does not produce clausal tags)
+
+    if 'parser (nn)' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+            reminders_util.title_options_CoreNLP_nn_parser,
+            reminders_util.message_CoreNLP_nn_parser,
             True)
 
     if 'quote' in str(annotator_params):
@@ -425,6 +434,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     if "pcfg" in annotator_chosen:
                         sub_result, recordID = routine(config_filename, docID, docName, sentenceID, recordID, True,CoreNLP_output, **kwargs)
                     else:
+                        # neural network parser does not contain clause tags
                         sub_result, recordID = routine(config_filename, docID, docName, sentenceID, recordID, False,CoreNLP_output, **kwargs)
                 elif "All POS" in annotator_chosen or "Lemma" in annotator_chosen:
                     sub_result, recordID = routine(config_filename, docID, docName, sentenceID, recordID,
@@ -1573,6 +1583,7 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
     result = []
+    # neural network parser does not contain clausal tags (e.g., NP, VP,...)
     if pcfg:
         sent_list_clause = [Stanford_CoreNLP_clause_util.clausal_info_extract_from_string(parsed_sent['parse'])
                             for parsed_sent in json['sentences']]
@@ -1583,6 +1594,7 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
         sentenceID += 1
         # print("OutputSentenceID: ", sentenceID)
         #result = []
+        # neural network parser does not contain clause tags
         if pcfg:
             cur_clause = sent_list_clause[i]
         clauseID = 0
@@ -1634,7 +1646,7 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
             depID += 1
             if pcfg:
                 temp.append(cur_clause[clauseID][0])
-            else:
+            else: # neural network parser does not contain clause tags
                 temp.append("")
             # temp.append(" ")
             clauseID += 1
@@ -1693,7 +1705,7 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
     else:
         df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False)
 
-
+# the gender annotator displays results in an html file
 def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesToOpen, genderCol=["Gender"], wordCol=[]):
     for col in genderCol:
         if col not in IO_csv_util.get_csvfile_headers(dictFilename, False):

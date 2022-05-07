@@ -45,6 +45,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
         return
 
     if sentence_complexity_var==True:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
+            return
         filesToOpen=sentence_analysis_util.sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts)
         if filesToOpen==None:
             return
@@ -217,7 +219,6 @@ visualize_bySentenceIndex_lb = tk.Label(window, text='Select visualization optio
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,visualize_bySentenceIndex_lb,True)
 visualize_bySentenceIndex_menu = tk.OptionMenu(window,visualize_bySentenceIndex_options_var,'*','Clause analysis by sentence index (via CoNLL)','Noun analysis by sentence index (via CoNLL)','Verb analysis by sentence index (via CoNLL)','Function words analysis by sentence index (via CoNLL)','Sentence complexity by sentence index','Sentence/text readability by sentence index (via textstat)','N-grams (word & character) by sentence index','Hapax legomena (once-occurring words) by sentence index','Unusual words (via NLTK) by sentence index','Short words by sentence index','Vowel words by sentence index','Annotated gender names by sentence index', 'Annotated words (DBpedia, YAGO, dictionary) by sentence index','Sentiment analysis by sentence index','Concreteness analysis by sentence index', 'Words/collocations by sentence index','WordNet categories by sentence index','Time by sentence index','Location by sentence index')
 y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,visualize_bySentenceIndex_menu)
-visualize_bySentenceIndex_menu.configure(state='disabled')
 
 sentence_complexity_var.set(0)
 sentence_complexity_checkbox = tk.Checkbutton(window, text='Sentence complexity', variable=sentence_complexity_var, onvalue=1, offvalue=0)
@@ -254,10 +255,7 @@ def activate_visualize_bySentenceIndex_options(*args):
     if visualize_bySentenceIndex_var.get()==False:
         visualize_bySentenceIndex_menu.configure(state='disabled')
     else:
-        # temporarily disabled
-        mb.showwarning(title='Option disabled',message='The selected option is temporarily disabled.\n\nSorry!')
-        visualize_bySentenceIndex_menu.configure(state='disabled')
-        # visualize_bySentenceIndex_menu.configure(state='normal')
+        visualize_bySentenceIndex_menu.configure(state='normal')
 visualize_bySentenceIndex_var.trace('w',activate_visualize_bySentenceIndex_options)
 
 activate_visualize_bySentenceIndex_options()
@@ -274,8 +272,18 @@ activate_extract_sentences()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Clause analysis':'TIPS_NLP_Clause Analysis.pdf','Sentence complexity':'TIPS_NLP_Sentence complexity.pdf','Text readability':'TIPS_NLP_Text readability.pdf','CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf", 'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf", 'DEPREL (Stanford Dependency Relations)': "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf", 'NLP Searches': "TIPS_NLP_NLP Searches.pdf",'N-Grams (word & character)':"TIPS_NLP_Ngrams (word & character).pdf",'NLP Ngram and Word Co-Occurrence VIEWER':"TIPS_NLP_Ngram and Word Co-Occurrence VIEWER.pdf",'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf'}
-TIPS_options='Clause analysis', 'Sentence complexity', 'Text readability','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer'
+TIPS_lookup = {'Clause analysis':'TIPS_NLP_Clause Analysis.pdf',
+               'Sentence complexity':'TIPS_NLP_Sentence complexity.pdf',
+               'Text readability':'TIPS_NLP_Text readability.pdf',
+               'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
+               'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
+               'DEPREL (Stanford Dependency Relations)': "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf",
+               'NLP Searches': "TIPS_NLP_NLP Searches.pdf",
+               'N-Grams (word & character)':"TIPS_NLP_Ngrams (word & character).pdf",
+               'NLP Ngram and Word Co-Occurrence VIEWER':"TIPS_NLP_Ngram and Word Co-Occurrence VIEWER.pdf",
+               'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
+               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf'}
+TIPS_options='Clause analysis', 'Sentence complexity', 'Text readability','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Excel smoothing data series'
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.

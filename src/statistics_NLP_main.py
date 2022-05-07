@@ -569,8 +569,9 @@ TIPS_lookup = {'Statistical tools in the NLP Suite': 'TIPS_NLP_Statistical tools
                'Style measures': 'TIPS_NLP_Style measures.pdf',
                'N-Grams (word & character)': "TIPS_NLP_Ngrams (word & character).pdf",
                'NLP Ngram and Word Co-Occurrence Viewer': "TIPS_NLP_NLP Ngram and Co-Occurrence Viewer.pdf",
-               'Google Ngram Viewer': 'TIPS_NLP_Ngram Google Ngram Viewer.pdf'}
-TIPS_options = 'Statistical tools in the NLP Suite', 'Statistical descriptive measures', 'Lemmas & stopwords','Style measures', 'N-Grams (word & character)', 'NLP Ngram and Word Co-Occurrence VIEWER', 'Google Ngram Viewer'
+               'Google Ngram Viewer': 'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
+               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf'}
+TIPS_options = 'Statistical tools in the NLP Suite', 'Statistical descriptive measures', 'Lemmas & stopwords','Style measures', 'N-Grams (word & character)', 'NLP Ngram and Word Co-Occurrence VIEWER', 'Google Ngram Viewer','Excel smoothing data series'
 
 
 # add all the lines lines to the end to every special GUI

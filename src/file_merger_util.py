@@ -21,7 +21,7 @@ import IO_user_interface_util
 
 #The script merges together in a single document several txt documents found in a directory (txt ---> txt)
 #can insert filename or not
-def file_merger(window,inputdirectory,outputdirectory,openOutputFiles, processSubdir=None,saveFilenameInOutput=None,merge_separator=False,startString='<@#',endString='@#>',embedSubdir=None,separator='__', writeRootDirectory=True):
+def file_merger(window,inputdirectory,outputdirectory,openOutputFiles, processSubdir=None,saveFilenameInOutput=None,merge_separator=False,startString='<@#',endString='#@>',embedSubdir=None,separator='__', writeRootDirectory=True):
     docNum=0
     if processSubdir==None:
         processSubdir = tk.messagebox.askyesnocancel("Process sub-directories", "Do you want to process for files in subdirectories?")

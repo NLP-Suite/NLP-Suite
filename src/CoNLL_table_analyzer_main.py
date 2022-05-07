@@ -248,7 +248,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                 if searchedCoNLLField == 'FORM':
                     tempFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=output_file_name,
 															outputDir=outputDir,
-															select_col=['SEARCHED TOKEN (FORM)'],
+															select_col=['SEARCHED TOKEN POSTAG-DESCRIPTION'],
 															group_col=['Document ID'],
 															chartTitle="Frequency Distribution of SEARCHED TOKEN (FORM)",
                                                             complete_sid=False)
@@ -936,8 +936,9 @@ TIPS_lookup = {'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'Nominalization': 'TIPS_NLP_Nominalization.pdf', 'NLP Searches': "TIPS_NLP_NLP Searches.pdf",
                'Excel Charts': 'TIPS_NLP_Excel Charts.pdf',
                'Excel Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
+               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                'Network Graphs (via Gephi)': 'TIPS_NLP_Gephi network graphs.pdf'}
-TIPS_options = 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'English Language Benchmarks', 'Style Analysis', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'Nominalization', 'NLP Searches', 'Excel Charts', 'Excel Enabling Macros', 'Network Graphs (via Gephi)'
+TIPS_options = 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'English Language Benchmarks', 'Style Analysis', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'Nominalization', 'NLP Searches', 'Excel Charts', 'Excel Enabling Macros', 'Excel smoothing data series', 'Network Graphs (via Gephi)'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons
@@ -976,7 +977,7 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+9), "Help",
                                   "ON THE LEFT-HAND SIDE, please, tick the checkbox if you wish to extract SVOs from the CoNLL table.\n\nON THE RIGHT-HAND SIDE, tick the 'All analyses: clauses, nouns, verbs, function words (\'junk/stop\' words)' to select and deselect all options, allowing you to select specific options." + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+10), "Help",
-                                  "ON THE LEFT-HAND SIDE, please, tick the checkbox if you wish to extract specific items (e.g., Proper nouns) from the first K and last K sentences in a document." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox if you wish to run the repetition finder to locate word expressions repeated across selected K sentences." + GUI_IO_util.msg_Esc)
     GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+11), "Help",
                                   GUI_IO_util.msg_openOutputFiles)
 

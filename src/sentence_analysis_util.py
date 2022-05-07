@@ -412,7 +412,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
 												   'Started running Text Readability at',
-												   True, '\n\nYou can follow Text Readability in command line.')
+												   True, '\nYou can follow Text Readability in command line.')
 
 	if nFile > 1:
 		outputFilenameTxt = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'READ',
@@ -487,54 +487,54 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 			outputTxtFile.write(
 				"RESULTS -----------------------------------------------------------------------------------------------------------------------------------------------\n\n")
 			# Syllable count
-			str1 = "Syllable count " + str(textstat.syllable_count(text, lang='en_US'))
-			outputTxtFile.write(str1 + "\n")
+			str_value = "Syllable count " + str(textstat.syllable_count(text, lang='en_US'))
+			outputTxtFile.write(str_value + "\n")
 			# print("\n\nSyllable count ",textstat.syllable_count(text, lang='en_US'))
 			# Lexicon count
-			str1 = "Lexicon count " + str(textstat.lexicon_count(text, removepunct=True))
-			outputTxtFile.write(str1 + "\n")
+			str_value = "Lexicon count " + str(textstat.lexicon_count(text, removepunct=True))
+			outputTxtFile.write(str_value + "\n")
 			# print("Lexicon count ",textstat.lexicon_count(text, removepunct=True))
 			# Sentence count
-			str1 = "Sentence count " + str(textstat.sentence_count(text))
-			outputTxtFile.write(str1 + "\n\n")
+			str_value = "Sentence count " + str(textstat.sentence_count(text))
+			outputTxtFile.write(str_value + "\n\n")
 			# print("Sentence count ",textstat.sentence_count(text))
 
 			# The Flesch Reading Ease formula
-			str1 = "Flesch Reading Ease formula " + str(textstat.flesch_reading_ease(text))
-			outputTxtFile.write(str1 + "\n")
+			str_value = "Flesch Reading Ease formula " + str(textstat.flesch_reading_ease(text))
+			outputTxtFile.write(str_value + "\n")
 			# print("Flesch Reading Ease formula",textstat.flesch_reading_ease(text))
 			# The Flesch-Kincaid Grade Level
-			str1 = "Flesch-Kincaid Grade Level " + str(textstat.flesch_kincaid_grade(text))
-			outputTxtFile.write(str1 + "\n")
+			str_value = "Flesch-Kincaid Grade Level " + str(textstat.flesch_kincaid_grade(text))
+			outputTxtFile.write(str_value + "\n")
 			# print("Flesch-Kincaid Grade Level",textstat.flesch_kincaid_grade(text))
 			# The Fog Scale (Gunning FOG Formula)
-			str1 = "Fog Scale (Gunning FOG Formula) " + str(textstat.gunning_fog(text))
-			outputTxtFile.write(str1 + "\n")
+			str_value = "Fog Scale (Gunning FOG Formula) " + str(textstat.gunning_fog(text))
+			outputTxtFile.write(str_value + "\n")
 			# print("Fog Scale (Gunning FOG Formula)",textstat.gunning_fog(text))
 			# The SMOG Index
-			str1 = "SMOG (Simple Measure of Gobbledygook) Index " + str(textstat.smog_index(text))
-			outputTxtFile.write(str1 + "\n")
+			str_value = "SMOG (Simple Measure of Gobbledygook) Index " + str(textstat.smog_index(text))
+			outputTxtFile.write(str_value + "\n")
 			# print("SMOG (Simple Measure of Gobbledygook) Index",textstat.smog_index(text))
 			# Automated Readability Index
-			str1 = "Automated Readability Index " + str(textstat.automated_readability_index(text))
-			outputTxtFile.write(str1 + "\n")
+			str_value = "Automated Readability Index " + str(textstat.automated_readability_index(text))
+			outputTxtFile.write(str_value + "\n")
 			# print("Automated Readability Index",textstat.automated_readability_index(text))
 			# The Coleman-Liau Index
-			str1 = "Coleman-Liau Index " + str(textstat.coleman_liau_index(text))
-			outputTxtFile.write(str1 + "\n")
+			str_value = "Coleman-Liau Index " + str(textstat.coleman_liau_index(text))
+			outputTxtFile.write(str_value + "\n")
 			# print("Coleman-Liau Index",textstat.coleman_liau_index(text))
 			# Linsear Write Formula
-			str1 = "Linsear Write Formula " + str(textstat.linsear_write_formula(text))
-			outputTxtFile.write(str1 + "\n")
+			str_value = "Linsear Write Formula " + str(textstat.linsear_write_formula(text))
+			outputTxtFile.write(str_value + "\n")
 			# print("Linsear Write Formula",textstat.linsear_write_formula(text))
 			# Dale-Chall Readability Score
-			str1 = "Dale-Chall Readability Score " + str(textstat.dale_chall_readability_score(text))
-			outputTxtFile.write(str1 + "\n")
+			str_value = "Dale-Chall Readability Score " + str(textstat.dale_chall_readability_score(text))
+			outputTxtFile.write(str_value + "\n")
 			# print("Dale-Chall Readability Score",textstat.dale_chall_readability_score(text))
 			# Readability Consensus based upon all the above tests
-			str1 = "\n\nReadability Consensus Level based upon all the above tests: " + str(
+			str_value = "\n\nReadability Consensus Level based upon all the above tests: " + str(
 				textstat.text_standard(text, float_output=False) + '\n\n')
-			outputTxtFile.write(str1 + "\n")
+			outputTxtFile.write(str_value + "\n")
 			# print("\n\nReadability Consensus based upon all the above tests: ",textstat.text_standard(text, float_output=False))
 
 			# write csv files ____________________________________________
@@ -562,7 +562,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 				str7 = str(textstat.linsear_write_formula(sent))
 				# Dale-Chall Readability Score
 				str8 = str(textstat.dale_chall_readability_score(sent))
-				# Overal summary measure
+				# Overall summary measure
 				str9 = str(textstat.text_standard(sent, float_output=False))
 				if str9 == "-1th and 0th grade":
 					sortOrder = 0
@@ -588,7 +588,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 					sortOrder = 10
 				elif str9 == "10th and 11th grade":
 					sortOrder = 11
-				elif str9 == "11st and 12th grade":
+				elif str9 == "11th and 12th grade":
 					sortOrder = 12
 				elif str9 == "12th and 13th grade":
 					sortOrder = 13
@@ -615,11 +615,11 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 				elif str9 == "23rd and 24th grade":
 					sortOrder = 24
 				else:
+					str9 = 'Unclassified'
 					sortOrder = 25
 				# rowValue=[[documentID,file,sentenceID,sent,str1,str2,str3,str4,str5,str6,str7,str8,str9,sortOrder]]
 				rowValue = [
-					[sentenceID, sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file), str1, str2, str3,
-					 str4, str5, str6, str7, str8, str9, sortOrder]]
+					[str1, str2, str3, str4, str5, str6, str7, str8, str9, sortOrder, sentenceID, sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)]]
 				writer = csv.writer(outputCsvFile)
 				writer.writerows(rowValue)
 		# at least 12th grade level HIGH-SCHOOL EDUCATION
@@ -642,20 +642,35 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 			# if nFile>10:
 			#     result = mb.askyesno("Excel charts","You have " + str(nFile) + " files for which to compute Excel charts for each file.\n\nTHIS WILL TAKE A LONG TIME TO PRODUCE.\n\nAre you sure you want to do that?")
 			if result == True:
-				# 4 (Flesch Reading Ease) has a different scale and 8 (SMOG) is often 0
-				columns_to_be_plotted = [[2, 5], [2, 6], [2, 7], [2, 9], [2, 10], [2, 11]]
-				hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
+				# 0 (Flesch Reading Ease) has a different scale and 3 (SMOG) is often 0
+				#	do NOT plot on the same chart these two measures
+				#	plot all other 6 measures
+				columns_to_be_plotted = [[10, 1], [10, 2], [10, 4], [10, 5], [10, 6],[10, 7]]
+				# multiple lines with hover-over effects the sample line chart produces wrong results
+				# hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
+				hover_label = []
 
 				Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
 																 outputFileLabel='READ',
 																 chart_type_list=["line"],
-																 chart_title='Text Readability',
+																 chart_title='Text Readability (6 Readability Measures)',
 																 column_xAxis_label_var='Sentence index',
 																 hover_info_column_list=hover_label,
 																 count_var=0,
-																 column_yAxis_label_var='Readability grade level')
+																 column_yAxis_label_var='6 Readability measures')
+
 				if Excel_outputFilename != "":
-					filesToOpen.append(Excel_outputFilename)
+					# rename filename not be overwritten by next line plot
+					try:
+						Excel_outputFilename_new = Excel_outputFilename.replace("line_chart", "ALL_line_chart")
+						os.rename(Excel_outputFilename, Excel_outputFilename_new)
+					except:
+						# the file already exists and must be removed
+						if os.path.isfile(Excel_outputFilename_new):
+							os.remove(Excel_outputFilename_new)
+						os.rename(Excel_outputFilename, Excel_outputFilename_new)
+
+					filesToOpen.append(Excel_outputFilename_new)
 
 				# outputFilenameXLSM_1 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
 				#                                           outputFilenameCsv, chart_type_list=["line"],
@@ -672,16 +687,18 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 				# if outputFilenameXLSM_1 != "":
 				#     filesToOpen.append(outputFilenameXLSM_1)
 
-				columns_to_be_plotted = [[2, 13]]
+				# plot overall grade level
+				columns_to_be_plotted = [[10, 9]]
 				hover_label = ['Sentence']
 				Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
 																 outputFileLabel='READ',
 																 chart_type_list=["line"],
-																 chart_title='Text Readability',
+																 chart_title='Text Readability (Readability Grade Level)',
 																 column_xAxis_label_var='Sentence index',
 																 hover_info_column_list=hover_label,
 																 count_var=0,
 																 column_yAxis_label_var='Readability grade level')
+
 				if Excel_outputFilename != "":
 					filesToOpen.append(Excel_outputFilename)
 
@@ -701,7 +718,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 				#     filesToOpen.append(outputFilenameXLSM_2)
 
 			# bar chart of the frequency of sentences by grade levels
-			columns_to_be_plotted = [[0, 12]]
+			columns_to_be_plotted = [[10, 8]]
 			hover_label = []
 
 			Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
@@ -842,7 +859,7 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 	document_df = pd.DataFrame({'Document ID': documentID, 'Document': document})
 	document_df = document_df.astype('str')
 
-	nlp = stanza.Pipeline(lang='en', processors='tokenize,pos, constituency')
+	nlp = stanza.Pipeline(lang='en', processors='tokenize,pos, constituency',use_gpu=False)
 	op = pd.DataFrame(
 		columns=['Sentence length (No. of words)', 'Yngve score', 'Yngve sum', 'Frazier score', 'Frazier sum',
 				 'Sentence ID', 'Sentence', 'Document ID', 'Document'])

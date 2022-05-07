@@ -663,9 +663,13 @@ activate_allOptions()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'N-Grams (word & character)':"TIPS_NLP_Ngram (word & character).pdf",'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf','NLP Suite Ngram and Word Co-Occurrence Viewer':"TIPS_NLP_Ngram and Word Co-Occurrence Viewer.pdf",'Style analysis':'TIPS_NLP_Style analysis.pdf'}
+TIPS_lookup = {'N-Grams (word & character)':"TIPS_NLP_Ngram (word & character).pdf",
+               'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
+               'NLP Suite Ngram and Word Co-Occurrence Viewer':"TIPS_NLP_Ngram and Word Co-Occurrence Viewer.pdf",
+               'Style analysis':'TIPS_NLP_Style analysis.pdf',
+               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf'}
     #,'Java download install run':'TIPS_NLP_Java download install run.pdf'}
-TIPS_options='N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis' #,'Java download install run'
+TIPS_options='N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis','Excel smoothing data series' #,'Java download install run'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function help_buttons

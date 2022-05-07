@@ -147,7 +147,7 @@ def display_merge_separator(y_multiplier_integer):
 	merge_separator_entry_begin.configure(state="disabled")
 	y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,merge_separator_entry_begin,True)
 
-	merge_separator_entry_end_var.set("@#>")
+	merge_separator_entry_end_var.set("#@>")
 	merge_separator_entry_end.configure(state="disabled")
 	y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+520,y_multiplier_integer,merge_separator_entry_end,True)
 display_merge_separator(y_multiplier_integer)
