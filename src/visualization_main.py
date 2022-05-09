@@ -283,33 +283,34 @@ TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf",
 TIPS_options='Lemmas & stopwords', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle', 'Excel smoothing data series', 'Network Graphs (via Gephi)'
 
 # add all the lines lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function help_buttons
+# change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
+def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     resetAll = "\n\nPress the RESET button to clear all selected values, and start fresh."
     plusButton = "\n\nPress the + buttons, when available, to add a new field."
     OKButton = "\n\nPress the OK button, when available, to accept the selections made, then press the RUN button to process the query."
     if not IO_setup_display_brief:
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",GUI_IO_util.msg_CoNLL)
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_corpusData)
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_CoNLL)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_corpusData)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_outputDirectory)
     else:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help","Please, click on the button to open the Excel GUI.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","Please, click on the button to open the GIS GUI.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help","Please, click on the button to open the HTML annotator GUI.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help","Please, click on the button to open the wordcloud GUI.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help","Please, tick the checkbox if you wish to visualize a network graph in Gephi.\n\nOptions become available in succession.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help","\n\nOptions become available in succession.\n\nThe first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nOnce all three fields have been selected, the widget 'Field to be used for dynamic network graphs' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID) or ignore the option if the network should not be dynamic." + plusButton + OKButton + resetAll)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+7),"Help","\n\nThe widget is always disabled; it is for display only. When pressing OK, the selected csv fields will be displayed." + plusButton + OKButton + resetAll)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+8),"Help",GUI_IO_util.msg_openOutputFiles)
-help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the Excel GUI.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GIS GUI.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the HTML annotator GUI.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the wordcloud GUI.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize a network graph in Gephi.\n\nOptions become available in succession.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","\n\nOptions become available in succession.\n\nThe first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nOnce all three fields have been selected, the widget 'Field to be used for dynamic network graphs' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID) or ignore the option if the network should not be dynamic." + plusButton + OKButton + resetAll)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","\n\nThe widget is always disabled; it is for display only. When pressing OK, the selected csv fields will be displayed." + plusButton + OKButton + resetAll)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    return y_multiplier_integer -1
+y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 script and online services display the content of text files as word cloud.\n\nA word cloud, also known as text cloud or tag cloud, is a collection of words depicted visually in different sizes (and colors). The bigger and bolder the word appears, the more often it’s mentioned within a given text and the more important it is.\n\nDifferent, freeware, word cloud applications are available: 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle'. These applications require internet connection.\n\nThe script also provides Python word clouds (via Andreas Mueller's Python package WordCloud https://amueller.github.io/word_cloud/) for which no internet connection is required."
-readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

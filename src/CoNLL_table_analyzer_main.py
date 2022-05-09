@@ -940,53 +940,51 @@ TIPS_lookup = {'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
 TIPS_options = 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'English Language Benchmarks', 'Style Analysis', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'Nominalization', 'NLP Searches', 'Excel Charts', 'Excel Enabling Macros', 'Excel smoothing data series', 'Network Graphs (via Gephi)'
 
 # add all the lines lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function help_buttons
+# change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 right_msg = "\n\nON THE RIGHT-HAND SIDE, please, tick any of the checkboxes to obtain frequency distributions of specific linguistic objects."
 
 
-def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
+def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     resetAll = "\n\nPress the RESET ALL button to clear all values, including csv files and fields, and start fresh."
     plusButton = "\n\nPress the + buttons, when available, to add either a new field from the same csv file (the + button at the end of this line) or a new csv file (the + button next to File at the top of this GUI). Multiple csv files can be used with any of the operations."
     OKButton = "\n\nPress the OK button, when available, to accept the selections made, then press the RUN button to process the query."
     if not IO_setup_display_brief:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help", GUI_IO_util.msg_CoNLL)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_CoNLL)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_outputDirectory)
     else:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+1), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "ON THE LEFT-HAND SIDE, please, enter the token (i.e., word) to be searched. ENTER * TO SEARCH FOR ANY TOKEN/WORD.\n\nTHE SELECT OUTPUT BUTTON IS DISABLED UNTIL A SEARCHED TOKEN HAS BEEN ENTERED.\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe program will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the program will search in each dependency tree (i.e., each sentence) all the tokens whose head is the token wife, and the head of the token wife." + right_msg + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "ON THE LEFT-HAND SIDE, please, select the CoNLL field to be used for the search (FORM or LEMMA).\n\nFor example, if brother is entered as the searched token, and FORM is entered as search field, the program will first search all occurrences of the FORM brother. Note that in this case brothers will NOT be considered. Otherwise, if LEMMA is entered as search field, the program will search all occurences of the LEMMA brother. In this case, tokens with form brother and brothers will all be considered." + right_msg + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "ON THE LEFT-HAND SIDE, please, select POSTAG value for searched token (e.g., NN for noun; RETURN for ANY POSTAG value)." + right_msg + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "ON THE LEFT-HAND SIDE, please, select DEPREL value for searched token (e.g., nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)." + right_msg + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "ON THE LEFT-HAND SIDE, please, select POSTAG value for token co-occurring in the same sentence (e.g., NN for noun; RETURN for ANY POSTAG value)." + right_msg + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "ON THE LEFT-HAND SIDE, please, select DEPREL value for token co-occurring in the same sentence (e.g., DEPREL nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)." + right_msg + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to compute a sentence table with various sentence statistics.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "The EXTRACT option allows you to select specific fields, even by specific values, from one or more csv files and save the output as a new file.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value in the \'WHERE\' widget (case sensitive!), and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+9), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "ON THE LEFT-HAND SIDE, please, tick the checkbox if you wish to extract SVOs from the CoNLL table.\n\nON THE RIGHT-HAND SIDE, tick the 'All analyses: clauses, nouns, verbs, function words (\'junk/stop\' words)' to select and deselect all options, allowing you to select specific options." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+10), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the repetition finder to locate word expressions repeated across selected K sentences." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+11), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
-
-help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
-             GUI_IO_util.get_y_step())
+    return y_multiplier_integer -1
+y_multiplier_integer = y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), increment)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script will allow you to analyze in depth the contents of the CoNLL table (CoNLL U format), the table produced by Stanford CoreNLP parser. You can do two things in this GUI, depending upon whether you use the tools on the left-hand side (a search tool) or the tools on the right-hand side (statistical frequency tools).\n\nON THE LEFT-HAND SIDE, you can search all the tokens (i.e., words) related to a user-supplied keyword, found in either FORM or LEMMA of a user-supplied CoNLL table.\n\nYou can filter results by specific POSTAG and DEPREL values for both searched and co-occurring tokens (e.g., POSTAG ‘NN for nouns, DEPREL nsubjpass for passive nouns that are subjects.)\n\nIn INPUT the script expects a CoNLL table generated by the python script StanfordCoreNLP.py. \n\nIn OUTPUT the script creates a tab-separated csv file with a user-supplied filename and path.\n\nThe script also displays the same infomation in the command line.\n\nON THE RIGHT-HAND SIDE, the tools provide frequency distributions of various types of linguistic objects: clauses, nouns, verbs, and function words." + GUI_IO_util.msg_multipleDocsCoNLL
-readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
-                                                   GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 scriptName=os.path.basename(__file__)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName,True)

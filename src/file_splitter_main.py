@@ -599,49 +599,48 @@ TIPS_options = 'File splitter', 'File merger', 'File handling in NLP Suite', 'Fi
 
 
 # add all the lines lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function help_buttons
+# change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
     clearOptions = "\n\nTo clear a previously selected option for any of the tools, click on the appropriate dropdown menu and press ESCape twice."
     if not IO_setup_display_brief:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help", GUI_IO_util.msg_anyFile)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "NLP Suite Help", GUI_IO_util.msg_anyFile)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "NLP Suite Help",
                                       GUI_IO_util.msg_anyData)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "NLP Suite Help",
                                       GUI_IO_util.msg_outputDirectory)
     else:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+1), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to check your input corpus for utf-8 encoding.\n   Non utf-8 compliant texts are likely to lead to code breakdown.\n\nTick the checkbox to convert non-ASCII apostrophes & quotes and % to percent.\n   ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n   % signs may lead to code breakdon of Stanford CoreNLP.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if the file to be split is a merged file with filenames embedded in start/end strings (e.g., <@#The New York Times_11-02-1992_4_1#@>).")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to split a txt file into separate files using a Table of Contents as the criterion for splitting.\n\nIn INPUT the Document splitter script expects two types of txt-type files:\n   1. a main txt file (e.g., The Philosopher’s Stone.txt) with the body of a text and section headings (e.g., chapter titles of the Harry Potter book);\n   2. a txt TOC file (Table of Content) that contains all the section headings of the main document (one section heading per line).\n\nSECTION HEADINGS IN THE TOC MUST MATCH EXACTLY THE SECTION HEADINGS IN THE MAIN DOCUMENT.\n   CASE WILL BE IGNORED IN MATCHING SECTION TITLE IN TOC AND MAIN DOCUMENT.\n   REMOVE TABLE OF CONTENTS FROM THE MAIN DOCUMENT TO BE SPLIT.\n\nIn OUTPUT, the script will split the main file into sub-documents, one document for each of the headings listed in the TOC file. The output documents will be placed in a new subdirectory where the main input file is stored. ANY TOC HEADINGS NOT FOUND IN THE MAIN DOCUMENT WILL BE LISTED IN A csv ERROR FILE.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to split a txt file into separate files using a maximum number of words as the criterion for splitting.\n\nThe number of words in the selected file is displayed in the second widget, Word count in selected file. You will need to enter to desired maximum number of words in each split file in the third widget, Max word count in split files.\n\nIn INPUT, the script can either take a single txt file or a directory.\n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to split a txt file into separate files using single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line,' as the criterion for splitting.\n\nYou have the option to LEMMATIZE the expression you entered (thus, the expression 'coming out', when the 'Lemmatize' checkbox is ticked, would be checked for 'coming out', 'come out', 'came out', 'comes out').\n\nYou also have the option to split a file by the FIRST OCCURRENCE of the expression entered (which would always result in two txt output files) or of splitting the file at every occurrence of the expression entered (thus leading to multiple output txt files, one for each occurrence of the expression).\n\nIn INPUT, the script can either take a single file or a directory. THE SCRIPT CAN EITHER SEARCH IN A CONLL TABLE OR IN TEXT FILE.\n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words).\n\nThe widget 'Words in sentence' will become available once you select the option. You will need to enter there the words/set of words that a sentence must contain in order to be extracted from input and saved in output. Words/set of words must be entered in quotes (e.g., \"The New York Times\") and comma separated (e.g., \"The New York Times\" , \"The Boston Globe\"). When running the script, the script will ask you if you want to process the search word(s) as case sensitive (thus, if you opt for case sensitive searches, a sentence containing the word 'King' will not be selected in output if in the widget 'Word(s) in sentence' you have entered 'king').\n\nIn INPUT, the script expects a single txt file or a directory.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract.txt and containing, for each input file, all the sentences that have the search word(s);\n2. files ending with _extract_minus.txt and containing, for each input file, the sentences that do NOT have the search word(s)." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to split a txt file into separate files using string values as the criterion for splitting.\n\nIn INPUT, the script can either take a single file or a directory. \n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to split a txt file into separate files using a blank line in the text as the criterion for splitting.\n\nIn INPUT, the script can either take a single file or a directory. \n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+9), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to split a txt file into separate files using a number at the start of the line (like a bullet point) as the criterion for splitting.\n\nIn INPUT, the script can either take a single file or a directory. \n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+10), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to split a merged csv file containing several different 'Document ID' and 'Document' into separate csv files one for each 'Document ID' and 'Document'.\n\nIn INPUT, the function expects a single merged csv file containing the fields 'Document ID' and 'Document'.\n\nIn OUTPUT, the function will create multiple csv files (as many as 'Document ID's in the INPUT merged csv file).")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+11), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
 
-help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
+y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
              GUI_IO_util.get_y_step())
 
 # change the value of the readMe_message
 readMe_message = "These Python 3 scripts split txt files into separate txt files with a number of processing options."
-readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
-                                                   GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()
