@@ -152,6 +152,10 @@ def display_enter_button():
                              command=lambda: close_NLP())
     enter_button.grid(row=9, column=4, columnspan=3, rowspan=2, sticky=(tk.N,tk.W),padx=30)
 
+    # hover-over effect
+    enter_button.bind('<Enter>', lambda e: e.widget.config(background='red'))
+    enter_button.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
+
     # display Enter NLP button
     enter_button = tk.Button(window, text='Enter NLP Suite', width=20, height=2, foreground="red",
                              font=("Arial", 14, "bold"),

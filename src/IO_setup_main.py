@@ -67,27 +67,35 @@ GUI_label = 'Graphical User Interface (GUI) for Setting Up Input/Output, I/O, Op
 # 		  [0,1,0,1] in this case ONLY an inout Dir is a valid option
 
 # define variables
-help_increment = 0
+y_multiplier_integer = 0
 GUI_size = '1100x240'
 
 # either input file or dir (for corpus) and no secondary dir
-if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric_options[1] != 0) or (config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] == 0)) and config_input_output_numeric_options[2] == 0:
+if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric_options[1] != 0)
+    or (config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] == 0)) \
+        and config_input_output_numeric_options[2] == 0:
     GUI_size = '1100x240'
-    help_increment = 0
+    # increment = 0
+
+# either input file or dir (for corpus) and secondary dir
+if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric_options[1] != 0)
+    or (config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] == 0)) \
+        and config_input_output_numeric_options[2] != 0:
+    GUI_size = '1100x280'
 
 # both input file and dir (for corpus) and no secondary dir
 if config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] != 0 and config_input_output_numeric_options[2] == 0:
     GUI_size = '1100x280'
-    help_increment = 1
+    # increment = 1
 
 # both input file and dir (for corpus) and secondary dir
 if config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] != 0 and config_input_output_numeric_options[2] != 0:
     GUI_size = '1100x320'
-    help_increment = 2
+    # increment = 2
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
-y_multiplier_integer = GUI_util.y_multiplier_integer
+# y_multiplier_integer = GUI_util.y_multiplier_integer
 
 window = GUI_util.window
 # config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
@@ -135,9 +143,9 @@ TIPS_lookup = {'Setup INPUT-OUTPUT options':'TIPS_NLP_Setup INPUT-OUTPUT options
 TIPS_options='Setup INPUT-OUTPUT options'
 
 # add all the lines lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function help_buttons
+# change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
+def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     # 1 for CoNLL file
     # 2 for TXT file
     # 3 for csv file
@@ -147,44 +155,44 @@ def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
 
     # INPUT file by type
     if config_input_output_numeric_options[0]==1:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_CoNLL)
     elif config_input_output_numeric_options[0]==2:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_txtFile)
     elif config_input_output_numeric_options[0]==3:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_csvFile)
     elif config_input_output_numeric_options[0] == 4:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_anyFile)
     elif config_input_output_numeric_options[0]==5:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_txt_htmlFile)
     elif config_input_output_numeric_options[0]==6:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_csv_txtFile)
+
     # INPUT primary directory
     if config_input_output_numeric_options[1]!=0:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + (y_step * help_increment), "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Please, select the main INPUT directory of the TXT files to be analyzed." + GUI_IO_util.msg_openExplorer)
 
     # INPUT secondary directory
     if config_input_output_numeric_options[2]!=0:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + (y_step * help_increment), "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Please, select the secondary INPUT directory of the TXT files to be analyzed." + GUI_IO_util.msg_openExplorer)
 
     # OUTPUT  directory
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + (y_step * (help_increment+1)), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_outputDirectory)
+    return y_multiplier_integer
 
-help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
-             GUI_IO_util.get_y_step())
+y_multiplier_integer = y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), y_multiplier_integer)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the Input/Output information necessary to run the NLP-Suite scripts, namely the INPUT files to be used - a single file or a set of files in a directory - and the OUTPUT directory where the files produced by the NLP Suite scripts will be saved - txt, csv, html, kml, jpg.\n\nThe selected I/O configuration will be saved in config files in the config subdirectory. The default_config.csv file will be used for all NLP Suite scripts unless a different configuraton is selected for a specific script by selecting the 'Alternative I/O configuation'. When opening the GUI with the option 'Alternative I/O configuation' a configuration file will be saved under the config subdirectory with the specif name of the calling script (e.g., Stanford-CoreNLP_config.csv).\n\nWhen clicking the CLOSE button, the script will give the option to save the currently selected configuration IF different from the previously saved configuration."
-readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
-                                                   GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, False, 'IO_setup_main')
 
 if msg!="":

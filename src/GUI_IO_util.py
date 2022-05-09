@@ -76,13 +76,72 @@ TIPSPath = os.path.join(NLPPath,'TIPS')
 videosPath = os.path.join(NLPPath,'videos')
 remindersPath = os.path.join(NLPPath, 'reminders')
 
-def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, centerX=False, basic_y_coordinate=90):
+# The function places and displays a message for each ? HELP button in the GUIs
+def place_help_button(window,x_coordinate,y_coordinate,text_title,text_msg):
+    help_button = tk.Button(window, text='? HELP', command=lambda: display_button_info(text_title, text_msg))
+    y_multiplier_integer = placeWidget(x_coordinate,y_coordinate,help_button,False,False,True)
+    return y_multiplier_integer
+
+# The function displays the info for any bottom (e.g., ? HELP and ReadMe) in the GUIs
+def display_button_info(text_title,text_msg):
+    mb.showinfo(title=text_title, message=text_msg)
+
+def hover_over_widget(widget_name,no_hover_over_widget=False,whole_widget_red=False):
+    if no_hover_over_widget:
+        return
+    # hover-over effect
+    if widget_name.cget('foreground')!='red':     # do not overwrite in red if the background is already in red
+        if 'scale' in str(widget_name) or 'text' in str(widget_name):
+            label = ''
+        else:
+            label = widget_name.cget('text') # this gives the text value displayed as the label
+        # print('widget_name',widget_name,'  label',label)
+        # all buttons for opening files/dir are little boxes with no text
+        if 'button' in str(widget_name) and label == '':
+                whole_widget_red=True
+        if 'optionmenu' in str(widget_name):
+            # https://stackoverflow.com/questions/6178153/how-to-change-menu-background-color-of-tkinters-optionmenu-widget
+            if label=='': # if no menu options are displayed, turn red the whole widget
+                widget_name.bind('<Enter>', lambda e: e.widget.config(activebackground='red'))
+            else:
+                widget_name.bind('<Enter>', lambda e: e.widget.config(activeforeground='red',text=label))
+        # elif 'combobox' in str(widget_name): # cannot get the combobox option to work
+        #   https://www.tutorialspoint.com/how-to-set-the-background-color-of-a-ttk-combobox-in-tkinter
+        #     widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
+        else:
+            if 'scale' in str(widget_name):
+                # background sets the whole widget in red
+                widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
+            elif 'text' in str(widget_name):
+                # for text widgets do not set the whole widget to red
+                widget_name.bind('<Enter>', lambda e: e.widget.config(background='#F0F0F0'))
+            else:
+                # foreground sets only the widget wording in red
+                if whole_widget_red:
+                    widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
+                else:
+                    widget_name.bind('<Enter>', lambda e: e.widget.config(foreground='red',text=label))
+        # widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
+        if 'scale' in str(widget_name) or 'text' in str(widget_name):
+            widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
+        else:
+            if whole_widget_red:
+                widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
+            else:
+                widget_name.bind('<Leave>', lambda e: e.widget.config(foreground='black',text=label))
+
+def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90):
     #basic_y_coordinate = 90
     y_step = 40 #the line-by-line increment on the GUI
     if centerX:
         widget_name.place(relx=0.5, anchor=tk.CENTER, y=basic_y_coordinate + y_step*y_multiplier_integer)
     else:
         widget_name.place(x=x_coordinate, y=basic_y_coordinate + y_step*y_multiplier_integer)
+    # use the following command to change the color of any label to any value
+    # widget_name.config(foreground='red')
+
+    hover_over_widget(widget_name, no_hover_over_widget, whole_widget_red)
+
     if sameY==False:
         y_multiplier_integer = y_multiplier_integer+1
     return y_multiplier_integer
@@ -312,21 +371,6 @@ def exit_window(window,config_filename, scriptName, config_input_output_numeric_
 from tkinter import Toplevel
 def Dialog2Display(title: str):
     Dialog2 = Toplevel(height=1000, width=1000)
-
-# The function places and displays a message for each ? HELP button in the GUIs
-def place_help_button(window,x_coordinate,y_coordinate,text_title,text_msg):
-    if text_title=='Help':
-        text_title='NLP Suite Help'
-    def msg_box():
-        mb.showinfo(title=text_title, message=text_msg)
-    tk.Button(window, text='? HELP', command=msg_box).place(x=x_coordinate,y=y_coordinate)
-
-# The function displays the info for the ReadMe button in the GUIs
-def readme_button(Window, xCoord, yCoord, text_title,text_msg):
-    if text_title=='Help':
-        text_title='NLP Suite Help'
-    mb.showinfo(title=text_title, message=text_msg)
-
 
 # creating popup menu in tkinter
 
