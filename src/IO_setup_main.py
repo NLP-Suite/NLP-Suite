@@ -75,7 +75,6 @@ if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric
     or (config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] == 0)) \
         and config_input_output_numeric_options[2] == 0:
     GUI_size = '1100x240'
-    # increment = 0
 
 # either input file or dir (for corpus) and secondary dir
 if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric_options[1] != 0)
@@ -86,19 +85,14 @@ if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric
 # both input file and dir (for corpus) and no secondary dir
 if config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] != 0 and config_input_output_numeric_options[2] == 0:
     GUI_size = '1100x280'
-    # increment = 1
 
 # both input file and dir (for corpus) and secondary dir
 if config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] != 0 and config_input_output_numeric_options[2] != 0:
     GUI_size = '1100x320'
-    # increment = 2
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
-# y_multiplier_integer = GUI_util.y_multiplier_integer
-
 window = GUI_util.window
-# config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, False)
 

@@ -110,7 +110,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
-IO_setup_display_brief=False
+IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
                                                  GUI_height_brief=560, # height at brief display
@@ -197,7 +197,9 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 #setup a button to open Windows Explorer on the selected input directory
 openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, annotator_dictionary_file_var.get()))
-openInputFile_button.place(x=GUI_IO_util.get_labels_x_coordinate()+190, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,
+    openInputFile_button, True)
 
 annotator_dictionary_file=tk.Entry(window, width=100,textvariable=annotator_dictionary_file_var)
 annotator_dictionary_file.config(state='disabled')
@@ -265,7 +267,10 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 
 #setup a button to open Windows Explorer on the selected input directory
 open_new_SS_folder_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openExplorer(window, new_SS_folder_var.get()))
-open_new_SS_folder_button.place(x=GUI_IO_util.get_labels_x_coordinate()+190, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    GUI_IO_util.get_labels_x_coordinate()+190,
+    y_multiplier_integer,
+    open_new_SS_folder_button, True)
 
 new_SS_folder=tk.Entry(window, width=110,textvariable=new_SS_folder_var)
 new_SS_folder.config(state='disabled')

@@ -20,10 +20,8 @@ from sys import platform
 
 import os
 import tkinter.messagebox as mb
-import inspect
 from subprocess import call
-# import webbrowser
-# import atexit
+import time
 
 import config_util
 import reminders_util
@@ -318,6 +316,7 @@ def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,titl
         output_dir_path.set(directoryName)
 
 
+
 # configuration_type is the value displayed on the GUI: Default I/O configuration,GUI-specific I/O configuration
 def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_output_numeric_options,scriptName,silent,*args):
     error = False
@@ -409,8 +408,9 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
         IO_setup_brief_display_area.insert("end", IO_setup_display_string)
         # IO_setup_brief_display_area.pack(side=tk.LEFT)
         IO_setup_brief_display_area.configure(state='disabled')
+
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
-    answer = activateRunButton(temp_config_filename,IO_setup_display_brief,scriptName,silent)
+    run_button_state, answer = activateRunButton(temp_config_filename,IO_setup_display_brief,scriptName,silent)
     if not answer:
         return
     if run_button_state=='disabled':
@@ -429,7 +429,7 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName,silent =
     config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file(config_filename, config_input_output_numeric_options)
     run_button_state, answer = config_util.check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_display_brief, silent)
     run_button.configure(state=run_button_state)
-    return answer
+    return run_button_state, answer
 
 #GUI top widgets ALL IO widgets
 #	 input filename, input dir, secondary input dir, output dir
@@ -475,15 +475,19 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_outputDir_button_brief, y_multiplier_integer,
                                                    openOutputDirectory_button, True)
 
-    def openConfigFile():
+    def openConfigFile(scriptName):
         if 'Default' in IO_setup_menu_var.get():  # GUI_util.GUI_util.IO_setup_menu_var.get()
             temp_config_filename = 'default_config.csv'
         else:
             temp_config_filename = config_filename
         IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + temp_config_filename)
+        time.sleep(10) # wait 10 seconds to give enough time to save any changes to the csv config file
+        IO_setup_display_brief = True
+        display_IO_setup(window, IO_setup_display_brief, temp_config_filename,
+                         config_input_output_numeric_options, scriptName, silent)
 
     openInputConfigFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                     command=lambda: openConfigFile())
+                                     command=lambda: openConfigFile(scriptName))
     y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_config_file_button_brief, y_multiplier_integer,
                                                    openInputConfigFile_button, True)
 
@@ -518,53 +522,71 @@ def IO_config_setup_full (window, y_multiplier_integer):
             select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
 
         # place the INPUT file widget
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_file_button)
-        tk.Label(window, textvariable=inputFilename).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_file_button,True)
 
         #setup a button to open Windows Explorer on the selected input file
-        current_y_multiplier_integer=y_multiplier_integer-1
         openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, inputFilename.get()))
-        openInputFile_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer)
+        y_multiplier_integer = GUI_IO_util.placeWidget(
+            GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+            openInputFile_button, True)
+
+        inputFile_lb = tk.Label(window, textvariable=inputFilename)
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),
+                                                       y_multiplier_integer, inputFile_lb)
 
     #primary INPUT directory ______________________________________________
     if config_input_output_numeric_options[1]==1: #directory input
         # buttons are set to normal or disabled in selectFile_set_options
         select_input_main_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT files directory',  command = lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select INPUT files directory",True))
         # select_input_main_dir_button.config(state="normal")
-
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_main_dir_button)
-        tk.Label(window, textvariable=input_main_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_main_dir_button,True)
 
         #setup a button to open Windows Explorer on the selected input directory
-        current_y_multiplier_integer=y_multiplier_integer-1
         openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, input_main_dir_path.get()))
-        openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer)
+        y_multiplier_integer = GUI_IO_util.placeWidget(
+            GUI_IO_util.get_open_file_directory_coordinate(),
+            y_multiplier_integer,
+            openDirectory_button,True)
+
+        inputMainDir_lb = tk.Label(window, textvariable=input_main_dir_path)
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),
+                                                       y_multiplier_integer, inputMainDir_lb)
 
     #secondary INPUT directory ______________________________________________
     if config_input_output_numeric_options[2]==1: #secondary directory input
         # buttons are set to normal or disabled in selectFile_set_options
         select_input_secondary_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT secondary directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path, input_secondary_dir_path,"Select INPUT secondary TXT directory"))
-
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_secondary_dir_button)
-        tk.Label(window, textvariable=input_secondary_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
+        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
+                            y_multiplier_integer,select_input_secondary_dir_button,True)
 
         #setup a button to open Windows Explorer on the selected input directory
-        current_y_multiplier_integer3=y_multiplier_integer-1
         openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, input_secondary_dir_path.get()))
-        openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer3)
+        y_multiplier_integer = GUI_IO_util.placeWidget(
+            GUI_IO_util.get_open_file_directory_coordinate(),
+            y_multiplier_integer,
+            openDirectory_button,True)
+
+        inputSecondaryDir_lb = tk.Label(window, textvariable=input_secondary_dir_path)
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),
+                                                       y_multiplier_integer, inputSecondaryDir_lb)
 
     #OUTPUT directory ______________________________________________
     if config_input_output_numeric_options[3]==1: #output directory
         # buttons are set to normal or disabled in selectFile_set_options
         select_output_dir_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select OUTPUT files directory',  command=lambda: selectDirectory_set_options(window,input_main_dir_path,output_dir_path,"Select OUTPUT files directory"))
-
-        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_output_dir_button)
-        tk.Label(window, textvariable=output_dir_path).place(x=GUI_IO_util.get_entry_box_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step()*(y_multiplier_integer-1))
+        y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_output_dir_button,True)
 
         #setup a button to open Windows Explorer on the selected input directory
-        current_y_multiplier_integer4=y_multiplier_integer-1
+        # current_y_multiplier_integer4=y_multiplier_integer-1
         openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
-        openDirectory_button.place(x=GUI_IO_util.get_open_file_directory_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*current_y_multiplier_integer4)
+        y_multiplier_integer = GUI_IO_util.placeWidget(
+            GUI_IO_util.get_open_file_directory_coordinate(),
+            y_multiplier_integer,
+            openDirectory_button, True)
+
+        outputDir_lb = tk.Label(window, textvariable=output_dir_path)
+        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),
+                                                       y_multiplier_integer, outputDir_lb)
 
 def setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent):
     if 'Default' in IO_setup_menu_var.get(): # GUI_util.GUI_util.IO_setup_menu_var.get()
@@ -703,7 +725,6 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
                                                        y_multiplier_integer,
                                                        open_csv_output_label,True,False,False)
-        # open_csv_output_label.place(x=GUI_IO_util.get_labels_x_coordinate(), y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
         open_csv_output_checkbox.set(1)
 
         #creat Excel chart files widget defined above since it is used earlier
@@ -713,7 +734,6 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        y_multiplier_integer,
                                                        create_Excel_chart_output_label,True,False,False)
 
-        # create_Excel_chart_output_label.place(x=GUI_IO_util.get_labels_x_coordinate()+380, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
         create_Excel_chart_output_checkbox.set(1)
         # y_multiplier_integer=y_multiplier_integer+1
         charts_options = ['Excel','Python Plotly']
@@ -882,7 +902,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     changed_IO_setup_config()
 
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
-    answer = activateRunButton(temp_config_filename, IO_setup_display_brief, scriptName, silent)
+    # run_button_state, answer = activateRunButton(temp_config_filename, IO_setup_display_brief, scriptName, silent)
     # GUI front end is used for those GUIs that do not have any code to run functions but the buttons just open other GUIs
     if ('GUI front end' not in reminder_options):
         # recompute the options since a new line has been added
