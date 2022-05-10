@@ -75,7 +75,7 @@ def option_not_available():
                    message='The selected option is not available yet.\n\nSorry!')
 
 sample_by_date_button = tk.Button(window, text='Sample files by date in filename',width=70,command=lambda: option_not_available())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_by_date_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_by_date_button)
 
 def get_file(window,title,fileType):
     selectedFile_var.set('')
@@ -85,25 +85,25 @@ def get_file(window,title,fileType):
         selectedFile_var.set(filePath)
 
 sample_by_documentID_button = tk.Button(window, text='Sample files by Document ID in csv file',width=70,command=lambda: get_file(window,'Select INPUT csv file', [("csv files", "*.csv")]))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_by_documentID_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_by_documentID_button,True)
 
 # setup a button to open Windows Explorer on open the csv file
 openFile_button = tk.Button(window, width=3, text='',
                                  command=lambda: IO_files_util.openFile(window,
                                                                         selectedFile_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+500, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+500, y_multiplier_integer,
                                                openFile_button, True)
 
 selectedFile_var.set('')
 selectedFile=tk.Entry(window, width=90,textvariable=selectedFile_var)
 selectedFile.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+560, y_multiplier_integer,selectedFile)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+560, y_multiplier_integer,selectedFile)
 
 sample_sentences_by_documentID_button = tk.Button(window, text='Sample sentences by Document ID and other fields values in csv file (Open GUI)',width=70,command=lambda: call("python data_manager_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_sentences_by_documentID_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_sentences_by_documentID_button)
 
 export_csv_field_GUI_button = tk.Button(window, text='Export csv field content to csv/txt file (Open GUI)',width=70,command=lambda: call("python data_manager_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,export_csv_field_GUI_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,export_csv_field_GUI_button)
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

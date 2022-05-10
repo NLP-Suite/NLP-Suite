@@ -468,7 +468,7 @@ def custom_sort(s):
 
 
 searchToken_lb = tk.Label(window, text='Searched token')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer, searchToken_lb,True)
 
 searchField_kw.set('e.g.: father')
@@ -477,43 +477,43 @@ searchField_kw.set('e.g.: father')
 y_multiplier_integer_top = y_multiplier_integer
 
 entry_searchField_kw = tk.Entry(window, textvariable=searchField_kw)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
                                                entry_searchField_kw)
 
 # Search type var (FORM/LEMMA)
 searchedCoNLLField.set('FORM')
 searchedCoNLLdescription_csv_field_menu_lb = tk.Label(window, text='CoNLL search field')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                searchedCoNLLdescription_csv_field_menu_lb,True)
 
 searchedCoNLLdescription_csv_field_menu_lb = tk.OptionMenu(window, searchedCoNLLField, 'FORM', 'LEMMA')
 searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
                                                searchedCoNLLdescription_csv_field_menu_lb)
 
 # POSTAG variable
 postag_var.set('*')
 POS_lb = tk.Label(window, text='POSTAG of searched token')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                POS_lb, True)
 
 postag_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = postag_var)
 postag_menu_lb['values'] = postag_menu
 postag_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
                                                postag_menu_lb)
 
 # DEPREL variable
 
 deprel_var.set('*')
 DEPREL_lb = tk.Label(window, text='DEPREL of searched token')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                DEPREL_lb, True)
 
 deprel_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = deprel_var)
 deprel_menu_lb['values'] = deprel_menu
 deprel_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.combobox_position, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.combobox_position, y_multiplier_integer,
                                                deprel_menu_lb)
 
 # Co-Occurring POSTAG menu
@@ -521,26 +521,26 @@ y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordina
 co_postag_var.set('*')
 
 POSTAG_CoOc_lb = tk.Label(window, text='POSTAG of co-occurring tokens')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                POSTAG_CoOc_lb, True)
 
 co_postag_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_postag_var)
 co_postag_menu_lb['values'] = postag_menu
 co_postag_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.combobox_position, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.combobox_position, y_multiplier_integer,
                                                co_postag_menu_lb)
 
 co_deprel_menu = '*','acl - clausal modifier of noun (adjectival clause)', 'acl:relcl - relative clause modifier', 'acomp - adjectival complement', 'advcl - adverbial clause modifier', 'advmod - adverbial modifier', 'agent - agent', 'amod - adjectival modifier', 'appos - appositional modifier', 'arg - argument', 'aux - auxiliary', 'auxpass - passive auxiliary', 'case - case marking', 'cc - coordinating conjunction', 'ccomp - clausal complement with internal subject', 'cc:preconj - preconjunct','compound - compound','compound:prt - phrasal verb particle','conj - conjunct','cop - copula conjunction','csubj - clausal subject','csubjpass - clausal passive subject','dep - unspecified dependency','det - determiner','det:predet - predeterminer','discourse - discourse element','dislocated - dislocated element','dobj - direct object','expl - expletive','foreign - foreign words','goeswith - goes with','iobj - indirect object','list - list','mark - marker','mod - modifier','mwe - multi-word expression','name - name','neg - negation modifier','nn - noun compound modifier','nmod - nominal modifier','nmod:npmod - noun phrase as adverbial modifier','nmod:poss - possessive nominal modifier','nmod:tmod - temporal modifier','nummod - numeric modifier','npadvmod - noun phrase adverbial modifier','nsubj - nominal subject','nsubjpass - passive nominal subject','num - numeric modifier','number - element of compound number','parataxis - parataxis','pcomp - prepositional complement','pobj - object of a preposition','poss - possession modifier', 'possessive - possessive modifier','preconj - preconjunct','predet - predeterminer','prep - prepositional modifier','prepc - prepositional clausal modifier','prt - phrasal verb particle','punct - punctuation','quantmod - quantifier phrase modifier','rcmod - relative clause modifier','ref - referent','remnant - remnant in ellipsis','reparandum - overridden disfluency','ROOT - root','sdep - semantic dependent','subj - subject','tmod - temporal modifier','vmod - reduced non-finite verbal modifier','vocative - vocative','xcomp - clausal complement with external subject','xsubj - controlling subject','# - #'
 
 co_deprel_var.set('*')
 DEPREL_CoOc_lb = tk.Label(window, text='DEPREL of co-occurring tokens')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                DEPREL_CoOc_lb, True)
 
 co_deprel_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_deprel_var)
 co_deprel_menu_lb['values'] = deprel_menu
 co_deprel_menu_lb.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.combobox_position, y_multiplier_integer,co_deprel_menu_lb)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.combobox_position, y_multiplier_integer,co_deprel_menu_lb)
 
 def reset_all_values():
     global buildString
@@ -592,17 +592,17 @@ GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inpu
 compute_sentence_var.set(0)
 sentence_table_checkbox = tk.Checkbutton(window, text='Compute sentence table', variable=compute_sentence_var,
                                          onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                sentence_table_checkbox)
 
 extract_var.set(0)
 extract_checkbox = tk.Checkbutton(window, text='Extract from CoNLL', variable=extract_var, onvalue=1,
                                   offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                extract_checkbox, True)
 
 select_csv_field_lb = tk.Label(window, text='Select field')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
                                                select_csv_field_lb, True)
 
 if len(menu_values) > 0:
@@ -610,33 +610,33 @@ if len(menu_values) > 0:
 else:
     select_csv_field_extract_menu = tk.OptionMenu(window, select_csv_field_extract_var, menu_values)
 select_csv_field_extract_menu.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position+80, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position+80, y_multiplier_integer,
                                                select_csv_field_extract_menu, True)
 
 comparator_var = tk.StringVar()
 comparator_menu = tk.OptionMenu(window, comparator_var, 'not equals', 'equals', 'greater than',
                                     'greater than or equals', 'less than', 'less than or equals')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 410, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 410, y_multiplier_integer,
                                                comparator_menu, True)
 
 where_lb = tk.Label(window, text='WHERE')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 535, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 535, y_multiplier_integer,
                                                where_lb, True)
 
 where_entry_var = tk.StringVar()
 where_entry = tk.Entry(window, width=25, textvariable=where_entry_var)
 where_entry.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
                                                where_entry, True)
 
 and_or_lb = tk.Label(window, text='and/or')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 790, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 790, y_multiplier_integer,
                                                and_or_lb, True)
 
 and_or_var = tk.StringVar()
 and_or_menu = tk.OptionMenu(window, and_or_var, 'and', 'or')
 and_or_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 840, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 840, y_multiplier_integer,
                                                and_or_menu, True)
 
 
@@ -656,12 +656,12 @@ def build_extract_string(comingFrom_Plus, comingFrom_OK):
 add_extract_options_var = tk.IntVar()
 add_extract_options = tk.Button(window, text='+', width=2, height=1, state='disabled',
                                 command=lambda: build_extract_string(True, False))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 905, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 905, y_multiplier_integer,
                                                add_extract_options, True)
 
 OK_extract_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
                               command=lambda: build_extract_string(False, True))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 955, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 955, y_multiplier_integer,
                                                OK_extract_button, True)
 
 
@@ -699,11 +699,11 @@ def show_values():
 
 
 show_button = tk.Button(window, width=7, text='Show', state='normal', command=lambda: show_values())
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1005, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 1005, y_multiplier_integer,
                                                show_button, True)
 
 reset_all_button = tk.Button(window, width=6, text='Reset', state='normal', command=lambda: reset_all_values())
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1075, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 1075, y_multiplier_integer,
                                                reset_all_button)
 
 
@@ -721,14 +721,14 @@ SVO_var.set(0)
 SVO_checkbox = tk.Checkbutton(window, text="Automatic extraction of Subject-Verb-Object from CoNLL table",
                               variable=SVO_var, onvalue=1, offvalue=0)
 SVO_checkbox.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                SVO_checkbox)
 
 k_sentences_var.set(0)
 k_sentences_checkbox = tk.Checkbutton(window, text="K sentences analyzer (repetition finder)",
                               variable=k_sentences_var, onvalue=1, offvalue=0)
 # k_sentences_checkbox.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                k_sentences_checkbox)
 
 # Here rowspan=3 is necessary to make the separator span all 3 rows (the header, player 1 and player2).
@@ -748,30 +748,30 @@ y_multiplier_integer = y_multiplier_integer_top
 clausal_analysis_var.set(0)
 clausal_analysis_checkbox = tk.Checkbutton(window, text='CLAUSE analyses', variable=clausal_analysis_var, onvalue=1,
                                            offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
                                                clausal_analysis_checkbox)
 
 noun_analysis_var.set(0)
 noun_analysis_checkbox = tk.Checkbutton(window, text='NOUN analyses', variable=noun_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
                                                noun_analysis_checkbox)
 
 verb_analysis_var.set(0)
 verb_analysis_checkbox = tk.Checkbutton(window, text='VERB analyses', variable=verb_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
                                                verb_analysis_checkbox)
 
 function_words_analysis_var.set(0)
 function_words_analysis_checkbox = tk.Checkbutton(window, text='FUNCTION WORDS analyses',
                                                   variable=function_words_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
                                                function_words_analysis_checkbox)
 
 all_analyses_var.set(0)
 all_analyses_checkbox = tk.Checkbutton(window,
                                        text="ALL anayses: Clauses, nouns, verbs, function words ('junk/stop' words)",
                                        variable=all_analyses_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
                                                all_analyses_checkbox)
 
 # -------------------------------------------------------------------------------------------------------

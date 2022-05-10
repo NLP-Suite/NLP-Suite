@@ -157,9 +157,9 @@ NER_entry_var = tk.StringVar()
 
 encoding_var.set('utf-8')
 encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le','latin-1','ISO-8859-1')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,encodingValue,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,encodingValue,True)
 encoding_lb = tk.Label(window, text='Select the encoding type (utf-8 default)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,encoding_lb)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,encoding_lb)
 
 GUI=''
 
@@ -167,78 +167,78 @@ def open_GUI1():
     call("python file_checker_converter_cleaner_main.py", shell=True)
 
 pre_processing_button = tk.Button(window, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI1)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                pre_processing_button)
 # memory options
 
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                memory_var_lb, True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(4)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100, y_multiplier_integer,
                                                memory_var,True)
 
 document_length_var_lb = tk.Label(window, text='Document length')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                document_length_var_lb, True)
 
 document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
 document_length_var.pack()
 document_length_var.set(90000)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+150, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+150, y_multiplier_integer,
                                                document_length_var,True)
 
 limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
                                                limit_sentence_length_var_lb,True)
 
 limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
 limit_sentence_length_var.pack()
 limit_sentence_length_var.set(100)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 550, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 550, y_multiplier_integer,
                                                limit_sentence_length_var)
 
 extract_date_lb = tk.Label(window, text='Extract date (for dynamic GIS)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_date_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_date_lb,True)
 
 extract_date_from_text_var.set(0)
 extract_date_from_text_checkbox = tk.Checkbutton(window, variable=extract_date_from_text_var, onvalue=1, offvalue=0)
 extract_date_from_text_checkbox.config(text="From document content")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),
                                                y_multiplier_integer, extract_date_from_text_checkbox, True)
 
 extract_date_from_filename_var.set(0)
 extract_date_from_filename_checkbox = tk.Checkbutton(window, variable=extract_date_from_filename_var, onvalue=1, offvalue=0)
 extract_date_from_filename_checkbox.config(text="From filename")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 190,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 190,
                                                y_multiplier_integer, extract_date_from_filename_checkbox, True)
 
 date_format_lb = tk.Label(window,text='Format ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 320,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 320,
                                                y_multiplier_integer, date_format_lb, True)
 date_format.set('mm-dd-yyyy')
 date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
 date_format_menu.configure(width=10,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 380,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 380,
                                                y_multiplier_integer, date_format_menu, True)
 date_separator_var.set('_')
 date_separator_lb = tk.Label(window, text='Character separator ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 510,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 510,
                                                y_multiplier_integer, date_separator_lb, True)
 date_separator = tk.Entry(window, textvariable=date_separator_var)
 date_separator.configure(width=2,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 640,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 640,
                                                y_multiplier_integer, date_separator, True)
 date_position_var.set(2)
 date_position_menu_lb = tk.Label(window, text='Position ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 670,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 670,
                                                y_multiplier_integer, date_position_menu_lb, True)
 date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
 date_position_menu.configure(width=1,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 740,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 740,
                                                y_multiplier_integer, date_position_menu)
 
 
@@ -261,52 +261,52 @@ extract_date_from_text_var.trace('w',check_dateFields)
 extract_date_from_filename_var.trace('w',check_dateFields)
 
 language_lb = tk.Label(window,text='Language')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                y_multiplier_integer, language_lb, True)
 
 language_var.set('English')
 language_menu = tk.OptionMenu(window, language_var, 'English', 'Arabic','Chinese','German','Hungarian','Italian','Spanish')
 language_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
                                                y_multiplier_integer, language_menu)
 
 NER_tag_lb = tk.Label(window, text='NER tags')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,NER_tag_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,NER_tag_lb,True)
 
 # NER tags menu
 NER_tag_var.set('')
 NER_menu = tk.OptionMenu(window,NER_tag_var,'--- All NER tags', '--- All quantitative expressions','NUMBER', 'ORDINAL', 'PERCENT', '--- All social actors', 'PERSON', 'ORGANIZATION', '--- All spatial expressions', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', '--- All temporal expressions', 'DATE', 'TIME', 'DURATION', 'SET',  '--- All other expressions', 'MISC', 'CAUSE_OF_DEATH', 'CRIMINAL_CHARGE', 'EMAIL',  'IDEOLOGY', 'MONEY',  'NATIONALITY', 'RELIGION', 'TITLE','URL')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100,y_multiplier_integer,NER_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,y_multiplier_integer,NER_menu,True)
 
 add_NER_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_NER_Options())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+40,y_multiplier_integer,add_NER_button, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+40,y_multiplier_integer,add_NER_button, True)
 
 reset_NER_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: clear_NER_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+70,y_multiplier_integer,reset_NER_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+70,y_multiplier_integer,reset_NER_button,True)
 
 NER_entry_lb = tk.Label(window, text='NER list')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 140,y_multiplier_integer,NER_entry_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 140,y_multiplier_integer,NER_entry_lb,True)
 
 NER_entry = tk.Entry(window,width=70,textvariable=NER_entry_var)
 NER_entry.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+ 200,y_multiplier_integer,NER_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+ 200,y_multiplier_integer,NER_entry)
 
 # openFile_button = tk.Button(window, width=3, text='',command=lambda: IO_files_util.openFile(window, os.path.join(GUI_IO_util.wordLists_libPath,'NER_prefix_suffix.csv')))
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,openFile_button,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,openFile_button,True)
 
 # NER_split_values_prefix_entry_lb = tk.Label(window, text='NER split values (Prefix)')
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 40,y_multiplier_integer,NER_split_values_prefix_entry_lb,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 40,y_multiplier_integer,NER_split_values_prefix_entry_lb,True)
 #
 # NER_split_values_prefix_entry = tk.Entry(window,width=70,textvariable=NER_split_values_prefix_entry_var)
 # NER_split_values_prefix_entry.configure(state="disabled")
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+ 200,y_multiplier_integer,NER_split_values_prefix_entry)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+ 200,y_multiplier_integer,NER_split_values_prefix_entry)
 #
 # NER_split_values_suffix_entry_lb = tk.Label(window, text='NER split values (Suffix)')
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 40,y_multiplier_integer,NER_split_values_suffix_entry_lb,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 40,y_multiplier_integer,NER_split_values_suffix_entry_lb,True)
 #
 # NER_split_values_suffix_entry = tk.Entry(window,width=70,textvariable=NER_split_values_suffix_entry_var)
 # NER_split_values_suffix_entry.configure(state="disabled")
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+ 200,y_multiplier_integer,NER_split_values_suffix_entry)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+ 200,y_multiplier_integer,NER_split_values_suffix_entry)
 
 def clear(e):
     clear_NER_list()
@@ -410,13 +410,13 @@ def clear_NER_list():
 NER_sentence_var.set(0)
 NER_sentence_checkbox = tk.Checkbutton(window, variable=NER_sentence_var, onvalue=1, offvalue=0)
 NER_sentence_checkbox.config(text="NER tags by sentence index")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,NER_sentence_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,NER_sentence_checkbox)
 
 def open_GUI2():
     call("python CoNLL_table_analyzer_main.py", shell=True)
 
 CoNLL_table_analyzer_button = tk.Button(window, text='Open the CoNLL table analyzer GUI',command=open_GUI2)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                CoNLL_table_analyzer_button)
 
 videos_lookup = {'No videos available':''}

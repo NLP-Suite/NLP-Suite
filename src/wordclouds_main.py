@@ -205,9 +205,9 @@ wordclouds_var.set('Python WordCloud')
 selectedImage_var.set('')
 use_contour_only_var.set(1)
 wordclouds = tk.OptionMenu(window,wordclouds_var,'Python WordCloud','TagCrowd','Tagul','Tagxedo','Wordclouds','Wordle')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+120, y_multiplier_integer,wordclouds,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+120, y_multiplier_integer,wordclouds,True)
 wordclouds_lb = tk.Label(window, text='Select the word cloud service you wish to use (txt file(s)/CoNLL table)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,wordclouds_lb)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,wordclouds_lb)
 
 y_multiplier_integer_SV=y_multiplier_integer
 
@@ -219,7 +219,7 @@ prefer_horizontal_checkbox = tk.Checkbutton(window, variable=prefer_horizontal_v
                                                        onvalue=1, offvalue=0)
 
 prefer_horizontal_checkbox.config(text="Horizontal")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,
                                                y_multiplier_integer, prefer_horizontal_checkbox, True)
 def warnUser(*args):
     if prefer_horizontal_var.get()==True:
@@ -232,59 +232,59 @@ font_list = wordclouds_util.get_font_list()
 
 font_var.set('Default')
 font_lb = tk.Label(window, text='Font')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,font_lb, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,font_lb, True)
 
 font = ttk.Combobox(window, width = 15, textvariable = font_var)
 font['values'] = font_list
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+160, y_multiplier_integer,font,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+160, y_multiplier_integer,font,True)
 # font.config(state='disabled')
 
 max_words_var=tk.StringVar()
 max_words_var.set(100)
 
 max_words_lb = tk.Label(window, text='Max no. of words')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,max_words_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,max_words_lb,True)
 max_words=tk.Entry(window, width=4,textvariable=max_words_var)
 max_words.config(state='normal')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+420, y_multiplier_integer,max_words,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+420, y_multiplier_integer,max_words,True)
 
 lemmatize_checkbox = tk.Checkbutton(window, variable=lemmatize_var,
                                                        onvalue=1, offvalue=0)
 
 lemmatize_checkbox.config(text="Lemmas")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+3290,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+3290,
                                                y_multiplier_integer, lemmatize_checkbox, True)
 
 stopwords_checkbox = tk.Checkbutton(window, variable=stopwords_var,
                                                        onvalue=1, offvalue=0)
 
 stopwords_checkbox.config(text="Stopwords")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+480,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+480,
                                                y_multiplier_integer, stopwords_checkbox, True)
 
 punctuation_checkbox = tk.Checkbutton(window, variable=punctuation_var,
                                                        onvalue=1, offvalue=0)
 
 punctuation_checkbox.config(text="Punctuation")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+590,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+590,
                                                y_multiplier_integer, punctuation_checkbox, True)
 
 lowercase_checkbox = tk.Checkbutton(window, variable=lowercase_var,
                                                        onvalue=1, offvalue=0)
 
 lowercase_checkbox.config(text="Lowercase")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+710,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+710,
                                                y_multiplier_integer, lowercase_checkbox, True)
 
 collocation_checkbox = tk.Checkbutton(window, variable=collocation_var,
                                                        onvalue=1, offvalue=0)
 
 collocation_checkbox.config(text="Collocation")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+830,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+830,
                                                y_multiplier_integer, collocation_checkbox, True)
 
 differentPOS_differentColors_checkbox.config(text="Different colors by POS tags")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+950,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+950,
                                                y_multiplier_integer, differentPOS_differentColors_checkbox)
 
 menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
@@ -293,29 +293,29 @@ prepare_image_checkbox = tk.Checkbutton(window, variable=prepare_image_var,
                                                        onvalue=1, offvalue=0)
 
 prepare_image_checkbox.config(text="Prepare image")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(),
                                                y_multiplier_integer, prepare_image_checkbox)
 
 # width=20,
 select_image_file_button=tk.Button(window, text='Select png image file',command=lambda: get_image(window,'Select INPUT png file', [("png files", "*.png")]))
 #select_image_file_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,select_image_file_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,select_image_file_button,True)
 
 # setup a button to open Windows Explorer on open the png image file
 openImage_button = tk.Button(window, width=3, text='', state='disabled',
                                  command=lambda: IO_files_util.openFile(window,
                                                                         selectedImage_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+150, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+150, y_multiplier_integer,
                                                openImage_button, True)
 
 selectedImage=tk.Entry(window, width=100,textvariable=selectedImage_var)
 selectedImage.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+220, y_multiplier_integer,selectedImage, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+220, y_multiplier_integer,selectedImage, True)
 
 use_contour_only_var.set(1)
 use_contour_only_checkbox = tk.Checkbutton(window, variable=use_contour_only_var, onvalue=1, offvalue=0)
 use_contour_only_checkbox.config(text="Use image contour only")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+900,y_multiplier_integer,use_contour_only_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+900,y_multiplier_integer,use_contour_only_checkbox)
 
 def get_image(window,title,fileType):
     selectedImage_var.set('')
@@ -330,7 +330,7 @@ def get_image(window,title,fileType):
 differentColumns_differentColors_var.set(0)
 differentColumns_differentColors_checkbox = tk.Checkbutton(window, variable=differentColumns_differentColors_var, onvalue=1, offvalue=0)
 differentColumns_differentColors_checkbox.config(text="Use different colors for different columns (csv file)")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,differentColumns_differentColors_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,differentColumns_differentColors_checkbox)
 
 def displayWarning(*args):
     if collocation_var.get()==True and differentPOS_differentColors_var.get()==True:
@@ -343,13 +343,13 @@ differentPOS_differentColors_var.trace('w',displayWarning)
 menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 
 field_lb = tk.Label(window, text='Select csv field')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,field_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,field_lb,True)
 if menu_values!='':
     csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
 else:
     csv_field_menu = tk.OptionMenu(window, csv_field_var, menu_values)
 csv_field_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,csv_field_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,csv_field_menu,True)
 
 def activateCsvOptions(*args):
     csv_field_var.set('')
@@ -368,13 +368,13 @@ activateCsvOptions()
 
 color_var.set(0)
 color_checkbox = tk.Checkbutton(window, text='Color ', state='disabled',variable=color_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+300,y_multiplier_integer,color_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300,y_multiplier_integer,color_checkbox,True)
 
 color_lb = tk.Label(window, text='RGB color code ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,color_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,color_lb,True)
 color_entry = tk.Entry(window, width=10, textvariable=color_style_var)
 color_entry.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+520,y_multiplier_integer,color_entry,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+520,y_multiplier_integer,color_entry,True)
 
 def activate_color_palette(*args):
     # tkcolorpicker requires tkinter and pillow to be installed (https://libraries.io/pypi/tkcolorpicker)
@@ -397,10 +397,10 @@ def update_csvFields():
     color_var.set(0)
 
 add_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: update_csvFields())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+650,y_multiplier_integer,add_button, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+650,y_multiplier_integer,add_button, True)
 
 reset_button = tk.Button(window, text='Reset', height=1,state='disabled',command=lambda: clear_field_color_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,reset_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,reset_button,True)
 
 def showList():
     if len(csvField_color_list)==0:
@@ -409,7 +409,7 @@ def showList():
         mb.showwarning(title='Warning', message='The currently selected combination of csv fields and colors is:\n\n' + ','.join(csvField_color_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
 show_columns_button = tk.Button(window, text='Show',height=1,state='disabled',command=lambda: showList())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+760,y_multiplier_integer,show_columns_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+760,y_multiplier_integer,show_columns_button)
 
 def activateCsvField(*args):
     if csv_field_var.get()!='':
@@ -494,7 +494,7 @@ changed_filename()
 doNotCreateIntermediateFiles_var.set(1)
 doNotCreateIntermediateFiles_checkbox = tk.Checkbutton(window, variable=doNotCreateIntermediateFiles_var, onvalue=1, offvalue=0)
 doNotCreateIntermediateFiles_checkbox.config(text="Do NOT produce intermediate word cloud files when processing all txt files in a directory")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,doNotCreateIntermediateFiles_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,doNotCreateIntermediateFiles_checkbox)
 
 def changeLabel_nomin(*args):
     if doNotCreateIntermediateFiles_var.get()==1:

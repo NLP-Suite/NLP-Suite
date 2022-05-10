@@ -122,33 +122,33 @@ if current_process().name == 'MainProcess':
     Mallet_var = tk.IntVar()
 
     num_topics_lb = tk.Label(window, text='Number of topics ')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    num_topics_lb, True)
 
     num_topics_var.set(20)
     num_topics_entry = tk.Entry(window, width=5, textvariable=num_topics_var)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate() + 100,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate() + 100,
                                                    y_multiplier_integer, num_topics_entry)
 
     remove_stopwords_var.set(1)
     remove_stopwords_checkbox = tk.Checkbutton(window, text='Remove stopwords', variable=remove_stopwords_var,
                                                onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    remove_stopwords_checkbox)
 
     lemmatize_var.set(1)
     lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize words (Nouns, verbs, adverbs, adjectives)', variable=lemmatize_var, onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    lemmatize_checkbox)
 
     nounsOnly_var.set(0)
     nounsOnly_checkbox = tk.Checkbutton(window, text='Use nouns only (lemmatized)', variable=nounsOnly_var, onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
                                                    nounsOnly_checkbox)
 
     Mallet_var.set(0)
     Mallet_checkbox = tk.Checkbutton(window, text='Run MALLET (Topic coherence values and plot visualization)', variable=Mallet_var, onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    Mallet_checkbox)
 
     def Mallet_reminder(*args):

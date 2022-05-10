@@ -130,7 +130,7 @@ similarityIndex_var = tk.DoubleVar()
 # applies to list files only
 # character_count_var.set(0)
 # character_count_checkbox = tk.Checkbutton(window, text='By count of character(s) embedded in filename', variable=character_count_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+50,y_multiplier_integer, character_count_checkbox)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+50,y_multiplier_integer, character_count_checkbox)
 
 by_date_var.set(0)
 date_format.set('mm-dd-yyyy')
@@ -139,47 +139,47 @@ date_position_var.set(2)
 by_NER_var.set(0)
 
 by_date_checkbox = tk.Checkbutton(window, text='By date embedded in filenames', variable=by_date_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer, by_date_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer, by_date_checkbox,True)
 
 date_format_lb = tk.Label(window,text='Date format ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+270,y_multiplier_integer, date_format_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+270,y_multiplier_integer, date_format_lb,True)
 date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
 date_format_menu.configure(state='normal', width=10)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer, date_format_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer, date_format_menu,True)
 
 date_separator_lb = tk.Label(window, text='Date character separator ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+210,y_multiplier_integer, date_separator_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+210,y_multiplier_integer, date_separator_lb,True)
 date_separator = tk.Entry(window, state='normal', textvariable=date_separator_var)
 date_separator.configure(width=2)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+350,y_multiplier_integer, date_separator,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+350,y_multiplier_integer, date_separator,True)
 
 date_position_menu_lb = tk.Label(window, state='normal', text='Date position ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+400,y_multiplier_integer, date_position_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+400,y_multiplier_integer, date_position_menu_lb,True)
 date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
 date_position_menu.configure(width=2)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+490,y_multiplier_integer, date_position_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+490,y_multiplier_integer, date_position_menu)
 
 date_distance_value_lb = tk.Label(window, text='Date distance ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+270,y_multiplier_integer, date_distance_value_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+270,y_multiplier_integer, date_distance_value_lb,True)
 
 date_distance_value = tk.Entry(window, textvariable=date_distance_value_var)
 date_distance_value.configure(width=4)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer, date_distance_value,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer, date_distance_value,True)
 
 date_type_lb = tk.Label(window, text='Date type ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+210,y_multiplier_integer, date_type_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+210,y_multiplier_integer, date_type_lb,True)
 
 date_type = tk.OptionMenu(window, date_type_var, 'day', 'month','year')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+300,y_multiplier_integer, date_type)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+300,y_multiplier_integer, date_type)
 
 by_NER_checkbox = tk.Checkbutton(window, text='By NER values',variable=by_NER_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer, by_NER_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer, by_NER_checkbox,True)
 
 similarityIndex_var.set(0.25) # or 0.3
 similarityIndex_menu_lb = tk.Label(window, text='Relativity index threshold ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+270,y_multiplier_integer,similarityIndex_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+270,y_multiplier_integer,similarityIndex_menu_lb,True)
 similarityIndex_menu = tk.OptionMenu(window,similarityIndex_var,.1,.15,.2,.25,.3,.35,.4,.45,.5,.45,.5,.55,.6,.65,.7,.75,.8,.85,.9)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+450,y_multiplier_integer,similarityIndex_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+450,y_multiplier_integer,similarityIndex_menu)
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

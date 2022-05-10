@@ -214,19 +214,19 @@ window.bind("<Escape>", clear)
 visualize_bySentenceIndex_var.set(0)
 visualize_bySentenceIndex_options_var.set('')
 visualize_bySentenceIndex_checkbox = tk.Checkbutton(window, text='Visualize text features by sentence index (Excel line plots)', variable=visualize_bySentenceIndex_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,visualize_bySentenceIndex_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,visualize_bySentenceIndex_checkbox,True)
 visualize_bySentenceIndex_lb = tk.Label(window, text='Select visualization option')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,visualize_bySentenceIndex_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,visualize_bySentenceIndex_lb,True)
 visualize_bySentenceIndex_menu = tk.OptionMenu(window,visualize_bySentenceIndex_options_var,'*','Clause analysis by sentence index (via CoNLL)','Noun analysis by sentence index (via CoNLL)','Verb analysis by sentence index (via CoNLL)','Function words analysis by sentence index (via CoNLL)','Sentence complexity by sentence index','Sentence/text readability by sentence index (via textstat)','N-grams (word & character) by sentence index','Hapax legomena (once-occurring words) by sentence index','Unusual words (via NLTK) by sentence index','Short words by sentence index','Vowel words by sentence index','Annotated gender names by sentence index', 'Annotated words (DBpedia, YAGO, dictionary) by sentence index','Sentiment analysis by sentence index','Concreteness analysis by sentence index', 'Words/collocations by sentence index','WordNet categories by sentence index','Time by sentence index','Location by sentence index')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,visualize_bySentenceIndex_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,visualize_bySentenceIndex_menu)
 
 sentence_complexity_var.set(0)
 sentence_complexity_checkbox = tk.Checkbutton(window, text='Sentence complexity', variable=sentence_complexity_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sentence_complexity_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sentence_complexity_checkbox)
 
 text_readability_var.set(0)
 text_readability_checkbox = tk.Checkbutton(window, text='Sentence/text readability (via textstat)', variable=text_readability_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,text_readability_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,text_readability_checkbox)
 
 def getScript(script):
 	global script_to_run, IO_values
@@ -238,18 +238,18 @@ visualize_bySentenceIndex_options_var.trace('w', lambda x,y,z: getScript(visuali
 
 visualize_sentence_structure_var.set(0)
 visualize_sentence_structure_checkbox = tk.Checkbutton(window, text='Visualize sentence structure (via dependency tree)', variable=visualize_sentence_structure_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,visualize_sentence_structure_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,visualize_sentence_structure_checkbox)
 
 extract_sentences_var.set(0)
 extract_sentences_checkbox = tk.Checkbutton(window, text='Extract sentences from corpus', variable=extract_sentences_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_sentences_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_sentences_checkbox,True)
 
 search_words_var.set('')
 search_words_lb = tk.Label(window, text='Word(s) in sentence')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+200,y_multiplier_integer,search_words_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200,y_multiplier_integer,search_words_lb,True)
 search_words_entry = tk.Entry(window, textvariable=search_words_var)
 search_words_entry.configure(width=100)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+340,y_multiplier_integer,search_words_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+340,y_multiplier_integer,search_words_entry)
 
 def activate_visualize_bySentenceIndex_options(*args):
     if visualize_bySentenceIndex_var.get()==False:
