@@ -227,7 +227,9 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate
 #setup a button to open Windows Explorer on the selected input directory
 current_y_multiplier_integer=y_multiplier_integer-1
 openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, annotator_dictionary_file_var.get()))
-openInputFile_button.place(x=GUI_IO_util.get_labels_x_coordinate()+190, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+y_multiplier_integer = GUI_IO_util.placeWidget(
+    GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,
+    openInputFile_button, True)
 
 html_annotator_dictionary_file=tk.Entry(window, width=100,textvariable=html_annotator_dictionary_file_var)
 html_annotator_dictionary_file.config(state='disabled')
