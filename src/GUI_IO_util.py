@@ -87,12 +87,23 @@ def display_button_info(text_title,text_msg):
     mb.showinfo(title=text_title, message=text_msg)
 
 # https://stackoverflow.com/questions/20399243/display-message-when-hovering-over-something-with-mouse-cursor-in-python
-def display_widget_info(window,x_coordinate, y_coordinate,text_msg):
-    tk.Label(window, text=text_msg, width=40).place(x=x_coordinate, y=y_coordinate+1)
+# def display_widget_info(window,x_coordinate, y_coordinate,text_msg):
+#     tk.Label(window, text=text_msg, width=40).place(x=x_coordinate, y=y_coordinate+1)
+
+def display_widget_info(e, window,display_window_lb,x_coordinate, y_coordinate,text_msg):
+    if text_msg == '':
+        e.widget.config(background = '#F0F0F0')
+        # display_window.place_forget()
+    else:
+        e.widget.config(background='red')
+        window.display_window_lb.config(text='change the value')
+        window.display_window_lb['text']=text_msg
+        # display_window = tk.Label(window, text=text_msg, width=40).place(x=x_coordinate-300, y=y_coordinate+40)
 
 def hover_over_widget(window,x_coordinate,y_coordinate,widget_name,no_hover_over_widget=False,whole_widget_red=False):
     if no_hover_over_widget:
         return
+    display_window_lb = tk.Label(window, text='', width=40).place(x=x_coordinate - 300, y=y_coordinate + 40)
     # hover-over effect
     if widget_name.cget('foreground')!='red':     # do not overwrite in red if the background is already in red
         if 'scale' in str(widget_name) or 'text' in str(widget_name):
@@ -122,8 +133,11 @@ def hover_over_widget(window,x_coordinate,y_coordinate,widget_name,no_hover_over
             else:
                 # foreground sets only the widget wording in red
                 if whole_widget_red:
-                    widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
-                    display_widget_info(window,x_coordinate,y_coordinate,'Hello world')
+                    # widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
+                    # display_widget_info(window,x_coordinate,y_coordinate,'Hello world')
+                    # display_window_lb.config('Hello world')
+                    widget_name.bind('<Enter>', lambda e: display_widget_info(e, window, display_window_lb, x_coordinate, y_coordinate,
+                                                                              'Hello world'))
                 else:
                     widget_name.bind('<Enter>', lambda e: e.widget.config(foreground='red',text=label))
 
@@ -132,8 +146,10 @@ def hover_over_widget(window,x_coordinate,y_coordinate,widget_name,no_hover_over
             widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
         else:
             if whole_widget_red:
-                widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
-                display_widget_info(window, x_coordinate, y_coordinate,'')
+                # widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
+                # display_widget_info(window, x_coordinate, y_coordinate,'')
+                widget_name.bind('<Leave>', lambda e: display_widget_info(e, window, display_window_lb, x_coordinate, y_coordinate,
+                                                                          ''))
             else:
                 widget_name.bind('<Leave>', lambda e: e.widget.config(foreground='black',text=label))
 
