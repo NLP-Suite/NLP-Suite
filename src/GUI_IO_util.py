@@ -90,20 +90,22 @@ def display_button_info(text_title,text_msg):
 # def display_widget_info(window,x_coordinate, y_coordinate,text_msg):
 #     tk.Label(window, text=text_msg, width=40).place(x=x_coordinate, y=y_coordinate+1)
 
-def display_widget_info(e, window,display_window_lb,x_coordinate, y_coordinate,text_msg):
-    if text_msg == '':
+# def display_widget_info(e, window,display_window_lb,x_coordinate, y_coordinate,text_msg):
+def display_widget_info(window, e, x_coordinate, y_coordinate, text_msg):
+    e.widget.config(background='red')
+    display_window_lb = tk.Label(window, text=text_msg, width=40)
+    display_window_lb.place(x=x_coordinate - 500, y=y_coordinate + 20)
+    return display_window_lb
+
+def delete_display_widget_lb(window, e, display_window_lb, x_coordinate, y_coordinate, text_msg):
+
+    if text_msg == '': # <Leave> widget event
         e.widget.config(background = '#F0F0F0')
-        # display_window.place_forget()
-    else:
-        e.widget.config(background='red')
-        window.display_window_lb.config(text='change the value')
-        window.display_window_lb['text']=text_msg
-        # display_window = tk.Label(window, text=text_msg, width=40).place(x=x_coordinate-300, y=y_coordinate+40)
+        display_window_lb.place_forget()
 
 def hover_over_widget(window,x_coordinate,y_coordinate,widget_name,no_hover_over_widget=False,whole_widget_red=False):
     if no_hover_over_widget:
         return
-    display_window_lb = tk.Label(window, text='', width=40).place(x=x_coordinate - 300, y=y_coordinate + 40)
     # hover-over effect
     if widget_name.cget('foreground')!='red':     # do not overwrite in red if the background is already in red
         if 'scale' in str(widget_name) or 'text' in str(widget_name):
@@ -136,10 +138,14 @@ def hover_over_widget(window,x_coordinate,y_coordinate,widget_name,no_hover_over
                     # widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
                     # display_widget_info(window,x_coordinate,y_coordinate,'Hello world')
                     # display_window_lb.config('Hello world')
-                    widget_name.bind('<Enter>', lambda e: display_widget_info(e, window, display_window_lb, x_coordinate, y_coordinate,
-                                                                              'Hello world'))
+                    # widget_name.bind('<Enter>', lambda e: display_widget_info(e, window, display_window_lb, x_coordinate, y_coordinate,
+                    #                                                           'Hello world'))
+                    display_widget_lb = widget_name.bind('<Enter>',
+                                     lambda e: display_widget_info(window, e, x_coordinate,
+                                                                   y_coordinate,
+                                                                   'Hello world'))
                 else:
-                    widget_name.bind('<Enter>', lambda e: e.widget.config(foreground='red',text=label))
+                    display_widget_lb = widget_name.bind('<Enter>', lambda e: e.widget.config(foreground='red',text=label))
 
         # widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
         if 'scale' in str(widget_name) or 'text' in str(widget_name):
@@ -148,8 +154,11 @@ def hover_over_widget(window,x_coordinate,y_coordinate,widget_name,no_hover_over
             if whole_widget_red:
                 # widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
                 # display_widget_info(window, x_coordinate, y_coordinate,'')
-                widget_name.bind('<Leave>', lambda e: display_widget_info(e, window, display_window_lb, x_coordinate, y_coordinate,
-                                                                          ''))
+                # widget_name.bind('<Leave>', lambda e: display_widget_info(e, window, display_window_lb, x_coordinate, y_coordinate,
+                #                                                           ''))
+                widget_name.bind('<Leave>',
+                                 lambda e: delete_display_widget_lb(window, e, display_widget_lb, x_coordinate, y_coordinate,
+                                                               ''))
             else:
                 widget_name.bind('<Leave>', lambda e: e.widget.config(foreground='black',text=label))
 
