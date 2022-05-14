@@ -166,7 +166,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                        date_format=dateFormat,
                                                                        date_separator_var=sep,
                                                                        date_position_var=date_field_position,
-                                                                       single_quote_var = single_quote)
+                                                                       single_quote_var = single_quote,
+                                                                       language = language_var)
 
         if len(tempOutputFiles)>0:
             filesToOpen.extend(tempOutputFiles)
@@ -399,7 +400,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 
 language_var.set('English')
 language_menu = tk.OptionMenu(window, language_var, 'English', 'Arabic','Chinese','German','Hungarian','Italian','Spanish')
-language_menu.configure(state="disabled")
+# language_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
                                                y_multiplier_integer, language_menu)
 
