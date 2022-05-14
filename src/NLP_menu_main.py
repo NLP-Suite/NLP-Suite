@@ -282,7 +282,7 @@ sentence_tools_var = tk.StringVar()
 
 setup_IO_OK_checkbox = tk.Checkbutton(window, state='disabled',
                                       variable=setup_IO_OK_checkbox_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                setup_IO_OK_checkbox, True)
 
 def setup_IO():
@@ -297,16 +297,16 @@ def setup_IO_checkbox():
         setup_IO_OK_checkbox_var.set(0)
 
 IO_setup_button = tk.Button(window, text='Setup default I/O options: INPUT corpus file(s) and OUTPUT files directory', width=95, font=("Courier", 10, "bold"), command=lambda: setup_IO())
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+30, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+30, y_multiplier_integer,
                                                IO_setup_button,True)
 
 open_default_IO_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'default_config.csv'))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button, y_multiplier_integer,
                                                open_default_IO_config_button)
 
 setup_software_checkbox = tk.Checkbutton(window, state='disabled',
                                          variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                setup_software_checkbox,True)
 software_dir = ''
 
@@ -336,49 +336,49 @@ def setup_software_warning():
         setup_external_programs_checkbox(software)
 
 software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_software_warning())
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+30, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+30, y_multiplier_integer,
                                                software_setup_button,True)
 
 open_setup_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'software_config.csv'))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_setup_software_button, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_setup_software_button, y_multiplier_integer,
                                                open_setup_button)
 
 general_tools_lb = tk.Label(window, text='General Tools', foreground="red",font=("Courier", 12, "bold"))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                general_tools_lb)
 
 # setup GUI widgets
 data_file_handling_tools_var.set('')
 file_handling_lb = tk.Label(window, text='Data & Files Handling Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                file_handling_lb, True)
 data_file_handling_tools_menu = ttk.Combobox(window, width = 90, textvariable = data_file_handling_tools_var)
 data_file_handling_tools_menu['values'] = constants_util.NLP_Suite_data_file_handling_tools_menu
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, data_file_handling_tools_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, data_file_handling_tools_menu)
 
 pre_processing_tools_var.set('')
 pre_processing_lb = tk.Label(window, text='Pre-Processing Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                pre_processing_lb, True)
 
 pre_processing_tools_menu = ttk.Combobox(window, width = 90, textvariable = pre_processing_tools_var)
 pre_processing_tools_menu['values'] = constants_util.NLP_Suite_pre_processing_tools_menu
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, pre_processing_tools_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, pre_processing_tools_menu)
 
 statistical_tools_var.set('')
 statistical_tools_lb = tk.Label(window, text='Statistical Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                statistical_tools_lb, True)
 statistical_tools_menu = ttk.Combobox(window, width = 90, textvariable = statistical_tools_var)
 statistical_tools_menu['values'] = ['Statistics (csv & txt files)']
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, statistical_tools_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, statistical_tools_menu)
 
 visualization_lb = tk.Label(window, text='Visualization Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                visualization_lb, True)
 visualization_menu = ttk.Combobox(window, width = 90, textvariable = visualization_tools_var)
 visualization_menu['values'] = constants_util.NLP_Suite_visualization_tools_menu
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, visualization_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, visualization_menu)
 
 # (startX, startY, endX, endY) where endX is the width of window
 # https://stackoverflow.com/questions/40390746/how-to-correctly-use-tkinter-create-line-coordinates
@@ -388,35 +388,35 @@ y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordin
 
 linguistic_tools_lb = tk.Label(window, text='Linguistic Analysis Tools', foreground="red",font=("Courier", 12, "bold"))
 # text.configure(font=("Times New Roman", 12, "bold"))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                linguistic_tools_lb)
 
 corpus_tools_lb = tk.Label(window, text='CORPUS Analysis Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                corpus_tools_lb, True)
 # tools that apply exclusively to a corpus
 corpus_menu = ttk.Combobox(window, width = 90, textvariable = corpus_tools_var)
 corpus_menu['values'] = constants_util.NLP_Suite_corpus_tools_menu
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, corpus_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, corpus_menu)
 
 # 'KWIC (Key Word In Context)')
 
 # corpus_document_tools_var.set('')
 corpus_document_tools_lb = tk.Label(window, text='CORPUS/DOCUMENT Analysis Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                corpus_document_tools_lb, True)
 #tools that can be applied to either corpus or single document
 corpus_documents_menu = ttk.Combobox(window, width = 90, textvariable = corpus_document_tools_var)
 corpus_documents_menu['values'] = constants_util.NLP_Suite_corpus_document_tools_menu
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, corpus_documents_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, corpus_documents_menu)
 
 sentence_tools_var.set('')
 sentence_tools_lb = tk.Label(window, text='SENTENCE Analysis Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                sentence_tools_lb, True)
 sentence_tools_menu = ttk.Combobox(window, width = 90, textvariable = sentence_tools_var)
 sentence_tools_menu['values'] = ['Sentence analysis (ALL options)']
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, sentence_tools_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, sentence_tools_menu)
 
 
 def getScript(script):

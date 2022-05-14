@@ -210,57 +210,57 @@ window.bind("<Escape>", clear)
 
 encoding_var.set('utf-8')
 encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le','latin-1','ISO-8859-1')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350, y_multiplier_integer,encodingValue,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350, y_multiplier_integer,encodingValue,True)
 encoding_lb = tk.Label(window, text='Select the encoding type (utf-8 default)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,encoding_lb)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,encoding_lb)
 
 geocoder_lb = tk.Label(window, text='Geocoder')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,geocoder_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,geocoder_lb,True)
 geocoder_var.set('Nominatim')
 geocoder = tk.OptionMenu(window,geocoder_var,'Nominatim','Google')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350, y_multiplier_integer,geocoder)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350, y_multiplier_integer,geocoder)
 
 # geocode_var.set(0)
 # geocode_checkbox = tk.Checkbutton(window, variable=geocode_var, onvalue=1, offvalue=0)
 # geocode_checkbox.config(text="Geocode locations")
-# y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
 #                                                y_multiplier_integer, geocode_checkbox)
 
 compute_pairwise_distances_var.set(0)
 compute_pairwise_distances_checkbox = tk.Checkbutton(window, variable=compute_pairwise_distances_var, onvalue=1, offvalue=0)
 compute_pairwise_distances_checkbox.config(text="Compute pairwise distances")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                y_multiplier_integer, compute_pairwise_distances_checkbox)
 
 compute_baseline_distances_var.set(0)
 compute_baseline_distances_checkbox = tk.Checkbutton(window, variable=compute_baseline_distances_var, onvalue=1, offvalue=0)
 compute_baseline_distances_checkbox.config(text="Compute distances from baseline location")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                y_multiplier_integer, compute_baseline_distances_checkbox,True)
 
 baselineLocation_value_lb = tk.Label(window, text='Enter location ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,baselineLocation_value_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,baselineLocation_value_lb,True)
 baselineLocation_entry = tk.Entry(window, textvariable=baselineLocation_entry_var)
 baselineLocation_entry.configure(width=50, state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+450,y_multiplier_integer,baselineLocation_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+450,y_multiplier_integer,baselineLocation_entry)
 
 menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 
 location_field_lb = tk.Label(window, text='Select the column containing the FIRST location names')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,location_field_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,location_field_lb,True)
 if menu_values!='':
     location_field = tk.OptionMenu(window,location_var,*menu_values)
 else:
     location_field = tk.OptionMenu(window,location_var,menu_values)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350, y_multiplier_integer,location_field)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350, y_multiplier_integer,location_field)
 
 location_field_lb2 = tk.Label(window, text='Select the column containing the SECOND location names')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,location_field_lb2,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,location_field_lb2,True)
 if menu_values!='':
     location_field2 = tk.OptionMenu(window,location_var2,*menu_values)
 else:
     location_field2 = tk.OptionMenu(window,location_var2,menu_values)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350, y_multiplier_integer,location_field2)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350, y_multiplier_integer,location_field2)
 
 def activate_options(*args):
     if compute_pairwise_distances_var.get():

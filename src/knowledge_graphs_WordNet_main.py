@@ -270,33 +270,33 @@ def get_csv_file(window,title,fileType,annotate):
 
 csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: get_csv_file(window,'Select INPUT csv file', [("dictionary files", "*.csv")],True))
 # csv_file_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,csv_file_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,csv_file_button,True)
 
 #setup a button to open Windows Explorer on the selected input directory
 # current_y_multiplier_integer=y_multiplier_integer-1
 # openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
     openInputFile_button, True)
 
 csv_file=tk.Entry(window, width=130,textvariable=csv_file_var)
 csv_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,csv_file)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,csv_file)
 
 WordNet_category_lb = tk.Label(window, text='WordNet category (synset)')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                WordNet_category_lb,True)
 
 noun_verb_menu = tk.OptionMenu(window, noun_verb_menu_var, 'NOUN', 'VERB')
 noun_verb_menu.configure(width=9, state="normal")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 170, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 170, y_multiplier_integer,
                                                noun_verb_menu)
 
 disaggregate_var.set(0)
 disaggregate_checkbox = tk.Checkbutton(window, text='Zoom IN/DOWN to find related words', variable=disaggregate_var,
                                     onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                disaggregate_checkbox, True)
 
 def activate_keyword_menu():
@@ -305,12 +305,12 @@ def activate_keyword_menu():
 
 add_keyword_button = tk.Button(window, text='+', width=2, height=1, state='disabled',
                                command=lambda: activate_keyword_menu())
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
                                                add_keyword_button, True)
 
 reset_keywords_button = tk.Button(window, text='Reset', width=5, height=1, state='disabled',
                                   command=lambda: clear_keyword_list())
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 50, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 50, y_multiplier_integer,
                                                reset_keywords_button, True)
 
 def showKeywordList():
@@ -320,31 +320,31 @@ def showKeywordList():
 
 show_keywords_button = tk.Button(window, text='Show', width=5, height=1, state='disabled',
                                  command=lambda: showKeywordList())
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 100, y_multiplier_integer,
                                                show_keywords_button, True)
 
 noun_verb_menu_options = []
 keyWord_var.set('')
 keyWord_menu_lb = tk.Label(window, text='Keyword (synset)')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 170, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 170, y_multiplier_integer,
                                                keyWord_menu_lb, True)
 
 keyWord_menu = tk.OptionMenu(window, keyWord_var, noun_verb_menu_options)
 # keyWord_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 290, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 290, y_multiplier_integer,
                                                keyWord_menu, True)
 
 keyWord_entry_lb = tk.Label(window, text='YOUR keyword(s) ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 430, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 430, y_multiplier_integer,
                                                keyWord_entry_lb, True)
 
 keyWord_entry = tk.Entry(window, width=40, textvariable=keyWord_entry_var)
 keyWord_entry.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 550, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 550, y_multiplier_integer,
                                                keyWord_entry, True)
 
 OK_button = tk.Button(window, text='OK', width=3, height=1, state='disabled', command=lambda: accept_WordNet_list())
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 830, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 830, y_multiplier_integer,
                                                OK_button)
 def clear(e):
     if aggregate_lemmatized_var.get():
@@ -394,38 +394,38 @@ keyWord_entry_var.trace('w', add_wordNet_keyword)
 
 annotate_file_var.set(0)
 annotate_file_checkbox = tk.Checkbutton(window, text='Annotate corpus (using WordNet csv output file from Zoom IN/DOWN)', variable=annotate_file_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,annotate_file_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,annotate_file_checkbox)
 
 extract_proper_nouns_var.set(0)
 extract_proper_nouns_checkbox = tk.Checkbutton(window, text='Extract WordNet PROPER nouns  (using WordNet csv output file from Zoom IN/DOWN)',
                                                variable=extract_proper_nouns_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                extract_proper_nouns_checkbox, True)
 extract_proper_nouns_checkbox.config(text="Extract PROPER nouns  (using WordNet csv output file from Zoom IN/DOWN)")
 
 extract_improper_nouns_var.set(0)
 extract_improper_nouns_checkbox = tk.Checkbutton(window, text='Extract WordNet IMPROPER nouns  (using WordNet csv output file from Zoom IN/DOWN)',
                                                  variable=extract_improper_nouns_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+250, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+250, y_multiplier_integer,
                                                extract_improper_nouns_checkbox)
 extract_improper_nouns_checkbox.config(text="Extract IMPROPER nouns  (using WordNet csv output file from Zoom IN/DOWN)")
 
 aggregate_lemmatized_var.set(0)
 aggregate_lemmatized_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (classify/aggregate lemmatized words in csv file)', variable=aggregate_lemmatized_var,
                                    onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                aggregate_lemmatized_checkbox)
 
 extract_nouns_verbs_from_CoNLL_var.set(0)
 extract_nouns_verbs_from_CoNLL_checkbox = tk.Checkbutton(window, text='Extract nouns & verbs from CoNLL table (for Zoom OUT/UP)',
                                               variable=extract_nouns_verbs_from_CoNLL_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                extract_nouns_verbs_from_CoNLL_checkbox)
 
 aggregate_POS_var.set(0)
 aggregate_POS_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (classify/aggregate input text document(s) by CoreNLP NOUN & VERB POS tags and WordNet NOUN & VERB synsets)', variable=aggregate_POS_var,
                                     onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                aggregate_POS_checkbox)
 
 aggregate_bySentenceID_var.set(0)
@@ -434,16 +434,16 @@ aggregate_bySentenceID_var.set(0)
 #                                                 command=lambda: getDictFile())
 aggregate_bySentenceID_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP by Sentence Index',
                                                 variable=aggregate_bySentenceID_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                aggregate_bySentenceID_checkbox, True)
 
 dict_WordNet_filename_lb = tk.Label(window, text='csv file of WordNet classified/aggregated words (from ZOOM OUT/UP)')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
                                                dict_WordNet_filename_lb, True)
 
 dict_WordNet_filename = tk.Entry(window, width=80, textvariable=dict_WordNet_filename_var)
 dict_WordNet_filename.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 400, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 400, y_multiplier_integer,
                                                dict_WordNet_filename)
 
 asked = False

@@ -458,75 +458,75 @@ def get_csv_file(window,title,fileType,annotate):
 
 csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: get_csv_file(window,'Select INPUT csv file', [("dictionary files", "*.csv")],True))
 # csv_file_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,csv_file_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,csv_file_button,True)
 
 #setup a button to open Windows Explorer on the selected input directory
 # current_y_multiplier_integer=y_multiplier_integer-1
 # openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
     openInputFile_button, True)
 
 csv_file=tk.Entry(window, width=130,textvariable=csv_file_var)
 csv_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,csv_file)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,csv_file)
 
 encoding_lb = tk.Label(window, text='Select encoding type (utf-8 default)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,encoding_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,encoding_lb,True)
 encoding_var.set('utf-8')
 encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le','latin-1','ISO-8859-1')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,encodingValue,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,encodingValue,True)
 
 
 #memory options
 
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 190,y_multiplier_integer,memory_var_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 190,y_multiplier_integer,memory_var_lb,True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(4)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 270,y_multiplier_integer,memory_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 270,y_multiplier_integer,memory_var)
 
 extract_date_lb = tk.Label(window, text='Extract date (for dynamic GIS)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_date_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_date_lb,True)
 
 extract_date_from_text_var.set(0)
 extract_date_from_text_checkbox = tk.Checkbutton(window, variable=extract_date_from_text_var, onvalue=1, offvalue=0)
 extract_date_from_text_checkbox.config(text="From document content")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),
                                                y_multiplier_integer, extract_date_from_text_checkbox, True)
 
 extract_date_from_filename_var.set(0)
 extract_date_from_filename_checkbox = tk.Checkbutton(window, variable=extract_date_from_filename_var, onvalue=1, offvalue=0)
 extract_date_from_filename_checkbox.config(text="From filename")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 190,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 190,
                                                y_multiplier_integer, extract_date_from_filename_checkbox, True)
 
 date_format_lb = tk.Label(window,text='Format ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 320,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 320,
                                                y_multiplier_integer, date_format_lb, True)
 date_format.set('mm-dd-yyyy')
 date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
 date_format_menu.configure(width=10,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 380,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 380,
                                                y_multiplier_integer, date_format_menu, True)
 date_separator_var.set('_')
 date_separator_lb = tk.Label(window, text='Character separator ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 510,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 510,
                                                y_multiplier_integer, date_separator_lb, True)
 date_separator = tk.Entry(window, textvariable=date_separator_var)
 date_separator.configure(width=2,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 640,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 640,
                                                y_multiplier_integer, date_separator, True)
 date_position_var.set(2)
 date_position_menu_lb = tk.Label(window, text='Position ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 670,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 670,
                                                y_multiplier_integer, date_position_menu_lb, True)
 date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
 date_position_menu.configure(width=1,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 740,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 740,
                                                y_multiplier_integer, date_position_menu)
 
 def check_dateFields(*args):
@@ -550,22 +550,22 @@ extract_date_from_filename_var.trace('w',check_dateFields)
 NER_extractor_var.set(0)
 NER_extractor_checkbox = tk.Checkbutton(window, variable=NER_extractor_var, onvalue=1, offvalue=0)
 NER_extractor_checkbox.config(text="EXTRACT locations (via Stanford CoreNLP NER) - Default parameters")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,NER_extractor_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,NER_extractor_checkbox)
 
 menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 
 location_field_lb = tk.Label(window, text='Select the column containing location names')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,location_field_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,location_field_lb,True)
 if menu_values!='':
     location_field = tk.OptionMenu(window,location_menu_var,*menu_values)
 else:
     location_field = tk.OptionMenu(window,location_menu_var,menu_values)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,location_field)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,location_field)
 
 geocode_locations_var.set(0)
 geocode_locations_checkbox = tk.Checkbutton(window, variable=geocode_locations_var, onvalue=1, offvalue=0)
 geocode_locations_checkbox.config(text="GEOCODE locations")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,geocode_locations_checkbox, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,geocode_locations_checkbox, True)
 
 def activate_geocoder(*args):
     if geocode_locations_var.get()==True:
@@ -581,10 +581,10 @@ def activate_geocoder(*args):
 geocode_locations_var.trace('w',activate_geocoder)
 
 geocoder_lb = tk.Label(window, text='Geocoder')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+200,y_multiplier_integer,geocoder_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200,y_multiplier_integer,geocoder_lb,True)
 geocoder_var.set('Nominatim')
 geocoder = tk.OptionMenu(window,geocoder_var,'Nominatim','Google')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,geocoder,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,geocoder,True)
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
 # Google_API_geocode_lb = tk.Label(window, text='API key')
@@ -606,7 +606,7 @@ def activate_Google_API_geocode(*args):
 geocoder_var.trace('w',activate_Google_API_geocode)
 
 country_bias_lb = tk.Label(window, text='Country bias')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,country_bias_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,country_bias_lb,True)
 
 country_menu = constants_util.ISO_GIS_country_menu
 
@@ -614,23 +614,23 @@ country_bias_var.set('')
 country_bias = ttk.Combobox(window, width = 25, textvariable = country_bias_var)
 country_bias['values'] = country_menu
 country_bias.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,country_bias, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,country_bias, True)
 
 area_lb = tk.Label(window, text='Area')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,area_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,area_lb,True)
 
 area_var.set('e.g., (34.98527, -85.59790), (30.770444, -81.521974)')
 area=tk.Entry(window, width=45,textvariable=area_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+750, y_multiplier_integer,area, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+750, y_multiplier_integer,area, True)
 
 restrict_var.set(0)
 restrict_checkbox = tk.Checkbutton(window, text="Restrict", variable=restrict_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+1050, y_multiplier_integer,restrict_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+1050, y_multiplier_integer,restrict_checkbox)
 
 map_locations_var.set(0)
 map_locations_checkbox = tk.Checkbutton(window, variable=map_locations_var, onvalue=1, offvalue=0)
 map_locations_checkbox.config(text="MAP locations")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,map_locations_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,map_locations_checkbox,True)
 
 def call_reminders(*args):
     if map_locations_var.get()==True:
@@ -645,20 +645,20 @@ map_locations_var.trace('w',call_reminders)
 
 GIS_package_var.set('Google Earth Pro & Google Maps')
 GIS_package_lb = tk.Label(window, text='Software')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,GIS_package_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,GIS_package_lb,True)
 GIS_package = tk.OptionMenu(window,GIS_package_var,'Google Earth Pro & Google Maps','Google Earth Pro','Google Maps','QGIS','Tableau','TimeMapper')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+80, y_multiplier_integer,GIS_package,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+80, y_multiplier_integer,GIS_package,True)
 
 GIS_package2_var.set(0)
 GIS_package2_checkbox = tk.Checkbutton(window, variable=GIS_package2_var, onvalue=1, offvalue=0)
 GIS_package2_checkbox.config(text="GIS package - Open GUI")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700, y_multiplier_integer,GIS_package2_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700, y_multiplier_integer,GIS_package2_checkbox)
 
 open_API_config_lb = tk.Label(window, text='View Google API key')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_API_config_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_API_config_lb,True)
 open_API_config_var.set('Google Maps')
 API = tk.OptionMenu(window,open_API_config_var,'Google Maps','Google geocoding')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+130, y_multiplier_integer,API, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+130, y_multiplier_integer,API, True)
 
 open_API_config_button=tk.Button()
 if 'Maps' in open_API_config_var.get():
@@ -668,7 +668,7 @@ else:
 open_API_config_button = tk.Button(window, width=3,
                                      text='',
                                      command=lambda:GIS_pipeline_util.getGoogleAPIkey(config_file,True))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,open_API_config_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,open_API_config_button)
 
 
 # https://developers.google.com/maps/documentation/embed/get-api-key

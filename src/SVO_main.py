@@ -757,79 +757,79 @@ def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
 
 pre_processing_button = tk.Button(window, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                pre_processing_button)
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                memory_var_lb, True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(6)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 100, y_multiplier_integer,
                                                memory_var, True)
 
 document_length_var_lb = tk.Label(window, text='Document length')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                document_length_var_lb, True)
 
 document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
 document_length_var.pack()
 document_length_var.set(90000)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+150, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+150, y_multiplier_integer,
                                                document_length_var,True)
 
 limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
                                                limit_sentence_length_var_lb,True)
 
 limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
 limit_sentence_length_var.pack()
 limit_sentence_length_var.set(100)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 550, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 550, y_multiplier_integer,
                                                limit_sentence_length_var)
 
 extract_date_lb = tk.Label(window, text='Extract date (for dynamic GIS)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_date_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_date_lb,True)
 
 extract_date_from_text_var.set(0)
 extract_date_from_text_checkbox = tk.Checkbutton(window, variable=extract_date_from_text_var, onvalue=1, offvalue=0)
 extract_date_from_text_checkbox.config(text="From document content")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),
                                                y_multiplier_integer, extract_date_from_text_checkbox, True)
 # extract_date_from_text_checkbox.configure(state='disabled')
 
 extract_date_from_filename_var.set(0)
 extract_date_from_filename_checkbox = tk.Checkbutton(window, variable=extract_date_from_filename_var, onvalue=1, offvalue=0)
 extract_date_from_filename_checkbox.config(text="From filename")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 190,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 190,
                                                y_multiplier_integer, extract_date_from_filename_checkbox, True)
 # extract_date_from_filename_checkbox.config(state='disabled')
 
 date_format_lb = tk.Label(window,text='Format ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 320,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 320,
                                                y_multiplier_integer, date_format_lb, True)
 date_format_var.set('mm-dd-yyyy')
 date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
 # date_format_menu.configure(width=10,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 380,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 380,
                                                y_multiplier_integer, date_format_menu, True)
 date_separator_var.set('_')
 date_separator_lb = tk.Label(window, text='Character separator ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 510,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 510,
                                                y_multiplier_integer, date_separator_lb, True)
 date_separator = tk.Entry(window, textvariable=date_separator_var)
 # date_separator.configure(width=2,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 640,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 640,
                                                y_multiplier_integer, date_separator, True)
 date_position_var.set(2)
 date_position_menu_lb = tk.Label(window, text='Position ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 670,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 670,
                                                y_multiplier_integer, date_position_menu_lb, True)
 date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
 # date_position_menu.configure(width=1,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 740,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 740,
                                                y_multiplier_integer, date_position_menu)
 
 def check_dateFields(*args):
@@ -851,29 +851,29 @@ extract_date_from_text_var.trace('w',check_dateFields)
 extract_date_from_filename_var.trace('w',check_dateFields)
 
 language_lb = tk.Label(window,text='Language')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                y_multiplier_integer, language_lb, True)
 
 language_var.set('English')
 language_menu = tk.OptionMenu(window, language_var, 'English', 'Arabic','Chinese','German','Hungarian','Italian','Spanish')
-language_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100,
+# language_menu.configure(state="disabled")
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
                                                y_multiplier_integer, language_menu)
 
 CoRef_var.set(0)
 CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP - Neural Network)',
                                 variable=CoRef_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                CoRef_checkbox)
 
 # CoRef_menu_var.set("Neural Network")
 # CoRef_menu = tk.OptionMenu(window, CoRef_menu_var, 'Deterministic', 'Statistical', 'Neural Network')
-# y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column, y_multiplier_integer, CoRef_menu)
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, CoRef_menu)
 
 manual_Coref_var.set(0)
 manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_Coref_var,
                                        onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
                                                manual_Coref_checkbox)
 
 def activateCoRefOptions(*args):
@@ -899,24 +899,24 @@ activateCoRefOptions()
 # extracted in SVO
 # date_extractor_checkbox = tk.Checkbutton(window, text='Extract normalized NER dates (via Stanford CoreNLP)',
 #                                          variable=normalized_NER_date_extractor_var, onvalue=1, offvalue=0)
-# y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
 #                                                date_extractor_checkbox)
 
 CoreNLP_SVO_extractor_var.set(1)
 CoreNLP_SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs & SVs (via CoreNLP Enhanced++ Dependencies)',
                                                 variable=CoreNLP_SVO_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                CoreNLP_SVO_extractor_checkbox, True)
 
 SENNA_SVO_extractor_var.set(0)
 SENNA_SVO_extractor_checkbox = tk.Checkbutton(window, text='Extract SVOs & SVs (via SENNA)',
                                               variable=SENNA_SVO_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
                                                SENNA_SVO_extractor_checkbox, True)
 
 CoreNLP_OpenIE_var.set(0)
 CoreNLP_OpenIE_checkbox = tk.Checkbutton(window, text='Extract relation triples (via CoreNLP OpenIE)', variable=CoreNLP_OpenIE_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
                                                CoreNLP_OpenIE_checkbox, False)
 
 def activateFilters(*args):
@@ -1000,101 +1000,101 @@ filter_subjects_var.set(1)
 subjects_checkbox = tk.Checkbutton(window, text='Filter Subject', variable=filter_subjects_var, onvalue=1, offvalue=0,
                                    command=lambda: getDictFile(filter_subjects_var, subjects_dict_var, filter_subjects_var.get(),
                                                                'Subject'))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                subjects_checkbox, True)
 
 # setup a button to open Windows Explorer on the subjects file
 openInputFile_subjects_button = tk.Button(window, width=3, text='',
                                           command=lambda: IO_files_util.openFile(window, subjects_dict_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 140, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 140, y_multiplier_integer,
                                                openInputFile_subjects_button, True)
 
 lemmatize_subjects_checkbox = tk.Checkbutton(window, text='Lemmatize Subject', variable=lemmatize_subjects_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+200, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200, y_multiplier_integer,
                                                lemmatize_subjects_checkbox, True)
 
 
 filter_verbs_var.set(1)
 verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=filter_verbs_var, onvalue=1, offvalue=0,
                                 command=lambda: getDictFile(filter_verbs_var, verbs_dict_var, filter_verbs_var.get(), 'Verb'))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column, y_multiplier_integer, verbs_checkbox, True)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, verbs_checkbox, True)
 
 # setup a button to open Windows Explorer on the verbs file
 openInputFile_verbs_button = tk.Button(window, width=3, text='',
                                        command=lambda: IO_files_util.openFile(window, verbs_dict_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 520, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 520, y_multiplier_integer,
                                                openInputFile_verbs_button, True)
 
 lemmatize_verbs_var.set(1)
 lemmatize_verbs_checkbox = tk.Checkbutton(window, text='Lemmatize Verb', variable=lemmatize_verbs_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+580, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+580, y_multiplier_integer,
                                                lemmatize_verbs_checkbox, True)
 
 filter_objects_var.set(0)
 objects_checkbox = tk.Checkbutton(window, text='Filter Object', variable=filter_objects_var, onvalue=1, offvalue=0,
                                   command=lambda: getDictFile(filter_objects_var, objects_dict_var, filter_objects_var.get(),
                                                               'Object'))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
                                                objects_checkbox, True)
 
 # setup a button to open Windows Explorer on the objects file
 openInputFile_objects_button = tk.Button(window, width=3, text='',
                                          command=lambda: IO_files_util.openFile(window, objects_dict_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 930, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 930, y_multiplier_integer,
                                                openInputFile_objects_button,True)
 
 lemmatize_objects_checkbox = tk.Checkbutton(window, text='Lemmatize Object', variable=lemmatize_objects_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+990, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+990, y_multiplier_integer,
                                                lemmatize_objects_checkbox)
 
 subjects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
 subjects_dict_entry = tk.Entry(window, width=60, state="disabled", textvariable=subjects_dict_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                subjects_dict_entry, True)
 
 verbs_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-action-list.csv'))
 verbs_dict_entry = tk.Entry(window, width=60, state="disabled", textvariable=verbs_dict_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column, y_multiplier_integer, verbs_dict_entry, True)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, verbs_dict_entry, True)
 
 objects_dict_var.set('')
 objects_dict_entry = tk.Entry(window, width=60, state="disabled", textvariable=objects_dict_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
                                                objects_dict_entry)
 
 gender_var.set(0)
 gender_checkbox = tk.Checkbutton(window, text='S & O gender',
                                                 variable=gender_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                gender_checkbox, True)
 quote_var.set(0)
 quote_checkbox = tk.Checkbutton(window, text='S & O speaker',
                                                 variable=quote_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,
                                                quote_checkbox, True)
 
 SRL_var.set(0)
 SRL_checkbox = tk.Checkbutton(window, text='SRL (Semantic Role Labeling)',
                                                 variable=SRL_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+600, y_multiplier_integer,
                                                SRL_checkbox)
 SRL_checkbox.configure(state='disabled')
 
 gephi_var.set(1)
 gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network graphs (via Gephi) ',
                                 variable=gephi_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                gephi_checkbox, True)
 
 wordcloud_var.set(1)
 wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wordcloud', variable=wordcloud_var,
                                     onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.SVO_2nd_column, y_multiplier_integer, wordcloud_checkbox,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, wordcloud_checkbox,
                                                True)
 
 google_earth_var.set(1)
 google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where in maps (via Google Maps & Google Earth Pro)',
                                        variable=google_earth_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
                                                google_earth_checkbox)
 
 videos_lookup = {'No videos available':''}

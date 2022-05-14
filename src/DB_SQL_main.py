@@ -183,21 +183,21 @@ def get_SQLite_file(window,title,fileType):
 
 construct_SQLite_DB_button=tk.Button(window, width=23, text='Construct SQLite database',command=lambda: dbFromCSV(inputDir,outputDir))
 #construct_SQLite_DB_checkbox = tk.Checkbutton(window, text='Construct SQLite database', variable=construct_SQLite_DB_var, onvalue=1, offvalue=0)
-#y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_checkbox)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_button)
+#y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_button)
 
 select_SQLite_DB_button=tk.Button(window, width=23, text='Select SQLite database',command=lambda: get_SQLite_file(window,'Select INPUT SQLite file', [("SQLite files", "*.sqlite")]))
 # select_SQLite_DB_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,select_SQLite_DB_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,select_SQLite_DB_button,True)
 
 openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, select_SQLite_DB_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,
     openInputFile_button, True)
 
 SQLite_DB_file=tk.Entry(window, width=100,textvariable=select_SQLite_DB_var)
 SQLite_DB_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,SQLite_DB_file)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,SQLite_DB_file)
 
 table_menu_values = []
 def get_table_list(*args):
@@ -222,13 +222,13 @@ def get_table_list(*args):
 select_SQLite_DB_var.trace('w',get_table_list)
 
 select_DB_tables_lb = tk.Label(window, text='Select DB table ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_DB_tables_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_DB_tables_lb,True)
 if len(table_menu_values)==0:
     select_DB_tables_menu = tk.OptionMenu(window, select_DB_tables_var, table_menu_values)
 else:
     select_DB_tables_menu = tk.OptionMenu(window,select_DB_tables_var, *table_menu_values)
 select_DB_tables_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100,y_multiplier_integer,select_DB_tables_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,y_multiplier_integer,select_DB_tables_menu,True)
 
 table_fields_menu_values = []
 
@@ -262,13 +262,13 @@ def get_table_fields_name(*args):
 select_DB_table_fields_var.trace('w',get_table_fields_name)
 
 select_DB_table_fields_lb = tk.Label(window, text='Select DB table field')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,select_DB_table_fields_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,select_DB_table_fields_lb,True)
 if len(table_fields_menu_values)==0:
     select_DB_table_fields_menu = tk.OptionMenu(window, select_DB_table_fields_var, table_fields_menu_values)
 else:
     select_DB_table_fields_menu = tk.OptionMenu(window,select_DB_table_fields_var, *table_fields_menu_values)
 select_DB_table_fields_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+480,y_multiplier_integer,select_DB_table_fields_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+480,y_multiplier_integer,select_DB_table_fields_menu,True)
 
 def import_query(window, title, fileType):
     filePath = tk.filedialog.askopenfilename(title=title, initialdir=GUI_util.input_main_dir_path,
@@ -306,28 +306,28 @@ def view_relations():
         call(view_rels_command)
 
 import_query_button=tk.Button(window, width=15, text='Import SQL query',command=lambda: import_query(window,'Select INPUT SQL query file', [("SQL files", "*.sql")]))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700, y_multiplier_integer,import_query_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700, y_multiplier_integer,import_query_button,True)
 
 save_query_button=tk.Button(window, width=15, text='Save SQL query',command=lambda: save_query())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+850, y_multiplier_integer,save_query_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+850, y_multiplier_integer,save_query_button)
 
 SQL_query_entry = tk.Text(window,width=120,height=10)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SQL_query_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SQL_query_entry)
 
 y_multiplier_integer=y_multiplier_integer+3.5
 
 auto_SQL_var=tk.StringVar()
 auto_SQL_lb = tk.Label(window, text='Select SQL query type (template)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,auto_SQL_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,auto_SQL_lb,True)
 auto_SQL_value = tk.OptionMenu(window,auto_SQL_var,'SQL standard','SQL count', 'SQL duplicates', 'SQL unmatched', 'SQL union', 'SQL join')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,auto_SQL_value,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,auto_SQL_value,True)
 
 distinct_checkbox = tk.Checkbutton(window, text='Distinct', variable=distinct_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,distinct_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,distinct_checkbox,True)
 
 # view_relations_button = tk.Button(window, text='View table relations', width=5,height=1,state='disabled',command=lambda: clear_DBpedia_YAGO_class_list())
 view_relations_button = tk.Button(window, text='View table relations', width=20,height=1,state='normal', command=lambda: view_relations())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,view_relations_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,view_relations_button)
 
 def display_SQL(*args):
     SQL_query_entry.delete(0.1, tk.END)

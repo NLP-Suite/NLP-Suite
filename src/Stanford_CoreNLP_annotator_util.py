@@ -31,6 +31,7 @@ import string
 import nltk
 from pycorenlp import StanfordCoreNLP
 from tkinter import messagebox as mb
+import tkinter as tk
 import pandas as pd
 import time
 import Stanford_CoreNLP_clause_util
@@ -112,6 +113,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     date_separator_var = ''
     date_position_var = 0
     date_str = ''
+    language = 'English'
     NERs = []
     for key, value in kwargs.items():
         if key == 'extract_date_from_text_var' and value == True:
@@ -128,8 +130,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
             date_position_var = value
         if key == 'single_quote_var':
             single_quote_var = value
+        if key == 'language':
+            language = value
 
     produce_split_files=False
+    
+    
 
     params_option = {
         'Sentence': {'annotators':['ssplit']},
@@ -196,6 +202,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
         # neural network parser does not contain clause tags
         'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
     }
+    
+    lang_models = language_models(CoreNLPdir, language)
+    if lang_models == None:
+        return ''
     param_number = 0
     param_number_NN = 0
     files = []#storing names of txt files
@@ -267,7 +277,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         POS_WordNet=False
 
     params = {'annotators':param_string,
-                'parse.model': 'edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz',
+                'parse.model': lang_models['pcfg'],
                 'outputFormat': 'json',
                 'outputDirectory': outputDir,
                 'replaceExtension': True,
@@ -283,16 +293,29 @@ def CoreNLP_annotate(config_filename,inputFilename,
     if sys.platform == 'darwin':  # Mac OS
         # mx is the same as Xmx and refers to maximum Java heap size
         # '-props spanish',
-        CoreNLP_nlp = subprocess.Popen(
-            ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer',  '-parse.maxlen' + str(sentence_length), '-timeout', '999999'])
+        if language == 'English':
+            CoreNLP_nlp = subprocess.Popen(
+                ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer',  '-parse.maxlen' + str(sentence_length), '-timeout', '999999'])
+        else:
+            CoreNLP_nlp = subprocess.Popen(
+                ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer','-props', language.lower(),
+                 '-parse.maxlen' + str(sentence_length), '-timeout', '999999'])
+        
     else:
         # CoreNLP_nlp = subprocess.Popen(
         #     ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp',  os.path.join(CoreNLPdir, '*'),
         #      'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
-        CoreNLP_nlp = subprocess.Popen(
-            ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
-             'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
+        if language == 'English':
+            CoreNLP_nlp = subprocess.Popen(
+                ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
+        else: 
+            CoreNLP_nlp = subprocess.Popen(
+                ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-props', language.lower(),
+                 '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
 
     time.sleep(5)
 
@@ -384,7 +407,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                            'CoreNLP_' + str(
                                                                                annotator_params) + '_json_output_NN')
                     with open(jsonFilename, "a+", encoding='utf-8', errors='ignore') as json_out:
-                        json.dump(CoreNLP_output, json_out, indent=4)
+                        json.dump(CoreNLP_output, json_out, indent=4,ensure_ascii=False)
                     # no need to open the Json file
                     # if jsonFilename not in filesToOpen:
                     #     filesToOpen.append(jsonFilename)
@@ -401,7 +424,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 if parse_model == "NN" and model_switch == False:
                     model_switch = True
                     params_NN = params
-                    params_NN['parse.model'] = 'edu/stanford/nlp/models/parser/nndep/english_UD.gz'
+                    params_NN['parse.model'] = lang_models['nn']
                     params_NN['annotators'] = param_string_NN
                     if "quote" in param_string_NN and single_quote_var:
                         print("debugging: Include Single Quote")
@@ -424,7 +447,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                                'CoreNLP_' + str(
                                                                                    annotator_params) + '_json_output_NN')
                         with open(jsonFilename, "a+", encoding='utf-8', errors='ignore') as json_out_nn:
-                            json.dump(CoreNLP_output, json_out_nn, indent=4)
+                            json.dump(CoreNLP_output, json_out_nn, indent=4,ensure_ascii=False)
                         # no need to open the Json file
                         # if jsonFilename not in filesToOpen:
                         #     filesToOpen.append(jsonFilename)
@@ -497,7 +520,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                               'CoreNLP_'+annotator_chosen+'_lemma'+output_format[index][0])
                 filesToOpen.append(outputFilename)
                 df = pd.DataFrame(run_output[index], columns=output_format[index])
-                df.to_csv(outputFilename, index=False)
+                df.to_csv(outputFilename, index=False, encoding = 'utf_8_sig')
         else: # single, merged output
             # generate output file name
             if annotator_chosen == 'NER':
@@ -542,7 +565,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 #count the number of corefed pronouns (COREF annotator)
                 if annotator_chosen == 'coref table':
                     corefed_pronouns = df.shape[0]
-                df.to_csv(outputFilename, index=False)
+                df.to_csv(outputFilename, index=False, encoding = 'utf_8_sig')
     # print("Length of Files to Open after generating files: ", len(filesToOpen))
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
@@ -631,7 +654,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         errorFile = os.path.join(outputDir,
                                            IO_files_util.generate_output_file_name(IO_csv_util.dressFilenameForCSVHyperlink(inputFilename), inputDir, outputDir, '.csv',
                                                                                    'CoreNLP', 'file_ERRORS'))
-        IO_csv_util.list_to_csv(GUI_util.window, filesError, errorFile)
+        IO_csv_util.list_to_csv(GUI_util.window, filesError, errorFile, encoding = 'utf_8_sig')
         filesToOpen.append(errorFile)
     # record the time consumption of generating outputfiles and visualization
     # record the time consumption of running the whole analysis
@@ -641,12 +664,36 @@ def CoreNLP_annotate(config_filename,inputFilename,
     speed_csv = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                            'CoreNLP_speed_assessment')
     df = pd.DataFrame(speed_assessment, columns=speed_assessment_format)
-    df.to_csv(speed_csv, index=False)
+    df.to_csv(speed_csv, index=False, encoding = 'utf_8_sig')
     if len(inputDir) != 0:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Output warning', 'The output filename generated by Stanford CoreNLP is the name of the directory processed in input, rather than any individual file in the directory. The output file(s) include all ' + str(nDocs) + ' files in the input directory processed by CoreNLP.\n\nThe different files are listed in the output csv file under the headers \'Document ID\' and \'Document\'.')
 
     return filesToOpen
 
+
+def language_models(CoreNLPdir, language: str):
+    if language == 'English':
+        pcfg_model = 'edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz'
+        nn_model = 'edu/stanford/nlp/models/parser/nndep/english_UD.gz'
+    else:
+        head, tail = os.path.split(CoreNLPdir)
+        language_file = os.path.join(CoreNLPdir, tail + "-models-" + language.lower() + ".jar")
+        CoreNLP_download = "https://stanfordnlp.github.io/CoreNLP/human-languages.html"
+        if not os.path.isfile(language_file):
+            answer = tk.messagebox.askyesno(title='Language pack', message="You have selected to work with the " + language.upper() + " language. But the language model " +
+                                language_file + " was not found in the main directory of Stanford CoreNLP " +
+                                CoreNLPdir + "\n\nPlease, download the " + language.upper() + " language pack from the Stanford NLP website " + CoreNLP_download + " and move it to the main Stanford CoreNLP directory.\n\nWould you like to do that now?")
+            if answer:
+                if not IO_libraries_util.open_url('Stanford CoreNLP', CoreNLP_download):
+                    return
+            return
+        pcfg_model = 'edu/stanford/nlp/models/srparser/' + language.lower() + 'SR.beam.ser.gz'
+        nn_model = 'edu/stanford/nlp/models/parser/nndep/UD_' + language  +'.gz'
+    result = {}
+    result['pcfg'] = pcfg_model
+    result['nn'] = nn_model
+    return result
+    
 
 def check_sentence_length(sentence_length, sentenceID, config_filename):
     # WARNING for sentences with > 100 tokens
@@ -1259,7 +1306,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         merge_df = pd.merge(merge_df, gender_df, on=["Object (O)", "Sentence ID", "Document ID"], how='left')
         merge_df = merge_df[['Subject (S)', 'S Gender', 'Verb (V)', 'Object (O)', 'O Gender', 'Sentence ID','Sentence', 'Document ID', 'Document']]
         merge_df = merge_df.drop_duplicates()
-        merge_df.to_csv(kwargs["gender_filename"], index=False, mode="a")
+        merge_df.to_csv(kwargs["gender_filename"], index=False, mode="a", encoding = 'utf_8_sig')
 
     if quote_var:
         SVO_df = pd.DataFrame(SVO_brief, columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
@@ -1267,7 +1314,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         merge_df = pd.merge(SVO_df, quote_df, on=["Sentence ID", "Document ID"], how='left')
         merge_df = merge_df[['Subject (S)', 'Verb (V)', 'Object (O)', "Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]]
         merge_df = merge_df.drop_duplicates()
-        merge_df.to_csv(kwargs["quote_filename"], index=False, mode="a")
+        merge_df.to_csv(kwargs["quote_filename"], index=False, mode="a", encoding = 'utf_8_sig')
 
     return SVO_enhanced_dependencies
 
@@ -1701,9 +1748,9 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
 
     df = pd.DataFrame(to_write, columns=columns)
     if not os.path.exists(kwargs["location_filename"]):
-        df.to_csv(kwargs["location_filename"], header='column_names', index=False)
+        df.to_csv(kwargs["location_filename"], header='column_names', index=False, encoding = 'utf_8_sig')
     else:
-        df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False)
+        df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False, encoding = 'utf_8_sig')
 
 # the gender annotator displays results in an html file
 def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesToOpen, genderCol=["Gender"], wordCol=[]):

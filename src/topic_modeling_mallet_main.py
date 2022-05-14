@@ -113,18 +113,18 @@ optimize_intervals_var = tk.IntVar()
 num_topics_var = tk.IntVar()
 
 num_topics_lb = tk.Label(window, text='Number of topics ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                num_topics_lb, True)
 
 num_topics_var.set(20)
 num_topics_entry = tk.Entry(window, width=5, textvariable=num_topics_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate() + 100,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate() + 100,
                                                y_multiplier_integer, num_topics_entry)
 
 optimize_intervals_var.set(1)
 optimize_intervals_checkbox = tk.Checkbutton(window, text='Optimize topic intervals', variable=optimize_intervals_var,
                                              onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                optimize_intervals_checkbox)
 
 videos_lookup = {'No videos available': ''}

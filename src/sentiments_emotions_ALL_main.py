@@ -65,22 +65,22 @@ window.bind("<Escape>", clear)
 y_multiplier_integer = 0
 
 open_YAGO_GUI_button = tk.Button(window, text='Open GUI for YAGO searches (Emotion ontology class)',width=60,command=lambda: call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_YAGO_GUI_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_YAGO_GUI_button)
 
 open_WordNet_GUI_button = tk.Button(window, text='Open GUI for WordNet searches (NOUN: feeling; VERB: emotion)',width=60,command=lambda: call("python knowledge_graphs_WordNet_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_WordNet_GUI_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_WordNet_GUI_button)
 
 open_sentiment_analysis_GUI_button = tk.Button(window, text='Open GUI for Sentiment Analysis (ALL options)',width=60,command=lambda: call("python sentiment_analysis_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_sentiment_analysis_GUI_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_sentiment_analysis_GUI_button)
 
 open_shape_of_stories_GUI_button = tk.Button(window, text='Open GUI for Shape of Stories',width=60,command=lambda: call("python shape_of_stories_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_shape_of_stories_GUI_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_shape_of_stories_GUI_button)
 
 open_rhetoric_GUI_button = tk.Button(window, text='Open GUI for Vocabulary Analysis (punctuation and repetition)',width=60,command=lambda: call("python style_analysis_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_rhetoric_GUI_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_rhetoric_GUI_button)
 
 search_GUI_button = tk.Button(window, text='Open GUI for searching corpus for words of emotions/sentiment',width=60,command=lambda: call("python search_ALL_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,search_GUI_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,search_GUI_button)
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

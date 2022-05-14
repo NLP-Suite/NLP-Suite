@@ -166,7 +166,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                        date_format=dateFormat,
                                                                        date_separator_var=sep,
                                                                        date_position_var=date_field_position,
-                                                                       single_quote_var = single_quote)
+                                                                       single_quote_var = single_quote,
+                                                                       language = language_var)
 
         if len(tempOutputFiles)>0:
             filesToOpen.extend(tempOutputFiles)
@@ -296,39 +297,39 @@ def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
 
 pre_processing_button = tk.Button(window, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                pre_processing_button)
 
 # memory options
 
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                memory_var_lb, True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(4)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100, y_multiplier_integer,
                                                memory_var,True)
 
 document_length_var_lb = tk.Label(window, text='Document length')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                document_length_var_lb, True)
 
 document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
 document_length_var.pack()
 document_length_var.set(90000)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate()+150, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+150, y_multiplier_integer,
                                                document_length_var,True)
 
 limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
                                                limit_sentence_length_var_lb,True)
 
 limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
 limit_sentence_length_var.pack()
 limit_sentence_length_var.set(100)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 550, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 550, y_multiplier_integer,
                                                limit_sentence_length_var)
 
 date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm',
@@ -343,38 +344,38 @@ date_separator_lb = tk.Label()
 
 fileName_embeds_date_checkbox = tk.Checkbutton(window, text='Filename embeds date', variable=fileName_embeds_date,
                                                onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                fileName_embeds_date_checkbox, True)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                fileName_embeds_date_msg, True)
 
 date_format.set('mm-dd-yyyy')
 date_format_lb = tk.Label(window, text='Date format ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                date_format_lb, True)
 date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm',
                                  'yyyy')
 date_format_menu.configure()
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 90, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 90, y_multiplier_integer,
                                                date_format_menu, True)
 
 date_separator_lb = tk.Label(window, text='Date character separator ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 230, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 230, y_multiplier_integer,
                                                date_separator_lb, True)
 
 date_separator_var.set('_')
 date_separator = tk.Entry(window, textvariable=date_separator_var)
 date_separator.configure(width=2)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 390, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 390, y_multiplier_integer,
                                                date_separator, True)
 
 date_position_var.set(2)
 date_position_menu_lb = tk.Label(window, text='Date position ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 440, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 440, y_multiplier_integer,
                                                date_position_menu_lb, True)
 date_position_menu = tk.OptionMenu(window, date_position_var, 1, 2, 3, 4, 5)
 date_position_menu.configure(width=2)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 530, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 530, y_multiplier_integer,
                                                date_position_menu)
 
 
@@ -394,23 +395,23 @@ def check_CoreNLP_dateFields(*args):
 fileName_embeds_date.trace('w', check_CoreNLP_dateFields)
 
 language_lb = tk.Label(window,text='Language')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                y_multiplier_integer, language_lb, True)
 
 language_var.set('English')
 language_menu = tk.OptionMenu(window, language_var, 'English', 'Arabic','Chinese','German','Hungarian','Italian','Spanish')
-language_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100,
+# language_menu.configure(state="disabled")
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
                                                y_multiplier_integer, language_menu)
 
 parser_var.set(1)
 parser_checkbox = tk.Checkbutton(window, text='CoreNLP parser', variable=parser_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                parser_checkbox, True)
 
 parser_menu_var.set("Probabilistic Context Free Grammar (PCFG)")
 parser_menu = tk.OptionMenu(window, parser_menu_var, 'Neural Network', 'Probabilistic Context Free Grammar (PCFG)')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                parser_menu)
 
 def activate_SentenceTable(*args):
@@ -428,11 +429,11 @@ def activate_SentenceTable(*args):
 CoNLL_table_analyzer_var.set(0)
 CoNLL_table_analyzer_checkbox = tk.Checkbutton(window, text='CoNLL table analyzer', variable=CoNLL_table_analyzer_var,
                                                onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                CoNLL_table_analyzer_checkbox, True)
 CoNLL_table_analyzer_checkbox_msg = tk.Label()
 CoNLL_table_analyzer_checkbox_msg.config(text="Open the CoNLL table analyzer GUI")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                CoNLL_table_analyzer_checkbox_msg)
 
 def check_CoNLL_table(*args):
@@ -446,7 +447,7 @@ CoNLL_table_analyzer_var.trace('w', check_CoNLL_table)
 
 CoreNLP_annotators_checkbox = tk.Checkbutton(window, text='CoreNLP annotators', variable=CoreNLP_annotators_var,
                                              onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                CoreNLP_annotators_checkbox, True)
 
 CoreNLP_annotators_menu_var.set("")
@@ -464,7 +465,7 @@ CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var,
         'Normalized NER date',
         'Quote/dialogue annotator (Neural Network)')
 
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                CoreNLP_annotators_menu)
 
 manual_Coref_checkbox = tk.Checkbutton(window, text='Manual edit',
@@ -494,7 +495,7 @@ def activate_CoreNLP_annotators_menu(*args):
         if '*' in CoreNLP_annotators_menu_var.get() or 'dialogue' in CoreNLP_annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer_SV-1
             quote_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 400,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 400,
                                                            y_multiplier_integer,
                                                            quote_checkbox,True)
             quote_checkbox.configure(state='normal')
@@ -504,12 +505,12 @@ def activate_CoreNLP_annotators_menu(*args):
         if 'Coreference' in CoreNLP_annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer-1
             manual_Coref_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 400,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 400,
                                                            y_multiplier_integer,
                                                            manual_Coref_checkbox,True)
 
             open_GUI_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate() + 550,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 550,
                                                            y_multiplier_integer,
                                                            open_GUI_checkbox)
             open_GUI_checkbox.configure(state='normal')

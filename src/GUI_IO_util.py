@@ -79,14 +79,31 @@ remindersPath = os.path.join(NLPPath, 'reminders')
 # The function places and displays a message for each ? HELP button in the GUIs
 def place_help_button(window,x_coordinate,y_coordinate,text_title,text_msg):
     help_button = tk.Button(window, text='? HELP', command=lambda: display_button_info(text_title, text_msg))
-    y_multiplier_integer = placeWidget(x_coordinate,y_coordinate,help_button,False,False,True)
+    y_multiplier_integer = placeWidget(window,x_coordinate,y_coordinate,help_button,False,False,True)
     return y_multiplier_integer
 
 # The function displays the info for any bottom (e.g., ? HELP and ReadMe) in the GUIs
 def display_button_info(text_title,text_msg):
     mb.showinfo(title=text_title, message=text_msg)
 
-def hover_over_widget(widget_name,no_hover_over_widget=False,whole_widget_red=False):
+# https://stackoverflow.com/questions/20399243/display-message-when-hovering-over-something-with-mouse-cursor-in-python
+# def display_widget_info(window,x_coordinate, y_coordinate,text_msg):
+#     tk.Label(window, text=text_msg, width=40).place(x=x_coordinate, y=y_coordinate+1)
+
+# def display_widget_info(e, window,display_window_lb,x_coordinate, y_coordinate,text_msg):
+def display_widget_info(window, e, x_coordinate, y_coordinate, text_msg):
+    e.widget.config(background='red')
+    display_window_lb = tk.Label(window, text=text_msg, width=40)
+    display_window_lb.place(x=x_coordinate - 500, y=y_coordinate + 20)
+    return display_window_lb
+
+def delete_display_widget_lb(window, e, display_window_lb, x_coordinate, y_coordinate, text_msg):
+
+    if text_msg == '': # <Leave> widget event
+        e.widget.config(background = '#F0F0F0')
+        display_window_lb.place_forget()
+
+def hover_over_widget(window,x_coordinate,y_coordinate,widget_name,no_hover_over_widget=False,whole_widget_red=False):
     if no_hover_over_widget:
         return
     # hover-over effect
@@ -118,19 +135,34 @@ def hover_over_widget(widget_name,no_hover_over_widget=False,whole_widget_red=Fa
             else:
                 # foreground sets only the widget wording in red
                 if whole_widget_red:
-                    widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
+                    # widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
+                    # display_widget_info(window,x_coordinate,y_coordinate,'Hello world')
+                    # display_window_lb.config('Hello world')
+                    # widget_name.bind('<Enter>', lambda e: display_widget_info(e, window, display_window_lb, x_coordinate, y_coordinate,
+                    #                                                           'Hello world'))
+                    display_widget_lb = widget_name.bind('<Enter>',
+                                     lambda e: display_widget_info(window, e, x_coordinate,
+                                                                   y_coordinate,
+                                                                   'Hello world'))
                 else:
-                    widget_name.bind('<Enter>', lambda e: e.widget.config(foreground='red',text=label))
+                    display_widget_lb = widget_name.bind('<Enter>', lambda e: e.widget.config(foreground='red',text=label))
+
         # widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
         if 'scale' in str(widget_name) or 'text' in str(widget_name):
             widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
         else:
             if whole_widget_red:
-                widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
+                # widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
+                # display_widget_info(window, x_coordinate, y_coordinate,'')
+                # widget_name.bind('<Leave>', lambda e: display_widget_info(e, window, display_window_lb, x_coordinate, y_coordinate,
+                #                                                           ''))
+                widget_name.bind('<Leave>',
+                                 lambda e: delete_display_widget_lb(window, e, display_widget_lb, x_coordinate, y_coordinate,
+                                                               ''))
             else:
                 widget_name.bind('<Leave>', lambda e: e.widget.config(foreground='black',text=label))
 
-def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90):
+def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90):
     #basic_y_coordinate = 90
     y_step = 40 #the line-by-line increment on the GUI
     if centerX:
@@ -140,7 +172,7 @@ def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_ho
     # use the following command to change the color of any label to any value
     # widget_name.config(foreground='red')
 
-    hover_over_widget(widget_name, no_hover_over_widget, whole_widget_red)
+    hover_over_widget(window,x_coordinate, basic_y_coordinate + y_step*y_multiplier_integer,widget_name, no_hover_over_widget, whole_widget_red)
 
     if sameY==False:
         y_multiplier_integer = y_multiplier_integer+1
