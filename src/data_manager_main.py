@@ -276,7 +276,7 @@ if __name__ == '__main__':
                                      command=lambda: IO_files_util.openFile(window,
                                                                             selectedCsvFile_var.get()))
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
-                                                   openInputFile_button,True)
+                                                   openInputFile_button,True, False, True, False, 90, GUI_IO_util.open_file_directory_coordinate, "Open displayed file")
 
     selectedCsvFile_var = tk.StringVar()
     selectedCsvFile = tk.Entry(window, width=100, textvariable=selectedCsvFile_var)
@@ -1122,6 +1122,7 @@ if __name__ == '__main__':
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       resetAll + "\n\nThe next two (read-only) widgets display the arguments that will be processed when pressing the RUN button for the selected operation.\n\nThe first (read-only) widget displays the currently selected type of operation.\n\nThe second (read-only) widget displays a list of items:\n   csv filename\n   csv column/field.\n   For the Concatenate option the character separator will also be displayed.\n   For the Extract option, the comparator value (e.g., =, >), the WHERE value, and the selected add/or option will be displayed.")
         # empty line to account for the height of the text widget
+        y_multiplier_integer = y_multiplier_integer +1
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "The MERGE option allows you to select several files, merge them together in a single file using the key of overlapping fields (the equivalent of an SQL JOIN operation), and save the output as a new file.\n\nAfter selecting the 'Merge files (Join)' option, press the + button either to add a new csv field or a new csv file (you can add repeatedly more fields and/or files)." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll + "\n\nIn INPUT, the MERGE option takes 2 or more csv files.\n\nIn OUTPUT, the MERGE option creates a csv file containing all the fields from all input files matched on the basis of the same selected overlapping field(s) (e.g., Document ID, Sentence ID).")
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -1136,7 +1137,7 @@ if __name__ == '__main__':
                                       GUI_IO_util.msg_openOutputFiles)
         return y_multiplier_integer -1
 
-    y_multiplier_integer = y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), increment)
+    y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
 
     # change the value of the readMe_message
     readMe_message = "The Python 3 scripts provide several ways of handling data from csv files.\n\nIn INPUT, the script takes one or more csv files depending upon the selected operation.\n\nIn OUTPUT, the script creates a new csv file.\n\nThe following operation are possible.\n\n   1. MERGE different csv files using one or more overlapping common field(s) as a way to JOIN the files together;\n   2. CONCATENATE into a single field the values of different fields from one csv file;\n   3. APPEND the content of different fields from one csv file after the content of a selected target field;\n   4. EXTRACT fields from one csv file, perhaps by specific field values (the equivalent of an SQL WHERE clause);\n   4. PURGE dulicate rows from one csv file."

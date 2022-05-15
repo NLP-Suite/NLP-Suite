@@ -306,7 +306,7 @@ openImage_button = tk.Button(window, width=3, text='', state='disabled',
                                  command=lambda: IO_files_util.openFile(window,
                                                                         selectedImage_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+150, y_multiplier_integer,
-                                               openImage_button, True)
+                                               openImage_button, True, False, True,False, 90, GUI_IO_util.get_labels_x_indented_coordinate()+150, "Open png image file")
 
 selectedImage=tk.Entry(window, width=100,textvariable=selectedImage_var)
 selectedImage.config(state='disabled')

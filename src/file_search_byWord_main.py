@@ -211,7 +211,7 @@ current_y_multiplier_integer=y_multiplier_integer-1
 openInputFile_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.get_labels_x_coordinate()+180, y_multiplier_integer,
-    openInputFile_button, True)
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+180, "Open displayed csv dictionary file")
 
 selectedCsvFile = tk.Entry(window,width=100,state='disabled',textvariable=selectedCsvFile_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,selectedCsvFile)
