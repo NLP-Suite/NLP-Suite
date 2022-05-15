@@ -199,7 +199,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, annotator_dictionary_file_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,
-    openInputFile_button, True)
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 190, "Open csv dictionary file")
 
 annotator_dictionary_file=tk.Entry(window, width=100,textvariable=annotator_dictionary_file_var)
 annotator_dictionary_file.config(state='disabled')
@@ -270,7 +270,7 @@ open_new_SS_folder_button  = tk.Button(window, width=3, text='', command=lambda:
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.get_labels_x_coordinate()+190,
     y_multiplier_integer,
-    open_new_SS_folder_button, True)
+    open_new_SS_folder_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 190, "Open SS file directory")
 
 new_SS_folder=tk.Entry(window, width=110,textvariable=new_SS_folder_var)
 new_SS_folder.config(state='disabled')

@@ -314,7 +314,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, corefed_txt_file_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
-    openInputFile_button, True)
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.get_open_file_directory_coordinate(), "Open coreferenced txt file")
 
 corefed_txt_file=tk.Entry(window, width=130,textvariable=corefed_txt_file_var)
 corefed_txt_file.config(state='disabled')

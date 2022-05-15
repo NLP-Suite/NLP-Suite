@@ -1007,7 +1007,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 openInputFile_subjects_button = tk.Button(window, width=3, text='',
                                           command=lambda: IO_files_util.openFile(window, subjects_dict_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 140, y_multiplier_integer,
-                                               openInputFile_subjects_button, True)
+                                               openInputFile_subjects_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 140, "Open csv file containing SUBJECT filters")
 
 lemmatize_subjects_checkbox = tk.Checkbutton(window, text='Lemmatize Subject', variable=lemmatize_subjects_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200, y_multiplier_integer,
@@ -1017,13 +1017,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 filter_verbs_var.set(1)
 verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=filter_verbs_var, onvalue=1, offvalue=0,
                                 command=lambda: getDictFile(filter_verbs_var, verbs_dict_var, filter_verbs_var.get(), 'Verb'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, verbs_checkbox, True)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, verbs_checkbox, True, False, True, False, 90, GUI_IO_util.SVO_2nd_column, "Open csv file containing VERB filters")
 
 # setup a button to open Windows Explorer on the verbs file
 openInputFile_verbs_button = tk.Button(window, width=3, text='',
                                        command=lambda: IO_files_util.openFile(window, verbs_dict_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 520, y_multiplier_integer,
-                                               openInputFile_verbs_button, True)
+                                               openInputFile_verbs_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 520, "Open csv file containing VERB filters")
 
 lemmatize_verbs_var.set(1)
 lemmatize_verbs_checkbox = tk.Checkbutton(window, text='Lemmatize Verb', variable=lemmatize_verbs_var, onvalue=1, offvalue=0)
@@ -1041,7 +1041,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 openInputFile_objects_button = tk.Button(window, width=3, text='',
                                          command=lambda: IO_files_util.openFile(window, objects_dict_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 930, y_multiplier_integer,
-                                               openInputFile_objects_button,True)
+                                               openInputFile_objects_button,True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 930, "Open csv file containing OBJECT filters")
 
 lemmatize_objects_checkbox = tk.Checkbutton(window, text='Lemmatize Object', variable=lemmatize_objects_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+990, y_multiplier_integer,
