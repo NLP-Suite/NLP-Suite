@@ -1,8 +1,16 @@
 # Written by Tony Chen Gu in Feb 2022
 # Contact: chentony2011@hotmail.com
 
+from matplotlib.pyplot import subplot
 import pandas as pd
 import plotly.express as px
+import plotly
+import plotly.offline as py
+import plotly.graph_objs as go
+import plotly.figure_factory as ff
+import plotly.tools as tls
+from plotly.subplots import make_subplots
+from plotly.offline import plot, iplot
 import os
 
 ## NOTE:
@@ -99,18 +107,50 @@ def plot_radar_chart_px(theta_label, fileName, outputDir, chartTitle, r_label = 
     save_chart(fig, outputDir, chartTitle, static_flag)
     return
 
+#plot 
+def plot_multi_line_chart_w_slider_px(fileName, outputDir, chartTitle):
+    data = pd.read_csv(fileName, encoding='utf-8')
+    data.fillna(0, inplace=True)
+    figs = make_subplots()
+    col_name = list(data.head())
+    for i in range(1,len(col_name)):
+        trace = go.Scatter(
+            x = data[col_name[0]],
+            y = data[col_name[i]],
+            name = col_name[i])
+        figs.add_trace(trace)
+    figs.update_layout(title=chartTitle, title_x=0.5)
+    figs.update_layout(
+        xaxis=dict(
+            rangeselector=dict(
+                buttons=list([
+                    dict(count=1),
+                ])
+            ),
+            rangeslider=dict(
+                visible=True
+            ),
+        )
+    )
+    iplot(figs)
+    #save_chart(fig, outputDir, chartTitle, static_flag)
+    return
+
 #=======================================================================================================================
 # debug use
 #=======================================================================================================================
-# def main():
-#     x_label = 'char'
-#     height = 'count'
-#     hover_label = 'count'
-#     chartTitle = 'test chart'
-#     fileName =  ''
-#     outputDir = 'D:/'
-#     #plot_bar_chart(x_label, height, fileName, outputDir, chartTitle, hover_label)
-#     plot_radar_chart_px(x_label, height, fileName, outputDir, chartTitle)
+def main():
+    x_label = 'char'
+    height = 'count'
+    hover_label = 'count'
+    chartTitle = 'test chart'
+    fileName =  'C:/Users/Tony Chen/Desktop/NLP_working/Test OutputNLP_NVA_conll_eng_Noun_POSTAG_list_frequencies.csv'
+    outputDir = 'C:/Users/Tony Chen/Desktop/NLP_working'
 
-# if __name__ == "__main__":
-#     main()
+    #plot_bar_chart(x_label, height, fileName, outputDir, chartTitle, hover_label)
+    
+    #plot_radar_chart_px(x_label, height, fileName, outputDir, chartTitle)
+    plot_multi_line_chart_w_slider_px(fileName,outputDir,chartTitle)
+
+if __name__ == "__main__":
+    main()
