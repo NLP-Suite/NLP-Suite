@@ -1,7 +1,7 @@
 Software,Path,Download_link
 Stanford CoreNLP,D:/NLP_dependencies/stanford-corenlp-latest/stanford-corenlp-4.3.2,https://stanfordnlp.github.io/CoreNLP/download.html
 Gephi,D:/NLP_dependencies/Gephi-0.9.2,https://gephi.org/users/download/
-Google Earth Pro,D:/NLP_dependencies/google earth pro,https://www.google.com/earth/download/gep/agree.html?hl=en-GB
+Google Earth Pro,C:/Program Files/Google/Google Earth Pro,https://www.google.com/earth/download/gep/agree.html?hl=en-GB
 Mallet,D:/NLP_dependencies/mallet-2.0.8/mallet-2.0.8,http://mallet.cs.umass.edu/download.php
 SENNA,D:/NLP_dependencies/senna-v3.0/senna,https://ronan.collobert.com/senna/download.html
 WordNet,D:/NLP_dependencies/wordnet,https://wordnet.princeton.edu/download/current-version

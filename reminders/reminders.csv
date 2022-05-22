@@ -78,3 +78,4 @@ NGrams_CoOccurrences_Viewer,subprocess.call(cmd) error,"subprocess.call(cmd) err
 If the VIEWER you are running exits with an error code about a file not found, most likely your selected INPUT & OUTPUT directory options are too long for Windows to handle.
 
 You may need to move your input and output folders so as to have a shorter path (e.g., desktop).",Yes,No
+GIS,GIS default visualization options,"The Google Earth Pro visualization options in the GIS GUI are set by default. If you want to customize Google Earth Pro, please, use the GIS Google Earth GUI with the list of locations or of geocoded locations produced by the GIS pipeline as csv files.",Yes,No
