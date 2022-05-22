@@ -103,53 +103,53 @@ keywords_var=tk.StringVar()
 ## option for stopwords
 remove_stopwords_var.set(1)
 remove_stopwords_checkbox = tk.Checkbutton(window, text='Remove stopwords', variable=remove_stopwords_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,remove_stopwords_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,remove_stopwords_checkbox)
 ## option for Lemmatization
 lemmatize_var.set(1)
 lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,lemmatize_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,lemmatize_checkbox)
 ## option for model architecture
 sg_lb = tk.Label(window,text='Select the training model architecture')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sg_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sg_lb,True)
 sg_menu_var.set('Skip-Gram')
 sg_menu = tk.OptionMenu(window,sg_menu_var, 'Skip-Gram','CBOW')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+30,y_multiplier_integer,sg_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+30,y_multiplier_integer,sg_menu)
 ## option for vector size
 vector_size_lb = tk.Label(window,text='Vector size')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,vector_size_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,vector_size_lb,True)
 vector_size_var.set(100)
 vector_size_entry = tk.Entry(window,width=5,textvariable=vector_size_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,vector_size_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,vector_size_entry)
 ## option for window size
 window_lb = tk.Label(window,text='Window size')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,window_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,window_lb,True)
 window_var.set(5)
 window_entry = tk.Entry(window,width=5,textvariable=window_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,window_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,window_entry)
 ## option for minimum count
 min_count_lb = tk.Label(window,text='Minimum count')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,min_count_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,min_count_lb,True)
 min_count_var.set(5)
 min_count_entry = tk.Entry(window,width=5,textvariable=min_count_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,min_count_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+100,y_multiplier_integer,min_count_entry)
 ## option for visualization method
 vis_var_lb = tk.Label(window,text='Select the visualization method')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,vis_var_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,vis_var_lb,True)
 vis_menu_var.set('Plot all word vectors')
 vis_menu = tk.OptionMenu(window,vis_menu_var, 'Plot all word vectors', 'Clustering of word vectors')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,vis_menu, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,vis_menu, True)
 #### 2D or 3D plot
 dim_menu_var.set('2D')
 dim_menu = tk.OptionMenu(window,dim_menu_var, '2D', '3D')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+240,y_multiplier_integer,dim_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+240,y_multiplier_integer,dim_menu)
 #### entry for clustering keywords
 keywords_var.set('')
 keywords_lb = tk.Label(window, text='Keywords')
 cluster_var_entry = tk.Entry(window,width=10,textvariable=keywords_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+30,y_multiplier_integer,keywords_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+30,y_multiplier_integer,keywords_lb,True)
 keywords_entry = tk.Entry(window, textvariable=keywords_var)
 keywords_entry.configure(state='disabled',width=100)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,keywords_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,keywords_entry)
 
 def activate_keywords_var(*args):
     if vis_menu_var.get() == 'Clustering of word vectors':
@@ -165,49 +165,49 @@ videos_options='No videos available'
 TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf","Word2Vec with Gensim":"TIPS_NLP_Word2Vec.pdf"}
 TIPS_options = 'Lemmas & stopwords', 'Word2Vec with Gensim'
 
-def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
+def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if not IO_setup_display_brief:
 
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help", GUI_IO_util.msg_csv_txtFile)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help", GUI_IO_util.msg_corpusData)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help", GUI_IO_util.msg_outputDirectory)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_csv_txtFile)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_corpusData)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_outputDirectory)
 
     else:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 1),
-                                  "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
                                   "Please, tick the checkbox to exclude stopwords from the analyzes (e.g, determiners, personal and possessive pronouns, auxiliaries).")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 2),
-                                  "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
                                   "Please, tick the checkbox to lemmatize nouns (using the singular version instead of plural, e.g., ox iinstead of oxen, child instead of children) and verbs (using the infinitive form instead of any verb forms, e.g., go gor going, went, goes).")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 3),
-                                  "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
                                   "Please, using the dropdown menu, select the preferred model architecture for training Word2Vec: Skip-Gram and CBOW (Continuous Bag of Words).\n\nWhich model is better?\n\nAccording to the original paper by Mikolov et al. (2013) Skip-Gram works well with small datasets, and can better represent less frequent words. However, CBOW is found to train faster than Skip-Gram, and can better represent more frequent words.\n\nMikolov, Tomas, Kai Chen, Greg Corrado, and Jeffrey Dean. 2013. 'Efficient Estimation of Word Representations in Vector Space' arXiv:1301.3781.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 4),
-                                  "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
                                   "'Vector size' refers to the dimensionality of the word vectors. If you have a large corpus (> billions of tokens), you can go up to 100-300 dimensions. Generally word vectors with more dimensions give better results.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 5),
-                                  "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
                                   "'Window size' refers to the maximum distance between the current and predicted word within a sentence. In other words, how many words come before and after your given word.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 6),
-                                  "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
                                   "'Minimum count' refers to the minimum frequency threshold. The words with total frequency lower than this will be ignored.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 7),
-                                  "Help", GUI_IO_util.msg_openOutputFiles)
-                                  # "Help", "Please, using the dropdown menu, select the architecture to be used in training Word2Vec: CBOW (Continuous Bag-of-Words) and Skip-gram. Both approaches are based on neural networks. Generally, CBOW is much faster and with slightly better accuracy for larger corpora. Skip-gram is better for smaller corpora.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 8),
-                                  "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
+                                  # "NLP Suite Help", "Please, using the dropdown menu, select the architecture to be used in training Word2Vec: CBOW (Continuous Bag-of-Words) and Skip-gram. Both approaches are based on neural networks. Generally, CBOW is much faster and with slightly better accuracy for larger corpora. Skip-gram is better for smaller corpora.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
                                   "Enter comma-separated keywords you want to focus on for semantic similarity. The words MUST be in the file(s) you are analyzing.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 9),
-                                  "Help", GUI_IO_util.msg_openOutputFiles)
-
-help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
+    return y_multiplier_integer -1
+y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script analyzes a set of documents for Word2Vec with Gensim."
-readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

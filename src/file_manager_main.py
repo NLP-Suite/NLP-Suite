@@ -532,65 +532,67 @@ def get_additional_csvFile(window,title,fileType):
 
 # add_file_button = tk.Button(window, text='csv file', width=2,height=1,state='disabled',command=lambda: get_additional_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
 add_file_button = tk.Button(window, text='csv file', command=lambda: get_additional_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,add_file_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,add_file_button,True)
 
 #setup a button to open Windows Explorer on the selected input directory
-current_y_multiplier_integer2=y_multiplier_integer-1
+current_y_multiplier_integer=y_multiplier_integer-1
 openInputFile_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
-openInputFile_button.place(x=GUI_IO_util.get_labels_x_coordinate()+70, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.get_labels_x_coordinate()+70, y_multiplier_integer,
+    openInputFile_button, True)
 
 selectedCsvFile = tk.Entry(window,width=110,state='disabled',textvariable=selectedCsvFile_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,selectedCsvFile,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,selectedCsvFile,True)
 
 select_csv_field_lb = tk.Label(window,text='Select csv field')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+800,y_multiplier_integer,select_csv_field_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+800,y_multiplier_integer,select_csv_field_lb,True)
 
 if menu_values!=' ':
     select_csv_field_menu = tk.OptionMenu(window, select_csv_field_var, *menu_values)
 else:
     select_csv_field_menu = tk.OptionMenu(window, select_csv_field_var, menu_values)
 select_csv_field_menu.configure(state='disabled',width=12)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+900,y_multiplier_integer,select_csv_field_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+900,y_multiplier_integer,select_csv_field_menu)
 
 utf8_var.set(0)
 utf8_checkbox = tk.Checkbutton(window, text='Check input filename(s) for utf-8 encoding ', variable=utf8_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,utf8_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,utf8_checkbox,True)
 
 ASCII_var.set(0)
 ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes in filename(s)', variable=ASCII_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,ASCII_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,ASCII_checkbox)
 
 list_var.set(0)
 list_checkbox = tk.Checkbutton(window, text='List', variable=list_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,list_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,list_checkbox,True)
 
 rename_var.set(0)
 rename_checkbox = tk.Checkbutton(window, text='Rename', variable=rename_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+60,y_multiplier_integer,rename_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+60,y_multiplier_integer,rename_checkbox,True)
 
 copy_var.set(0)
 copy_checkbox = tk.Checkbutton(window, text='Copy', variable=copy_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+160,y_multiplier_integer,copy_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+160,y_multiplier_integer,copy_checkbox,True)
 
 move_var.set(0)
 move_checkbox = tk.Checkbutton(window, text='Move', variable=move_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+260,y_multiplier_integer,move_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+260,y_multiplier_integer,move_checkbox,True)
 
 delete_var.set(0)
 delete_checkbox = tk.Checkbutton(window, text='Delete', variable=delete_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+360,y_multiplier_integer,delete_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+360,y_multiplier_integer,delete_checkbox,True)
 
 count_file_manager_var.set(0)
 count_checkbox = tk.Checkbutton(window, text='Count', state="normal", variable=count_file_manager_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+460,y_multiplier_integer,count_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+460,y_multiplier_integer,count_checkbox,True)
 
 split_file_manager_var.set(0)
 split_checkbox = tk.Checkbutton(window, text='Split', state="normal", variable=split_file_manager_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+560,y_multiplier_integer,split_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+560,y_multiplier_integer,split_checkbox)
 
 # use_csv_var.set(0)
 # use_csv_checkbox = tk.Checkbutton(window, text='Use csv for Source & Target fields', state="normal", variable=use_csv_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+560,y_multiplier_integer,use_csv_checkbox)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+560,y_multiplier_integer,use_csv_checkbox)
 
 def activate_list_options(*args):
     if list_var.get()==1:
@@ -762,13 +764,13 @@ split_file_manager_var.trace('w',activate_split_options)
 
 by_file_type_var.set(0)
 by_file_type_checkbox = tk.Checkbutton(window, text='By file type', variable=by_file_type_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,by_file_type_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,by_file_type_checkbox,True)
 
 file_type_menu_lb = tk.Label(window, text='Select file type ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+280,y_multiplier_integer,file_type_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+280,y_multiplier_integer,file_type_menu_lb,True)
 file_type_menu = tk.OptionMenu(window,file_type_menu_var,'*','bmp','csv','doc','docx','gexf','html','jpg','kml','pdf','png','tif','txt','xls','xlsm','xlsx')
 file_type_menu.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+370,y_multiplier_integer,file_type_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+370,y_multiplier_integer,file_type_menu)
 
 
 def activate_file_type_options(*args):
@@ -780,34 +782,34 @@ def activate_file_type_options(*args):
 by_file_type_var.trace('w',activate_file_type_options)
 
 by_creation_date_checkbox = tk.Checkbutton(window, text='By creation & modification date', variable=by_creation_date_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,by_creation_date_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,by_creation_date_checkbox,True)
 # before_date,
 # after_date,
 # on_date,
 
 by_author_checkbox = tk.Checkbutton(window, text='By author (Windows Office files)', variable=by_author_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,by_author_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,by_author_checkbox)
 
 by_prefix_var.set(0)
 by_prefix_checkbox = tk.Checkbutton(window, text='By prefix value', variable=by_prefix_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,by_prefix_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,by_prefix_checkbox,True)
 
 by_substring_var.set(0)
 by_substring_checkbox = tk.Checkbutton(window, text='By sub-string value', variable=by_substring_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,by_substring_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,by_substring_checkbox,True)
 
 string_entry_lb = tk.Label(window, text='Enter value (case sensitive)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+280,y_multiplier_integer,string_entry_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+280,y_multiplier_integer,string_entry_lb,True)
 
 string_entry = tk.Entry(window,width=30,textvariable=string_entry_var)
 string_entry.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+450,y_multiplier_integer,string_entry,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+450,y_multiplier_integer,string_entry,True)
 
 rename_new_entry_lb = tk.Label(window, text='New renaming value (case sensitive)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+580,y_multiplier_integer,rename_new_entry_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+580,y_multiplier_integer,rename_new_entry_lb,True)
 
 rename_new_entry = tk.Entry(window,width=30,textvariable=rename_new_entry_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+ 720,y_multiplier_integer,rename_new_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+ 720,y_multiplier_integer,rename_new_entry)
 
 y_multiplier_integer_save=y_multiplier_integer-1
 
@@ -831,8 +833,8 @@ def activate_prefix_substring_options(*args):
             rename_new_entry_lb.place_forget() #invisible
             rename_new_entry.place_forget() #invisible
         else:
-            y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 400,y_multiplier_integer_save,rename_new_entry_lb,True)
-            y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+ 600,y_multiplier_integer_save,rename_new_entry)
+            y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 400,y_multiplier_integer_save,rename_new_entry_lb,True)
+            y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+ 600,y_multiplier_integer_save,rename_new_entry)
     else:
         if by_substring_var.get()==0:
             by_prefix_checkbox.configure(state="normal")
@@ -847,13 +849,13 @@ by_substring_var.trace('w',activate_prefix_substring_options)
 by_foldername_var.set(0)
 by_foldername_checkbox = tk.Checkbutton(window, text='By subfolder name (renaming only)', variable=by_foldername_var, onvalue=1, offvalue=0)
 by_foldername_checkbox.config(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,by_foldername_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,by_foldername_checkbox,True)
 
 folder_character_separator_lb = tk.Label(window, text='Separator character(s)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+280,y_multiplier_integer, folder_character_separator_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+280,y_multiplier_integer, folder_character_separator_lb,True)
 folder_character_separator = tk.Entry(window, textvariable=folder_character_separator_var)
 folder_character_separator.configure(width=2,state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+420,y_multiplier_integer, folder_character_separator)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+420,y_multiplier_integer, folder_character_separator)
 
 def activateFolderCharacterSeparator(*args):
     folder_character_separator_var.set('')
@@ -865,30 +867,30 @@ by_foldername_var.trace('w',activateFolderCharacterSeparator)
 
 by_embedded_items_var.set(0)
 by_embedded_items_checkbox = tk.Checkbutton(window, text='By number of embedded items', variable=by_embedded_items_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,by_embedded_items_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,by_embedded_items_checkbox,True)
 # by_embedded_items_checkbox.configure(state="disabled")
 
 comparison_var.set('=')
 comparison_menu = tk.OptionMenu(window, comparison_var, '=', '<=','>=')
 comparison_menu.configure(width=4)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+280,y_multiplier_integer, comparison_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+280,y_multiplier_integer, comparison_menu,True)
 
 number_of_items_lb = tk.Label(window, text='Number of items')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer, number_of_items_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer, number_of_items_lb,True)
 number_of_items_value = tk.Entry(window, width=2,textvariable=number_of_items_var)
 number_of_items_value.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+530,y_multiplier_integer, number_of_items_value,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+530,y_multiplier_integer, number_of_items_value,True)
 
 embedded_item_character_value_var.set("_")
 embedded_item_character_value_lb = tk.Label(window, text='Separator character(s)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+580,y_multiplier_integer, embedded_item_character_value_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+580,y_multiplier_integer, embedded_item_character_value_lb,True)
 embedded_item_character_value = tk.Entry(window, width=2,textvariable=embedded_item_character_value_var)
 embedded_item_character_value.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+750,y_multiplier_integer, embedded_item_character_value,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+750,y_multiplier_integer, embedded_item_character_value,True)
 
 include_exclude_var.set(1)
 include_exclude_checkbox = tk.Checkbutton(window, variable=include_exclude_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(include_exclude_var, include_exclude_checkbox, "Include first # items only", "Exclude first # items"))
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+850,y_multiplier_integer, include_exclude_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+850,y_multiplier_integer, include_exclude_checkbox)
 include_exclude_checkbox.config(text='Include first # items only',state="disabled")
 
 def activate_numberEmbeddedItems_options(*args):
@@ -915,14 +917,14 @@ by_embedded_items_var.trace('w',activate_numberEmbeddedItems_options)
 character_count_file_manager_var.set(0)
 character_count_checkbox = tk.Checkbutton(window, text='By number of embedded character(s)', variable=character_count_file_manager_var, onvalue=1, offvalue=0)
 character_count_checkbox.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer, character_count_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer, character_count_checkbox,True)
 
 characters_entry_lb = tk.Label(window, text='Enter character(s) ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 280,y_multiplier_integer,characters_entry_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 280,y_multiplier_integer,characters_entry_lb,True)
 
 characters_entry = tk.Entry(window,width=2,textvariable=character_entry_var)
 characters_entry.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+ 420,y_multiplier_integer,characters_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+ 420,y_multiplier_integer,characters_entry)
 
 def activate_characters_entry_option(*args):
     character_entry_var.set('')
@@ -938,25 +940,25 @@ date_position_var.set(2)
 
 fileName_embeds_date_checkbox = tk.Checkbutton(window, text='Filename embeds date', variable=fileName_embeds_date, onvalue=1, offvalue=0)
 fileName_embeds_date_checkbox.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer, fileName_embeds_date_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer, fileName_embeds_date_checkbox,True)
 
 date_format_lb = tk.Label(window,text='Date format ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+280,y_multiplier_integer, date_format_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+280,y_multiplier_integer, date_format_lb,True)
 date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
 date_format_menu.configure(width=10)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+80,y_multiplier_integer, date_format_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+80,y_multiplier_integer, date_format_menu,True)
 
 date_separator_lb = tk.Label(window, text='Date character separator ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+210,y_multiplier_integer, date_separator_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+210,y_multiplier_integer, date_separator_lb,True)
 date_separator = tk.Entry(window, textvariable=date_separator_var)
 date_separator.configure(width=2)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+350,y_multiplier_integer, date_separator,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+350,y_multiplier_integer, date_separator,True)
 
 date_position_menu_lb = tk.Label(window, text='Date position ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+400,y_multiplier_integer, date_position_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+400,y_multiplier_integer, date_position_menu_lb,True)
 date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
 date_position_menu.configure(width=2)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+490,y_multiplier_integer, date_position_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+490,y_multiplier_integer, date_position_menu)
 
 def check_CoreNLP_dateFields(*args):
     if fileName_embeds_date.get() == 1:
@@ -971,7 +973,7 @@ fileName_embeds_date.trace('w',check_CoreNLP_dateFields)
 
 include_subdir_var.set(0)
 include_subdir_checkbox = tk.Checkbutton(window, text='Include subdirectories', variable=include_subdir_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,include_subdir_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,include_subdir_checkbox)
 
 videos_lookup = {'File manager':'NLP_File manager.mp4'}
 videos_options = 'File manager'
@@ -980,34 +982,35 @@ TIPS_lookup = {'File manager':'TIPS_NLP_File manager.pdf','File handling in NLP 
 TIPS_options= 'File manager','File handling in NLP Suite', 'Filename checker', 'Filename matcher', 'File classifier (By date)','File classifier (By NER)','File content checker & converter','Text encoding (utf-8)','Spelling checker','File merger','File splitter'
 
 # add all the lines lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function help_buttons
+# change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
+def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if not IO_setup_display_brief:
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_csvFile)
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_outputDirectory)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_csvFile)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_outputDirectory)
     else:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help", "Please, click to select a csv file containing a list of filenames to be handled by a selected file operation: Rename, Copy, Delete, Count, Split.\n\nThe csv file can contain several columns. Once a csv file has been selected, using the dropdown menu, select the field containing the filenames to be processed.\n\nWHEN THE FILENAME IN THE SELECTED FIELD CONTAINS A FULL PATH, THE SELECTED INPUT FILE DIRECTORY WILL BE IGNORED.\n\nSuch csv file can be obtained, for instance, by using the List option.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","Please, tick the checkboxes if you wish to check the input text filename for utf-8 compliance. Non utf-8 compliant filename(s) are likely to lead to code breakdown in some scripts.\n\nTick the checkbox to convert non-ASCII apostrophes & quotes. ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help", "Please, tick the appropriate checkbox for the file operation you wish to run.\n\nNot all filter options (By_...) are available for all operations (e.g., the filter option 'Filename embeds date' is only available when listing files).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help", "Please, using the dropdown menu, select the file type to restrict the selected file handling option.\n\nThe 'By file type' option can be used in conjuction with the options 'By prefix value' or 'By sub-string value.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help", "Please, tick the checkbox to restrict by file creation/modification date and by author the selected file handling option.\n\nThe 'By author' option is available for Windows Office files only (doc, docx, xls, xlsx, xlsm).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help", "Please, tick the checkbox to restrict the selected file handling option by prefix value (e.g., all filenames starting with ._) or sub-string value (e.g., all filenames that contain the string _NLP_SSR_).\n\nAppropriate prefix and sub-string values will need to be entered.\n\nWhen renaming files, the 'New substring for renaming' will also need to be entered.\n\nThe options 'By prefix value' or 'By sub-string value can be used in conjuction with the 'By file type' option.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+7),"Help", "Please, tick the checkbox to rename files in a folder by embedding the LAST PART of folder path in the renamed filename (e.g., The Boston Globe_19-19-1919 found in the subfolder 'John Willis' of a folder path 'c:\mydata\\newspapers\lynching\John Willis' will be remamed as The Boston Globe_19-19-1919__John Willis if __ is selected as the separator character(s).\n\nThe option is available only when renaming files.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+8),"Help", "Please, tick the checkbox to list, copy, move files in a folder by filtering files by the number of items embedded in a filename and separated by specific character(s).\n\nThe user can choose to exclude or include the selected items.\n\nThus, for instance, given the file The Chicago Tribune_17-22-1922_4_3__Ben Treppard, and the options Separator character(s) __, Number of characters 1, and Exclude would result in th filename The Chicago Tribune_17-22-1922_4_3   items embedding the directory name in the renamed filename (e.g., The Boston Globe_19-19-1919 found in the folder John Willis will be remamed as The Boston Globe_19-19-1919__John Willis if __ is selected as the separator character(s).\n\nThe option is available only when listing, copying, moving, or splitting files.\n\nWhen splitting files, all is needed is the 'Separator character(s)' value.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+9),"Help", "The 'By number of embedded character(s)' checkbox is available only when listing files in a folder.\n\nWhen available, tick the checkbox to provide a list of files with a count of characters embedded in the filename (e.g., the character _ counted).\n\nOnce ticked, you must enter appropriate character value(s) (e.g. _).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+10),"Help", "The 'Filename embeds date' checkbox is available only when listing files in a folder.\n\nWHEN THE OPTION IS SELECTED, SINCE THE DATE FUNCTION AUTOMATICALLY CHECKS EMBEDDED DATES FOR THE CORRECT FORMAT, THE OPTION CAN BE USED TO CHECK THAT FILENAMES HAVE THE CORRECT DATE FORMAT. FAULTY DATES ARE EXPORTED AS BLANK.\n\nWhen available, tick the checkbox if filenames contain a date (e.g., The New York Time_2-18-1872). Once the checkbox is ticked, date options will become available. The date in the filename will then be exported, along with filename and path, to the output csv file that lists all files in a folder.\n\nThe embedded date will be checked automatically to ensure that the date has the correct date format. Detected incorrect dates will be listed with a BLANK date.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+11),"Help", "Please, tick the checkbox to process all files found in the input directory and all its subdirectories.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+12),"Help", GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click to select a csv file containing a list of filenames to be handled by a selected file operation: Rename, Copy, Delete, Count, Split.\n\nThe csv file can contain several columns. Once a csv file has been selected, using the dropdown menu, select the field containing the filenames to be processed.\n\nWHEN THE FILENAME IN THE SELECTED FIELD CONTAINS A FULL PATH, THE SELECTED INPUT FILE DIRECTORY WILL BE IGNORED.\n\nSuch csv file can be obtained, for instance, by using the List option.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes if you wish to check the input text filename for utf-8 compliance. Non utf-8 compliant filename(s) are likely to lead to code breakdown in some scripts.\n\nTick the checkbox to convert non-ASCII apostrophes & quotes. ASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the appropriate checkbox for the file operation you wish to run.\n\nNot all filter options (By_...) are available for all operations (e.g., the filter option 'Filename embeds date' is only available when listing files).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, using the dropdown menu, select the file type to restrict the selected file handling option.\n\nThe 'By file type' option can be used in conjuction with the options 'By prefix value' or 'By sub-string value.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to restrict by file creation/modification date and by author the selected file handling option.\n\nThe 'By author' option is available for Windows Office files only (doc, docx, xls, xlsx, xlsm).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to restrict the selected file handling option by prefix value (e.g., all filenames starting with ._) or sub-string value (e.g., all filenames that contain the string _NLP_SSR_).\n\nAppropriate prefix and sub-string values will need to be entered.\n\nWhen renaming files, the 'New substring for renaming' will also need to be entered.\n\nThe options 'By prefix value' or 'By sub-string value can be used in conjuction with the 'By file type' option.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to rename files in a folder by embedding the LAST PART of folder path in the renamed filename (e.g., The Boston Globe_19-19-1919 found in the subfolder 'John Willis' of a folder path 'c:\mydata\\newspapers\lynching\John Willis' will be remamed as The Boston Globe_19-19-1919__John Willis if __ is selected as the separator character(s).\n\nThe option is available only when renaming files.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to list, copy, move files in a folder by filtering files by the number of items embedded in a filename and separated by specific character(s).\n\nThe user can choose to exclude or include the selected items.\n\nThus, for instance, given the file The Chicago Tribune_17-22-1922_4_3__Ben Treppard, and the options Separator character(s) __, Number of characters 1, and Exclude would result in th filename The Chicago Tribune_17-22-1922_4_3   items embedding the directory name in the renamed filename (e.g., The Boston Globe_19-19-1919 found in the folder John Willis will be remamed as The Boston Globe_19-19-1919__John Willis if __ is selected as the separator character(s).\n\nThe option is available only when listing, copying, moving, or splitting files.\n\nWhen splitting files, all is needed is the 'Separator character(s)' value.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "The 'By number of embedded character(s)' checkbox is available only when listing files in a folder.\n\nWhen available, tick the checkbox to provide a list of files with a count of characters embedded in the filename (e.g., the character _ counted).\n\nOnce ticked, you must enter appropriate character value(s) (e.g. _).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "The 'Filename embeds date' checkbox is available only when listing files in a folder.\n\nWHEN THE OPTION IS SELECTED, SINCE THE DATE FUNCTION AUTOMATICALLY CHECKS EMBEDDED DATES FOR THE CORRECT FORMAT, THE OPTION CAN BE USED TO CHECK THAT FILENAMES HAVE THE CORRECT DATE FORMAT. FAULTY DATES ARE EXPORTED AS BLANK.\n\nWhen available, tick the checkbox if filenames contain a date (e.g., The New York Time_2-18-1872). Once the checkbox is ticked, date options will become available. The date in the filename will then be exported, along with filename and path, to the output csv file that lists all files in a folder.\n\nThe embedded date will be checked automatically to ensure that the date has the correct date format. Detected incorrect dates will be listed with a BLANK date.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to process all files found in the input directory and all its subdirectories.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
+    return y_multiplier_integer -1
 
-help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
+y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide several ways of handling files in a directory:\n\nLIST, RENAME, COPY, MOVE, DELETE, COUNT, SPLIT files in a directory (and subdirectories), by a variety of filename filters.\n\nMore specialized file managment options based on the filename are available as separate tools (e.g., Filename checker, File matcher, File classifier)\n\nAll these tools deal with the name of a file, rather than its content. A number of other tools deal with file content (e.g., File merger, File splitter, File type converter, File utf-8 encoding checker)."
-readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

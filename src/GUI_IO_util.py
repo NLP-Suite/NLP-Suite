@@ -26,7 +26,7 @@ msg_openExplorer="\n\nA small button appears next to the select directory button
 msg_openFile="\n\nA small button appears next to the select file button. Click on the button to open the file, if one has been selected, as a check that you selected the correct file." # + msg_fileButtonDisabled
 msg_Esc="\n\nPress the ESCape button to clear any previously selected options and start fresh."
 
-msg_IO_config="The default or GUI-specific config files are 2-columns csv files with the 4 I/O labels - Input filename with path, Input files directory, Input files secondary directory, Output files directory - in the first column and the file or directory path in the second column.\n\nThe fields Input filename with path and Input files directory are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH.\n\nA couple of scripts in the NLP Suite require two input directories (e.g., for source and target files, as in social_science_researh_main and file_classifier_main)."
+msg_IO_config="The default or GUI-specific config files are 2-columns csv files with the 4 I/O labels - Input filename with path, Input files directory, Input files secondary directory, Output files directory - in the first column and the file or directory path in the second column.\n\nThe fields Input filename with path and Input files directory are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH.\n\nA couple of scripts in the NLP Suite require two input directories (e.g., for source and target files, as in social_science_researh_main and file_classifier_main)\n\nCONFIG FILES ARE STORED IN THE SUBDIRECTORY config OF THE MAIN NLP SUITE DIRECTORY."
 
 msg_IO_setup="Please, using the dropdown menu, select the type of INPUT/OUTPUT configuration you wish to use in this GUI: Default I/O configuration or GUI-specific I/O configuration.\n\nEach option will allow you to select and INPUT file or directory where the files(s) to be used in input are stored and an OUTPUT directory where files produced by the NLP tools will be saved (csv, txt, html, kml, jpg).\n\n   The default configuration is the I/O option used for all GUIs as default;\n   the GUI-specific I/O configuration is an alternative I/O option only used in a specific GUI.\n\nYou can click on the display area and scroll to visualize the current configuration. You can also click on the 'Setup INPUT/OUTPUT configuration' button to get a better view of the available options.\n\nClick on the small buttons to the right of the I/O display area to open the input file, the input directory, the output directory displayed, and the config file where these options are saved. "+msg_IO_config
 msg_CoreNLP="Please, select the directory where you downloaded the Stanford CoreNLP software.\n\nYou can download Stanford CoreNLP from https://stanfordnlp.github.io/CoreNLP/download.html\n\nYou can place the Stanford CoreNLP folder anywhere on your machine. But... on some machines CoreNLP will not run unless the folder is inside the NLP folder.\n\nIf you suspect that CoreNLP may have given faulty results for some sentences, you can test those sentences directly on the Stanford CoreNLP website at https://corenlp.run\n\nYOU MUST BE CONNECTED TO THE INTERNET TO RUN CoreNLP."
@@ -76,13 +76,91 @@ TIPSPath = os.path.join(NLPPath,'TIPS')
 videosPath = os.path.join(NLPPath,'videos')
 remindersPath = os.path.join(NLPPath, 'reminders')
 
-def placeWidget(x_coordinate,y_multiplier_integer,widget_name,sameY=False, centerX=False, basic_y_coordinate=90):
+# The function places and displays a message for each ? HELP button in the GUIs
+def place_help_button(window,x_coordinate,y_coordinate,text_title,text_msg):
+    help_button = tk.Button(window, text='? HELP', command=lambda: display_button_info(text_title, text_msg))
+    y_multiplier_integer = placeWidget(window,x_coordinate,y_coordinate,help_button,False,False,True)
+    return y_multiplier_integer
+
+# The function displays the info for any bottom (e.g., ? HELP and ReadMe) in the GUIs
+def display_button_info(text_title,text_msg):
+    mb.showinfo(title=text_title, message=text_msg)
+
+# https://stackoverflow.com/questions/20399243/display-message-when-hovering-over-something-with-mouse-cursor-in-python
+def hover_over_widget(window,x_coordinate,y_coordinate,widget_name,no_hover_over_widget=False,whole_widget_red=False, x_coordinate_hover_over= 90, text_info=''):
+    if no_hover_over_widget:
+        return
+
+    def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_msg):
+        e.widget.config(background='red')
+        display_window_lb = tk.Label(window, text=text_msg, name='display_window_lb', foreground='blue')
+        display_window_lb.place(x=x_coordinate_hover_over, y=y_coordinate - 20)
+
+    def delete_display_widget_lb(window, e, x_coordinate, y_coordinate, text_msg):
+        if text_msg == '':  # <Leave> widget event
+            e.widget.config(background='#F0F0F0')
+            window.nametowidget('display_window_lb').place_forget()
+
+    # hover-over effect
+    if widget_name.cget('foreground')!='red':     # do not overwrite in red if the background is already in red
+        if 'scale' in str(widget_name) or 'text' in str(widget_name):
+            label = ''
+        else:
+            label = widget_name.cget('text') # this gives the text value displayed as the label
+        # print('widget_name',widget_name,'  label',label)
+        # all buttons for opening files/dir are little boxes with no text
+        if 'button' in str(widget_name) and label == '':
+                whole_widget_red=True
+        if 'optionmenu' in str(widget_name):
+            # https://stackoverflow.com/questions/6178153/how-to-change-menu-background-color-of-tkinters-optionmenu-widget
+            if label=='': # if no menu options are displayed, turn red the whole widget
+                widget_name.bind('<Enter>', lambda e: e.widget.config(activebackground='red'))
+            else:
+                widget_name.bind('<Enter>', lambda e: e.widget.config(activeforeground='red',text=label))
+        # elif 'combobox' in str(widget_name): # cannot get the combobox option to work
+        #   https://www.tutorialspoint.com/how-to-set-the-background-color-of-a-ttk-combobox-in-tkinter
+        #     widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
+        else:
+            if 'scale' in str(widget_name):
+                # background sets the whole widget in red
+                widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
+            elif 'text' in str(widget_name):
+                # for text widgets do not set the whole widget to red
+                widget_name.bind('<Enter>', lambda e: e.widget.config(background='#F0F0F0'))
+            else:
+                # foreground sets only the widget wording in red
+                if whole_widget_red:
+                    widget_name.bind('<Enter>',
+                                     lambda e: display_widget_info(window, e, x_coordinate,
+                                                                   y_coordinate,
+                                                                   x_coordinate_hover_over,
+                                                                   text_info))
+                else:
+                    widget_name.bind('<Enter>', lambda e: e.widget.config(foreground='red',text=label))
+
+        # widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
+        if 'scale' in str(widget_name) or 'text' in str(widget_name):
+            widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
+        else:
+            if whole_widget_red:
+                widget_name.bind('<Leave>',
+                                 lambda e: delete_display_widget_lb(window, e, x_coordinate, y_coordinate,
+                                                               ''))
+            else:
+                widget_name.bind('<Leave>', lambda e: e.widget.config(foreground='black',text=label))
+
+def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90, x_coordinate_hover_over = 90, text_info=''):
     #basic_y_coordinate = 90
     y_step = 40 #the line-by-line increment on the GUI
     if centerX:
         widget_name.place(relx=0.5, anchor=tk.CENTER, y=basic_y_coordinate + y_step*y_multiplier_integer)
     else:
         widget_name.place(x=x_coordinate, y=basic_y_coordinate + y_step*y_multiplier_integer)
+    # use the following command to change the color of any label to any value
+    # widget_name.config(foreground='red')
+
+    hover_over_widget(window,x_coordinate, basic_y_coordinate + y_step*y_multiplier_integer,widget_name, no_hover_over_widget, whole_widget_red, x_coordinate_hover_over, text_info)
+
     if sameY==False:
         y_multiplier_integer = y_multiplier_integer+1
     return y_multiplier_integer
@@ -312,21 +390,6 @@ def exit_window(window,config_filename, scriptName, config_input_output_numeric_
 from tkinter import Toplevel
 def Dialog2Display(title: str):
     Dialog2 = Toplevel(height=1000, width=1000)
-
-# The function places and displays a message for each ? HELP button in the GUIs
-def place_help_button(window,x_coordinate,y_coordinate,text_title,text_msg):
-    if text_title=='Help':
-        text_title='NLP Suite Help'
-    def msg_box():
-        mb.showinfo(title=text_title, message=text_msg)
-    tk.Button(window, text='? HELP', command=msg_box).place(x=x_coordinate,y=y_coordinate)
-
-# The function displays the info for the ReadMe button in the GUIs
-def readme_button(Window, xCoord, yCoord, text_title,text_msg):
-    if text_title=='Help':
-        text_title='NLP Suite Help'
-    mb.showinfo(title=text_title, message=text_msg)
-
 
 # creating popup menu in tkinter
 

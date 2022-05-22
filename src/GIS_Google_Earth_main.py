@@ -261,40 +261,40 @@ window.bind("<Escape>", clear)
 
 encoding_var.set('utf-8')
 encodingValue = tk.OptionMenu(window, encoding_var, 'utf-8', 'utf-16-le', 'utf-32-le', 'latin-1', 'ISO-8859-1')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer, encodingValue, True)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer, encodingValue, True)
 encoding_lb = tk.Label(window, text='Select encoding type (utf-8 default)')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate, y_multiplier_integer, encoding_lb)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer, encoding_lb)
 
 menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get())
 
 location_field_lb = tk.Label(window, text='Column containing location names')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                location_field_lb, True)
 if menu_values != '':
     location_field = tk.OptionMenu(window, location_var, *menu_values)
 else:
     location_field = tk.OptionMenu(window, location_var, menu_values)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                location_field)
 
 date_field_lb = tk.Label(window, text='Column containing date')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                date_field_lb, True)
 if menu_values != '':
     date_field = tk.OptionMenu(window, date_var, *menu_values)
 else:
     date_field = tk.OptionMenu(window, date_var, menu_values)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                date_field, True)
 
 date_format_var.set('')
 date_format_lb = tk.Label(window, text='Date format ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 250, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 250, y_multiplier_integer,
                                                date_format_lb, True)
 date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm',
                                  'yyyy-mm', 'yyyy')
 date_format_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 400, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 400, y_multiplier_integer,
                                                date_format_menu)
 
 
@@ -387,28 +387,28 @@ def add_group_to_list():
         group_values_entry_var_list.append(group_values_entry_var.get())
 
 group_checkbox = tk.Checkbutton(window, text='Icon for group of values', variable=group_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                group_checkbox, True)
 
 group_number_var.set(1)
 group_lb = tk.Label(window, text='Group ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                group_lb, True)
 group_number = tk.Entry(window, width=3, state='disabled', textvariable=group_number_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 50, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 50, y_multiplier_integer,
                                                group_number, True)
 
 add_group_button = tk.Button(window, text='+', width=2, height=1, state='disabled', command=lambda: add_group_to_list())
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 90, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 90, y_multiplier_integer,
                                                add_group_button, True)
 
 reset_group_button = tk.Button(window, text='Reset', width=5, height=1, state='disabled',
                                command=lambda: reset_all_values())
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 130, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 130, y_multiplier_integer,
                                                reset_group_button, True)
 
 csv_field_forGroups_lb = tk.Label(window, text='Select csv field ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 250, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 250, y_multiplier_integer,
                                                csv_field_forGroups_lb, True)
 
 if menu_values != '':
@@ -416,7 +416,7 @@ if menu_values != '':
 else:
     csv_field_forGroups_menu = tk.OptionMenu(window, icon_csv_field_var, menu_values)
 
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 400, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 400, y_multiplier_integer,
                                                csv_field_forGroups_menu, True)
 
 group_values_entry_var.set('')
@@ -445,47 +445,47 @@ def groupSelection(*args):
 group_var.trace('w', groupSelection)
 
 group_values_lb = tk.Label(window, text='Enter value(s) ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 500, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 500, y_multiplier_integer,
                                                group_values_lb, True)
 group_values_entry = tk.Entry(window, width=10, textvariable=group_values_entry_var)
 group_values_entry.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 600, y_multiplier_integer,
                                                group_values_entry, True)
 
 group_lb = tk.Label(window, text='Group label ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 700, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 700, y_multiplier_integer,
                                                group_lb, True)
 group_label_entry = tk.Entry(window, width=10, textvariable=group_label_entry_var)
 group_label_entry.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 800, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 800, y_multiplier_integer,
                                                group_label_entry)
 
 icon_var.set('Pushpins')
 icon_var_list.append('Pushpins')
 icon_lb = tk.Label(window, text='ICON ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate, y_multiplier_integer, icon_lb,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer, icon_lb,
                                                True)
 icon_value_lb = tk.Label(window, text='Select icon type ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                icon_value_lb, True)
 icon_menu = tk.OptionMenu(window, icon_var, 'Directions', 'Paddles (teardrop)', 'Paddles (square)', 'Pushpins',
                           'Shapes', 'Other icons')
 # icon_menu.config(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 100, y_multiplier_integer,
                                                icon_menu, True)
 
 specific_icon_var.set('red')
 specific_icon_var_list.append('red')
 specific_icon_value_lb = tk.Label(window, text='Select type of ' + str(icon_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 250,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 250,
                                                y_multiplier_integer, specific_icon_value_lb, True)
 icon_menu_values = ['blue', 'green', 'light_blue', 'pink', 'purple', 'red', 'white', 'yellow']
 specific_icon_menu = tk.OptionMenu(window, specific_icon_var, *icon_menu_values)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 500,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 500,
                                                y_multiplier_integer, specific_icon_menu, True)
 
 image_lb = tk.Label(window)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 500, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 500, y_multiplier_integer,
                                                image_lb, False)
 
 y_multiplier_integer_save = y_multiplier_integer - 1
@@ -511,7 +511,7 @@ def display_icon_image(pic_url, y_multiplier_integer_save):
     else:
         image_lb.image = ''
     image_lb.pack(padx=1, pady=1)
-    GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate + 900, y_multiplier_integer_save, image_lb, False)
+    GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 900, y_multiplier_integer_save, image_lb, False)
 
 
 # image_lb.config(state='normal')
@@ -595,39 +595,39 @@ display_icon_image(pic_url, y_multiplier_integer_save)
 name_var.set(0)
 name_var_list.append(0)
 name_checkbox = tk.Checkbutton(window, text='NAME ', variable=name_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                name_checkbox, True)
 
 scale_var_list.append(1)
 
 scale_var.set(1)
 scale_lb = tk.Label(window, text='Scale ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                scale_lb, True)
 scale_entry = tk.Entry(window, width=4, textvariable=scale_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 50, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 50, y_multiplier_integer,
                                                scale_entry, True)
 
 opacity_lb = tk.Label(window, text='Opacity ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 100, y_multiplier_integer,
                                                opacity_lb, True)
 opacity_entry = tk.Entry(window, width=4, textvariable=opacity_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 170, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 170, y_multiplier_integer,
                                                opacity_entry, True)
 
 color_var.set(0)
 color_var_list.append(0)
 color_checkbox = tk.Checkbutton(window, text='Color ', variable=color_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 250, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 250, y_multiplier_integer,
                                                color_checkbox, True)
 
 color_style_var_list.append("")
 color_lb = tk.Label(window, text='RGB color code ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 400, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 400, y_multiplier_integer,
                                                color_lb, True)
 color_entry = tk.Entry(window, width=10, textvariable=color_style_var)
 color_entry.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 500, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 500, y_multiplier_integer,
                                                color_entry)
 
 
@@ -664,18 +664,18 @@ activate_name_options()
 description_var.set(0)
 description_var_list.clear()
 description_checkbox = tk.Checkbutton(window, text='DESCRIPTION ', variable=description_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                description_checkbox, True)
 
 description_csv_field_var_list.clear()
 field_lb = tk.Label(window, text='Select csv field ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                field_lb, True)
 if menu_values != '':
     description_csv_field_menu = tk.OptionMenu(window, description_csv_field_var, *menu_values)
 else:
     description_csv_field_menu = tk.OptionMenu(window, description_csv_field_var, menu_values)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate + 100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 100, y_multiplier_integer,
                                                description_csv_field_menu, True)
 
 
@@ -768,13 +768,13 @@ bold_var_list.append(1)
 bold_var.set(1)
 bold_checkbox = tk.Checkbutton(window, text='Bold ', variable=bold_var, onvalue=1, offvalue=0)
 bold_checkbox.config(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate+250, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate+250, y_multiplier_integer,
                                                bold_checkbox, True)
 
 italic_var.set(1)
 italic_checkbox = tk.Checkbutton(window, text='Italic ', variable=italic_var, onvalue=1, offvalue=0)
 italic_checkbox.config(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate+400, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate+400, y_multiplier_integer,
                                                italic_checkbox)
 
 def activate_description_options(*args):
@@ -995,42 +995,41 @@ TIPS_options = 'utf-8 encoding', 'Geocoding', 'Geocoding: How to Improve Nominat
 
 
 # add all the lines lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function help_buttons
+# change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
+def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     if not IO_setup_display_brief:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       'Please, select an input csv file for the GIS Geogle Earth Pro script. Two types of csv files are acceptable:\n  1. a file containing a first column of location names that need to be geocoded (e.g., New York);\n2.  a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script Stanford_CoreNLP_main.py (the script parses text documents using the Stanford CoreNLP parser).')
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_outputDirectory)
     else:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+1), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the column containing the location names (e.g., New York) to be geocoded and mapped.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. NER IS THE COLUMN AUTOMATICALLY USED WHEN WORKING WITH A CONLL FILE IN INPUT.\n\nWhen GIS distance is to be computed, the column refers to the FIRST set of location names. In this case, you can use the second dropdown menu to select the column containing the second set of location names." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "\n\nUsing the dropdown menu, if a date is present, select the column containing the date and the date format. If a date is present, it will be used to construct dynamic GIS models." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to use different pins for different values in a field of the csv file.\n\nSeveral options become available after ticking the checkbox. In particular, you will be able to:\n\nselect the field in the csv file whose selected values will be used for the same icon;\nenter the comma-separated values that should all share the same icon (e.g., 'communists, socialists, maximalists, anarchists, protesters, demonstartors, trade unions' in a study of the rise of Italian fascism);\noptionally, enter a label for the group (e.g., 'the left'), otherwise leave blank.\n\nSeveral groups can be added by clicking on the + button. Again, in a study of the rise of Italian fascism, a second group may have values 'fascists, right-wingers, nationalists' and, optionally, a group label 'the right'.\n\nFor 'the left' group you may then select a red pin and a black pin for 'the right'.\n\ncsv field value NOT included in any of the two groups (in this specific example), should be added as a third group, leaving blank both fields for group values and group label and then selecting a different icon not associated to any previously defined groups (e.g., a white pin).\n\nWhen group labels are left blank, the labels will be set by default to Group 1, Group 2, Group 3, ...\n\nGroup labels and group values will be automatically displayed in the DESCRIPTION field, if the DESCRIPTION checkbox is ticked."+ GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+5), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the type of pin you wish to use on the map.\n\nSeveral options become available after selecting the basic type of icon pin." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, enter various types of information required for the pin NAME option.\n\nNAME refers to the label to be displayed on the map for each coordinates point. KEEP IN MIND THAT WHEN THE MAP CONTAINS A LARGE NUMBER OF LOCATIONS, DISPLAYING LOCATIONS WITH PINS AND NAMES MAY RESULT IN A VERY 'BUSY' MAP HARD TO READ.\n\nSCALE refers to the size of the label (NAME) to be displayed. Default value 1, but .5 or 2, 3,... acceptable. Try out different values!\n\nOPACITY refers to the transparency of the label displayed (i.e., how much you can see of the map behind the NAME label). Default value 100%. Enter a value (0-100) for the opacity of the label (NAME) to be displayed. Try out different opacity values!\n\nCOLOR refers to the color for the label (NAME) to be displayed on the map for each coordinates point."+ GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, enter various types of information required for the pin DESCRIPTION option. DESCRIPTION contains the information that will be displayed when clicking on a pin.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. FOR CONLL FILES, THE DESCRIPTION FIELD IS AUTOMATICALLY COMPUTED, DISPLAYING THE LOCATION, THE FILENAME, AND THE SENTENCE WHERE THE LOCATION IS MENTIONED.\n\nSelect the field name from the input csv file whose values will be displayed when clicking on a pin on the map.\n\nTick the bold checkbox if you want to display in BOLD the field name.\n\nTick the italic checkbox if you want to display in ITALIC the field name."+ GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
+    return y_multiplier_integer -1
 
-help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
-             GUI_IO_util.get_y_step())
+y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script relies on the Python Geopy library to geocode locations, i.e., finding a locaton latitude and longitude so that it can be mapped using Google Earth Pro.\n\nYOU MUST DOWNLOAD AND INSTALL THE FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro.\n\nIn INPUT, the script can either take:\n   1. A CoNLL table produced by Stanford CoreNLP parser and use the NER (Named Entity Recognition) values of LOCATION, CITY, STATE-OR-PROVINCE, COUNTRY, values for geocoding;\n   2. a csv file, however created (e.g., CoreNLP NER annotator), containing a list of locations to be geocoded (e.g., Chicago);\n   2. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location').\n\nWhen a CoNLL file is used, if the file contains a date, the script can automatically process a wide variety of date formats: day, month, and year in numeric form and in different order, year in 2 or 4 digit form, and month in numeric or alphabetic form and, in the latter case, in 3 or full characters (e.g., Jan or January).\n\nThe current release of the script relies on Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe script prepares the kml file to be displayed in Google Earth Pro.\n\nThe script can also be used to compute geographic distances between locations, in both kilometers and miles, by either geodesic distance or by great circle distance. Distances will be visualized in Excel charts."
-readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
-                                                   GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 if errorDisplayed==False:

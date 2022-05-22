@@ -169,39 +169,41 @@ last_SS_year_var=tk.IntVar()
 new_SS_folders=[]
 
 CoreNLP_gender_annotator_checkbox = tk.Checkbutton(window, text='Annotate nouns & pronouns gender (via CoreNLP Gener annotator - Neural Network)', variable=CoreNLP_gender_annotator_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoreNLP_gender_annotator_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoreNLP_gender_annotator_checkbox,True)
 
 #memory options
 
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,memory_var_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,memory_var_lb,True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(6)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,memory_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,memory_var)
 
 CoreNLP_download_gender_file_checkbox = tk.Checkbutton(window, text='Download CoreNLP gender file', variable=CoreNLP_download_gender_file_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,CoreNLP_download_gender_file_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,CoreNLP_download_gender_file_checkbox,True)
 
 CoreNLP_upload_gender_file_checkbox = tk.Checkbutton(window, text='Upload CoreNLP gender file', variable=CoreNLP_upload_gender_file_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,CoreNLP_upload_gender_file_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,CoreNLP_upload_gender_file_checkbox)
 
 annotator_dictionary_var.set(0)
 annotator_dictionary_checkbox = tk.Checkbutton(window, text='Annotate first names by gender (via CoreNLP NER PERSON & dictionary file)', variable=annotator_dictionary_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,annotator_dictionary_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,annotator_dictionary_checkbox)
 
 annotator_dictionary_button=tk.Button(window, width=20, text='Select dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
 annotator_dictionary_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20, y_multiplier_integer,annotator_dictionary_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20, y_multiplier_integer,annotator_dictionary_button,True)
 
 #setup a button to open Windows Explorer on the selected input directory
 openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, annotator_dictionary_file_var.get()))
-openInputFile_button.place(x=GUI_IO_util.get_labels_x_coordinate()+190, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 190, "Open csv dictionary file")
 
 annotator_dictionary_file=tk.Entry(window, width=100,textvariable=annotator_dictionary_file_var)
 annotator_dictionary_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,annotator_dictionary_file)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,annotator_dictionary_file)
 
 
 def get_dictionary_file(window,title,fileType):
@@ -213,30 +215,30 @@ def get_dictionary_file(window,title,fileType):
 
 personal_pronouns_var.set(1)
 personal_pronouns_checkbox = tk.Checkbutton(window, text='Process personal pronouns', variable=personal_pronouns_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,personal_pronouns_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,personal_pronouns_checkbox)
 
 plot_var.set(0)
 plot_checkbox = tk.Checkbutton(window, text='Plot names via US Social Security', variable=plot_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,plot_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,plot_checkbox,True)
 
 year_state_lb = tk.Label(window, text='By US state/year')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 250,y_multiplier_integer,year_state_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 250,y_multiplier_integer,year_state_lb,True)
 
 year_state_menu = tk.OptionMenu(window,year_state_var,'State','Year','Year of birth','State & Year','State & Year of birth')
 year_state_menu.configure(width=20,state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,year_state_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,year_state_menu,True)
 
 firstName_entry_lb = tk.Label(window, text='Enter first name(s)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 540,y_multiplier_integer,firstName_entry_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 540,y_multiplier_integer,firstName_entry_lb,True)
 
 firstName_entry = tk.Entry(window,width=50,textvariable=firstName_entry_var)
 firstName_entry.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+ 670,y_multiplier_integer,firstName_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+ 670,y_multiplier_integer,firstName_entry)
 
 # https://www.ssa.gov/oact/babynames/limits.html
 new_SS_folders_var.set(0)
 new_SS_folders_checkbox = tk.Checkbutton(window, text='Generate new US Social Security files (by US State, Year, Year of birth, US State & Year, US State & Year of birth)', variable=new_SS_folders_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,new_SS_folders_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,new_SS_folders_checkbox)
 
 def get_new_SS_folders(window):
     new_SS_folders.clear()
@@ -261,20 +263,23 @@ def get_new_SS_folders(window):
 
 new_SS_select_button=tk.Button(window, width=20, text='Select new SS folders',command=lambda: get_new_SS_folders(window))
 new_SS_select_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20, y_multiplier_integer,new_SS_select_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20, y_multiplier_integer,new_SS_select_button,True)
 
 #setup a button to open Windows Explorer on the selected input directory
 open_new_SS_folder_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openExplorer(window, new_SS_folder_var.get()))
-open_new_SS_folder_button.place(x=GUI_IO_util.get_labels_x_coordinate()+190, y=GUI_IO_util.get_basic_y_coordinate()+GUI_IO_util.get_y_step()*y_multiplier_integer)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.get_labels_x_coordinate()+190,
+    y_multiplier_integer,
+    open_new_SS_folder_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 190, "Open SS file directory")
 
 new_SS_folder=tk.Entry(window, width=110,textvariable=new_SS_folder_var)
 new_SS_folder.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,new_SS_folder,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,new_SS_folder,True)
 
 last_SS_year_var.set(2018)
 last_SS_year=tk.Entry(window, width=6,textvariable=last_SS_year_var)
 last_SS_year.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+950, y_multiplier_integer,last_SS_year)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+950, y_multiplier_integer,last_SS_year)
 
 def checkUSSSUpdate():
     if annotator_dictionary_var.get()==True or plot_var.get() == True:
@@ -347,30 +352,31 @@ TIPS_lookup = {'Gender annotator':'TIPS_NLP_Gender annotator.pdf','NER (Named En
 TIPS_options='Gender annotator', 'NER (Named Entity Recognition)', 'CoreNLP Coref'
 
 # add all the lines lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function help_buttons
+# change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
+def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if not IO_setup_display_brief:
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help", GUI_IO_util.msg_txtFile)
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help", GUI_IO_util.msg_corpusData)
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help", GUI_IO_util.msg_outputDirectory)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_txtFile)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_corpusData)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_outputDirectory)
     else:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+1),"Help", 'Please, tick the checkbox if you wish to run the Stanford CoreNLP gender annotator. The CoreNLP gender annotator is based on CoreNLP annotator which, unfortunately, only has about 60\% accuracy. The algorithm annotates the gender of both first names and personal pronouns (he, him, his, she, her, hers).\n\nThe CoreNLP annotator uses a neural network approach. This annotator requires a great deal of memory. Please, adjust the memory allowing as much memory as you can afford.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+2),"Help", 'Please, tick the DOWNLOAD checkbox to dowload the Stanford CoreNLP gender file for editing.\n\nTick the UPLOAD checkbox to upload the edited Stanford CoreNLP gender file.\n\nThe CoreNLP gender file has the format JOHN\\MALE with one NAME\\GENDER entry per line. The CoreNLP gender file is found in The default gender mappings file is in the stanford-corenlp-3.5.2-models.jar file. It is called tmp-stanford-models-expanded/edu/stanford/nlp/models/gender/first_name_map_small')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+3),"Help", 'Please, tick the checkbox if you wish to annotate the first names found in a text using an input dictionary list of gender annotated first names. As a caveat, keep in mind that some first names may be both male and female names (e.g., Jamie in the US) or male and female depending upon the country (e.g., Andrea is a male name in Italy, a female name in the US).\n\nThe algorithm uses the NER PERSON value from the Stanford CoreNLP NER annotator to annotate the gender of proper first names.\n\nThe algorithm also annotates the gender of personal pronouns (he, him, his, she, her, hers, as, respectively, male and female).\n\nThe "Select dictionary file" widget will become available when the "Annotate first names by gender" checkbox is ticked off.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+4),"Help", 'Please, click on the \'Select dictionary file\' to select the first name file to be used to annotate the first names found in the input text(s) by gender.\n\nSeveral files are available as default files in the lib subdirectory (e.g., the 1990 US census lists, the US Social Security list, Carnegie Mellon lists). But, users can also select any file of their choice.\n\nThe "Select dictionary file" widget will become available when the "Annotate first names by gender" checkbox is ticked off.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+5),"Help", 'Please, tick the checkbox if you wish to annotate the gender of personal pronouns (he, him, his, she, her, hers as male and female, respectively).')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+6),"Help", 'Please, tick the checkbox if you wish to plot selected first name(s) by US State, by Year of use of the first name, by Year of birth of individuals bearing the first name, by US State & Year (combining both into one file), or State & Year of birth (combining both into one file) using United States Social Security lists.\n\nEnter comma-separated first names, including double names, e.g., Jo Ann.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+7),"Help", 'Please, tick the checkbox if you wish to generate new US Social Security files (by US State, Year, Year of birth, US State & Year, US State & Year of birth).\n\nTHIS IS ONLY NECESSARY WHEN THE US SOCIAL SECURITY ADMINISTRATION RELEASES NEW GENDER NAMES DATA.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+8),"Help", 'Please, click on the \'Select new SS folders\' to select the two folders where you downloaded and unzipped the most up-to-date gender names databases \'National data\' and \'State-specific data\' from the US Social Security website\n\nhttps://www.ssa.gov/oact/babynames/limits.html\n\nThe last updated year in your NLP Suite is displayed in the last widget of this GUI line.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+9),"Help",GUI_IO_util.msg_openOutputFiles)
-help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to run the Stanford CoreNLP gender annotator. The CoreNLP gender annotator is based on CoreNLP annotator which, unfortunately, only has about 60\% accuracy. The algorithm annotates the gender of both first names and personal pronouns (he, him, his, she, her, hers).\n\nThe CoreNLP annotator uses a neural network approach. This annotator requires a great deal of memory. Please, adjust the memory allowing as much memory as you can afford.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the DOWNLOAD checkbox to dowload the Stanford CoreNLP gender file for editing.\n\nTick the UPLOAD checkbox to upload the edited Stanford CoreNLP gender file.\n\nThe CoreNLP gender file has the format JOHN\\MALE with one NAME\\GENDER entry per line. The CoreNLP gender file is found in The default gender mappings file is in the stanford-corenlp-3.5.2-models.jar file. It is called tmp-stanford-models-expanded/edu/stanford/nlp/models/gender/first_name_map_small')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to annotate the first names found in a text using an input dictionary list of gender annotated first names. As a caveat, keep in mind that some first names may be both male and female names (e.g., Jamie in the US) or male and female depending upon the country (e.g., Andrea is a male name in Italy, a female name in the US).\n\nThe algorithm uses the NER PERSON value from the Stanford CoreNLP NER annotator to annotate the gender of proper first names.\n\nThe algorithm also annotates the gender of personal pronouns (he, him, his, she, her, hers, as, respectively, male and female).\n\nThe "Select dictionary file" widget will become available when the "Annotate first names by gender" checkbox is ticked off.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, click on the \'Select dictionary file\' to select the first name file to be used to annotate the first names found in the input text(s) by gender.\n\nSeveral files are available as default files in the lib subdirectory (e.g., the 1990 US census lists, the US Social Security list, Carnegie Mellon lists). But, users can also select any file of their choice.\n\nThe "Select dictionary file" widget will become available when the "Annotate first names by gender" checkbox is ticked off.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to annotate the gender of personal pronouns (he, him, his, she, her, hers as male and female, respectively).')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to plot selected first name(s) by US State, by Year of use of the first name, by Year of birth of individuals bearing the first name, by US State & Year (combining both into one file), or State & Year of birth (combining both into one file) using United States Social Security lists.\n\nEnter comma-separated first names, including double names, e.g., Jo Ann.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to generate new US Social Security files (by US State, Year, Year of birth, US State & Year, US State & Year of birth).\n\nTHIS IS ONLY NECESSARY WHEN THE US SOCIAL SECURITY ADMINISTRATION RELEASES NEW GENDER NAMES DATA.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, click on the \'Select new SS folders\' to select the two folders where you downloaded and unzipped the most up-to-date gender names databases \'National data\' and \'State-specific data\' from the US Social Security website\n\nhttps://www.ssa.gov/oact/babynames/limits.html\n\nThe last updated year in your NLP Suite is displayed in the last widget of this GUI line.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    return y_multiplier_integer -1
+y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide ways of annotating text files for the gender (female/male) of first names found in the text.\n\nTwo different types of gender annotation are applied.\n\n  1. Stanford CoreNLP gender annotator. This annotator requires Coref annotator which only has about 60% accuracy.\n\n  2. A second approach is based on a variety of first name lists (e.g., US Census name lists, Social Security lists, Carnegie Mellon lists). As a point of warning, it should be noted that many first names may be both male or female first names (e.g., Jamie in the US), sometimes depending upon the country (e.g., Andrea is a male name in Italy and a female name in the US).\n\nWhether using CoreNLP or dictionary lists, the algorithms also classify the gender of personal pronouns (he, him, his; she, her, hers as male and female, respectively)."
-readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

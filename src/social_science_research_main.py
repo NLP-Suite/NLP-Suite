@@ -314,7 +314,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
-IO_setup_display_brief=True
+IO_setup_display_brief=False
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
                              GUI_height_brief=560, # height at brief display
@@ -374,98 +374,98 @@ selectedFile_var = tk.StringVar()  # the noun/verb file to be used for ancestor
 
 fileName_embeds_date_checkbox = tk.Checkbutton(window, text='Filename embeds date', state="disabled",
                                                variable=fileName_embeds_date, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                fileName_embeds_date_checkbox, True)
 
 date_format_lb = tk.Label(window, text='Date format ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
                                                date_format_lb, True)
 date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm',
                                  'yyyy')
 date_format_menu.configure(width=10, state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 90, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 90, y_multiplier_integer,
                                                date_format_menu, True)
 
 date_separator_var_lb = tk.Label(window, text='Date character separator ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 210, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 210, y_multiplier_integer,
                                                date_separator_var_lb, True)
 date_separator_var_menu = tk.Entry(window, textvariable=date_separator_var)
 date_separator_var_menu.configure(width=2, state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 360, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 360, y_multiplier_integer,
                                                date_separator_var_menu, True)
 
 date_position_var_menu_lb = tk.Label(window, text='Date position ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 390, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 390, y_multiplier_integer,
                                                date_position_var_menu_lb, True)
 date_position_var_menu = tk.OptionMenu(window, date_position_var, 1, 2, 3, 4, 5)
 date_position_var_menu.configure(width=4, state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 490, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 490, y_multiplier_integer,
                                                date_position_var_menu)
 
 check_filename_var.set(0)
 check_filename_checkbox = tk.Checkbutton(window, text='Check the filenames well-formedness',
                                          variable=check_filename_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                check_filename_checkbox)
 
 character_var.set(0)
 character_checkbox = tk.Checkbutton(window, text='Find the character & the ancestor (via WordNet)',
                                     variable=character_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                character_checkbox)
 
 missing_character_var.set(0)
 missing_character_checkbox = tk.Checkbutton(window, text='Find the missing character', variable=missing_character_var,
                                             onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                missing_character_checkbox, True)
 
 NER_var.set(0)
 NER_checkbox = tk.Checkbutton(window, text='NER (Named Entity Recognition) ', state="disabled", variable=NER_var,
                               onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
                                                NER_checkbox)
 
 Levenshtein_var.set(0)
 Levenshtein_checkbox = tk.Checkbutton(window, text="Check the character's name tag", variable=Levenshtein_var,
                                       onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                Levenshtein_checkbox)
 
 character_home_var.set(0)
 character_home_checkbox = tk.Checkbutton(window, text="Find the character's home", variable=character_home_var,
                                          onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                character_home_checkbox)
 
 intruder_var.set(0)
 intruder_checkbox = tk.Checkbutton(window, text='Find the intruder', variable=intruder_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                intruder_checkbox, True)
 
 similarityIndex_Intruder_var.set(0.2)
 similarityIndex_Intruder_menu_lb = tk.Label(window, text='Relativity index threshold')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
                                                similarityIndex_Intruder_menu_lb, True)
 similarityIndex_Intruder_menu = tk.OptionMenu(window, similarityIndex_Intruder_var, .1, .15, .2, .25, .3, .35, .4, .45,
                                               .5, .45, .5, .55, .6, .65, .7, .75, .8, .85, .9)
 similarityIndex_Intruder_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 170, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 170, y_multiplier_integer,
                                                similarityIndex_Intruder_menu)
 
 plagiarist_var.set(0)
 plagiarist_checkbox = tk.Checkbutton(window, text='Find the plagiarist', variable=plagiarist_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                plagiarist_checkbox, True)
 
 similarityIndex_Plagiarist_var.set(.8)
 similarityIndex_Plagiarist_menu_lb = tk.Label(window, text='Similarity index ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
                                                similarityIndex_Plagiarist_menu_lb, True)
 similarityIndex_Plagiarist_menu = tk.OptionMenu(window, similarityIndex_Plagiarist_var, .4, .45, .5, .45, .5, .55, .6,
                                                 .65, .7, .75, .8, .85, .9)
 similarityIndex_Plagiarist_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 170, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 170, y_multiplier_integer,
                                                similarityIndex_Plagiarist_menu)
 
 
@@ -716,46 +716,44 @@ TIPS_options = 'Filename well-formedness', 'WordNet', 'Find the character\'s hom
 
 
 # add all the lines lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function help_buttons
+# change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
+def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     if not IO_setup_display_brief:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       "Please, select the main INPUT directory of the TXT files to be analyzed." + GUI_IO_util.msg_openExplorer)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       "Please, select the secondary INPUT directory of the TXT files to be analyzed." + GUI_IO_util.msg_openExplorer)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_outputDirectory)
     else:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 1), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if the filenames processed by the scripts 'Check the filenames well-formedness' and 'Find the plagiarist' embed a date (e.g., The New York Times_12-23-1992).\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the following information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy);\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _);\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers).\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 2), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to check the well-formedness of filenames (for filenames that embed different items of information, e.g., The New York Times_4-22-1918_4_2, i.e., newspaper name, date, page number, column number, separated by _.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 3), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to open the WordNet GUI and run the Python 3 scripts 'Find the character' and 'Find the ancestor'.\n\n'Find the character' uses the WordNet lexicon database to provide a list of words as social actors (i.e., human characters, groups, or organizations) or other characters (e.g., animals, for folktales).\n\n'Find the ancestor' uses the WordNet lexicon database to aggregate nouns and verbs of a csv list (e.g., run, flee, walk, ... aggregated as verbs of movement).")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 4), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the Python 3 script 'Find the missing character'. The script checks an event summary (whether human- or machine-generated) against a set of documents (e.g., all describing the same event) that provided the basis for the summary. The script will generate a list of social actors missing in the event summary.\n\nPlease, check the NER (Named Entity Recognition) tick box to run the script with the added NER filter. The NER option relies on the Stanford NER tagger to increase the probability of identifying missing information in document summaries against the original documents. Summaries will be checked against the originals not just on the basis of missing social actors (by their improper name, e.g., girl), but by proper names (e.g., Mary), and also dates, locations, organizations, as computed by the Stanford NER tagger.\n\nIn INPUT the script expects 3 paths:\n  path to a directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event);\n  path to the directory containing the set of event summaries;\n  output path directory.\n\nIn OUTPUT the script will create two csv files: a csv file that contains the missing social actors and the location of the error; a csv file that calculates the frequency of having a missing social actor problem.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 5), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the Python 3 script \'Check the character\'s name tag\' (i.e., the Levenshtein\'s word distance, also known as edit distance, between any 2 words selected by their NER, Named Entity Recognition, values: CITY, COUNTRY, LOCATION, ORGANIZATION, PERSON).\n\nIn INPUT, the script expects a main directory with several subdirectories with varying sets of txt files. This set of files will be checked for word difference.\n\nIn OUTPUT, the script will produce a csv files with a list suggested ")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 6), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the Python 3 script 'Find the character\'s home. The script uses the date embedded in the filename of files in a directory to check against the dates of files grouped in the same subdirectory (e.g., because they talk about the same event).\n\nIt is presumed that files with dates that are very close to each other, as user specified, will belong to the same event.\n\nIn INPUT the script expects 3 paths:\n  path to a directory containing a list of files;\n  a directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event);\n  output path directory.\n\nIn OUTPUT the script will create two csv files: a csv file that contains the missing social actors and the location of the error; a csv file that calculates the frequency of having a missing social actor problem.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 7), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the Python 3 script 'Find the intruder'. The script checks the documents grouped together in a directory, as perhaps all describing a specific event, to see whether any of them do not belong to the group. The script uses NER values for 'Location','Date','Organization', and 'Person' as criteria for checking files.\n\nPlease, using the dropdown menu, select a value for the similarity index. The similarity index, based on cosine similarity, is used to compute the degree of similarity between documents. The default value is set as 0.2. If you set a high value >.6, then every document may be an intruder; so, the recommended value should be <.4.\n\nIn INPUT the script expects the path to a directory containing several folders, each folder containing a set of related documents (e.g., all describing the same event).\n\nIn OUTPUT, the script creates two csv files: One includes a list of irrelevant files, and the folder they are in; The other csv file contains the frequency of having intruders in the input folders.\n\nNo Excel charts are produced since the csv output lists only one record of frequencies and percentages.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 8), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the Java script 'Find the plagiarist'. The script, based on Lucene, checks a set of documents to compute the percentage of similarity between any two of them.\n\nIn INPUT the script expects:\n   1. the file stopwords.txt stored in the lib subdirectory;\n   2. a directory that contains all the files to be compared.\n\nIn OUTPUT, the script produces four output files: \n   1. document_duplicates.txt that shows the summary of duplicated files;\n   2. Lucene_class_freq.csv that shows how many documents fall into each class of frequency (e.g., 100 documents have 10%-20% similarity with other files);\n   3. Lucene_classes_time_freq.csv that shows, for each year, how many documents fall into each class of frequency (e.g., in 1897, 100 documents have 10%-20% similarity with other files);\n  4. Lucene_document_classes_freq.csv that shows for each document, how many documents fall into each class of frequency (e.g., for the document “The Oglethorpe Echo_09-19-1919_1_1.txt”, 10 other documents have 10%-20% frequency of similarity with it).\n\nThe default threshold for similarity is set at 80%. Documents that get a score over this value are considered duplicates of the candidate document. This level was arrived at by running several different threshold levels on different corpora. Lowering the level would give too many false positives (too many documents wrongly classified as similar); raising the level may exclude too many documents.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 9), "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
-
-help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
-             GUI_IO_util.get_y_step())
+    return y_multiplier_integer -1
+y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for a set of NLP tools, written in Java and Python 3, that can be of use in a variety of social science research projects based on documents.\n\nIn INPUT the scripts expect a main drectory where txt files to be analyzed are stored and, depending upon the type of tools run, a secondary directory where further txt files are stored.\n\nIn OUTPUT, the scripts will save the csv files and Excel charts written by the various scripts."
-readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
-                                                   GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

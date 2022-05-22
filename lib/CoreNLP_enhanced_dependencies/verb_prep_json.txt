@@ -168,7 +168,7 @@
         "compare",
         "cover",
         "discuss",
-        "help",
+        "NLP Suite Help",
         "speak",
         "talk",
         "acquaint",

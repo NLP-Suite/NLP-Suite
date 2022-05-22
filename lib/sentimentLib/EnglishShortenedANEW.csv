@@ -4,7 +4,7 @@ abalone,5.3,2.65,4.95
 abandon,2.84,3.73,3.32
 abandonment,2.63,4.95,2.64
 abbey,5.85,2.2,5
-abdomen,5.43,3.68,5.15
+abdomen,5.y_multiplier_integer,3.68,5.15
 abdominal,4.48,3.5,5.32
 abduct,2.42,5.9,2.75
 abduction,2.05,5.33,3.02
@@ -21,7 +21,7 @@ abolish,3.84,4.18,4.65
 abominable,4.05,5.45,4.62
 abomination,2.5,5.9,3.8
 abort,3.1,5.8,3.38
-abortion,2.58,5.43,4.73
+abortion,2.58,5.y_multiplier_integer,4.73
 abracadabra,5.11,5.27,4.96
 abrasive,4.26,6.1,4.94
 abreast,4.62,4.61,5.19
@@ -30,12 +30,12 @@ abscess,2.79,4,3.95
 absence,3.86,4.3,4.24
 absent,4.1,3.72,4.21
 absinthe,3.53,3.7,3.95
-absolute,5.43,3.48,5.58
+absolute,5.y_multiplier_integer,3.48,5.58
 absolution,6.58,3.38,5.75
 absolve,4.58,3.53,4.82
 absorb,5.5,4.27,5.62
 abstain,4.4,3.1,6.08
-abstinence,3.43,3.15,5.64
+abstinence,3.y_multiplier_integer,3.15,5.64
 abstract,5.25,3.96,5.53
 absurd,4.45,4.02,5.06
 absurdity,4.06,4.7,5.37
@@ -88,7 +88,7 @@ achieve,7.75,4.7,6.61
 achievement,7.28,5.57,7.17
 achy,3.15,4.48,4.62
 acid,3.26,4.77,4.26
-acknowledge,6.43,3.26,6.11
+acknowledge,6.y_multiplier_integer,3.26,6.11
 acknowledgement,6.53,3.3,6.71
 acne,2.18,4.47,3.44
 acorn,5.85,4.42,4.77
@@ -112,7 +112,7 @@ active,6.47,5.62,6.32
 activist,6.24,5.26,5.86
 activity,6.21,4.86,6.45
 actor,6.15,4.35,5.64
-actress,5.42,5.43,4.65
+actress,5.42,5.y_multiplier_integer,4.65
 actual,6.22,2.75,5.54
 actuality,5.4,5.55,5.24
 acupuncture,4.81,4.9,4.77
@@ -202,7 +202,7 @@ aerial,6.04,3.67,5.17
 aerobics,6,5.1,5.7
 aerodynamic,6.16,4.33,5.1
 aerospace,5.79,4.52,5.17
-aesthetic,5.43,2.88,5.5
+aesthetic,5.y_multiplier_integer,2.88,5.5
 affair,3.1,5.4,5.89
 affect,5.65,3.61,6.39
 affection,7.89,5.64,6.6
@@ -228,12 +228,12 @@ aftershave,5.55,3.5,5.81
 age,5.78,3.71,4.67
 agency,5.14,3.17,4.89
 agenda,5.05,3.62,5.36
-agent,5.23,3.43,5.65
+agent,5.23,3.y_multiplier_integer,5.65
 aggravate,2.55,5.9,4.85
 aggravation,2.48,5.35,4.45
 aggression,3.18,5.69,4.65
 aggressive,3.08,5.87,5.49
-aggressiveness,3.58,6.43,5.21
+aggressiveness,3.58,6.y_multiplier_integer,5.21
 aggressor,2.8,6.55,4.57
 agile,5.95,4.95,6.09
 agility,6.55,4.21,6.41
@@ -268,7 +268,7 @@ airliner,6.05,4,4.25
 airlock,4.85,4.23,5
 airplane,5.25,5.62,4.12
 airport,6,5.5,5.79
-airship,5.63,4.88,4.43
+airship,5.63,4.88,4.y_multiplier_integer
 airspace,5.5,4.4,4.91
 airspeed,4.95,4.33,5.24
 airstrip,4.76,3.83,5.1
@@ -349,7 +349,7 @@ amaretto,6,4.04,5.19
 amateur,4.58,3.55,5.25
 amaze,7.24,5,5.83
 amazed,7.55,5.95,6.11
-amazement,7.29,6.3,6.43
+amazement,7.29,6.3,6.y_multiplier_integer
 amazing,7.72,6.05,6.83
 ambassador,5.5,3.91,6.2
 amber,6.15,3.36,6.21
@@ -370,16 +370,16 @@ ammo,4.18,5.53,5.52
 ammonia,3.74,3,3.83
 ammonium,4.06,4.37,4.84
 ammunition,4.59,5.7,5.95
-amnesia,3.43,5.04,3.08
+amnesia,3.y_multiplier_integer,5.04,3.08
 amnesty,5.38,3.86,6
 amorous,5.95,4.21,6
 amount,5.42,3.53,5.39
-amour,6.43,5.43,5.91
+amour,6.y_multiplier_integer,5.y_multiplier_integer,5.91
 amp,5.79,5.05,5.13
 amphibian,5.4,3.35,5.42
 amphibious,5.75,5.7,4.85
 ample,5.89,3.28,6.04
-amputate,2.1,5.43,3
+amputate,2.1,5.y_multiplier_integer,3
 amputation,1.84,4.86,2.85
 amuck,4,4.41,3.74
 amulet,5.75,3.95,5.79
@@ -387,19 +387,19 @@ amuse,7.1,5.17,6.8
 amused,7.05,4.27,5.93
 amusement,7,4.82,6.59
 amusing,7.6,5.18,6.79
-anaconda,4.43,6,4.08
+anaconda,4.y_multiplier_integer,6,4.08
 anagram,4.37,3.86,4.83
 anal,4,4.29,4.45
 analogy,5.24,3.95,5.33
 analysis,5.25,3.74,5.95
 analyst,5,3.24,4.76
-analytical,6,4.13,6.43
+analytical,6,4.13,6.y_multiplier_integer
 analyze,5.65,4.1,5.96
 analyzer,4.62,3.48,5.88
 anaphylactic,4,5.57,4.17
 anarchist,2.76,4.16,4.57
 anarchy,3.68,4.86,3.1
-anatomy,6.29,4.43,5.95
+anatomy,6.29,4.y_multiplier_integer,5.95
 ancestor,6.37,3.73,4.81
 ancestral,6.6,3.6,5.05
 ancestry,6.29,3.71,4.16
@@ -450,13 +450,13 @@ anointed,4.79,3.32,5.18
 anomaly,4.84,4.25,4.26
 anonymity,4.81,3.29,5.88
 anonymous,5.75,4.13,5.48
-anorexic,2.71,4.24,3.43
+anorexic,2.71,4.24,3.y_multiplier_integer
 answer,6.1,4,5.95
 ant,3.9,3.27,5.3
 antagonistic,4.32,4.11,4.41
 antagonize,3.15,4.95,4
 antelope,5.68,4.46,5.57
-antenna,5.43,3.15,5.67
+antenna,5.y_multiplier_integer,3.15,5.67
 anterior,4.89,3.36,4.64
 anthem,5.95,4.48,6.29
 anthill,4.32,4.63,4.76
@@ -493,7 +493,7 @@ apartments,5,3.28,5.18
 apathy,3.68,3.8,5.15
 ape,5.21,4.25,5.38
 apex,5.52,3.48,5.17
-aphrodisiac,6.43,5.96,5.04
+aphrodisiac,6.y_multiplier_integer,5.96,5.04
 apocalypse,3.24,5.04,2.65
 apologetic,6.65,4,5
 apologize,4.94,3.52,4.22
@@ -528,7 +528,7 @@ applicant,4.91,3.96,5.08
 application,5.05,4.52,4.3
 apply,5.16,3.24,6.2
 appoint,5.95,4.25,5.65
-appointment,4.43,4.8,6.68
+appointment,4.y_multiplier_integer,4.8,6.68
 appraisal,5.09,4.09,5.65
 appreciate,7.33,3.1,7
 appreciation,7.3,4.68,6.63
@@ -548,7 +548,7 @@ apt,5.64,4.05,5.95
 aptitude,5.95,4.55,5.45
 aqua,6.5,3.6,4.82
 aquamarine,6.4,3.9,4.95
-aquarium,6.43,4.3,6.14
+aquarium,6.y_multiplier_integer,4.3,6.14
 aquatic,6.8,3.58,4.53
 arbitrary,4.15,4.55,4.77
 arbitration,4.09,4.41,4.19
@@ -578,7 +578,7 @@ argumentative,3.2,5.61,4
 arise,6.17,4.76,5.87
 aristocracy,5.21,4.15,5.08
 aristocrat,4.28,3.6,4.94
-aristocratic,5.79,3.18,4.43
+aristocratic,5.79,3.18,4.y_multiplier_integer
 arithmetic,4.95,4,5.54
 ark,6.15,3.52,5.88
 arm,5.44,3.44,6.02
@@ -622,7 +622,7 @@ artillery,4.1,4.56,4.64
 artist,6.76,4.1,6.95
 artiste,6.33,3,5.35
 artistic,7,5,6.86
-artistry,6.91,4.71,7.43
+artistry,6.91,4.71,7.y_multiplier_integer
 artwork,6.76,4.18,6.33
 arty,6.55,5.53,5.48
 asbestos,2.24,4.38,3.05
@@ -636,17 +636,17 @@ ashtray,3.52,3.48,5.56
 asinine,5.05,4.63,4.81
 ask,5.95,3.48,6.29
 asleep,6.5,2,4.33
-asparagus,5.43,2.73,5.67
+asparagus,5.y_multiplier_integer,2.73,5.67
 aspect,4.89,3.39,4.76
 aspen,6.57,4.11,5.5
 asphalt,4.46,3.2,4.62
 asphyxia,2.19,6.14,2.4
 asphyxiation,1.53,6.91,2.54
 aspiration,6.26,5,5.94
-aspire,6.43,3.68,6.85
+aspire,6.y_multiplier_integer,3.68,6.85
 aspirin,5.3,3.35,5.12
 aspiring,6.89,4.41,6.85
-ass,5.45,5.43,3.61
+ass,5.45,5.y_multiplier_integer,3.61
 assailant,3.24,5.7,3
 assassin,2.11,5.82,3.36
 assassinate,3.27,6.38,3.23
@@ -659,7 +659,7 @@ assert,5.68,4.64,5.93
 assertive,5.37,5.55,6.04
 assess,5.84,3.45,5.21
 assessment,5.22,2.75,5.44
-asset,7.25,4.43,6
+asset,7.25,4.y_multiplier_integer,6
 asshole,2.11,6.38,2.89
 assign,4.75,3.71,5.74
 assignment,5.39,4.45,6
@@ -717,7 +717,7 @@ attend,5.4,3.5,6.7
 attendance,5.95,4.24,5.59
 attendant,5.63,3.14,5.09
 attention,6.68,4.05,6.47
-attentive,6.43,4.37,6.62
+attentive,6.y_multiplier_integer,4.37,6.62
 attest,5.1,3.68,6.26
 attic,4.95,3.45,5.36
 attire,6.16,3.95,5.78
@@ -728,7 +728,7 @@ attraction,7,5.4,4.62
 attractive,7.19,4.91,6.81
 attribute,5.67,4.12,6
 auburn,5.89,3.62,5.61
-auction,5.43,4.5,5.33
+auction,5.y_multiplier_integer,4.5,5.33
 auctioneer,5.09,4,5.37
 audacious,5.11,4.28,5.41
 audacity,5.2,4.1,5.33
@@ -752,7 +752,7 @@ authority,4.76,5.35,5.19
 authorization,5.86,4.32,4.77
 authorize,5.37,4.67,6.54
 autism,3.2,4.1,3.12
-autistic,3.62,4.24,2.43
+autistic,3.62,4.24,2.y_multiplier_integer
 auto,5,4.95,5.7
 autobiographical,4.82,3.74,5.89
 autobiography,5.79,2.85,6.5
@@ -812,7 +812,7 @@ bachelorette,5.52,4.09,4.89
 back,4.76,2.59,5.22
 backboard,4.7,3.41,5.47
 backbone,5.16,4.05,6.4
-backdoor,4.86,3.85,5.43
+backdoor,4.86,3.85,5.y_multiplier_integer
 backdrop,5.45,2.7,5.27
 backer,4.73,3.53,5.62
 backfire,3,4.79,3.5
@@ -836,10 +836,10 @@ badass,6.14,6.68,6
 badge,5.24,4.4,5.75
 badger,4.63,4.35,4.58
 badness,3.55,4.38,4.08
-bag,5.05,3.43,5.62
+bag,5.05,3.y_multiplier_integer,5.62
 bagel,6.32,3.6,5.17
 baggage,4.5,4,5.95
-baggie,5.43,3.55,5.33
+baggie,5.y_multiplier_integer,3.55,5.33
 baggy,4.45,4.05,5.21
 bagman,4.7,2.7,3.86
 bail,3.79,3.91,4
@@ -880,7 +880,7 @@ bandanna,5.26,3.15,5.42
 bandit,3.88,5.18,4.77
 bandstand,5.81,3.54,5.25
 bandwagon,3.95,3.95,5.25
-bandwidth,5.32,3.43,4.91
+bandwidth,5.32,3.y_multiplier_integer,4.91
 bane,3.9,3.95,3.5
 bang,5.1,6.09,4.89
 banger,4.05,3.33,5.45
@@ -902,7 +902,7 @@ baptism,6.62,3.96,5.23
 baptize,5.59,3.32,6.57
 bar,5,4.53,5.48
 barbarian,3.14,6.26,3.67
-barbaric,3.43,5.6,4.31
+barbaric,3.y_multiplier_integer,5.6,4.31
 barbecue,7.1,5.55,5.59
 barbed,3.75,5.1,4.58
 barber,4.89,3.18,5.91
@@ -930,7 +930,7 @@ baron,3.9,3.88,4.95
 baroness,4.75,4.36,5.53
 barracuda,4.85,5.16,3.47
 barrage,4.24,3.96,4.64
-barrel,4.92,3.43,4.94
+barrel,4.92,3.y_multiplier_integer,4.94
 barren,3.79,3.59,3.7
 barricade,4.32,4.23,4.77
 barrier,4.47,4.7,4.88
@@ -948,17 +948,17 @@ bash,3.68,5.14,4.46
 bashful,5.55,4.36,4.74
 basic,5.5,2.95,6.05
 basics,5.86,3.14,5.55
-basil,6.43,3.82,5.36
+basil,6.y_multiplier_integer,3.82,5.36
 basin,5.47,2.77,4.75
 basis,5.42,2.68,5.18
 bask,6.37,3.86,6.17
 basket,5.66,2.48,5.3
 basketball,5.67,4.35,5.05
 bass,5.23,4.87,5.89
-bass guitar,6.27,4.88,6.43
+bass guitar,6.27,4.88,6.y_multiplier_integer
 bastard,3.31,5.1,2.59
 bat,4.81,4.57,4.29
-batch,5.57,3.29,5.43
+batch,5.57,3.29,5.y_multiplier_integer
 bath,7,3.25,6.64
 bathe,7.5,3.15,6.5
 bathhouse,5.32,4,5.68
@@ -976,7 +976,7 @@ battle,3.52,6.25,5.63
 battlefield,3.89,6.48,4.05
 battleground,4.09,5.76,4.09
 battlements,3.7,4.52,5.14
-battleship,4.43,3.41,5.3
+battleship,4.y_multiplier_integer,3.41,5.3
 batty,4.44,4.05,4.21
 bauble,5.71,3.83,4.67
 bawl,3.58,4.86,4.14
@@ -985,7 +985,7 @@ bayonet,4.68,4.45,5.17
 bayou,6.2,3.81,5.44
 bazaar,6.42,5.9,5.48
 bazooka,5.37,6.1,4.04
-be,6.18,3.43,5.5
+be,6.18,3.y_multiplier_integer,5.5
 beach,7.21,5.1,5.7
 beacon,5.18,4.52,5.32
 bead,6.05,3.4,3.91
@@ -1001,7 +1001,7 @@ bearable,5.72,3.57,5.47
 beard,5.09,3.18,5.42
 bearded,5.67,5.53,6.06
 bearer,4.95,4.7,5.67
-bearings,5.43,3.29,5.32
+bearings,5.y_multiplier_integer,3.29,5.32
 bearskin,4.25,3.95,5.6
 beast,4.42,5.83,4.08
 beastly,4.19,6.22,4.38
@@ -1012,7 +1012,7 @@ beautiful,7.61,5.71,6.17
 beauty,7.58,4.89,5.6
 beaver,5,4.05,5.15
 bebop,6.26,3.95,5.25
-become,6.32,3.43,6.18
+become,6.32,3.y_multiplier_integer,6.18
 bed,7.16,3,6.73
 bedding,5.05,3.65,6
 bedpan,2.74,5.05,4
@@ -1045,7 +1045,7 @@ behold,6.48,3.88,6.59
 beholden,5.05,3.24,4.84
 beige,5.26,2.6,5.05
 belated,4.21,3.19,5.32
-belay,5.5,3.43,4.72
+belay,5.5,3.y_multiplier_integer,4.72
 belch,4.18,4.77,4.75
 belief,6.14,3.95,7.18
 believable,6.89,4.05,5.3
@@ -1072,7 +1072,7 @@ benefactor,6,2.95,4.5
 beneficial,6.61,4.18,6.3
 beneficiary,6.19,4.45,6.5
 benefit,6.87,3.53,6.25
-benevolence,6.29,4.35,5.43
+benevolence,6.29,4.35,5.y_multiplier_integer
 benevolent,5.95,3.6,5
 benign,5.86,3.26,6
 benzene,4.53,3.95,4.92
@@ -1116,7 +1116,7 @@ bigot,2.75,5.37,3.12
 bigotry,2.24,6.15,4.53
 bike,6.1,3.62,5.89
 biker,5.32,4.04,4.68
-bikini,5.57,5.43,5.57
+bikini,5.57,5.y_multiplier_integer,5.57
 bilateral,5.23,2.86,5.23
 bile,2.61,4.1,3.5
 bilge,4.55,3.73,4.79
@@ -1150,7 +1150,7 @@ bipolar,3.26,5,3.18
 birch,6.53,2.85,5
 bird,6.75,3.83,5.88
 birdcage,5.2,4.23,4.52
-birdie,6.47,3.43,5.43
+birdie,6.47,3.y_multiplier_integer,5.y_multiplier_integer
 birdman,5,4.15,5.5
 birth,6.52,5.75,5
 birthday,6.37,4.6,6.07
@@ -1183,7 +1183,7 @@ blackberry,6.63,3.24,5.45
 blackbird,5.62,3.5,5.04
 blackboard,4.95,4,6
 blacken,4.1,3.95,4.74
-blackface,3.2,4.43,4.48
+blackface,3.2,4.y_multiplier_integer,4.48
 blackjack,5,5.05,5
 blacklist,3.45,4,3.21
 blackmail,2.59,5.44,3.98
@@ -1195,7 +1195,7 @@ bladder,4.58,3.78,5.53
 blade,3.9,4.52,4.56
 blame,2.94,4.81,3.33
 blameless,5.45,3.74,5.19
-bland,3.88,2.43,5.77
+bland,3.88,2.y_multiplier_integer,5.77
 blank,4.67,2.9,4.68
 blanket,7.05,2.23,6.75
 blare,4.8,4.68,4.79
@@ -1219,7 +1219,7 @@ blender,5.16,4.05,5.53
 bless,7,4.57,6.26
 blessed,7.5,3.55,5.32
 blessing,7.18,4.21,6.1
-bleu,4.84,3.67,5.43
+bleu,4.84,3.67,5.y_multiplier_integer
 blight,3.14,4.24,3.92
 blimp,5.14,3.59,4.67
 blind,2.8,3.73,3.04
@@ -1273,9 +1273,9 @@ blue spruce,5.58,3.1,4.8
 blueberry,7.11,3.23,5.7
 bluebird,7.29,3.55,5.86
 bluegrass,5.65,3.35,5.9
-bluejay,6.64,3.43,5
+bluejay,6.64,3.y_multiplier_integer,5
 blueprint,4.95,3.71,5.96
-blues,3.43,3.61,5.44
+blues,3.y_multiplier_integer,3.61,5.44
 bluff,4.58,4.17,5.21
 blunder,3.95,4.14,3.64
 blunt,4.65,4.61,5.63
@@ -1364,7 +1364,7 @@ booth,5.25,4.35,5.17
 bootleg,3.68,4.69,5
 bootlegger,5.56,4.85,5.56
 boots,5.89,3.52,5.08
-booty,5.63,5.43,5.3
+booty,5.63,5.y_multiplier_integer,5.3
 booze,5,5.08,5.15
 bop,5.63,3.95,5.4
 bopper,5.33,3.23,5.24
@@ -1378,7 +1378,7 @@ boron,4.1,2.91,5.28
 borough,5,3.45,5.22
 borrow,5.18,4.55,6.16
 bosom,6.44,4.7,5
-boss,4.76,4.43,4.65
+boss,4.76,4.y_multiplier_integer,4.65
 bossy,2.86,4.68,4.73
 botanical,5.77,3.25,5.73
 botany,5.55,3,4.81
@@ -1394,7 +1394,7 @@ bouncer,4.37,4.33,5.29
 bouncy,6.64,4.54,5.54
 bound,4.05,5.55,4.85
 boundary,4.75,4.17,3.95
-bountiful,6.27,4.43,6.16
+bountiful,6.27,4.y_multiplier_integer,6.16
 bounty,4.37,4.85,5.45
 bouquet,6.67,3.33,5.76
 bourbon,5.7,5.95,5.69
@@ -1487,7 +1487,7 @@ brief,6,3.42,5.39
 briefcase,5.2,3.59,6.33
 briefing,4.76,3.58,5.88
 brig,4,3.29,3.5
-brigade,4.43,4.44,5.59
+brigade,4.y_multiplier_integer,4.44,5.59
 bright,6.84,5,6.38
 brighten,7.37,5.32,6.77
 brightness,7.05,4.39,5.79
@@ -1509,12 +1509,12 @@ broaden,6.39,3.16,5.6
 broadside,3.8,3.16,4.64
 broadsword,5.24,4.62,6
 broccoli,6,2.48,5.12
-brochure,4.74,3.43,5.32
+brochure,4.74,3.y_multiplier_integer,5.32
 broken,2.75,4.86,3.76
 brokenhearted,2.47,5.41,3.47
 broker,4.15,3.77,5.37
 brokerage,4.5,3.57,5.16
-bromide,4.43,2.75,4.58
+bromide,4.y_multiplier_integer,2.75,4.58
 bronco,5.83,4.25,4.28
 bronze,5.81,3.62,5.4
 brooch,5.33,3.64,5.04
@@ -1539,10 +1539,10 @@ brunette,6.35,4.15,5.36
 brunt,3.71,3.96,4.85
 brush,5.47,3.18,6.18
 brutal,3.07,5.13,3.94
-brutality,2.43,4.96,3.89
+brutality,2.y_multiplier_integer,4.96,3.89
 brute,3.48,4.85,5.55
 brutish,3,4.74,5.11
-bubble,6.43,4.19,6.12
+bubble,6.y_multiplier_integer,4.19,6.12
 bubbly,6.9,4.77,6
 bubonic,2.17,5.78,3.52
 buck,6.5,4.7,5.39
@@ -1558,7 +1558,7 @@ budge,4.83,3.95,4.32
 budget,4.56,3.33,4.9
 Budweiser,4.62,4.09,4.78
 buff,6.21,4.59,5.39
-buffer,5.42,4.05,5.43
+buffer,5.42,4.05,5.y_multiplier_integer
 buffet,6.05,4.95,5.88
 buffoon,3.95,5.7,4
 bug,3.45,6.06,4.08
@@ -1573,7 +1573,7 @@ buildup,5.37,3.55,5.06
 bulb,5.86,3.26,4.82
 bulge,3.74,4.05,4.39
 bulimic,2.86,4.3,4.06
-bulk,4.89,3.43,5.05
+bulk,4.89,3.y_multiplier_integer,5.05
 bulkhead,4.67,3.65,4.88
 bulky,4.21,3.95,5.24
 bull,3.95,4.9,6.89
@@ -1591,7 +1591,7 @@ bullpen,5.15,4.52,5.62
 bullshit,2.33,7,3
 bully,2.67,5.86,3.18
 bum,3.64,4.39,4.74
-bumblebee,5.43,4.38,4.74
+bumblebee,5.y_multiplier_integer,4.38,4.74
 bummer,2.57,4.32,3.89
 bump,5.05,4.75,5.33
 bumper,4.79,3.45,5.11
@@ -1603,7 +1603,7 @@ bungalow,6.5,3.64,5.7
 bungee,5.71,6.35,4.94
 bunghole,3.9,4.59,5.42
 bunion,3.48,4.11,4.19
-bunk,5.43,3.53,5.19
+bunk,5.y_multiplier_integer,3.53,5.19
 bunker,4.7,4.23,4.95
 bunkhouse,5.63,3.9,4.88
 bunny,7.3,3.86,5.78
@@ -1626,7 +1626,7 @@ burr,4.33,2.96,4.84
 burrito,6.65,4.65,5
 burro,4.86,4.04,5.57
 burrow,5.53,3.52,5.24
-burst,5.43,5.09,4.45
+burst,5.y_multiplier_integer,5.09,4.45
 bury,1.95,5.55,4.79
 bus,5.12,3.83,4.88
 busboy,4.71,3.91,4.57
@@ -1635,7 +1635,7 @@ bushel,5.68,4.29,5.55
 bushy,4.53,3.95,4.75
 business,5.48,3.71,5.35
 business man,4.44,2.9,5.45
-businessman,5.38,3.36,5.43
+businessman,5.38,3.36,5.y_multiplier_integer
 businesswoman,6.1,4.24,5.2
 busload,4.67,3.7,4.12
 bust,4.77,5.8,6.53
@@ -1702,7 +1702,7 @@ calligraphy,6.8,3.29,5.52
 callous,2.9,3.85,4.26
 calm,6.89,1.67,7.44
 camaraderie,5.85,4.09,6.32
-camcorder,6.43,4.42,5.86
+camcorder,6.y_multiplier_integer,4.42,5.86
 camel,5.29,3.1,5.21
 cameo,5.86,3.42,5.65
 camera,6.61,3.05,6.39
@@ -1764,7 +1764,7 @@ capsule,5.6,3.45,5.56
 captain,5.71,3.86,5
 captive,3.27,4.88,3.3
 captivity,3.14,5.09,2.89
-capture,5.05,5.43,3.57
+capture,5.05,5.y_multiplier_integer,3.57
 car,6.63,4.04,6.41
 caramel,6.68,4.29,6.05
 caravan,5.86,3.8,5.59
@@ -1793,7 +1793,7 @@ carnal,5.16,6.24,5.17
 carnation,5.75,3.68,5.52
 carnival,6.48,5.22,5.55
 carnivorous,4.52,4.48,4.77
-carousel,6.7,4.43,5.92
+carousel,6.7,4.y_multiplier_integer,5.92
 carp,4.55,4.31,5.83
 carpal,4.19,3.79,4.42
 carpenter,5.94,3.05,5.12
@@ -1817,7 +1817,7 @@ carve,5.09,4.13,6.32
 cascade,6.24,3.59,6.76
 case,5.18,4.14,6.11
 cash,7.51,6.59,6.16
-cashier,5.1,3.45,5.43
+cashier,5.1,3.45,5.y_multiplier_integer
 cashmere,6.62,3.8,5.05
 casing,4.3,2.95,4.96
 casino,4.68,6.05,4.84
@@ -1894,7 +1894,7 @@ celluloid,4.3,2.71,4.44
 cement,4.62,3.28,4.84
 cemetery,3.49,4.1,3.82
 censor,4.1,4.45,4.15
-censorship,3.43,4.25,3.26
+censorship,3.y_multiplier_integer,4.25,3.26
 census,4.91,3.54,4.91
 cent,5.37,3.76,5.3
 centennial,5.58,2.86,6.09
@@ -1964,7 +1964,7 @@ charismatic,6.95,4.85,6.28
 charitable,7.33,3.5,6.56
 charity,6.85,3.22,6.08
 charlatan,4.18,4.72,4.48
-charm,7.34,4.51,6.43
+charm,7.34,4.51,6.y_multiplier_integer
 charmer,6.53,4.79,5.86
 charming,7.05,5,6.95
 charred,3.86,4.68,3.9
@@ -2005,9 +2005,9 @@ cheerleading,5.7,4.95,4.59
 cheery,7.21,5.86,6.2
 cheese,6.81,3.8,7.11
 cheeseburger,7.2,4.58,6.2
-cheesecake,7.67,3.43,6.22
+cheesecake,7.67,3.y_multiplier_integer,6.22
 cheesy,4.9,4.09,4.86
-cheetah,6.27,5.31,5.43
+cheetah,6.27,5.31,5.y_multiplier_integer
 chef,6.15,3.05,6.67
 chemical,4.89,3.41,3.78
 chemist,4.95,3.95,5.4
@@ -2019,7 +2019,7 @@ cherry,7.05,4.91,5.63
 cherub,5.29,3.22,5.62
 chess,5.05,2.86,5
 chest,5.18,4.95,6.58
-chestnut,5.68,3.43,5.63
+chestnut,5.68,3.y_multiplier_integer,5.63
 chew,5.58,3.8,6.48
 chewy,5.37,3.82,5.53
 chic,6.47,5.1,6.04
@@ -2045,7 +2045,7 @@ chimney,4.89,2.45,5.19
 chimp,6,3.8,4.95
 chimpanzee,6.39,3.9,5.28
 chin,5.07,3.84,5.48
-chinchilla,6.15,4.43,5.56
+chinchilla,6.15,4.y_multiplier_integer,5.56
 chip,6.32,2.75,4.58
 chipmunk,7.33,3.8,4.96
 chipper,5.95,4.75,5.18
@@ -2056,7 +2056,7 @@ chiseler,4.32,3.95,5
 chitchat,6,3.88,5.74
 chivalry,6.7,3.95,5.81
 chloride,4.32,4.36,5.85
-chlorine,3.84,4.43,5.5
+chlorine,3.84,4.y_multiplier_integer,5.5
 chloroform,3,6.15,4.19
 chocolate,7.63,5.14,5.88
 choice,6.36,3.52,6.56
@@ -2066,7 +2066,7 @@ cholera,2.68,4,4.35
 cholesterol,3.76,3.05,5.95
 choose,6,3.6,6.83
 choosy,5.29,3.4,5.53
-chop,4.6,4.43,5.76
+chop,4.6,4.y_multiplier_integer,5.76
 chopper,5.05,3.55,5.44
 choppers,4.8,5.05,4.85
 chord,5.75,2.72,5.35
@@ -2105,7 +2105,7 @@ cinch,4.47,3.3,5
 cinder,4.8,3.91,5.76
 cinema,6.86,6.05,5.94
 cinematic,6.05,4.35,5.96
-cinematography,5.43,4,6.04
+cinematography,5.y_multiplier_integer,4,6.04
 cinnamon,6.75,3.72,5.91
 cipher,5.71,4.55,5.53
 circle,5.76,3.33,5.38
@@ -2126,7 +2126,7 @@ cirrhosis,1.86,4.76,3.82
 citadel,5.61,3.85,5.56
 citation,3.7,3.8,3.86
 cite,4.95,4,6.19
-citizen,6.43,2.63,5.95
+citizen,6.y_multiplier_integer,2.63,5.95
 citizenship,7.24,5.58,5.89
 citrus,6.36,4.16,6.46
 city,6.12,5.08,5.04
@@ -2155,7 +2155,7 @@ clarinet,4.74,3.06,5.06
 clarity,7.26,3.64,6.59
 clash,3.96,5.67,4.32
 clasp,5.19,3.52,5.47
-class,5.73,4.43,5.24
+class,5.73,4.y_multiplier_integer,5.24
 classic,6.32,3.62,6.29
 classic rock,5.79,4.78,5.75
 classical,6.79,3.75,6.25
@@ -2188,7 +2188,7 @@ cleft,4.36,3.54,4.57
 clemency,5.15,3.3,5.48
 clench,3.68,4.11,4.53
 clergy,4.8,2.95,5.16
-cleric,4.65,3.18,4.43
+cleric,4.65,3.18,4.y_multiplier_integer
 clerical,4.65,3.15,4.77
 clerk,4.76,3.85,5.24
 clever,7.36,5.25,7
@@ -2217,7 +2217,7 @@ clitoris,5.57,5.65,6.08
 cloak,5.95,4.1,5.13
 cloaking,4.95,3.81,5.21
 cloakroom,4.95,2.95,5.45
-clobber,4,4.43,4.15
+clobber,4,4.y_multiplier_integer,4.15
 clock,5.65,3.35,5.24
 clockwork,5.58,4.23,5.48
 clod,3.58,3.5,4.57
@@ -2337,7 +2337,7 @@ colonoscopy,2.6,4.05,3.4
 colony,5.52,4.17,5.04
 color,7.05,3.18,5.95
 colored,6.57,4.73,5.36
-colorful,7.43,3.59,5.96
+colorful,7.y_multiplier_integer,3.59,5.96
 coloring,6.29,4.41,6.77
 colossal,4.33,4.96,5.14
 columbine,3.7,5.14,3.85
@@ -2352,7 +2352,7 @@ combative,3.65,5.6,4.59
 combination,5.47,3.5,5.96
 combine,4.84,3.64,5.54
 combo,6.17,4.48,5.5
-combustion,4.43,6.26,4.14
+combustion,4.y_multiplier_integer,6.26,4.14
 come,5.64,3.57,5.94
 comeback,6.14,4.89,6.67
 comedian,7.6,5.78,6.48
@@ -2369,7 +2369,7 @@ comics,6.95,4.41,5.3
 comma,4.47,3.23,5.11
 command,4.19,4.65,7.21
 commandant,5.16,3.95,4.38
-commandeer,4.43,4.45,5.74
+commandeer,4.y_multiplier_integer,4.45,5.74
 commander,4.73,4.6,6.68
 commanding,4.57,5.95,4.64
 commandment,5.55,4.16,5.19
@@ -2384,7 +2384,7 @@ comment,5.65,3.56,5.96
 commentary,5.5,3.5,5.45
 commentator,5.11,4.1,5.17
 commerce,5.21,3.95,4.85
-commercial,4.11,4.43,4.35
+commercial,4.11,4.y_multiplier_integer,4.35
 commie,3.86,4.76,4.22
 commissary,5,3.36,5.95
 commission,5.81,4.59,5.38
@@ -2394,14 +2394,14 @@ commitment,6.33,4.26,6
 committee,5.52,3.56,5.56
 commodity,5.86,3.75,5.38
 commodore,4.82,3.05,5.14
-common,5.94,2.43,5.83
+common,5.94,2.y_multiplier_integer,5.83
 commoner,4.42,3.05,5.05
 commonplace,5.48,3,5.47
 commotion,4.1,3.73,4.3
 communal,5.47,3,4.89
 commune,5,3.77,5.24
 communicate,6.28,3.79,6.8
-communication,6.73,4.16,6.43
+communication,6.73,4.16,6.y_multiplier_integer
 communicator,5.42,3.33,5.39
 communion,5.37,3.5,4.71
 communism,2.94,5.1,3.12
@@ -2526,10 +2526,10 @@ confer,5.09,2.48,4.76
 conference,5.1,2.95,4.88
 confess,4.85,4.67,5.53
 confession,5.47,4.59,5.18
-confessional,4.62,4.35,4.43
+confessional,4.62,4.35,4.y_multiplier_integer
 confetti,6.26,5.57,5.57
 confidant,7.15,4.25,6.82
-confide,6.21,3.43,6.42
+confide,6.21,3.y_multiplier_integer,6.42
 confidence,6.71,4.04,6.5
 confident,7.56,4.62,7.04
 confidential,6.05,4.5,5
@@ -2597,7 +2597,7 @@ consideration,6.4,3.45,7.11
 consignment,5.58,4.17,3.89
 consist,5.21,3.14,5.25
 consistency,6.1,2.73,6.19
-consistent,6.43,3.19,6.77
+consistent,6.y_multiplier_integer,3.19,6.77
 consolation,5.47,3.35,4.71
 console,6.53,4.09,5.79
 consoled,6.44,2.58,5.86
@@ -2636,7 +2636,7 @@ containment,4.37,5.53,4.17
 contaminate,3.53,5.67,4.26
 contamination,3.11,6.71,3.78
 contemplate,5.48,3.16,5.68
-contemporary,5.95,3.81,5.43
+contemporary,5.95,3.81,5.y_multiplier_integer
 contempt,3.22,4.61,4.45
 contend,5.37,4.33,5.28
 contender,5,3.32,5.91
@@ -2671,8 +2671,8 @@ contrast,5.3,4.23,6.3
 contribute,6.15,3.58,6.96
 contribution,6.58,3.18,7
 contrition,4.4,3.88,4.93
-control,4.43,4.76,5.47
-controller,4.43,4.08,6.16
+control,4.y_multiplier_integer,4.76,5.47
+controller,4.y_multiplier_integer,4.08,6.16
 controlling,3.45,5.69,5.29
 controversial,4.73,6.26,4.71
 controversy,3.21,6.09,3.75
@@ -2686,7 +2686,7 @@ convention,5,3.67,4.65
 conventional,5.47,3.77,5.68
 converge,4.53,4.24,5.61
 conversation,6.72,2.65,6.28
-conversational,6.32,3.38,5.43
+conversational,6.32,3.38,5.y_multiplier_integer
 conversationalist,5.94,3.9,5.88
 converse,5.37,4.25,6.05
 conversion,5.59,4.79,5.29
@@ -2705,16 +2705,16 @@ cooker,5.52,3,5.67
 cookie,7.32,4.7,6.1
 cooking,6.77,4.19,7.27
 cookout,7.11,4.86,6.3
-cool,6.82,3.43,6.44
+cool,6.82,3.y_multiplier_integer,6.44
 coolant,5.21,3.45,5.9
 cooler,6.1,3.83,5.92
 coon,4.32,3.86,4.26
 cooperate,6.39,3.83,6.18
 cooperation,6.62,3.32,6.83
-cooperative,6.62,3.43,6.72
+cooperative,6.62,3.y_multiplier_integer,6.72
 coordinate,5.5,4.59,6.95
 coordination,6.11,3.45,6.52
-coordinator,5.43,4.41,5.75
+coordinator,5.y_multiplier_integer,4.41,5.75
 cop,4.5,4.9,2.83
 copacetic,4.56,3.45,6.5
 cope,5.1,4.1,5.95
@@ -2724,7 +2724,7 @@ copper,5.6,4.14,6.19
 copter,4.86,4.7,4.05
 copy,5.22,3.15,4.67
 copycat,3.33,4.62,4.67
-copyright,4.43,2.96,5.5
+copyright,4.y_multiplier_integer,2.96,5.5
 coral,6.42,3.18,5.5
 coral snake,4,6.28,4
 cord,5.38,4.2,5.47
@@ -2735,7 +2735,7 @@ corduroy,5.79,3.45,4.82
 core,6.19,3.24,5.89
 cork,4.93,3.92,4.7
 corkscrew,5.26,3.76,4.96
-corn,5.95,3.43,5.65
+corn,5.95,3.y_multiplier_integer,5.65
 cornball,5.55,3.17,5.1
 cornbread,6.47,3.5,6.08
 corned,4.61,3.59,4.54
@@ -2812,17 +2812,17 @@ coupon,6.3,4.22,5.54
 courage,7.67,5,7.27
 courageous,8.05,5.5,7.38
 courier,5.5,3.67,5.79
-court,3.52,4.43,3.94
+court,3.52,4.y_multiplier_integer,3.94
 courteous,7.05,3.95,7.26
 courtesy,6.79,4.3,5.96
 courthouse,4.61,4.2,3.5
 courtroom,2.84,4.67,3.45
 courtship,6,5.38,5.37
 courtside,6,4.24,6
-courtyard,5.53,3.43,5.05
+courtyard,5.53,3.y_multiplier_integer,5.05
 cousin,6.11,2.6,5.28
 cove,5.67,3.17,6.06
-coven,5.43,4.8,4.78
+coven,5.y_multiplier_integer,4.8,4.78
 covenant,5.21,4,5.35
 cover,5.59,3.76,5.78
 coverage,5.77,3.19,5.96
@@ -2833,7 +2833,7 @@ cow,5.42,2.95,5.24
 coward,2.42,4.09,4.09
 cowardice,3.05,4.25,3.64
 cowardly,2.85,5.14,3.85
-cowboy,5.43,4.43,5.67
+cowboy,5.y_multiplier_integer,4.y_multiplier_integer,5.67
 cowgirl,6.11,5.3,5.63
 cowhand,4.65,3.33,5.44
 coworker,5,3.57,4.55
@@ -2906,7 +2906,7 @@ cretin,4.47,3.71,4.95
 crevice,4.67,4.58,4.62
 crew,5.83,3.38,5
 crewman,5.14,3.2,4.91
-crib,6.43,4.26,4.77
+crib,6.y_multiplier_integer,4.26,4.77
 cricket,5.71,3.22,4.88
 crime,1.95,5.68,3.31
 criminal,2.11,4.49,4.09
@@ -2923,7 +2923,7 @@ critical,3.95,4.95,4.22
 criticism,3.84,5.95,4.17
 criticize,2.41,5.27,4.7
 critique,4.8,3.85,6
-critter,5.4,4.05,4.43
+critter,5.4,4.05,4.y_multiplier_integer
 croak,3.29,4.52,3.58
 croc,4,5.06,4.79
 crock,5.1,4.32,5.58
@@ -2989,7 +2989,7 @@ cue,5.84,4.35,4.62
 cuff,4.81,3.56,4.16
 cuisine,6.88,4.51,5.75
 culinary,6.33,4.5,5.85
-culmination,5.85,3.43,5.2
+culmination,5.85,3.y_multiplier_integer,5.2
 culprit,2.9,5.54,3.82
 cult,2.77,5.48,3.61
 cultivate,5.73,3.81,6.23
@@ -3009,7 +3009,7 @@ curfew,4.14,4,5
 curiosity,6.37,5.9,6.21
 curious,6.58,5.74,6.88
 curl,5.72,3.05,5.4
-curling,5,4.43,5.47
+curling,5,4.y_multiplier_integer,5.47
 currency,5.9,4.05,5.3
 current,5.53,3.25,5.9
 curriculum,5.3,3.56,4.08
@@ -3034,7 +3034,7 @@ customer,5.86,3.4,6.16
 customized,6.91,4.87,6.58
 cut,3.9,5.07,4.55
 cute,7.56,5.05,6.02
-cutie,7.43,4.62,5.44
+cutie,7.y_multiplier_integer,4.62,5.44
 cutlass,5,4.55,5.26
 cutoff,3.14,3.92,5
 cutter,4.05,4.35,5.88
@@ -3152,7 +3152,7 @@ decide,6.28,3.1,6.28
 decimal,4.68,3.35,5.52
 decimeter,4.82,2.5,4.76
 decipher,5.09,4.39,5.68
-decision,5.5,3.43,6.89
+decision,5.5,3.y_multiplier_integer,6.89
 decisive,6.78,3.95,5.76
 deck,5.68,3.25,5.38
 declaration,5.67,4.24,5.24
@@ -3160,17 +3160,17 @@ declare,5.42,4.4,6.13
 decline,3.19,3.6,3.71
 deco,5.29,3.74,4.9
 decode,5.5,4.59,6.58
-decoder,6.21,3.43,5.57
+decoder,6.21,3.y_multiplier_integer,5.57
 decompose,2.42,4.17,3.4
 decomposition,3.16,4,3.89
-decompress,4.43,3.52,4.79
+decompress,4.y_multiplier_integer,3.52,4.79
 decompression,3.75,2.91,4.78
 decontamination,4.33,4.96,5
 decor,5.95,3.38,7.32
 decorate,6.26,4.33,6.95
 decoration,6.71,4.05,6.4
 decorative,7.52,4.76,6.45
-decorator,6.43,3.15,5.64
+decorator,6.y_multiplier_integer,3.15,5.64
 decorum,5.5,2.91,5.73
 decoy,4.61,3.91,4.95
 decrease,4.16,3.05,3.68
@@ -3191,7 +3191,7 @@ deer,6.89,3.95,4.89
 defamation,2.9,5.62,2.56
 default,4.16,4.57,4.7
 defeat,3.74,4.14,3.87
-defeated,2.59,4.73,2.43
+defeated,2.59,4.73,2.y_multiplier_integer
 defeatist,3.37,3.5,3.35
 defect,2.89,4.14,3.37
 defective,3.52,4.17,3.67
@@ -3219,7 +3219,7 @@ deformity,3.18,4.71,3.82
 defrost,4.86,3.48,5.81
 deft,4.67,3,5.32
 defuse,5.78,4.68,5.77
-defy,4.84,5.43,5.3
+defy,4.84,5.y_multiplier_integer,5.3
 degenerate,2.7,4.68,2.95
 degeneration,3.48,4.18,3.67
 degradation,2.85,4.26,3.39
@@ -3340,7 +3340,7 @@ designated,5.1,3.85,5.14
 designer,5.57,5,5.44
 desirable,6.95,6.25,6.15
 desire,7.05,6.2,6.07
-desist,4.27,3.84,4.43
+desist,4.27,3.84,4.y_multiplier_integer
 desk,5.56,2.45,5.72
 desolate,2.95,3.22,2.94
 desolation,2.91,4.04,4.25
@@ -3399,7 +3399,7 @@ deviation,4.9,4.7,4.94
 device,5.79,3.42,5.95
 devil,3.11,5.4,3.84
 deviled,3.37,4.24,4.25
-devilish,4.22,6.38,5.43
+devilish,4.22,6.38,5.y_multiplier_integer
 devious,3.57,3.83,5.16
 devise,4.45,4.48,5.15
 devoid,3.61,3.22,3.82
@@ -3475,7 +3475,7 @@ diminish,4.05,3.87,5.05
 diminutive,4.42,3.5,4.62
 dimwit,3.48,3.5,3.95
 dine,6.6,4,6.05
-diner,6.75,4.04,6.43
+diner,6.75,4.04,6.y_multiplier_integer
 dinghy,4.82,4.17,4.67
 dingo,5.65,4.25,4.8
 dingy,3.45,4.57,4.89
@@ -3534,12 +3534,12 @@ disclose,4,4.45,5.89
 disclosure,4.71,3.15,4.27
 disco,5.76,5.25,5.24
 discoloration,3.82,4.05,4.77
-discomfort,2.84,4.43,3.55
+discomfort,2.84,4.y_multiplier_integer,3.55
 disconcerting,3.58,4.36,4.84
 disconnect,3.81,3.12,4.6
 discontent,2.75,4.67,3.68
 discontinue,3.94,3.89,4.41
-discord,3.58,5.43,4.12
+discord,3.58,5.y_multiplier_integer,4.12
 discount,5.78,4.62,5.86
 discourage,3.05,3.73,3.71
 discouraged,3.18,3.38,3.5
@@ -3549,7 +3549,7 @@ discover,7.18,5.7,6.79
 discovery,6.81,6.04,6.25
 discredit,3.14,4.05,4.29
 discreet,5.05,3.4,6.45
-discrepancy,3.43,3.75,3.73
+discrepancy,3.y_multiplier_integer,3.75,3.73
 discretion,5.4,3.57,5.88
 discretionary,5.53,3,5.11
 discriminate,3.18,4.05,5.05
@@ -3578,7 +3578,7 @@ dishonorable,2.33,5.76,3.71
 dishwasher,5.32,3.05,5.21
 disinfect,5.11,4,5.64
 disinfectant,5.1,2.96,5.8
-disintegrate,4.32,5.43,4.52
+disintegrate,4.32,5.y_multiplier_integer,4.52
 disk,5.24,2.95,5.22
 dislike,3.25,4.27,5.81
 disloyal,2.27,5.14,3.28
@@ -3603,7 +3603,7 @@ dispatcher,4.59,3.86,4.95
 dispensary,5.05,4.14,5.08
 dispense,5.24,2.95,5.45
 dispenser,5.26,4.18,5.48
-dispersal,4.91,4.43,5.16
+dispersal,4.91,4.y_multiplier_integer,5.16
 disperse,4.19,3.67,5.12
 displace,2.89,3.8,4.65
 displacement,3.68,3.86,4.85
@@ -3625,12 +3625,12 @@ disrupt,3.48,4.87,4.62
 disruption,3.32,5.48,3.9
 disruptive,3.2,6.1,4.92
 dissatisfied,3.25,4.82,4.74
-dissect,3.95,5.43,5.16
+dissect,3.95,5.y_multiplier_integer,5.16
 dissection,3.11,4.32,4.91
 dissent,4.8,4,3.84
 dissertation,4.3,3.71,5.56
 dissociative,3.58,4.61,4.07
-dissolve,5.43,3.36,4.67
+dissolve,5.y_multiplier_integer,3.36,4.67
 dissuade,4.11,3.35,4.96
 distance,3.89,3.81,4.25
 distant,4.74,2.95,3.56
@@ -3639,12 +3639,12 @@ distilled,5.16,3.11,4.68
 distinct,5.55,3.67,5.8
 distinction,5.05,3.6,6
 distinctive,6.32,3.78,6.18
-distinguish,5.26,3.87,5.43
+distinguish,5.26,3.87,5.y_multiplier_integer
 distinguished,6.62,4.4,5.86
 distinguishing,5.37,5.7,6
 distort,3.38,3.62,4.7
 distorted,3.89,5.29,4.09
-distortion,3.5,4.43,3.86
+distortion,3.5,4.y_multiplier_integer,3.86
 distract,3.68,3.55,4.35
 distraction,4.05,3.94,4
 distraught,2.81,5.64,3.55
@@ -3675,7 +3675,7 @@ divine,7.15,3.05,5.96
 division,4.42,3.57,5.48
 divorce,2.49,5.39,4.02
 divorcee,3.29,3.8,4.16
-divulge,4.79,5.43,5.04
+divulge,4.79,5.y_multiplier_integer,5.04
 divvy,4.81,3.27,5.77
 dizziness,3.36,4.95,4.25
 dizzy,3.14,4.67,3.55
@@ -3697,7 +3697,7 @@ dodger,4.7,3.95,6.16
 dodgy,4.79,4.55,4.62
 dodo,3.91,4,4.95
 doer,5.63,4.38,6.96
-dog,7,5.43,5.73
+dog,7,5.y_multiplier_integer,5.73
 dogface,3.95,4.14,4.9
 doggy,7,4.79,5.48
 doghouse,5.1,2.68,4.72
@@ -3725,7 +3725,7 @@ donor,6.57,3.76,6.79
 doodle,6.39,4.09,6.91
 doom,3,6.17,2.42
 doomsday,2.8,6.22,3
-door,5.43,3.19,6.1
+door,5.y_multiplier_integer,3.19,6.1
 doorbell,5.33,4.17,5.12
 doorknob,4.86,2.64,5.58
 doorman,5.45,3.35,5.67
@@ -3793,7 +3793,7 @@ drawer,4.67,3,5.71
 dread,3,4.5,3.62
 dreaded,2.11,5.1,3.5
 dreadful,2.6,4.5,3.38
-dream,7.43,4.37,5.4
+dream,7.y_multiplier_integer,4.37,5.4
 dreamboat,7.47,4.27,5.91
 dreamer,7.45,4.4,6.53
 dreamland,7,3.95,5.31
@@ -3840,7 +3840,7 @@ drunkard,3.28,4.45,3.21
 drunken,3,4.36,4.05
 drunkenness,3.42,6.05,3.97
 dry,4.86,3.8,6.21
-dryer,5.21,2.43,4.57
+dryer,5.21,2.y_multiplier_integer,4.57
 dual,5.14,4.39,5.21
 dub,5.35,4.58,5.36
 dubious,3.47,4.33,5.17
@@ -3875,7 +3875,7 @@ duo,6.45,3.75,5.75
 dupe,4,3.73,3.86
 duplex,5.67,3.09,4.8
 duplicate,4.7,4.5,5.5
-duration,5.43,3.3,4.81
+duration,5.y_multiplier_integer,3.3,4.81
 duress,2.82,4.45,3.17
 dusk,5.63,3.52,5.27
 dusky,4.95,4.55,4.58
@@ -3884,13 +3884,13 @@ duster,5.26,2.85,5.75
 dustpan,4.67,2.86,5.36
 dusty,3.95,4.1,4.7
 duty,5.33,3.71,4
-dwarf,4.71,3.43,3.84
+dwarf,4.71,3.y_multiplier_integer,3.84
 dweeb,4.17,3.86,4.68
 dwell,4.75,3.14,5.3
 dwelling,5.21,3.57,5.82
 dye,5.25,3.3,4.77
 dyke,3.8,3.67,3.67
-dynamic,6.1,5.43,5.52
+dynamic,6.1,5.y_multiplier_integer,5.52
 dynamite,4.79,6.4,4.65
 dynamo,6.21,5.18,5.82
 dynasty,5.16,4.45,5.45
@@ -3924,7 +3924,7 @@ eater,4.95,4.23,5.87
 eavesdrop,4.05,4.33,5.2
 ebony,6.14,4.32,4.71
 eccentric,5.37,5.19,6.1
-echelon,5.55,3.17,4.43
+echelon,5.55,3.17,4.y_multiplier_integer
 echinacea,4.8,3.73,5.42
 echo,5.2,3.61,4.59
 eclectic,5.9,4.5,5.75
@@ -3937,14 +3937,14 @@ ecosystem,6.5,3.71,4.41
 ecstasy,7.19,6.11,5.52
 ecstatic,6.45,6.95,5.63
 edema,3.86,3.27,4.42
-edge,4.43,4.65,4.31
+edge,4.y_multiplier_integer,4.65,4.31
 edgy,4.81,4.39,4.56
 edible,6.68,5.15,6.45
 edifice,5,3.95,5.33
 edit,4.95,4.1,6.64
 editing,5.45,5.58,6.57
 edition,5.3,3.79,4.81
-editor,5.43,4.09,5.9
+editor,5.y_multiplier_integer,4.09,5.9
 editorial,5.18,2.9,5.77
 educate,7.48,4.36,6.79
 education,6.58,4.64,6.82
@@ -3958,7 +3958,7 @@ effectiveness,6.9,4.95,6.19
 efficiency,6.74,3.74,6.79
 efficient,6.95,3.86,6.67
 effort,6.47,4.12,6.64
-effortless,7.1,3.43,7
+effortless,7.1,3.y_multiplier_integer,7
 egg,5.95,3.28,5.74
 egghead,4.47,3.59,4.57
 eggnog,6,4.27,5.26
@@ -3969,7 +3969,7 @@ egomaniac,3.68,5.53,5.19
 egotistical,3.08,5.14,5.23
 eight,5.37,3.48,5.26
 eighteen,5.72,3.83,5.71
-eighty,5.43,3.41,4.41
+eighty,5.y_multiplier_integer,3.41,4.41
 ejaculate,6,6.15,5.83
 ejaculation,5.42,6.18,5.04
 eject,3.95,4.42,5.18
@@ -3981,7 +3981,7 @@ elated,6.56,5.14,6.86
 elbow,5.38,3.2,6.02
 elder,6.11,2.5,4.14
 elderly,4.63,2.73,4.91
-elect,5.52,4,5.43
+elect,5.52,4,5.y_multiplier_integer
 election,4.5,4.23,5
 elective,5.38,3.54,6.35
 electoral,4.21,3.86,4.96
@@ -3997,7 +3997,7 @@ electron,5.33,3.82,4.57
 electronic,6.52,3.64,5.41
 electronics,6.5,4.6,5.96
 elegance,6.91,4.24,6.26
-elegant,7,4.43,5.95
+elegant,7,4.y_multiplier_integer,5.95
 element,5.58,3.9,5
 elemental,5.19,4.35,4.77
 elementary,6.11,3.5,4.91
@@ -4006,16 +4006,16 @@ elevate,6.42,4.65,5.67
 elevation,5.67,3.57,6.06
 elevator,5.95,3.65,4.92
 eleven,5,3.05,5.2
-elf,6.1,4.3,5.43
+elf,6.1,4.3,5.y_multiplier_integer
 elicit,4.14,5.27,4.4
 eligible,6.45,4.81,6
 eliminate,3.89,3.64,5.48
 elimination,3.86,3.35,4.33
 elite,5.71,5.9,5.34
 elitist,4.5,4.57,5.74
-elixir,5.68,3.95,5.43
+elixir,5.68,3.95,5.y_multiplier_integer
 elk,5.81,3.48,4.67
-elm,6.32,3.05,5.43
+elm,6.32,3.05,5.y_multiplier_integer
 elope,6.58,5.7,6.21
 eloquence,6.76,3.91,6.46
 eloquent,7.16,4.61,6.37
@@ -4023,7 +4023,7 @@ elude,4.62,4,5.05
 elusive,4.3,4.5,4.73
 email,6,4.5,6.11
 emancipation,6.57,3.65,4.73
-embankment,5,3.62,5.43
+embankment,5,3.62,5.y_multiplier_integer
 embargo,5.05,4.59,5.45
 embark,5.89,4.3,6.39
 embarrass,3.38,5.47,4.22
@@ -4043,9 +4043,9 @@ embryo,5.75,3.7,4.86
 emcee,5.15,4.05,4.74
 emerald,7.3,5.33,6.32
 emerge,5.75,4.74,6.67
-emergency,2.72,6.43,2.72
+emergency,2.72,6.y_multiplier_integer,2.72
 emery,4.74,3.59,5.6
-eminence,5.43,4.5,5
+eminence,5.y_multiplier_integer,4.5,5
 eminent,5.58,4.95,5.09
 emissary,4.76,3.39,5.56
 emission,4.1,3.67,4.68
@@ -4056,7 +4056,7 @@ empathize,7.1,3.55,6.38
 empathy,7.29,3.62,5.9
 emperor,4.68,4.25,5.32
 emphasis,5.26,4.1,5
-emphasize,5.75,4.21,6.43
+emphasize,5.75,4.21,6.y_multiplier_integer
 emphysema,2.47,4.25,4.3
 empire,5.36,4.59,5.95
 empirical,4.67,4.14,5.3
@@ -4103,7 +4103,7 @@ enduring,6.67,3.36,6.37
 enema,3.29,4.13,3.2
 enemy,2.22,5.3,2.5
 energetic,7.57,6.1,5.81
-energize,7.43,6,6.55
+energize,7.y_multiplier_integer,6,6.55
 energy,6.9,6.25,6.53
 enforce,5.32,5.3,5.49
 enforcement,4.67,4.48,4
@@ -4191,7 +4191,7 @@ era,5.29,3.62,4.92
 eradicate,3.79,5.09,4.95
 erase,4.89,3.55,5.42
 eraser,5.64,3.57,6.89
-erect,5.79,5.43,5.7
+erect,5.79,5.y_multiplier_integer,5.7
 erectile,4.5,5.5,4.53
 erection,7.38,7.37,5.18
 ergo,4.86,4,5.21
@@ -4200,10 +4200,10 @@ erotic,5.83,7.27,5.9
 erotica,6.1,6.52,5.56
 err,3.58,3.68,4.82
 errand,4.68,3.89,6.15
-errant,4.43,4.8,4.23
+errant,4.y_multiplier_integer,4.8,4.23
 erratic,3.21,5.1,4.4
 erroneous,4.38,4.64,4.07
-error,3.36,4.43,4.18
+error,3.36,4.y_multiplier_integer,4.18
 erupt,5.14,6.41,3.32
 eruption,4.74,6.09,2.82
 escalate,4.05,6.25,5.24
@@ -4224,7 +4224,7 @@ establish,5.58,3.72,6.29
 estate,5.65,3.45,5.27
 esteem,6.38,3.91,6.45
 esteemed,5.95,4.72,5.54
-estimate,5.95,3.41,5.43
+estimate,5.95,3.41,5.y_multiplier_integer
 estimation,4.67,3.18,5.26
 estranged,3.67,3.95,4.48
 estrogen,5.22,4.45,4.2
@@ -4237,7 +4237,7 @@ ethics,6,3.71,6.6
 ethnic,5.36,3.55,5.05
 etiquette,6,3.71,5.65
 eucalyptus,6.05,3.1,5.57
-eulogy,3.43,4.16,4.05
+eulogy,3.y_multiplier_integer,4.16,4.05
 euphemism,5.05,3.48,5.5
 euphoria,7.26,5.68,6.73
 euphoric,7.8,5.25,6.77
@@ -4265,7 +4265,7 @@ evident,5.1,3.76,6.16
 evidentiary,4.5,4.22,4.42
 evil,2.34,5.67,3.6
 evolution,5.35,6.3,4.77
-evolutionary,5.62,5.59,4.43
+evolutionary,5.62,5.59,4.y_multiplier_integer
 evolve,5.7,4.46,5.48
 ex,2.7,4.79,4
 exact,5.58,3.95,5.7
@@ -4288,9 +4288,9 @@ exceptional,7.32,5,6.32
 excess,4.29,5.42,5.29
 excessive,4.37,3.73,4.04
 exchange,5.9,4.76,5.88
-excitable,5.68,5.43,6.55
+excitable,5.68,5.y_multiplier_integer,6.55
 excite,7.79,6.61,5.79
-excited,8.11,6.43,7.33
+excited,8.11,6.y_multiplier_integer,7.33
 excitement,7.62,6.21,6.33
 exciting,7.95,6.95,7.21
 exclamation,6.85,5.4,6
@@ -4307,7 +4307,7 @@ executioner,2.23,6.59,3.68
 executive,4.95,4.32,4.95
 executor,3.95,5.1,5.54
 exemplary,5.58,4.79,6.57
-exempt,4.84,4.43,5.54
+exempt,4.84,4.y_multiplier_integer,5.54
 exemption,5.37,4.17,5.32
 exercise,6.33,5.41,6.9
 exert,5.47,4.64,6
@@ -4332,7 +4332,7 @@ exonerate,5.44,3.83,5.82
 exorcism,3.15,5.96,3.71
 exorcist,3.76,6.29,3.8
 exotic,7.55,6.9,5.65
-expand,5.35,3.3,5.43
+expand,5.35,3.3,5.y_multiplier_integer
 expansion,6.4,5.7,5.42
 expect,5.95,4.86,4.89
 expectancy,6.32,4.35,5.41
@@ -4361,13 +4361,13 @@ exploitation,2.89,6.1,5
 exploration,6.71,5,5.36
 exploratory,5.95,4.29,5.88
 explore,7,4.05,6.52
-explorer,5.9,5.24,6.43
+explorer,5.9,5.24,6.y_multiplier_integer
 explosion,3.17,6.35,3.62
 explosive,4.14,6.62,3.32
-expo,6.26,4.43,5.11
+expo,6.26,4.y_multiplier_integer,5.11
 export,4.79,3.45,5.54
 expose,4.14,5.89,4.24
-exposition,5.43,4.3,5.4
+exposition,5.y_multiplier_integer,4.3,5.4
 exposure,4.81,5.45,5.08
 express,5.53,4.79,6.57
 expression,6.15,4.33,6.88
@@ -4387,7 +4387,7 @@ external,5.37,3,5.5
 extinct,2.74,4.55,3.42
 extinction,3.1,5,3.04
 extinguish,4.65,4.91,5.47
-extinguisher,4.76,4.43,5.95
+extinguisher,4.76,4.y_multiplier_integer,5.95
 extort,3.19,4.48,3.48
 extortion,2.15,4.56,3.05
 extra,6.39,2.9,5.72
@@ -4453,7 +4453,7 @@ fallacy,4,4,3.96
 fallback,4.81,3.72,4.94
 fallopian,4.59,3.61,5.37
 fallout,2.84,4.55,3.45
-fallow,4.43,3.48,5.21
+fallow,4.y_multiplier_integer,3.48,5.21
 FALSE,3.27,5.23,4.7
 fame,5.45,4.63,6.27
 famed,5.33,3.9,4.71
@@ -4461,13 +4461,13 @@ familiar,6.19,2.5,7.21
 familiarity,6.8,2.67,6.62
 family,7.25,4.35,5.98
 famine,2.95,6.1,3.09
-famished,4.47,6.43,4.3
+famished,4.47,6.y_multiplier_integer,4.3
 famous,5.89,4.2,5.4
 fan,6.81,3.7,6.05
 fanatic,4.67,6.17,4.31
 fanatical,3.86,5.87,3.83
 fanciful,7.05,4.81,6.76
-fancy,7.43,5.42,7.16
+fancy,7.y_multiplier_integer,5.42,7.16
 fanfare,5.3,4.91,6
 fang,4.62,4.12,5.55
 fantasize,7,5,6.65
@@ -4476,7 +4476,7 @@ fantasy,7.15,6.18,6.35
 faraway,4.7,3.44,5.08
 farce,4.33,3.96,3.68
 fare,4.86,2.3,4
-farewell,3.43,4.2,4.67
+farewell,3.y_multiplier_integer,4.2,4.67
 farm,6.22,3.05,6.08
 farmer,6.14,3.67,6.1
 farmhouse,5.81,3.5,4.77
@@ -4496,7 +4496,7 @@ fat,2.74,3.89,4
 fatal,2,6.79,3.54
 fatality,2.85,6.05,3.69
 fate,5.38,5.2,5.53
-fated,4.43,3.85,2.55
+fated,4.y_multiplier_integer,3.85,2.55
 fateful,5,4.5,4.8
 fathead,3.47,5,4.32
 father,6.88,3.68,5.19
@@ -4548,7 +4548,7 @@ feisty,5.76,6.3,6.11
 feline,6.86,3.58,5.86
 feller,4.82,3.14,4.5
 fellow,6.28,3.05,6
-fellowship,6.43,2.91,5.94
+fellowship,6.y_multiplier_integer,2.91,5.94
 felon,2.2,4.95,3.36
 felony,2.42,4.95,4.31
 female,7.52,5.9,6.42
@@ -4566,13 +4566,13 @@ fennel,5.35,3.59,6.29
 fern,6.52,3.15,4.67
 ferocious,3.21,6.67,3.96
 ferret,4.89,4.11,4.25
-ferry,6.3,2.71,5.43
+ferry,6.3,2.71,5.y_multiplier_integer
 ferryboat,5.86,4.1,5.28
 fertile,7,5.41,4.92
 fertility,5.85,4.72,4.55
 fertilize,5.45,4.27,6.52
 fertilizer,4.45,3.45,5.63
-fess,3.57,3.43,5
+fess,3.57,3.y_multiplier_integer,5
 fest,6.57,4.78,5.23
 festival,6.84,5.86,5.6
 festive,7.14,5.67,6.55
@@ -4627,7 +4627,7 @@ fin,5.27,4.45,5.45
 final,4.56,4.4,3.94
 finale,5.26,4.27,5.65
 finalist,6.24,3.3,5.78
-finality,4.43,4.18,4.52
+finality,4.y_multiplier_integer,4.18,4.52
 finalize,5.6,4.85,5.78
 finance,4.81,5.6,4.57
 financial,5,4.55,4.82
@@ -4640,7 +4640,7 @@ finger,5.8,4.15,5.32
 fingernail,5.57,3.5,4.73
 fingerprint,5.25,3.29,4.56
 finish,6.41,3.81,6.44
-finite,5.68,4.43,4.79
+finite,5.68,4.y_multiplier_integer,4.79
 fir,5,3,5.5
 fire,4.32,6.05,4.57
 firearm,4,4.54,5.89
@@ -4655,7 +4655,7 @@ fireman,6.47,4.52,5
 fireplace,5.95,5.2,5.56
 firepower,5.84,5.91,6.26
 fireside,6,4,5.64
-firewall,4.43,4.91,4.76
+firewall,4.y_multiplier_integer,4.91,4.76
 firewood,6.09,4.58,5.95
 fireworks,6.8,6.05,5.61
 firm,5.36,4.3,6.58
@@ -4670,7 +4670,7 @@ fishing boat,6.21,3.14,5.4
 fishy,4.2,3.11,3.59
 fissure,4.3,4.18,4.59
 fist,2.95,4.85,4.95
-fistfight,4,6.23,4.43
+fistfight,4,6.23,4.y_multiplier_integer
 fistful,5.4,4.1,4.76
 fit,6.28,4.35,6.11
 fitness,6.45,5.32,6.96
@@ -4711,8 +4711,8 @@ flashback,5,4.71,4.18
 flashlight,6,4.04,6.06
 flashy,4.85,5.77,5.78
 flask,5.5,4.24,5.17
-flat,4.43,3.04,4
-flatbed,4.86,3.38,5.43
+flat,4.y_multiplier_integer,3.04,4
+flatbed,4.86,3.38,5.y_multiplier_integer
 flatfoot,4.33,3.1,4.32
 flatten,5.24,3.52,5.53
 flatter,6.1,4.61,6
@@ -4729,7 +4729,7 @@ flea,3,3,4.42
 fleabag,3.4,4.35,4.32
 flee,3.84,4.95,5
 fleece,5.79,3.71,5.64
-fleet,5.4,4.43,6.24
+fleet,5.4,4.y_multiplier_integer,6.24
 flesh,5.2,4.11,5.29
 fleshy,4.89,5.3,3.95
 flex,5.32,4.8,6.04
@@ -4737,7 +4737,7 @@ flexibility,6.9,4.5,6.73
 flexible,6.74,4.45,6.68
 flick,5.41,4.31,6.46
 flicker,5.5,5.15,5.38
-flier,4.19,4.43,4.85
+flier,4.19,4.y_multiplier_integer,4.85
 flight,6.11,4.2,5.33
 flighty,4.9,4.88,4.32
 flimsy,4,3.77,4.2
@@ -4767,7 +4767,7 @@ flounder,5.32,4,4.32
 flour,5.25,3.26,5.86
 flourish,7.21,5.22,6.17
 flow,5.68,3.71,5.4
-flower,7.3,3.67,6.43
+flower,7.3,3.67,6.y_multiplier_integer
 flowery,7.47,3.81,5.57
 flu,2.58,4,2.8
 flue,4.45,2.86,4.32
@@ -4822,7 +4822,7 @@ footing,5.13,2.95,5.57
 footlocker,5.05,4.25,5.27
 footloose,6.05,4.62,5.38
 footprint,6,2.96,6.37
-footwear,6.43,4,5.18
+footwear,6.y_multiplier_integer,4,5.18
 footwork,5.74,3.96,5.58
 forbid,2.82,4.85,4.48
 forbidding,3.82,5.05,3.57
@@ -4842,7 +4842,7 @@ forego,4.89,4.33,5.32
 foregone,5.06,3.32,4.16
 foreground,5.47,2.68,5.11
 forehead,5.04,3.14,6.5
-foreign,4.86,5.43,4.79
+foreign,4.86,5.y_multiplier_integer,4.79
 foreigner,4.68,3.24,4.33
 foreman,4.89,3.55,5.08
 foremost,5.27,3.81,6.04
@@ -4853,11 +4853,11 @@ foresee,5.67,3.64,6.05
 foresight,5.79,3.5,6.13
 forest,6.68,4.44,5.71
 forevermore,6.48,4.3,5
-forfeit,3.68,4.74,4.43
+forfeit,3.68,4.74,4.y_multiplier_integer
 forge,5,4.16,5.55
 forger,3.95,5.05,4.71
 forgery,2.6,4.86,3.4
-forget,3.73,4.43,3.5
+forget,3.73,4.y_multiplier_integer,3.5
 forgetful,3.59,4.45,4.45
 forgetfulness,3.8,4.55,4.19
 forgive,7.06,3.62,6.44
@@ -4875,12 +4875,12 @@ formation,5.58,4,5
 formidable,5.52,3.96,5.56
 formula,5.3,3.61,4.73
 formulate,5.22,2.64,5.46
-fornicate,4.67,5.43,5.62
+fornicate,4.67,5.y_multiplier_integer,5.62
 fornication,5.95,6.65,6.59
 forsake,3.58,3.32,4.05
 forte,5.7,3.57,6.42
 forthcoming,5.1,4.09,6
-forthright,6.3,3.43,5.8
+forthright,6.3,3.y_multiplier_integer,5.8
 fortitude,6.26,4.59,6.75
 fortnight,5.5,3.05,5.56
 fortress,4.82,3.77,6.55
@@ -4927,7 +4927,7 @@ frayed,4.05,3.2,4.6
 freak,3.73,6.3,5.11
 freakish,3.71,5.12,4.86
 freaky,4.26,6.05,4.21
-freckle,5.53,3.36,4.43
+freckle,5.53,3.36,4.y_multiplier_integer
 free,8.25,5.38,6.5
 freebie,7.3,6.1,6.05
 freedom,7.72,5.67,7.37
@@ -4949,7 +4949,7 @@ fresh,6.67,2.35,6.28
 freshen,6.56,4.68,7.25
 freshener,5.71,4.17,6.19
 freshman,5.05,3.82,3.78
-freshness,7.43,4.1,6.29
+freshness,7.y_multiplier_integer,4.1,6.29
 freshwater,7.29,2.82,5.76
 fret,3.73,5.89,4.24
 friar,5.2,3.26,5.62
@@ -4984,7 +4984,7 @@ frosty,6.15,4.61,5
 frown,3.35,3.61,4.95
 fruit,7,4.09,6.12
 fruit punch,6.95,4.75,5
-fruitcake,5.29,3.43,5.42
+fruitcake,5.29,3.y_multiplier_integer,5.42
 fruitful,7.11,4.14,6.91
 fruitless,2.95,3.25,3.59
 fruity,6.71,5.26,6
@@ -5027,8 +5027,8 @@ furlong,4.58,3.72,5.71
 furlough,4.95,3.35,5.16
 furnace,5.11,3.24,4.82
 furnish,5.65,3.86,6.41
-furnishings,6.25,3.22,6.43
-furniture,5.79,3.05,5.43
+furnishings,6.25,3.22,6.y_multiplier_integer
+furniture,5.79,3.05,5.y_multiplier_integer
 furry,6.63,3.7,5.26
 fury,2.73,6.12,4.62
 fuse,5.05,3.77,5.81
@@ -5046,12 +5046,12 @@ gab,5.2,3.78,4.04
 gad,5.15,3.15,5.04
 gadget,5.74,3.86,5.36
 gaff,3.89,3.9,4.4
-gag,4.43,3.59,3.81
+gag,4.y_multiplier_integer,3.59,3.81
 gaga,4.58,5.8,4.58
 gaggle,5.16,3.95,5.7
 gaiety,5.52,4.61,4.27
 gain,5.9,4.33,6.82
-gal,5.27,4.43,5.53
+gal,5.27,4.y_multiplier_integer,5.53
 gala,6.16,4.67,5.95
 galactic,7,5.8,4.77
 galaxy,5.95,5.61,4.76
@@ -5098,7 +5098,7 @@ gasket,4.45,3.42,5
 gasoline,4.63,4.57,3.63
 gasp,4.5,5.61,4.68
 gassy,3.21,3.5,4.26
-gastric,3.91,4.16,4.43
+gastric,3.91,4.16,4.y_multiplier_integer
 gate,5.32,4.5,5.95
 gatekeeper,5.4,3.9,5.08
 gateway,5.75,3.81,6.16
@@ -5108,7 +5108,7 @@ gatorade,5.7,3.95,5.48
 Gatorade,6,3.84,5.44
 gaudy,3.55,4.33,5.8
 gauge,5.17,3.5,5.23
-gauntlet,4.76,4.43,5.29
+gauntlet,4.76,4.y_multiplier_integer,5.29
 gauze,4.5,3.2,4.76
 gavel,4.3,2.72,4.21
 gay,6.11,4.05,4.78
@@ -5134,7 +5134,7 @@ generation,6.08,4.24,5.23
 generator,5.65,3.62,5.48
 generic,4.5,2.5,4.68
 generosity,7.55,4.29,6.56
-generous,7.43,5.7,6.81
+generous,7.y_multiplier_integer,5.7,6.81
 genetic,4.79,3.83,3.76
 genetics,4.84,4.27,3.29
 genie,6.1,4.41,5.32
@@ -5155,7 +5155,7 @@ genuine,7.11,4.27,7.5
 geographic,6.21,3.05,4.57
 geographical,6.21,3.18,4.65
 geography,5.4,2.56,4.45
-geological,6.43,3.95,5.61
+geological,6.y_multiplier_integer,3.95,5.61
 geologist,6.62,3.75,5.81
 geology,5.89,4.3,4.74
 geometric,5.24,4.21,5.36
@@ -5178,7 +5178,7 @@ giant,5.41,5.1,6.68
 gibberish,4.3,4.62,5.21
 giddy,6.17,5.32,6.4
 gift,7.27,4.64,6.32
-gifted,6.62,4.43,6.67
+gifted,6.62,4.y_multiplier_integer,6.67
 gig,6.48,5.75,5.14
 gigantic,5.35,5.89,5.54
 giggle,7.95,5.39,4.75
@@ -5187,7 +5187,7 @@ gilded,4.94,3.15,5.28
 gimmick,3.89,4.63,3.48
 gimp,2.9,3.29,3.64
 gin,5.82,4.19,5.91
-ginger,5.79,4.43,5.47
+ginger,5.79,4.y_multiplier_integer,5.47
 gingerbread,7,4.18,6.18
 ginseng,5.79,4.05,4.96
 giraffe,6.52,2.91,5.27
@@ -5242,10 +5242,10 @@ glove,6.11,3.57,6
 gloves,5.2,3.17,5.75
 glow,6.55,4.95,5.38
 glucose,3.59,4.25,4.05
-glue,4.85,3.75,5.43
+glue,4.85,3.75,5.y_multiplier_integer
 glum,2.82,3.58,4.62
 glutton,3.53,4.4,3.68
-gnat,3.43,2.75,3.65
+gnat,3.y_multiplier_integer,2.75,3.65
 gnome,6.24,4.21,4.21
 go,6.32,4.86,5.33
 goal,6.79,4.67,6.57
@@ -5319,7 +5319,7 @@ grader,5.26,3.38,5.17
 gradual,5.1,2.95,5.84
 graduate,7.26,4.52,7.18
 graduation,6.47,5.83,5.59
-graffiti,4.24,5.43,5.28
+graffiti,4.24,5.y_multiplier_integer,5.28
 graft,3.58,3.68,4.17
 grail,5.05,4.08,5.71
 grain,5.83,1.6,5.12
@@ -5337,7 +5337,7 @@ grandfather,5.68,3.77,6.15
 grandiose,5.24,4.84,5.1
 grandma,7.5,3.2,5.39
 grandmother,7.62,3.75,6.32
-grandpa,7.43,3.7,5.05
+grandpa,7.y_multiplier_integer,3.7,5.05
 grandson,6.22,3.36,5.39
 grandstand,4.9,4.91,6.21
 granite,5.05,3.76,4.6
@@ -5354,7 +5354,7 @@ graphite,5.05,3.78,5.53
 grappling,5.11,4.9,5.46
 grasp,5.45,4.05,6.48
 grass,6.47,3.39,5.67
-grasshopper,6.05,4.43,5.82
+grasshopper,6.05,4.y_multiplier_integer,5.82
 grassy,6,3.09,5.68
 grate,4.68,4.08,5.96
 grateful,7.5,4.29,7
@@ -5380,7 +5380,7 @@ great grandma,6.33,2.62,6.04
 great grandmother,7.42,4.05,5.17
 great grandpa,7.1,3.67,5.36
 great uncle,5.6,3.05,4.58
-greatness,7.76,4.43,6.76
+greatness,7.76,4.y_multiplier_integer,6.76
 greed,2.48,4.45,4
 greedy,2.1,4.76,4
 green,6.29,4.07,5.64
@@ -5403,7 +5403,7 @@ grilled,6.67,3.89,5.32
 grim,2.41,4.48,4.18
 grimy,3.63,4.4,4.08
 grin,7.66,5.65,5.58
-grind,5.2,3.43,4.58
+grind,5.2,3.y_multiplier_integer,4.58
 grinder,4.77,5.24,5.09
 grindstone,4.14,4.7,5.42
 gringo,4.11,3.61,4.35
@@ -5411,7 +5411,7 @@ grip,5.14,3.64,5.59
 gripe,3.42,4.24,5
 grisly,3.71,5.09,4
 grit,4.55,4.22,6.38
-grits,4.9,3.43,4.65
+grits,4.9,3.y_multiplier_integer,4.65
 gritty,3.94,4.36,4.83
 grizzly,4.45,5,5
 groan,3.9,4.17,5.5
@@ -5432,14 +5432,14 @@ ground,5.28,2.35,5.5
 groundhog,5.19,3.12,5.32
 grounding,5.09,3.84,3.9
 groundwork,5.71,2.86,5.77
-group,5.78,3.43,4.39
+group,5.78,3.y_multiplier_integer,4.39
 groupie,4,4.09,4.71
 grouping,4.9,3.76,5.64
 grouse,3.73,4.05,4.64
 grove,5.26,3.73,6.05
 grovel,3.3,3.65,3.45
 grow,6.28,2.6,5.5
-growl,4.43,3.95,5.11
+growl,4.y_multiplier_integer,3.95,5.11
 grownup,5.3,4.19,6.24
 growth,6,4.95,6.04
 grub,4.16,4.45,4.87
@@ -5451,7 +5451,7 @@ gruesome,2.89,6.62,3.83
 gruff,4.05,4.25,5.67
 grumpy,2.81,5.05,5.06
 grunt,3.68,3.86,4.91
-grunting,4.43,3.87,5.85
+grunting,4.y_multiplier_integer,3.87,5.85
 guacamole,5.47,4.76,5.78
 guano,4.2,3.19,5.32
 guarantee,6.17,3.67,6
@@ -5466,10 +5466,10 @@ guesswork,4.29,4.08,5.04
 guest,6.14,4.15,6.95
 guesthouse,6.09,3,5.65
 guidance,5.95,3.06,6.1
-guide,5.43,3.33,5.75
+guide,5.y_multiplier_integer,3.33,5.75
 guidebook,5.92,2.78,5.78
 guiding,5.73,4.77,5.58
-guild,5.43,4.6,6.29
+guild,5.y_multiplier_integer,4.6,6.29
 guillotine,1.63,5.64,3.39
 guilt,2.29,4.48,4.35
 guilty,3.09,4.65,4.5
@@ -5505,7 +5505,7 @@ guru,5.76,3.76,6.42
 gush,5.32,5.57,5.19
 gusher,4.67,4.9,4.28
 gust,4.86,4.46,4.36
-gusto,5.67,4.43,6.21
+gusto,5.67,4.y_multiplier_integer,6.21
 gut,3.9,3.67,5.27
 gutless,4.05,4.65,3.9
 gutsy,5.53,5.57,5.7
@@ -5556,15 +5556,15 @@ halter,4.33,3.26,5.22
 ham,4.65,4.2,5.85
 hamburger,6.93,4.2,5.35
 hammer,5.17,4.56,5.59
-hammerhead,4.63,4.43,4.11
+hammerhead,4.63,4.y_multiplier_integer,4.11
 hammock,6.95,2.9,5.22
 hamper,5.15,3.14,5.19
 hamster,5.88,4,5.72
 hand,5.9,3.98,5.88
 handbag,4.68,3.94,5.69
-handball,5.43,3.23,5.26
+handball,5.y_multiplier_integer,3.23,5.26
 handbook,5.3,3.36,5.85
-handcuff,3.35,5,3.43
+handcuff,3.35,5,3.y_multiplier_integer
 handful,5.45,3.83,5.73
 handgun,4.95,6.78,5.04
 handheld,6.26,3.61,6.14
@@ -5592,7 +5592,7 @@ hankering,5.52,4.2,4.84
 hanky,5.18,3.57,5.67
 haphazard,3.28,4.67,3.7
 hapless,3.63,4.1,4.61
-happen,5.5,3.43,5.53
+happen,5.5,3.y_multiplier_integer,5.53
 happiness,8.48,6.5,7.05
 happy,8.47,6.05,7.21
 harass,2.95,6.1,3.58
@@ -5632,7 +5632,7 @@ hasten,4.9,3.86,5.33
 hasty,4.25,5.35,4.81
 hat,5.69,2.88,6.21
 hatch,5.26,4.9,5.09
-hatchet,4.43,5.14,4.48
+hatchet,4.y_multiplier_integer,5.14,4.48
 hate,1.96,6.26,4.47
 hateful,1.9,5.71,4.32
 hater,2.33,4.14,4.8
@@ -5642,10 +5642,10 @@ haul,4.95,3.18,5.6
 haunt,4.05,4.87,4.39
 have,5.86,3.52,5.72
 haven,6.36,2.9,6.88
-havoc,3.85,5.43,3.96
+havoc,3.85,5.y_multiplier_integer,3.96
 haw,4.35,3.72,4.71
 hawk,6.46,4.83,5.5
-hay,5.41,2.43,4.75
+hay,5.41,2.y_multiplier_integer,4.75
 hayride,6.67,3.81,6.76
 haystack,5.86,3.58,5.38
 haywire,4.55,4.29,2.88
@@ -5682,10 +5682,10 @@ heap,4.38,3.42,5.39
 hear,6.68,3.62,6.71
 hearsay,3.82,4.59,4.32
 hearse,2.78,3.64,3.21
-heart,6.95,5.07,5.43
+heart,6.95,5.07,5.y_multiplier_integer
 heart disease,2.09,5.8,3.38
 heartache,3.23,5.24,3.32
-heartbeat,6.24,4.43,4.54
+heartbeat,6.24,4.y_multiplier_integer,4.54
 heartbreak,2.45,5.65,3.58
 heartbreaker,3.76,4.45,5
 heartbreaking,2.91,4.86,3.55
@@ -5734,7 +5734,7 @@ helmet,5.26,3.71,5.52
 helmsman,5.19,3,5.33
 help,6.95,4.29,6.89
 helper,6.71,3.22,6.6
-helpful,7.43,3.88,6.79
+helpful,7.y_multiplier_integer,3.88,6.79
 helpless,2.24,4.91,3
 hem,5.47,3.05,6.13
 hematoma,3.11,4.62,3.25
@@ -5760,7 +5760,7 @@ hernia,2.48,5.42,2.95
 hero,7.44,6.35,5.78
 heroic,7.45,5.48,6.79
 heroin,2.74,4.62,3.67
-heroine,4.86,5.43,4.92
+heroine,4.86,5.y_multiplier_integer,4.92
 heroism,7.05,5.96,6.83
 herpes,1.57,5.58,3.75
 herring,4.9,3.35,5.18
@@ -5799,10 +5799,10 @@ hilarious,7.8,6.11,6.32
 hill,5.41,3.15,6.95
 hillside,6.27,4.28,5.52
 hilltop,6.15,3.09,6.44
-hilly,5.7,3.43,4.81
+hilly,5.7,3.y_multiplier_integer,4.81
 hilt,5.15,3.35,5.17
 hind,4.7,2.71,4.42
-hinder,3.9,3.43,4.68
+hinder,3.9,3.y_multiplier_integer,4.68
 hindsight,5.19,4.28,4.69
 hinge,5.21,3.25,5.7
 hint,6.05,4.75,6.05
@@ -5880,7 +5880,7 @@ homosexuality,5.11,4.05,4
 honcho,5,3.05,5.27
 hone,5.42,3.76,5.48
 honest,8.16,4,6.7
-honesty,7.43,3.32,6.81
+honesty,7.y_multiplier_integer,3.32,6.81
 honey,7.27,4.38,6.39
 honeycomb,6.55,3.95,5.85
 honeymoon,7.53,5.91,7.33
@@ -5959,7 +5959,7 @@ housebroken,5.65,4.23,6.55
 houseguest,5.2,3.67,4.96
 household,6.67,3.96,7
 housekeeper,5.32,3.64,5.48
-housekeeping,5.55,3.43,5.64
+housekeeping,5.55,3.y_multiplier_integer,5.64
 housewarming,6.26,4.23,6.13
 housewife,5.42,3.73,5.86
 housework,3.94,3.59,4.76
@@ -5993,7 +5993,7 @@ humid,3.42,3.36,4.04
 humidity,3.86,4.19,3.68
 humiliate,2.6,5.05,3.96
 humiliating,2.16,5.5,2.85
-humiliation,2.27,5.43,3.26
+humiliation,2.27,5.y_multiplier_integer,3.26
 humility,5.65,3.95,5.6
 hummer,5.81,3.71,5.71
 hummingbird,6.74,4.68,5.3
@@ -6013,7 +6013,7 @@ hunt,3.84,5.1,5.3
 hunting,4.75,3.71,5.76
 huntress,4.61,4.16,5.48
 hurdle,4.3,4.05,4.21
-hurl,3.32,4.43,5.11
+hurl,3.32,4.y_multiplier_integer,5.11
 hurricane,3.16,5.75,2.98
 hurry,4.32,5.62,4.56
 hurt,2.45,4.72,3.73
@@ -6058,7 +6058,7 @@ hypodermic,2.9,4.78,4.58
 hypothalamus,5.3,4.04,4.46
 hypothermia,2.57,5.78,3.12
 hypothesis,5.78,3.29,5.6
-hypothetical,4.94,4.43,5.71
+hypothetical,4.94,4.y_multiplier_integer,5.71
 hysterectomy,2.95,5.22,3.57
 hysteria,3.79,5.59,3.46
 hysterical,4.58,6.33,5.13
@@ -6127,7 +6127,7 @@ immaterial,4.68,3.08,5.21
 immature,3.17,4.21,4.19
 immediate,5.85,4.64,5.84
 immense,5.48,5.85,4.62
-immigrant,5.43,5.05,4.1
+immigrant,5.y_multiplier_integer,5.05,4.1
 immigration,4,4.22,3.5
 imminent,5.25,3.45,3.55
 immobile,2.89,4.38,3.63
@@ -6181,16 +6181,16 @@ impostor,3.47,4.6,4.35
 impotence,3.1,4.61,3.77
 impotent,2.95,3.71,3.95
 impound,2.68,4.23,3.08
-impoverished,2.43,4.64,3.3
-impractical,3.77,4.53,4.43
+impoverished,2.y_multiplier_integer,4.64,3.3
+impractical,3.77,4.53,4.y_multiplier_integer
 impregnable,4.68,3.95,5.61
 impregnate,4.5,6.21,5.08
 impress,6.25,4.82,6.62
 impressed,6.66,4.9,6.38
-impression,6,3.86,5.43
+impression,6,3.86,5.y_multiplier_integer
 impressionable,5.4,4,5.19
 impressive,7.05,4.1,6.08
-imprint,5.24,2.43,5.32
+imprint,5.24,2.y_multiplier_integer,5.32
 imprison,2.48,4.7,3.42
 imprisonment,3.1,5.14,2.93
 improbable,4.05,3.95,4.78
@@ -6268,7 +6268,7 @@ incumbent,4.05,3.19,4.21
 incur,4.8,4,5.04
 incurable,1.9,4.9,2.8
 indebted,3.21,4.25,3.2
-indecent,4.52,5.4,4.43
+indecent,4.52,5.4,4.y_multiplier_integer
 indecision,3.85,4.1,4
 indecisive,3.52,4.81,3.62
 indefinite,4.55,4.8,4.23
@@ -6318,7 +6318,7 @@ inevitable,4.1,4.27,3.15
 inexcusable,3.68,3.59,3.82
 inexpensive,7.63,4.74,5.72
 inexperienced,3.5,3.67,3.64
-inexplicable,4.55,5,4.43
+inexplicable,4.55,5,4.y_multiplier_integer
 infallible,5.86,3.79,5.3
 infamous,4.86,4.32,5.04
 infamy,4.36,5.05,4.65
@@ -6331,7 +6331,7 @@ infect,2.84,4,3.7
 infection,2,4.95,3.8
 infectious,2.63,5.14,3.19
 infer,4.79,3.82,4.95
-inferior,3.43,4.55,3.35
+inferior,3.y_multiplier_integer,4.55,3.35
 inferiority,3.09,3.47,3.33
 infernal,4.14,6.3,4.61
 inferno,3.24,6.14,3.32
@@ -6376,16 +6376,16 @@ ingredient,5.86,2.45,5.85
 inhabit,5.38,3.65,5.45
 inhabitant,5.11,3.57,5.69
 inhalation,5.25,3.33,4.72
-inhale,5.36,4.43,5.89
-inhaler,4.43,3.46,5.05
+inhale,5.36,4.y_multiplier_integer,5.89
+inhaler,4.y_multiplier_integer,3.46,5.05
 inherent,5.95,3.71,5.68
 inherit,7.11,4.35,4.76
 inheritance,6.8,5,5.04
 inhibition,3.95,4.29,4.48
-inhibitor,4.43,5.45,4.43
+inhibitor,4.y_multiplier_integer,5.45,4.y_multiplier_integer
 inhospitable,2.65,4.36,3.35
 inhuman,3.18,5.24,3.64
-inhumane,3.1,5.43,3.36
+inhumane,3.1,5.y_multiplier_integer,3.36
 iniquity,4.25,3.38,4.92
 initial,5.38,4.09,5.27
 initiate,6.1,3.52,6.67
@@ -6426,7 +6426,7 @@ insanity,2.7,7.79,4.12
 insatiable,4.26,5.48,2.95
 inscription,6.14,4.85,5.06
 inscrutable,4.1,4.33,4.96
-insect,4.43,4.67,4.79
+insect,4.y_multiplier_integer,4.67,4.79
 insecticide,3.86,5.09,4.47
 insecure,2.3,4.57,3.62
 insecurity,2.24,4.81,3.56
@@ -6438,7 +6438,7 @@ insertion,4.47,5.05,5.18
 insider,4.5,4.39,5.63
 insidious,3.55,4.68,3.58
 insight,6.76,3.96,6.3
-insightful,5.43,4.27,6.85
+insightful,5.y_multiplier_integer,4.27,6.85
 insignia,5.57,2.83,5.44
 insignificant,3.64,3.7,4.64
 insinuate,4.09,5.22,5.84
@@ -6447,7 +6447,7 @@ insist,4.42,4.55,6.35
 insistence,5,5.63,5.33
 insistent,4.75,3.91,5.54
 insolence,3.5,3.83,5.22
-insolent,2.74,5.43,4.12
+insolent,2.74,5.y_multiplier_integer,4.12
 insomnia,2.67,4.91,2.92
 inspect,5.26,4.05,4.78
 inspection,4.32,4.05,4.48
@@ -6459,7 +6459,7 @@ inspired,6.89,5.56,7.3
 instability,2.75,4.89,3.27
 install,5.95,3.72,6.68
 installation,5.06,3.42,5.75
-installment,4.42,4.43,5.54
+installment,4.42,4.y_multiplier_integer,5.54
 instant,5.84,4.33,6.22
 instantaneous,5.16,4.72,5.96
 instinct,5.67,4.44,6.26
@@ -6528,8 +6528,8 @@ international,5.65,3.95,5.33
 internet,6.68,5.44,6.24
 internship,5.9,6.25,5.11
 interoffice,4.32,3.67,4.59
-interpret,5.2,4.43,5.24
-interpretation,5.6,4.21,5.43
+interpret,5.2,4.y_multiplier_integer,5.24
+interpretation,5.6,4.21,5.y_multiplier_integer
 interpreter,5.8,3.14,5.74
 interpretive,5.16,2.9,6.3
 interrogate,2.76,4.8,4.64
@@ -6539,7 +6539,7 @@ interruption,3.81,3.88,4.25
 intersection,4.58,4.45,4.42
 interstate,5,4.38,4.91
 interstellar,5.95,4.95,5.33
-interval,5.05,3.43,5.7
+interval,5.05,3.y_multiplier_integer,5.7
 intervene,5.21,4.48,5.82
 intervention,4.14,4.74,4.57
 interview,4.68,6.35,6.84
@@ -6553,7 +6553,7 @@ intimidating,3,4.33,4
 intimidation,3.79,4.67,3.25
 intolerable,3.14,5.41,4.15
 intolerance,2.95,5.35,3.87
-intolerant,3.43,4.05,4.74
+intolerant,3.y_multiplier_integer,4.05,4.74
 intoxicating,5.58,5.81,2.82
 intracranial,4.62,4.45,4.57
 intravenous,4.29,4.09,4.59
@@ -6584,7 +6584,7 @@ inventor,6.21,4.62,5.15
 inventory,4.95,3.58,5.48
 inverted,4.91,3.85,5.58
 invest,6.16,3.95,5.94
-investigate,5.68,4.09,5.43
+investigate,5.68,4.09,5.y_multiplier_integer
 investigation,4.36,5.7,6.11
 investigative,5.5,5.8,5.69
 investigator,4.95,4.35,4.79
@@ -6593,7 +6593,7 @@ investor,5.42,3.39,5.76
 invincible,6.32,5.3,6.6
 invisibility,5.32,4.32,5.1
 invisible,5,3.95,4.27
-invitation,7.05,4.94,6.43
+invitation,7.05,4.94,6.y_multiplier_integer
 invite,5.68,5.1,6.95
 invoice,4.6,3.68,5.7
 invoke,5.05,4.85,5.54
@@ -6645,7 +6645,7 @@ jacket,5.86,3.35,6.89
 jackhammer,3.9,4.7,4.76
 jackpot,7.1,5.62,4.35
 jackrabbit,5.95,3.61,4.36
-jade,6.25,3.43,5.37
+jade,6.25,3.y_multiplier_integer,5.37
 jaded,3.62,3.79,5.65
 jagged,3.95,6.05,4.48
 jaguar,5.63,5.55,5.1
@@ -6682,7 +6682,7 @@ jellybean,6.4,4.77,6.14
 jellyfish,4.9,3.73,4
 jeopardize,3.1,6.15,3.65
 jeopardy,3.84,4.23,4.32
-jerk,2.43,6.45,4.84
+jerk,2.y_multiplier_integer,6.45,4.84
 jerky,4.74,4,4.21
 jest,6.2,4.21,5.64
 jester,4.53,4.75,5.35
@@ -6704,14 +6704,14 @@ jive,6.32,5.68,5.29
 job,5.64,4,4.44
 jockey,4.95,4.84,5.62
 jockstrap,3.5,4.33,4.58
-jog,5.81,3.43,6.35
+jog,5.81,3.y_multiplier_integer,6.35
 jogger,5.11,3.5,5.94
 join,5.83,3.9,4.94
 joint,5.32,4.5,6.16
 joke,7.88,5.73,5.79
 joker,5.67,4.21,5.05
 jolly,7.47,5.95,7.4
-jolt,4.43,6.63,4.76
+jolt,4.y_multiplier_integer,6.63,4.76
 jot,4.79,4,5.77
 jour,5.74,2.95,5.45
 journal,5.91,3.23,6.31
@@ -6773,14 +6773,14 @@ karaoke,6.29,5,6.17
 karate,6.26,4.6,6.74
 karma,6.28,4.18,3.29
 karmic,5.63,4.22,4.19
-kayak,5.68,3.77,5.43
+kayak,5.68,3.77,5.y_multiplier_integer
 kazoo,5.76,5.05,5.1
 kebab,5.95,3.65,5.23
 keel,4.64,4.15,5.74
 keen,6.72,3.21,5.52
-keep,6.32,3.43,5.71
+keep,6.32,3.y_multiplier_integer,5.71
 keeper,5.89,3.81,4.83
-keepsake,6.73,4.43,5.95
+keepsake,6.73,4.y_multiplier_integer,5.95
 keg,5.65,4.52,6.33
 kelp,5,3.46,5.18
 kennel,4.64,3.67,5.73
@@ -6810,7 +6810,7 @@ kidnapping,2.05,5.36,2.47
 kidney,4.9,3.95,5.44
 kids,6.48,5.69,5.13
 kill,1.81,6.81,3.61
-killer,1.74,7.05,4.43
+killer,1.74,7.05,4.y_multiplier_integer
 killing,1.95,5.52,4.47
 killjoy,3.84,4.14,4.05
 kilo,4.29,3.26,5.19
@@ -6879,7 +6879,7 @@ laboratory,5.14,4.38,4.77
 laborer,4.71,4.08,5.21
 labyrinth,4.84,4.24,3.8
 lace,6.58,3.75,6.7
-laceration,3.43,6.67,3.64
+laceration,3.y_multiplier_integer,6.67,3.64
 lack,3.68,2.24,5.46
 lackey,4.32,4,4.13
 lacquer,4.95,3.3,5
@@ -6940,7 +6940,7 @@ lasting,6.67,3.33,6.33
 latch,5,3.09,4.78
 late,3.32,5.57,4.22
 latent,4.48,3.04,4.11
-lateral,5.43,4.11,4.68
+lateral,5.y_multiplier_integer,4.11,4.68
 latex,3.95,3.72,5.54
 lather,5.57,4.39,6.16
 latitude,4.82,3.74,5.47
@@ -6968,7 +6968,7 @@ lawn,6.05,2.62,6.04
 lawnmower,5.48,2.92,5.74
 lawsuit,2.84,5.39,3.2
 lawyer,3.94,3.95,3.56
-lax,4.43,3.12,5.33
+lax,4.y_multiplier_integer,3.12,5.33
 laxative,3.1,4.14,3
 lay,6.18,3.7,6.32
 layaway,5.29,3.9,5.35
@@ -6985,7 +6985,7 @@ leadership,6,4.76,6.84
 leaf,6.16,3.05,5.54
 leafy,5.95,3.57,5.88
 league,5.35,4.25,6.28
-leak,4,5.43,4.57
+leak,4,5.y_multiplier_integer,4.57
 leakage,3.52,5.23,3.67
 leaky,3.95,4.33,4.59
 lean,6.35,3.32,5.84
@@ -7001,7 +7001,7 @@ lecture,4,3.16,4.5
 lecturer,4.42,3.48,4.88
 ledge,5.24,4.95,4.36
 ledger,5.33,3.24,5.87
-leech,2.43,4.09,4.5
+leech,2.y_multiplier_integer,4.09,4.5
 leeway,5.26,3.88,6.11
 leftover,4.59,4.27,5.54
 leftovers,5.29,3.4,6.09
@@ -7021,7 +7021,7 @@ lego,6.14,5.05,6.3
 legwork,4.86,3.5,6.36
 leisure,7.4,4.48,6.68
 leisurely,6.92,3.6,6.58
-lemon,6.37,4.52,5.43
+lemon,6.37,4.52,5.y_multiplier_integer
 lemonade,7.05,4.63,6
 lend,4.95,3.22,5.5
 length,5.21,3.41,5.67
@@ -7029,10 +7029,10 @@ lengthy,4.4,3.39,5.24
 leniency,5.8,3.78,5.71
 lenient,5.52,3.61,5.54
 lens,5.42,2.95,5.04
-leopard,6.43,6.26,4.29
+leopard,6.y_multiplier_integer,6.26,4.29
 leotard,5.1,3.95,5
 leper,3.3,4.24,2.88
-leprechaun,6,5.11,4.43
+leprechaun,6,5.11,4.y_multiplier_integer
 leprosy,2.25,4.38,3.35
 lesbian,5.76,6.04,5.34
 lesion,2.95,5.62,4.13
@@ -7100,7 +7100,7 @@ likable,6.83,4.23,7.35
 like,7.44,4.4,6.28
 likelihood,5.74,2.9,5.59
 likely,6.9,4.42,6.14
-likeness,6.6,4.27,6.43
+likeness,6.6,4.27,6.y_multiplier_integer
 lilac,6.95,3.64,6.24
 lily,7.05,2.64,5.39
 limb,4.42,2.7,6.37
@@ -7150,11 +7150,11 @@ listless,3.84,3.33,4.67
 liter,4.37,3.65,5.16
 literacy,7.55,3.95,6.36
 literal,5.84,4.35,6.32
-literary,5.95,3.9,6.43
-literature,6.43,3.7,6.06
+literary,5.95,3.9,6.y_multiplier_integer
+literature,6.y_multiplier_integer,3.7,6.06
 lithium,4.75,3.5,4.79
 litigation,3.8,4.33,4.21
-litigator,3.52,4.43,4.36
+litigator,3.52,4.y_multiplier_integer,4.36
 litter,2.58,3.8,5.7
 little,5.91,4.2,5.18
 live,7.95,4.71,6.5
@@ -7165,9 +7165,9 @@ liver,4.19,3.27,4.67
 livery,4.59,5.11,5.37
 livestock,5.95,2.95,4.68
 livid,3.42,5.38,4.55
-lizard,5.43,5.5,5.86
-llama,5.43,4.04,5.63
-load,4.43,4.55,6.68
+lizard,5.y_multiplier_integer,5.5,5.86
+llama,5.y_multiplier_integer,4.04,5.63
+load,4.y_multiplier_integer,4.55,6.68
 loader,4.48,2.96,6.33
 loaf,5.75,2.45,5.32
 loafer,4.05,3.63,5.05
@@ -7179,7 +7179,7 @@ lobby,4.76,4.65,5.53
 lobbyist,3.32,3.73,4.45
 lobe,4.52,3.92,5.59
 lobotomy,2.45,5.32,2
-lobster,6.43,4.67,5.55
+lobster,6.y_multiplier_integer,4.67,5.55
 local,6.77,3.8,6.68
 localized,5.05,2.4,5.86
 locate,5.58,3.67,6.3
@@ -7195,7 +7195,7 @@ loco,4.53,4.8,4.21
 locomotive,5.95,5.5,5.23
 locust,3.16,4.24,3.45
 lode,5.24,3.45,5.03
-lodge,6.43,3.33,5.8
+lodge,6.y_multiplier_integer,3.33,5.8
 loft,5.96,3.42,5.09
 lofty,5.65,2.95,5.85
 log,4.94,4.29,5.7
@@ -7215,7 +7215,7 @@ longitude,4.76,2.91,5.04
 longtime,5.5,3.36,6
 look,5.95,3.76,5.88
 looker,6.05,4.88,6.17
-lookout,4.43,4.32,6
+lookout,4.y_multiplier_integer,4.32,6
 loom,4.94,3.65,4.96
 loon,4.74,3.85,4.75
 loony,4.48,4.04,4.2
@@ -7224,13 +7224,13 @@ loophole,4.84,4.71,5.35
 loopy,4.67,4.25,4.16
 loose,4.52,4.3,5.53
 loosen,5,4,6
-loot,4.43,5.15,5.62
+loot,4.y_multiplier_integer,5.15,5.62
 lop,4.8,4.55,5.08
 lopsided,4.19,4.42,3.95
 lord,5.59,3.81,5.75
 lordship,5.2,4.42,5.41
 lore,6.42,4.5,5.58
-lose,3.59,5.43,4.39
+lose,3.59,5.y_multiplier_integer,4.39
 loser,2.85,3.94,4.53
 loss,2.9,5.2,4.47
 lost,2.53,5.11,3.85
@@ -7289,7 +7289,7 @@ lung,4.84,2.64,4.74
 lunge,4.27,4.73,6.1
 lurch,3.9,4.09,4.38
 lure,4.65,4.48,5.44
-lurk,3.48,4.43,5
+lurk,3.48,4.y_multiplier_integer,5
 luscious,6.91,5.75,5.59
 lush,6.48,4.24,5.79
 lust,6.26,6.44,4.64
@@ -7307,7 +7307,7 @@ lyrics,6.42,4.95,5.8
 macadamia,6.33,3.8,5.37
 macarena,6.52,4.24,5.26
 macaroni,7.75,5.09,6.27
-mace,4.14,5.43,4.76
+mace,4.14,5.y_multiplier_integer,4.76
 mach,5.35,3.95,5.24
 machete,4.13,6.18,4.7
 machine,5,4.39,4.8
@@ -7325,7 +7325,7 @@ madness,2.86,6.25,4.18
 maestro,6.14,3.7,6.24
 mafia,3.11,7.05,3.65
 magazine,6.24,4.2,7.05
-magenta,5.95,4.58,5.43
+magenta,5.95,4.58,5.y_multiplier_integer
 maggot,2,5.6,3.55
 magic,7.17,6.05,5.33
 magical,8.23,5.88,5.3
@@ -7450,12 +7450,12 @@ margarine,4.85,3.14,5.96
 margarita,6.33,5.2,6.19
 margin,4.75,3.71,5.15
 marginal,4.6,3.57,5.47
-mariachi,5.95,4.43,5.33
+mariachi,5.95,4.y_multiplier_integer,5.33
 marijuana,3.63,4.36,4.77
 marinara,5.95,3,6.59
 marine,5.95,3.44,5.14
-mariner,5.58,3.43,4.96
-marital,5.24,4.91,5.43
+mariner,5.58,3.y_multiplier_integer,4.96
+marital,5.24,4.91,5.y_multiplier_integer
 maritime,4.9,3.36,5.26
 marker,5.8,4.05,5.48
 market,6.21,3.55,5.77
@@ -7548,7 +7548,7 @@ maze,5.84,4.83,4.56
 meadow,7.3,2.62,6.15
 meager,3.35,4.63,4.46
 meal,7.05,4.85,7.11
-mean,2.43,4.81,4.17
+mean,2.y_multiplier_integer,4.81,4.17
 meanie,3.17,4.85,4.48
 meaning,6.45,4.05,6.53
 meaningful,6.79,3.78,6.29
@@ -7559,7 +7559,7 @@ measles,2.57,4.5,4.1
 measure,5.14,4.36,5.41
 measurement,5.11,3.09,5.18
 measuring cup,5.75,3.62,6.47
-measuring tape,5.43,2.15,6.86
+measuring tape,5.y_multiplier_integer,2.15,6.86
 meat,6.62,4.3,5.58
 meatball,6.68,4.79,5.38
 meathead,3.38,4.22,3.81
@@ -7582,7 +7582,7 @@ medication,3.65,4.56,6.21
 medicinal,5.45,5.87,5.16
 medicine,5.9,4,5.35
 medieval,5.6,4.4,5.29
-mediocre,4.43,3,4.16
+mediocre,4.y_multiplier_integer,3,4.16
 mediocrity,3.71,3.55,3.67
 meditate,6.47,2.85,7.15
 meditation,7.21,2.5,7.35
@@ -7616,7 +7616,7 @@ menace,3.13,4.89,4.4
 menacing,3.14,4.76,4.15
 mend,6.53,3.76,5.83
 menial,3.8,3.85,5.32
-meningitis,2.55,5.41,3.43
+meningitis,2.55,5.41,3.y_multiplier_integer
 menopause,1.89,3.55,4.32
 menstrual,2.79,4.3,3.37
 mental,4.58,3.68,5.48
@@ -7658,11 +7658,11 @@ metaphysical,5.48,4,5.37
 meteor,5.1,5.62,3.92
 meteorite,7.25,6.37,3.49
 meter,5.53,3.25,5.25
-meth,2.55,4.43,3.12
+meth,2.55,4.y_multiplier_integer,3.12
 methadone,3.05,3.76,4.48
 methane,3.48,3.73,4.37
 method,5.2,4.17,6.13
-methodical,5.11,3.76,5.43
+methodical,5.11,3.76,5.y_multiplier_integer
 methodology,4.84,3.41,5.48
 meticulous,5.14,4.8,5.36
 metric,4.95,3.67,5.13
@@ -7693,7 +7693,7 @@ midsummer,6.24,4.8,5.14
 midterm,4.14,4.82,4.28
 midtown,5.83,4.2,5.54
 midwife,5.65,3.14,5.96
-mighty,6.45,5.43,6.85
+mighty,6.45,5.y_multiplier_integer,6.85
 mignon,5.57,3.37,4.82
 migraine,2.68,4.96,3.11
 migrate,4.57,3.33,5.55
@@ -7701,7 +7701,7 @@ migration,4.52,3.54,4.88
 mil,4.85,4.05,5.58
 mild,5.9,2.39,5.67
 mildew,2.61,4.14,4.19
-mile,4.78,3.43,5.33
+mile,4.78,3.y_multiplier_integer,5.33
 mileage,5.9,2.95,5.64
 milestone,6.85,4.56,6.36
 militant,3.95,5.38,4.4
@@ -7814,7 +7814,7 @@ mock,3.81,4.95,5.17
 mockery,2.95,4.48,4.11
 mockingbird,6.37,4.62,5.48
 mod,5.57,3.65,4.81
-mode,5.25,3.43,6.1
+mode,5.25,3.y_multiplier_integer,6.1
 model,6.38,3.9,6.53
 modeling,5.67,3.92,4.65
 modem,5.29,3.55,4.5
@@ -7825,7 +7825,7 @@ modest,6.42,2.93,7.05
 modesty,6.19,4.41,5.81
 modicum,4.95,3.33,5.18
 modification,5.05,4.1,6.62
-modify,5.1,3.78,6.43
+modify,5.1,3.78,6.y_multiplier_integer
 module,4.9,4.33,5.41
 mogul,5.42,3.48,5.11
 moist,5.53,4.2,4.5

@@ -483,7 +483,7 @@ generateKWICIntro = tk.Label(window, anchor = 'w', text="Generate a new KWIC tab
 generateKWICIntro.place(x=labels_x_coordinate,y=basic_y_coordinate)
 
 searchKWICIntro = tk.Label(window, anchor = 'w', text="Search existing KWIC table")
-searchKWICIntro.place(x=labels_x_coordinate,y=basic_y_coordinate+y_step*3)
+searchKWICIntro.place(x=labels_x_coordinate,y=y_multiplier_integer)
 
 quit_button = tk.Button(window, text='QUIT', width=20,height=2, command=exit_window)
 quit_button.place(x=900,y=y_main_buttons)
@@ -511,29 +511,29 @@ tk.Label(window, textvariable=CoNLL_input_file_path).place(x=entry_box_x_coordin
 
 # output kwic from conll
 select_save_KWIC_file_button=tk.Button(window, width=44,text='Select OUTPUT KWIC table', command=select_KWIC_output_dir, anchor="w")
-select_save_KWIC_file_button.place(x=labels_x_coordinate+x_indent_step, y=basic_y_coordinate+y_step*2)
-tk.Label(window, textvariable=KWIC_create_output_file_path).place(x=entry_box_x_coordinate+60, y=basic_y_coordinate+y_step*2)
+select_save_KWIC_file_button.place(x=labels_x_coordinate+x_indent_step, y=y_multiplier_integer)
+tk.Label(window, textvariable=KWIC_create_output_file_path).place(x=entry_box_x_coordinate+60, y=y_multiplier_integer)
 
 # existing kwic to search
 select_input_KWIC_button=tk.Button(window, width=44,text='Select existing INPUT KWIC table', command=select_existing_KWIC, anchor="w")
-select_input_KWIC_button.place(x=labels_x_coordinate+x_indent_step, y=basic_y_coordinate+y_step*4)
-tk.Label(window, textvariable=KWIC_input_file_path).place(x=entry_box_x_coordinate+60, y=basic_y_coordinate+y_step*4)
+select_input_KWIC_button.place(x=labels_x_coordinate+x_indent_step, y=y_multiplier_integer)
+tk.Label(window, textvariable=KWIC_input_file_path).place(x=entry_box_x_coordinate+60, y=y_multiplier_integer)
 
 # output of existing kwic search
 select_save_KWIC_Search_file_button=tk.Button(window, width=44,text='Select OUTPUT file for KWIC search results', command=select_KWIC_Search_Output_dir, anchor="w")
-select_save_KWIC_Search_file_button.place(x=labels_x_coordinate+x_indent_step, y=basic_y_coordinate+y_step*5)
-tk.Label(window, textvariable=KWIC_search_output_file_path).place(x=entry_box_x_coordinate+60, y=basic_y_coordinate+y_step*5)
+select_save_KWIC_Search_file_button.place(x=labels_x_coordinate+x_indent_step, y=y_multiplier_integer)
+tk.Label(window, textvariable=KWIC_search_output_file_path).place(x=entry_box_x_coordinate+60, y=y_multiplier_integer)
 
 # Keyword field labels
 kw_Info = tk.Label(window, anchor = 'w', text="Key word to search")
 kw_Info.pack()
-kw_Info.place(x=labels_x_coordinate+x_indent_step,y=basic_y_coordinate+y_step*6)
+kw_Info.place(x=labels_x_coordinate+x_indent_step,y=y_multiplier_integer)
 
 # Setting up keyword search
 searchField_kw = tk.StringVar()
 searchField_kw.set('e.g.: father')
 entry_searchField_kw = tk.Entry(window, textvariable=searchField_kw)
-entry_searchField_kw.place(x=x_drop_down, y=basic_y_coordinate+y_step*6)
+entry_searchField_kw.place(x=x_drop_down, y=y_multiplier_integer)
 
 # Setting up window dropdown
 window_dropdown_field = tk.StringVar()
@@ -541,33 +541,33 @@ window_dropdown_field.set('+/-5')
 
 windowInfo = tk.Label(window, anchor = 'w', text="Search window size")
 windowInfo.pack()
-windowInfo.place(x=labels_x_coordinate+x_indent_step,y=basic_y_coordinate+y_step*7)
+windowInfo.place(x=labels_x_coordinate+x_indent_step,y=y_multiplier_integer)
 
 # Window size menu dropdown and var monitoring
 window_menu_lb = tk.OptionMenu(window,window_dropdown_field,'+/-10', '+/-9', '+/-8', '+/-7', '+/-6', '+/-5', '+/-4', '+/-3', '+/-2', '+/-1')
-window_menu_lb.place(x=x_drop_down, y=basic_y_coordinate+y_step*7)
+window_menu_lb.place(x=x_drop_down, y=y_multiplier_integer)
 
 # Setting up position dropdown (left, right, both)
 position_dropdown_field = tk.StringVar()
 position_dropdown_field.set('both')
 positionInfo = tk.Label(window, anchor = 'w', text="Direction (position) to search")
 positionInfo.pack()
-positionInfo.place(x=labels_x_coordinate+x_indent_step,y=basic_y_coordinate+y_step*8)
+positionInfo.place(x=labels_x_coordinate+x_indent_step,y=y_multiplier_integer)
 
 # Position menu dropdown and var monitoring
 position_dropdown_lb = tk.OptionMenu(window,position_dropdown_field,'left','right','both')
-position_dropdown_lb.place(x=x_drop_down, y=basic_y_coordinate+y_step*8)
+position_dropdown_lb.place(x=x_drop_down, y=y_multiplier_integer)
 
 # Setting up at/within search menu (left, right, both)
 where_dropdown_field = tk.StringVar()
 where_dropdown_field.set('within')
 whereInfo = tk.Label(window, anchor = 'w', text="Search at or within")
 whereInfo.pack()
-whereInfo.place(x=labels_x_coordinate+x_indent_step,y=basic_y_coordinate+y_step*9)
+whereInfo.place(x=labels_x_coordinate+x_indent_step,y=y_multiplier_integer)
 
 # location (at/where) search and var monitoring
 where_dropdown_lb = tk.OptionMenu(window,where_dropdown_field,'at','within')
-where_dropdown_lb.place(x=x_drop_down, y=basic_y_coordinate+y_step*9)
+where_dropdown_lb.place(x=x_drop_down, y=y_multiplier_integer)
 
 # monitor if key word to search was enabled
 def check_kw(*args):
@@ -586,12 +586,12 @@ def print_open_file_or_not():
 
 #open or not
 l_checkbox = tk.Label(window)
-l_checkbox.place(x=labels_x_coordinate+30,y=basic_y_coordinate+y_step*10)
+l_checkbox.place(x=labels_x_coordinate+30,y=y_multiplier_integer)
 ask_open_table = tk.IntVar()
 ask_open_table.set(1)
 openCheck = tk.Checkbutton(window, variable=ask_open_table, onvalue=1, offvalue=0,
                     command=print_open_file_or_not)
-openCheck.place(x=labels_x_coordinate, y=basic_y_coordinate+y_step*10)
+openCheck.place(x=labels_x_coordinate, y=y_multiplier_integer)
 
 # monitor if input path selected for generating kwic
 def check_conll(*args):
@@ -641,9 +641,9 @@ TIPS_util.trace_open_tips(tips_dropdown_field,tips_menu_lb,lookup)
 #__________________________________________________________________________________________________________________
 #GUI HELP buttons
 
-Help_buttons='KWIC'
+y_multiplier_integer = help_buttons='KWIC'
 
-Help_util.place_help_buttons(window,Help_buttons,help_button_x_coordinate,basic_y_coordinate,y_step)
+Help_util.place_y_multiplier_integer = help_buttons(window,y_multiplier_integer = help_buttons,help_button_x_coordinate,basic_y_coordinate,y_step)
 
 
 paths = [CoNLL_input_file_path,KWIC_create_output_file_path,KWIC_input_file_path,KWIC_search_output_file_path]

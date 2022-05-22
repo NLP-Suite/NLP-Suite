@@ -294,19 +294,19 @@ y_multiplier_integerSV= y_multiplier_integer
 
 knowledge_graphs_DBpedia_var.set(0)
 knowledge_graphs_DBpedia_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using DBpedia knowledge graph)', variable=knowledge_graphs_DBpedia_var, onvalue=1, offvalue=0,command=lambda: activate_DBpedia_YAGO_menu())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,knowledge_graphs_DBpedia_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,knowledge_graphs_DBpedia_checkbox,True)
 
 # http://yago.r2.enst.fr/
 # http://yago.r2.enst.fr/downloads/yago-4
 knowledge_graphs_YAGO_var.set(0)
 knowledge_graphs_YAGO_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using YAGO knowledge graph',variable=knowledge_graphs_YAGO_var, onvalue=1, offvalue=0,command=lambda: activate_DBpedia_YAGO_menu())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+200,y_multiplier_integer,knowledge_graphs_YAGO_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+200,y_multiplier_integer,knowledge_graphs_YAGO_checkbox,True)
 
 confidence_level_lb = tk.Label(window, text='DBpedia confidence level')
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+270,y_multiplier_integer,confidence_level_lb,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+270,y_multiplier_integer,confidence_level_lb,True)
 
 confidence_level_entry = tk.Scale(window, from_=0.0, to=1.0, resolution = 0.1, orient=tk.HORIZONTAL)
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+420,y_multiplier_integer,confidence_level_entry)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+420,y_multiplier_integer,confidence_level_entry)
 confidence_level_entry.set(.5)
 
 y_multiplier_integer=y_multiplier_integerSV+1
@@ -314,10 +314,10 @@ y_multiplier_integer=y_multiplier_integerSV+1
 DB_menu_options=('*','Wikipedia', 'Wikidata')
 databases_var.set('')
 databases_menu_lb = tk.Label(window, text='Databases')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,databases_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,databases_menu_lb,True)
 databases_menu = tk.OptionMenu(window,databases_var,*DB_menu_options)
 databases_menu.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+100,y_multiplier_integer,databases_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,y_multiplier_integer,databases_menu,True)
 
 
 #activated when pressing the RESET button
@@ -368,7 +368,7 @@ YAGO_ontology_class_menu = constants_util.YAGO_ontology_class_menu
 DBpedia_ontology_class_menu = constants_util.DBpedia_ontology_class_menu
 
 ontology_class_lb = tk.Label(window, text='Class')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+180,y_multiplier_integer,ontology_class_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+180,y_multiplier_integer,ontology_class_lb,True)
 ontology_class_var.set('')
 # to jump to an item in the list that starts with a specific letter (e.g., without) by pressing that letter (e.g., w)
 # https://stackoverflow.com/questions/32747592/can-you-have-a-tkinter-drop-down-menu-that-can-jump-to-an-entry-by-typing
@@ -384,26 +384,26 @@ elif sys.platform == 'darwin':
 
 ontology_class = ttk.Combobox(window, width = ontology_width, textvariable = ontology_class_var)
 ontology_class['values'] = DBpedia_ontology_class_menu
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+230, y_multiplier_integer,ontology_class,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+230, y_multiplier_integer,ontology_class,True)
 ontology_class.configure(state='disabled')
 
 sub_class_entry_lb = tk.Label(window, text='Sub-class')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+470,y_multiplier_integer,sub_class_entry_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+470,y_multiplier_integer,sub_class_entry_lb,True)
 
 sub_class_entry = tk.Entry(window,width=35,textvariable=sub_class_entry_var)
 sub_class_entry.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+550,y_multiplier_integer,sub_class_entry,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+550,y_multiplier_integer,sub_class_entry,True)
 
 color_palette_DBpedia_YAGO_var.set('')
 color_palette_DBpedia_YAGO_lb = tk.Label(window, text='Color')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+780,y_multiplier_integer,color_palette_DBpedia_YAGO_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+780,y_multiplier_integer,color_palette_DBpedia_YAGO_lb,True)
 color_palette_DBpedia_YAGO_menu = tk.OptionMenu(window, color_palette_DBpedia_YAGO_var,'black','blue','green','pink','red','yellow')
 color_palette_DBpedia_YAGO_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+830, y_multiplier_integer,color_palette_DBpedia_YAGO_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+830, y_multiplier_integer,color_palette_DBpedia_YAGO_menu,True)
 
 bold_DBpedia_YAGO_var.set(1)
 bold_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text='Bold', state='disabled',variable=bold_DBpedia_YAGO_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+900,y_multiplier_integer,bold_DBpedia_YAGO_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+900,y_multiplier_integer,bold_DBpedia_YAGO_checkbox,True)
 
 def activate_class_var(*args):
     if ontology_class_var.get() or sub_class_entry_var.get():
@@ -418,7 +418,7 @@ def activate_class_var(*args):
     ontology_class.configure(state='normal')
 
 reset_class_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: clear_DBpedia_YAGO_class_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+970,y_multiplier_integer,reset_class_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+970,y_multiplier_integer,reset_class_button,True)
 
 def show_class_color_list():
     # if len(DBpedia_YAGO_color_list)==0:
@@ -438,12 +438,12 @@ def show_class_color_list():
         mb.showwarning(title='Warning', message='The currently selected combination of ontology classes and colors are:\n\n' + class_color_string + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
 show_class_color_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_class_color_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+1035,y_multiplier_integer,show_class_color_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+1035,y_multiplier_integer,show_class_color_button,True)
 
 firstTime = False
 
 add_class_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_class_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+1100,y_multiplier_integer,add_class_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+1100,y_multiplier_integer,add_class_button)
 
 # https://www.python.org/download/mac/tcltk/
 # https://stackoverflow.com/questions/24207870/cant-reenable-menus-in-python-tkinter-on-mac
@@ -459,21 +459,21 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
         ontology_class_var.set('') # DBpedia_YAGO_menu_options
         knowledge_graphs_DBpedia_checkbox.configure(state="normal")
         knowledge_graphs_YAGO_checkbox.configure(state="normal")
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+200, y_multiplier_integerSV,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+200, y_multiplier_integerSV,
                                                    knowledge_graphs_YAGO_checkbox)
     else:
         ontology_class.configure(state='normal')
     if knowledge_graphs_DBpedia_var.get()==True:
         ontology_class['values'] = DBpedia_ontology_class_menu
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+200, y_multiplier_integerSV,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+200, y_multiplier_integerSV,
                                                        knowledge_graphs_YAGO_checkbox, True)
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 550,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 550,
                                                        y_multiplier_integerSV, confidence_level_lb,True)
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate() + 720,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 720,
                                                        y_multiplier_integerSV, confidence_level_entry)
         knowledge_graphs_YAGO_checkbox.configure(state="disabled")
     else:
-        y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+200, y_multiplier_integerSV,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+200, y_multiplier_integerSV,
                                                        knowledge_graphs_YAGO_checkbox)
         confidence_level_lb.place_forget()  # invisible
         confidence_level_entry.place_forget()  # invisible
@@ -558,29 +558,30 @@ videos_options='No videos available'
 TIPS_lookup = {'Annotator':'TIPS_NLP_Annotator.pdf','Annotator DBpedia':'TIPS_NLP_Annotator DBpedia.pdf','DBpedia ontology classes':'TIPS_NLP_Annotator DBpedia ontology classes.pdf','YAGO (schema.org) ontology classes':'TIPS_NLP_Annotator YAGO (schema.org) ontology classes.pdf','YAGO (REDUCED schema.org) ontology classes':'TIPS_NLP_Annotator YAGO (schema reduced).pdf','The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf','W3C, OWL, RDF, SPARQL':'TIPS_NLP_W3C OWL RDF SPARQL.pdf','Annotator dictionary':'TIPS_NLP_Annotator dictionary.pdf','Annotator extractor':'TIPS_NLP_Annotator extractor.pdf','Gender annotator':'TIPS_NLP_Gender annotator.pdf'}
 TIPS_options='Annotator','Annotator DBpedia','DBpedia ontology classes','YAGO (schema.org) ontology classes','YAGO (REDUCED schema.org) ontology classes','The world of emotions and sentiments','W3C, OWL, RDF, SPARQL', 'Annotator dictionary','Annotator extractor','Gender annotator'
 # add all the lines lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function help_buttons
+# change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
+def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if not IO_setup_display_brief:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_txtFile)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_corpusData)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * 2, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_outputDirectory)
     else:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                   GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step * (increment+1),"Help", 'Please, tick the appropriate checkbox if you wish to run the Python 3 annotator_DBpedia script or annotator_YAGO script to annotate the input corpus by terms found in either DBpedia or YAGO.\n\nDBpedia will allow you to set confidence levels for your annotation (.5 is the recommended default value in a range between 0 and 1). THE HIGHER THE CONFIDENCE LEVEL THE LESS LIKELY YOU ARE TO FIND DBpedia ENTRIES; THE LOWER THE LEVEL AND THE MORE LIKELY YOU ARE TO FIND EXTRANEOUS ENTRIES.\n\nDBpedia and YAGO are enormous databases (DB for database) designed to extract structured content from the information created in Wikipedia, Wikidata and other knowledge bases. DBpedia and YAGO allow users to semantically query relationships and properties of Wikipedia data (including links to other related datasets) via a large ontology of search values (for a complete listing, see the TIPS files TIPS_NLP_DBpedia Ontology Classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf).\n\nFor more information, see https://wiki.DBpedia.org/ and https://yago-knowledge.org/.\n\nIn INPUT the scripts expect one or more txt files.\n\nIn OUTPUT the scripts generate as many annotated html files as selected in input.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+2),"Help", 'Once you tick the DBpedia or YAGO checkbox, the options on this line will become available.\n\nUsing the class dropdown menu, select the DPpedia or YAGO ontology class you wish to use.\n Press the + button to add another selection.\n IF NO CLASS IS SELECTED, ALL CLASSES WILL BE PROCESSED, WITH \'THING\' AS THE DEFAULT CLASS.\n\nThe class dropdown menu only includes the main classes in the DBpedia or YAGO ontology. For specific sub-classes, please, get the values from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf and enter them, comma-separated, in Ontology sub-class field. CLICK + AFTER ENTERING CLASS AND/OR SUB-CLASS VALUES.\n\nYAGO DOES NOT USE THE COMPLETE SCHEMA CLASSES AND SUB-CLASSES. PLEASE, REFER TO THE REDUCED LIST FOR ALL THE SCHEMA CLASSES USED.\n\nYou can test the resulting annotations directly on DBpedia Spotlight at https://www.dbpedia-spotlight.org/demo/\n\nYou can select a specific color for a specific ontology class (Press the \'Show\' widget to display the combination of seleted values).\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\nPress SHOW to display all selected values (the SHOW button only becomes available afyter pressing the + button to confirm your choices).\n\nThe RESET, SHOW, and + widgets become available only after selecting an ontology class or sub-class.')
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step* (increment+3),"Help",GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the appropriate checkbox if you wish to run the Python 3 annotator_DBpedia script or annotator_YAGO script to annotate the input corpus by terms found in either DBpedia or YAGO.\n\nDBpedia will allow you to set confidence levels for your annotation (.5 is the recommended default value in a range between 0 and 1). THE HIGHER THE CONFIDENCE LEVEL THE LESS LIKELY YOU ARE TO FIND DBpedia ENTRIES; THE LOWER THE LEVEL AND THE MORE LIKELY YOU ARE TO FIND EXTRANEOUS ENTRIES.\n\nDBpedia and YAGO are enormous databases (DB for database) designed to extract structured content from the information created in Wikipedia, Wikidata and other knowledge bases. DBpedia and YAGO allow users to semantically query relationships and properties of Wikipedia data (including links to other related datasets) via a large ontology of search values (for a complete listing, see the TIPS files TIPS_NLP_DBpedia Ontology Classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf).\n\nFor more information, see https://wiki.DBpedia.org/ and https://yago-knowledge.org/.\n\nIn INPUT the scripts expect one or more txt files.\n\nIn OUTPUT the scripts generate as many annotated html files as selected in input.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Once you tick the DBpedia or YAGO checkbox, the options on this line will become available.\n\nUsing the class dropdown menu, select the DPpedia or YAGO ontology class you wish to use.\n Press the + button to add another selection.\n IF NO CLASS IS SELECTED, ALL CLASSES WILL BE PROCESSED, WITH \'THING\' AS THE DEFAULT CLASS.\n\nThe class dropdown menu only includes the main classes in the DBpedia or YAGO ontology. For specific sub-classes, please, get the values from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf and enter them, comma-separated, in Ontology sub-class field. CLICK + AFTER ENTERING CLASS AND/OR SUB-CLASS VALUES.\n\nYAGO DOES NOT USE THE COMPLETE SCHEMA CLASSES AND SUB-CLASSES. PLEASE, REFER TO THE REDUCED LIST FOR ALL THE SCHEMA CLASSES USED.\n\nYou can test the resulting annotations directly on DBpedia Spotlight at https://www.dbpedia-spotlight.org/demo/\n\nYou can select a specific color for a specific ontology class (Press the \'Show\' widget to display the combination of seleted values).\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\nPress SHOW to display all selected values (the SHOW button only becomes available afyter pressing the + button to confirm your choices).\n\nThe RESET, SHOW, and + widgets become available only after selecting an ontology class or sub-class.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    return y_multiplier_integer -1
 
-help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
+y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide ways of annotating text files for matching terms found in the knowledge graphs DBpedia or YAGO.\n\nDBpedia and YAGO tags can be selected from the class dropdown menu containing the DBpedia and YAGO ontology. The menu only includes the main classes in the ontology. For specific sub-classes, please, get the values from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org) ontology classes.pdf and enter them in the Ontology sub-class field."
-readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

@@ -169,7 +169,7 @@ tk.Label(window, text='Searched Field') \
 searched_field_menu = tk.OptionMenu(window, searchedCoNLLField, *SearchField.list())
 searchedCoNLLField.set(SearchField.FORM.name)
 
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                searched_field_menu)
 
 tk.Label(window, text='Should it be false?') \
@@ -177,7 +177,7 @@ tk.Label(window, text='Should it be false?') \
            y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step() * y_multiplier_integer)
 
 should_be_false_option_menu = tk.OptionMenu(window, should_be_false, 'does', 'does not')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                should_be_false_option_menu)
 should_be_false.set('does')
 
@@ -188,7 +188,7 @@ tk.Label(window, text='Type of filter') \
 searched_type_menu = tk.OptionMenu(window, searched_type, *SearchType.list())
 searched_type.set(SearchType.match.name)
 
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                searched_type_menu)
 y_multiplier_for_searched_term = y_multiplier_integer
 
@@ -199,7 +199,7 @@ tk.Label(window, text='Searched token') \
 searched_term.set('father')
 
 entry_searchField_kw = tk.Entry(window, textvariable=searched_term)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                entry_searchField_kw)
 
 filter_table = ttk.Treeview(window, columns=('field', 'does/does not', 'type', 'term'))
@@ -240,9 +240,9 @@ def delete_filter():
 
 delete_button = tk.Button(window, text='Delete Selected Filter', command=delete_filter)
 
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                add_button, sameY=True)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                delete_button)
 
 tk.Label(window, text='Condition') \
@@ -250,11 +250,11 @@ tk.Label(window, text='Condition') \
            y=GUI_IO_util.get_basic_y_coordinate() + GUI_IO_util.get_y_step() * y_multiplier_integer)
 
 condition_option = tk.OptionMenu(window, and_or_selector, "Any of the below is true", "All of the below is true")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
                                                condition_option)
 and_or_selector.set("All of the below is true")
 
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                filter_table)
 
 
@@ -280,7 +280,7 @@ def on_searched_field_change(*args):
         new_entry = tk.Entry(window, textvariable=searched_term)
         searched_term.set('')
 
-    GUI_IO_util.placeWidget(GUI_IO_util.get_open_file_directory_coordinate(),
+    GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),
                             y_multiplier_for_searched_term,
                             new_entry)
     entry_searchField_kw.destroy()
@@ -304,8 +304,7 @@ TIPS_lookup = {'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
 TIPS_options = 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'English Language Benchmarks', 'Style Analysis', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'Nominalization', 'NLP Searches', 'Excel Charts', 'Excel Enabling Macros', 'Network Graphs (via Gephi)'
 
 readMe_message = "This Python 3 script allows you to search in the CoNLL table."
-readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
-                                                   GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName,True)
 
 # GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer + 5, readMe_command, {'None': 'None'}, 'None')

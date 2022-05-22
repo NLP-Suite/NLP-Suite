@@ -113,18 +113,18 @@ optimize_intervals_var = tk.IntVar()
 num_topics_var = tk.IntVar()
 
 num_topics_lb = tk.Label(window, text='Number of topics ')
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                num_topics_lb, True)
 
 num_topics_var.set(20)
 num_topics_entry = tk.Entry(window, width=5, textvariable=num_topics_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate() + 100,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate() + 100,
                                                y_multiplier_integer, num_topics_entry)
 
 optimize_intervals_var.set(1)
 optimize_intervals_checkbox = tk.Checkbutton(window, text='Optimize topic intervals', variable=optimize_intervals_var,
                                              onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                optimize_intervals_checkbox)
 
 videos_lookup = {'No videos available': ''}
@@ -140,36 +140,35 @@ TIPS_lookup = {"Mallet installation":"TIPS_NLP_Topic modeling Mallet installatio
 TIPS_options='Topic modeling in Mallet','Mallet installation','Excel - Enabling Macros','csv files - Problems & solutions','Topic modeling in Gensim','Topic modeling and corpus size' #, 'JAVA installation'
 
 # add all the lines lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function help_buttons
+# change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
+def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     if not IO_setup_display_brief:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_corpusData)
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_outputDirectory)
     else:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 1),
-                                  "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
                                   "Please, tick the checkbox if you do NOT wish to optimize intervals.\n\n"
                                   "Optimization, however, seems to lead to better reults "
                                   "(https://programminghistorian.org/lessons/topic-modeling-and-mallet).")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 2),
-                                  "Help",
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
                                   "Please, enter the number of topics to be used (recommended default = 20).\n\n"
                                   "Varying the number of topics may provide better results.")
-    GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment + 3),
-                                  "Help", GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
 
-
-help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
-             GUI_IO_util.get_y_step())
+    return y_multiplier_integer -1
+y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
 
 # change the value of the readMe_message
-readme_message = "This Python 3 script analyzes a set of documents for topic modeling with Mallet" \
+readMe_message = "This Python 3 script analyzes a set of documents for topic modeling with Mallet" \
                  "(https://mimno.github.io/Mallet/topics).\n\n" \
                  "MALLET CODE WILL BREAK IF INPUT AND/OR OUTPUT PATHS CONTAIN SPACES (I.E., BLANKS).\n\n" \
                  "In INPUT the script expects a set of text files stored in a directory.\n\n" \
@@ -193,12 +192,9 @@ readme_message = "This Python 3 script analyzes a set of documents for topic mod
                  "descending PROPORTION order). "
 
 
-def readme_command(): return GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
-                                                       GUI_IO_util.get_basic_y_coordinate(),
-                                                       "Help", readme_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 
-
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readme_command,
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
                     videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

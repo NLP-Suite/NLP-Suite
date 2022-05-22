@@ -181,11 +181,11 @@ window.bind("<Escape>", clear)
 # CHECK ________________________________________________________
 
 # check_files_lb = tk.Label(window, text='Check files',font=("Courier", 12, "bold"))
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,check_files_lb)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,check_files_lb)
 
 check_tools_var.set('')
 check_lb = tk.Label(window, text='Check Files')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,check_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,check_lb,True)
 check_menu = tk.OptionMenu(window,check_tools_var,
                     'Check utf-8 encoding compliance',
                     'Check empty file',
@@ -198,17 +198,17 @@ check_menu = tk.OptionMenu(window,check_tools_var,
                     # 'Vowel words')
 
 check_menu.configure(width=70)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,check_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,check_menu)
 
 #setup GUI widgets
 # CONVERT ________________________________________________________
 
 # convert_files_lb = tk.Label(window, text='Convert files',font=("Courier", 12, "bold"))
-# y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,convert_files_lb)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,convert_files_lb)
 
 convert_tools_var.set('')
 convert_lb = tk.Label(window, text='Convert Files')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,convert_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,convert_lb,True)
 convert_menu = tk.OptionMenu(window,convert_tools_var,
                     'Document converter (csv --> txt)',
                     'Document converter (docx --> txt)',
@@ -216,11 +216,11 @@ convert_menu = tk.OptionMenu(window,convert_tools_var,
                     'Document converter (rtf --> txt)')
 
 convert_menu.configure(width=70)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,convert_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,convert_menu)
 
 clean_tools_var.set('')
 clean_lb = tk.Label(window, text='Clean Files')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,clean_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,clean_lb,True)
 clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Change to ASCII non-ASCII apostrophes & quotes and % to percent',
                     'Find & Replace string',
@@ -230,7 +230,7 @@ clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Separate titles from documents (newspaper articles)')
 
 clean_menu.configure(width=70)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,clean_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,clean_menu)
 
 
 def activate_allOptions(*args):
@@ -279,26 +279,28 @@ TIPS_lookup = {'File manager':'TIPS_NLP_File manager.pdf','File handling in NLP 
 TIPS_options= 'File content checker & converter & cleaner','File handling in NLP Suite', 'File manager', 'Filename checker', 'Filename matcher', 'File classifier (By date)','File classifier (By NER)','Text encoding (utf-8)','Spelling checker','File merger','File splitter'
 
 # add all the lines lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function help_buttons
+# change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
+def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if not IO_setup_display_brief:
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",GUI_IO_util.msg_anyFile)
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_anyData)
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_anyFile)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_anyData)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_outputDirectory)
     else:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help","Please, using the dropdown menu, select one of the options available for checking txt files.\n\nWhen a directory is selected as the input option, all files in a directory and its subdirectories can be checked. The script will ask users whether they want to check files in subdirectories." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","Please, using the dropdown menu, select one of the options available for converting the file type: from pdf to txt, docx (NOT doc) to txt, or rtf to txt.\n\nThe pdf convert (via the pdfminer package) can also convert column-based pdf files. MAKE SURE TO OCR THE PDF DOCUMENT(S) BEFORE CONVERTING FOR BETTER QUALITY RESULTS.\n\nIn INPUT, when a directory is selected, all files in a directory and its subdirectories can be converted. The script will ask users whether they want to convert files in subdirectories.\n\nIn OUTPUT, the converted file(s) will be placed in the same directory as the input file(s)." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help","Please, using the dropdown menu, select one of the options available for cleaning a text file:\n\n   find & replace, via a single expression or a set of expressions in a csv file (will replace EXACT expressions - even multiple words but cannot include punctuation);\n   removing blank lines;\n   removing titles in documents (e.g., newspaper articles) and putting them in separate documents (titles and body text).\n\nOf particular IMPORTANTCE is the function that converts non-ASCII apostrophes and quotes and the % symbol.\n   The Windows Word non-ASCII slanted apostrophes and quotes will NOT break any NLP Suite code but will display as weird characters in a csv file (in a Windows machine; not on Mac).\n   The presence in your corpus of % signs is more fatal and will break the Stanford CoreNLP parser since % is interpreted as the start of a special escaped sequence.\n   Slanted apostrophes and quotes will be converted to straight apostrophes and quotes.\n   % signs will be converted to the word \'percent\'." + GUI_IO_util.msg_Esc)
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help",GUI_IO_util.msg_openOutputFiles)
-help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select one of the options available for checking txt files.\n\nWhen a directory is selected as the input option, all files in a directory and its subdirectories can be checked. The script will ask users whether they want to check files in subdirectories." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select one of the options available for converting the file type: from pdf to txt, docx (NOT doc) to txt, or rtf to txt.\n\nThe pdf convert (via the pdfminer package) can also convert column-based pdf files. MAKE SURE TO OCR THE PDF DOCUMENT(S) BEFORE CONVERTING FOR BETTER QUALITY RESULTS.\n\nIn INPUT, when a directory is selected, all files in a directory and its subdirectories can be converted. The script will ask users whether they want to convert files in subdirectories.\n\nIn OUTPUT, the converted file(s) will be placed in the same directory as the input file(s)." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select one of the options available for cleaning a text file:\n\n   find & replace, via a single expression or a set of expressions in a csv file (will replace EXACT expressions - even multiple words but cannot include punctuation);\n   removing blank lines;\n   removing titles in documents (e.g., newspaper articles) and putting them in separate documents (titles and body text).\n\nOf particular IMPORTANTCE is the function that converts non-ASCII apostrophes and quotes and the % symbol.\n   The Windows Word non-ASCII slanted apostrophes and quotes will NOT break any NLP Suite code but will display as weird characters in a csv file (in a Windows machine; not on Mac).\n   The presence in your corpus of % signs is more fatal and will break the Stanford CoreNLP parser since % is interpreted as the start of a special escaped sequence.\n   Slanted apostrophes and quotes will be converted to straight apostrophes and quotes.\n   % signs will be converted to the word \'percent\'." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+
+    return y_multiplier_integer -1
+y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),increment)
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script can check the CONTENT of txt files for\n  utf-8 compliace;\n  spelling.\n\nThe script can also convert a file type from\n  pdf to txt;\n  docx to txt;\n  rtf to txt.\nThe txt type is the only file type NLP tools can process.\n\nIn INPUT the script can take either a single txt file or a directory, processing all txt fles in the directory."
-readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

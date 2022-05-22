@@ -206,9 +206,9 @@ wordclouds_var.set('Python WordCloud')
 selectedImage_var.set('')
 use_contour_only_var.set(1)
 wordclouds = tk.OptionMenu(window,wordclouds_var,'Python WordCloud','TagCrowd','Tagul','Tagxedo','Wordclouds','Wordle')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_entry_box_x_coordinate()+120, y_multiplier_integer,wordclouds,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+120, y_multiplier_integer,wordclouds,True)
 wordclouds_lb = tk.Label(window, text='Select the word cloud service you wish to use (txt file(s)/CoNLL table)')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,wordclouds_lb)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,wordclouds_lb)
 
 y_multiplier_integer_SV=y_multiplier_integer
 
@@ -220,7 +220,7 @@ prefer_horizontal_checkbox = tk.Checkbutton(window, variable=prefer_horizontal_v
                                                        onvalue=1, offvalue=0)
 
 prefer_horizontal_checkbox.config(text="Horizontal")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,
                                                y_multiplier_integer, prefer_horizontal_checkbox, True)
 def warnUser(*args):
     if prefer_horizontal_var.get()==True:
@@ -233,59 +233,59 @@ font_list = wordclouds_util.get_font_list()
 
 font_var.set('Default')
 font_lb = tk.Label(window, text='Font')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,font_lb, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,font_lb, True)
 
 font = ttk.Combobox(window, width = 15, textvariable = font_var)
 font['values'] = font_list
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+160, y_multiplier_integer,font,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+160, y_multiplier_integer,font,True)
 # font.config(state='disabled')
 
 max_words_var=tk.StringVar()
 max_words_var.set(100)
 
 max_words_lb = tk.Label(window, text='Max no. of words')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,max_words_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,max_words_lb,True)
 max_words=tk.Entry(window, width=4,textvariable=max_words_var)
 max_words.config(state='normal')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+420, y_multiplier_integer,max_words,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+420, y_multiplier_integer,max_words,True)
 
 lemmatize_checkbox = tk.Checkbutton(window, variable=lemmatize_var,
                                                        onvalue=1, offvalue=0)
 
 lemmatize_checkbox.config(text="Lemmas")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+3290,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+3290,
                                                y_multiplier_integer, lemmatize_checkbox, True)
 
 stopwords_checkbox = tk.Checkbutton(window, variable=stopwords_var,
                                                        onvalue=1, offvalue=0)
 
 stopwords_checkbox.config(text="Stopwords")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+480,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+480,
                                                y_multiplier_integer, stopwords_checkbox, True)
 
 punctuation_checkbox = tk.Checkbutton(window, variable=punctuation_var,
                                                        onvalue=1, offvalue=0)
 
 punctuation_checkbox.config(text="Punctuation")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+590,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+590,
                                                y_multiplier_integer, punctuation_checkbox, True)
 
 lowercase_checkbox = tk.Checkbutton(window, variable=lowercase_var,
                                                        onvalue=1, offvalue=0)
 
 lowercase_checkbox.config(text="Lowercase")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+710,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+710,
                                                y_multiplier_integer, lowercase_checkbox, True)
 
 collocation_checkbox = tk.Checkbutton(window, variable=collocation_var,
                                                        onvalue=1, offvalue=0)
 
 collocation_checkbox.config(text="Collocation")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+830,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+830,
                                                y_multiplier_integer, collocation_checkbox, True)
 
 differentPOS_differentColors_checkbox.config(text="Different colors by POS tags")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+950,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+950,
                                                y_multiplier_integer, differentPOS_differentColors_checkbox)
 
 menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
@@ -294,29 +294,29 @@ prepare_image_checkbox = tk.Checkbutton(window, variable=prepare_image_var,
                                                        onvalue=1, offvalue=0)
 
 prepare_image_checkbox.config(text="Prepare image")
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(),
                                                y_multiplier_integer, prepare_image_checkbox)
 
 # width=20,
 select_image_file_button=tk.Button(window, text='Select png image file',command=lambda: get_image(window,'Select INPUT png file', [("png files", "*.png")]))
 #select_image_file_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,select_image_file_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,select_image_file_button,True)
 
 # setup a button to open Windows Explorer on open the png image file
 openImage_button = tk.Button(window, width=3, text='', state='disabled',
                                  command=lambda: IO_files_util.openFile(window,
                                                                         selectedImage_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+150, y_multiplier_integer,
-                                               openImage_button, True)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+150, y_multiplier_integer,
+                                               openImage_button, True, False, True,False, 90, GUI_IO_util.get_labels_x_indented_coordinate()+150, "Open png image file")
 
 selectedImage=tk.Entry(window, width=100,textvariable=selectedImage_var)
 selectedImage.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_indented_coordinate()+220, y_multiplier_integer,selectedImage, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+220, y_multiplier_integer,selectedImage, True)
 
 use_contour_only_var.set(1)
 use_contour_only_checkbox = tk.Checkbutton(window, variable=use_contour_only_var, onvalue=1, offvalue=0)
 use_contour_only_checkbox.config(text="Use image contour only")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+900,y_multiplier_integer,use_contour_only_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+900,y_multiplier_integer,use_contour_only_checkbox)
 
 def get_image(window,title,fileType):
     selectedImage_var.set('')
@@ -331,7 +331,7 @@ def get_image(window,title,fileType):
 differentColumns_differentColors_var.set(0)
 differentColumns_differentColors_checkbox = tk.Checkbutton(window, variable=differentColumns_differentColors_var, onvalue=1, offvalue=0)
 differentColumns_differentColors_checkbox.config(text="Use different colors for different columns (csv file)")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,differentColumns_differentColors_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,differentColumns_differentColors_checkbox)
 
 def displayWarning(*args):
     if collocation_var.get()==True and differentPOS_differentColors_var.get()==True:
@@ -344,13 +344,13 @@ differentPOS_differentColors_var.trace('w',displayWarning)
 menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 
 field_lb = tk.Label(window, text='Select csv field')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,field_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,field_lb,True)
 if menu_values!='':
     csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
 else:
     csv_field_menu = tk.OptionMenu(window, csv_field_var, menu_values)
 csv_field_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,csv_field_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,csv_field_menu,True)
 
 def activateCsvOptions(*args):
     csv_field_var.set('')
@@ -369,13 +369,13 @@ activateCsvOptions()
 
 color_var.set(0)
 color_checkbox = tk.Checkbutton(window, text='Color ', state='disabled',variable=color_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+300,y_multiplier_integer,color_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300,y_multiplier_integer,color_checkbox,True)
 
 color_lb = tk.Label(window, text='RGB color code ')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,color_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,color_lb,True)
 color_entry = tk.Entry(window, width=10, textvariable=color_style_var)
 color_entry.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+520,y_multiplier_integer,color_entry,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+520,y_multiplier_integer,color_entry,True)
 
 def activate_color_palette(*args):
     # tkcolorpicker requires tkinter and pillow to be installed (https://libraries.io/pypi/tkcolorpicker)
@@ -398,10 +398,10 @@ def update_csvFields():
     color_var.set(0)
 
 add_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: update_csvFields())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+650,y_multiplier_integer,add_button, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+650,y_multiplier_integer,add_button, True)
 
 reset_button = tk.Button(window, text='Reset', height=1,state='disabled',command=lambda: clear_field_color_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,reset_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,reset_button,True)
 
 def showList():
     if len(csvField_color_list)==0:
@@ -410,7 +410,7 @@ def showList():
         mb.showwarning(title='Warning', message='The currently selected combination of csv fields and colors is:\n\n' + ','.join(csvField_color_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
 show_columns_button = tk.Button(window, text='Show',height=1,state='disabled',command=lambda: showList())
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+760,y_multiplier_integer,show_columns_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+760,y_multiplier_integer,show_columns_button)
 
 def activateCsvField(*args):
     if csv_field_var.get()!='':
@@ -495,7 +495,7 @@ changed_filename()
 doNotCreateIntermediateFiles_var.set(1)
 doNotCreateIntermediateFiles_checkbox = tk.Checkbutton(window, variable=doNotCreateIntermediateFiles_var, onvalue=1, offvalue=0)
 doNotCreateIntermediateFiles_checkbox.config(text="Do NOT produce intermediate word cloud files when processing all txt files in a directory")
-y_multiplier_integer=GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,doNotCreateIntermediateFiles_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,doNotCreateIntermediateFiles_checkbox)
 
 def changeLabel_nomin(*args):
     if doNotCreateIntermediateFiles_var.get()==1:
@@ -518,31 +518,31 @@ TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf", "Word clo
 TIPS_options='Lemmas & stopwords', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle'
 
 # add all the lines lines to the end to every special GUI
-# change the last item (message displayed) of each line of the function help_buttons
+# change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-def help_buttons(window,help_button_x_coordinate,basic_y_coordinate,y_step):
+def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if not IO_setup_display_brief:
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate,"Help",GUI_IO_util.msg_CoNLL)
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step,"Help",GUI_IO_util.msg_corpusData)
-        GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*2,"Help",GUI_IO_util.msg_outputDirectory)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_CoNLL)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_corpusData)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_outputDirectory)
     else:
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+1),"Help","Please, using the dropdown menu, select the word cloud service you want to use to generate a worldcloud.\n\nFor 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle' you must be connected to the internet. You will also need to copy/paste text or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file.\n\nThe Python algorithm uses Andreas Mueller's Python package WordCloud (https://amueller.github.io/word_cloud/) can be run without internet connection.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files or a csv CoNLL table file.\n\nIn OUTPUT the algorithm creates word cloud image file(s).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+2),"Help","\n\nThe filter options are only available when selecting Python as the wordcloud service to use. When available,\n\n   1. tick the 'Horizonal' checkbox if you wish to display words in the wordcloud horizonally only;\n   2. select the preferred font;\n   3. enter the maximum number of words to be displayed;\n   4. tick the 'Lemmas' checkbox if you wish to lemmatize the words in the input file(s);\n   5. tick the 'Stopwords' checkbox if you wish to exclude from processing stopwords present in the input file(s);\n   6. tick the 'Punctuation' checkbox if you wish to exclude from processing punctuation symbols present in the input file(s);\n   7. tick the 'Lowercase' checkbox if you wish to convert all words to lowercase to avoid having some words capitalized simly because they are the first words in a sentence;\n   8. tick the 'Collocation' checkbox if you wish to keep together common combinations of words (South Carolina; White House);\n   9. tick the 'Different colors for different POS tags' checkbox if you wish to display different POSTAG values (namely, nouns, verbs, adjectives, and adverbs) in different colors (RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, and GREY for ADVERBS; YELLOW for any other POS tags). For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values).\n\nStanford CoreNLP STANZA will be used to tokenize sentences, lemmatize words, and compute POS tags. Depending upon the number of files processed and length of files, the process can be time consuming. Please, be patient.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+3),"Help","Please, tick the checkbox to open the web service Removebg (https://www.remove.bg/) that will prepare an image for use in the Python wordcloud algorithm, removing all image background and turning it into white.\n\nYou can then use the output png image file to create the wordcloud (see the widget 'Select png image' file).\n\nYOU MUST BE CONNECTED TO THE INTERNET.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+4),"Help","Please, select a png image file to be used to dislay the word cloud in the image.\n\nThe image must have a white background.\n\nYou can use the image file created via removebg (see the widget 'Prepare image').\n\nClick on the button to the right of the widget 'Select png image file' to open the file.\n\nTick the checkbox 'Use image contour only' if you want to use the contour of the image rather than the full image.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+5),"Help","Please, tick the checkbox if you wish to run the Python 3 Andreas Mueller's package WordCloud (https://amueller.github.io/word_cloud/) and assign different colors to the values of different columns of a csv file.\n\nThus, if, from a file, you have extracted SVOs (Subjects, Verbs, Objects) or POSTAG values (nouns, verbs, and adjectives), saving these values in in different columns, this function will allow you to display the values in the different columns in different, user-selected colors (e.g., RED for the column of NOUNS, BLUE for the column of VERBS).\n\nThe wordcloud algorithm can color all the values of a column differently from all the values of another column. The algorithm is NOT setup to color differently the different values within a column (to accomplish this goal, you would need to manipulate first the csv file; for instance, if the input file is a CoNLL table, you could extract all the NER values COUNTRY, CITY, and STATE_OR_PROVINCE and the NER value PERSON and ORGANIZATION, save them as two separate columns, and then use this new csv file in the current wordcloud algorithm).\n\nIn INPUT the algorithm expects a single csv file (e.g., a CoNLL table) rather than a text file or a directory.\n\nIn OUTPUT the algorithm creates a word cloud image file.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+6),"Help","Pease, select the sets of csv file fields and colors.\n\nPress the + button to add more csv file fields.\n\nPress the RESET button (or simply ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+7),"Help","Please, untick the checkbox if you want to create intermediate image files for every txt file in a directory when processing all the txt files in a directory. These image files will be in addition to the final file which will include the words from all files in the directory (so, if there is 1 file in the directory, this will lead to 2 files, although in this case, the image utput will be exactly the same for each of he 2 files).\n\nWARNING! Unticking the checkbox may result in a very large number of intermediate files (1 word cloud image file for every txt file in the directory).")
-    GUI_IO_util.place_help_button(window,help_button_x_coordinate,basic_y_coordinate+y_step*(increment+8),"Help",GUI_IO_util.msg_openOutputFiles)
-
-help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),GUI_IO_util.get_y_step())
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the word cloud service you want to use to generate a worldcloud.\n\nFor 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle' you must be connected to the internet. You will also need to copy/paste text or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file.\n\nThe Python algorithm uses Andreas Mueller's Python package WordCloud (https://amueller.github.io/word_cloud/) can be run without internet connection.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files or a csv CoNLL table file.\n\nIn OUTPUT the algorithm creates word cloud image file(s).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","\n\nThe filter options are only available when selecting Python as the wordcloud service to use. When available,\n\n   1. tick the 'Horizonal' checkbox if you wish to display words in the wordcloud horizonally only;\n   2. select the preferred font;\n   3. enter the maximum number of words to be displayed;\n   4. tick the 'Lemmas' checkbox if you wish to lemmatize the words in the input file(s);\n   5. tick the 'Stopwords' checkbox if you wish to exclude from processing stopwords present in the input file(s);\n   6. tick the 'Punctuation' checkbox if you wish to exclude from processing punctuation symbols present in the input file(s);\n   7. tick the 'Lowercase' checkbox if you wish to convert all words to lowercase to avoid having some words capitalized simly because they are the first words in a sentence;\n   8. tick the 'Collocation' checkbox if you wish to keep together common combinations of words (South Carolina; White House);\n   9. tick the 'Different colors for different POS tags' checkbox if you wish to display different POSTAG values (namely, nouns, verbs, adjectives, and adverbs) in different colors (RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, and GREY for ADVERBS; YELLOW for any other POS tags). For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values).\n\nStanford CoreNLP STANZA will be used to tokenize sentences, lemmatize words, and compute POS tags. Depending upon the number of files processed and length of files, the process can be time consuming. Please, be patient.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to open the web service Removebg (https://www.remove.bg/) that will prepare an image for use in the Python wordcloud algorithm, removing all image background and turning it into white.\n\nYou can then use the output png image file to create the wordcloud (see the widget 'Select png image' file).\n\nYOU MUST BE CONNECTED TO THE INTERNET.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select a png image file to be used to dislay the word cloud in the image.\n\nThe image must have a white background.\n\nYou can use the image file created via removebg (see the widget 'Prepare image').\n\nClick on the button to the right of the widget 'Select png image file' to open the file.\n\nTick the checkbox 'Use image contour only' if you want to use the contour of the image rather than the full image.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to run the Python 3 Andreas Mueller's package WordCloud (https://amueller.github.io/word_cloud/) and assign different colors to the values of different columns of a csv file.\n\nThus, if, from a file, you have extracted SVOs (Subjects, Verbs, Objects) or POSTAG values (nouns, verbs, and adjectives), saving these values in in different columns, this function will allow you to display the values in the different columns in different, user-selected colors (e.g., RED for the column of NOUNS, BLUE for the column of VERBS).\n\nThe wordcloud algorithm can color all the values of a column differently from all the values of another column. The algorithm is NOT setup to color differently the different values within a column (to accomplish this goal, you would need to manipulate first the csv file; for instance, if the input file is a CoNLL table, you could extract all the NER values COUNTRY, CITY, and STATE_OR_PROVINCE and the NER value PERSON and ORGANIZATION, save them as two separate columns, and then use this new csv file in the current wordcloud algorithm).\n\nIn INPUT the algorithm expects a single csv file (e.g., a CoNLL table) rather than a text file or a directory.\n\nIn OUTPUT the algorithm creates a word cloud image file.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Pease, select the sets of csv file fields and colors.\n\nPress the + button to add more csv file fields.\n\nPress the RESET button (or simply ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, untick the checkbox if you want to create intermediate image files for every txt file in a directory when processing all the txt files in a directory. These image files will be in addition to the final file which will include the words from all files in the directory (so, if there is 1 file in the directory, this will lead to 2 files, although in this case, the image utput will be exactly the same for each of he 2 files).\n\nWARNING! Unticking the checkbox may result in a very large number of intermediate files (1 word cloud image file for every txt file in the directory).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    return y_multiplier_integer -1
+y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 script and online services display the content of text files as word cloud.\n\nA word cloud, also known as text cloud or tag cloud, is a collection of words depicted visually in different sizes (and colors). The bigger and bolder the word appears, the more often it’s mentioned within a given text and the more important it is.\n\nDifferent, freeware, word cloud applications are available: 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle'. These applications require internet connection.\n\nThe script also provides Python word clouds (via Andreas Mueller's Python package WordCloud https://amueller.github.io/word_cloud/) for which no internet connection is required.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files or a csv file (e.g., a CoNLL table).\n\nIn OUTPUT the algorithms create word cloud image file(s)."
-readMe_command=lambda: GUI_IO_util.readme_button(window,GUI_IO_util.get_help_button_x_coordinate(),GUI_IO_util.get_basic_y_coordinate(),"Help",readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

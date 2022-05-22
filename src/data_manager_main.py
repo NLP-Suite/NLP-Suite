@@ -183,7 +183,7 @@ if __name__ == '__main__':
 
     current_pair_file_field_var = tk.Label(text="Current matched pair of csv filename and fields",
                                            font="Helvetica 10 italic")
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() +300, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() +300, y_multiplier_integer,
                                                    current_pair_file_field_var)
 
     avoidLoop = False
@@ -258,30 +258,30 @@ if __name__ == '__main__':
     file_number_var = tk.IntVar()
     file_number_var.set(1)
     file_lb = tk.Label(window, text='File ')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer, file_lb,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer, file_lb,
                                                    True)
     file_number = tk.Entry(window, width=3, textvariable=file_number_var)
     file_number.config(state="disabled")
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 50, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 50, y_multiplier_integer,
                                                    file_number, True)
 
     add_file_button = tk.Button(window, text='+', state='disabled', width=2, height=1,
                                 command=lambda: get_additional_csvFile(window, 'Select INPUT csv file',
                                                                        [("csv files", "*.csv")]))
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 100, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 100, y_multiplier_integer,
                                                    add_file_button, True)
 
     # setup a button to open Windows Explorer on the selected input directory
     openInputFile_button = tk.Button(window, width=3, text='',
                                      command=lambda: IO_files_util.openFile(window,
                                                                             selectedCsvFile_var.get()))
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
-                                                   openInputFile_button,True)
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+                                                   openInputFile_button,True, False, True, False, 90, GUI_IO_util.open_file_directory_coordinate, "Open displayed file")
 
     selectedCsvFile_var = tk.StringVar()
     selectedCsvFile = tk.Entry(window, width=100, textvariable=selectedCsvFile_var)
     selectedCsvFile.config(state='disabled')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() +300, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() +300, y_multiplier_integer,
                                                    selectedCsvFile)
 
 
@@ -324,18 +324,18 @@ if __name__ == '__main__':
 
     reset_field_button = tk.Button(window, width=15, text='Reset csv field(s)', state='disabled',
                                    command=lambda: reset_csv_field_values())
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    reset_field_button, True)
 
     selected_csv_fields_var = tk.StringVar()
     selected_csv_fields_var.set('')
     selected_fields = tk.Entry(window, width=100, textvariable=selected_csv_fields_var)
     selected_fields.configure(state="disabled")
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate()+ 300, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+ 300, y_multiplier_integer,
                                                    selected_fields)
 
     reset_all_button = tk.Button(window, width=15, text='Reset all', state='normal', command=lambda: reset_all_values())
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    reset_all_button, True)
 
     # after clicking OK, the selected options will be displayed here
@@ -343,12 +343,12 @@ if __name__ == '__main__':
     operation_name_var.set('')
     operation_name = tk.Entry(window, width=20, textvariable=operation_name_var)
     operation_name.configure(state="disabled")
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 140, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 140, y_multiplier_integer,
                                                    operation_name,True)
 
     # a text widget is read only when disabled
     operation_results_text = tk.Text(window, width=100, height=3, state="disabled")
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() +300, y_multiplier_integer, operation_results_text)
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() +300, y_multiplier_integer, operation_results_text)
 
     # operation is a string with values "merge", "concatenate", "append", "extract", "purge"
     # menu_choice is the menu value of the specific csv field selected  (e.g., select_csv_field_concatenate_var.get())
@@ -432,17 +432,17 @@ if __name__ == '__main__':
 
     merge_var.set(0)
     merge_checkbox = tk.Checkbutton(window, text='Merge files (Join)', variable=merge_var, onvalue=1, offvalue=0, command=lambda: merge_reminder1())
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    merge_checkbox, True)
 
     select_csv_field_lb = tk.Label(window, text='Select field')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
                                                    select_csv_field_lb, True)
 
     select_csv_field_merge_var = tk.StringVar()
     select_csv_field_merge_menu = tk.OptionMenu(window, select_csv_field_merge_var, *menu_values)
     select_csv_field_merge_menu.configure(state='disabled', width=12)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 300, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 300, y_multiplier_integer,
                                                    select_csv_field_merge_menu, True)
 
     # after selecting a csv field
@@ -496,12 +496,12 @@ if __name__ == '__main__':
 
     add_merge_options_var = tk.IntVar()
     add_merge_options = tk.Button(window, text='+', width=2, height=1, state='disabled', command=lambda: merge_reminder_plus())
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1000, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 1000, y_multiplier_integer,
                                                    add_merge_options, True)
 
     OK_merge_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
                                 command=lambda: merge_reminder_OK())
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1050, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 1050, y_multiplier_integer,
                                                    OK_merge_button)
 
     # _____________________________________________________________________________
@@ -509,27 +509,27 @@ if __name__ == '__main__':
     concatenate_var.set(0)
     concatenate_checkbox = tk.Checkbutton(window, text='Concatenate field values', variable=concatenate_var, onvalue=1,
                                           offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    concatenate_checkbox, True)
 
     select_csv_field_lb = tk.Label(window, text='Select field')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
                                                    select_csv_field_lb, True)
 
     select_csv_field_concatenate_var = tk.StringVar()
     select_csv_field_concatenate_menu = tk.OptionMenu(window, select_csv_field_concatenate_var, *menu_values)
     select_csv_field_concatenate_menu.configure(state='disabled', width=12)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 300, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 300, y_multiplier_integer,
                                                    select_csv_field_concatenate_menu, True)
 
     character_separator_lb = tk.Label(window, text='Character(s) separator')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 450, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 450, y_multiplier_integer,
                                                    character_separator_lb, True)
 
     character_separator_entry_var = tk.StringVar()
     character_separator_entry = tk.Entry(window, width=5, textvariable=character_separator_entry_var)
     character_separator_entry.config(state='disabled')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 600, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 600, y_multiplier_integer,
                                                    character_separator_entry, True)
 
     def build_concatenate_string(comingFrom_Plus, comingFrom_OK):
@@ -541,29 +541,29 @@ if __name__ == '__main__':
     add_concatenate_options_var = tk.IntVar()
     add_concatenate_options = tk.Button(window, text='+', width=2, height=1, state='disabled',
                                         command=lambda: build_concatenate_string(True, False))
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1000, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 1000, y_multiplier_integer,
                                                    add_concatenate_options, True)
 
     OK_concatenate_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
                                       command=lambda: build_concatenate_string(False, True))
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1050, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 1050, y_multiplier_integer,
                                                    OK_concatenate_button)
 
     # _____________________________________________________________________________
 
     append_var.set(0)
     append_checkbox = tk.Checkbutton(window, text='Append field values', variable=append_var, onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    append_checkbox, True)
 
     select_csv_field_lb = tk.Label(window, text='Select field')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
                                                    select_csv_field_lb, True)
 
     select_csv_field_append_var = tk.StringVar()
     select_csv_field_append_menu = tk.OptionMenu(window, select_csv_field_append_var, *menu_values)
     select_csv_field_append_menu.configure(state='disabled', width=12)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 300, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 300, y_multiplier_integer,
                                                    select_csv_field_append_menu, True)
 
 
@@ -576,12 +576,12 @@ if __name__ == '__main__':
     add_append_options_var = tk.IntVar()
     add_append_options = tk.Button(window, text='+', width=2, height=1, state='disabled',
                                    command=lambda: build_append_string(True, False))
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1000, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 1000, y_multiplier_integer,
                                                    add_append_options, True)
 
     OK_append_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
                                  command=lambda: build_append_string(False, True))
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1050, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 1050, y_multiplier_integer,
                                                    OK_append_button)
 
     # EXTRACT _____________________________________________________________________________
@@ -590,20 +590,20 @@ if __name__ == '__main__':
     extract_var.set(0)
     extract_checkbox = tk.Checkbutton(window, text='Extract field(s) from csv file', variable=extract_var, onvalue=1,
                                       offvalue=0,command=lambda:extractSelection(False))
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    extract_checkbox, True)
 
     # extract_var.trace('w',)
 
     select_csv_field_lb = tk.Label(window, text='Select field')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
                                                    select_csv_field_lb, True)
 
     ##
     select_csv_field_extract_var = tk.StringVar()
     select_csv_field_extract_menu = tk.OptionMenu(window, select_csv_field_extract_var, *menu_values) #, command=lambda:select_csv_field_extract_var.trace('w', extractSelection)
     select_csv_field_extract_menu.configure(state='disabled', width=12)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 300, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 300, y_multiplier_integer,
                                                    select_csv_field_extract_menu, True)
 
     # TODO from a GUI, how can you select a specific value of selected field,
@@ -617,7 +617,7 @@ if __name__ == '__main__':
     output_to_csv_var.set(1)
     output_to_csv_checkbox = tk.Checkbutton(window, text='csv output', variable=output_to_csv_var, onvalue=1,
                                       offvalue=0,command=lambda:change_label())
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 450, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 450, y_multiplier_integer,
                                                    output_to_csv_checkbox, True)
 
     comp_menu_values=['<>', '=', '>', '>=', '<', '<=']
@@ -625,27 +625,27 @@ if __name__ == '__main__':
     ##
     # select_csv_field_extract_menu = tk.OptionMenu(window, select_csv_field_extract_var, *menu_values, command=lambda:activate_csv_fields_selection('extract', extract_var.get(), False, False))
     comparator_menu = tk.OptionMenu(window, comparator_var, *comp_menu_values) #, command=lambda:extractSelection()
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 540, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 540, y_multiplier_integer,
                                                    comparator_menu, True)
 
     where_lb = tk.Label(window, text='WHERE')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
                                                    where_lb, True)
 
     where_entry_var = tk.StringVar()
     where_entry = tk.Entry(window, width=30, textvariable=where_entry_var)
     where_entry.configure(state="disabled")
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 670, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 670, y_multiplier_integer,
                                                    where_entry, True)
 
     and_or_lb = tk.Label(window, text='and/or')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 860, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 860, y_multiplier_integer,
                                                    and_or_lb, True)
 
     and_or_var = tk.StringVar()
     and_or_menu = tk.OptionMenu(window, and_or_var, 'and', 'or')
     and_or_menu.configure(state="disabled", width=3)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 910, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 910, y_multiplier_integer,
                                                    and_or_menu, True)
 
     def build_extract_string(comingFrom_Plus, comingFrom_OK):
@@ -658,12 +658,12 @@ if __name__ == '__main__':
     add_extract_options_var = tk.IntVar()
     add_extract_options = tk.Button(window, text='+', width=2, height=1, state='disabled',
                                     command=lambda: activate_extract_options())
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1000, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 1000, y_multiplier_integer,
                                                    add_extract_options, True)
 
     OK_extract_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
                                   command=lambda: build_extract_string(False, True))
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1050, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 1050, y_multiplier_integer,
                                                    OK_extract_button)
 
     pressedPlus = False
@@ -767,39 +767,39 @@ if __name__ == '__main__':
 
     purge_var.set(0)
     purge_checkbox = tk.Checkbutton(window, text='Purge duplicate rows', variable=purge_var, onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                    purge_checkbox, True)
 
     # purge_var
 
     select_csv_field_lb = tk.Label(window, text='Select field')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 200, y_multiplier_integer,
                                                    select_csv_field_lb, True)
 
     select_csv_field_purge_var = tk.StringVar()
     select_csv_field_purge_menu = tk.OptionMenu(window, select_csv_field_purge_var, *menu_values)
     select_csv_field_purge_menu.configure(state='disabled', width=12)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 300, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 300, y_multiplier_integer,
                                                    select_csv_field_purge_menu, True)
 
     keep_most_recent_checkbox = tk.Checkbutton(window, text='Keep row with most recent file', variable=keep_most_recent_var,
                                                onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 450, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 450, y_multiplier_integer,
                                                    keep_most_recent_checkbox, True)
 
     keep_most_fields_checkbox = tk.Checkbutton(window, text='Keep row with most items', variable=keep_most_fields_var,
                                                onvalue=1, offvalue=0)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 670, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 670, y_multiplier_integer,
                                                    keep_most_fields_checkbox, True)
 
     select_csv_field2_lb = tk.Label(window, text='Select second field')
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 850, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 850, y_multiplier_integer,
                                                    select_csv_field2_lb, True)
 
     select_csv_field2_purge_var = tk.StringVar()
     select_csv_field2_purge_menu = tk.OptionMenu(window, select_csv_field2_purge_var, *menu_values)
     select_csv_field2_purge_menu.configure(state='disabled', width=12)
-    y_multiplier_integer = GUI_IO_util.placeWidget(GUI_IO_util.get_labels_x_coordinate() + 1000, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 1000, y_multiplier_integer,
                                                    select_csv_field2_purge_menu)
 
     ##
@@ -1099,49 +1099,49 @@ if __name__ == '__main__':
 
 
     # add all the lines lines to the end to every special GUI
-    # change the last item (message displayed) of each line of the function help_buttons
+    # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
     # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
-    def help_buttons(window, help_button_x_coordinate, basic_y_coordinate, y_step):
+    def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         resetAll = "\n\nPress the RESET ALL button to clear all values, including csv files and fields, and start fresh."
         plusButton = "\n\nPress the + buttons, when available, to add either a new field from the same csv file (the + button at the end of this line) or a new csv file (the + button next to File at the top of this GUI). Multiple csv files can be used with any of the operations."
         OKButton = "\n\nPress the OK button, when available, to accept the selections made, then press the RUN button to process the query."
         if not IO_setup_display_brief:
-            GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help", GUI_IO_util.msg_csvFile)
-            GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step, "Help",
+            y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_csvFile)
+            y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                           GUI_IO_util.msg_outputDirectory)
         else:
-            GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "Help",
+            y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                           GUI_IO_util.msg_IO_setup)
 
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+1), "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "The label groups together the next two widgets that display the currently selected csv filename and fields.")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+2), "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Press the + button to add a new csv file.\n\nThe currently selected csv file is displayed in the next(read-only) widget.")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+3), "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Press the RESET CSV FIELD(S) button to clear all selected csv fields and start fresh.\n\nThe currently selected csv fields are displayed in the second (read-only) widget.")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+4), "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       resetAll + "\n\nThe next two (read-only) widgets display the arguments that will be processed when pressing the RUN button for the selected operation.\n\nThe first (read-only) widget displays the currently selected type of operation.\n\nThe second (read-only) widget displays a list of items:\n   csv filename\n   csv column/field.\n   For the Concatenate option the character separator will also be displayed.\n   For the Extract option, the comparator value (e.g., =, >), the WHERE value, and the selected add/or option will be displayed.")
         # empty line to account for the height of the text widget
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+6), "Help",
+        y_multiplier_integer = y_multiplier_integer +1
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "The MERGE option allows you to select several files, merge them together in a single file using the key of overlapping fields (the equivalent of an SQL JOIN operation), and save the output as a new file.\n\nAfter selecting the 'Merge files (Join)' option, press the + button either to add a new csv field or a new csv file (you can add repeatedly more fields and/or files)." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll + "\n\nIn INPUT, the MERGE option takes 2 or more csv files.\n\nIn OUTPUT, the MERGE option creates a csv file containing all the fields from all input files matched on the basis of the same selected overlapping field(s) (e.g., Document ID, Sentence ID).")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+7), "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "The CONCATENATE option allows you to select specific fields from a csv file, concatenate them together in a new field, and save the output as a new file.\n\nThe character(s) separator must be entered for every new csv field selected.\n\nTo select concatenate fields from different csv files, after selecting the first field and the character(s) separator, press the + button to add a new csv file and the RESET button to clear all values and start fresh." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll + "\n\nIn INPUT, the CONCATENATE option takes 1 csv file.\n\nIn OUTPUT, the CONCATENATE option creates a csv file containing all the same fields as in the input file plus an extra field for the concatenated values.")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+8), "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "The APPEND option allows you to select a specific field from a csv file and append its values at the bottom of the values of another field, and save the output as a new file." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll+ "\n\nIn INPUT, the APPEND option takes 1 csv file.\n\nIn OUTPUT, the APPEND option creates a csv file containing all the same input fields but with more rows (the appended rows).")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+9), "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "The EXTRACT option allows you to select specific fields, even by specific values, from a csv file and save the output as a new csv or txt file.\n\nYOU CAN SAVE THE OUTPUT TO CSV FILE OR TO A TEXT FILE. Just tick the Output csv checkbox as desired.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value, and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll + "\n\nIn INPUT, the EXTRACT option takes 1 csv file.\n\nIn OUTPUT, the EXTRACT option creates either a csv or a text file containing only the fields selected for extraction from the input file.")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+10), "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "The PURGE DUPLICATE ROWS option allows you to delete duplicate records in a csv file.\n\n" + GUI_IO_util.msg_Esc + "\n\nIn INPUT, the PURGE option takes 1 csv file.\n\nIn OUTPUT, the PURGE option creates a csv file containing all the same fields of the input file but with fewer rows.")
-        GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate + y_step * (increment+11), "Help",
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_openOutputFiles)
+        return y_multiplier_integer -1
 
-    help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), GUI_IO_util.get_basic_y_coordinate(),
-                 GUI_IO_util.get_y_step())
+    y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
 
     # change the value of the readMe_message
     readMe_message = "The Python 3 scripts provide several ways of handling data from csv files.\n\nIn INPUT, the script takes one or more csv files depending upon the selected operation.\n\nIn OUTPUT, the script creates a new csv file.\n\nThe following operation are possible.\n\n   1. MERGE different csv files using one or more overlapping common field(s) as a way to JOIN the files together;\n   2. CONCATENATE into a single field the values of different fields from one csv file;\n   3. APPEND the content of different fields from one csv file after the content of a selected target field;\n   4. EXTRACT fields from one csv file, perhaps by specific field values (the equivalent of an SQL WHERE clause);\n   4. PURGE dulicate rows from one csv file."
-    readMe_command = lambda: GUI_IO_util.readme_button(window, GUI_IO_util.get_help_button_x_coordinate(),
-                                                       GUI_IO_util.get_basic_y_coordinate(), "Help", readMe_message)
+    readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
     GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,'data_manager_main.py',True)
 
     GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
