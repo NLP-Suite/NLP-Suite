@@ -162,7 +162,8 @@ def geocode(window,locations, inputFilename, outputDir,
 		return '', ''  # empty output files
 
 	distinctGeocodedLocations= {}
-	distinctGeocodedList=[]
+	# distinctGeocodedList=[]
+	distinctGeocodedList=set()
 	locationsNotFound=0
 	index=0
 
@@ -263,7 +264,8 @@ def geocode(window,locations, inputFilename, outputDir,
 				location = itemToGeocode
 			else:
 				print("   Geocoding DISTINCT location: " + itemToGeocode)
-				distinctGeocodedList.append(itemToGeocode)
+				#distinctGeocodedList.append(itemToGeocode)
+				distinctGeocodedList.add(itemToGeocode)
 				if geocoder=='Nominatim':
 					location = nominatim_geocode(geolocator,itemToGeocode,country_bias,area,restrict)
 				else:
