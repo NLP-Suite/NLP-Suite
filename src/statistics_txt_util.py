@@ -916,6 +916,15 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     if not IO_error:
         filesToOpen.append(outputFilename)
 
+    # if createExcelCharts == True and 'by sentence index' in processType.lower():
+    #     # line plots by sentence index -----------------------------------------------------------------------------------------------
+    #     outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=outputFilename,
+    #                                                                    outputDir=outputDir,
+    #                                                                    select_col=['Short words (<4 chars)'],
+    #                                                                    group_col=['Sentence ID'],
+    #                                                                    chartTitle=processType)
+    #     filesToOpen.append(outputFilename)
+
     return filesToOpen
 
 # n is n most common words

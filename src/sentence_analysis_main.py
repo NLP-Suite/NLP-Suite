@@ -20,6 +20,7 @@ import IO_user_interface_util
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
     visualize_bySentenceIndex_var,
+    visualize_bySentenceIndex_options_var,
     script_to_run,
     IO_values,
     sentence_complexity_var,
@@ -41,7 +42,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
     if visualize_bySentenceIndex_var:
         IO_files_util.runScript_fromMenu_option(script_to_run, IO_values,
                                                 inputFilename, inputDir,outputDir,
-                                                openOutputFiles, createExcelCharts)
+                                                openOutputFiles, createExcelCharts, visualize_bySentenceIndex_options_var)
         return
 
     if sentence_complexity_var==True:
@@ -78,7 +79,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
 
         sentence_analysis_util.extract_sentences(inputFilename, inputDir, outputDir, search_words_var)
 
-    IO_files_util.runScript_fromMenu_option(script_to_run,IO_values,inputFilename,inputDir, outputDir, openOutputFiles,createExcelCharts)
+    IO_files_util.runScript_fromMenu_option(script_to_run,IO_values,inputFilename,inputDir, outputDir, openOutputFiles,createExcelCharts, visualize_bySentenceIndex_options_var)
 
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -90,6 +91,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_Excel_chart_output_checkbox.get(),
                                 visualize_bySentenceIndex_var.get(),
+                                visualize_bySentenceIndex_options_var.get(),
                                 script_to_run,
                                 IO_values,
                                 sentence_complexity_var.get(),
