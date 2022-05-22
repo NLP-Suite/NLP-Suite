@@ -284,7 +284,7 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
     return data_to_be_plotted
 
 # Tony Chen Gu at April 2022
-# select_col should be one colmun name eg: ['Verb Voice']
+# select_col should be one column name eg: ['Verb Voice']
 # group_col should be a list of column names eg ['Sentence ID']
 # enable complete_sid to make sentence index continuous
 # enable graph to make a multiline graph
@@ -296,7 +296,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         data = pd.DataFrame(data, columns=header)
     except:
         # an error message about unable to read the file
-        print("Error: cannot read the file")
+        print("Error: cannot read the csv file " + inputFilename)
         return
     #data = CoNLL_verb_analysis_util.verb_voice_data_preparation(data)
     #data,stats,pas,aux,act = CoNLL_verb_analysis_util.voice_output(data, group_col)
@@ -308,7 +308,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         # an error message about wrong csv file without the necessary columns
         print("Please select the correct csv file, with correct columns")
         return
-    name = outputDir + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
+    name = outputDir + os.sep + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
     data.to_csv(name)
     # group by both group col and select cols and get a row named count to count the number of frequencies
     data = data.groupby(cols).size().to_frame("count")
@@ -319,7 +319,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
     print(data)
     data.to_csv(name)
     if(complete_sid):
-        print("Completeing sentence index...")
+        print("Completing sentence index...")
         complete_sentence_index(name)
     print(name)
     if(graph):
@@ -746,7 +746,6 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                        series_label_list=[],
                        second_y_var=0,
                        second_yAxis_label=''):
-
     #TODO perhaps all these different imports can be consolidated into a single import?
     if 'pie' in chart_type_list:
         from openpyxl.chart import (
@@ -795,15 +794,17 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     head, tail = os.path.split(inputFilename)
     num_label=len(data_to_be_plotted[0])-1
 
-
     # ValueError: Row numbers must be between 1 and 1048576
     # 1048576 is simply 2 to the 20th power, and thus this number is the largest that can be represented in twenty bits.
     # https://stackoverflow.com/questions/33775423/how-to-set-a-data-type-for-a-column-with-closedxml
-    if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1048575:
-        IO_user_interface_util.timed_alert(window, 4000, 'Warning',
-                                           "Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.'")
+    nRecords = IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename)
+    if nRecords > 1048575:
+        mb.showwarning(title='Excel chart error',message="Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.'")
         print("Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.")
         return
+    if 'line' in chart_type_list:
+        if nRecords > 70:
+            mb.showwarning(title='Warning',message='The input file\n\n' + inputFilename + '\n\ncontains ' + str(nRecords) + ' records, way too many to be displayed clearly in an Excel line chart.\n\nYOU SHOULD USE PLOTLY WHICH GIVES YOU THE OPTION TO DYNAMICALLY FILTER THE DATA ZOOMING IN ON SPECIFIC DATA SEGMENTS.')
 
     if len(hover_info_column_list) > 0:
         outputExtension='.xlsm'

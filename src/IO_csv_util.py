@@ -124,6 +124,10 @@ def get_csvfile_numberofColumns (csvFile):
     return countColumns
 
 
+def GetNumberOfRecordInCSVFile(inputFilename,encodingValue='utf-8'):
+    with open(inputFilename,'r',encoding=encodingValue,errors='ignore') as f:
+        return sum(1 for line in f)
+
 # inputFile has path
 def GetNumberOfDocumentsInCSVfile(inputFilename,algorithm,columnHeader='Document ID',encodingValue='utf-8'):
     with open(inputFilename,encoding=encodingValue,errors='ignore') as f:
@@ -148,9 +152,30 @@ def GetNumberOfDocumentsInCSVfile(inputFilename,algorithm,columnHeader='Document
         f.close()
     return maxnum
 
-def GetNumberOfRecordInCSVFile(inputFilename,encodingValue='utf-8'):
-    with open(inputFilename,'r',encoding=encodingValue,errors='ignore') as f:
-        return sum(1 for line in f)
+# inputFile has path
+def GetNumberOfSentencesInCSVfile(inputFilename,algorithm,columnHeader='Sentence ID',encodingValue='utf-8'):
+    with open(inputFilename,encoding=encodingValue,errors='ignore') as f:
+        reader = csv.reader(f)
+        next(reader) # skip header row
+        headers=get_csvfile_headers(inputFilename)
+        if not columnHeader in str(headers):
+            mb.showwarning(title='csv file error',
+                           message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + "\n\nThe '" + algorithm + "' algorithm requires in input a csv file with a \'Sentence ID\' column.\n\nPlease, select a different csv file in input and try again!")
+            return 0
+        columnNumber = get_columnNumber_from_headerValue(headers, columnHeader)
+
+        val_list = list()
+        for column in reader:
+            try:
+                val_list.append(int(float(column[columnNumber].replace(',', ''))))
+            except:
+                pass
+        maxnum = max(val_list)
+        # the following line would break in the presence of a blank field in column
+        # maxnum = max(int(column[columnNumber].replace(',', '')) for column in reader)
+        f.close()
+    return maxnum
+
 
 # list_output has the following type format [['PRONOUN ANALYSIS','FREQUENCY'], ['PRP', 105], ['PRP$', 11], ['WP', 5], ['WP$', 0]]
 # path_output is the name of the outputfile with path
