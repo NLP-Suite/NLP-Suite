@@ -1206,7 +1206,7 @@ def header_check(inputFile):
 
 # input can be a csv filename or a dataFrame
 # output is a dataFrame
-# TODO any funtion that plots data by sentence index shoulld really check that the required sentence IDs are all there and insert them otherwise
+# TODO any funtion that plots data by sentence index should really check that the required sentence IDs are all there and insert them otherwise
 def add_missing_IDs(input):
     if isinstance(input, pd.DataFrame):
         df = input

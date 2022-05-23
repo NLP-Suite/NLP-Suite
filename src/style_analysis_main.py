@@ -136,11 +136,12 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
             if createExcelCharts == True:
                 inputFilename=outputFilename
                 if mode == "both":
-                    columns_to_be_plotted = [[2, 4], [2, 5]]
+                    columns_to_be_plotted = [[7, 0], [7, 1]]
                     hover_label = ['Sentence', 'Sentence']
                 else:
-                    columns_to_be_plotted = [[2, 4]]
+                    columns_to_be_plotted = [[7, 0]]
                     hover_label = ['Sentence']
+                # Tony Chen Gu
                 Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                           outputFileLabel='Concret',
                                                           chart_type_list=["line"],
@@ -151,7 +152,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                                                           column_yAxis_label_var='Scores')
                 if Excel_outputFilename != "":
                     filesToOpen.append(Excel_outputFilename)
-
+                # Tony Chen Gu
                 # outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                 #                                     outputFilename, chart_type_list=["line"],
                 #                                     chart_title="Concreteness Scores by Sentence Index",

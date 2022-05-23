@@ -182,23 +182,26 @@ pydict = {}
 # when using a function within a script
 # pydict["Dictionary items by sentence index"] = ["dictionary_items_sentenceID_util.dictionary_items_bySentenceID", 0, 3, 'txt']
 
+pydict["Annotated gender names by sentence index (GUI)"] = ["html_annotator_gender_main.py", 1]
+pydict["Annotated words (DBpedia, YAGO, dictionary) by sentence index GUI"] = ["html_annotator_main.py", 1]
 pydict["Clause analysis by sentence index (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Noun analysis by sentence index (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Verb analysis by sentence index (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Function words analysis by sentence index (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
-pydict["Concreteness analysis by sentence index"] = ["sentiment_concreteness_analysis_main.py", 1]
+pydict["NER tags (e.g., Location, Time) by sentence index (GUI)"] = ["Stanford_CoreNLP_NER_main.py", 1]
+pydict["Words/collocations by sentence index (GUI)"] = ["file_search_byWord_main.py", 1]
+pydict["WordNet categories by sentence index (GUI)"] = ["knowledge_graphs_WordNet_main.py", 1]
+
+pydict["Abstract/Concrete vocabulary analysis by sentence index"] = ["concreteness_analysis_util.main", 0, 3, 'txt']
 pydict["Dictionary items by sentence index"] = ["dictionary_items_sentenceID_util.dictionary_items_bySentenceID", 0, 3, 'txt']
+pydict["Hapax legomena (once-occurring words) by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
 pydict["N-grams (word & character) by sentence index"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
-pydict["Search words/collocations by sentence index"] = ["file_search_byWord_main.py",1]
 pydict["Sentence complexity by sentence index"] = ["sentence_analysis_util.sentence_complexity", 0, 3, 'txt']
 pydict["Sentence/text readability by sentence index (via textstat)"] = ["sentence_analysis_util.sentence_text_readability", 0, 3, 'txt']
-pydict["Sentiment analysis by sentence index"] = ["sentiment_concreteness_analysis_main.py", 1]
-pydict["Hapax legomena (once-occurring words) by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
+pydict["Sentiment analysis by sentence index (GUI)"] = ["sentiment_analysis_main.py", 1]
 pydict["Short words by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
 pydict["Unusual words (via NLTK) by sentence index"] = ["file_spell_checker_util.nltk_unusual_words", 0, 3, 'txt']
 pydict["Vowel words by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
-pydict["Words/collocations by sentence index"] = ["", 0]
-pydict["WordNet categories by sentence index"] = ["knowledge_graphs_WordNet_main.py", 1]
 
 visualize_bySentenceIndex_var=tk.IntVar()
 visualize_bySentenceIndex_options_var=tk.StringVar()
@@ -223,7 +226,26 @@ visualize_bySentenceIndex_checkbox = tk.Checkbutton(window, text='Visualize text
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,visualize_bySentenceIndex_checkbox,True)
 visualize_bySentenceIndex_lb = tk.Label(window, text='Select visualization option')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,visualize_bySentenceIndex_lb,True)
-visualize_bySentenceIndex_menu = tk.OptionMenu(window,visualize_bySentenceIndex_options_var,'*','Clause analysis by sentence index (via CoNLL) GUI','Noun analysis by sentence index (via CoNLL) GUI','Verb analysis by sentence index (via CoNLL) GUI','Function words analysis by sentence index (via CoNLL) GUI','Sentence complexity by sentence index','Sentence/text readability by sentence index (via textstat)','N-grams (word & character) by sentence index','Hapax legomena (once-occurring words) by sentence index','Unusual words (via NLTK) by sentence index','Short words by sentence index','Vowel words by sentence index','Annotated gender names by sentence index', 'Annotated words (DBpedia, YAGO, dictionary) by sentence index','Sentiment analysis by sentence index','Concreteness analysis by sentence index', 'Words/collocations by sentence index','WordNet categories by sentence index','Time by sentence index','Location by sentence index')
+visualize_bySentenceIndex_menu = tk.OptionMenu(window,visualize_bySentenceIndex_options_var,
+                                               'Annotated gender names by sentence index (GUI)',
+                                               'Annotated words (DBpedia, YAGO, dictionary) by sentence index GUI',
+                                               'Clause analysis by sentence index (via CoNLL) GUI',
+                                               'Noun analysis by sentence index (via CoNLL) GUI',
+                                               'Verb analysis by sentence index (via CoNLL) GUI',
+                                               'Function words analysis by sentence index (via CoNLL) GUI',
+                                               'NER tags (e.g., Location, Time) by sentence index (GUI)',
+                                               'Sentiment analysis by sentence index (GUI)',
+                                               'Words/collocations by sentence index (GUI)',
+                                               'WordNet categories by sentence index (GUI)',
+                                               'Sentence complexity by sentence index',
+                                               'Sentence/text readability by sentence index (via textstat)',
+                                               'N-grams (word & character) by sentence index',
+                                               'Hapax legomena (once-occurring words) by sentence index',
+                                               'Unusual words (via NLTK) by sentence index',
+                                               'Short words by sentence index',
+                                               'Vowel words by sentence index',
+                                               'Abstract/Concrete vocabulary analysis by sentence index'
+                                               )
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,visualize_bySentenceIndex_menu)
 
 sentence_complexity_var.set(0)
