@@ -62,3 +62,4 @@ buck-out/
 #/src/WordNet_Search_DOWN.jar
 #/src/WordNet_Search_UP.jar
 *.pyc
+config/*
