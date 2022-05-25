@@ -657,8 +657,7 @@ def setNounVerbMenu(*args):
     if noun_verb_menu_optionsSV != noun_verb_menu_options:
         clear_keyword_list()
 
-
-    print('hidden_noun_lemma_csv, hidden_verb_lemma_csv',hidden_noun_lemma_csv.get(), hidden_verb_lemma_csv.get())
+    #print('hidden_noun_lemma_csv, hidden_verb_lemma_csv',hidden_noun_lemma_csv.get(), hidden_verb_lemma_csv.get())
 
 noun_verb_menu_var.trace("w", setNounVerbMenu)
 

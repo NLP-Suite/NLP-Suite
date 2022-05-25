@@ -187,6 +187,7 @@ pydict["CoreNLP annotator - gender (male & female names; via CoreNLP and diction
 pydict["CoreNLP annotator - quote"] = ["Stanford_CoreNLP_main.py", 1]
 pydict["CoreNLP annotator - coreference (pronominal)"] = ["Stanford_CoreNLP_coreference_main.py", 1]
 pydict["Knowledge graphs: DBpedia & YAGO"] = ["knowledge_graphs_DBpedia_YAGO_main.py", 1]
+pydict["HTML annotator - dictionary, gender, DBpedia, YAGO - (All options GUI)"] = ["html_annotator_main.py", 1]
 pydict["HTML annotator"] = ["html_annotator_main.py", 1]
 pydict["HTML annotator extractor"] = ["html_annotator_main.py", 1]
 pydict["Annotator - hedge/uncertainty"] = ["", 0]
@@ -234,7 +235,7 @@ pydict["Search (ALL options GUI)"] = ["search_ALL_main.py", 1]
 pydict["Search CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Search text file(s) for n-grams & co-occurrences (N-grams viewer)"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Search text file(s) for words/collocations"] = ["file_search_byWord_main.py", 1]
-pydict["Sentence analysis (ALL options)"] = ["sentence_analysis_main.py", 1]
+pydict["Sentence analysis (ALL options GUI)"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence complexity"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence/text readability (via textstat)"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence visualization: Dependency tree viewer (png graphs)"] = ["sentence_analysis_main.py", 1]
@@ -260,11 +261,11 @@ pydict["Dictionary items by sentence index"] = ["sentence_analysis_util.dictiona
 pydict["Topic modeling (via Gensim)"] = ["topic_modeling_gensim_main.py", 1]
 pydict["Topic modeling (via MALLET)"] = ["topic_modeling_mallet_main.py", 1]
 pydict["utf-8 compliance"] = ["file_checker_converter_cleaner_main.py", 1]
-pydict["Style analysis"] = ["style_analysis_main.py", 1]
-pydict["Narrative analysis"] = ["narrative_analysis_main.py", 1]
+pydict["Style analysis (ALL options GUI)"] = ["style_analysis_main.py", 1]
+pydict["Narrative analysis (ALL options GUI)"] = ["narrative_analysis_main.py", 1]
 pydict["WHAT\'S IN YOUR CORPUS? A SWEEPING VIEW"] = ["whats_in_your_corpus_main.py", 1]
 pydict["Corpus statistics (Sentences, words, lines)"] = ["statistics_NLP_main.py", 1]
-pydict["Word clouds"] = ["wordclouds_main.py", 1]
+pydict["Word clouds (ALL options GUI)"] = ["wordclouds_main.py", 1]
 pydict["WordNet"] = ["knowledge_graphs_WordNet_main.py", 1]
 pydict["Word2Vec (via Gensim)"] = ["word2vec_main.py", 1]
 
@@ -302,7 +303,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 
 open_default_IO_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'default_config.csv'))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button, y_multiplier_integer,
-                                               open_default_IO_config_button)
+                                               open_default_IO_config_button, False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button-300, "Open the default_config.csv file containing the default Input/Output options")
 
 setup_software_checkbox = tk.Checkbutton(window, state='disabled',
                                          variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0)
@@ -341,7 +342,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 
 open_setup_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'software_config.csv'))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_setup_software_button, y_multiplier_integer,
-                                               open_setup_button)
+                                               open_setup_button, False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button-300, "Open the software_config.csv file containing all external software installation paths")
 
 general_tools_lb = tk.Label(window, text='General Tools', foreground="red",font=("Courier", 12, "bold"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
@@ -415,7 +416,7 @@ sentence_tools_lb = tk.Label(window, text='SENTENCE Analysis Tools')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                sentence_tools_lb, True)
 sentence_tools_menu = ttk.Combobox(window, width = 90, textvariable = sentence_tools_var)
-sentence_tools_menu['values'] = ['Sentence analysis (ALL options)']
+sentence_tools_menu['values'] = ['Sentence analysis (ALL options GUI)']
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, sentence_tools_menu)
 
 

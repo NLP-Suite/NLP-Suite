@@ -130,17 +130,16 @@ def analyzefile(input_file, output_dir, output_file, mode, documentID, documentN
 
 			# search for lemmatized word in Brysbaert et al. concreteness ratings
 			if len(found_words) == 0:  # no words found in Brysbaert et al. concreteness ratings for this sentence
-				writer.writerow({'Document ID': documentID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(documentName),
-								 'Sentence ID': i,
-								 'Sentence': s,
-								 'Concreteness (Mean score)': 'N/A',
+				writer.writerow({'Concreteness (Mean score)': 'N/A',
 								 'Concreteness (Median score)': 'N/A',
 								 'Standard Deviation': 'N/A',
 								 '# Words Found': 0,
 								 'Percentage': '0.0%',
 								 'Found Words': 'N/A',
 								 'All Words': all_words,
-
+								 'Sentence ID': i,
+								 'Sentence': s, 'Document ID': documentID,
+								 'Document': IO_csv_util.dressFilenameForCSVHyperlink(documentName)
 								 })
 				i += 1
 		else:  # output concreteness info for this sentence
@@ -154,17 +153,17 @@ def analyzefile(input_file, output_dir, output_file, mode, documentID, documentN
 				# conc_sd = 'N/A'
 				# if len(score_list) > 1:
 				# print(conc_m,conc_sd)
-				writer.writerow({'Document ID': documentID, 'Document': IO_csv_util.dressFilenameForCSVHyperlink(documentName),
-								 'Sentence ID': i,
-								 'Sentence': s,
-								 'Concreteness (Mean score)': conc_mean,
+				writer.writerow({'Concreteness (Mean score)': conc_mean,
 								 'Concreteness (Median score)': conc_median,
 								 'Standard Deviation': conc_sd,
 								 '# Words Found': "%d out of %d" % (len(found_words), len(all_words)),
 								 'Percentage': str(100 * (float(len(found_words)) / float(len(all_words)))) + '%',
 								 'Found Words': ', '.join(found_words),
-								 'All Words': ', '.join(all_words)
-
+								 'All Words': ', '.join(all_words),
+								 'Sentence ID': i,
+								 'Sentence': s,
+								 'Document ID': documentID,
+								 'Document': IO_csv_util.dressFilenameForCSVHyperlink(documentName)
 								 })
 
 			i += 1
@@ -173,7 +172,6 @@ def analyzefile(input_file, output_dir, output_file, mode, documentID, documentN
 	return output_file  # LINE ADDED
 
 fileNamesToPass = []  # LINE ADDED
-
 
 def main(input_file, input_dir, output_dir, output_file, mode):
 	"""
@@ -192,9 +190,10 @@ def main(input_file, input_dir, output_dir, output_file, mode):
 		print('No input specified. Please give either a single file or a directory of files to analyze.')
 		sys.exit(1)
 	with open(output_file, 'w', encoding='utf-8', errors='ignore') as csvfile:
-		fieldnames = ['Document ID', 'Document','Sentence ID', 'Sentence', 'Concreteness (Mean score)', 'Concreteness (Median score)',
+		fieldnames = ['Concreteness (Mean score)', 'Concreteness (Median score)',
 					  'Standard Deviation',
-					  '# Words Found', 'Percentage', 'Found Words', 'All Words']
+					  '# Words Found', 'Percentage', 'Found Words', 'All Words',
+					  'Sentence ID', 'Sentence','Document ID', 'Document']
 		global writer
 		writer = csv.DictWriter(csvfile, fieldnames=fieldnames, lineterminator='\n')
 		writer.writeheader()

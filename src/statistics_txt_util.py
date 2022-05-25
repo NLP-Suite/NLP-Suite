@@ -377,7 +377,7 @@ def same_sentence_check(jgram):
 #compute_character_word_ngrams works for BOTH character and word ngrams
 #https://stackoverflow.com/questions/18658106/quick-implementation-of-character-n-grams-for-word
 #ngrams is the type of ngrams wanted 2grams,3grams,4grams,5grams MAX
-def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngramsNumber=4, normalize=False, excludePunctuation=False, wordgram=None, openOutputFiles=True, createExcelCharts=True, bySentenceID=None):
+def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngramsNumber=4, normalize=False, excludePunctuation=False, wordgram=None, frequency = None, openOutputFiles=True, createExcelCharts=True, bySentenceID=None):
     filesToOpen = []
     container = []
 
@@ -420,7 +420,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
         head, tail = os.path.split(file)
         i=i+1
         print("Processing file " + str(i) + "/" + str(nFile) + ' ' + tail)
-        ngramsList = get_ngramlist(file, ngramsNumber, wordgram, excludePunctuation, bySentenceID, isdir=True)
+        ngramsList = get_ngramlist(file, ngramsNumber, wordgram, excludePunctuation, frequency, bySentenceID, isdir=True)
         container.append(ngramsList)
 
     for index, f in enumerate(container):
@@ -438,7 +438,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
             one_gram += (f[0])
         else:
             one_gram += (f[0][1:])
-        generalList = [one_gram]
+    generalList = [one_gram]
     if ngramsNumber>1:
         two_gram = []
         for index, f in enumerate(container):
@@ -480,12 +480,13 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
         filesToOpen.append(csv_outputFilename)
         IO_csv_util.list_to_csv(window,ngramsList, csv_outputFilename)
 
-        # n-grams
+        # n-grams line chart by sentence index
         if createExcelCharts==True and result==True:
             inputFilename=csv_outputFilename
             if bySentenceID == True:
-                columns_to_be_plotted=[[2,2]]
+                columns_to_be_plotted=[[2,1]]
                 hover_label=[str(index+1)+'-grams']
+                # Tony Chen Gu
                 Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                           outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
                                                           chart_type_list=["line"],
@@ -495,17 +496,8 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                 if Excel_outputFilename != "":
                     filesToOpen.append(Excel_outputFilename)
             else:
-                columns_to_be_plotted=[[0,2]] # 0,1
+                columns_to_be_plotted=[[2,1]] # 0,1
                 hover_label=[str(index+1)+'-grams'] # change to sentence
-
-                # def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
-                #             chart_type_list, chart_title, column_xAxis_label_var,
-                #             hover_info_column_list=[],
-                #             count_var=0,
-                #             column_yAxis_label_var='Frequencies',
-                #             column_yAxis_field_list=[],
-                #             reverse_column_position_for_series_label=False,
-                #             series_label_list=[], second_y_var=0, second_yAxis_label=''):
 
                 Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                           outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
@@ -531,7 +523,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
 
-def get_ngramlist(inputFilename,ngramsNumber=4, wordgram=1, excludePunctuation=False, bySentenceID=False, isdir=False):
+def get_ngramlist(inputFilename,ngramsNumber=4, wordgram=1, excludePunctuation=False, frequency = None, bySentenceID=False, isdir=False):
 
     def transform(arr):
         t = []
@@ -573,7 +565,11 @@ def get_ngramlist(inputFilename,ngramsNumber=4, wordgram=1, excludePunctuation=F
             # ngram     freq     sentenceID
             for i in In:
                 if i[0] not in Extract(ngramsList):
-                    ngramsList.append(i)
+                    if frequency == None:
+                        ngramsList.append(i)
+                    else: # hapax legomena with frequency=1; exclude items with frequency>1, i.e. i[1] > 1
+                        if i[1] == 1:
+                            ngramsList.append(i)
             ngramsList=sorted(ngramsList, key = lambda x: x[1])
             if excludePunctuation:
                 if isdir:
@@ -845,6 +841,21 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
             for word in words:
                 if word and word and word[0] in "aeiou" and word.isalpha():
                     word_list.append([word, index, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+        if processType == '' or "hapax" in processType.lower():
+            header = ['Word','Document ID','Document']
+            fileLabel = 'hapax'
+            # for word in words:
+            #     if word and word and word[0].isupper():
+            #         word_list.append([word, index, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+            ngramsNumber=1
+            normalize=False
+            excludePunctuation=True
+            wordgram=True
+            frequency=1 #hapax
+            bySentenceID=True
+            tempOutputFiles=compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, ngramsNumber, normalize, excludePunctuation, wordgram, frequency, openOutputFiles, createExcelCharts,
+                                                              bySentenceID)
+
         if processType == '' or "punctuation" in processType.lower():
             header = ['Word','Punctuation symbols of pathos (?!)','Document ID','Document']
             fileLabel = 'punctuation'
@@ -915,6 +926,15 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     IO_error=IO_csv_util.list_to_csv(window, word_list, outputFilename)
     if not IO_error:
         filesToOpen.append(outputFilename)
+
+    # if createExcelCharts == True and 'by sentence index' in processType.lower():
+    #     # line plots by sentence index -----------------------------------------------------------------------------------------------
+    #     outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=outputFilename,
+    #                                                                    outputDir=outputDir,
+    #                                                                    select_col=['Short words (<4 chars)'],
+    #                                                                    group_col=['Sentence ID'],
+    #                                                                    chartTitle=processType)
+    #     filesToOpen.append(outputFilename)
 
     return filesToOpen
 

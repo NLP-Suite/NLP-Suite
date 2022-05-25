@@ -577,7 +577,7 @@ def run_jar_script(scriptName, inputFilename, input_main_dir_path, output_dir_pa
 # The NLP script and sentence_analysis script use pydict dictionaries to run the script selected in a menu
 # the dict can contain a python file, a jar file or a combination of python file + function
 def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_main_dir_path, output_dir_path,
-                              openOutputFiles, createExcelCharts):
+                              openOutputFiles, createExcelCharts, processType=''):
     if len(script_to_run) == 0:
         return
     if script_to_run == "Gender guesser":
@@ -600,23 +600,23 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
                                                'You can follow ' + script_to_run + ' in command line.')
         else:
             startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                               'Started running ' + script_to_run + ' at', True)
+                                               'Started running ' + script_to_run + ' (' + processType + ') at', True)
         script = script_to_run.split(".", 1)
         import importlib
         pythonFile = importlib.import_module(script[0])
         # script[0] contains the Python file name
-        # script[1] contains the function name insime a specific Python file
+        # script[1] contains the function name inside a specific Python file
         if IO_libraries_util.check_inputPythonJavaProgramFile(script[0] + '.py') == False:
             return
         func = getattr(pythonFile, script[1])
         # correct values are checked in NLP_GUI
         if IO_values == 1:
-            func(GUI_util.window, inputFilename, output_dir_path, openOutputFiles, createExcelCharts)
+            func(GUI_util.window, inputFilename, output_dir_path, openOutputFiles, createExcelCharts, processType)
         elif IO_values == 2:
-            func(GUI_util.window, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts)
+            func(GUI_util.window, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, processType)
         else:
             func(GUI_util.window, inputFilename, input_main_dir_path, output_dir_path,
-                 openOutputFiles,createExcelCharts)
+                 openOutputFiles,createExcelCharts, processType)
 
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
                                            'Finished running ' + script_to_run + ' at', True, '', True, startTime)

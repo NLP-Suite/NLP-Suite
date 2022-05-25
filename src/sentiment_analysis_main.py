@@ -122,7 +122,7 @@ def run(inputFilename,inputDir,outputDir,
         if not usedir:
             if createExcelCharts==True:
                 # CoreNLP only computes mean values
-                columns_to_be_plotted = [[2,4]]
+                columns_to_be_plotted = [[2,0]]
                 hover_label=['Sentence']
                 # inputFilename = outputFilename
                 Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
@@ -136,7 +136,7 @@ def run(inputFilename,inputDir,outputDir,
                 if Excel_outputFilename != "":
                     filesToOpen.append(Excel_outputFilename)
 
-                columns_to_be_plotted = [[5,5]]
+                columns_to_be_plotted = [[0,0]]
                 hover_label=[]
                 # inputFilename = inputFilename
                 Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
@@ -146,7 +146,7 @@ def run(inputFilename,inputDir,outputDir,
                                                           column_xAxis_label_var='Sentiment score',
                                                           hover_info_column_list=hover_label,
                                                           count_var=1,
-                                                          column_yAxis_label_var='Scores')
+                                                          column_yAxis_label_var='Frequencies')
 
                 if Excel_outputFilename != "":
                     filesToOpen.append(Excel_outputFilename)
@@ -203,10 +203,10 @@ def run(inputFilename,inputDir,outputDir,
 
         if createExcelCharts==True:
             if mode == "both":
-                columns_to_be_plotted = [[2,4],[2,6]]
+                columns_to_be_plotted = [[6,0],[6,2]]
                 hover_label=['Sentence','Sentence']
             else:
-                columns_to_be_plotted = [[2,4]]
+                columns_to_be_plotted = [[6,0]]
                 hover_label=['Sentence']
             # inputFilename = outputFilename
             Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
@@ -220,7 +220,7 @@ def run(inputFilename,inputDir,outputDir,
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
-            columns_to_be_plotted = [[5,5]]
+            columns_to_be_plotted = [[0,0]]
             hover_label=[]
             # inputFilename = outputFilename
             Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
@@ -254,7 +254,7 @@ def run(inputFilename,inputDir,outputDir,
         filesToOpen.append(outputFilename)
         if createExcelCharts==True:
             # sentiWordNet compute a single sentiment score
-            columns_to_be_plotted = [[2,4]]
+            columns_to_be_plotted = [[2,0]]
             hover_label=['Sentence']
 
             # inputFilename = outputFilename
@@ -269,7 +269,7 @@ def run(inputFilename,inputDir,outputDir,
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
-            columns_to_be_plotted = [[5,5]]
+            columns_to_be_plotted = [[0,0]]
             hover_label=[]
             Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='SentiWordNet_sent',
@@ -304,7 +304,7 @@ def run(inputFilename,inputDir,outputDir,
         filesToOpen.append(outputFilename)
         if createExcelCharts==True:
             # VADER does not compute separate mean and median values
-            columns_to_be_plotted = [[2,4]]
+            columns_to_be_plotted = [[2,0]]
             hover_label=['Sentence']
             # inputFilename = outputFilename
 
@@ -319,7 +319,7 @@ def run(inputFilename,inputDir,outputDir,
             if Excel_outputFilename != "":
                 filesToOpen.append(Excel_outputFilename)
 
-            columns_to_be_plotted = [[5,5]]
+            columns_to_be_plotted = [[0,0]]
             hover_label=[]
             # inputFilename = outputFilename
             Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
@@ -350,10 +350,10 @@ def run(inputFilename,inputDir,outputDir,
         if createExcelCharts==True:
             # # sentiment by sentence index
             if mode == "both":
-                columns_to_be_plotted = [[2,4],[2,6],[2,8],[2,10],[2,12],[2,14]]
+                columns_to_be_plotted = [[13,0],[13,6],[13,8],[13,10],[13,12],[13,14]]
                 hover_label=['Sentence','Sentence','Sentence','Sentence','Sentence','Sentence']
             else:
-                columns_to_be_plotted = [[2,4],[2,6],[2,8]]
+                columns_to_be_plotted = [[13,4],[13,6],[13,8]]
                 hover_label=['Sentence','Sentence','Sentence']
 
             # inputFilename = outputFilename

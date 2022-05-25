@@ -26,69 +26,69 @@ filesToOpen=[]
 
 # written by Yi Wang April 2020
 # ConnlTable is the inputFilename
-def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_verb,openOutputFiles,createExcelCharts):
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running WordNet charts by sentence index at',
-                                                 True, '', True, '', True)
-
-    if noun_verb=='NOUN':
-        checklist = ['NN','NNP','NNPS','NNS']
-    else:
-        checklist = ['VB','VBD','VBG','VBN','VBP','VBZ']
-    # read in the CoreNLP CoNLL table
-    connl = pd.read_csv(ConnlTable)
-    # read in the dictionary file to be used to filter CoNLL values
-    # The file is expected to have 2 columns with headers: Word, WordNet Category
-    dict = pd.read_csv(wordnetDict)
-    # set up the double list conll from the conll data 
-    connl = connl[['word','lemma','postag','Sentence ID','Document ID','Document']]
-    # filter the list by noun or verb
-    connl = connl[connl['postag'].isin(checklist)]
-    # eliminate any duplicate value in Word    
-    dict = dict.drop_duplicates().rename(columns = {'Word':'lemma', 'WordNet Category':'Category'})
-    # ?
-    connl = connl.merge(dict,how = 'left', on = 'lemma')
-    # the CoNLL table value is not found in the dictionary Word value
-    connl.fillna('Not in INPUT dictionary for ' + noun_verb, inplace = True)
-    # add the WordNet Catgegory to the conll list 
-    connl = connl[['word','lemma','postag','Category','Sentence ID','Document ID','Document']]
-    # put headers on conll list
-    connl.columns = ['word','lemma','postag','Category','Sentence ID','Document ID','Document']
-
-    Row_list = []
-    # Iterate over each row
-    for index, rows in connl.iterrows():
-        # Create list for the current row
-        my_list = [rows.word, rows.lemma, rows.postag, rows.Category, rows.SentenceID,rows.DocumentID, rows.Document]
-        # append the list to the final list
-        Row_list.append(my_list)
-    for index,row in enumerate(Row_list):
-        if index == 0 and Row_list[index][4] != 1:
-            for i in range(Row_list[index][4]-1,0,-1):
-                Row_list.insert(0,['','','','',i,Row_list[index][5],Row_list[index][6]])
-        else:
-            if index < len(Row_list)-1 and Row_list[index+1][4] - Row_list[index][4] > 1:
-                for i in range(Row_list[index+1][4]-1,Row_list[index][4],-1):
-                    Row_list.insert(index+1,['','','','',i,Row_list[index][5],Row_list[index][6]])
-    df = pd.DataFrame(Row_list,index=['word','lemma','postag','WordNet Category','Sentence ID','Document ID','Document'])
-    df = charts_Excel_util.add_missing_IDs(df)
-    # Row_list.insert(0, ['word','lemma','postag','WordNet Category','SentenceID','DocumentID','Document'])
-    #IO_util.list_to_csv('',Row_list,outputFilename)
-    df.to_csv(outputFilename,index=False)
-
-    if createExcelCharts:
-        outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
-                                    ConnlTable,
-                                    df,
-                                    outputDir,
-                                    openOutputFiles,
-                                    createExcelCharts,
-                                    [[4,5]],
-                                    ['WordNet Category'],['word'], ['Document ID','Sentence ID','Document'],
-                                    'WordNet', 'line')
-        if len(outputFiles) > 0:
-            filesToOpen.extend(outputFiles)
-
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet charts by sentence index at', True, '', True, startTime)
+# def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_verb,openOutputFiles,createExcelCharts):
+#     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running WordNet charts by sentence index at',
+#                                                  True, '', True, '', True)
+#
+#     if noun_verb=='NOUN':
+#         checklist = ['NN','NNP','NNPS','NNS']
+#     else:
+#         checklist = ['VB','VBD','VBG','VBN','VBP','VBZ']
+#     # read in the CoreNLP CoNLL table
+#     connl = pd.read_csv(ConnlTable)
+#     # read in the dictionary file to be used to filter CoNLL values
+#     # The file is expected to have 2 columns with headers: Word, WordNet Category
+#     dict = pd.read_csv(wordnetDict)
+#     # set up the double list conll from the conll data
+#     connl = connl[['word','lemma','postag','Sentence ID','Document ID','Document']]
+#     # filter the list by noun or verb
+#     connl = connl[connl['postag'].isin(checklist)]
+#     # eliminate any duplicate value in Word
+#     dict = dict.drop_duplicates().rename(columns = {'Word':'lemma', 'WordNet Category':'Category'})
+#     # ?
+#     connl = connl.merge(dict,how = 'left', on = 'lemma')
+#     # the CoNLL table value is not found in the dictionary Word value
+#     connl.fillna('Not in INPUT dictionary for ' + noun_verb, inplace = True)
+#     # add the WordNet Catgegory to the conll list
+#     connl = connl[['word','lemma','postag','Category','Sentence ID','Document ID','Document']]
+#     # put headers on conll list
+#     connl.columns = ['word','lemma','postag','Category','Sentence ID','Document ID','Document']
+#
+#     Row_list = []
+#     # Iterate over each row
+#     for index, rows in connl.iterrows():
+#         # Create list for the current row
+#         my_list = [rows.word, rows.lemma, rows.postag, rows.Category, rows.SentenceID,rows.DocumentID, rows.Document]
+#         # append the list to the final list
+#         Row_list.append(my_list)
+#     for index,row in enumerate(Row_list):
+#         if index == 0 and Row_list[index][4] != 1:
+#             for i in range(Row_list[index][4]-1,0,-1):
+#                 Row_list.insert(0,['','','','',i,Row_list[index][5],Row_list[index][6]])
+#         else:
+#             if index < len(Row_list)-1 and Row_list[index+1][4] - Row_list[index][4] > 1:
+#                 for i in range(Row_list[index+1][4]-1,Row_list[index][4],-1):
+#                     Row_list.insert(index+1,['','','','',i,Row_list[index][5],Row_list[index][6]])
+#     df = pd.DataFrame(Row_list,index=['word','lemma','postag','WordNet Category','Sentence ID','Document ID','Document'])
+#     df = charts_Excel_util.add_missing_IDs(df)
+#     # Row_list.insert(0, ['word','lemma','postag','WordNet Category','SentenceID','DocumentID','Document'])
+#     #IO_util.list_to_csv('',Row_list,outputFilename)
+#     df.to_csv(outputFilename,index=False)
+#
+#     if createExcelCharts:
+#         outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+#                                     ConnlTable,
+#                                     df,
+#                                     outputDir,
+#                                     openOutputFiles,
+#                                     createExcelCharts,
+#                                     [[4,5]],
+#                                     ['WordNet Category'],['word'], ['Document ID','Sentence ID','Document'],
+#                                     'WordNet', 'line')
+#         if len(outputFiles) > 0:
+#             filesToOpen.extend(outputFiles)
+#
+#     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet charts by sentence index at', True, '', True, startTime)
 
 def process_keyword(wordNet_keyword_list, noun_verb):
     for keyword in wordNet_keyword_list:
