@@ -18,6 +18,35 @@ import os
 ## these functions supports the feature of getting frequencies of the categorical variables
 ## the static_flag is used to indicate whether the chart is static or not
 
+
+# def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptType,
+#                        chartTitle,
+#                        chart_type_list,
+#                        column_xAxis_label='',
+#                        column_yAxis_label='',
+#                        hover_info_column_list=[],
+#                        reverse_column_position_for_series_label=False,
+#                        series_label_list=[],
+#                        second_y_var=0,
+#                        second_yAxis_label=''):
+# match the excel chart format
+def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,x_cols,y_cols,
+                        column_xAxis_label='',
+                        column_yAxis_label='',):
+    for i in chart_type_list:
+        if i == 'bar':
+            plot_bar_chart_px(x_cols,inputFilename,outputDir,chartTitle,column_yAxis_label)
+        elif i == 'pie':
+            plot_pie_chart_px(x_cols,inputFilename,outputDir,chartTitle,column_yAxis_label)
+        elif i == 'scatter':
+            plot_scatter_chart_px(x_cols,y_cols,inputFilename,outputDir,chartTitle)
+        elif i == 'radar':
+            plot_radar_chart_px(x_cols,y_cols,inputFilename,outputDir,chartTitle)
+        else:
+            print('Chart type not supported '+i+'! Skipped and continue with next chart.')
+    return
+
+
 # get frequencies of categorical variables
 def get_frequencies(data, variable):
     #this line give a column of the counts for the categorical vairable
@@ -32,7 +61,7 @@ def get_frequencies(data, variable):
 
 #helper function for saving the chart
 #set up the output directory path
-#suport both static and dynamic chart
+#support both static and dynamic chart
 def save_chart(fig, outputDir, chartTitle, static_flag):
     if static_flag:
         savepath = os.path.join(outputDir, chartTitle + '.png')
@@ -133,7 +162,7 @@ def plot_multi_line_chart_w_slider_px(fileName, outputDir, chartTitle):
         )
     )
     iplot(figs)
-    #save_chart(fig, outputDir, chartTitle, static_flag)
+    save_chart(figs, outputDir, chartTitle, False)
     return
 
 #=======================================================================================================================
