@@ -85,6 +85,21 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
+# run_script_command=lambda: run(GUI_util.inputFilename.get(),
+#                                 GUI_util.input_main_dir_path.get(),
+#                                 GUI_util.output_dir_path.get(),
+#                                 GUI_util.open_csv_output_checkbox.get(),
+#                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+#                                 visualize_bySentenceIndex_var.get(),
+#                                 visualize_bySentenceIndex_options_var.get(),
+#                                 script_to_run,
+#                                 IO_values,
+#                                 sentence_complexity_var.get(),
+#                                 text_readability_var.get(),
+#                                 visualize_sentence_structure_var.get(),
+#                                 extract_sentences_var.get(),
+#                                 search_words_var.get())
+
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
@@ -99,6 +114,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 visualize_sentence_structure_var.get(),
                                 extract_sentences_var.get(),
                                 search_words_var.get())
+
 
 GUI_util.run_button.configure(command=run_script_command)
 

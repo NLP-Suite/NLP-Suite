@@ -1,5 +1,5 @@
 # Written by Yuhang Feng November 2019-April 2020
-# Edited by Roberto Franzosi 
+# Edited by Roberto Franzosi, Tony May 2022
 
 import sys
 import GUI_util
@@ -94,7 +94,13 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             column_yAxis_label_var='Frequencies',
             column_yAxis_field_list = [],
             reverse_column_position_for_series_label=False,
-            series_label_list=[], second_y_var=0,second_yAxis_label=''):
+            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = True):
+
+    # added by Tony, May 2022 for complete sentence index
+    # the file should have a column named Sentence ID
+    # the extra parameter "complete_sid" is set to True by default to avoid extra code mortification elsewhere
+    if complete_sid:
+        complete_sentence_index(inputFilename)
 
     data_to_be_plotted = prepare_data_to_be_plotted(inputFilename,
                                 columns_to_be_plotted,
@@ -102,6 +108,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
                                 column_yAxis_field_list)
     if data_to_be_plotted==None:
             return ''
+
     transform_list = []
     # the following is deciding which type of data is returned from prepare_data_to_be_plotted
     # for the function prepare_data_to_be_plotted branch into two different data handling functions which retruns different data type
