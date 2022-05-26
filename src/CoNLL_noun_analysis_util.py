@@ -243,15 +243,6 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 															select_col=['Noun POS Tags'],
 															group_col=['Sentence ID'],
 															chartTitle="Frequency Distribution of Noun POS Tags")
-        # outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
-        #                                                                noun_postag_file_name,
-        #                                                                '',
-        #                                                                outputDir,
-        #                                                                openOutputFiles,
-        #                                                                createExcelCharts,
-        #                                                                [[1, 4]],
-        #                                                                ['Noun POS Tags'], ['FORM', 'Sentence ID','Sentence', 'Document ID','Document'],
-        #                                                                'NVA', 'line')
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 
@@ -260,16 +251,6 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 															select_col=['Noun DEPREL Tags'],
 															group_col=['Sentence ID'],
 															chartTitle="Frequency Distribution of Noun DEPREL Tags")
-        # outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
-        #                                                                noun_deprel_file_name,
-        #                                                                '',
-        #                                                                outputDir,
-        #                                                                openOutputFiles,
-        #                                                                createExcelCharts,
-        #                                                                [[1, 4]],
-        #                                                                ['Noun DEPREL Tags'],['FORM', 'Sentence'],['Sentence ID','Document ID', 'Document'],
-        #                                                                'NVA','line')
-
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 
@@ -279,15 +260,6 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 															select_col=['Noun NER Tags'],
 															group_col=['Sentence ID'],
 															chartTitle="Frequency Distribution of Noun NER Tags")
-        # outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
-        #                                                                noun_ner_file_name,
-        #                                                                '',
-        #                                                                outputDir,
-        #                                                                openOutputFiles,
-        #                                                                createExcelCharts,
-        #                                                                [[1, 4]],
-        #                                                                ['Noun NER Tags'], ['FORM', 'Sentence'], ['Sentence ID', 'Document ID', 'Document'],
-        #                                                                'NVA','line')
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 

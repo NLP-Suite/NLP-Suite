@@ -578,17 +578,18 @@ def run_jar_script(scriptName, inputFilename, input_main_dir_path, output_dir_pa
 # the dict can contain a python file, a jar file or a combination of python file + function
 def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_main_dir_path, output_dir_path,
                               openOutputFiles, createExcelCharts, processType=''):
+    filesToOpen = []
     if len(script_to_run) == 0:
-        return
+        return filesToOpen
     if script_to_run == "Gender guesser":
         import IO_internet_util
         # check internet connection
         if not IO_internet_util.check_internet_availability_warning("Gender guesser"):
-            return
+            return filesToOpen
         webbrowser.open('http://www.hackerfactor.com/GenderGuesser.php#About')
     elif script_to_run.endswith('.py'):  # with GUI
         if IO_libraries_util.check_inputPythonJavaProgramFile(script_to_run) == False:
-            return
+            return filesToOpen
         call("python " + script_to_run, shell=True)
     elif script_to_run.endswith('.jar'):  # with GUI
         run_jar_script(script_to_run, inputFilename, input_main_dir_path, output_dir_path, openOutputFiles,
@@ -607,20 +608,21 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
         # script[0] contains the Python file name
         # script[1] contains the function name inside a specific Python file
         if IO_libraries_util.check_inputPythonJavaProgramFile(script[0] + '.py') == False:
-            return
+            return filesToOpen
         func = getattr(pythonFile, script[1])
-        # correct values are checked in NLP_GUI
-        if IO_values == 1:
-            func(GUI_util.window, inputFilename, output_dir_path, openOutputFiles, createExcelCharts, processType)
-        elif IO_values == 2:
-            func(GUI_util.window, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, processType)
-        else:
-            func(GUI_util.window, inputFilename, input_main_dir_path, output_dir_path,
+        # # correct values are checked in NLP_GUI
+        if IO_values == 1: # no inputDir
+            filesToOpen = func(GUI_util.window, inputFilename, output_dir_path, openOutputFiles, createExcelCharts, processType)
+        elif IO_values == 2: # no inputFilename
+            filesToOpen = func(GUI_util.window, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, processType)
+        else: # both inputFilename and inputDir
+            filesToOpen = func(GUI_util.window, inputFilename, input_main_dir_path, output_dir_path,
                  openOutputFiles,createExcelCharts, processType)
 
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
                                            'Finished running ' + script_to_run + ' at', True, '', True, startTime)
 
+        return filesToOpen
 
 """
 #does not work, despite StackOverFlow recommandation; always returns None

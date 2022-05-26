@@ -835,8 +835,9 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 		if doc.endswith('.txt'):
 			with open(doc, 'r', encoding='utf-8', errors='ignore') as file:
 				dId += 1
+				head, tail = os.path.split(doc)
+				print("Processing file " + str(dId) + '/' + str(numFiles) + tail)
 				text = file.read()
-				print('importing single file')
 				documentID.append(dId)
 				document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
 				all_input_docs[dId] = text
@@ -849,10 +850,11 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 
 		for doc in os.listdir(inputDir):
 			if doc.endswith('.txt'):
+				head, tail = os.path.split(doc)
 				with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
 					dId += 1
+					print("Importing filename " + str(dId) + '/' + str(numFiles) + tail)
 					text = file.read()
-					print('Importing ' + str(dId) + '/' + str(numFiles) + ' file')
 					documentID.append(dId)
 					document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
 					all_input_docs[dId] = text
@@ -864,8 +866,9 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 		columns=['Sentence length (No. of words)', 'Yngve score', 'Yngve sum', 'Frazier score', 'Frazier sum',
 				 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
 	for idx, txt in enumerate(all_input_docs.items()):
-		print(f'Running Sentence Complexity on {idx + 1} / {numFiles}')
 		doc = nlp(txt[1])
+		tail = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document[idx]))[1]
+		print("Processing file " + str(dId) + '/' + str(numFiles) + tail)
 		for i, sentence in enumerate(doc.sentences):
 			sent = str(sentence.constituency)
 			root1 = tree.make_tree(sent)
@@ -911,6 +914,24 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 															 'SentenceComplexity')
 	op.to_csv(outputFilename, index=False)
 	filesToOpen.append(outputFilename)
+
+	if createExcelCharts == True:
+		inputFilename = outputFilename
+		# Tony Chen Gu
+		# Only one column is plotted
+		columns_to_be_plotted = [[5, 1], [5, 3]]
+		hover_label = ['Sentence', 'Sentence']
+		Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+														 outputFileLabel='Complex',
+														 chart_type_list=["line"],
+														 chart_title='Complexity Scores (Yngve, Frazier) by Sentence Index',
+														 column_xAxis_label_var='Sentence index',
+														 hover_info_column_list=hover_label,
+														 count_var=0,
+														 column_yAxis_label_var='Scores')
+		if Excel_outputFilename != "":
+			filesToOpen.append(Excel_outputFilename)
+
 
 	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
 									   'Finished running Sentence Complexity at', True, '', True, startTime)
