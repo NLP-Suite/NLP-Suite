@@ -123,51 +123,14 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
 
             startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
                                                            'Started running CONCRETENESS Analysis at', True)
-            if len(inputFilename) > 0:
-                outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,outputDir, '.csv', 'SC',
-                                                                         'Concreteness', '', '', '', False, True)
-            else:
-                outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir, outputDir, '.csv', 'SC_dir',
-                                                                         'Concreteness', '', '', '', False, True)
+            # if len(inputFilename) > 0:
+            #     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,outputDir, '.csv', 'SC',
+            #                                                              'Concreteness', '', '', '', False, True)
+            # else:
+            #     outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir, outputDir, '.csv', 'SC_dir',
+            #                                                              'Concreteness', '', '', '', False, True)
 
-            concreteness_analysis_util.main(inputFilename, inputDir, outputDir, outputFilename, mode)
-
-            filesToOpen.append(outputFilename)
-            if createExcelCharts == True:
-                inputFilename=outputFilename
-                if mode == "both":
-                    columns_to_be_plotted = [[7, 0], [7, 1]]
-                    hover_label = ['Sentence', 'Sentence']
-                else:
-                    columns_to_be_plotted = [[7, 0]]
-                    hover_label = ['Sentence']
-                # Tony Chen Gu
-                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                          outputFileLabel='Concret',
-                                                          chart_type_list=["line"],
-                                                          chart_title='Concreteness Scores by Sentence Index',
-                                                          column_xAxis_label_var='Sentence index',
-                                                          hover_info_column_list=hover_label,
-                                                          count_var=0,
-                                                          column_yAxis_label_var='Scores')
-                if Excel_outputFilename != "":
-                    filesToOpen.append(Excel_outputFilename)
-                # Tony Chen Gu
-                # outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                #                                     outputFilename, chart_type_list=["line"],
-                #                                     chart_title="Concreteness Scores by Sentence Index",
-                #                                     column_xAxis_label_var='Sentence index',
-                #                                     column_yAxis_label_var='Frequency of concreteness scores',
-                #                                     outputExtension='.xlsm', label1='SC', label2='Concreteness',
-                #                                     label3='line', label4='chart', label5='', useTime=False,
-                #                                     disable_suffix=True,
-                #                                     count_var=0, column_yAxis_field_list=[],
-                #                                     reverse_column_position_for_series_label=False,
-                #                                     series_label_list=[''], second_y_var=0,
-                #                                     second_yAxis_label='', hover_var=1,
-                #                                     hover_info_column_list=hover_label)
-                # if outputFilename != "":
-                #     filesToOpen.append(outputFilename)
+            filesToOpen = concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, processType='')
 
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                                    'Finished running CONCRETENESS Analysis at', True, '', True, startTime, True)

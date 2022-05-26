@@ -250,12 +250,12 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
         writer.writeheader()
         #print("Number of corpus text documents: ",Ndocs)
         #currentLine.append([Ndocs])
-        index=0
+        documentID=0
         for doc in inputDocs:
             head, tail = os.path.split(doc)
-            index=index+1
-            # currentLine.append([index])
-            print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
+            documentID=documentID+1
+            # currentLine.append([documentID])
+            print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
             #currentLine.append([doc])
             fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
 
@@ -291,8 +291,8 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             #print("\n\nTOP 20 most frequent words  ----------------------------")
             # for item in word_counts.most_common(20):
             #     print(item)
-            # currentLine=[[Ndocs,index,doc,Nsentences,Nwords,Nsyllables]]
-            currentLine=[[Ndocs,index,IO_csv_util.dressFilenameForCSVHyperlink(doc),Nsentences,Nwords,Nsyllables]]
+            # currentLine=[[Ndocs,documentID,doc,Nsentences,Nwords,Nsyllables]]
+            currentLine=[[Ndocs,documentID,IO_csv_util.dressFilenameForCSVHyperlink(doc),Nsentences,Nwords,Nsyllables]]
             for item in word_counts.most_common(20):
                 currentLine[0].append(item[0])  # word
                 currentLine[0].append(item[1]) # frequency
@@ -423,7 +423,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
         ngramsList = get_ngramlist(file, ngramsNumber, wordgram, excludePunctuation, frequency, bySentenceID, isdir=True)
         container.append(ngramsList)
 
-    for index, f in enumerate(container):
+    for documentID, f in enumerate(container):
 
         for n in f:
             for skip, gram in enumerate(n):
@@ -431,26 +431,26 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                     gram.insert(-1, 'Document ID')
                     continue
                 else:
-                    gram.insert(-1, index + 1)
+                    gram.insert(-1, documentID + 1)
     one_gram = []
-    for index, f in enumerate(container):
-        if index == 0:
+    for documentID, f in enumerate(container):
+        if documentID == 0:
             one_gram += (f[0])
         else:
             one_gram += (f[0][1:])
     generalList = [one_gram]
     if ngramsNumber>1:
         two_gram = []
-        for index, f in enumerate(container):
-            if index == 0:
+        for documentID, f in enumerate(container):
+            if documentID == 0:
                 two_gram += (f[1])
             else:
                 two_gram += (f[1][1:])
         generalList = [one_gram, two_gram]
     if ngramsNumber>2:
         three_gram = []
-        for index, f in enumerate(container):
-            if index == 0:
+        for documentID, f in enumerate(container):
+            if documentID == 0:
                 three_gram += (f[2])
             else:
                 three_gram += (f[2][1:])
@@ -459,8 +459,8 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
     # stop at 3; no point going above
     # if ngramsNumber>3:
     #     four_gram = []
-    #     for index, f in enumerate(container):
-    #         if index == 0:
+    #     for documentID, f in enumerate(container):
+    #         if documentID == 0:
     #             four_gram += (f[3])
     #         else:
     #             four_gram += (f[3][1:])
@@ -471,11 +471,15 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
     # if createExcelCharts==True:
     #     if nFile>10:
     #         result = mb.askyesno("Excel charts","You have " + str(nFile) + " files for which to compute Excel charts.\n\nTHIS WILL TAKE A LONG TIME.\n\nAre you sure you want to do that?",default='no')
+    if frequency == 1:  # hapax
+        label = '1-grams_hapax_'
+    else:
+        label = 'n-grams_'
     for index,ngramsList in enumerate(generalList):
         if nFile>1:
-            csv_outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'n-grams_' + str(index + 1) + '_' + fn, 'stats', '', '', '', False, True)
+            csv_outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', label + str(index + 1) + '_' + fn, 'stats', '', '', '', False, True)
         else:
-            csv_outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'n-grams_' + str(index + 1) + '_' + fn, 'stats')
+            csv_outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', label + str(index + 1) + '_' + fn, 'stats')
 
         filesToOpen.append(csv_outputFilename)
         IO_csv_util.list_to_csv(window,ngramsList, csv_outputFilename)
@@ -487,6 +491,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                 columns_to_be_plotted=[[2,1]]
                 hover_label=[str(index+1)+'-grams']
                 # Tony Chen Gu
+                # what is needed here is the new compute_csv_column_frequencies
                 Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                           outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
                                                           chart_type_list=["line"],
@@ -793,7 +798,7 @@ def print_results(window, words, class_word_list, header, inputFilename, outputD
 
 def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, createExcelCharts, processType='', excludeStopWords=True,word_length=3):
     filesToOpen=[]
-    index = 0
+    documentID = 0
     multiple_punctuation=0
     exclamation_punctuation=0
     question_punctuation=0
@@ -806,14 +811,14 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     Ndocs=str(len(inputDocs))
     for doc in inputDocs:
         head, tail = os.path.split(doc)
-        index = index + 1
-        print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
+        documentID = documentID + 1
+        print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
         fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
         # words = fullText.translate(string.punctuation).lower().split()
         fullText = fullText.replace('\n',' ')
         words = fullText.translate(string.punctuation).split()
-        if excludeStopWords:
-            words = excludeStopWords_list(words)
+        # if excludeStopWords:
+        #     words = excludeStopWords_list(words)
         if processType != '':
             hideMessage = False
         else:
@@ -823,38 +828,64 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
         else:
             hideMessage = True
         if processType=='' or "short" in processType.lower():
+            select_col = ['Short words (<4 chars)']
             header = ['Short words (<4 chars)','Document ID','Document']
             fileLabel='short_words'
             # exclude numbers from list
             for word in words:
                 if word and len(word) <= int(word_length) and word.isalpha():
-                    word_list.append([word, index, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                    word_list.append([word, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
         if processType=='' or "capital" in processType.lower():
-            header = ['Initial-capital words','Document ID','Document']
+            select_col = ['Initial-capital words']
+            header = ['Initial-capital words', 'First word in sentence', 'Document ID','Document']
             fileLabel='init_cap_words'
+            word_index=0
             for word in words:
                 if word and word and word[0].isupper():
-                    word_list.append([word, index, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                    previous_word = words[word_index - 1]
+                    if previous_word[len(previous_word) - 1] == '.' or previous_word[len(previous_word) - 1] == '?' or \
+                            previous_word[len(previous_word) - 1] == '!':
+                        first_word_inSentence = 'Yes'
+                    else:
+                        if previous_word[len(previous_word) - 1] == '\'' or previous_word[
+                            len(previous_word) - 1] == '"':
+                            if previous_word[len(previous_word) - 2] == '.' or previous_word[
+                                len(previous_word) - 2] == '?' or \
+                                    previous_word[len(previous_word) - 2] == '!':
+                                first_word_inSentence = 'Yes'
+                            else:
+                                first_word_inSentence = 'No'
+                        else:
+                            first_word_inSentence = 'No'
+                    word_list.append([word, first_word_inSentence, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                word_index = word_index + 1
         if processType=='' or "vowel" in processType.lower():
-            header = ['Vowel words','Document ID','Document']
+            select_col = ['Initial-vowel words']
+            header = ['Initial-vowel', 'Document ID','Document']
             fileLabel='vowel_words'
             for word in words:
                 if word and word and word[0] in "aeiou" and word.isalpha():
-                    word_list.append([word, index, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-        if processType == '' or "hapax" in processType.lower():
+                    word_list.append([word, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+        if processType == '' or "N-grams" in processType or "hapax" in processType.lower():
             header = ['Word','Document ID','Document']
-            fileLabel = 'hapax'
+            if "hapax" in processType.lower():
+                fileLabel = 'hapax'
+                ngramsNumber=1
+                frequency=1 #hapax
+            else:
+                fileLabel = 'N-grams'
+                ngramsNumber = 3
+                frequency = 50  # hapax
             # for word in words:
             #     if word and word and word[0].isupper():
             #         word_list.append([word, index, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-            ngramsNumber=1
             normalize=False
             excludePunctuation=True
             wordgram=True
-            frequency=1 #hapax
             bySentenceID=True
             tempOutputFiles=compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, ngramsNumber, normalize, excludePunctuation, wordgram, frequency, openOutputFiles, createExcelCharts,
                                                               bySentenceID)
+            return
 
         if processType == '' or "punctuation" in processType.lower():
             header = ['Word','Punctuation symbols of pathos (?!)','Document ID','Document']
@@ -870,7 +901,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                 if punctuation != '':
                     if doc not in punctuation_docs:
                         punctuation_docs.append(doc)
-                    word_list.extend([[word, punctuation, index, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
+                    word_list.extend([[word, punctuation, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
                     if '!' in punctuation and '?' in punctuation:
                         multiple_punctuation=multiple_punctuation+1
                     elif '!' in punctuation:
@@ -927,11 +958,12 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     if not IO_error:
         filesToOpen.append(outputFilename)
 
+    # vowel, short, capital do NOT contain sentence ID; cannot plot by sentence index
     # if createExcelCharts == True and 'by sentence index' in processType.lower():
     #     # line plots by sentence index -----------------------------------------------------------------------------------------------
     #     outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=outputFilename,
     #                                                                    outputDir=outputDir,
-    #                                                                    select_col=['Short words (<4 chars)'],
+    #                                                                    select_col=select_col,
     #                                                                    group_col=['Sentence ID'],
     #                                                                    chartTitle=processType)
     #     filesToOpen.append(outputFilename)
@@ -971,12 +1003,12 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
     with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as outfile:
         #print("Number of corpus text documents: ",Ndocs)
         #currentLine.append([Ndocs])
-        index=0
+        documentID=0
         for doc in inputDocs:
             head, tail = os.path.split(doc)
-            index=index+1
-            # currentLine.append([index])
-            print("Processing file " + str(index) + "/" + str(Ndocs) + " " + tail)
+            documentID=documentID+1
+            # currentLine.append([documentID])
+            print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
             fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
 
             Nsentences=str(textstat.sentence_count(fullText))
