@@ -238,6 +238,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createExcel
 		columns_to_be_plotted = [[7, 0], [7, 1]]
 		hover_label = ['Sentence', 'Sentence']
 		# Tony Chen Gu
+		# what is needed here is the new compute_csv_column_frequencies
 		Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
 														 outputFileLabel='Concret',
 														 chart_type_list=["line"],

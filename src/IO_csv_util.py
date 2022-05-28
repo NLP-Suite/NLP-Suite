@@ -294,7 +294,10 @@ def dressFilenameForCSVHyperlink(fileName):
     return fileName
 
 def undressFilenameForCSVHyperlink(fileName):
-    fileName=fileName.replace('=hyperlink("','')
+    try:
+        fileName=fileName.replace('=hyperlink("','')
+    except:
+        return fileName
     fileName=fileName.replace('")','')
     return fileName
 

@@ -290,7 +290,7 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
         data_to_be_plotted.append(data.iloc[:,gp])
     return data_to_be_plotted
 
-# Tony Chen Gu at April 2022
+# written by Tony Chen Gu, April 2022
 # select_col should be one column name eg: ['Verb Voice']
 # group_col should be a list of column names eg ['Sentence ID']
 # enable complete_sid to make sentence index continuous
@@ -978,7 +978,14 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         for i in range(max(lengths)): # find the largest length of all series
             row = []
             for stats_list in data_to_be_plotted: # Iterate through all the lists
+                # when X-axis values contain a document dressed for hyperlink and with full path
+                #   undressed the hyperlink and only display the tail of the document
                 if i < len(stats_list): # if i is smaller than the length of the current series
+                    if '=hyperlink' in str(stats_list[i][0]):
+                        stats_list[i][0]=IO_csv_util.undressFilenameForCSVHyperlink(stats_list[i][0])
+                    if os.path.isfile(str(stats_list[i][0])):
+                        head, tail = os.path.split(stats_list[i][0])
+                        stats_list[i][0] = tail
                     row += stats_list[i] # then we append the data
                 else: # else means the length of current series is smaller than the largest length of all series
                     # lines below are for the situation: in an excel chart, we have multiple series, but they are not the same length.
@@ -1014,7 +1021,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 #     chartName.x_axis.title = " X_AXIS"
                 
                 if len(column_yAxis_label)>0:
-                    chartName.y_axis.title = column_yAxis_label # displayed on the y-axis
+                    chartName.y_axis.title = str(column_yAxis_label) # displayed on the y-axis
                 # else:
                 #     chartName.y_axis.title = " Y_AXIS"
 

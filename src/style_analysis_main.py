@@ -98,13 +98,13 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                                                                          openOutputFiles, createExcelCharts)
         elif 'capital' in vocabulary_analysis_menu_var:
             filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir,
-                                                                   openOutputFiles, createExcelCharts,'capital')
+                                                                   openOutputFiles, createExcelCharts,vocabulary_analysis_menu_var)
         elif 'Short' in vocabulary_analysis_menu_var:
-            filesToOpen=statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir, openOutputFiles, createExcelCharts,'short')
+            filesToOpen=statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir, openOutputFiles, createExcelCharts,vocabulary_analysis_menu_var)
         elif 'Vowel' in vocabulary_analysis_menu_var:
-            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,'vowel')
+            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,vocabulary_analysis_menu_var)
         elif 'Punctuation' in vocabulary_analysis_menu_var:
-            filesToOpen=statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,'punctuation')
+            filesToOpen=statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,vocabulary_analysis_menu_var)
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
             filesToOpen=statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
         if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
@@ -141,10 +141,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                 ngramType=0
             else:
                 ngramType = 1
-            startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
-                                                           'Started running Word/Characters N-Grams at',
-                                                           True, '', True, '', True)
-            # (inputFilename = ''  # for now we only process a whole directory
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
             ngramsNumber=4
@@ -155,8 +151,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                                                               outputDir, ngramsNumber, normalize, excludePunctuation, ngramType, openOutputFiles,
                                                               createExcelCharts,
                                                               bySentenceIndex_var)
-            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-                                               'Finished running Word/Characters N-Grams at', True, '', True, startTime, True)
 
         if '*' in ngrams_analysis_menu_var or 'Hapax' in ngrams_analysis_menu_var:
             ngramsNumber=1

@@ -595,13 +595,6 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
         run_jar_script(script_to_run, inputFilename, input_main_dir_path, output_dir_path, openOutputFiles,
                        createExcelCharts)
     else:  # with NO GUI; does not end with py
-        if input_main_dir_path != '':
-            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                               'Started running ' + script_to_run + ' at', True,
-                                               'You can follow ' + script_to_run + ' in command line.')
-        else:
-            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                               'Started running ' + script_to_run + ' (' + processType + ') at', True)
         script = script_to_run.split(".", 1)
         import importlib
         pythonFile = importlib.import_module(script[0])
@@ -619,13 +612,10 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
             filesToOpen = func(GUI_util.window, inputFilename, input_main_dir_path, output_dir_path,
                  openOutputFiles,createExcelCharts, processType)
 
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                           'Finished running ' + script_to_run + ' at', True, '', True, startTime)
-
         return filesToOpen
 
 """
-#does not work, despite StackOverFlow recommandation; always returns None
+#does not work, despite StackOverFlow recommendation; always returns None
 def detectCsvHeader (csvFile):
     with open(csvFile, 'r',encoding="utf8",errors='ignore') as csvf:
         has_header = csv.Sniffer().sniff(csvf.read(2048))
