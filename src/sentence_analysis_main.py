@@ -193,11 +193,13 @@ pydict["WordNet categories by sentence index (GUI)"] = ["knowledge_graphs_WordNe
 pydict["Abstract/Concrete vocabulary analysis by sentence index"] = ["concreteness_analysis_util.main", 0, 3, 'txt']
 pydict["Dictionary items by sentence index"] = ["dictionary_items_sentenceID_util.dictionary_items_bySentenceID", 0, 3, 'txt']
 pydict["Hapax legomena (once-occurring words) by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
+# pydict["Hapax legomena (once-occurring words) by sentence index"] = ["statistics_txt_util.compute_character_word_ngrams", 0, 3, 'txt']
 pydict["N-grams (word & character) by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
+# pydict["N-grams (word & character) by sentence index"] = ["statistics_txt_util.compute_character_word_ngrams", 0, 3, 'txt']
 pydict["Sentence complexity by sentence index"] = ["sentence_analysis_util.sentence_complexity", 0, 3, 'txt']
 pydict["Sentence/text readability by sentence index (via textstat)"] = ["sentence_analysis_util.sentence_text_readability", 0, 3, 'txt']
 pydict["Sentiment analysis by sentence index (GUI)"] = ["sentiment_analysis_main.py", 1]
-pydict["Short words by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
+pydict["Short words (<4 chars) by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
 pydict["Initial-vowel words by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
 pydict["Initial-capital words by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
 pydict["Unusual words (via NLTK) by sentence index"] = ["file_spell_checker_util.nltk_unusual_words", 0, 3, 'txt']
@@ -242,7 +244,7 @@ visualize_bySentenceIndex_menu = tk.OptionMenu(window,visualize_bySentenceIndex_
                                                'N-grams (word & character) by sentence index',
                                                'Hapax legomena (once-occurring words) by sentence index',
                                                'Unusual words (via NLTK) by sentence index',
-                                               'Short words by sentence index',
+                                               'Short words (<4 chars) by sentence index',
                                                'Initial-capital words by sentence index',
                                                'Initial-vowel words by sentence index'
                                                )

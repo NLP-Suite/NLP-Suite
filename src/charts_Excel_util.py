@@ -283,7 +283,7 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
         data_to_be_plotted.append(data.iloc[:,gp])
     return data_to_be_plotted
 
-# Tony Chen Gu at April 2022
+# written by Tony Chen Gu, April 2022
 # select_col should be one column name eg: ['Verb Voice']
 # group_col should be a list of column names eg ['Sentence ID']
 # enable complete_sid to make sentence index continuous
@@ -1007,7 +1007,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 #     chartName.x_axis.title = " X_AXIS"
                 
                 if len(column_yAxis_label)>0:
-                    chartName.y_axis.title = column_yAxis_label # displayed on the y-axis
+                    chartName.y_axis.title = str(column_yAxis_label) # displayed on the y-axis
                 # else:
                 #     chartName.y_axis.title = " Y_AXIS"
 
