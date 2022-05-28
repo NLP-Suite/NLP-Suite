@@ -858,9 +858,9 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     fileLabel='short_words'
                     fileLabel_byDocID = 'vowel_words_byDoc'
                     columns_to_be_plotted = [[0, 0]] # bar chart
-                    columns_to_be_plotted_byDocID = [[5, 5]] # bar chart
+                    columns_to_be_plotted_byDocID = [[6, 6]] # bar chart
                     chart_title_label = 'Frequency of Short Words (<4 Characters)'
-                    chart_title_byDocID='Frequency of Short Words By Document ID'
+                    chart_title_byDocID='Frequency of Short Words By Document'
                     chart_title_bySentID ='Frequency of Short Words By Sentence Index'
                     column_xAxis_label = 'Short Words (<4 Characters)'
 
@@ -876,9 +876,9 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     fileLabel='init_cap_words'
                     fileLabel_byDocID = 'vowel_words_byDoc'
                     columns_to_be_plotted = [[0, 0]] # bar chart
-                    columns_to_be_plotted_byDocID = [[5, 5]] # bar chart
+                    columns_to_be_plotted_byDocID = [[6, 6]] # bar chart
                     chart_title_label = 'Frequency of Initial-Capital Words'
-                    chart_title_byDocID ='Frequency of Initial-Capital Words By Document ID'
+                    chart_title_byDocID ='Frequency of Initial-Capital Words By Document'
                     chart_title_bySentID ='Frequency of Initial-Vowel Words By Sentence Index'
                     column_xAxis_label = 'Initial-Capital Words'
 
@@ -894,9 +894,9 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     fileLabel='vowel_words'
                     fileLabel_byDocID = 'vowel_words_byDoc'
                     columns_to_be_plotted = [[0, 0]] # bar chart
-                    columns_to_be_plotted_byDocID = [[5, 5]] # bar chart
+                    columns_to_be_plotted_byDocID = [[6, 6]] # bar chart
                     chart_title_label = 'Frequency of Initial-Vowel Words'
-                    chart_title_byDocID='Frequency of Initial-Vowel Words By Document ID'
+                    chart_title_byDocID='Frequency of Initial-Vowel Words By Document'
                     chart_title_bySentID = 'Frequency of Initial-Vowel Words By Sentence Index'
                     column_xAxis_label = 'Initial-Vowel Words'
                     if word and word and word[0] in "aeiou" and word.isalpha():
@@ -910,10 +910,10 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     fileLabel = 'punctuation'
                     fileLabel_byDocID = 'punctuation_byDoc'
                     columns_to_be_plotted = [[0, 0]] # bar chart
-                    columns_to_be_plotted_byDocID = [[5, 5]] # bar chart
+                    columns_to_be_plotted_byDocID = [[6, 6]] # bar chart
                     chart_title_label = 'Frequency of Punctuation Symbols of Pathos (?!)'
-                    chart_title_byDocID='Frequency of Punctuation Symbols of Pathos (?!) By Document ID'
-                    chart_title_bySentID='Frequency of Punctuation Symbols of Pathos (?!) By Sentence ID'
+                    chart_title_byDocID='Frequency of Punctuation Symbols of Pathos (?!) By Document'
+                    chart_title_bySentID='Frequency of Punctuation Symbols of Pathos (?!) By Sentence Index'
                     column_xAxis_label = 'Punctuation symbols of pathos (?!)'
                     if word != '!' and word != '?':
                         continue
@@ -974,7 +974,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                                                              outputFileLabel=fileLabel_byDocID,
                                                              chart_type_list=["bar"],
                                                              chart_title=chart_title_byDocID,
-                                                             column_xAxis_label_var='Document ID',
+                                                             column_xAxis_label_var='Document',
                                                              hover_info_column_list=hover_label,
                                                              count_var=True)
             if Excel_outputFilename != "":
@@ -985,7 +985,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
             Excel_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=outputFilename,
                                                                            outputDir=outputDir,
                                                                            select_col=select_col,
-                                                                           group_col=['Sentence ID'],
+                                                                           group_col=['Sentence Index'],
                                                                            chartTitle=chart_title_bySentID)
             if Excel_outputFilename != None:
                 filesToOpen.append(Excel_outputFilename)

@@ -27,12 +27,14 @@ from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize
 import IO_user_interface_util
 import IO_files_util
 import IO_csv_util
-
+import charts_Excel_util
 
 def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_search_keywords, search_keywords_list,
-        search_options_list):
+        search_options_list, createExcelCharts):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        "Started running the file search script at", True)
+
+    filesToOpen=[]
 
     # loop through every txt file and annotate via request to YAGO
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
@@ -161,7 +163,7 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                                          IO_csv_util.dressFilenameForCSVHyperlink(file)])
                         else:
                             continue
-            else:
+            else: # search in document, regardless of sentence
                 if not case_sensitive:
                     docText = docText.lower()
                 # words_ = word_tokenize(docText)  # the list of sentences in corpus
@@ -256,7 +258,38 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
         mb.showwarning(title='Search string(s) not found',
                        message='The search keywords:\n\n   ' + search_keywords_list + '\n\nwere not found in your input document(s).')
         outputFileName = ''
+    filesToOpen.append(outputFileName)
+
+    if createExcelCharts == True:
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                 'search')
+        columns_to_be_plotted=[[0,0]]
+        hover_label = []
+        inputFilename = outputFilename
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                         outputFileLabel='search',
+                                                         chart_type_list=["bar"],
+                                                         chart_title='Frequency of search words',
+                                                         column_xAxis_label_var='Search words',
+                                                         hover_info_column_list=hover_label,
+                                                         count_var=True)
+        if Excel_outputFilename != "":
+            filesToOpen.append(Excel_outputFilename)
+
+        # should also provide a bar chart of the frequency of distinct documents by punctuation symbol
+        columns_to_be_plotted=[[0,9]]
+        hover_label = []
+        inputFilename = outputFilename
+        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                         outputFileLabel='search_byDoc',
+                                                         chart_type_list=["bar"],
+                                                         chart_title='Frequency of search words By Document',
+                                                         column_xAxis_label_var='Document',
+                                                         hover_info_column_list=hover_label,
+                                                         count_var=True)
+        if Excel_outputFilename != "":
+            filesToOpen.append(Excel_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end",
                                        "Finished running the file search script at", True)
-    return outputFileName
+    return filesToOpen

@@ -39,10 +39,10 @@ def run(inputFilename,inputDir, outputDir,
                         'SEARCH options: ' + str(search_options_list)+'\nSEARCH words: '+search_keyword_values,
                                        True, '', True)
 
-    outputFile = file_search_byWord_util.run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_keyword, search_keyword_values, search_options_list)
+    if not 'Search within document' in search_options_list:
+        search_options_list.append('Search within sentence (default)')
+    filesToOpen = file_search_byWord_util.run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_keyword, search_keyword_values, search_options_list, createExcelCharts)
 
-    if outputFile!='':
-        filesToOpen.append(outputFile)
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
