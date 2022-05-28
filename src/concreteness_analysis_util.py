@@ -234,6 +234,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createExcel
 				sys.exit(0)
 	if createExcelCharts == True:
 		inputFilename = outputFilename
+		print(outputFilename)
 		columns_to_be_plotted = [[7, 0], [7, 1]]
 		hover_label = ['Sentence', 'Sentence']
 		# Tony Chen Gu
@@ -241,10 +242,10 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createExcel
 														 outputFileLabel='Concret',
 														 chart_type_list=["line"],
 														 chart_title='Concreteness Scores by Sentence Index\n' + chart_title,
-														 column_xAxis_label_var='Sentence index',
-														 hover_info_column_list=hover_label,
-														 count_var=0,
-														 column_yAxis_label_var='Scores')
+														 column_xAxis_label_var='Sentence ID')#,
+														 #hover_info_column_list=hover_label,
+														 #count_var=0,
+														 #column_yAxis_label_var='Scores')
 		if Excel_outputFilename != "":
 			filesToOpen.append(Excel_outputFilename)
 

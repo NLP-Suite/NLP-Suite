@@ -492,12 +492,17 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                 hover_label=[str(index+1)+'-grams']
                 # Tony Chen Gu
                 # what is needed here is the new compute_csv_column_frequencies
-                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                          outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
-                                                          chart_type_list=["line"],
-                                                          chart_title=chartTitle + str(index+1) + '-grams',
-                                                          column_xAxis_label_var='Sentence Index',
-                                                          hover_info_column_list=hover_label)
+                Excel_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=inputFilename,
+															outputDir=outputDir,
+															select_col=[],
+															group_col=['Sentence ID'],
+															chartTitle=chartTitle + str(index+1) + '-grams Frequencies by Sentence Index')
+                # Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                #                                           outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
+                #                                           chart_type_list=["line"],
+                #                                           chart_title=chartTitle + str(index+1) + '-grams',
+                #                                           column_xAxis_label_var='Sentence Index',
+                #                                           hover_info_column_list=hover_label)
                 if Excel_outputFilename != "":
                     filesToOpen.append(Excel_outputFilename)
             else:
