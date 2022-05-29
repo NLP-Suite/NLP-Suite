@@ -577,7 +577,7 @@ def run_jar_script(scriptName, inputFilename, input_main_dir_path, output_dir_pa
 # The NLP script and sentence_analysis script use pydict dictionaries to run the script selected in a menu
 # the dict can contain a python file, a jar file or a combination of python file + function
 def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_main_dir_path, output_dir_path,
-                              openOutputFiles, createExcelCharts, processType=''):
+                              openOutputFiles, createExcelCharts, chartPackage, processType=''):
     filesToOpen = []
     if len(script_to_run) == 0:
         return filesToOpen
@@ -605,12 +605,12 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
         func = getattr(pythonFile, script[1])
         # # correct values are checked in NLP_GUI
         if IO_values == 1: # no inputDir
-            filesToOpen = func(GUI_util.window, inputFilename, output_dir_path, openOutputFiles, createExcelCharts, processType)
+            filesToOpen = func(GUI_util.window, inputFilename, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, processType)
         elif IO_values == 2: # no inputFilename
-            filesToOpen = func(GUI_util.window, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, processType)
+            filesToOpen = func(GUI_util.window, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, processType)
         else: # both inputFilename and inputDir
             filesToOpen = func(GUI_util.window, inputFilename, input_main_dir_path, output_dir_path,
-                 openOutputFiles,createExcelCharts, processType)
+                 openOutputFiles,createExcelCharts,chartPackage, processType)
 
         return filesToOpen
 

@@ -31,6 +31,7 @@ import config_util
 def run(inputFilename,inputDir,outputDir,
         openOutputFiles,
         createExcelCharts,
+        chartPackage,
         mean_var,
         median_var,
         SA_algorithm_var,
@@ -112,7 +113,7 @@ def run(inputFilename,inputDir,outputDir,
         if memory_var==0:
             memory_var=4
         outputFilename = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                          outputDir, openOutputFiles, createExcelCharts,'sentiment', False,
+                                                                          outputDir, openOutputFiles, createExcelCharts, chartPackage,'sentiment', False,
                                                                           memory_var)
         outputFilename=outputFilename[0] # annotators return a list and not a string
         if len(outputFilename)>0:
@@ -437,6 +438,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                GUI_util.output_dir_path.get(),
                                GUI_util.open_csv_output_checkbox.get(),
                                GUI_util.create_Excel_chart_output_checkbox.get(),
+                               GUI_util.charts_dropdown_field.get(),
                                mean_var.get(),
                                median_var.get(),
                                SA_algorithm_var.get(),

@@ -15,7 +15,7 @@ import word2vec_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
+def run(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts, chartPackage,
         remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var,
         vis_menu_var, dim_menu_var, keywords_var):
 
@@ -24,7 +24,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
     if 'Clustering' in vis_menu_var and keywords_var=='':
         mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
         return
-    filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts,
+    filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, outputDir,openOutputFiles, createExcelCharts, chartPackage,
                              remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var, vis_menu_var, dim_menu_var, keywords_var)
 
     if openOutputFiles==True:
@@ -36,6 +36,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                GUI_util.charts_dropdown_field.get(),
                                 remove_stopwords_var.get(),
                                 lemmatize_var.get(),
                                 sg_menu_var.get(),

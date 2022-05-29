@@ -18,7 +18,7 @@ import IO_user_interface_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,chartType,
+def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,chartPackage,
     visualize_bySentenceIndex_var,
     visualize_bySentenceIndex_options_var,
     script_to_run,
@@ -42,7 +42,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,cha
     if visualize_bySentenceIndex_var:
         filesToOpen = IO_files_util.runScript_fromMenu_option(script_to_run, IO_values,
                                                 inputFilename, inputDir, outputDir,
-                                                openOutputFiles, createExcelCharts,
+                                                openOutputFiles, createExcelCharts, chartPackage,
                                                 visualize_bySentenceIndex_options_var)
 
     if sentence_complexity_var==True:

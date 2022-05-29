@@ -85,7 +85,7 @@ def compute_stats_CoreNLP_tag(data_list,column_to_be_counted,column_name,CoreNLP
 #       every NUMERIC field in the input file
 #       or on a specific field passed
 
-def compute_field_statistics_NoGroupBy(window,inputFilename, outputDir, openOutputFiles, createExcelCharts, columnNumber=-1):
+def compute_field_statistics_NoGroupBy(window,inputFilename, outputDir, openOutputFiles, createExcelCharts, chartPackage, columnNumber=-1):
     filesToOpen = []
     if inputFilename[-4:]!='.csv':
         mb.showwarning(title='File type error', message="The input file\n\n" + inputFilename + "\n\nis not a csv file. The statistical function only works with input csv files.\n\nPlease, select a csv file in input and try again!")
@@ -150,7 +150,7 @@ def percentile(n):
 
 
 #written by Yi Wang March 2020, edited Landau/Franzosi February 20021
-def compute_field_statistics_groupBy(window,inputFilename, outputDir, groupByField: list, openOutputFiles, createExcelCharts, columnNumber=-1):
+def compute_field_statistics_groupBy(window,inputFilename, outputDir, groupByField: list, openOutputFiles, createExcelCharts, chartPackage, columnNumber=-1):
     filesToOpen=[]
     output_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'group_stats')
     # filesToOpen.append(output_name)
@@ -207,7 +207,7 @@ def compute_field_statistics(window,inputFilename,outputDir, openOutputFiles,cre
 
 # # 1.22 Yi we do not need a columns_to_be_plotted variable in this function, passing numbers of columns to prepare_csv_data_for_chart will cause error
 def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
-            openOutputFiles,createExcelCharts,
+            openOutputFiles,createExcelCharts,chartPackage,
             columns_to_be_plotted,selected_col, hover_col, group_col,
             fileNameType='CSV',chartType='line'):
 

@@ -58,7 +58,7 @@ def dbFromCSV(inpath, outpath):
     return dbOutput
 
 
-def run(inputDir,outputDir, openOutputFiles, createExcelCharts,SQL_query_var, createFromCSV):
+def run(inputDir,outputDir, openOutputFiles, createExcelCharts, chartPackage,SQL_query_var, createFromCSV):
 
     if createFromCSV==1:
         dbOutput = dbFromCSV(inputDir,outputDir)
@@ -112,6 +112,7 @@ run_script_command=lambda: run(
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                GUI_util.charts_dropdown_field.get(),
                                 SQL_query_entry.get("1.0", "end-1c"),
                                 construct_SQLite_DB_var.get())
 

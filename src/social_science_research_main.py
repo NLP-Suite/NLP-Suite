@@ -62,20 +62,20 @@ def find_character_home(output_dir_path):
         subprocess.call("sudo Python file_classifier_main.py character home", shell=True)
     # files are opened in the file_classifier_main.py GUI
 
-def missing_character(CoreNLPdir, input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createExcelCharts, checkNER):
+def missing_character(CoreNLPdir, input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, checkNER):
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_summary_checker_util.py') == False:
         return
-    Excel_outputFile=file_summary_checker_util.main(CoreNLPdir, input_main_dir_path,input_secondary_dir_path,output_dir_path,openOutputFiles, createExcelCharts, checkNER)
+    Excel_outputFile=file_summary_checker_util.main(CoreNLPdir, input_main_dir_path,input_secondary_dir_path,output_dir_path,openOutputFiles, createExcelCharts, chartPackage, checkNER)
     if Excel_outputFile!="":
         filesToOpen.extend(Excel_outputFile)
 
-def intruder(CoreNLPdir,input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, similarityIndex_Intruder_var):
+def intruder(CoreNLPdir,input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, similarityIndex_Intruder_var):
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_find_non_related_documents_util.py') == False:
         return
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running INTRUDER at',
                                                  True, '', True, '', True)
     # Windows...
-    outputFiles=file_find_non_related_documents_util.main(CoreNLPdir, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, similarityIndex_Intruder_var)
+    outputFiles=file_find_non_related_documents_util.main(CoreNLPdir, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, similarityIndex_Intruder_var)
 
     if outputFiles!='':
         filesToOpen.extend(outputFiles)
@@ -246,7 +246,7 @@ def Levenshtein():
     # files are opened in the spell_checker_main
 
 
-def run(input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createExcelCharts,
+def run(input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage,
         fileName_embeds_date, DateFormat, DatePosition, DateCharacterSeparator,
         check_filename_var, character_var, character_home_var, missing_character_var, NER_var, intruder_var,
         similarityIndex_Intruder_var, ancestor_var, nouns_verbs,
@@ -270,13 +270,13 @@ def run(input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutp
     elif character_home_var == True:
         find_character_home(output_dir_path)
     elif missing_character_var == True:
-        missing_character(CoreNLPdir, input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createExcelCharts, NER_var)
+        missing_character(CoreNLPdir, input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, NER_var)
     elif intruder_var == True:
-        intruder(CoreNLPdir, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, similarityIndex_Intruder_var)
+        intruder(CoreNLPdir, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, similarityIndex_Intruder_var)
     elif ancestor_var == True:
         ancestor(input_main_dir_path, output_dir_path)
     elif plagiarist_var == True:
-        plagiarist(input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts,
+        plagiarist(input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage,
                    similarityIndex_Plagiarist_var, fileName_embeds_date, DateFormat, DatePosition,
                    DateCharacterSeparator)
     elif Levenshtein_var == True:
@@ -291,6 +291,7 @@ run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.charts_dropdown_field.get(),
                                  fileName_embeds_date.get(),
                                  date_format.get(),
                                  date_position_var.get(),

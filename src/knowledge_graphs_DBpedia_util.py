@@ -95,7 +95,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
                                                    'Started running DBpedia Knowledge Graph at', True,
                                                    'Annotating types: ' + str(
                                                        annotationTypes) + '\nConfidence level: ' + str(
-                                                       confidence_level),True)
+                                                       confidence_level),False)
     print('\n\nAnnotating types: ', annotationTypes, 'with confidence level', str(confidence_level))
 
 

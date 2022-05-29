@@ -31,6 +31,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.charts_dropdown_field.get(),
                             utf8_var.get(),
                             ASCII_var.get(),
                             corpus_statistics_var.get(),
@@ -48,6 +49,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
 def run(inputFilename,inputDir, outputDir,
         openOutputFiles,
         createExcelCharts,
+        chartPackage,
         utf8_var,
         ASCII_var,
         corpus_statistics_var,
@@ -94,7 +96,7 @@ def run(inputFilename,inputDir, outputDir,
             lemmatize=True
 
         if '*' in corpus_options_menu_var or 'stopwords' in corpus_options_menu_var or 'Lemmatize' in corpus_options_menu_var:
-            output = statistics_txt_util.compute_corpus_statistics(window, '', inputDir, outputDir, False, createExcelCharts,
+            output = statistics_txt_util.compute_corpus_statistics(window, '', inputDir, outputDir, False, createExcelCharts, chartPackage,
                                   stopwords, lemmatize)
             if output!=None:
                 filesToOpen.extend(output)
@@ -109,7 +111,7 @@ def run(inputFilename,inputDir, outputDir,
         normalize=False
 
         statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                          outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts,
+                                                          outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts, chartPackage,
                                                           bySentenceIndex_word_var)
 
         if 'lines' in corpus_options_menu_var:
@@ -138,13 +140,13 @@ def run(inputFilename,inputDir, outputDir,
                     filesToOpen.extend(output)
 
         if topics_Mallet_var==True:
-            # def run(inputDir, outputDir, openOutputFiles, createExcelCharts, OptimizeInterval, numTopics):
+            # def run(inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, OptimizeInterval, numTopics):
 
             if open_GUI_var == True:
                 call("python topic_modeling_mallet_main.py", shell=True)
             else:
                 # running with default values
-                output = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts, OptimizeInterval=True, numTopics=20)
+                output = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts, chartPackage=chartPackage, OptimizeInterval=True, numTopics=20)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -191,7 +193,7 @@ def run(inputFilename,inputDir, outputDir,
 
                 annotator = ['POS']
                 files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                            outputDir, openOutputFiles, createExcelCharts,
+                                            outputDir, openOutputFiles, createExcelCharts, chartPackage,
                                             annotator, False, memory_var)
                 if len(files) > 0:
                     noun_verb=''
@@ -225,7 +227,7 @@ def run(inputFilename,inputDir, outputDir,
             annotator_list = ['NER', 'gender', 'quote', 'normalized-date']
             NER_list=['PERSON','ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                      outputDir, openOutputFiles, createExcelCharts,
+                                                                      outputDir, openOutputFiles, createExcelCharts, chartPackage,
                                                                       annotator_list, False, memory_var,
                                                                       NERs=NER_list)
             if output != None:
@@ -236,7 +238,7 @@ def run(inputFilename,inputDir, outputDir,
             NER_list=['PERSON','ORGANIZATION']
 
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                      outputDir, openOutputFiles, createExcelCharts,
+                                                                      outputDir, openOutputFiles, createExcelCharts, chartPackage,
                                                                       annotator, False, memory_var,
                                                                       NERs=NER_list)
             if output != None:
@@ -245,7 +247,7 @@ def run(inputFilename,inputDir, outputDir,
         if gender_var == True:
             annotator = 'gender'
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                      outputDir, openOutputFiles, createExcelCharts,
+                                                                      outputDir, openOutputFiles, createExcelCharts, chartPackage,
                                                                       annotator, False, memory_var)
             if output != None:
                 filesToOpen.extend(output)
@@ -253,7 +255,7 @@ def run(inputFilename,inputDir, outputDir,
         if dialogues_var==True:
             annotator = 'quote'
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                      outputDir, openOutputFiles, createExcelCharts,
+                                                                      outputDir, openOutputFiles, createExcelCharts, chartPackage,
                                                                       annotator, False, memory_var, single_quote_var = single_quote)
             if output != None:
                 filesToOpen.extend(output)
@@ -261,7 +263,7 @@ def run(inputFilename,inputDir, outputDir,
         if times_var==True:
             annotator='normalized-date'
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
-                        openOutputFiles, createExcelCharts,
+                        openOutputFiles, createExcelCharts, chartPackage,
                         annotator, False, memory_var)
             if output != None:
                 filesToOpen.extend(output)
@@ -271,7 +273,7 @@ def run(inputFilename,inputDir, outputDir,
             NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
 
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                      outputDir, openOutputFiles, createExcelCharts,
+                                                                      outputDir, openOutputFiles, createExcelCharts, chartPackage,
                                                                       annotator, False, memory_var,
                                                                       NERs=NER_list)
             if output != None:

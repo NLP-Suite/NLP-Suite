@@ -30,7 +30,7 @@ import charts_Excel_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
+def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,chartPackage,
     CoNLL_table_analysis_var,
     nominalization_var,
     complexity_readability_analysis_var,
@@ -98,13 +98,13 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
                                                                          openOutputFiles, createExcelCharts)
         elif 'capital' in vocabulary_analysis_menu_var:
             filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir,
-                                                                   openOutputFiles, createExcelCharts,vocabulary_analysis_menu_var)
+                                                                   openOutputFiles, createExcelCharts, chartPackage,vocabulary_analysis_menu_var)
         elif 'Short' in vocabulary_analysis_menu_var:
-            filesToOpen=statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir, openOutputFiles, createExcelCharts,vocabulary_analysis_menu_var)
+            filesToOpen=statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,vocabulary_analysis_menu_var)
         elif 'Vowel' in vocabulary_analysis_menu_var:
-            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,vocabulary_analysis_menu_var)
+            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,vocabulary_analysis_menu_var)
         elif 'Punctuation' in vocabulary_analysis_menu_var:
-            filesToOpen=statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,vocabulary_analysis_menu_var)
+            filesToOpen=statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,vocabulary_analysis_menu_var)
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
             filesToOpen=statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
         if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
@@ -130,7 +130,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,
             #     outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir, outputDir, '.csv', 'SC_dir',
             #                                                              'Concreteness', '', '', '', False, True)
 
-            filesToOpen = concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, processType='')
+            filesToOpen = concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, processType='')
 
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                                    'Finished running CONCRETENESS Analysis at', True, '', True, startTime, True)
@@ -187,6 +187,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                GUI_util.charts_dropdown_field.get(),
                                 CoNLL_table_analysis_var.get(),
                                 nominalization_var.get(),
                                 complexity_readability_analysis_var.get(),

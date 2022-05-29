@@ -31,6 +31,10 @@ def run(inputDir="relative_path_here",
         temporalAggregation="",
         viewer_options_list=[]):
 
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
+                                       'Started running Word/Characters N-Grams at',
+                                       True, '', True, '', False)
+
     if search_wordsLists is None:
         search_wordsLists = []
     checkCoOccList = False
@@ -401,5 +405,8 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
             for label, res in coOcc_results.items():
                 writer.writerow([res["Search Word(s)"], res["CO-Occurrence"], res["Document ID"],
                                  IO_csv_util.dressFilenameForCSVHyperlink(res["Document"])])
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+                                       'Finished running Word/Characters N-Grams at', True, '', True, startTime, False)
 
     return NgramsFileName, coOccFileName

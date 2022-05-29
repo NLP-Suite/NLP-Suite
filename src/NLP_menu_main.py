@@ -28,12 +28,13 @@ import constants_util
 def run(inputFilename,input_main_dir_path, output_dir_path,
     openOutputFiles,
     createExcelCharts,
+    chartPackage,
     script_to_run,
     IO_values):
     if script_to_run=='':
         mb.showwarning('No option selection','No option has been selected.\n\nPlease, using the dropdown menus, select one of the many General tools and/or Linguistic analysis tools, then click on RUN again.')
         return
-    IO_files_util.runScript_fromMenu_option(script_to_run,IO_values,inputFilename,input_main_dir_path, output_dir_path, openOutputFiles,createExcelCharts)
+    IO_files_util.runScript_fromMenu_option(script_to_run,IO_values,inputFilename,input_main_dir_path, output_dir_path, openOutputFiles,createExcelCharts,chartPackage)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -41,6 +42,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.charts_dropdown_field.get(),
                             script_to_run,
                             IO_values)
 

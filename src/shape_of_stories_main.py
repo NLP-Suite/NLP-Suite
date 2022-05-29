@@ -36,7 +36,7 @@ import file_checker_util as utf
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
         hierarchical_clustering, SVD, NMF, best_topic_estimation):
 
     global nSAscoreFiles
@@ -109,7 +109,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                 computeSAScores=mb.askyesno("Sentiment Analysis","You have selected to run sentiment analysis on your corpus. But there already exists a csv file of sentiment scores for this corpus saved in the default output directory:\n\n"+outputFilename+"\n\nAre you sure you want to recompute the scores?")
                 if not computeSAScores:
                     return
-            tempOutputfile=Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles, createExcelCharts,'sentiment',False, memory_var)
+            tempOutputfile=Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,'sentiment',False, memory_var)
             if tempOutputfile==None:
                 return
             sentiment_scores_input=tempOutputfile[0]
@@ -228,6 +228,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.charts_dropdown_field.get(),
                                  sentiment_analysis_var.get(),
                                  sentiment_analysis_menu_var.get(),
                                  memory_var.get(),

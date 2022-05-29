@@ -97,7 +97,7 @@ def run(inputFilename, inputDir, outputDir,
                                                                          spelling_checker_var)
         else:
             outputFiles = file_spell_checker_util.check_for_typo(inputDir, outputDir,
-                                                                 openOutputFiles, createExcelCharts,
+                                                                 openOutputFiles, createExcelCharts, chartPackage,
                                                                  NER_list, similarity_value,
 																 by_all_tokens_var)
 
@@ -115,6 +115,7 @@ run_similarity_command = lambda: run(
                                      GUI_util.output_dir_path.get(),
                                      GUI_util.open_csv_output_checkbox.get(),
                                      GUI_util.create_Excel_chart_output_checkbox.get(),
+                                     GUI_util.charts_dropdown_field.get(),
                                      by_all_tokens_var.get(),
                                      byNER_value_var.get(),
                                      NER_list,

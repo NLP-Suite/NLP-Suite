@@ -438,7 +438,7 @@ def complete_sentence_index(file_path):
 #         data.drop(hover_col, axis=1, inplace=True)
 #     return charts_Excel_util.prepare_csv_data_for_chart(window, inputFilename, data, output_dir, select_col,
 #                                                                 Hover_over_header, group_col, fileNameType, chartType,
-#                                                                 openOutputFiles, createExcelCharts, count_var)
+#                                                                 openOutputFiles, createExcelCharts, chartPackage, count_var)
 
 
 # def multi_group_multi_hover(input, output,group_col ,hover_col):
@@ -501,10 +501,10 @@ def complete_sentence_index(file_path):
 #         data.drop(hover_col, axis=1, inplace=True)
 #     return prepare_csv_data_for_chart(window, inputFileName, data, output_dir, select_col,
 #                                                                 Hover_over_header, group_col, fileNameType, chartType,
-#                                                                 openOutputFiles, createExcelCharts, count_var)
+#                                                                 openOutputFiles, createExcelCharts, chartPackage, count_var)
 # group col should be from smallest group to largest group
 #
-# def compute_csv_column_frquencies1(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createExcelCharts,
+# def compute_csv_column_frquencies1(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createExcelCharts, chartPackage,
 #                                         columns_to_be_plotted,
 #                                         select_col, hover_col, group_col,
 #                                        fileNameType='CSV', chartType='line'):
@@ -520,7 +520,7 @@ def complete_sentence_index(file_path):
 # select_col is also a list BUT with one item only
 # called from WordNet.py, CoNLL_*, Stanford_CoreNLP_date_annotator
 # the function exits immediately because it no longer works
-# def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createExcelCharts,
+# def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createExcelCharts, chartPackage,
 #                                         columns_to_be_plotted,
 #                                         select_col, hover_col, group_col,
 #                                        fileNameType='CSV', chartType='line', count_var=0):
@@ -579,7 +579,7 @@ def complete_sentence_index(file_path):
     #     # columns_to_be_plotted=[[1,3]]
 
     #     # Excel_outputFilename=prepare_csv_data_for_chart(window, inputFilename, data, outputDir, select_col, Hover_over_header, group_col,
-    #     #                            fileNameType, chartType, openOutputFiles, createExcelCharts, count_var)
+    #     #                            fileNameType, chartType, openOutputFiles, createExcelCharts, chartPackage, count_var)
     #     data = data.pivot_table(index=group_col[0], columns=select_col, values='Frequency',
     #                             fill_value=0).reset_index().rename_axis(None, axis=1)
     #     data_to_be_plotted = data.iloc[:, 0:4].T.reset_index().values.T.tolist()
@@ -607,7 +607,7 @@ def complete_sentence_index(file_path):
 # called from statistics_csv_util.compute_csv_column_frequencies_NEW
 
 # TODO HOW DOES THIS DIFFER FROM def prepare_data_to_be_plotted?
-# def prepare_csv_data_for_chart(window,inputfile, inputDataFrame, outputpath, select_col : list, hover_col : list, group_col : list, fileNameType, chartType, openOutputFiles, createExcelCharts,count_var=0):
+# def prepare_csv_data_for_chart(window,inputfile, inputDataFrame, outputpath, select_col : list, hover_col : list, group_col : list, fileNameType, chartType, openOutputFiles, createExcelCharts, chartPackage,count_var=0):
 #     filesToOpen=[]
 #     outputCsvfilename = IO_files_util.generate_output_file_name(inputfile, '', outputpath, '.csv')
 #     df = inputDataFrame
@@ -826,7 +826,10 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         return
     if 'line' in chart_type_list:
         if nRecords > 70:
-            mb.showwarning(title='Warning',message='The input file\n\n' + inputFilename + '\n\ncontains ' + str(nRecords) + ' records, way too many to be displayed clearly in an Excel line chart.\n\nYOU SHOULD USE PLOTLY WHICH GIVES YOU THE OPTION TO DYNAMICALLY FILTER THE DATA ZOOMING IN ON SPECIFIC DATA SEGMENTS.')
+            IO_user_interface_util.timed_alert(window, 2000, 'Warning',
+                                               'The input file\n\n' + inputFilename + '\n\ncontains ' + str(nRecords) + ' records, way too many to be displayed clearly in an Excel line chart.\n\nYOU SHOULD USE PLOTLY WHICH GIVES YOU THE OPTION TO DYNAMICALLY FILTER THE DATA ZOOMING IN ON SPECIFIC DATA SEGMENTS.',
+                                               False, '', True, '', True)
+            # mb.showwarning(title='Warning',message='The input file\n\n' + inputFilename + '\n\ncontains ' + str(nRecords) + ' records, way too many to be displayed clearly in an Excel line chart.\n\nYOU SHOULD USE PLOTLY WHICH GIVES YOU THE OPTION TO DYNAMICALLY FILTER THE DATA ZOOMING IN ON SPECIFIC DATA SEGMENTS.')
 
     if len(hover_info_column_list) > 0:
         outputExtension='.xlsm'

@@ -23,7 +23,7 @@ import constants_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createExcelCharts,
+def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createExcelCharts, chartPackage,
         knowledge_graphs_DBpedia_YAGO_var,
         knowledge_graphs_WordNet_var,
         html_gender_annotator_var,
@@ -110,7 +110,9 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
                 GUI_util.output_dir_path.get(),
                 GUI_util.open_csv_output_checkbox.get(),
-                GUI_util.create_Excel_chart_output_checkbox.get(),
+                                                GUI_util.create_Excel_chart_output_checkbox.get(),
+                                GUI_util.charts_dropdown_field.get(),
+
                 knowledge_graphs_DBpedia_YAGO_var.get(),
                 knowledge_graphs_WordNet_var.get(),
                 html_gender_annotator_var.get(),

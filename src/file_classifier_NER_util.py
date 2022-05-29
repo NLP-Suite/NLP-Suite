@@ -164,7 +164,7 @@ def find(doc_dir, soc_acts, nlp, compare, sim_base, f, terminal_output):
 # CoreNLPDir: the path to stanfordCoreNLP folder. example name is "stanford-corenlp-4.2.0"
 # inputDir: the path to a folder that stores ungrouped documents in txt format. 
 # inputTargetDir: the path to a folder that stores several folders which contains several documents of the same target
-def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createExcelCharts, relativity_threshold):
+def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, relativity_threshold):
 
     filesToOpen = []
     # check that the CoreNLPdir has been setup

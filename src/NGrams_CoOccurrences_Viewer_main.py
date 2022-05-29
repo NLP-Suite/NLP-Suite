@@ -56,7 +56,7 @@ def validate(date_text):
         raise ValueError("Incorrect data format, should be YYYY-MM-DD")
 
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,
         n_grams_var,
         n_grams_menu_var,
         n_grams_list,
@@ -154,11 +154,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
         if n_grams_word_var or bySentenceIndex_word_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts,
+                                                              outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts, chartPackage,
                                                               bySentenceIndex_word_var)
         if n_grams_character_var or bySentenceIndex_character_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, n_grams_size, normalize, excludePunctuation, 0, openOutputFiles, createExcelCharts,
+                                                              outputDir, n_grams_size, normalize, excludePunctuation, 0, openOutputFiles, createExcelCharts, chartPackage,
                                                               bySentenceIndex_character_var)
 
 # VIEWER ____________________________________________________________________________________________
@@ -322,6 +322,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get(), GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.charts_dropdown_field.get(),
                                  n_grams_var.get(),
                                  n_grams_menu_var.get(),
                                  n_grams_list,

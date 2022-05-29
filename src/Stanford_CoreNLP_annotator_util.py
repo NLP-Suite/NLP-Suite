@@ -68,7 +68,7 @@ import GUI_IO_util
 
 def CoreNLP_annotate(config_filename,inputFilename,
                      inputDir, outputDir,
-                     openOutputFiles, createExcelCharts,
+                     openOutputFiles, createExcelCharts, chartPackage,
                      annotator_params,
                      DoCleanXML,
                      memory_var,

@@ -156,7 +156,7 @@ def createChart(inputFilename,outputDir,columns_to_be_plotted,hover_label):
 
 
 # check within subdirectory
-def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs, similarity_value, by_all_tokens_var,spelling_checker_var):
+def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, NERs, similarity_value, by_all_tokens_var,spelling_checker_var):
     filesToOpen=[]
     if inputDir=='':
         return
@@ -166,7 +166,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createExcelChar
                        message='There are no sub directories under the selected input directory\n\n' + inputDir +'\n\nPlease, uncheck your subdir option if you want to process this directory and try again.')
     df_list = []
     for dir in subdir:
-        dfs = check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs, similarity_value, by_all_tokens_var)
+        dfs = check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, NERs, similarity_value, by_all_tokens_var)
         df_list.append(dfs)
     if len(df_list) > 0:
         df_complete_list = [df[0] for df in df_list]
@@ -223,7 +223,7 @@ def check_edit_dist(input_word, checklist, similarity_value):
 # output csv header list: ['NNPs', 'sentenceID', 'DocumentID', 'fileName', 'NamedEntity', 'potential_Typo']
 
 # using Levenshtein distance to check for typos
-def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, NERs, similarity_value, by_all_tokens_var):
+def check_for_typo(inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, NERs, similarity_value, by_all_tokens_var):
     filesToOpen=[]
     all_header_rows_dict = []
     ner_dict = {}

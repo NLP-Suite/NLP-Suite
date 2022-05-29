@@ -187,7 +187,7 @@ def write_dir_csv(output_filename, lists, file_name):
         list_.append(file_name)
     IO_csv_util.list_to_csv(GUI_util.window,lists,output_filename,colnum=0)
 
-def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,doNotListIndividualFiles):
+def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,chartPackage,doNotListIndividualFiles):
     global first_section, noun_cnt, nominalized_cnt
 
     first_section = re.compile("^(.+?)\.")
@@ -389,6 +389,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                GUI_util.charts_dropdown_field.get(),
                                 doNotCreateIntermediateFiles_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
