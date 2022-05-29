@@ -96,8 +96,9 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             column_yAxis_label_var='Frequencies',
             column_yAxis_field_list = [],
             reverse_column_position_for_series_label=False,
-            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = True, use_plotly = False):
+            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = True, graph_type = ''):
 
+    use_plotly = (graph_type == 'Python Plotly')
     # added by Tony, May 2022 for complete sentence index
     # the file should have a column named Sentence ID
     # the extra parameter "complete_sid" is set to True by default to avoid extra code mortification elsewhere
