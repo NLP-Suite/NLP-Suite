@@ -1,6 +1,7 @@
 # Written by Yuhang Feng November 2019-April 2020
 # Edited by Roberto Franzosi, Tony May 2022
 
+from asyncio.windows_events import NULL
 import sys
 import GUI_util
 import IO_libraries_util
@@ -24,6 +25,7 @@ import IO_csv_util
 import GUI_IO_util
 import IO_files_util
 import IO_user_interface_util
+import charts_plotly_util
 
 # ensure filename extension is correct for hover_over effects (xlxm) and no effects (xlsx)
 def checkExcel_extension(output_file_name,hover_info_column_list):
@@ -94,14 +96,21 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             column_yAxis_label_var='Frequencies',
             column_yAxis_field_list = [],
             reverse_column_position_for_series_label=False,
-            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = True):
+            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = True, use_plotly = False):
 
     # added by Tony, May 2022 for complete sentence index
     # the file should have a column named Sentence ID
     # the extra parameter "complete_sid" is set to True by default to avoid extra code mortification elsewhere
     if complete_sid:
         complete_sentence_index(inputFilename)
-
+    if use_plotly:
+        # charts_plotly_util.create_plotly_chart(inputFilename = inputFilename,
+        #                                         outputDir = outputDir,
+        #                                         chartTitle = chart_title,
+        #                                         chart_type_list = chart_type_list,
+        #                                         x_cols)
+        return
+    
     data_to_be_plotted = prepare_data_to_be_plotted(inputFilename,
                                 columns_to_be_plotted,
                                 chart_type_list,count_var,
@@ -296,7 +305,7 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 # enable complete_sid to make sentence index continuous
 # enable graph to make a multiline graph
 # the input should be saved to a csv file first
-def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle, graph = True, complete_sid = True):
+def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle, graph = True, complete_sid = True, series_label = NULL):
     cols = group_col + select_col
     try:
         data,header = IO_csv_util.get_csv_data(inputFilename, True)
@@ -335,9 +344,14 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         cols_to_be_plotted = []
         for i in range(1,len(data.columns)):
             cols_to_be_plotted.append([0,i])
-        Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
-                                        "frequency_multi-line_chart", chart_type_list=["line"], 
-                                        chart_title=chartTitle, column_xAxis_label_var="Sentence ID")
+        if series_label == NULL:
+            Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
+                                            "frequency_multi-line_chart", chart_type_list=["line"], 
+                                            chart_title=chartTitle, column_xAxis_label_var="Sentence ID")
+        else:
+            Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
+                                            "frequency_multi-line_chart", chart_type_list=["line"], 
+                                            chart_title=chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label)
     return Excel_outputFilename
 
 # Tony Chen Gu written at April 2022 mortified at May 2022

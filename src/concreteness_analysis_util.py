@@ -243,10 +243,10 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createExcel
 														 outputFileLabel='Concret',
 														 chart_type_list=["line"],
 														 chart_title='Concreteness Scores by Sentence Index\n' + chart_title,
-														 column_xAxis_label_var='Sentence ID')#,
+														 column_xAxis_label_var='Sentence ID',
 														 #hover_info_column_list=hover_label,
 														 #count_var=0,
-														 #column_yAxis_label_var='Scores')
+														 column_yAxis_label_var='Scores')
 		if Excel_outputFilename != "":
 			filesToOpen.append(Excel_outputFilename)
 

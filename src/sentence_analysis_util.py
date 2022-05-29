@@ -925,10 +925,10 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 														 outputFileLabel='Complex',
 														 chart_type_list=["line"],
 														 chart_title='Complexity Scores (Yngve, Frazier) by Sentence Index',
-														 column_xAxis_label_var='Sentence index')#,
+														 column_xAxis_label_var='Sentence index',
 														 #hover_info_column_list=hover_label,
 														 #count_var=0,
-														 #column_yAxis_label_var='Scores')
+														 column_yAxis_label_var='Scores')
 		if Excel_outputFilename != "":
 			filesToOpen.append(Excel_outputFilename)
 

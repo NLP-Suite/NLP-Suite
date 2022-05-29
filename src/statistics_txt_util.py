@@ -496,7 +496,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
 															outputDir=outputDir,
 															select_col=[],
 															group_col=['Sentence ID'],
-															chartTitle=chartTitle + str(index+1) + '-grams Frequencies by Sentence Index')
+															chartTitle=chartTitle + str(index+1) + '-grams Frequencies by Sentence Index', series_label = hover_label)
                 # Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                 #                                           outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
                 #                                           chart_type_list=["line"],

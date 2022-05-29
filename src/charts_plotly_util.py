@@ -18,7 +18,6 @@ import os
 ## these functions supports the feature of getting frequencies of the categorical variables
 ## the static_flag is used to indicate whether the chart is static or not
 
-
 # def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptType,
 #                        chartTitle,
 #                        chart_type_list,
@@ -30,22 +29,35 @@ import os
 #                        second_y_var=0,
 #                        second_yAxis_label=''):
 # match the excel chart format
-def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,x_cols,y_cols,
+def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_to_plot,
                         column_xAxis_label='',
                         column_yAxis_label='',):
-    for i in chart_type_list:
-        if i == 'bar':
-            plot_bar_chart_px(x_cols,inputFilename,outputDir,chartTitle,column_yAxis_label)
-        elif i == 'pie':
-            plot_pie_chart_px(x_cols,inputFilename,outputDir,chartTitle,column_yAxis_label)
-        elif i == 'scatter':
-            plot_scatter_chart_px(x_cols,y_cols,inputFilename,outputDir,chartTitle)
-        elif i == 'radar':
-            plot_radar_chart_px(x_cols,y_cols,inputFilename,outputDir,chartTitle)
+    data = pd.read_csv(inputFilename, encoding='utf-8')
+    headers = data.columns.tolist()
+    for j in len(chart_type_list):
+        i = chart_type_list[j]
+        x_cols = []
+        y_cols = []
+        if(i == 'bar' or i == 'pie'):
+            x_cols = headers[cols_to_plot[j][0]]
+            if i == 'bar':
+                plot_bar_chart_px(x_cols,inputFilename,outputDir,chartTitle,column_yAxis_label)
+            elif i == 'pie':
+                plot_pie_chart_px(x_cols,inputFilename,outputDir,chartTitle,column_yAxis_label)
+        elif(i == 'scatter' or i == 'radar'):
+            x_cols = headers[cols_to_plot[j][0]]
+            y_cols = headers[cols_to_plot[j][1]]
+            if i == 'scatter':
+                plot_scatter_chart_px(x_cols,y_cols,inputFilename,outputDir,chartTitle)
+            elif i == 'radar':
+                plot_radar_chart_px(x_cols,y_cols,inputFilename,outputDir,chartTitle)
         else:
             print('Chart type not supported '+i+'! Skipped and continue with next chart.')
     return
 
+# need to discuss further
+def get_chart_title(xVar = '', yVar = '', base_title = '', chart_type = ''):
+    return base_title+" of "+xVar+" and "+yVar
 
 # get frequencies of categorical variables
 def get_frequencies(data, variable):
