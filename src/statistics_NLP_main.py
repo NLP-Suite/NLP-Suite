@@ -16,14 +16,14 @@ import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelCharts,
+def run(inputFilename,inputDir,outputDir,openOutputFiles,createExcelCharts,chartPackage,
         corpus_stats, corpus_options_menu_var, n_grams, n_grams_menu_var, n_grams_list, all_csv_stats,csv_field_stats,
         csv_list,hover_over_list, groupBy_list, script_to_run):
 
     filesToOpen=[]
 
     window=GUI_util.window
-    if input_main_dir_path=='' and corpus_stats:
+    if inputDir=='' and corpus_stats:
         mb.showwarning(title='Input error', message='The selected option - ' + script_to_run + ' - requires a directory in input.\n\nPlease, select a directory and try again.')
         return
 
@@ -67,12 +67,12 @@ def run(inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelC
         if 'stopwords' in corpus_options_menu_var:
             stopwords_var=True
         if "*" in corpus_options_menu_var or lemmatize_var==True or stopwords_var==True:
-            tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,input_main_dir_path,outputDir,False,createExcelCharts,stopwords_var, lemmatize_var)
+            tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,False,createExcelCharts,stopwords_var, lemmatize_var)
             if tempOutputFiles!=None:
                 filesToOpen.extend(tempOutputFiles)
 
         if "Compute lines length" or "*" in corpus_options_menu_var:
-            tempOutputFiles=statistics_txt_util.read_line(window, inputFilename, input_main_dir_path, outputDir,
+            tempOutputFiles=statistics_txt_util.read_line(window, inputFilename, inputDir, outputDir,
                                                           False, createExcelCharts)
             if tempOutputFiles!=None:
                 filesToOpen.extend(tempOutputFiles)
@@ -88,7 +88,7 @@ def run(inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelC
                                                            inputFilename,
                                                            '',
                                                            outputDir,
-                                                           openOutputFiles, createExcelCharts,
+                                                           openOutputFiles, createExcelCharts, chartPackage,
                                                            columns_to_be_plotted,
                                                            csv_list,hover_over_list,groupBy_list,
                                                            'CSV')
@@ -120,31 +120,29 @@ def run(inputFilename,input_main_dir_path,outputDir,openOutputFiles,createExcelC
                                            True, '', True, '', True)
 
         if n_grams_word_var or n_grams_character_var or bySentenceIndex_word_var or bySentenceIndex_character_var:
-            inputFilename = ''  # for now we only process a whole directory
+            # inputFilename = ''  # for now we only process a whole directory
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
 
         if n_grams_word_var or bySentenceIndex_word_var:
-            tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_main_dir_path,outputDir,n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts,
+            tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts, chartPackage,
                                                               bySentenceIndex_word_var)
         if n_grams_character_var or bySentenceIndex_character_var:
-            tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_main_dir_path,outputDir,n_grams_size, normalize, excludePunctuation,  0, openOutputFiles, createExcelCharts,
+            tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,n_grams_size, normalize, excludePunctuation,  0, openOutputFiles, createExcelCharts, chartPackage,
                                                               bySentenceIndex_character_var)
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams end',
-                                           'Finished running ' + n_grams_menu_var + ' n-grams at', True, '', True, startTime, True)
-
         # statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_mai
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-#def run(inputFilename,input_main_dir_path,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
+#def run(inputFilename,inputDir,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
 run_script_command=lambda: run(
                 GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
                 GUI_util.output_dir_path.get(),
                 GUI_util.open_csv_output_checkbox.get(),
                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                GUI_util.charts_dropdown_field.get(),
                 corpus_stats_var.get(),
                 corpus_options_menu_var.get(),
                 # stopwords_var.get(),
@@ -197,7 +195,7 @@ window = GUI_util.window
 # config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
 # config_filename = GUI_util.config_filename
 inputFilename = GUI_util.inputFilename
-input_main_dir_path = GUI_util.input_main_dir_path
+inputDir = GUI_util.input_main_dir_path
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename,IO_setup_display_brief)
 
@@ -449,7 +447,7 @@ csv_groupBy_field_var.trace('w', activate_plus3)
 
 
 def activate_allOptions(menu_values, from_csv_field_stats_var=False):
-    if inputFilename.get() == '' and input_main_dir_path.get() == '':
+    if inputFilename.get() == '' and inputDir.get() == '':
         clear('Escape')
         corpus_field_checkbox.configure(state='disabled')
         all_csv_field_checkbox.configure(state='disabled')
@@ -472,7 +470,7 @@ def activate_allOptions(menu_values, from_csv_field_stats_var=False):
             n_grams_menu.configure(state='disabled')
             n_grams_options_menu .configure(state='disabled')
 
-        if input_main_dir_path.get() != '':
+        if inputDir.get() != '':
             corpus_field_checkbox.configure(state='normal')
             all_csv_field_checkbox.configure(state='normal')
             csv_field_checkbox.configure(state='normal')

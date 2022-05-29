@@ -259,7 +259,7 @@ def check(dir_path, soc_acts, nlp, compilation_path, checkNER, freq_act_miss, ac
             print('"'+missing[1]+'"')
     return freq_act_miss,act_miss_list,id_act_miss,freq_loc_miss,loc_miss_list,id_loc_miss,freq_org_miss,org_miss_list,id_org_miss,freq_per_miss,per_miss_list,id_per_miss,freq_date_miss,date_miss_list,id_date_miss, if_act, if_loc, if_org, if_per, if_date
 
-def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,openOutputFiles, createExcelCharts, checkNER=False):
+def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,openOutputFiles, createExcelCharts, chartPackage, checkNER=False):
     articles_path = input_main_dir_path
     compilations_path = input_secondary_dir_path # summaries folder
     filesToOpen=[]

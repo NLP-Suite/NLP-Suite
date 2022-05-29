@@ -21,7 +21,11 @@ import IO_user_interface_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 
-def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
+def run(inputDir, outputDir,
+        openOutputFiles,
+        createExcelCharts,
+        chartPackage,
+        selectedCsvFile_var, selectedCsvFile_colName,
         utf8_var,
         ASCII_var,
         list_var,
@@ -369,6 +373,9 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
+                                GUI_util.open_csv_output_checkbox.get(),
+                                GUI_util.create_Excel_chart_output_checkbox.get(),
+                                GUI_util.charts_dropdown_field.get(),
                                 selectedCsvFile_var.get(),
                                 select_csv_field_var.get(),
                                 utf8_var.get(),

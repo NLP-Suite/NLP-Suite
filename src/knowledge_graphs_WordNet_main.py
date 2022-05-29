@@ -138,7 +138,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         verbs_var = True
         # uses a txt fie in input
         files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                 outputDir, openOutputFiles, createExcelCharts,
+                                                                 outputDir, openOutputFiles, createExcelCharts, chartPackage,
                                                                  annotator, False, memory_var)
         if len(files) > 0:
             noun_verb = ''
@@ -181,6 +181,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(), 
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.charts_dropdown_field.get(),
                             csv_file_var.get(),
                             aggregate_POS_var.get(),
                             noun_verb_menu_var.get(),

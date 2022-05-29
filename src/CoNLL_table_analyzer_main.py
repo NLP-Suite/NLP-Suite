@@ -30,7 +30,7 @@ import CoNLL_k_sentences_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
+def run(inputFilename, outputDir, openOutputFiles, createExcelCharts, chartPackage,
         searchedCoNLLField, searchField_kw, postag, deprel, co_postag, co_deprel,
         k_sentences_var,
         clausal_analysis_var,
@@ -256,7 +256,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                     #                                                       ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
                     #                                                       ['SEARCHED TOKEN (FORM)', 'Sentence ID','Sentence'],
                     #                                                       ['Document ID', 'Document'],
-                    #                                                       openOutputFiles, createExcelCharts, 'QC', 'line')
+                    #                                                       openOutputFiles, createExcelCharts, chartPackage, 'QC', 'line')
                 else:
                     tempFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=output_file_name,
 															outputDir=outputDir,
@@ -269,7 +269,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                     #                                                       ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
                     #                                                       ['SEARCHED TOKEN (LEMMA)', 'Sentence ID','Sentence'],
                     #                                                       ['Document ID', 'Document'],
-                    #                                                       openOutputFiles, createExcelCharts, 'QC', 'line')
+                    #                                                       openOutputFiles, createExcelCharts, chartPackage, 'QC', 'line')
                 filesToOpen.extend(tempFiles)
 
                 output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
@@ -355,6 +355,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.charts_dropdown_field.get(),
                                  searchedCoNLLField.get(),
                                  searchField_kw.get(),
                                  postag_var.get(),

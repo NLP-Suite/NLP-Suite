@@ -16,10 +16,10 @@ import GUI_IO_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 
-def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, create_Excel_chart_output, find_var, source_extension_var, target_extension_var, matching_var, copy_var, move_var, character_value, number_of_items):
+def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, createExcelCharts, chartPackage, find_var, source_extension_var, target_extension_var, matching_var, copy_var, move_var, character_value, number_of_items):
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Matcher at',
-                                                 True, '', True, '', True)
+                                                 True, '', True, '', False)
 
     file_matcher_util.run_default(GUI_util.window, [inputPath], outputPath, selectedCsvFile_var, openOutputFiles, matching_var, source_extension_var, target_extension_var, copy_var, move_var, character_value, number_of_items)
 
@@ -38,7 +38,7 @@ def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, create_Exce
     # subdirs: Files in root of type directory
     # files: Files in current root (not in subdirs) of type other than directory
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File matcher at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File matcher at', True, '', True, startTime, False)
 
     # if i > 0:
     # 	mb.showwarning(title='File matcher', message=str(i) + ' files have been matched.')
@@ -57,6 +57,7 @@ run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
                                selectedCsvFile_var.get(),
                                GUI_util.open_csv_output_checkbox.get(),
                                GUI_util.create_Excel_chart_output_checkbox.get(),
+                               GUI_util.charts_dropdown_field.get(),
                                find_var.get(),
                                source_file_type_menu_var.get(),
                                target_file_type_menu_var.get(),

@@ -175,7 +175,7 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 
 filesToOpen = []  # LINE ADDED
 
-def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createExcelCharts, processType=''):
+def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createExcelCharts,chartPackage, processType=''):
 	"""
 	Runs analyzefile on the appropriate files, provided that the input paths are valid.
 	:param inputFilename:
@@ -235,9 +235,8 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createExcel
 	if createExcelCharts == True:
 		inputFilename = outputFilename
 		columns_to_be_plotted = [[7, 0], [7, 1]]
-		hover_label = ['Sentence', 'Sentence']
-		# Tony Chen Gu
-		# what is needed here is the new compute_csv_column_frequencies
+		# hover_label = ['Sentence', 'Sentence']
+		hover_label = []
 		Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
 														 outputFileLabel='Concret',
 														 chart_type_list=["line"],

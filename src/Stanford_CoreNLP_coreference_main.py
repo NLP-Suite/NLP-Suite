@@ -44,7 +44,7 @@ websites = "[.](com|net|org|io|gov)"
 
 
 def run(inputFilename, inputDir, outputDir,
-        openOutputFiles, createExcelCharts,
+        openOutputFiles, createExcelCharts, chartPackage,
         memory_var,
         document_length_var,
         limit_sentence_length_var,
@@ -95,7 +95,7 @@ def run(inputFilename, inputDir, outputDir,
         # 2 items are returned: filename string and true/False for error
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
                                        outputCorefedDir,
-                                       openOutputFiles, createExcelCharts,
+                                       openOutputFiles, createExcelCharts, chartPackage,
                                        memory_var,
                                        Manual_Coref_var)
         if error_indicator != 0:
@@ -143,6 +143,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.charts_dropdown_field.get(),
                                  memory_var.get(),
                                  document_length_var.get(),
                                  limit_sentence_length_var.get(),

@@ -170,7 +170,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
 	filesToOpen = []
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
 												   'Started running WordNet charts by sentence index at',
-												   True, '', True, '', True)
+												   True, '', True, '', False)
 
 	if noun_verb == 'NOUN':
 		checklist = ['NN', 'NNP', 'NNPS', 'NNS']
@@ -253,7 +253,7 @@ def extract_sentence_length(inputFilename, inputDir, outputDir):
 		return
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
 												   'Started running sentence length computation at',
-												   True, '', True, '', True)
+												   True, '', True, '', False)
 
 	fileID = 0
 	long_sentences = 0
@@ -292,9 +292,9 @@ def extract_sentence_length(inputFilename, inputDir, outputDir):
 
 
 # wordList is a string
-def extract_sentences(input_file, input_dir, output_dir, inputString):
+def extract_sentences(window, inputFilename, inputDir, outputDir, inputString):
 	filesToOpen=[]
-	inputDocs = IO_files_util.getFileList(input_file, input_dir, fileType='.txt')
+	inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 	Ndocs = len(inputDocs)
 	if Ndocs == 0:
 		return
@@ -310,27 +310,48 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
 		# Append ', ' to the end of search_words_var so that literal_eval creates a list
 		inputString += ', '
 	# convert the string inputString to a list []
-	try:
-		wordList = ast.literal_eval(inputString)
-	except:
-		mb.showwarning(title='Search error',message='The search function encountered an error. If you have entered multi-word expressions (e.g. beautiful girl make sure to enclose them in double quotes "beautiful girl"). Also, make sure to separate single-word expressions, with a comma (e.g., go, come).')
-		return
+	def Convert(inputString):
+		wordList = list(inputString.split(","))
+		return wordList
+
+	wordList = Convert(inputString)
+
+	# wordList = ast.literal_eval(inputString)
+	# print('wordList',wordList)
+	# try:
+	# 	wordList = ast.literal_eval(inputString)
+	# except:
+	# 	mb.showwarning(title='Search error',message='The search function encountered an error. If you have entered multi-word expressions (e.g. beautiful girl make sure to enclose them in double quotes "beautiful girl"). Also, make sure to separate single-word expressions, with a comma (e.g., go, come).')
+	# 	return
 	caseSensitive = mb.askyesno("Python", "Do you want to process your search word(s) as case sensitive?")
+
+	if inputFilename!='':
+		inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
+		outputDir_sentences = os.path.join(outputDir, "sentences_" + inputFileBase)
+	else:
+		# processing a directory
+		inputDirBase = os.path.basename(inputDir)
+		outputDir_sentences = os.path.join(outputDir, "sentences_Dir_" + inputDirBase)
+
+	outputDir_sentences_extract=os.path.join(outputDir_sentences,'extract')
+	outputDir_sentences_extract_minus=os.path.join(outputDir_sentences,'extract_minus')
+	if not IO_files_util.make_directory(outputDir_sentences, True):
+		return
+	if not IO_files_util.make_directory(outputDir_sentences_extract, True):
+		return
+	if not IO_files_util.make_directory(outputDir_sentences_extract_minus, True):
+		return
+
+	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+												   'Started running the Word search function at',
+												   True, '', True)
 
 	fileID = 0
 	file_extract_written = False
 	file_extract_minus_written = False
 	nDocsExtractOutput = 0
 	nDocsExtractMinusOutput = 0
-	new_out_dir_sentences=os.path.join(output_dir,'sentences')
-	new_out_dir_extract=os.path.join(new_out_dir_sentences,'extract')
-	new_out_dir_extract_minus=os.path.join(new_out_dir_sentences,'extract_minus')
-	if not IO_files_util.make_directory(new_out_dir_sentences, True):
-		return
-	if not IO_files_util.make_directory(new_out_dir_extract, True):
-		return
-	if not IO_files_util.make_directory(new_out_dir_extract_minus, True):
-		return
+
 	for doc in inputDocs:
 		wordFound = False
 		fileID = fileID + 1
@@ -338,8 +359,8 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
 		print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
 		with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
 			text = inputFile.read().replace("\n", " ")
-		outputFilename_extract = os.path.join(new_out_dir_extract,tail[:-4]) + "_extract.txt"
-		outputFilename_extract_minus = os.path.join(new_out_dir_extract_minus,tail[:-4]) + "_extract_minus.txt"
+		outputFilename_extract = os.path.join(outputDir_sentences_extract,tail[:-4]) + "_extract.txt"
+		outputFilename_extract_minus = os.path.join(outputDir_sentences_extract_minus,tail[:-4]) + "_extract_minus.txt"
 		with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
 				outputFilename_extract_minus, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_minus:
 			# sentences = tokenize.sent_tokenize(text)
@@ -347,27 +368,28 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
 			n_sentences_extract = 0
 			n_sentences_extract_minus = 0
 			for sentence in sentences:
+				wordFound = False
 				sentenceSV = sentence
 				nextSentence = False
 				for word in wordList:
 					if nextSentence == True:
 						# go to next sentence; do not write the same sentence several times if it contains several words in wordList
 						break
-					if caseSensitive == False:
-						sentenceSV = sentence
+					#
+					if caseSensitive==False:
 						sentence = sentence.lower()
 						word = word.lower()
 					if word in sentence:
+						wordFound = True
+						nextSentence = True
 						n_sentences_extract += 1
 						outputFile_extract.write(sentenceSV + " ")  # write out original sentence
 						file_extract_written = True
-						wordFound = True
-						nextSentence = True
-					# if none of the words in wordList are found in a sentence write the sentence to the extract_minus file
-					if wordFound == False:
-						n_sentences_extract_minus += 1
-						outputFile_extract_minus.write(sentenceSV + " ")  # write out original sentence
-						file_extract_minus_written = True
+						# if none of the words in wordList are found in a sentence write the sentence to the extract_minus file
+				if wordFound == False:
+					n_sentences_extract_minus += 1
+					outputFile_extract_minus.write(sentenceSV + " ")  # write out original sentence
+					file_extract_minus_written = True
 		if file_extract_written == True:
 			# filesToOpen.append(outputFilename_extract)
 			nDocsExtractOutput += 1
@@ -397,8 +419,15 @@ def extract_sentences(input_file, input_dir, output_dir, inputString):
 	mb.showwarning("Warning", msg1 + " processed in input.\n\n" +
 				   msg2 + " written with _extract in the filename.\n\n" +
 				   msg3 + " written with _extract_minus in the filename.\n\n" +
-				   "Files were written to the subdirectiries " + new_out_dir_extract + " and " + new_out_dir_extract_minus + " of the output directory." +
+				   "Files were written to the subdirectories " + outputDir_sentences_extract + " and " + outputDir_sentences_extract_minus + " of the output directory." +
 				   "\n\nPlease, check the output subdirectories for filenames ending with _extract.txt and _extract_minus.txt.")
+
+	IO_files_util.openExplorer(window, outputDir_sentences)
+
+
+	IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+								   'Finished running the Word search unction at', True)
+
 
 # https://pypi.org/project/textstat/
 def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts):
@@ -917,10 +946,9 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 
 	if createExcelCharts == True:
 		inputFilename = outputFilename
-		# Tony Chen Gu
-		# Only one column is plotted
 		columns_to_be_plotted = [[5, 1], [5, 3]]
-		hover_label = ['Sentence', 'Sentence']
+		# hover_label = ['Sentence', 'Sentence']
+		hover_label = []
 		Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
 														 outputFileLabel='Complex',
 														 chart_type_list=["line"],

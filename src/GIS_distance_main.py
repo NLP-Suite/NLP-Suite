@@ -36,7 +36,7 @@ import GIS_geocode_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,outputDir, openOutputFiles, createExcelCharts,
+def run(inputFilename,outputDir, openOutputFiles, createExcelCharts, chartPackage,
         encoding, geocoder,
         # geocode,
         compute_pairwise_distances, compute_baseline_distances, baselineLocation,locationColumn,locationColumn2):
@@ -141,6 +141,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.charts_dropdown_field.get(),
                             encoding_var.get(),
                             geocoder_var.get(),
                             # geocode_var.get(),

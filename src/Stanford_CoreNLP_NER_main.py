@@ -19,8 +19,8 @@ import IO_user_interface_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-# def run(CoreNLPdir,inputFilename,inputDir,outputDir,openOutputFiles,createExcelCharts,encoding_var,memory_var,extract_date_from_text_var,extract_date_from_filename_var,date_format,date_separator_var,date_position_var,NER_list,NER_split_prefix_values_entry_var,NER_split_suffix_values_entry_var,NER_sentence_var):
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
+# def run(CoreNLPdir,inputFilename,inputDir,outputDir,openOutputFiles,createExcelCharts,chartPackage,encoding_var,memory_var,extract_date_from_text_var,extract_date_from_filename_var,date_format,date_separator_var,date_position_var,NER_list,NER_split_prefix_values_entry_var,NER_split_suffix_values_entry_var,NER_sentence_var):
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,
         encoding_var,
         memory_var, document_length_var, limit_sentence_length_var,
         extract_date_from_text_var, extract_date_from_filename_var, date_format, date_separator_var,
@@ -38,7 +38,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         return
 
     tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
-                                                        openOutputFiles, createExcelCharts,
+                                                        openOutputFiles, createExcelCharts, chartPackage,
                                                         'NER',
                                                         NERs=NER_list,
                                                         DoCleanXML=False,
@@ -81,6 +81,7 @@ run_script_command=lambda: run(
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.charts_dropdown_field.get(),
                             encoding_var.get(),
                             memory_var.get(),
                             document_length_var.get(),

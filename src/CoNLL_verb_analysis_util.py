@@ -525,7 +525,7 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
 
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
 												   'Started running VERB ANALYSES at',
-												   True, '', True, '', True)
+												   True, '', True, '', False)
 
 	outputFiles = verb_voice_stats(inputFilename, outputDir, data, data_divided_sents,
 								   openOutputFiles, createExcelCharts)
@@ -544,7 +544,7 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
 		filesToOpen.extend(outputFiles)
 
 	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VERB ANALYSES at', True,
-									   '', True, startTime, True)
+									   '', True, startTime, False)
 
 	return filesToOpen
 

@@ -121,7 +121,7 @@ def extract_CoreNLP_SVO(svo_triplets, svo_CoreNLP_single_file, svo_CoreNLP_merge
             added.add((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
 
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,
         memory_var,
         document_length_var,
         limit_sentence_length_var,
@@ -234,7 +234,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         # inputFilename and inputDir are the original txt files to be coreferenced
         # 2 items are returned: filename string and true/False for error
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir, outputCorefedDir,
-                                       openOutputFiles, createExcelCharts,
+                                       openOutputFiles, createExcelCharts, chartPackage,
                                        memory_var,
                                        Manual_Coref_var)
         if error_indicator != 0:
@@ -254,7 +254,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
     if normalized_NER_date_extractor_var:
         files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
-                                                                 openOutputFiles, createExcelCharts,
+                                                                 openOutputFiles, createExcelCharts, chartPackage,
                                                                  'normalized-date', False, memory_var, document_length_var, limit_sentence_length_var)
         filesToOpen.extend(files)
 
@@ -301,6 +301,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir, openOutputFiles,
                                                                        createExcelCharts,
+                                                                       chartPackage,
                                                                        'SVO', False,
                                                                        memory_var, document_length_var, limit_sentence_length_var,
                                                                        extract_date_from_text_var=extract_date_from_text_var,
@@ -464,6 +465,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir, openOutputFiles,
                                                                            createExcelCharts,
+                                                                           chartPackage,
                                                                            'OpenIE', 
                                                                            False,
                                                                            memory_var, document_length_var, limit_sentence_length_var,
@@ -629,6 +631,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.charts_dropdown_field.get(),
                                  memory_var.get(),
                                  document_length_var.get(),
                                  limit_sentence_length_var.get(),

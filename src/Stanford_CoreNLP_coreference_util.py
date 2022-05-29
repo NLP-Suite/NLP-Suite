@@ -266,7 +266,7 @@ def manualCoref(original_file, corefed_file, outputFile):
     return 0
 
 # return file_to_open
-def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts,
+def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage,
         memory_var, manual_Coref):
 
     corefed_file = []
@@ -293,7 +293,7 @@ def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, ope
                                      reminders_util.message_CoreNLP_coref, True)
 
     corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
-                                                                    output_dir_path, openOutputFiles, createExcelCharts,
+                                                                    output_dir_path, openOutputFiles, createExcelCharts, chartPackage,
                                                                     ['coref', 'coref table'], False,
                                                                     memory_var)
 

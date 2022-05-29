@@ -52,7 +52,7 @@ args = parser.parse_args()
 """
 
 
-def run(inputDir, outputDir, openOutputFiles,createExcelCharts, num_topics, remove_stopwords_var, lemmatize_var, nounsOnly_var, Mallet_var):
+def run(inputDir, outputDir, openOutputFiles,createExcelCharts,chartPackage, num_topics, remove_stopwords_var, lemmatize_var, nounsOnly_var, Mallet_var):
     if not IO_internet_util.check_internet_availability_warning('Gensim Topic Modeling'):
         return
 
@@ -67,6 +67,7 @@ run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.charts_dropdown_field.get(),
                                  num_topics_var.get(),
                                  remove_stopwords_var.get(),
                                  lemmatize_var.get(),

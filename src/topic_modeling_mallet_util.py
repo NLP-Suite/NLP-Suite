@@ -44,7 +44,7 @@ import IO_user_interface_util
 
 # RUN section __________________________________________________________________________________________________________
 
-def run(inputDir, outputDir, openOutputFiles, createExcelCharts, OptimizeInterval, numTopics):
+def run(inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, OptimizeInterval, numTopics):
     # to setup environment variable programmatically
     #   https://stackoverflow.com/questions/4906977/how-to-access-environment-variable-values
     # to get an environment variable
@@ -133,13 +133,13 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, OptimizeInterva
         return
     elif numFiles == 1:
         mb.showerror(title='Number of files error', message='The selected input directory contains only ' + str(
-            numFiles) + 'file of txt type.\n\nTopic modeling requires a large number of files to produce valid '
+            numFiles) + ' file(s) of txt type.\n\nTopic modeling requires a large number of files to produce valid '
                         'results. That is true even if the available file contains several different documents morged'
                         ' together.')
         return
     elif numFiles < 10:
         mb.showwarning(title='Number of files', message='The selected input directory contains only ' + str(
-            numFiles) + 'files of txt type.\n\nTopic modeling requires a large number of files to produce valid '
+            numFiles) + ' file(s) of txt type.\n\nTopic modeling requires a large number of files to produce valid '
                         'results.')
 
     """

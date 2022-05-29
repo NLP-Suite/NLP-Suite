@@ -744,12 +744,12 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        y_multiplier_integer,
                                                        charts_menu_lb,False,False,False)
 
-    def warning_message(*args):
-        if charts_dropdown_field.get()!='Excel':
-            mb.showwarning(title='Warning',
-                           message="The 'Python Plotly' option to draw charts is not available yet; it is under development. Sorry!")
-            charts_dropdown_field.set('Excel')
-    charts_dropdown_field.trace('w',warning_message)
+    # def warning_message(*args):
+    #     if charts_dropdown_field.get()!='Excel':
+    #         mb.showwarning(title='Warning',
+    #                        message="The 'Python Plotly' option to draw charts is not available yet; it is under development. Sorry!")
+    #         charts_dropdown_field.set('Excel')
+    # charts_dropdown_field.trace('w',warning_message)
 
     # readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
     readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)

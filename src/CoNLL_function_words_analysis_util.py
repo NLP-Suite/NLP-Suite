@@ -106,7 +106,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
-            #                                                              openOutputFiles, createExcelCharts,
+            #                                                              openOutputFiles, createExcelCharts, chartPackage,
             #                                                              [[1,4]],
             #                                                              ['PRONOUNS'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
@@ -178,7 +178,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
-            #                                                              openOutputFiles,createExcelCharts,
+            #                                                              openOutputFiles,createExcelCharts,chartPackage,
             #                                                              [[1,4]],
             #                                                              ['PREPOSITIONS'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
@@ -254,7 +254,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
-            #                                                              openOutputFiles, createExcelCharts,
+            #                                                              openOutputFiles, createExcelCharts, chartPackage,
             #                                                              [[1,4]],['ARTICLES'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
             if len(outputFiles) > 0:
@@ -326,7 +326,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
-            #                                                              openOutputFiles, createExcelCharts,
+            #                                                              openOutputFiles, createExcelCharts, chartPackage,
             #                                                              [[1,4]],
             #                                                              ['CONJUNCTIONS'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
@@ -397,7 +397,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
-            #                                                              openOutputFiles,createExcelCharts,
+            #                                                              openOutputFiles,createExcelCharts,chartPackage,
             #                                                              [[1, 4]],
             #                                                              ['AUXILIARIES'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
