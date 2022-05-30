@@ -570,6 +570,7 @@ extract_sentences_var.trace('w', activate_allOptions)
 string_var.trace('w', activate_allOptions)
 blankLine_var.trace('w', activate_allOptions)
 number_var.trace('w', activate_allOptions)
+extract_sentences_var.trace('w', activate_allOptions)
 
 activate_allOptions()
 

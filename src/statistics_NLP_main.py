@@ -23,9 +23,10 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createExcelCharts,chart
     filesToOpen=[]
 
     window=GUI_util.window
-    if inputDir=='' and corpus_stats:
-        mb.showwarning(title='Input error', message='The selected option - ' + script_to_run + ' - requires a directory in input.\n\nPlease, select a directory and try again.')
-        return
+
+    # if inputDir=='' and corpus_stats:
+    #     mb.showwarning(title='Input error', message='The selected option - ' + script_to_run + ' - requires a directory in input.\n\nPlease, select a directory and try again.')
+    #     return
 
     if inputFilename!='' and (all_csv_stats or csv_field_stats):
         if inputFilename[-4:]!='.csv':
@@ -73,7 +74,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createExcelCharts,chart
 
         if "Compute lines length" or "*" in corpus_options_menu_var:
             tempOutputFiles=statistics_txt_util.read_line(window, inputFilename, inputDir, outputDir,
-                                                          False, createExcelCharts)
+                                                          False, createExcelCharts, chartPackage)
             if tempOutputFiles!=None:
                 filesToOpen.extend(tempOutputFiles)
 
@@ -240,16 +241,16 @@ window.bind("<Escape>", clear)
 
 
 corpus_stats_var.set(0)
-corpus_field_checkbox = tk.Checkbutton(window, text='Compute corpus statistics', variable=corpus_stats_var, onvalue=1,
-                                       offvalue=0, command=lambda: get_script_to_run('Compute corpus statistics'))
+corpus_field_checkbox = tk.Checkbutton(window, text='Compute document(s) statistics', variable=corpus_stats_var, onvalue=1,
+                                       offvalue=0, command=lambda: get_script_to_run('Compute document(s) statistics'))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                corpus_field_checkbox, True)
 
 corpus_options_menu_var.set('*')
-corpus_options_menu_lb = tk.Label(window, text='Corpus statistics options')
+corpus_options_menu_lb = tk.Label(window, text='Document(s) statistics options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,corpus_options_menu_lb,True)
 corpus_options_menu = tk.OptionMenu(window, corpus_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation', 'Compute lines length')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+560,y_multiplier_integer,corpus_options_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+580,y_multiplier_integer,corpus_options_menu)
 
 def activate_corpus_options(*args):
     if corpus_stats_var.get()==True:
@@ -447,36 +448,27 @@ csv_groupBy_field_var.trace('w', activate_plus3)
 
 
 def activate_allOptions(menu_values, from_csv_field_stats_var=False):
-    if inputFilename.get() == '' and inputDir.get() == '':
-        clear('Escape')
-        corpus_field_checkbox.configure(state='disabled')
+    if inputFilename.get()[-4:] == '.txt':
+        corpus_field_checkbox.configure(state='normal')
         all_csv_field_checkbox.configure(state='disabled')
         csv_field_checkbox.configure(state='disabled')
+        n_grams_checkbox.configure(state='normal')
+        n_grams_menu.configure(state='normal')
+        n_grams_options_menu.configure(state='normal')
+    elif inputFilename.get()[-4:] == '.csv':
+        all_csv_field_checkbox.configure(state='normal')
+        csv_field_checkbox.configure(state='normal')
+        corpus_field_checkbox.configure(state='disabled')
+        n_grams_checkbox.configure(state='disabled')
         n_grams_menu.configure(state='disabled')
         n_grams_options_menu .configure(state='disabled')
     else:
-        if inputFilename.get()[-4:] == '.txt':
-            all_csv_field_checkbox.configure(state='disabled')
-            csv_field_checkbox.configure(state='disabled')
-            corpus_field_checkbox.configure(state='normal')
-            n_grams_checkbox.configure(state='normal')
-            n_grams_menu.configure(state='normal')
-            n_grams_options_menu.configure(state='normal')
-        elif inputFilename.get()[-4:] == '.csv':
-            all_csv_field_checkbox.configure(state='normal')
-            csv_field_checkbox.configure(state='normal')
-            corpus_field_checkbox.configure(state='disabled')
-            n_grams_checkbox.configure(state='disabled')
-            n_grams_menu.configure(state='disabled')
-            n_grams_options_menu .configure(state='disabled')
-
-        if inputDir.get() != '':
-            corpus_field_checkbox.configure(state='normal')
-            all_csv_field_checkbox.configure(state='normal')
-            csv_field_checkbox.configure(state='normal')
-            n_grams_checkbox.configure(state='normal')
-            n_grams_menu.configure(state='disabled')
-            n_grams_options_menu.configure(state='disabled')
+        corpus_field_checkbox.configure(state='normal')
+        all_csv_field_checkbox.configure(state='normal')
+        csv_field_checkbox.configure(state='normal')
+        n_grams_checkbox.configure(state='normal')
+        n_grams_menu.configure(state='disabled')
+        n_grams_options_menu.configure(state='disabled')
 
     if corpus_stats_var.get() == 1:
         all_csv_field_checkbox.configure(state='disabled')
@@ -537,21 +529,19 @@ activate_allOptions(menu_values)
 def changed_filename(*args):
     clear('Escape')
     global menu_values
-    activate_allOptions(menu_values)
-    if inputFilename.get() == '' or inputFilename.get()[-4:] != '.csv':
-        activate_allOptions(menu_values)
-        return
-    menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get(), True)
-    m = csv_field_menu["menu"]
-    m1 = csv_hover_over_field_menu["menu"]
-    m2 = csv_groupBy_field_menu["menu"]
-    m.delete(0, "end")
-    m1.delete(0, "end")
-    m2.delete(0, "end")
-    for s in menu_values:
-        m.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
-        m1.add_command(label=s, command=lambda value=s: csv_hover_over_field_var.set(value))
-        m2.add_command(label=s, command=lambda value=s: csv_groupBy_field_var.set(value))
+    if inputFilename.get()[-4:] == '.csv':
+        # continue only if the input file is csv
+        menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get(), True)
+        m = csv_field_menu["menu"]
+        m1 = csv_hover_over_field_menu["menu"]
+        m2 = csv_groupBy_field_menu["menu"]
+        m.delete(0, "end")
+        m1.delete(0, "end")
+        m2.delete(0, "end")
+        for s in menu_values:
+            m.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
+            m1.add_command(label=s, command=lambda value=s: csv_hover_over_field_var.set(value))
+            m2.add_command(label=s, command=lambda value=s: csv_groupBy_field_var.set(value))
     activate_allOptions(menu_values)
 
 # at the bottom of the script after laying out the GUI
@@ -587,7 +577,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  'Please, tick the checkbox if you wish to compute basic statistics on your corpus. Users have the option to lemmatize words and exclude stopwords from word counts.\n\nIn INPUT the script expects a set of txt files.\n\nIn OUTPUT, the script generates the following three files:\n  1. csv file of frequencies of the twenty most frequent words;\n  2. csv file of the following statistics for each column in the previous csv file and for each document in the corpus: Count, Mean, Mode, Median, Standard deviation, Minimum, Maximum, Skewness, Kurtosis, 25% quantile, 50% quantile; 75% quantile;\n  3. Excel line chart of the number of sentences and words for each document.')
+                                  'Please, tick the checkbox if you wish to compute basic statistics on your corpus. Users have the option to lemmatize words and exclude stopwords from word counts.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates the following three files:\n  1. csv file of frequencies of the twenty most frequent words;\n  2. csv file of the following statistics for each column in the previous csv file and for each document in the corpus: Count, Mean, Mode, Median, Standard deviation, Minimum, Maximum, Skewness, Kurtosis, 25% quantile, 50% quantile; 75% quantile;\n  3. Excel line chart of the number of sentences and words for each document.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, tick the \'Compute n-grams\' checkbox if you wish to compute n-grams.\n\nN-grams can be computed for characters, words, POSTAG and DEPREL values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word n-grams between 1 and 4.\n\nWhen n-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

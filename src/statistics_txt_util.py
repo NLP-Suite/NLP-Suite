@@ -128,7 +128,7 @@ def excludeStopWords_list(words):
     words = words_excludePunctuation
     return words
 
-def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts):
+def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts, chartPackage):
     filesToOpen=[]
     outputFilenameCSV=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'line_length')
     filesToOpen.append(outputFilenameCSV)
@@ -136,12 +136,14 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
     Ndocs = str(len(inputDocs))
     if Ndocs==0:
         return
-    fieldnames=['Document ID',
-        'Document',
+    fieldnames=[
         'Line length (in characters)',
         'Line length (in words)',
         'Line ID',
-        'Line']
+        'Line',
+        'Document ID',
+        'Document'
+    ]
     if IO_csv_util.openCSVOutputFile(outputFilenameCSV):
         return
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running line length analysis at',
@@ -174,7 +176,7 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
                     words = word_tokenize_stanza(stanzaPipeLine(line))
                     # print("Line {}: Length (in characters) {} Length (in words) {}".format(lineID, len(line), len(words)))
                     currentLine = [
-                        [documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc), len(line), len(words),lineID,line.strip()]]
+                        [len(line), len(words),lineID,line.strip(), documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]]
                     writer.writerows(currentLine)
                     line = file.readline()
     csvfile.close()
@@ -187,7 +189,7 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
         filesToOpen.extend(tempOutputfile)
 
     # compute statistics about line length grouped by Document
-    list=['Document ID']
+    list=['Document ID','Document']
     tempOutputfile=statistics_csv_util.compute_field_statistics_groupBy(window, outputFilenameCSV, outputDir,
                                         list, openOutputFiles,
                                         createExcelCharts,3) # 'Line length (in words)'
@@ -242,8 +244,8 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
     if IO_csv_util.openCSVOutputFile(outputFilenameCSV):
         return
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running corpus statistics at',
-                                                 True, '', True, '', True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running document(s) statistics at',
+                                                 True, '', True, '', False)
 
     with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -301,7 +303,7 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
         csvfile.close()
 
         # compute statistics about doc length grouped by Document
-        list = ['Document ID']
+        list = ['Document ID', 'Document']
         tempOutputfile = statistics_csv_util.compute_field_statistics_groupBy(window, outputFilenameCSV, outputDir,
                                                                               list, openOutputFiles,
                                                                               createExcelCharts, 4)
@@ -309,42 +311,45 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
         if tempOutputfile != None:
             filesToOpen.extend(tempOutputfile)
 
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running corpus statistics at', True, '', True, startTime, True)
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running document(s) statistics at', True, '', True, startTime, False)
 
         if createExcelCharts==True:
 
-            columns_to_be_plotted=[[1,3]]
-            hover_label=['Document']
+            columns_to_be_plotted=[[2,3]]
+            # hover_label=['Document']
+            hover_label=[]
             inputFilename=outputFilenameCSV
             Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='',
                                                       chart_type_list=["bar"],
-                                                      # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
                                                       chart_title='Corpus Statistics: Frequency of Sentences by Document',
-                                                      column_xAxis_label_var='Document',
+                                                      column_xAxis_label_var='', #Document
                                                       hover_info_column_list=hover_label)
             if Excel_outputFilename != "":
                 # rename output file or it will be overwritten by the next chart
-                Excel_outputFilename_new=Excel_outputFilename[:-5]+'_sent.xlsm'
+                Excel_extention = Excel_outputFilename[-5:]
+                Excel_outputFilename_new=Excel_outputFilename[:-5]+'_sen.xlsm' + Excel_extention
                 # the file already exists and must be removed
                 if os.path.isfile(Excel_outputFilename_new):
                     os.remove(Excel_outputFilename_new)
                 os.rename(Excel_outputFilename, Excel_outputFilename_new)
                 filesToOpen.append(Excel_outputFilename_new)
 
-            columns_to_be_plotted=[[1,4]]
-            hover_label=['Document']
+            columns_to_be_plotted=[[2,4]]
+            # hover_label=['Document']
+            hover_label=[]
             inputFilename=outputFilenameCSV
             Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='',
                                                       chart_type_list=["bar"],
                                                       # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
                                                       chart_title='Corpus Statistics: Frequency of Words by Document',
-                                                      column_xAxis_label_var='Document',
+                                                      column_xAxis_label_var='', #Document
                                                       hover_info_column_list=hover_label)
             if Excel_outputFilename != "":
                 # rename output file or it will be overwritten by the next chart
-                Excel_outputFilename_new=Excel_outputFilename[:-5]+'_word.xlsm'
+                Excel_extention = Excel_outputFilename[-5:]
+                Excel_outputFilename_new=Excel_outputFilename[:-5]+'_word'+Excel_extention
                 # the file already exists and must be removed
                 if os.path.isfile(Excel_outputFilename_new):
                     os.remove(Excel_outputFilename_new)
@@ -858,8 +863,8 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     columns_to_be_plotted = [[0, 0]] # bar chart
                     columns_to_be_plotted_byDocID = [[6, 6]] # bar chart
                     chart_title_label = 'Frequency of Short Words (<4 Characters)'
-                    chart_title_byDocID='Frequency of Short Words By Document'
-                    chart_title_bySentID ='Frequency of Short Words By Sentence Index'
+                    chart_title_byDocID='Frequency of Short Words by Document'
+                    chart_title_bySentID ='Frequency of Short Words by Sentence Index'
                     column_xAxis_label = 'Short Words (<4 Characters)'
 
                     # exclude numbers from list
@@ -876,8 +881,8 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     columns_to_be_plotted = [[0, 0]] # bar chart
                     columns_to_be_plotted_byDocID = [[6, 6]] # bar chart
                     chart_title_label = 'Frequency of Initial-Capital Words'
-                    chart_title_byDocID ='Frequency of Initial-Capital Words By Document'
-                    chart_title_bySentID ='Frequency of Initial-Vowel Words By Sentence Index'
+                    chart_title_byDocID ='Frequency of Initial-Capital Words by Document'
+                    chart_title_bySentID ='Frequency of Initial-Vowel Words by Sentence Index'
                     column_xAxis_label = 'Initial-Capital Words'
 
                     if word and word and word[0].isupper():
@@ -894,8 +899,8 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     columns_to_be_plotted = [[0, 0]] # bar chart
                     columns_to_be_plotted_byDocID = [[6, 6]] # bar chart
                     chart_title_label = 'Frequency of Initial-Vowel Words'
-                    chart_title_byDocID='Frequency of Initial-Vowel Words By Document'
-                    chart_title_bySentID = 'Frequency of Initial-Vowel Words By Sentence Index'
+                    chart_title_byDocID='Frequency of Initial-Vowel Words by Document'
+                    chart_title_bySentID = 'Frequency of Initial-Vowel Words by Sentence Index'
                     column_xAxis_label = 'Initial-Vowel Words'
                     if word and word and word[0] in "aeiou" and word.isalpha():
                         word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
@@ -910,8 +915,8 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     columns_to_be_plotted = [[0, 0]] # bar chart
                     columns_to_be_plotted_byDocID = [[6, 6]] # bar chart
                     chart_title_label = 'Frequency of Punctuation Symbols of Pathos (?!)'
-                    chart_title_byDocID='Frequency of Punctuation Symbols of Pathos (?!) By Document'
-                    chart_title_bySentID='Frequency of Punctuation Symbols of Pathos (?!) By Sentence Index'
+                    chart_title_byDocID='Frequency of Punctuation Symbols of Pathos (?!) by Document'
+                    chart_title_bySentID='Frequency of Punctuation Symbols of Pathos (?!) by Sentence Index'
                     column_xAxis_label = 'Punctuation symbols of pathos (?!)'
                     if word != '!' and word != '?':
                         continue
@@ -972,7 +977,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                                                              outputFileLabel=fileLabel_byDocID,
                                                              chart_type_list=["bar"],
                                                              chart_title=chart_title_byDocID,
-                                                             column_xAxis_label_var='Document',
+                                                             column_xAxis_label_var='', #Document
                                                              hover_info_column_list=hover_label,
                                                              count_var=True)
             if Excel_outputFilename != "":

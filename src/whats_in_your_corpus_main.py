@@ -115,7 +115,7 @@ def run(inputFilename,inputDir, outputDir,
                                                           bySentenceIndex_word_var)
 
         if 'lines' in corpus_options_menu_var:
-            output = statistics_txt_util.read_line(window, '', inputDir, outputDir, False, createExcelCharts)
+            output = statistics_txt_util.read_line(window, '', inputDir, outputDir, False, createExcelCharts, chartPackage)
             if output!=None:
                 filesToOpen.extend(output)
 
