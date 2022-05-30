@@ -322,7 +322,8 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
                                                       # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
                                                       chart_title='Corpus Statistics: Frequency of Sentences by Document',
                                                       column_xAxis_label_var='Document',
-                                                      hover_info_column_list=hover_label)
+                                                      hover_info_column_list=hover_label,
+                                                      graph_type = chartPackage)
             if Excel_outputFilename != "":
                 # rename output file or it will be overwritten by the next chart
                 Excel_outputFilename_new=Excel_outputFilename[:-5]+'_sent.xlsm'
@@ -341,7 +342,8 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
                                                       # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
                                                       chart_title='Corpus Statistics: Frequency of Words by Document',
                                                       column_xAxis_label_var='Document',
-                                                      hover_info_column_list=hover_label)
+                                                      hover_info_column_list=hover_label,
+                                                      graph_type = chartPackage)
             if Excel_outputFilename != "":
                 # rename output file or it will be overwritten by the next chart
                 Excel_outputFilename_new=Excel_outputFilename[:-5]+'_word.xlsm'
@@ -506,7 +508,8 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                                                           chart_type_list=["bar"],
                                                           chart_title=chartTitle + str(index+1) + '-grams',
                                                           column_xAxis_label_var='',
-                                                          hover_info_column_list=hover_label)
+                                                          hover_info_column_list=hover_label,
+                                                          graph_type = chartPackage)
                 if Excel_outputFilename != "":
                     filesToOpen.append(Excel_outputFilename)
 

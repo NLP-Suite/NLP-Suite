@@ -2,16 +2,10 @@
 # Contact: chentony2011@hotmail.com
 
 from asyncio.windows_events import NULL
-from matplotlib.pyplot import subplot
 import pandas as pd
 import plotly.express as px
-import plotly
-import plotly.offline as py
 import plotly.graph_objs as go
-import plotly.figure_factory as ff
-import plotly.tools as tls
 from plotly.subplots import make_subplots
-from plotly.offline import plot, iplot
 import os
 
 ## NOTE:
@@ -36,27 +30,33 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
                         static_flag=False,):
     data = pd.read_csv(inputFilename, encoding='utf-8')
     headers = data.columns.tolist()
-    for j in len(chart_type_list):
+    file_list = []
+    for j in range(0,len(chart_type_list)):
         i = chart_type_list[j]
         x_cols = []
         y_cols = []
         fig = NULL
-        if(i == 'bar' or i == 'pie'):
-            x_cols = headers[cols_to_plot[j][0]]
-            if i == 'bar':
-                fig = plot_bar_chart_px(x_cols,inputFilename,outputDir,chartTitle)
-            elif i == 'pie':
-                fig = plot_pie_chart_px(x_cols,inputFilename,outputDir,chartTitle)
-        elif(i == 'scatter' or i == 'radar'):
-            x_cols = headers[cols_to_plot[j][0]]
-            y_cols = headers[cols_to_plot[j][1]]
-            if i == 'scatter':
-                fig = plot_scatter_chart_px(x_cols,y_cols,inputFilename,outputDir,chartTitle)
-            elif i == 'radar':
-                fig = plot_radar_chart_px(x_cols,y_cols,inputFilename,outputDir,chartTitle)
+        #if(i == 'bar' or i == 'pie'):
+        x_cols = headers[cols_to_plot[j][0]]
+        y_cols = headers[cols_to_plot[j][1]]
+        if i == 'bar':
+            fig = plot_bar_chart_px(x_cols,inputFilename,chartTitle)
+        elif i == 'pie':
+            fig = plot_pie_chart_px(x_cols,inputFilename,chartTitle)
+        #elif(i == 'scatter' or i == 'radar'):
+        elif i == 'scatter':
+            fig = plot_scatter_chart_px(x_cols,y_cols,inputFilename,chartTitle)
+        elif i == 'radar':
+            fig = plot_radar_chart_px(x_cols,y_cols,inputFilename,chartTitle)
+        elif i == 'line':
+            #plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, series_label_list = NULL)
+            fig = plot_multi_line_chart_w_slider_px(inputFilename,chartTitle,cols_to_plot)
+            file_list.append(save_chart(fig,outputDir,chartTitle,static_flag,column_xAxis_label,column_yAxis_label))
+            return file_list
         else:
             print('Chart type not supported '+i+'! Skipped and continue with next chart.')
-    return
+        file_list.append(save_chart(fig,outputDir,chartTitle,static_flag,column_xAxis_label,column_yAxis_label))
+    return file_list
 
 # need to discuss further
 def get_chart_title(xVar = '', yVar = '', base_title = '', chart_type = ''):
@@ -89,7 +89,7 @@ def save_chart(fig, outputDir, chartTitle, static_flag, x_label = '', y_label = 
     else:
         savepath = os.path.join(outputDir, chartTitle + '.html')
         fig.write_html(savepath)
-    return
+    return savepath
 
 #plot bar chart with plotly
 #fileName is a csv file with data to be plotted 
@@ -149,20 +149,20 @@ def plot_radar_chart_px(theta_label, fileName, chartTitle, r_label = None):
     return fig
 
 #plot 
-def plot_multi_line_chart_w_slider_px(fileName, outputDir, chartTitle, series_label_list = NULL):
+def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, series_label_list = NULL):
     data = pd.read_csv(fileName, encoding='utf-8')
     data.fillna(0, inplace=True)
     figs = make_subplots()
     col_name = list(data.head())
     default_series_name = (series_label_list == NULL)
-    for i in range(1,len(col_name)):
+    for i in range(0,len(col_to_be_ploted)):
         if default_series_name:
-            series_label = col_name[i]
+            series_label = col_name[col_to_be_ploted[i][1]]
         else:
-            series_label = series_label_list[i-1]
+            series_label = series_label_list[i]
         trace = go.Scatter(
-            x = data[col_name[0]],
-            y = data[col_name[i]],
+            x = data[col_name[col_to_be_ploted[i][0]]],
+            y = data[col_name[col_to_be_ploted[i][1]]],
             name = series_label)
         figs.add_trace(trace)
     figs.update_layout(title=chartTitle, title_x=0.5)
@@ -178,26 +178,22 @@ def plot_multi_line_chart_w_slider_px(fileName, outputDir, chartTitle, series_la
             ),
         )
     )
-    iplot(figs)
-    savepath = os.path.join(outputDir, chartTitle + '.html')
-    figs.write_html(savepath)
-    return
-
+    return figs
 #=======================================================================================================================
 # debug use
 #=======================================================================================================================
-def main():
-    x_label = 'char'
-    height = 'count'
-    hover_label = 'count'
-    chartTitle = 'test chart'
-    fileName =  'C:/Users/Tony Chen/Desktop/NLP_working/Test OutputNLP_NVA_conll_eng_Noun_POSTAG_list_frequencies.csv'
-    outputDir = 'C:/Users/Tony Chen/Desktop/NLP_working'
+# def main():
+#     x_label = 'char'
+#     height = 'count'
+#     hover_label = 'count'
+#     chartTitle = 'test chart'
+#     fileName =  'C:/Users/Tony Chen/Desktop/NLP_working/Test OutputNLP_NVA_conll_eng_Noun_POSTAG_list_frequencies.csv'
+#     outputDir = 'C:/Users/Tony Chen/Desktop/NLP_working'
 
-    #plot_bar_chart(x_label, height, fileName, outputDir, chartTitle, hover_label)
+#     #plot_bar_chart(x_label, height, fileName, outputDir, chartTitle, hover_label)
     
-    #plot_radar_chart_px(x_label, height, fileName, outputDir, chartTitle)
-    plot_multi_line_chart_w_slider_px(fileName,outputDir,chartTitle)
+#     #plot_radar_chart_px(x_label, height, fileName, outputDir, chartTitle)
+#     plot_multi_line_chart_w_slider_px(fileName,outputDir,chartTitle)
 
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

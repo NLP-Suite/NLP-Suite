@@ -96,7 +96,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             column_yAxis_label_var='Frequencies',
             column_yAxis_field_list = [],
             reverse_column_position_for_series_label=False,
-            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = True, graph_type = ''):
+            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = True, graph_type = 'Python Plotly'):
 
     use_plotly = (graph_type == 'Python Plotly')
     # added by Tony, May 2022 for complete sentence index
@@ -105,12 +105,18 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
     if complete_sid:
         complete_sentence_index(inputFilename)
     if use_plotly:
-        # charts_plotly_util.create_plotly_chart(inputFilename = inputFilename,
-        #                                         outputDir = outputDir,
-        #                                         chartTitle = chart_title,
-        #                                         chart_type_list = chart_type_list,
-        #                                         x_cols)
-        return
+        # def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_to_plot,
+        #                 column_xAxis_label='',
+        #                 column_yAxis_label='',
+        #                 static_flag=False,):
+        Plotly_outputFilename = charts_plotly_util.create_plotly_chart(inputFilename = inputFilename,
+                                                                        outputDir = outputDir,
+                                                                        chartTitle = chart_title,
+                                                                        chart_type_list = chart_type_list,
+                                                                        cols_to_plot = columns_to_be_plotted,
+                                                                        column_xAxis_label = column_xAxis_label_var,
+                                                                        column_yAxis_label = column_yAxis_label_var)
+        return Plotly_outputFilename
     
     data_to_be_plotted = prepare_data_to_be_plotted(inputFilename,
                                 columns_to_be_plotted,
@@ -306,7 +312,7 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 # enable complete_sid to make sentence index continuous
 # enable graph to make a multiline graph
 # the input should be saved to a csv file first
-def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle, graph = True, complete_sid = True, series_label = NULL):
+def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle, graph = True, complete_sid = True, series_label = NULL, use_plotly = False):
     cols = group_col + select_col
     try:
         data,header = IO_csv_util.get_csv_data(inputFilename, True)
@@ -346,13 +352,19 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         for i in range(1,len(data.columns)):
             cols_to_be_plotted.append([0,i])
         if series_label == NULL:
-            Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
-                                            "frequency_multi-line_chart", chart_type_list=["line"], 
-                                            chart_title=chartTitle, column_xAxis_label_var="Sentence ID")
+            if use_plotly:
+                charts_plotly_util.plot_multi_line_chart_w_slider_px(name, cols_to_be_plotted, chartTitle, outputDir)
+            else:
+                Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
+                                                "frequency_multi-line_chart", chart_type_list=["line"], 
+                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID")
         else:
-            Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
-                                            "frequency_multi-line_chart", chart_type_list=["line"], 
-                                            chart_title=chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label)
+            if use_plotly:
+                charts_plotly_util.plot_multi_line_chart_w_slider_px(name, cols_to_be_plotted, chartTitle, outputDir, series_label)
+            else:
+                Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
+                                                "frequency_multi-line_chart", chart_type_list=["line"], 
+                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label)
     return Excel_outputFilename
 
 # Tony Chen Gu written at April 2022 mortified at May 2022
