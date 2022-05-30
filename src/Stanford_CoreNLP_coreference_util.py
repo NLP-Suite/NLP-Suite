@@ -89,6 +89,7 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, root, r
     def find():
         # remove tag 'found' from index 1 to END
         text2.tag_remove('found', '1.0', END)
+        text1.tag_remove('found', '1.0', END)
         # returns to widget currently in focus
         s = searchBox.get()
         
@@ -108,6 +109,21 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, root, r
     
             # mark located string as red    
             text2.tag_config('found', foreground ='red', background='gainsboro')
+            idx = '1.0'
+            while 1:
+                # searches for desired string from index 1
+                idx = text1.search(s, idx, nocase=1,
+                                   stopindex=END)
+                if not idx: break
+                # last index sum of current index and
+                # length of text
+                lastidx = '% s+% dc' % (idx, len(s))
+                # overwrite 'Found' at idx
+                text1.tag_add('found', idx, lastidx)
+                idx = lastidx
+
+            # mark located string as red
+            text1.tag_config('found', foreground='red', background='gainsboro')
         searchBox.focus_set()
     findButton.config(command = find)
 
