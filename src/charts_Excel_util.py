@@ -89,6 +89,7 @@ def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_
 
 # columns_to_be_plotted is a double list [[0, 1], [0, 2], [0, 3]] where the first number refers to the x-axis value and the second to the y-axis value
 # when count_var=1 the second number gets counted
+# the complete sid need to be tested as na would be filled with 0
 def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             chart_type_list,chart_title, column_xAxis_label_var,
             hover_info_column_list=[],
@@ -96,7 +97,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             column_yAxis_label_var='Frequencies',
             column_yAxis_field_list = [],
             reverse_column_position_for_series_label=False,
-            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = True, graph_type = 'Python Plotly'):
+            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = False, graph_type = ''):
 
     use_plotly = (graph_type == 'Python Plotly')
     # added by Tony, May 2022 for complete sentence index

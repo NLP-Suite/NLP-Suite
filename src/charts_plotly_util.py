@@ -28,7 +28,13 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
                         column_xAxis_label='',
                         column_yAxis_label='',
                         static_flag=False,):
-    data = pd.read_csv(inputFilename, encoding='utf-8')
+    try:
+        data = pd.read_csv(inputFilename, encoding='utf-8')
+    except pd.errors.ParserError:
+        data = pd.read_csv(inputFilename, encoding='utf-8', sep='delimiter')
+    except:
+        print("Error: failed to read the csv file named: "+inputFilename)
+        return
     headers = data.columns.tolist()
     file_list = []
     for j in range(0,len(chart_type_list)):
@@ -37,8 +43,8 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
         y_cols = []
         fig = NULL
         #if(i == 'bar' or i == 'pie'):
-        x_cols = headers[cols_to_plot[j][0]]
-        y_cols = headers[cols_to_plot[j][1]]
+        x_cols = headers[cols_to_plot[j][0]-1]
+        y_cols = headers[cols_to_plot[j][1]-1]
         if i == 'bar':
             fig = plot_bar_chart_px(x_cols,inputFilename,chartTitle)
         elif i == 'pie':
@@ -99,9 +105,9 @@ def save_chart(fig, outputDir, chartTitle, static_flag, x_label = '', y_label = 
 #duplicates allowed, would add up the counts
 #Users are expected to provide the x label and their hights.
 #If not call the get_frequencies function to get the frequencies of the categorical variables in x_label column
-def plot_bar_chart_px(x_label, fileName, chartTitle, height = None):
+def plot_bar_chart_px(x_label, fileName, chartTitle, height = ''):
     data = pd.read_csv(fileName, encoding='utf-8')
-    if height is None:
+    if height == '':
         height = x_label+"_count"
         data = get_frequencies(data, x_label)
     fig = px.bar(data,x=x_label,y=height)
@@ -114,8 +120,11 @@ def plot_bar_chart_px(x_label, fileName, chartTitle, height = None):
 #height indicates the column name of y axis from the data
 #the output file would be a html file with hover over effect names by the chart title
 #duplicates allowed, would add up the counts
-def plot_pie_chart_px(x_label, fileName, chartTitle, height = None):
+def plot_pie_chart_px(x_label, fileName, chartTitle, height = ''):
     data = pd.read_csv(fileName, encoding='utf-8')
+    if height == '':
+        height = x_label+"_count"
+        data = get_frequencies(data, x_label)
     fig = px.pie(data, values=height, names=x_label)
     fig.update_layout(title=chartTitle, title_x=0.5)
     return fig
