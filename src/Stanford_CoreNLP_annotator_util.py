@@ -113,6 +113,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     date_separator_var = ''
     date_position_var = 0
     date_str = ''
+    # language initialized here and reset later in language = value
     language = 'English'
     NERs = []
     for key, value in kwargs.items():
@@ -132,6 +133,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
             single_quote_var = value
         if key == 'language':
             language = value
+
+    global language_encoding
+    if language == 'English':
+        language_encoding = 'utf-8'
+    else:
+        language_encoding = 'utf_8_sig'
 
     produce_split_files=False
     
@@ -372,7 +379,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
             head, tail = os.path.split(doc)
             if docName != doc:
                 print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
-            text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
+            text = open(doc, 'r', encoding=language_encoding, errors='ignore').read().replace("\n", " ")
             if "%" in text:
                 reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_percent,
                                              reminders_util.message_CoreNLP_percent, True)
@@ -382,7 +389,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
             #if there's only one annotator and it uses neural nerwork model, skip annoatiting with PCFG to save time
             if param_string != '':
-                # text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
                 annotator_start_time = time.time()
                 CoreNLP_output = nlp.annotate(text, properties=params)
                 errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window,
@@ -406,7 +412,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     jsonFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
                                                                            'CoreNLP_' + str(
                                                                                annotator_params) + '_json_output_NN')
-                    with open(jsonFilename, "a+", encoding='utf-8', errors='ignore') as json_out:
+                    with open(jsonFilename, "a+", encoding=language_encoding, errors='ignore') as json_out:
                         json.dump(CoreNLP_output, json_out, indent=4,ensure_ascii=False)
                     # no need to open the Json file
                     # if jsonFilename not in filesToOpen:
@@ -446,7 +452,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         jsonFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
                                                                                'CoreNLP_' + str(
                                                                                    annotator_params) + '_json_output_NN')
-                        with open(jsonFilename, "a+", encoding='utf-8', errors='ignore') as json_out_nn:
+                        with open(jsonFilename, "a+", encoding=language_encoding, errors='ignore') as json_out_nn:
                             json.dump(CoreNLP_output, json_out_nn, indent=4,ensure_ascii=False)
                         # no need to open the Json file
                         # if jsonFilename not in filesToOpen:
@@ -472,7 +478,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 if output_format == 'text':
                     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
                                                                              'CoreNLP_'+ str(annotator_chosen))
-                    with open(outputFilename, "a+", encoding='utf-8', errors='ignore') as output_text_file:
+                    with open(outputFilename, "a+", encoding=language_encoding, errors='ignore') as output_text_file:
                         # insert the separators <@# #@> in the the output file so that the file can then be split on the basis of these characters
                         if processing_doc != docTitle:
                             output_text_file.write("\n<@#" + docTitle + "#@>\n")
@@ -520,7 +526,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                               'CoreNLP_'+annotator_chosen+'_lemma'+output_format[index][0])
                 filesToOpen.append(outputFilename)
                 df = pd.DataFrame(run_output[index], columns=output_format[index])
-                df.to_csv(outputFilename, index=False, encoding = 'utf_8_sig')
+                df.to_csv(outputFilename, index=False, encoding = language_encoding)
         else: # single, merged output
             # generate output file name
             if annotator_chosen == 'NER':
@@ -565,7 +571,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 #count the number of corefed pronouns (COREF annotator)
                 if annotator_chosen == 'coref table':
                     corefed_pronouns = df.shape[0]
-                df.to_csv(outputFilename, index=False, encoding = 'utf_8_sig')
+                df.to_csv(outputFilename, index=False, encoding = language_encoding)
     # print("Length of Files to Open after generating files: ", len(filesToOpen))
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
@@ -623,11 +629,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # pie chart of SVO
                     # filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3],[4,4],[5,5]], 'pie',
                     #                       'Frequency Distribution of SVOs', 1, [], 'SVO_pie','SVOs')
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
                                           'Frequency Distribution of Subjects (unfiltered)', 1, [], 'S_bar','Subjects (unfiltered)')
-                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[4, 4]], 'bar',
+                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
                                                         'Frequency Distribution of Verbs (unfiltered)', 1, [], 'V_bar', 'Verbs (unfiltered)')
-                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[5, 5]], 'bar',
+                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
                                                         'Frequency Distribution of Objects (unfiltered)', 1, [], 'O_bar', 'Objects (unfiltered)')
                     if 'SVO' in annotator_params:
                         for key, value in kwargs.items():
@@ -654,7 +660,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         errorFile = os.path.join(outputDir,
                                            IO_files_util.generate_output_file_name(IO_csv_util.dressFilenameForCSVHyperlink(inputFilename), inputDir, outputDir, '.csv',
                                                                                    'CoreNLP', 'file_ERRORS'))
-        IO_csv_util.list_to_csv(GUI_util.window, filesError, errorFile, encoding = 'utf_8_sig')
+        IO_csv_util.list_to_csv(GUI_util.window, filesError, errorFile, encoding = language_encoding)
         filesToOpen.append(errorFile)
     # record the time consumption of generating outputfiles and visualization
     # record the time consumption of running the whole analysis
@@ -664,7 +670,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     speed_csv = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                            'CoreNLP_speed_assessment')
     df = pd.DataFrame(speed_assessment, columns=speed_assessment_format)
-    df.to_csv(speed_csv, index=False, encoding = 'utf_8_sig')
+    df.to_csv(speed_csv, index=False, encoding = language_encoding)
     if len(inputDir) != 0:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Output warning', 'The output filename generated by Stanford CoreNLP is the name of the directory processed in input, rather than any individual file in the directory. The output file(s) include all ' + str(nDocs) + ' files in the input directory processed by CoreNLP.\n\nThe different files are listed in the output csv file under the headers \'Document ID\' and \'Document\'.')
 
@@ -1306,7 +1312,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         merge_df = pd.merge(merge_df, gender_df, on=["Object (O)", "Sentence ID", "Document ID"], how='left')
         merge_df = merge_df[['Subject (S)', 'S Gender', 'Verb (V)', 'Object (O)', 'O Gender', 'Sentence ID','Sentence', 'Document ID', 'Document']]
         merge_df = merge_df.drop_duplicates()
-        merge_df.to_csv(kwargs["gender_filename"], index=False, mode="a", encoding = 'utf_8_sig')
+        merge_df.to_csv(kwargs["gender_filename"], index=False, mode="a", encoding = language_encoding)
 
     if quote_var:
         SVO_df = pd.DataFrame(SVO_brief, columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
@@ -1314,7 +1320,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         merge_df = pd.merge(SVO_df, quote_df, on=["Sentence ID", "Document ID"], how='left')
         merge_df = merge_df[['Subject (S)', 'Verb (V)', 'Object (O)', "Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]]
         merge_df = merge_df.drop_duplicates()
-        merge_df.to_csv(kwargs["quote_filename"], index=False, mode="a", encoding = 'utf_8_sig')
+        merge_df.to_csv(kwargs["quote_filename"], index=False, mode="a", encoding = language_encoding)
 
     return SVO_enhanced_dependencies
 
@@ -1748,9 +1754,9 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
 
     df = pd.DataFrame(to_write, columns=columns)
     if not os.path.exists(kwargs["location_filename"]):
-        df.to_csv(kwargs["location_filename"], header='column_names', index=False, encoding = 'utf_8_sig')
+        df.to_csv(kwargs["location_filename"], header='column_names', index=False, encoding = language_encoding)
     else:
-        df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False, encoding = 'utf_8_sig')
+        df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False, encoding = language_encoding)
 
 # the gender annotator displays results in an html file
 def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesToOpen, genderCol=["Gender"], wordCol=[]):

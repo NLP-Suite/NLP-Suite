@@ -64,7 +64,10 @@ def run(inputFilename,inputDir, outputDir,
         memory_var):
 
     filesToOpen=[]
-    inputFilename='' # only corpus in dir used
+
+    # if inputFilename=='': # only corpus in dir used
+    #     mb.showwarning(title='The scripts behind the What\'s in your corpus scripts expect in input a directory containing a sett of txt files.\n\nPlease, select a directory and try again.)
+    #     return
 
     if (corpus_statistics_var==False and \
         corpus_options_menu_var==False and \
@@ -96,7 +99,7 @@ def run(inputFilename,inputDir, outputDir,
             lemmatize=True
 
         if '*' in corpus_options_menu_var or 'stopwords' in corpus_options_menu_var or 'Lemmatize' in corpus_options_menu_var:
-            output = statistics_txt_util.compute_corpus_statistics(window, '', inputDir, outputDir, False, createExcelCharts, chartPackage,
+            output = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir, False, createExcelCharts, chartPackage,
                                   stopwords, lemmatize)
             if output!=None:
                 filesToOpen.extend(output)
@@ -104,7 +107,7 @@ def run(inputFilename,inputDir, outputDir,
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
             return
 
-        inputFilename = ''  # for now we only process a whole directory
+        # inputFilename = ''  # for now we only process a whole directory
         excludePunctuation=True
         n_grams_size=3
         bySentenceIndex_word_var=False
@@ -115,40 +118,41 @@ def run(inputFilename,inputDir, outputDir,
                                                           bySentenceIndex_word_var)
 
         if 'lines' in corpus_options_menu_var:
-            output = statistics_txt_util.read_line(window, '', inputDir, outputDir, False, createExcelCharts, chartPackage)
+            output = statistics_txt_util.read_line(window, inputFilename, inputDir, outputDir, False, createExcelCharts, chartPackage)
             if output!=None:
                 filesToOpen.extend(output)
 
     if topics_var==True:
-        if topics_Gensim_var==True:
-            if IO_libraries_util.check_inputPythonJavaProgramFile('topic_modeling_gensim_main.py')==False:
-                return
-            routine_options = reminders_util.getReminders_list(config_filename)
-            reminders_util.checkReminder(config_filename,
-                                         reminders_util.title_options_gensim,
-                                         reminders_util.message_gensim,
-                                         True)
-            routine_options = reminders_util.getReminders_list(config_filename)
+        if inputFilename!='': # only corpus in dir used
+            mb.showwarning(title='Wrong expected input',message='Topic modeling algorithms expect in input a directory containing a sett of txt files.\n\nPlease, select a directory to run topic modeling and try again.')
+        else:
+            if topics_Gensim_var==True:
+                if IO_libraries_util.check_inputPythonJavaProgramFile('topic_modeling_gensim_main.py')==False:
+                    return
+                routine_options = reminders_util.getReminders_list(config_filename)
+                reminders_util.checkReminder(config_filename,
+                                             reminders_util.title_options_gensim,
+                                             reminders_util.message_gensim,
+                                             True)
+                routine_options = reminders_util.getReminders_list(config_filename)
 
-            if open_GUI_var == True:
-                call("python topic_modeling_gensim_main.py", shell=True)
-            else:
-                # run with all default values; do not run MALLET
-                output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics=20,
-                                                      remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createExcelCharts=createExcelCharts)
-                if output!=None:
-                    filesToOpen.extend(output)
+                if open_GUI_var == True:
+                    call("python topic_modeling_gensim_main.py", shell=True)
+                else:
+                    # run with all default values; do not run MALLET
+                    output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics=20,
+                                                          remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createExcelCharts=createExcelCharts)
+                    if output!=None:
+                        filesToOpen.extend(output)
 
-        if topics_Mallet_var==True:
-            # def run(inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, OptimizeInterval, numTopics):
-
-            if open_GUI_var == True:
-                call("python topic_modeling_mallet_main.py", shell=True)
-            else:
-                # running with default values
-                output = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts, chartPackage=chartPackage, OptimizeInterval=True, numTopics=20)
-                if output != None:
-                    filesToOpen.extend(output)
+            if topics_Mallet_var==True:
+                if open_GUI_var == True:
+                    call("python topic_modeling_mallet_main.py", shell=True)
+                else:
+                    # running with default values
+                    output = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts, chartPackage=chartPackage, OptimizeInterval=True, numTopics=20)
+                    if output != None:
+                        filesToOpen.extend(output)
 
     nouns_var=False
     verbs_var=False
@@ -179,6 +183,8 @@ def run(inputFilename,inputDir, outputDir,
         locations_var=True
     if 'nature' in what_else_menu_var.lower():
         nature_var=True
+
+    inputFilenameSV=inputFilename #inputFilename value is changed in the WordNet function
 
     if (what_else_var and what_else_menu_var == '*') or nouns_var==True or verbs_var==True or people_organizations_var==True or gender_var==True or dialogues_var==True or times_var==True or locations_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py')==False:
@@ -221,16 +227,18 @@ def run(inputFilename,inputDir, outputDir,
             else:
                 if (what_else_var and what_else_menu_var == '*'):
                     IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Missing WordNet',
-                                                       'The analysis of \'what else is in your corpus\' will skip the nouns and verbs classification requiring WordNet and will continue with all other CoreNLP annotators')
+                                                       'The analysis of \'What else is in your corpus\' will skip the nouns and verbs classification requiring WordNet and will continue with all other CoreNLP annotators')
 
         if what_else_var and what_else_menu_var == '*':
+            inputFilename=inputFilenameSV
+
             annotator_list = ['NER', 'gender', 'quote', 'normalized-date']
             NER_list=['PERSON','ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir, openOutputFiles, createExcelCharts, chartPackage,
                                                                       annotator_list, False, memory_var,
                                                                       NERs=NER_list)
-            if output != None:
+            if output != None and output!=[]:
                 filesToOpen.extend(output)
 
         if people_organizations_var == True:

@@ -143,21 +143,21 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                                         frequency += 1
 
                             if frequency == 0:
-                                percent_position = 0
+                                document_percent_position = 0
                                 continue
                             else:
                                 search_keywords_found = True
-                                percent_position = round((sentence_index / len(sentences_)), 2)
+                                document_percent_position = round((sentence_index / len(sentences_)), 2)
                                 if lemmatize:
                                     form = search_keywords_list
                                     writer.writerow(
-                                        [keyword, form, first_occurrence_index, len(sentences_), percent_position, frequency,
+                                        [keyword, form, first_occurrence_index, len(sentences_), document_percent_position, frequency,
                                          sentence_index, sent,
                                          docIndex,
                                          IO_csv_util.dressFilenameForCSVHyperlink(file)])
                                 else:
                                     writer.writerow(
-                                        [keyword, '', first_occurrence_index, len(sentences_), percent_position, frequency,
+                                        [keyword, '', first_occurrence_index, len(sentences_), document_percent_position, frequency,
                                         sentence_index, sent,
                                          docIndex,
                                          IO_csv_util.dressFilenameForCSVHyperlink(file)])
