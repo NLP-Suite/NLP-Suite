@@ -113,6 +113,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     date_separator_var = ''
     date_position_var = 0
     date_str = ''
+    # language initialized here and reset later in language = value
     language = 'English'
     NERs = []
     for key, value in kwargs.items():
@@ -623,11 +624,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # pie chart of SVO
                     # filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3],[4,4],[5,5]], 'pie',
                     #                       'Frequency Distribution of SVOs', 1, [], 'SVO_pie','SVOs')
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
+                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
                                           'Frequency Distribution of Subjects (unfiltered)', 1, [], 'S_bar','Subjects (unfiltered)')
-                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[4, 4]], 'bar',
+                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
                                                         'Frequency Distribution of Verbs (unfiltered)', 1, [], 'V_bar', 'Verbs (unfiltered)')
-                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[5, 5]], 'bar',
+                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
                                                         'Frequency Distribution of Objects (unfiltered)', 1, [], 'O_bar', 'Objects (unfiltered)')
                     if 'SVO' in annotator_params:
                         for key, value in kwargs.items():
