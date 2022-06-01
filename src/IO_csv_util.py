@@ -78,7 +78,7 @@ def get_columnNumber_from_headerValue(headers,header_value):
             column_number = i
             break
     if column_number==None:
-        mb.showwarning(title='Wrong header value',message='The header value "' + header_value + '" was not found among the csv file headers ' + headers)
+        mb.showwarning(title='Wrong header value',message='The header value "' + str(header_value) + '" was not found among the csv file headers ' + str(headers))
     return column_number
 
 # convert header alphabetic value for CSV files with or without headers to its numeric column value

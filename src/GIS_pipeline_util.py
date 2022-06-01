@@ -105,6 +105,9 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
 
     locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName)
 
+    if locationColumnNumber == None:
+        return
+
     dateColumnNumber = -1
     if datePresent == True:
         dateColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,"Date")

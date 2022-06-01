@@ -138,7 +138,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     if language == 'English':
         language_encoding = 'utf-8'
     else:
-        language_encoding = 'utf_8_sig'
+        language_encoding = 'utf-8-sig'
 
     produce_split_files=False
     
