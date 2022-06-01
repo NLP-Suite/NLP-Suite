@@ -72,14 +72,12 @@ def get_csvfile_headers (csvFile,ask_Question=False):
 # convert header alphabetic value for CSV files with or without headers to its numeric column value
 # column numbers start at 0
 def get_columnNumber_from_headerValue(headers,header_value):
-    column_number = -1
+    column_number = None
     for i in range(len(headers)):
-        header_noBOM = headers[i].replace('\ufeff', '')
-        # if header_value == headers[i]:
-        if header_value == header_noBOM:
+        if header_value == headers[i]:
             column_number = i
             break
-    if column_number==-1 or column_number==None:
+    if column_number==None:
         mb.showwarning(title='Wrong header value',message='The header value "' + header_value + '" was not found among the csv file headers ' + headers)
     return column_number
 
