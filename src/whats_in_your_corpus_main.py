@@ -123,27 +123,24 @@ def run(inputFilename,inputDir, outputDir,
                 filesToOpen.extend(output)
 
     if topics_var==True:
-        if inputFilename!='': # only corpus in dir used
-            mb.showwarning(title='Wrong expected input',message='Topic modeling algorithms expect in input a directory containing a sett of txt files.\n\nPlease, select a directory to run topic modeling and try again.')
-        else:
-            if topics_Gensim_var==True:
-                if IO_libraries_util.check_inputPythonJavaProgramFile('topic_modeling_gensim_main.py')==False:
-                    return
-                routine_options = reminders_util.getReminders_list(config_filename)
-                reminders_util.checkReminder(config_filename,
-                                             reminders_util.title_options_gensim,
-                                             reminders_util.message_gensim,
-                                             True)
-                routine_options = reminders_util.getReminders_list(config_filename)
+        if topics_Gensim_var==True:
+            if IO_libraries_util.check_inputPythonJavaProgramFile('topic_modeling_gensim_main.py')==False:
+                return
+            routine_options = reminders_util.getReminders_list(config_filename)
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_topic_modeling_gensim,
+                                         reminders_util.message_topic_modeling_gensim,
+                                         True)
+            routine_options = reminders_util.getReminders_list(config_filename)
 
-                if open_GUI_var == True:
-                    call("python topic_modeling_gensim_main.py", shell=True)
-                else:
-                    # run with all default values; do not run MALLET
-                    output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics=20,
-                                                          remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createExcelCharts=createExcelCharts)
-                    if output!=None:
-                        filesToOpen.extend(output)
+            if open_GUI_var == True:
+                call("python topic_modeling_gensim_main.py", shell=True)
+            else:
+                # run with all default values; do not run MALLET
+                output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics=20,
+                                                      remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createExcelCharts=createExcelCharts)
+                if output!=None:
+                    filesToOpen.extend(output)
 
             if topics_Mallet_var==True:
                 if open_GUI_var == True:
@@ -305,7 +302,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
 
-GUI_label='Graphical User Interface (GUI) for a Sweeping View of Your Corpus - A Pipeline'
+GUI_label='Graphical User Interface (GUI) for a Sweeping View of Your Corpus (Single/Multiple Document(s)) - A Pipeline'
 head, scriptName = os.path.split(os.path.basename(__file__))
 config_filename = scriptName.replace('main.py', 'config.csv')
 
@@ -366,7 +363,7 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 utf8_var.set(1)
-utf8_checkbox = tk.Checkbutton(window, text='Check input corpus for utf-8 encoding', variable=utf8_var, onvalue=1, offvalue=0)
+utf8_checkbox = tk.Checkbutton(window, text='Check input document(s) for utf-8 encoding', variable=utf8_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,utf8_checkbox)
 
 ASCII_var.set(1)
@@ -374,18 +371,31 @@ ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & qu
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,ASCII_checkbox)
 
 corpus_statistics_var.set(1)
-corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute corpus statistics (word frequency & word n-grams by document)", variable=corpus_statistics_var, onvalue=1, offvalue=0)
+corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute document(s) statistics (word frequency & word n-grams by document)", variable=corpus_statistics_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,corpus_statistics_checkbox,True)
 
 corpus_options_menu_var.set('*')
-corpus_options_menu_lb = tk.Label(window, text='Corpus statistics options')
+corpus_options_menu_lb = tk.Label(window, text='document(s) statistics options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,corpus_options_menu_lb,True)
 corpus_options_menu = tk.OptionMenu(window, corpus_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation', 'Compute lines length')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+620,y_multiplier_integer,corpus_options_menu)
 
-topics_var.set(1)
 topics_checkbox = tk.Checkbutton(window,text="What are the topics? (Topic modeling)", variable=topics_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,topics_checkbox,True)
+
+def changed_filename(*args):
+    if inputFilename.get()!='':
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_topic_modeling,
+                                     reminders_util.message_topic_modeling,
+                                     True)
+        topics_var.set(0)
+        topics_checkbox.configure(state='disabled')
+    else:
+        topics_var.set(1)
+        topics_checkbox.configure(state='normal')
+inputFilename.trace('w',changed_filename)
+# input_main_dir_path.trace('w',changed_filename)
 
 topics_Mallet_var.set(0)
 topics_Mallet_checkbox = tk.Checkbutton(window,text="via MALLET", variable=topics_Mallet_var, onvalue=1, offvalue=0)
@@ -401,40 +411,38 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 def activate_topics(*args):
     if topics_var.get()==True:
-        topics_Gensim_var.set(1)
         topics_Mallet_checkbox.configure(state='normal')
         topics_Gensim_checkbox.configure(state='normal')
         open_GUI_checkbox.configure(state='normal')
     else:
-        topics_Gensim_var.set(0)
         topics_Mallet_checkbox.configure(state='disabled')
         topics_Gensim_checkbox.configure(state='disabled')
         open_GUI_checkbox.configure(state='disabled')
 topics_var.trace('w',activate_topics)
 
 def activate_Mallet(*args):
-    if topics_var.get()==True and topics_Mallet_var.get()==True:
-        open_GUI_checkbox.configure(state='normal')
+    if topics_var.get()==True:
         topics_Gensim_var.set(0)
-        topics_Gensim_checkbox.configure(state='disabled')
-        open_GUI_checkbox.configure(state='normal')
-    else:
-        open_GUI_var.set(0)
-        topics_Gensim_var.set(0)
-        topics_Gensim_checkbox.configure(state='normal')
-        open_GUI_checkbox.configure(state='disabled')
+        if topics_Mallet_var.get()==True:
+            open_GUI_checkbox.configure(state='normal')
+            topics_Gensim_checkbox.configure(state='disabled')
+            open_GUI_checkbox.configure(state='normal')
+        else:
+            open_GUI_var.set(0)
+            topics_Gensim_checkbox.configure(state='normal')
+            open_GUI_checkbox.configure(state='disabled')
 topics_Mallet_var.trace('w',activate_Mallet)
 
 def activate_Gensim(*args):
-    if topics_var.get()==True and topics_Gensim_var.get()==True:
-        topics_Mallet_var.set(0)
-        open_GUI_checkbox.configure(state='normal')
-        topics_Mallet_checkbox.configure(state='disabled')
-        open_GUI_checkbox.configure(state='normal')
-    else:
-        open_GUI_checkbox.configure(state='disabled')
-        topics_Mallet_checkbox.configure(state='normal')
-        open_GUI_checkbox.configure(state='disabled')
+    if topics_var.get()==True:
+        if topics_Gensim_var.get()==True:
+            open_GUI_checkbox.configure(state='normal')
+            topics_Mallet_checkbox.configure(state='disabled')
+            open_GUI_checkbox.configure(state='normal')
+        else:
+            open_GUI_checkbox.configure(state='disabled')
+            topics_Mallet_checkbox.configure(state='normal')
+            open_GUI_checkbox.configure(state='disabled')
 topics_Gensim_var.trace('w',activate_Gensim)
 
 def activate_allOptions(*args):
@@ -456,7 +464,7 @@ open_GUI_var.trace('w',activate_allOptions)
 
 
 what_else_var.set(1)
-what_else_checkbox = tk.Checkbutton(window,text="What else is in your corpus? (via Stanford CoreNLP and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
+what_else_checkbox = tk.Checkbutton(window,text="What else is in your document(s)? (via Stanford CoreNLP and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,what_else_checkbox,True)
 what_else_menu_var.set('*')
 what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues (CoreNLP Neural Network)','Noun and verb classes (CoreNLP NER & WordNet)', 'People & organizations (CoreNLP NER)', 'Females & males (CoreNLP Neural Network)',
