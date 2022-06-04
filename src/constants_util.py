@@ -99,24 +99,22 @@ NLP_Suite_pre_processing_tools_menu = 'File checker (file content)', \
 # 'Spelling checker (via pyspellchecker)',
 # 'Spelling checker (via textblob)')
 
-NLP_Suite_corpus_tools_menu = 'WHAT\'S IN YOUR CORPUS? A SWEEPING VIEW', \
-'Corpus statistics (Sentences, words, lines)', 'Co-Occurrences viewer', 'N-grams viewer', \
+NLP_Suite_corpus_tools_menu = 'Corpus statistics (Sentences, words, lines)', 'Co-Occurrences viewer', 'N-grams viewer', \
 'Shape of stories', 'Similarities between documents (via Python difflib)', \
 'Similarities between documents (via Java Lucene)', 'Topic modeling (via Gensim)', \
 'Topic modeling (via MALLET)'
 
-NLP_Suite_corpus_document_tools_menu = 'Stanford CoreNLP', 'CoNLL table analyzer - Search the CoNLL table', \
+NLP_Suite_corpus_document_tools_menu = 'WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW', 'Stanford CoreNLP', 'Stanza', 'spaCy', 'CoNLL table analyzer - Search the CoNLL table', \
 'CoNLL table analyzer - Clause, noun, verb, function words frequencies', 'CoreNLP annotator - date (NER normalized date)', \
 'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)', 'CoreNLP annotator - quote', \
-'CoreNLP annotator - coreference (pronominal)', 'Knowledge graphs: DBpedia & YAGO', 'HTML annotator',\
-'HTML annotator extractor', 'Annotator - hedge/uncertainty', 'Narrative analysis (ALL options GUI)', 'Style analysis (ALL options GUI)', \
+'CoreNLP annotator - coreference (pronominal)', 'Knowledge graphs: DBpedia & YAGO', \
+'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', 'Annotator - hedge/uncertainty', 'Narrative analysis (ALL options GUI)', 'Style analysis (ALL options GUI)', \
 'Sentiment analysis', 'Sentiments/emotions (ALL options GUI)', 'Gender guesser', 'Geographic maps: From texts to maps', 'Geographic maps: Google Earth Pro', \
 'NER (Named Entity Recognition) extractor', 'N-grams (word & character)', 'Nominalization', 'Search (ALL options GUI)', 'Search CoNLL table', \
 'Search text file(s) for n-grams & co-occurrences (N-grams viewer)', 'Search text file(s) for words/collocations', 'Sentence complexity', \
 'Sentence/text readability (via textstat)', 'Similarities between words (Levenshtein distance)', 'Spelling checkers', \
 'Spelling checker cleaner (Find & Replace string)', 'Semantic analysis (via TensorFlow)', 'SRL Semantic Role Labeling', \
 'SVO extractor & visualization', 'Word clouds (ALL options GUI)', 'WordNet', 'Word2Vec (via Gensim)'
-
 
 # 'Spelling checker/Unusual words (via NLTK)',
 # 'Spelling checker (via autocorrect)',

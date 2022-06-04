@@ -78,17 +78,11 @@ def run(inputFilename, inputDir, outputDir,
         if language_var!='English' and language_var!='Chinese':
             mb.showwarning(title='Language',message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
             return
-        if inputFilename!='':
-            inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
-            outputCorefedDir = os.path.join(outputDir, "coref_" + inputFileBase)  # + "_CoRefed_files")
-            inputDir = ''
-        else:
-            # processing a directory
-            inputFilename = ''
-            inputDirBase = os.path.basename(inputDir)
-            outputCorefedDir = os.path.join(outputDir, "coref_Dir_" + inputDirBase)
 
-        if not IO_files_util.make_directory(outputCorefedDir):
+        # create a subdirectory of the output directory
+        outputCorefedDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='coref',
+                                                            silent=True)
+        if outputCorefedDir == '':
             return
 
         # inputFilename and inputDir are the original txt files to be coreferenced

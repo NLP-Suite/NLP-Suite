@@ -40,25 +40,42 @@ os.chdir(dir_path)
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
 # check if a directory exists, remove if it does, and create
-def make_directory(newDirectory,ask=False):
+def make_directory(newDirectory,silent=True):
     createDir = True
+    # newDirectory=''
     # Got permission denied error if the folder is read-only.
     # Updates permission automatically
     if os.path.exists(newDirectory):
-        if ask:
+        if not silent:
             result = mb.askyesno('Directory already exists',
                                         'There already exists a directory\n\n' + newDirectory + '\n\nThis directory will be replaced.\n\nAre you sure you want to continue?')
             if not result:
-                createDir = False
-                return createDir
+                # createDir = False
+                # return createDir
+                return newDirectory
         shutil.rmtree(newDirectory)
     try:
         os.chmod(Path(newDirectory).parent.absolute(), 0o755)
         os.mkdir(newDirectory, 0o755)
     except Exception as e:
         print("error: ", e.__doc__)
-        createDir = False
-    return createDir
+        # createDir = False
+        newDirectory=''
+    # return createDir
+    return newDirectory
+
+def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=True):
+    outputSubDir=''
+    if inputFilename!='':
+        # process file
+        inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
+        outputSubDir = os.path.join(outputDir, label + "_" + inputFileBase)  # + "_CoRefed_files")
+    if inputDir!='':
+        # processing a directory
+        inputDirBase = os.path.basename(inputDir)
+        outputSubDir = os.path.join(outputDir, label + "_" + inputDirBase)
+    outputSubDir = make_directory(outputSubDir)
+    return outputSubDir
 
 
 # for folder, subs, files in os.walk(inputDir):

@@ -11,8 +11,9 @@ import GUI_IO_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run():
-    print()
-#the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
+    print('Exit')
+
+# the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run()
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -54,11 +55,6 @@ config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
 config_filename=GUI_util.config_filename
 
 GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
-
-def clear(e):
-    GUI_util.clear("Escape")
-window.bind("<Escape>", clear)
-
 
 #setup GUI widgets
 

@@ -250,19 +250,19 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
     if IO_csv_util.GetNumberOfRecordInCSVFile(svo_file_name,encodingValue='utf-8')>1:
 
-        Excel_outputFilename = visualize_Excel_chart(createExcelCharts, svo_file_name, outputDir, filesToOpen, [[3, 3]], 'bar',
+        Excel_outputFilename = visualize_Excel_chart(createExcelCharts, svo_file_name, outputDir, filesToOpen, [[0, 0]], 'bar',
                                             'Frequency Distribution of Subjects (filtered)', 1, [], 'S_bar',
                                             'Subjects (filtered)')
         if len(Excel_outputFilename) > 0:
             filesToOpen.append(Excel_outputFilename)
 
-        Excel_outputFilename = visualize_Excel_chart(createExcelCharts, svo_file_name, outputDir, filesToOpen, [[4, 4]], 'bar',
+        Excel_outputFilename = visualize_Excel_chart(createExcelCharts, svo_file_name, outputDir, filesToOpen, [[1, 1]], 'bar',
                                             'Frequency Distribution of Verbs (filtered)', 1, [], 'V_bar',
                                             'Verbs (filtered)')
         if len(Excel_outputFilename) > 0:
             filesToOpen.append(Excel_outputFilename)
 
-        Excel_outputFilename = visualize_Excel_chart(createExcelCharts, svo_file_name, outputDir, filesToOpen, [[5, 5]], 'bar',
+        Excel_outputFilename = visualize_Excel_chart(createExcelCharts, svo_file_name, outputDir, filesToOpen, [[2, 2]], 'bar',
                                             'Frequency Distribution of Objects (filtered)', 1, [], 'O_bar',
                                             'Objects (filtered)')
         if len(Excel_outputFilename) > 0:

@@ -74,6 +74,18 @@ message_WordNet_input_file_button = 'The Select INPUT file button is disabled (g
 title_options_WordNet_verb_aggregation = ['WordNet VERB aggregation']
 message_WordNet_verb_aggregation = "CAVEAT!\n\nFor VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.\n\nThe WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts."
 
+title_options_topic_modeling = ['What is in your corpus - Topic modeling']
+message_topic_modeling = 'The topic modeling option requires in input a set of txt documents, rather than a single txt file. The topic modeling option is disabled for single documents.'
+
+title_options_topic_modeling_gensim = ['What is in your corpus - Topic modeling Gensim']
+message_topic_modeling_gensim = 'The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.\n\nFor a more in-depth analysis of topics, use the topic modeling scripts for Gensim and MALLET.'
+
+title_options_GIS_redundancy = ['What is in your corpus - GIS redundant options']
+message_GIS_redundancy = 'You are running simultaneously two options that are redundant: "References to geographical locations (CoreNLP NER)" under "What else is in your document(s)?" and "GIS (Geographic Information System) pipeline".\n\nThe GIS option has the advantage that it extracts locations via CoreNLP NER annotator and maps them via Google Earth Pro and Google Maps. But... you need to install these freeware software options.'
+
+title_options_gensim_release = ['Gensim 4.0']
+message_gensim_release = 'Gensim release 4.0 removed the wrappers of other library algorithms. The algorithms running MALLET through Gensim cannot be run. Please, run MALLET using the MALLET topic modelling script to run MALLET. If your work depends on any of the Gensim modules based on wrappers (e.g., the computation of the coherence value for each topic or of the optimal number of topics), uninstall Gensim 4.0 and install Gensim 3.8.3, the last release when wrappers was supported.\n\nFor more information, please, visit the Gensim GitHub page https://github.com/RaRe-Technologies/gensim/wiki/Migrating-from-Gensim-3.x-to-4#15-removed-third-party-wrappers.'
+
 title_options_Mallet_installation = ['MALLET download and installation']
 message_Mallet_installation = 'The MALLET topic modelling tool requires a copy of the FREEWARE MALLET installed on your machine. You can download the FREEWARE MALLET at http://mallet.cs.umass.edu/download.php.\n\nMALLET in turn requires a copy of the JAVA development kit installed on your machine.\n\nRead carrefully the MALLET and Java installation TIPS.'
 
@@ -103,7 +115,7 @@ title_options_CoreNLP_NER_tags = ['CoreNLP NER tags']
 message_CoreNLP_NER_tags = "The CoNLL table produced by the CoreNLP parser has a record for each token in the document(s) processed.\n\nIf you are planning to produce frequency distributions of NER tags directly from the CoNLL table, you need to remember that tags such as 'Date' or 'City' may be grossly overestimated. For instance, in the expression 'the day before Christmas' each word 'the,' 'day,' 'before,' 'Christmas' will be tagged as NER date. The same is true for NER CITY tags such as 'New York City.'\n\nA better way to obtain frequency distributions of NER values is to run the NER annotators from the 'Stanford_CoreNLP_NER_main.py.'"
 
 title_options_CoreNLP_POS_NER_maxlen = ['CoreNLP POS/NER max sentence length']
-message_CoreNLP_POS_NER_maxlen = "The CoreNLP POS/NER annotators set a maximum sentence length for processing.\n\nSentences longer that your selected max length will be cut and some POS/NER tags in those long sentences may be be lost."
+message_CoreNLP_POS_NER_maxlen = "The CoreNLP POS/NER annotators set a maximum sentence length for processing.\n\nSentences longer than your selected max length will be cut and some POS/NER tags in those long sentences may be lost."
 
 title_options_CoreNLP_nn_parser = ['CoreNLP neural network parser']
 message_CoreNLP_nn_parser = "The CoreNLP neural network parser does not produce clause tags. The column 'Clause Tag' in the output csv file will be blank."
@@ -207,12 +219,6 @@ message_Google_API = 'If the heatmap produced by Google Maps is displayed correc
 
 title_options_Excel_Charts = ['Excel Charts']
 message_Excel_Charts = 'The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).\n\nFirst, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).\n\nSecond, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.\n\nThird, if the chart is displayed but the bars of a bar chart, for instance, have the same height, contrary to expectations, click on Data then on Chart to display the chart properly.'
-
-title_options_gensim = ['What is in your corpus - Gensim']
-message_gensim = 'The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.\n\nFor a more in-depth analysis of topics, use the topic modeling scripts for Gensim and MALLET.'
-
-title_options_gensim_release = ['Gensim 4.0']
-message_gensim_release = 'Gensim release 4.0 removed the wrappers of other library algorithms. The algorithms running MALLET through Gensim cannot be run. Please, run MALLET using the MALLET topic modelling script to run MALLET. If your work depends on any of the Gensim modules based on wrappers (e.g., the computation of the coherence value for each topic or of the optimal number of topics), uninstall Gensim 4.0 and install Gensim 3.8.3, the last release when wrappers was supported.\n\nFor more information, please, visit the Gensim GitHub page https://github.com/RaRe-Technologies/gensim/wiki/Migrating-from-Gensim-3.x-to-4#15-removed-third-party-wrappers.'
 
 title_options_input_csv_file = ["Input csv file"]
 message_input_csv_file = "You have a csv file in the 'Select INPUT CSV file' widget. The RUN command would process this file in input rather than the file stored in the I/O configuration.\n\nPress ESC if you want to clear the 'Select INPUT CSV file' widget."

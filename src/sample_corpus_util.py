@@ -11,7 +11,7 @@ import IO_files_util
 # table: path to the NLP Suite output csv file
 # corpus_location: the location of the corpus
 # folder_name: the name of the folder to save the sub corpus
-def sample_corpus_by_document_id(table, corpus_location):
+def sample_corpus_by_document_id(table, inputDir, outputDir):
     data = pd.read_csv(table)
     try:
         print(data['Document'])
@@ -19,15 +19,16 @@ def sample_corpus_by_document_id(table, corpus_location):
         mb.showwarning(title='Warning',
                        message="The selected csv INPUT file\n\n" + table + "\n\ndoes not contain the expected field header 'Document.'\n\nPlease, select the appropriate csv file and try again.")
         return
-    target_dir = os.path.join(corpus_location, 'sampleDir')
-    createDir = IO_files_util.make_directory(target_dir,True)
-    if not createDir:
+    # create a subdirectory of the output directory
+    inputFilename = ''
+    target_dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sampleDir', silent=False)
+    if target_dir == '':
         return
     doc_loc = set(data['Document'])
     not_found = []
     for doc in doc_loc:
         try:
-            shutil.copy2(os.path.join(corpus_location, doc), target_dir)
+            shutil.copy2(os.path.join(inputDir, doc), target_dir)
         except FileNotFoundError:
             not_found.append(doc)
     if len(not_found)>0:

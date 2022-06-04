@@ -752,6 +752,16 @@ def prepare_hover_data(inputFilename, hover_info_column, index):
     return hover_data
     
 
+def get_document_name(passed_string):
+    # when X-axis values contain a document dressed for hyperlink and with full path
+    #   undressed the hyperlink and only display the tail of the document
+    tail=passed_string
+    if '=hyperlink' in passed_string:
+        passed_string=IO_csv_util.undressFilenameForCSVHyperlink(passed_string)
+    if os.path.isfile(passed_string):
+        head, tail = os.path.split(passed_string)
+    return tail
+
 #data_to_be_plotted contains the values to be plotted
 #   the variable has this format:
 #   this includes both headers AND data
@@ -958,6 +968,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             index = 0
             for stats_list in data_to_be_plotted: # Iterate through all the lists
                 if i < len(stats_list): # if i is smaller than the length of the current series
+                    tail = get_document_name(str(stats_list[i][0]))
+                    stats_list[i][0] = tail
                     if index > 0:
                         row.append(stats_list[i][1]) # then we append the data
                     else:
@@ -998,25 +1010,27 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                                        reminders_util.message_Excel_Charts,
                                        True)
 
-    # NO hover-over effects; the Excel filename extension MUST be xlsx
-    else:
+    else: # NO hover-over effects; the Excel filename extension MUST be xlsx
         wb = Workbook()
         ws = wb.active
         ws.title = "Data"
         ws_chart = wb.create_sheet()
-        ws_chart.title = "Chart" 
+        ws_chart.title = "Chart"
 
+        index = 0
         for i in range(max(lengths)): # find the largest length of all series
             row = []
+            index = 0
             for stats_list in data_to_be_plotted: # Iterate through all the lists
                 # when X-axis values contain a document dressed for hyperlink and with full path
                 #   undressed the hyperlink and only display the tail of the document
                 if i < len(stats_list): # if i is smaller than the length of the current series
-                    if '=hyperlink' in str(stats_list[i][0]):
-                        stats_list[i][0]=IO_csv_util.undressFilenameForCSVHyperlink(stats_list[i][0])
-                    if os.path.isfile(str(stats_list[i][0])):
-                        head, tail = os.path.split(stats_list[i][0])
-                        stats_list[i][0] = tail
+                    tail = get_document_name(str(stats_list[i][0]))
+                    stats_list[i][0] = tail
+                    # if index > 0:
+                    #     row.append(stats_list[i][1]) # then we append the data
+                    # else:
+                    #     row += stats_list[i] # then we append the data
                     row += stats_list[i] # then we append the data
                 else: # else means the length of current series is smaller than the largest length of all series
                     # lines below are for the situation: in an excel chart, we have multiple series, but they are not the same length.
@@ -1024,6 +1038,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                     # Since we always have two columns for each series (e.g., name, freuency), so there are two append("").
                     row += [""]
                     row += [""]
+                index = index + 1
+            # fill out data sheet
             ws.append(row)
 
         #openpyxl only allows a maximum of 2 y axes with different scales
