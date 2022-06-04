@@ -19,6 +19,7 @@ import IO_user_interface_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,chartPackage,
+    compute_sentence_length_var,
     visualize_bySentenceIndex_var,
     visualize_bySentenceIndex_options_var,
     script_to_run,
@@ -31,13 +32,17 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,cha
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    if (visualize_bySentenceIndex_var==False and
+    if (compute_sentence_length_var==False and
+        visualize_bySentenceIndex_var==False and
         sentence_complexity_var==False and
         text_readability_var==False and
         visualize_sentence_structure_var==False and
         extract_sentences_var==False):
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
+
+    if compute_sentence_length_var:
+        filesToOpen = sentence_analysis_util.compute_sentence_length(inputFilename,inputDir, outputDir)
 
     if visualize_bySentenceIndex_var:
         filesToOpen = IO_files_util.runScript_fromMenu_option(script_to_run, IO_values,
@@ -89,6 +94,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_Excel_chart_output_checkbox.get(),
                                 GUI_util.charts_dropdown_field.get(),
+                                compute_sentence_length_var.get(),
                                 visualize_bySentenceIndex_var.get(),
                                 visualize_bySentenceIndex_options_var.get(),
                                 script_to_run,
@@ -107,7 +113,7 @@ GUI_util.run_button.configure(command=run_script_command)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
 GUI_width=GUI_IO_util.get_GUI_width(3)
-GUI_height=520 # height of GUI with full I/O display
+GUI_height=560 # height of GUI with full I/O display
 
 if IO_setup_display_brief:
     GUI_height = GUI_height - 80
@@ -192,7 +198,7 @@ pydict["Words/collocations by sentence index (GUI)"] = ["file_search_byWord_main
 pydict["WordNet categories by sentence index (GUI)"] = ["knowledge_graphs_WordNet_main.py", 1]
 
 pydict["Abstract/Concrete vocabulary analysis by sentence index"] = ["concreteness_analysis_util.main", 0, 3, 'txt']
-pydict["Dictionary items by sentence index"] = ["dictionary_items_sentenceID_util.dictionary_items_bySentenceID", 0, 3, 'txt']
+pydict["Dictionary items by sentence index"] = ["sentence_analysis_util.compute_sentence_length", 0, 3, 'txt']
 pydict["Hapax legomena (once-occurring words) by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
 # pydict["Hapax legomena (once-occurring words) by sentence index"] = ["statistics_txt_util.compute_character_word_ngrams", 0, 3, 'txt']
 pydict["N-grams (word & character) by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
@@ -205,6 +211,7 @@ pydict["Initial-vowel words by sentence index"] = ["statistics_txt_util.process_
 pydict["Initial-capital words by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
 pydict["Unusual words (via NLTK) by sentence index"] = ["file_spell_checker_util.nltk_unusual_words", 0, 3, 'txt']
 
+compute_sentence_length_var=tk.IntVar()
 visualize_bySentenceIndex_var=tk.IntVar()
 visualize_bySentenceIndex_options_var=tk.StringVar()
 visualize_sentence_structure_var=tk.IntVar()
@@ -221,6 +228,9 @@ def clear(e):
 	search_words_var.set('')
 	GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
+
+compute_sentence_length_checkbox = tk.Checkbutton(window, text='Compute sentence length', variable=compute_sentence_length_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,compute_sentence_length_checkbox)
 
 visualize_bySentenceIndex_var.set(0)
 visualize_bySentenceIndex_options_var.set('')
@@ -327,6 +337,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to compute the sentence lengths of your document(s).\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.'+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to visualize in an Excel line chart various text characteristics by sentence index.\n\nThe chart will give you a sense of the tempo of the text from one sentence to the next.\n\nOnce you have ticked the checkbox you will need to select one of the many visualization options available.\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.'+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to run the Java Sentence_Complexity.jar script to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure.\n\nThe Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.'+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to run the Python 3 sentence_text_readability function to compute various measures of text readability, also closely associated to the sentence clause structure.\n\n  12 readability score requires HIGHSCHOOL education;\n  16 readability score requires COLLEGE education;\n  18 readability score requires MASTER education;\n  24 readability score requires DOCTORAL education;\n  >24 readability score requires POSTDOC education.\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.\n\nIn OUTPUT, the script produces a txt file with readability scores for an entire text and a csv file with readability scores for each sentence in a text.'+GUI_IO_util.msg_Esc)

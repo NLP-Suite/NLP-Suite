@@ -80,6 +80,9 @@ message_topic_modeling = 'The topic modeling option requires in input a set of t
 title_options_topic_modeling_gensim = ['What is in your corpus - Topic modeling Gensim']
 message_topic_modeling_gensim = 'The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.\n\nFor a more in-depth analysis of topics, use the topic modeling scripts for Gensim and MALLET.'
 
+title_options_GIS_redundancy = ['What is in your corpus - GIS redundant options']
+message_GIS_redundancy = 'You are running simultaneously two options that are redundant: "References to geographical locations (CoreNLP NER)" under "What else is in your document(s)?" and "GIS (Geographic Information System) pipeline".\n\nThe GIS option has the advantage that it extracts locations via CoreNLP NER annotator and maps them via Google Earth Pro and Google Maps. But... you need to install these freeware software options.'
+
 title_options_gensim_release = ['Gensim 4.0']
 message_gensim_release = 'Gensim release 4.0 removed the wrappers of other library algorithms. The algorithms running MALLET through Gensim cannot be run. Please, run MALLET using the MALLET topic modelling script to run MALLET. If your work depends on any of the Gensim modules based on wrappers (e.g., the computation of the coherence value for each topic or of the optimal number of topics), uninstall Gensim 4.0 and install Gensim 3.8.3, the last release when wrappers was supported.\n\nFor more information, please, visit the Gensim GitHub page https://github.com/RaRe-Technologies/gensim/wiki/Migrating-from-Gensim-3.x-to-4#15-removed-third-party-wrappers.'
 
@@ -112,7 +115,7 @@ title_options_CoreNLP_NER_tags = ['CoreNLP NER tags']
 message_CoreNLP_NER_tags = "The CoNLL table produced by the CoreNLP parser has a record for each token in the document(s) processed.\n\nIf you are planning to produce frequency distributions of NER tags directly from the CoNLL table, you need to remember that tags such as 'Date' or 'City' may be grossly overestimated. For instance, in the expression 'the day before Christmas' each word 'the,' 'day,' 'before,' 'Christmas' will be tagged as NER date. The same is true for NER CITY tags such as 'New York City.'\n\nA better way to obtain frequency distributions of NER values is to run the NER annotators from the 'Stanford_CoreNLP_NER_main.py.'"
 
 title_options_CoreNLP_POS_NER_maxlen = ['CoreNLP POS/NER max sentence length']
-message_CoreNLP_POS_NER_maxlen = "The CoreNLP POS/NER annotators set a maximum sentence length for processing.\n\nSentences longer that your selected max length will be cut and some POS/NER tags in those long sentences may be be lost."
+message_CoreNLP_POS_NER_maxlen = "The CoreNLP POS/NER annotators set a maximum sentence length for processing.\n\nSentences longer than your selected max length will be cut and some POS/NER tags in those long sentences may be lost."
 
 title_options_CoreNLP_nn_parser = ['CoreNLP neural network parser']
 message_CoreNLP_nn_parser = "The CoreNLP neural network parser does not produce clause tags. The column 'Clause Tag' in the output csv file will be blank."

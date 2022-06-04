@@ -22,7 +22,7 @@ def run(window, inputFilename, inputDir, outputDir, extract_sentences_search_wor
         return
 
     import sample_corpus_util
-    sample_corpus_util.sample_corpus_by_document_id(selectedFile, inputDir)
+    sample_corpus_util.sample_corpus_by_document_id(selectedFile, inputDir, outputDir)
 
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated

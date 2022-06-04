@@ -99,7 +99,7 @@ NLP_Suite_pre_processing_tools_menu = 'File checker (file content)', \
 # 'Spelling checker (via pyspellchecker)',
 # 'Spelling checker (via textblob)')
 
-NLP_Suite_corpus_tools_menu = 'WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW', 'Corpus statistics (Sentences, words, lines)', 'Co-Occurrences viewer', 'N-grams viewer', \
+NLP_Suite_corpus_tools_menu = 'Corpus statistics (Sentences, words, lines)', 'Co-Occurrences viewer', 'N-grams viewer', \
 'Shape of stories', 'Similarities between documents (via Python difflib)', \
 'Similarities between documents (via Java Lucene)', 'Topic modeling (via Gensim)', \
 'Topic modeling (via MALLET)'

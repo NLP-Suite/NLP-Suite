@@ -317,10 +317,10 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
                         font_path = font).generate(textToProcess)
     if doNotListIndividualFiles==True:
         plt.title(inputDir)
-        output_file_name=IO_files_util.generate_output_file_name('', inputDir, outputDir, '.png', 'WC', 'img')
+        output_file_name=IO_files_util.generate_output_file_name(doc, inputDir, outputDir, '.png', 'WC', 'img')
     else:
         plt.title(ntpath.basename(doc))
-        output_file_name=IO_files_util.generate_output_file_name(doc, '', outputDir, '.png', 'WC', 'img')
+        output_file_name=IO_files_util.generate_output_file_name(doc, inputDir, outputDir, '.png', 'WC', 'img')
     # plot the WordCloud image
     plt.figure(figsize = (8, 8), facecolor = None)
     if bg_image_flag and bg_image is not None:

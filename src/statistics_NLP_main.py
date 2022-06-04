@@ -13,6 +13,7 @@ import GUI_IO_util
 import IO_csv_util
 import IO_user_interface_util
 import IO_files_util
+import sentence_analysis_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -72,7 +73,12 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createExcelCharts,chart
             if tempOutputFiles!=None:
                 filesToOpen.extend(tempOutputFiles)
 
-        if "Compute lines length" or "*" in corpus_options_menu_var:
+        if "Compute sentences length" in corpus_options_menu_var or "*" in corpus_options_menu_var:
+            tempOutputFiles = sentence_analysis_util.compute_sentence_length(inputFilename, inputDir, outputDir)
+            if tempOutputFiles!=None:
+                filesToOpen.extend(tempOutputFiles)
+
+        if "Compute lines length" in corpus_options_menu_var or "*" in corpus_options_menu_var:
             tempOutputFiles=statistics_txt_util.read_line(window, inputFilename, inputDir, outputDir,
                                                           False, createExcelCharts, chartPackage)
             if tempOutputFiles!=None:
@@ -249,7 +255,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 corpus_options_menu_var.set('*')
 corpus_options_menu_lb = tk.Label(window, text='Document(s) statistics options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,corpus_options_menu_lb,True)
-corpus_options_menu = tk.OptionMenu(window, corpus_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation', 'Compute lines length')
+corpus_options_menu = tk.OptionMenu(window, corpus_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation', 'Compute sentences length', 'Compute lines length')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+580,y_multiplier_integer,corpus_options_menu)
 
 def activate_corpus_options(*args):

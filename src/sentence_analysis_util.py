@@ -246,13 +246,13 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
 	return filesToOpen
 
 
-def extract_sentence_length(inputFilename, inputDir, outputDir):
+def compute_sentence_length(inputFilename, inputDir, outputDir):
 	inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 	Ndocs = len(inputDocs)
 	if Ndocs == 0:
 		return
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-												   'Started running sentence length computation at',
+												   'Started running sentence length algorithm at',
 												   True, '', True, '', False)
 
 	fileID = 0
@@ -280,7 +280,7 @@ def extract_sentence_length(inputFilename, inputDir, outputDir):
 						long_sentences = long_sentences + 1
 					sentenceID = sentenceID + 1
 					writer.writerow(
-						[fileID, sentenceID, len(tokens), sentence, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+						[len(tokens), sentenceID, sentence, fileID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 		csvOut.close()
 		answer = tk.messagebox.askyesno("TIPS file on memory issues", str(Ndocs) + " file(s) processed in input.\n\n" +
 										"Output csv file written to the output directory " + outputDir + "\n\n" +
@@ -289,7 +289,6 @@ def extract_sentence_length(inputFilename, inputDir, outputDir):
 		if answer:
 			TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
 	return [outputFilename]
-
 
 # wordList is a string
 def extract_sentences(window, inputFilename, inputDir, outputDir, inputString):
@@ -333,13 +332,12 @@ def extract_sentences(window, inputFilename, inputDir, outputDir, inputString):
 		inputDirBase = os.path.basename(inputDir)
 		outputDir_sentences = os.path.join(outputDir, "sentences_Dir_" + inputDirBase)
 
-	outputDir_sentences_extract=os.path.join(outputDir_sentences,'extract')
-	outputDir_sentences_extract_minus=os.path.join(outputDir_sentences,'extract_minus')
-	if not IO_files_util.make_directory(outputDir_sentences, True):
+	# create a subdirectory in the output directory
+	outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract', silent=True)
+	if outputDir_sentences_extract == '':
 		return
-	if not IO_files_util.make_directory(outputDir_sentences_extract, True):
-		return
-	if not IO_files_util.make_directory(outputDir_sentences_extract_minus, True):
+	outputDir_sentences_extract_minus = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_minus', silent=True)
+	if outputDir_sentences_extract_minus == '':
 		return
 
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',

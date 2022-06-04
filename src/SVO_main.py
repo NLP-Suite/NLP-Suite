@@ -217,18 +217,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         # field_names[10] = "Corefed Sentence"
         # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING IN SVO
         # THE SUBSCRIPT _coref_ IS CHECKED BELOW
-        if isFile:
-            inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
-            outputCorefedDir = os.path.join(outputDir, "coref_" + inputFileBase)  # + "_CoRefed_files")
-            # change input for all scripts - CoreNLP ++, SENNA, Gephi, wordclouds, Google Earth
-            inputDir = ''
-        else:
-            # processing a directory
-            inputFilename = ''
-            inputDirBase = os.path.basename(inputDir)
-            outputCorefedDir = os.path.join(outputDir, "coref_Dir_" + inputDirBase)
 
-        if not IO_files_util.make_directory(outputCorefedDir):
+        # create a subdirectory of the output directory
+        outputCorefedDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='coref',
+                                                            silent=True)
+        if outputCorefedDir == '':
             return
 
         # inputFilename and inputDir are the original txt files to be coreferenced
@@ -259,18 +252,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         filesToOpen.extend(files)
 
     if SENNA_SVO_extractor_var or CoreNLP_SVO_extractor_var or CoreNLP_OpenIE_var:
-        if isFile:
-            inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
-            # remove NLP_CoreNLP_ from filename (could have been added to filename in case of coref)
-            # the replace will be ignored when there is no NLP_CoreNLP_ in the filename
-            inputFileBase = inputFileBase.replace("NLP_CoreNLP_", "")
-            outputSVODir = os.path.join(outputDir, "SVO_" + inputFileBase)
-        else:
-            inputDirBase = os.path.basename(inputDir)
-            outputSVODir = os.path.join(outputDir, "SVO_Dir_" + inputDirBase)
-
-        outputDir = outputSVODir
-        if not IO_files_util.make_directory(outputSVODir):
+        # create a subdirectory of the output directory
+        #     # remove NLP_CoreNLP_ from filename (could have been added to filename in case of coref)
+        #     # the replace will be ignored when there is no NLP_CoreNLP_ in the filename
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename.replace("NLP_CoreNLP_", ""), inputDir, outputDir, label='SVO',
+                                                            silent=True)
+        if outputDir == '':
             return
 
     if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
