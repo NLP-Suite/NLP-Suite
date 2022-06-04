@@ -42,7 +42,6 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
         x_cols = []
         y_cols = []
         fig = NULL
-        #if(i == 'bar' or i == 'pie'):
         x_cols = headers[cols_to_plot[j][0]]
         y_cols = headers[cols_to_plot[j][1]]
         if i == 'bar':
