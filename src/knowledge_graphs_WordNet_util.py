@@ -190,7 +190,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     else:
         outputFilenameCSV1_new = outputFilenameCSV1
     filesToOpen.append(outputFilenameCSV1_new)
-
+    complete_csv_header(outputFilenameCSV1_new,"Synsets")
     # outputFilenameCSV2 - with frequency in the filename - is the file with the handful of WordNett aggregated synsets and their frequency
     outputFilenameCSV2 = os.path.join(outputDir, "NLP_WordNet_UP_" + fileName + "_frequency.csv")
     if (not 'VERB' in outputFilenameCSV2) and (not 'NOUN' in outputFilenameCSV2):
@@ -274,3 +274,36 @@ def get_case_initial_row(inputFilename,outputDir,check_column, firstLetterCapita
     data = data[data[check_column].str.contains(regex, regex= True, na=False)] # select by regular expression
     data.to_csv(outputFilename,index=False)
     return filesToOpen
+
+def complete_csv_header(inputFilename, padding_base_name):
+    max_length = 0
+    new_header = []
+    # find the longest row
+    with open(inputFilename, newline='') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if max_length < len(row):
+                max_length = len(row)
+    
+    
+    with open(inputFilename, newline='') as f:
+        reader = csv.reader(f)
+        # only read the first line
+        for row in reader:
+            max_length = max_length - len(row)
+            new_header = row
+            for i in range(1, max_length+1):
+                new_header.append(padding_base_name + " " + str(i))
+            break
+
+    tempFile = os.path.splitext(inputFilename)[0] + "_modified.csv"
+    os.rename(inputFilename, tempFile)
+    with open(tempFile, newline='') as fr, open(inputFilename,"w", newline='') as fw:
+        r = csv.reader(fr)
+        w = csv.writer(fw)
+        w.writerow(new_header)
+        next(r, None)
+        for row in r:
+            w.writerow(row)
+    os.remove(tempFile)
+    return
