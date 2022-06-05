@@ -45,6 +45,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             topics_Mallet_var.get(),
                             topics_Gensim_var.get(),
                             open_tm_GUI_var.get(),
+                            language_var.get(),
                             memory_var.get(),
                             document_length_var.get(),
                             limit_sentence_length_var.get(),
@@ -71,6 +72,7 @@ def run(inputFilename,inputDir, outputDir,
         topics_Mallet_var,
         topics_Gensim_var,
         open_tm_GUI_var,
+        language_var,
         memory_var,
         document_length_var,
         limit_sentence_length_var,
@@ -257,8 +259,8 @@ def run(inputFilename,inputDir, outputDir,
                 annotator = ['POS']
                 files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                             outputDir, openOutputFiles, createCharts, chartPackage,
-                                            annotator, False, memory_var, document_length_var, limit_sentence_length_var)
-                if len(files) > 0:
+                                            annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
+            if len(files) > 0:
                     noun_verb=''
                     if verbs_var == True:
                         inputFilename = files[0] # Verbs but... double check
@@ -295,7 +297,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator_list, False,
-                                                                      memory_var, document_length_var, limit_sentence_length_var,
+                                                                      language_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None and output!=[]:
                 filesToOpen.extend(output)
@@ -308,7 +310,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
-                                                                      memory_var, document_length_var,
+                                                                      language_var, memory_var, document_length_var,
                                                                       limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
@@ -319,7 +321,8 @@ def run(inputFilename,inputDir, outputDir,
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir, openOutputFiles,
                                                                       createCharts, chartPackage,
-                                                                      annotator, False, memory_var, document_length_var, limit_sentence_length_var)
+                                                                      annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
+
             if output != None:
                 filesToOpen.extend(output)
 
@@ -328,7 +331,8 @@ def run(inputFilename,inputDir, outputDir,
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir, openOutputFiles,
                                                                       createCharts, chartPackage,
-                                                                      annotator, False, memory_var, document_length_var, limit_sentence_length_var, single_quote_var = single_quote)
+                                                                      annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                      single_quote_var = single_quote)
             if output != None:
                 filesToOpen.extend(output)
 
@@ -336,7 +340,7 @@ def run(inputFilename,inputDir, outputDir,
             annotator='normalized-date'
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                         openOutputFiles, createCharts, chartPackage,
-                        annotator, False, memory_var, document_length_var, limit_sentence_length_var)
+                        annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
             if output != None:
                 filesToOpen.extend(output)
 
@@ -348,7 +352,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
-                                                                      memory_var, document_length_var, limit_sentence_length_var,
+                                                                      language_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
                 filesToOpen.extend(output)
@@ -380,7 +384,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                          outputDir, openOutputFiles,
                                                                          createCharts, chartPackage, 'NER',
                                                                          False,
-                                                                         memory_var, document_length_var, limit_sentence_length_var,
+                                                                         language_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                          NERs=NERs,
                                                                          extract_date_from_text_var=extract_date_from_text_var,
                                                                          extract_date_from_filename_var=extract_date_from_filename_var,
@@ -456,6 +460,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                                outputDir, openOutputFiles,
                                                                                createCharts, chartPackage,
                                                                                'SVO', False,
+                                                                               language_var,
                                                                                memory_var=memory_var,
                                                                                document_length_var=document_length_var,
                                                                                limit_sentence_length_var=limit_sentence_length_var,
@@ -530,6 +535,7 @@ topics_Mallet_var= tk.IntVar()
 topics_Gensim_var= tk.IntVar()
 open_tm_GUI_var= tk.IntVar()
 
+language_var= tk.StringVar()
 memory_var = tk.IntVar()
 nouns_var= tk.IntVar()
 verbs_var= tk.IntVar()
@@ -684,35 +690,44 @@ def activate_allOptions(*args):
         what_else_checkbox.configure(state='normal')
 open_tm_GUI_var.trace('w',activate_allOptions)
 
+# language options
+language_var_lb = tk.Label(window, text='Language ')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               language_var_lb, True)
+
+language_var.set('English')
+language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese', 'English', 'German','Hungarian','Italian','Spanish')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+70,
+                                               y_multiplier_integer, language_menu, True)
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+180, y_multiplier_integer,
                                                memory_var_lb, True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(6)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 250, y_multiplier_integer,
                                                memory_var, True)
 
 document_length_var_lb = tk.Label(window, text='Document length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+180, y_multiplier_integer,
                                                document_length_var_lb, True)
 
 document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
 document_length_var.pack()
 document_length_var.set(90000)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+150, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+300, y_multiplier_integer,
                                                document_length_var,True)
 
 limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500, y_multiplier_integer,
                                                limit_sentence_length_var_lb,True)
 
 limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
 limit_sentence_length_var.pack()
 limit_sentence_length_var.set(100)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 550, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 650, y_multiplier_integer,
                                                limit_sentence_length_var)
 
 what_else_var.set(1)

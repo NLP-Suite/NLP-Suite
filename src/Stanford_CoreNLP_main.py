@@ -64,10 +64,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if CoreNLP_annotators_var == True and 'Coreference PRONOMINAL resolution' in CoreNLP_annotators_menu_var:
         if IO_libraries_util.check_inputPythonJavaProgramFile("Stanford_CoreNLP_coReference_util.py") == False:
             return
-        if language_var!='English' and language_var!='Chinese':
-            mb.showwarning(title='Language',message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
-            return
-
+        # if not Stanford_CoreNLP_annotator_util.check_CoreNLP_language(annotator=CoreNLP_annotators_menu_var,
+        #                                                               language=language_var):
+        #     return
         # if "Neural" in CoreNLP_annotators_menu_var:
         #     CoRef_Option = 'Neural Network'
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
@@ -93,16 +92,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             return
 
         if parser and parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
-            if language_var == 'German' or language_var == 'Hungarian':
-                mb.showwarning(title='Language',
-                               message='The Stanford CoreNLP Probabilistic Context Free Grammar (PCFG) is not available for German and Hungarian.')
-                return
+            # if not Stanford_CoreNLP_annotator_util.check_CoreNLP_language(annotator=CoreNLP_annotators_menu_var,
+            #                                                               language=language_var):
+            #     return
             annotator='parser (pcfg)'
         elif parser_menu_var == 'Neural Network':
-            if language_var == 'Arabic' or language_var == 'Hungarian':
-                mb.showwarning(title='Language',
-                               message='The Stanford CoreNLP Neural Network dependency parsing is not available for Arabic and Hungarian.')
-                return
+            # if not Stanford_CoreNLP_annotator_util.check_CoreNLP_language(annotator=CoreNLP_annotators_menu_var,
+            #                                                               language=language_var):
+            #     return
             annotator='parser (nn)'
         else:
             if CoreNLP_annotators_var and CoreNLP_annotators_menu_var != '':
@@ -113,46 +110,22 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 elif 'Sentence splitter (with sentence length)' in CoreNLP_annotators_menu_var:
                     annotator = 'Sentence'
                 elif 'Lemma annotator' in CoreNLP_annotators_menu_var:
-                    if language_var != 'English':
-                        mb.showwarning(title='Language',
-                                       message='The Stanford CoreNLP lemmatizer is only available for English.')
-                        return
                     annotator = 'Lemma'
                 elif 'POS annotator' in CoreNLP_annotators_menu_var:
                     annotator = 'All POS'
                 elif 'Gender' in CoreNLP_annotators_menu_var:
-                    if language_var != 'English':
-                        mb.showwarning(title='Language',
-                                       message='The Stanford CoreNLP gender annotator is only available for English.')
-                        return
                     annotator = 'gender'
                 elif 'Quote' in CoreNLP_annotators_menu_var:
-                    if language_var != 'English':
-                        mb.showwarning(title='Language',
-                                       message='The Stanford CoreNLP quote annotator is only available for English.')
-                        return
                     annotator = 'quote'
                 elif 'Normalized' in CoreNLP_annotators_menu_var:
                     annotator = 'normalized-date'
                 elif '*' in CoreNLP_annotators_menu_var:
                     annotator = ['gender','normalized-date','quote']
                 elif 'Sentiment analysis' in CoreNLP_annotators_menu_var:
-                    if language_var != 'English':
-                        mb.showwarning(title='Language',
-                                       message='The Stanford CoreNLP sentiment analysis annotator is only available for English.')
-                        return
                     annotator = ['sentiment']
                 elif 'SVO' in CoreNLP_annotators_menu_var:
-                    if language_var == 'Arabic' or language_var == 'Hungarian':
-                        mb.showwarning(title='Language',
-                                       message='The Stanford CoreNLP SVO annotator is not available for Arabic and Hungarian.')
-                        return
                     annotator = ['SVO']
                 elif 'OpenIE' in CoreNLP_annotators_menu_var:
-                    if language_var != 'English':
-                        mb.showwarning(title='Language',
-                                       message='The Stanford CoreNLP OpenIE annotator is only available for English.')
-                        return
                     annotator = ['OpenIE']
                 else:
                     return
@@ -161,13 +134,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                        outputDir,
                                                                        openOutputFiles, createCharts, chartPackage,
                                                                        annotator, False, #'All POS',
-                                                                       memory_var, document_length_var, limit_sentence_length_var,
+                                                                       language_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                        extract_date_from_filename_var=dateInclude,
                                                                        date_format=dateFormat,
                                                                        date_separator_var=sep,
                                                                        date_position_var=date_field_position,
-                                                                       single_quote_var = single_quote,
-                                                                       language = language_var)
+                                                                       single_quote_var = single_quote)
 
         if len(tempOutputFiles)>0:
             filesToOpen.extend(tempOutputFiles)
@@ -400,7 +372,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                y_multiplier_integer, language_lb, True)
 
 language_var.set('English')
-language_menu = tk.OptionMenu(window, language_var, 'English', 'Arabic','Chinese','German','Hungarian','Italian','Spanish')
+language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese','English', 'German','Hungarian','Italian','Spanish')
 # language_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
                                                y_multiplier_integer, language_menu)

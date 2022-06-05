@@ -114,6 +114,9 @@ message_CoreNLP_shutting_down = "The Stanford CoreNLP, after firing up, will dis
 title_options_CoreNLP_NER_tags = ['CoreNLP NER tags']
 message_CoreNLP_NER_tags = "The CoNLL table produced by the CoreNLP parser has a record for each token in the document(s) processed.\n\nIf you are planning to produce frequency distributions of NER tags directly from the CoNLL table, you need to remember that tags such as 'Date' or 'City' may be grossly overestimated. For instance, in the expression 'the day before Christmas' each word 'the,' 'day,' 'before,' 'Christmas' will be tagged as NER date. The same is true for NER CITY tags such as 'New York City.'\n\nA better way to obtain frequency distributions of NER values is to run the NER annotators from the 'Stanford_CoreNLP_NER_main.py.'"
 
+title_options_CoreNLP_website = ['CoreNLP language/annotator options website']
+message_CoreNLP_website = "You will be asked next if you want to open the Stanford CoreNLP language website."
+
 title_options_CoreNLP_POS_NER_maxlen = ['CoreNLP POS/NER max sentence length']
 message_CoreNLP_POS_NER_maxlen = "The CoreNLP POS/NER annotators set a maximum sentence length for processing.\n\nSentences longer than your selected max length will be cut and some POS/NER tags in those long sentences may be lost."
 
@@ -402,6 +405,7 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
                     # title_options is the value you originally came in with (i.e., [title]) and that was inserted
                     checkReminder(config_filename, title_options, message,
                                   triggered_by_GUI_event)
+    return status # Yes for ON or No for OFF
 
 # called from a GUI when a reminder is selected from the reminder dropdown menu
 # title is a string, the reminders option selected in the GUI dropdown menu

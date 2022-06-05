@@ -255,6 +255,7 @@ def check_java_installation(script):
         errorFound = True
 
     if errorFound:
+        # open website
         open_url(title, url, ask_to_open=True, message_title=title, message=message, reminder_title=reminder_title, reminder_message=reminder_message)
 
     if system_output != '':
@@ -401,8 +402,8 @@ def open_url(website_name, url, ask_to_open = False, message_title='', message='
         return False
     # check if a reminder needs to be displayed
     if reminder_title != '':
-        reminders_util.checkReminder(config_filename, reminders_util.reminder_title,
-                                     reminders_util.reminder_message, True)
+        reminders_util.checkReminder(config_filename, reminder_title,
+                                     reminder_message, True)
     # check if the question to open the website is asked
     if ask_to_open:
         answer = tk.messagebox.askyesno(message_title,

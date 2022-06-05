@@ -45,6 +45,73 @@ import html_annotator_dictionary_util
 import SVO_enhanced_dependencies_util # Enhanced++ dependencies
 import reminders_util
 
+def check_CoreNLP_language(config_filename,annotator,language):
+    not_available = False
+    url = 'https://stanfordnlp.github.io/CoreNLP/human-languages.html'
+    CoreNLP_web='\n\nLanguage and annotator options for Stanford CoreNLP are listed at the Stanford CoreNLP website ' + url
+    if "lemma" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP Lemma annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "normalized" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP Normalized NER annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "gender" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP gender annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "quote" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP quote annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "OpenIE" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP OpenIE annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "sentiment" in annotator.lower():
+        if language != 'English' and language != 'Chinese':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP sentiment analysis annotator is only available for Chinese and English.' + CoreNLP_web)
+            not_available = True
+    elif "coreference" in annotator.lower():
+        if language != 'English' and language != 'Chinese':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP coreference resolution annotator is only available for Chinese and English.' + CoreNLP_web)
+            not_available = True
+    elif "PCFG" in annotator.lower():
+        if language == 'English' or language == 'German':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP PCFG parser is not available for German and Hungarian.'+CoreNLP_web)
+            not_available = True
+    elif "neural network" in annotator.lower(): #parsee
+        if language == 'Arabic' or language == 'Hungarian':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP neural network parser is not available for Arabic and Hungarian.'+CoreNLP_web)
+            not_available = True
+    elif "SVO" in annotator.lower(): #parsee
+        if language == 'Arabic' or language == 'Hungarian':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP SVO annotator is not available for Arabic and Hungarian.'+CoreNLP_web)
+            not_available = True
+    if not_available:
+        reminder_status = reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_website,
+                                     reminders_util.message_CoreNLP_website,
+                                     True)
+        if reminder_status == 'Yes':
+            # open website
+            website_name = 'CoreNLP website'
+            message_title = 'CoreNLP website'
+            message="Would you like to open the Stanford CoreNLP website for annotator availability for the various languages supported by CoreNLP?"
+            IO_libraries_util.open_url(website_name, url, ask_to_open=True, message_title=message_title, message=message)
+    return not(not_available) # failed
+
 import GUI_IO_util
 # from operator import itemgetter, attrgetter
 # central CoreNLP_annotator function that pulls together our approach to processing many files,
@@ -71,8 +138,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      openOutputFiles, createCharts, chartPackage,
                      annotator_params,
                      DoCleanXML,
+                     language,
                      memory_var,
-                     # print_json = False,
                      document_length=90000,
                      sentence_length=1000, # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
                      print_json = True,
@@ -114,7 +181,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
     date_position_var = 0
     date_str = ''
     # language initialized here and reset later in language = value
-    language = 'English'
     NERs = []
     for key, value in kwargs.items():
         if key == 'extract_date_from_text_var' and value == True:
@@ -131,8 +197,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
             date_position_var = value
         if key == 'single_quote_var':
             single_quote_var = value
-        if key == 'language':
-            language = value
 
     global language_encoding
     if language == 'English':
@@ -238,6 +302,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # param_list_NN = []
     corefed_pronouns = 0#pronouns that are corefed
     for annotator in annotator_params:
+        if not check_CoreNLP_language(config_filename, annotator, language):
+            continue
         if "gender" in annotator or "quote" in annotator or "coref" in annotator or "SVO" in annotator or "OpenIE" in annotator or ("parser" in annotator and "nn" in annotator):
             print("Using neural network model")
             neural_network = True
@@ -276,6 +342,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # the third item in routine_list is typ[ically a single lit [], but for POS it becomes a double list ['Verbs'],[Nouns]]
     # the case needs special handling
     POS_WordNet=False
+    if routine_list==[]: # when the language check fails for an annotator
+        return filesToOpen
     if isinstance(routine_list[0][2][0],list):
         run_output = [[], []]
         POS_WordNet=True
