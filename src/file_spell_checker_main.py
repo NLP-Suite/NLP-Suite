@@ -19,7 +19,8 @@ import file_spell_checker_util
 
 def run(inputFilename, inputDir, outputDir,
         openOutputFiles,
-        createExcelCharts,
+        createCharts,
+        chartPackage,
         by_all_tokens_var,
         byNER_value_var,
         NER_list,
@@ -44,10 +45,10 @@ def run(inputFilename, inputDir, outputDir,
                 silent=False
             # openOutputFiles=False
             filesToOpen=file_spell_checker_util.nltk_unusual_words(GUI_util.window, inputFilename, inputDir, outputDir, False,
-													   createExcelCharts,silent)
+													   createCharts,chartPackage, silent)
 
         if checker_value_var == '*' or "detector" in checker_value_var:
-            file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts)
+            file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage)
 
         if checker_value_var == '*' or 'autocorrect' in checker_value_var or 'pyspellchecker' in checker_value_var or 'textblob' in checker_value_var:
             autocorrect_df, pyspellchecker_df,textblob_df = file_spell_checker_util.spellcheck(inputFilename, inputDir, checker_value_var, check_withinSubDir_spell_checker_var)
@@ -92,12 +93,12 @@ def run(inputFilename, inputDir, outputDir,
         if check_withinSubDir and (not spelling_checker_var):
             # TODO files need t be added to filesToOpen
             outputFiles = file_spell_checker_util.check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles,
-																		 createExcelCharts, NER_list, similarity_value,
+																		 createCharts, NER_list, similarity_value,
 																		 by_all_tokens_var,
                                                                          spelling_checker_var)
         else:
             outputFiles = file_spell_checker_util.check_for_typo(inputDir, outputDir,
-                                                                 openOutputFiles, createExcelCharts, chartPackage,
+                                                                 openOutputFiles, createCharts, chartPackage,
                                                                  NER_list, similarity_value,
 																 by_all_tokens_var)
 
@@ -114,7 +115,7 @@ run_similarity_command = lambda: run(
                                      GUI_util.input_main_dir_path.get(),
                                      GUI_util.output_dir_path.get(),
                                      GUI_util.open_csv_output_checkbox.get(),
-                                     GUI_util.create_Excel_chart_output_checkbox.get(),
+                                     GUI_util.create_chart_output_checkbox.get(),
                                      GUI_util.charts_dropdown_field.get(),
                                      by_all_tokens_var.get(),
                                      byNER_value_var.get(),

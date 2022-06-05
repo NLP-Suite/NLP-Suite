@@ -30,7 +30,7 @@ pd.set_option('display.max_columns', 500)
 # written by Yi Wang April 2020
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles,
-        createExcelCharts,
+        createCharts,
         csv_file,
         aggregate_POS_var,
         noun_verb,
@@ -112,7 +112,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 if result==False:
                     return
         filesToOpen = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, config_filename, noun_verb, openOutputFiles,
-                                                     createExcelCharts)
+                                                     createCharts, chartPackage)
 
     if extract_nouns_verbs_from_CoNLL_var==True:
         # check that input file is a CoNLL table
@@ -138,7 +138,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         verbs_var = True
         # uses a txt fie in input
         files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                 outputDir, openOutputFiles, createExcelCharts, chartPackage,
+                                                                 outputDir, openOutputFiles, createCharts, chartPackage,
                                                                  annotator, False, memory_var)
         if len(files) > 0:
             noun_verb = ''
@@ -149,7 +149,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 else:
                     return
                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
-                                                        openOutputFiles, createExcelCharts)
+                                                        openOutputFiles, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -160,7 +160,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 else:
                     return
                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
-                                                        openOutputFiles, createExcelCharts)
+                                                        openOutputFiles, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -170,7 +170,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
             return
         outputFilename=IO_files_util.generate_output_file_name(csv_file, outputDir, '.csv', 'WordNet', 'conll')
         filesToOpen.append(outputFilename)
-        sentence_analysis_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,createExcelCharts)
+        sentence_analysis_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,createCharts, chartPackage)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -180,7 +180,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(), 
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_dropdown_field.get(),
                             csv_file_var.get(),
                             aggregate_POS_var.get(),
@@ -237,7 +237,7 @@ input_main_dir_path = GUI_util.input_main_dir_path
 outputDir = GUI_util.output_dir_path
 
 openOutputFiles = GUI_util.open_csv_output_checkbox.get()
-createExcelCharts = GUI_util.create_Excel_chart_output_checkbox.get()
+createCharts = GUI_util.create_chart_output_checkbox.get()
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief)
 

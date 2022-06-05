@@ -55,7 +55,7 @@ except:
 
 nlp = spacy.load('en_core_web_sm')
 
-def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,
+def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                         remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var,
                         vis_menu_var, dim_menu_var, keywords_var,
                         word_vector=None):

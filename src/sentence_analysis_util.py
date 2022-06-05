@@ -47,7 +47,7 @@ def Extract(lst):
 	return [item[0] for item in lst]
 
 
-def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, createExcelCharts, openOutputFiles=True,
+def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, createCharts, chartPackage, openOutputFiles=True,
 								  input_dictionary_file='', chartTitle=''):
 	filesToOpen = []
 	DictionaryList = []
@@ -166,7 +166,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 # written by Yi Wang April 2020
 # ConnlTable is the inputFilename
 def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, noun_verb, openOutputFiles,
-						 createExcelCharts):
+						 createCharts, chartPackage):
 	filesToOpen = []
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
 												   'Started running WordNet charts by sentence index at',
@@ -226,13 +226,14 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
 	df = charts_Excel_util.add_missing_IDs(df)
 	df.to_csv(outputFilename, index=False)
 
-	if createExcelCharts:
+	if createCharts:
 		outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
 																	   ConnlTable,
 																	   df,
 																	   outputDir,
 																	   openOutputFiles,
-																	   createExcelCharts,
+																	   createCharts,
+																	   chartPackage,
 																	   [[4, 5]],
 																	   ['WordNet Category'], ['Form'],
 																	   ['Sentence ID', 'Document ID', 'Document'],
@@ -428,7 +429,7 @@ def extract_sentences(window, inputFilename, inputDir, outputDir, inputString):
 
 
 # https://pypi.org/project/textstat/
-def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts):
+def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
 	filesToOpen = []
 	documentID = 0
 
@@ -664,7 +665,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 		result = True
 
 		# readability
-		if createExcelCharts == True:
+		if createCharts == True:
 			result = True
 			# if nFile>10:
 			#     result = mb.askyesno("Excel charts","You have " + str(nFile) + " files for which to compute Excel charts for each file.\n\nTHIS WILL TAKE A LONG TIME TO PRODUCE.\n\nAre you sure you want to do that?")
@@ -677,8 +678,9 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 				# hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
 				hover_label = []
 
-				Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
+				chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
 																 outputFileLabel='READ',
+																 chartPackage=chartPackage,
 																 chart_type_list=["line"],
 																 chart_title='Text Readability (6 Readability Measures)',
 																 column_xAxis_label_var='Sentence index',
@@ -686,18 +688,18 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 																 count_var=0,
 																 column_yAxis_label_var='6 Readability measures')
 
-				if Excel_outputFilename != "":
+				if chart_outputFilename != "":
 					# rename filename not be overwritten by next line plot
 					try:
-						Excel_outputFilename_new = Excel_outputFilename.replace("line_chart", "ALL_line_chart")
-						os.rename(Excel_outputFilename, Excel_outputFilename_new)
+						chart_outputFilename_new = chart_outputFilename.replace("line_chart", "ALL_line_chart")
+						os.rename(chart_outputFilename, chart_outputFilename_new)
 					except:
 						# the file already exists and must be removed
-						if os.path.isfile(Excel_outputFilename_new):
-							os.remove(Excel_outputFilename_new)
-						os.rename(Excel_outputFilename, Excel_outputFilename_new)
+						if os.path.isfile(chart_outputFilename_new):
+							os.remove(chart_outputFilename_new)
+						os.rename(chart_outputFilename, chart_outputFilename_new)
 
-					filesToOpen.append(Excel_outputFilename_new)
+					filesToOpen.append(chart_outputFilename_new)
 
 				# outputFilenameXLSM_1 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
 				#                                           outputFilenameCsv, chart_type_list=["line"],
@@ -717,8 +719,9 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 				# plot overall grade level
 				columns_to_be_plotted = [[10, 9]]
 				hover_label = ['Sentence']
-				Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
+				chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
 																 outputFileLabel='READ',
+																 chartPackage=chartPackage,
 																 chart_type_list=["line"],
 																 chart_title='Text Readability (Readability Grade Level)',
 																 column_xAxis_label_var='Sentence index',
@@ -726,8 +729,8 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 																 count_var=0,
 																 column_yAxis_label_var='Readability grade level')
 
-				if Excel_outputFilename != "":
-					filesToOpen.append(Excel_outputFilename)
+				if chart_outputFilename != "":
+					filesToOpen.append(chart_outputFilename)
 
 				# outputFilenameXLSM_2 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
 				#                                           outputFilenameCsv, chart_type_list=["line"],
@@ -748,15 +751,16 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 			columns_to_be_plotted = [[10, 8]]
 			hover_label = []
 
-			Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
+			chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
 															 outputFileLabel='READ',
+															 chartPackage=chartPackage,
 															 chart_type_list=["bar"],
 															 chart_title='Frequency of Sentences by Readability Consensus of Grade Level',
 															 column_xAxis_label_var='',
 															 hover_info_column_list=hover_label,
 															 count_var=1)
-			if Excel_outputFilename != "":
-				filesToOpen.append(Excel_outputFilename)
+			if chart_outputFilename != "":
+				filesToOpen.append(chart_outputFilename)
 
 			# outputFilenameXLSM_3 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
 			#                                           outputFilenameCsv, chart_type_list=["bar"],
@@ -843,7 +847,7 @@ def sentence_structure_tree(inputFilename, outputDir):
 			cf.print_to_file(outputDir + '/' + os.path.basename(inputFilename) + '_' + str(sentenceID) + '_tree.ps')
 
 # written by Mino Cha March/April 2022
-def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts):
+def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
 	## list for csv file
 	documentID = []
 	document = []
@@ -942,21 +946,22 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
 	op.to_csv(outputFilename, index=False)
 	filesToOpen.append(outputFilename)
 
-	if createExcelCharts == True:
+	if createCharts == True:
 		inputFilename = outputFilename
 		columns_to_be_plotted = [[5, 1], [5, 3]]
 		# hover_label = ['Sentence', 'Sentence']
 		hover_label = []
-		Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
 														 outputFileLabel='Complex',
+														 chartPackage=chartPackage,
 														 chart_type_list=["line"],
 														 chart_title='Complexity Scores (Yngve, Frazier) by Sentence Index',
 														 column_xAxis_label_var='Sentence index',
 														 hover_info_column_list=hover_label,
 														 count_var=0,
 														 column_yAxis_label_var='Scores')
-		if Excel_outputFilename != "":
-			filesToOpen.append(Excel_outputFilename)
+		if chart_outputFilename != "":
+			filesToOpen.append(chart_outputFilename)
 
 
 	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',

@@ -121,7 +121,7 @@ def extract_CoreNLP_SVO(svo_triplets, svo_CoreNLP_single_file, svo_CoreNLP_merge
             added.add((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
 
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         memory_var,
         document_length_var,
         limit_sentence_length_var,
@@ -227,7 +227,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         # inputFilename and inputDir are the original txt files to be coreferenced
         # 2 items are returned: filename string and true/False for error
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir, outputCorefedDir,
-                                       openOutputFiles, createExcelCharts, chartPackage,
+                                       openOutputFiles, createCharts, chartPackage,
                                        memory_var,
                                        Manual_Coref_var)
         if error_indicator != 0:
@@ -247,7 +247,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
     if normalized_NER_date_extractor_var:
         files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
-                                                                 openOutputFiles, createExcelCharts, chartPackage,
+                                                                 openOutputFiles, createCharts, chartPackage,
                                                                  'normalized-date', False, memory_var, document_length_var, limit_sentence_length_var)
         filesToOpen.extend(files)
 
@@ -287,7 +287,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         outputLocations.append(location_filename)
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir, openOutputFiles,
-                                                                       createExcelCharts,
+                                                                       createCharts,
                                                                        chartPackage,
                                                                        'SVO', False,
                                                                        memory_var, document_length_var, limit_sentence_length_var,
@@ -303,7 +303,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
                 output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -314,13 +314,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                     if IO_csv_util.GetNumberOfRecordInCSVFile(tempOutputFiles[0], encodingValue='utf-8') > 1:
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Verb (V)'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'VERB',
-                                                               openOutputFiles, createExcelCharts)
+                                                               openOutputFiles, createCharts, chartPackage)
                         os.remove(outputFilename)
                         if output != None:
                             filesToOpen.extend(output)
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'NOUN',
-                                                               openOutputFiles, createExcelCharts)
+                                                               openOutputFiles, createCharts, chartPackage)
                         os.remove(outputFilename)
                         if output != None:
                             filesToOpen.extend(output)
@@ -393,7 +393,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         #   both options run correctly for CoreNLP ++
         svo_SENNA_files = []
         svo_SENNA_file = SVO_SRL_SENNA_util.run_senna(inputFilename, inputDir, outputDir, openOutputFiles,
-                                                                createExcelCharts)
+                                                                createCharts, chartPackage)
         if len(svo_SENNA_file) > 0:
             svo_SENNA_file = svo_SENNA_file[0]
 
@@ -403,7 +403,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                                                                           outputDir=os.path.join(outputDir,
                                                                                                  outputSVODir),
                                                                           openOutputFiles=openOutputFiles,
-                                                                          createExcelCharts=createExcelCharts)
+                                                                          createCharts=createCharts,
+                                                                          chartPackage=chartPackage)
         else:
             svo_SENNA_files = [svo_SENNA_file]
 
@@ -414,7 +415,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_SENNA_files:
                 output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -451,7 +452,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         outputLocations.append(location_filename)
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir, openOutputFiles,
-                                                                           createExcelCharts,
+                                                                           createCharts,
                                                                            chartPackage,
                                                                            'OpenIE', 
                                                                            False,
@@ -467,7 +468,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
                 output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
             
@@ -479,14 +480,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                     outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Verb (V)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
                                                                              config_filename, 'VERB',
-                                                                             openOutputFiles, createExcelCharts)
+                                                                             openOutputFiles, createCharts, chartPackage)
                     os.remove(outputFilename)
                     if output != None:
                         filesToOpen.extend(output)
                     outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
                                                                              config_filename, 'NOUN',
-                                                                             openOutputFiles, createExcelCharts)
+                                                                             openOutputFiles, createCharts, chartPackage)
                     os.remove(outputFilename)
                     if output != None:
                         filesToOpen.extend(output)
@@ -617,7 +618,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_dropdown_field.get(),
                                  memory_var.get(),
                                  document_length_var.get(),

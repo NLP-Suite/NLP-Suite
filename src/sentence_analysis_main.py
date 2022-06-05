@@ -18,7 +18,7 @@ import IO_user_interface_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,chartPackage,
+def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPackage,
     compute_sentence_length_var,
     visualize_bySentenceIndex_var,
     visualize_bySentenceIndex_options_var,
@@ -47,20 +47,20 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,cha
     if visualize_bySentenceIndex_var:
         filesToOpen = IO_files_util.runScript_fromMenu_option(script_to_run, IO_values,
                                                 inputFilename, inputDir, outputDir,
-                                                openOutputFiles, createExcelCharts, chartPackage,
+                                                openOutputFiles, createCharts, chartPackage,
                                                 visualize_bySentenceIndex_options_var)
 
     if sentence_complexity_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
-        filesToOpen=sentence_analysis_util.sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts)
+        filesToOpen=sentence_analysis_util.sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage)
         if filesToOpen==None:
             return
 
     if text_readability_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
-        sentence_analysis_util.sentence_text_readability(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts)
+        sentence_analysis_util.sentence_text_readability(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage)
 
     if visualize_sentence_structure_var==True:
         # if IO_libraries_util.check_inputPythonJavaProgramFile('DependenSee.Jar')==False:
@@ -92,7 +92,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.create_Excel_chart_output_checkbox.get(),
+                                GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_dropdown_field.get(),
                                 compute_sentence_length_var.get(),
                                 visualize_bySentenceIndex_var.get(),
@@ -234,7 +234,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 visualize_bySentenceIndex_var.set(0)
 visualize_bySentenceIndex_options_var.set('')
-visualize_bySentenceIndex_checkbox = tk.Checkbutton(window, text='Visualize text features by sentence index (Excel line plots)', variable=visualize_bySentenceIndex_var, onvalue=1, offvalue=0)
+visualize_bySentenceIndex_checkbox = tk.Checkbutton(window, text='Visualize text features by sentence index (line plots)', variable=visualize_bySentenceIndex_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,visualize_bySentenceIndex_checkbox,True)
 visualize_bySentenceIndex_lb = tk.Label(window, text='Select visualization option')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,visualize_bySentenceIndex_lb,True)

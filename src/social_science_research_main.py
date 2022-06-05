@@ -62,20 +62,20 @@ def find_character_home(output_dir_path):
         subprocess.call("sudo Python file_classifier_main.py character home", shell=True)
     # files are opened in the file_classifier_main.py GUI
 
-def missing_character(CoreNLPdir, input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, checkNER):
+def missing_character(CoreNLPdir, input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, checkNER):
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_summary_checker_util.py') == False:
         return
-    Excel_outputFile=file_summary_checker_util.main(CoreNLPdir, input_main_dir_path,input_secondary_dir_path,output_dir_path,openOutputFiles, createExcelCharts, chartPackage, checkNER)
+    Excel_outputFile=file_summary_checker_util.main(CoreNLPdir, input_main_dir_path,input_secondary_dir_path,output_dir_path,openOutputFiles, createCharts, chartPackage, checkNER)
     if Excel_outputFile!="":
         filesToOpen.extend(Excel_outputFile)
 
-def intruder(CoreNLPdir,input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, similarityIndex_Intruder_var):
+def intruder(CoreNLPdir,input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var):
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_find_non_related_documents_util.py') == False:
         return
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running INTRUDER at',
                                                  True, '', True, '', True)
     # Windows...
-    outputFiles=file_find_non_related_documents_util.main(CoreNLPdir, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, similarityIndex_Intruder_var)
+    outputFiles=file_find_non_related_documents_util.main(CoreNLPdir, input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var)
 
     if outputFiles!='':
         filesToOpen.extend(outputFiles)
@@ -143,7 +143,7 @@ def group_newspaper(document_class_csv, output_filename):
             writer.writerow(to_write)
 
 
-def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, createExcelCharts,
+def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, createCharts,
                similarityIndex_Plagiarist_var, fileName_embeds_date, DateFormat, DatePosition, DateCharacterSeparator):
     if similarityIndex_Plagiarist_var < .8:
         mb.showwarning(title='Similarity Index warning', message="The level of similarity was set at " + str(
@@ -184,20 +184,21 @@ def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, c
         group_newspaper(outputFilenameCSV_3, outputFilenameCSV_4)
         filesToOpen.append(outputFilenameCSV_4)
 
-    if createExcelCharts:
+    if createCharts:
         # Lucene_classes_freq.csv; outputFilenameCSV_1
         outputDir=output_dir_path
         inputFilename = outputFilenameCSV_1
         columns_to_be_plotted = [[0, 1]]
         hover_label = ['List of Documents in Category']
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='SSR_plagiar',
+                                                  chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title='Frequency of Plagiarism by Classes of % Duplication',
                                                   column_xAxis_label_var='Classes of percentage duplication',
                                                   hover_info_column_list=hover_label)
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
         # Plot Lucene_classes_time_freq.csv line plot (temporal plot); outputFilenameCSV_2
         if fileName_embeds_date:
@@ -206,14 +207,15 @@ def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, c
             inputFilename = outputFilenameCSV_2
             columns_to_be_plotted = [[0, 1], [0, 2], [0, 3]]
             hover_label = ['', '', '']
-            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='SSR_plagiar',
+                                                      chartPackage=chartPackage,
                                                       chart_type_list=["line"],
                                                       chart_title='Frequency of Plagiarism by Year',
                                                       column_xAxis_label_var='Year',
                                                       hover_info_column_list=hover_label)
-            if Excel_outputFilename != "":
-                filesToOpen.append(Excel_outputFilename)
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
 
         # No plot for Lucene_document_classes_freq.csv
         #   because it could potentially have thousands of documents
@@ -224,14 +226,15 @@ def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, c
         columns_to_be_plotted = [[0, 1],[0, 2],[0, 3]]
         hover_label = ['']
         inputFilename = outputFilenameCSV_4
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='SSR_plagiar',
+                                                  chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title='Frequency of Plagiarism by Document Name & Classes',
                                                   column_xAxis_label_var='',
                                                   hover_info_column_list=hover_label)
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running PLAGIARIST at', True, '', True, startTime)
 
@@ -246,7 +249,7 @@ def Levenshtein():
     # files are opened in the spell_checker_main
 
 
-def run(input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage,
+def run(input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage,
         fileName_embeds_date, DateFormat, DatePosition, DateCharacterSeparator,
         check_filename_var, character_var, character_home_var, missing_character_var, NER_var, intruder_var,
         similarityIndex_Intruder_var, ancestor_var, nouns_verbs,
@@ -270,13 +273,13 @@ def run(input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutp
     elif character_home_var == True:
         find_character_home(output_dir_path)
     elif missing_character_var == True:
-        missing_character(CoreNLPdir, input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, NER_var)
+        missing_character(CoreNLPdir, input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, NER_var)
     elif intruder_var == True:
-        intruder(CoreNLPdir, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, similarityIndex_Intruder_var)
+        intruder(CoreNLPdir, input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var)
     elif ancestor_var == True:
         ancestor(input_main_dir_path, output_dir_path)
     elif plagiarist_var == True:
-        plagiarist(input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage,
+        plagiarist(input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage,
                    similarityIndex_Plagiarist_var, fileName_embeds_date, DateFormat, DatePosition,
                    DateCharacterSeparator)
     elif Levenshtein_var == True:
@@ -290,7 +293,7 @@ run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
                                  GUI_util.input_secondary_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_dropdown_field.get(),
                                  fileName_embeds_date.get(),
                                  date_format.get(),

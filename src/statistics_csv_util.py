@@ -85,7 +85,7 @@ def compute_stats_CoreNLP_tag(data_list,column_to_be_counted,column_name,CoreNLP
 #       every NUMERIC field in the input file
 #       or on a specific field passed
 
-def compute_field_statistics_NoGroupBy(window,inputFilename, outputDir, openOutputFiles, createExcelCharts, chartPackage, columnNumber=-1):
+def compute_field_statistics_NoGroupBy(window,inputFilename, outputDir, openOutputFiles, createCharts, chartPackage, columnNumber=-1):
     filesToOpen = []
     if inputFilename[-4:]!='.csv':
         mb.showwarning(title='File type error', message="The input file\n\n" + inputFilename + "\n\nis not a csv file. The statistical function only works with input csv files.\n\nPlease, select a csv file in input and try again!")
@@ -150,7 +150,7 @@ def percentile(n):
 
 
 #written by Yi Wang March 2020, edited Landau/Franzosi February 20021
-def compute_field_statistics_groupBy(window,inputFilename, outputDir, groupByField: list, openOutputFiles, createExcelCharts, chartPackage, columnNumber=-1):
+def compute_field_statistics_groupBy(window,inputFilename, outputDir, groupByField: list, openOutputFiles, createCharts, chartPackage, columnNumber=-1):
     filesToOpen=[]
     output_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'group_stats')
     # filesToOpen.append(output_name)
@@ -195,7 +195,7 @@ def compute_field_statistics_groupBy(window,inputFilename, outputDir, groupByFie
         filesToOpen=[] # empty list to avoid dual opening in calling function
     return filesToOpen
 
-def compute_field_statistics(window,inputFilename,outputDir, openOutputFiles,createExcelCharts=False):
+def compute_field_statistics(window,inputFilename,outputDir, openOutputFiles,createCharts=False):
     command = tk.messagebox.askyesno("Groupby fields", "Do you want to compute statistics grouping results by the values of one or more fields (e.g., the DocumentID of a CoNLL table)?")
     if command ==False:
         compute_field_statistics_NoGroupBy(window,inputFilename,outputDir, openOutputFiles)
@@ -207,7 +207,7 @@ def compute_field_statistics(window,inputFilename,outputDir, openOutputFiles,cre
 
 # # 1.22 Yi we do not need a columns_to_be_plotted variable in this function, passing numbers of columns to prepare_csv_data_for_chart will cause error
 def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
-            openOutputFiles,createExcelCharts,chartPackage,
+            openOutputFiles,createCharts,chartPackage,
             columns_to_be_plotted,selected_col, hover_col, group_col,
             fileNameType='CSV',chartType='line'):
 
@@ -246,16 +246,17 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
             data.to_csv(output_file_name,index=False)
             filesToOpen.append(output_file_name)
 
-            if createExcelCharts:
+            if createCharts:
                 # columns_to_be_plotted = [[1, 2]] # hard code Yi
-                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel=fileNameType,
+                                                      chartPackage=chartPackage,
                                                       chart_type_list=chartType,
                                                       chart_title='',
                                                       column_xAxis_label_var=col,
                                                       hover_info_column_list=Hover_over_header)
-                if Excel_outputFilename != "":
-                    filesToOpen.append(Excel_outputFilename)
+                if chart_outputFilename != "":
+                    filesToOpen.append(chart_outputFilename)
 
     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
         for col in selected_col:
@@ -268,26 +269,27 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
                     data.at[index,'Frequency'] = 0
             data.to_csv(output_file_name,index=False)
             filesToOpen.append(output_file_name)
-            if createExcelCharts:
+            if createCharts:
                 # columns_to_be_plotted = [[1, 2]] # hard code Yi
-                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel=fileNameType,
+                                                      chartPackage=chartPackage,
                                                       chart_type_list=chartType,
                                                       chart_title='',
                                                       column_xAxis_label_var=col,
                                                       hover_info_column_list=Hover_over_header)
-                filesToOpen.append(Excel_outputFilename)
-                if Excel_outputFilename != "":
-                    filesToOpen.append(Excel_outputFilename)
+                filesToOpen.append(chart_outputFilename)
+                if chart_outputFilename != "":
+                    filesToOpen.append(chart_outputFilename)
 
                 # # columns_to_be_plotted = [[1, 2]] # hard code Yi
-                # Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                # chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                 #                                       outputFileLabel=fileNameType,
                 #                                       chart_type_list=[chartType],
                 #                                       chart_title='',
                 #                                       column_xAxis_label_var=col,
                 #                                       hover_info_column_list=Hover_over_header)
-                # filesToOpen.append(Excel_outputFilename)
+                # filesToOpen.append(chart_outputFilename)
     else:
         for col in hover_col:
             temp = group_col.copy()
@@ -316,24 +318,25 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1)
         data.drop(hover_col, axis=1, inplace=True)
 
-        if createExcelCharts:
+        if createCharts:
             # columns_to_be_plotted = [[1, 2]] # hard code Yi
-            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel=fileNameType,
+                                                      chartPackage=chartPackage,
                                                       chart_type_list=chartType,
                                                       chart_title='',
                                                       column_xAxis_label_var=col,
                                                       hover_info_column_list=Hover_over_header)
-            if Excel_outputFilename != "":
-                filesToOpen.append(Excel_outputFilename)
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
             
         # need change, put run_all
-        # if createExcelCharts:
+        # if createCharts:
         #     filesToOpen=charts_Excel_util.prepare_csv_data_for_chart(window,
         #                                                         inputFilename, data, outputDir,
         #                                                         selected_col,
         #                                                         Hover_over_header, group_col, fileNameType,
-        #                                                         chartType,openOutputFiles, createExcelCharts)
+        #                                                         chartType,openOutputFiles, createCharts, chartPackage)
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
         filesToOpen=[] # empty list not to display twice

@@ -84,7 +84,7 @@ def gatherAnnotations(inputFile, tags, mustInclude='<p>', cleanMultiples=True):
     return result
         
 
-def buildcsv(inputHTMLFile, inputHTMLFolder, output_dir_path,openOutputFiles,createExcelCharts):
+def buildcsv(inputHTMLFile, inputHTMLFolder, output_dir_path,openOutputFiles,createCharts, chartPackage):
     filesToOpen=[]
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running html annotator extractor at', True, "You can follow html annotation extractor in command line.")
 
@@ -144,15 +144,15 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, output_dir_path,openOutputFiles,cre
 
     writeCSV.close()
 
-    # if createExcelCharts==True:
+    # if createCharts==True:
     #     chartTitle='HTML extractor'
     #     columns_to_be_plotted = [2,2]
     #     hover_label=['']
     #     chartType='bar'
     #     fileNameType='html_extr'
-    #     excel_outputFilename_1 = charts_Excel_util.run_all(columns_to_be_plotted, csvFile, output_dir_path, csvFile, chart_type_list=[chartType], chart_title=chartTitle, column_xAxis_label_var='', column_yAxis_label_var='Frequencies', outputExtension = '.xlsm', label1=fileNameType,label2=chartType,label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
-    #     if excel_outputFilename_1 != "":
-    #         filesToOpen.append(excel_outputFilename_1)
+    #     chart_outputFilename_1 = charts_Excel_util.run_all(columns_to_be_plotted, csvFile, output_dir_path, csvFile, chart_type_list=[chartType], chart_title=chartTitle, column_xAxis_label_var='', column_yAxis_label_var='Frequencies', outputExtension = '.xlsm', label1=fileNameType,label2=chartType,label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
+    #     if chart_outputFilename_1 != "":
+    #         filesToOpen.append(chart_outputFilename_1)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running html annotator extractor at', True, '', True, startTime, True)
     

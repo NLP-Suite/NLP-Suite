@@ -187,7 +187,7 @@ def write_dir_csv(output_filename, lists, file_name):
         list_.append(file_name)
     IO_csv_util.list_to_csv(GUI_util.window,lists,output_filename,colnum=0)
 
-def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,chartPackage,doNotListIndividualFiles):
+def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPackage,doNotListIndividualFiles):
     global first_section, noun_cnt, nominalized_cnt
 
     first_section = re.compile("^(.+?)\.")
@@ -305,32 +305,32 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,char
                 list_to_csv(output_filename_bySentenceIndex, result1)
                 filesToOpen.append(output_filename_bySentenceIndex)
 
-                # if createExcelCharts == True:
+                # if createCharts == True:
                 #     # line chart
                 #     columns_to_be_plotted = [[2,6]]
                 #     chartTitle='Nominalized verbs (by Sentence Index)'
                 #     xAxis='Sentence index'
                 #     yAxis='Number of nominalizations in sentence'
                 #     hover_label=''
-                #     Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, output_filename_bySentenceIndex, outputDir,
+                #     chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, output_filename_bySentenceIndex, outputDir,
                 #                                               '',
                 #                                               chart_type_list=["line"],
                 #                                               chart_title=chartTitle,
                 #                                               column_xAxis_label_var=xAxis,
                 #                                               hover_info_column_list=hover_label,
                 #                                               column_yAxis_label_var=yAxis)
-                #     if len(Excel_outputFilename) > 0:
-                #         filesToOpen.append(Excel_outputFilename)
+                #     if len(chart_outputFilename) > 0:
+                #         filesToOpen.append(chart_outputFilename)
                 #
                 #     # pie chart of nominalized verbs
-                #     Excel_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window,[counter_nominalized_list],fname,outputDir,'NOM_Verb',"Nominalized verbs",["pie"])
-                #     if len(Excel_outputFilename) > 0:
-                #         filesToOpen.append(Excel_outputFilename)
+                #     chart_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window,[counter_nominalized_list],fname,outputDir,'NOM_Verb',"Nominalized verbs",["pie"])
+                #     if len(chart_outputFilename) > 0:
+                #         filesToOpen.append(chart_outputFilename)
                 #
                 #     # pie chart of nouns
-                #     Excel_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window,[counter_noun_list],fname,outputDir,'NOM_noun',"Nouns",["pie"])
-                #     if len(Excel_outputFilename) > 0:
-                #         filesToOpen.append(Excel_outputFilename)
+                #     chart_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window,[counter_noun_list],fname,outputDir,'NOM_noun',"Nouns",["pie"])
+                #     if len(chart_outputFilename) > 0:
+                #         filesToOpen.append(chart_outputFilename)
 
         if len(inputDir)>0 and doNotListIndividualFiles == True:
             output_filename_TRUE_FALSE_dir = IO_files_util.generate_output_file_name(fname + '_TRUE_FALSE', '', outputDir, '.csv', 'NOM', '', '', '', '', False, True)
@@ -362,20 +362,20 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createExcelCharts,char
             list_to_csv(output_filename_dir_nominalized_frequencies, counter_nominalized_list)
             filesToOpen.append(output_filename_dir_nominalized_frequencies)
 
-            if createExcelCharts == True:
+            if createCharts == True:
                 # pie chart of nominalized verbs
-                Excel_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], output_filename_dir_nominalized_frequencies,
+                chart_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], output_filename_dir_nominalized_frequencies,
                                             outputDir,'NOM_verb',
                                             "Nominalized verbs", ["pie"])
-                if len(Excel_outputFilename) > 0:
-                    filesToOpen.append(Excel_outputFilename)
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.append(chart_outputFilename)
 
                 # pie chart of nouns
-                Excel_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window, [counter_noun_list], output_filename_dir_noun_frequencies,
+                chart_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window, [counter_noun_list], output_filename_dir_noun_frequencies,
                                             outputDir,'NOM_noun',
                                             "Nouns", ["pie"])
-                if len(Excel_outputFilename) > 0:
-                    filesToOpen.append(Excel_outputFilename)
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Nominalization at', True, '', True, startTime)
 
@@ -388,7 +388,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.create_Excel_chart_output_checkbox.get(),
+                                GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_dropdown_field.get(),
                                 doNotCreateIntermediateFiles_var.get())
 

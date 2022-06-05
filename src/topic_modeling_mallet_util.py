@@ -44,7 +44,7 @@ import IO_user_interface_util
 
 # RUN section __________________________________________________________________________________________________________
 
-def run(inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, OptimizeInterval, numTopics):
+def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, OptimizeInterval, numTopics):
     # to setup environment variable programmatically
     #   https://stackoverflow.com/questions/4906977/how-to-access-environment-variable-values
     # to get an environment variable
@@ -255,15 +255,16 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, O
     filesToOpen.append(Keys_FileName)
     filesToOpen.append(Composition_FileName)
 
-    if createExcelCharts:
+    if createCharts:
         columns_to_be_plotted = [[0, 1]]
         hover_label = [2]
         chartTitle = 'Mallet Topics'
         xAxis = 'Topic #'
         yAxis = 'Topic weight'
         fileName = Keys_FileName
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, fileName, outputDir,
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, fileName, outputDir,
                                                   'Mallet_TM',
+                                                  chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title=chartTitle,
                                                   column_xAxis_label_var=xAxis,
@@ -271,8 +272,8 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, O
                                                   count_var=0,
                                                   column_yAxis_label_var=yAxis)
 
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)

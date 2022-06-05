@@ -33,9 +33,9 @@ import sentence_analysis_util
 
 # dateInclude indicates whether there is date embedded in the file name. 
 # 1: included 0: not included
-# def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, memory_var, date_extractor, split_files, quote_extractor, CoreNLP_gender_annotator, CoReference, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
+# def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, date_extractor, split_files, quote_extractor, CoreNLP_gender_annotator, CoReference, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         memory_var,
         document_length_var,
         limit_sentence_length_var,
@@ -71,7 +71,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         # if "Neural" in CoreNLP_annotators_menu_var:
         #     CoRef_Option = 'Neural Network'
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
-                                                                           outputDir, openOutputFiles, createExcelCharts, chartPackage, memory_var,
+                                                                           outputDir, openOutputFiles, createCharts, chartPackage, memory_var,
                                                                            manual_Coref)
 
         if error_indicator == 0:
@@ -159,7 +159,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir,
-                                                                       openOutputFiles, createExcelCharts, chartPackage,
+                                                                       openOutputFiles, createCharts, chartPackage,
                                                                        annotator, False, #'All POS',
                                                                        memory_var, document_length_var, limit_sentence_length_var,
                                                                        extract_date_from_filename_var=dateInclude,
@@ -200,7 +200,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_dropdown_field.get(),
                                  memory_var.get(),
                                  document_length_var.get(),

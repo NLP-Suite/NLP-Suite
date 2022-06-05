@@ -19,7 +19,7 @@ import IO_files_util
 def Extract(lst):
     return [item[0] for item in lst]
 
-def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,createExcelCharts,openOutputFiles=True,input_dictionary_file='',chartTitle=''):
+def dictionary_items_bySentenceID(window,inputFilename,inputDir, outputDir,createCharts,chartPackage, openOutputFiles=True,input_dictionary_file='',chartTitle=''):
     filesToOpen=[]
     DictionaryList=[]
     file_list = IO_files_util.getFileList(inputFilename, inputDir, '.txt')

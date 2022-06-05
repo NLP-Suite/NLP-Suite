@@ -22,7 +22,7 @@ import html_annotator_dictionary_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createExcelCharts, chartPackage,
+def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createCharts, chartPackage,
         CoreNLP_gender_annotator_var, memory_var, CoreNLP_download_gender_file_var, CoreNLP_upload_gender_file_var,
         annotator_dictionary_var, annotator_dictionary_file_var,personal_pronouns_var,plot_var, year_state_var, firstName_entry_var, new_SS_folders):
 
@@ -39,7 +39,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
     #CoreNLP annotate
     if CoreNLP_gender_annotator_var==True:
         output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
-                                                               output_dir_path, openOutputFiles, createExcelCharts, chartPackage, 'gender', False, memory_var)
+                                                               output_dir_path, openOutputFiles, createCharts, chartPackage, 'gender', False, memory_var)
         # annotator returns a list and not a string
         # the gender annotator returns 2 Excel charts in addition to the csv file
         if len(output)>0:
@@ -52,7 +52,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
             return
         import annotator_gender_dictionary_util
         # csvValue_color_list, bold_var, tagAnnotations, '.txt'
-        output= annotator_gender_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, memory_var, annotator_dictionary_file_var,personal_pronouns_var)
+        output= annotator_gender_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, memory_var, annotator_dictionary_file_var,personal_pronouns_var)
         if len(output)>0:
             # output=output[0]
             filesToOpen.extend(output)
@@ -91,7 +91,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
                 GUI_util.output_dir_path.get(),
                 GUI_util.open_csv_output_checkbox.get(),
-                                                GUI_util.create_Excel_chart_output_checkbox.get(),
+                                                GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_dropdown_field.get(),
 
                 CoreNLP_gender_annotator_var.get(),

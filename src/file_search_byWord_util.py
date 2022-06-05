@@ -30,7 +30,7 @@ import IO_csv_util
 import charts_Excel_util
 
 def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_search_keywords, search_keywords_list,
-        search_options_list, createExcelCharts):
+        search_options_list, createCharts, chartPackage):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        "Started running the file search script at", True)
 
@@ -260,35 +260,37 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
         outputFileName = ''
     filesToOpen.append(outputFileName)
 
-    if createExcelCharts == True:
+    if createCharts == True:
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                  'search')
         columns_to_be_plotted=[[0,0]]
         hover_label = []
         inputFilename = outputFilename
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                          outputFileLabel='search',
+                                                         chartPackage=chartPackage,
                                                          chart_type_list=["bar"],
                                                          chart_title='Frequency of search words',
                                                          column_xAxis_label_var='Search words',
                                                          hover_info_column_list=hover_label,
                                                          count_var=True)
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
         # should also provide a bar chart of the frequency of distinct documents by punctuation symbol
         columns_to_be_plotted=[[0,9]]
         hover_label = []
         inputFilename = outputFilename
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                          outputFileLabel='search_byDoc',
+                                                         chartPackage=chartPackage,
                                                          chart_type_list=["bar"],
                                                          chart_title='Frequency of search words By Document',
                                                          column_xAxis_label_var='Document',
                                                          hover_info_column_list=hover_label,
                                                          count_var=True)
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end",
                                        "Finished running the file search script at", True)

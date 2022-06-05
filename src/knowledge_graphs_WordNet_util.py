@@ -26,7 +26,7 @@ filesToOpen=[]
 
 # written by Yi Wang April 2020
 # ConnlTable is the inputFilename
-# def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_verb,openOutputFiles,createExcelCharts):
+# def Wordnet_bySentenceID(ConnlTable, wordnetDict,outputFilename,outputDir,noun_verb,openOutputFiles,createCharts, chartPackage):
 #     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running WordNet charts by sentence index at',
 #                                                  True, '', True, '', True)
 #
@@ -75,13 +75,13 @@ filesToOpen=[]
 #     #IO_util.list_to_csv('',Row_list,outputFilename)
 #     df.to_csv(outputFilename,index=False)
 #
-#     if createExcelCharts:
+#     if createCharts:
 #         outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
 #                                     ConnlTable,
 #                                     df,
 #                                     outputDir,
 #                                     openOutputFiles,
-#                                     createExcelCharts,
+#                                     createCharts,
 #                                     [[4,5]],
 #                                     ['WordNet Category'],['word'], ['Document ID','Sentence ID','Document'],
 #                                     'WordNet', 'line')
@@ -144,7 +144,7 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
 
 # the header does not matter, it can be NUN or VERB or anything else
 # what matters is the first column; and there can be multiple columns tha will not be processed
-def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb,openOutputFiles,createExcelCharts):
+def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb,openOutputFiles,createCharts, chartPackage):
 
     if noun_verb == 'VERB':
         reminders_util.checkReminder(
@@ -190,7 +190,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     else:
         outputFilenameCSV1_new = outputFilenameCSV1
     filesToOpen.append(outputFilenameCSV1_new)
-
+    complete_csv_header(outputFilenameCSV1_new,"Synsets")
     # outputFilenameCSV2 - with frequency in the filename - is the file with the handful of WordNett aggregated synsets and their frequency
     outputFilenameCSV2 = os.path.join(outputDir, "NLP_WordNet_UP_" + fileName + "_frequency.csv")
     if (not 'VERB' in outputFilenameCSV2) and (not 'NOUN' in outputFilenameCSV2):
@@ -203,21 +203,22 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         outputFilenameCSV2_new = outputFilenameCSV2
     filesToOpen.append(outputFilenameCSV2_new)
 
-    if createExcelCharts:
+    if createCharts:
         columns_to_be_plotted = [[1, 1]]
         chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb
         hover_label=['Word']
         inputFilename = outputFilenameCSV1_new
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='',
+                                                  chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title=chart_title,
                                                   column_xAxis_label_var='WordNet ' + noun_verb + ' category',
                                                   hover_info_column_list=hover_label,
                                                   count_var=1)
 
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
     # from outputFilenameCSV1_new exclude the auxiliary verbs be and have not to bias
     #   the aggregate categories STATIVE and POSSESSION that include these verbs respectively
@@ -236,21 +237,22 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         # outputFilenameCSV3_new = data_manager_util.export_csv_to_csv_txt(outputFilenameCSV3_new, operation_results_text_list,'.csv',[0,1])
         outputFilenameCSV3_new = data_manager_util.export_csv_to_csv_txt(outputDir,operation_results_text_list,'.csv',[0,1])
 
-        if createExcelCharts:
+        if createCharts:
             columns_to_be_plotted = [[1, 1]]
             chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)'
             hover_label=[]
             inputFilename = outputFilenameCSV3_new
-            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='',
+                                                      chartPackage=chartPackage,
                                                       chart_type_list=["bar"],
                                                       chart_title=chart_title,
                                                       column_xAxis_label_var='WordNet ' + noun_verb + ' category',
                                                       hover_info_column_list=hover_label,
                                                       count_var=1)
 
-            if Excel_outputFilename != "":
-                filesToOpen.append(Excel_outputFilename)
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
 
         if outputFilenameCSV3_new != "":
             os.remove(outputFilenameCSV3_new)
@@ -274,3 +276,36 @@ def get_case_initial_row(inputFilename,outputDir,check_column, firstLetterCapita
     data = data[data[check_column].str.contains(regex, regex= True, na=False)] # select by regular expression
     data.to_csv(outputFilename,index=False)
     return filesToOpen
+
+def complete_csv_header(inputFilename, padding_base_name):
+    max_length = 0
+    new_header = []
+    # find the longest row
+    with open(inputFilename, newline='') as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if max_length < len(row):
+                max_length = len(row)
+    
+    
+    with open(inputFilename, newline='') as f:
+        reader = csv.reader(f)
+        # only read the first line
+        for row in reader:
+            max_length = max_length - len(row)
+            new_header = row
+            for i in range(1, max_length+1):
+                new_header.append(padding_base_name + " " + str(i))
+            break
+
+    tempFile = os.path.splitext(inputFilename)[0] + "_modified.csv"
+    os.rename(inputFilename, tempFile)
+    with open(tempFile, newline='') as fr, open(inputFilename,"w", newline='') as fw:
+        r = csv.reader(fr)
+        w = csv.writer(fw)
+        w.writerow(new_header)
+        next(r, None)
+        for row in r:
+            w.writerow(row)
+    os.remove(tempFile)
+    return

@@ -1,6 +1,7 @@
 # Written by Yuhang Feng November 2019-April 2020
-# Edited by Roberto Franzosi 
+# Edited by Roberto Franzosi, Tony May 2022
 
+from asyncio.windows_events import NULL
 import sys
 import GUI_util
 import IO_libraries_util
@@ -24,6 +25,7 @@ import IO_csv_util
 import GUI_IO_util
 import IO_files_util
 import IO_user_interface_util
+import charts_plotly_util
 
 # ensure filename extension is correct for hover_over effects (xlxm) and no effects (xlsx)
 def checkExcel_extension(output_file_name,hover_info_column_list):
@@ -87,21 +89,43 @@ def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_
 
 # columns_to_be_plotted is a double list [[0, 1], [0, 2], [0, 3]] where the first number refers to the x-axis value and the second to the y-axis value
 # when count_var=1 the second number gets counted
+# the complete sid need to be tested as na would be filled with 0
 def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
-            chart_type_list,chart_title, column_xAxis_label_var,
+            chartPackage, chart_type_list,chart_title, column_xAxis_label_var,
             hover_info_column_list=[],
             count_var=0,
             column_yAxis_label_var='Frequencies',
             column_yAxis_field_list = [],
             reverse_column_position_for_series_label=False,
-            series_label_list=[], second_y_var=0,second_yAxis_label=''):
+            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = False):
 
+    use_plotly = 'plotly' in chartPackage.lower()
+    # added by Tony, May 2022 for complete sentence index
+    # the file should have a column named Sentence ID
+    # the extra parameter "complete_sid" is set to True by default to avoid extra code mortification elsewhere
+    if complete_sid:
+        complete_sentence_index(inputFilename)
+    if use_plotly:
+        # def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_to_plot,
+        #                 column_xAxis_label='',
+        #                 column_yAxis_label='',
+        #                 static_flag=False,):
+        Plotly_outputFilename = charts_plotly_util.create_plotly_chart(inputFilename = inputFilename,
+                                                                        outputDir = outputDir,
+                                                                        chartTitle = chart_title,
+                                                                        chart_type_list = chart_type_list,
+                                                                        cols_to_plot = columns_to_be_plotted,
+                                                                        column_xAxis_label = column_xAxis_label_var,
+                                                                        column_yAxis_label = column_yAxis_label_var)
+        return Plotly_outputFilename
+    
     data_to_be_plotted = prepare_data_to_be_plotted(inputFilename,
                                 columns_to_be_plotted,
                                 chart_type_list,count_var,
                                 column_yAxis_field_list)
     if data_to_be_plotted==None:
             return ''
+
     transform_list = []
     # the following is deciding which type of data is returned from prepare_data_to_be_plotted
     # for the function prepare_data_to_be_plotted branch into two different data handling functions which retruns different data type
@@ -115,16 +139,16 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             transform_list.append(data)
             data_to_be_plotted=transform_list
     if data_to_be_plotted==None:
-            Excel_outputFilename = ""
+            chart_outputFilename = ""
     else:
         chart_title = chart_title
-        Excel_outputFilename = create_excel_chart(GUI_util.window, data_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = create_excel_chart(GUI_util.window, data_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel, chart_title, chart_type_list,
                                                   column_xAxis_label_var, column_yAxis_label_var,
                                                   hover_info_column_list,
                                                   reverse_column_position_for_series_label,
                                                   series_label_list, second_y_var, second_yAxis_label)
-    return Excel_outputFilename
+    return chart_outputFilename
 
 #sortOrder = True (descending 3, 2, 1)
 #sortOrder = False (ascending 1, 2, 3)
@@ -289,8 +313,12 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 # enable complete_sid to make sentence index continuous
 # enable graph to make a multiline graph
 # the input should be saved to a csv file first
-def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle, graph = True, complete_sid = True):
+def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartPackage, chartTitle, graph = True, complete_sid = True, series_label = NULL):
     cols = group_col + select_col
+    if 'Excel' in chartPackage:
+       use_plotly = False
+    else:
+        use_plotly = True
     try:
         data,header = IO_csv_util.get_csv_data(inputFilename, True)
         data = pd.DataFrame(data, columns=header)
@@ -328,10 +356,21 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         cols_to_be_plotted = []
         for i in range(1,len(data.columns)):
             cols_to_be_plotted.append([0,i])
-        Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
-                                        "frequency_multi-line_chart", chart_type_list=["line"], 
-                                        chart_title=chartTitle, column_xAxis_label_var="Sentence ID")
-    return Excel_outputFilename
+        if series_label == NULL:
+            if use_plotly:
+                charts_plotly_util.plot_multi_line_chart_w_slider_px(name, cols_to_be_plotted, chartTitle, outputDir)
+            else:
+                chart_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
+                                                "frequency_multi-line_chart", chartPackage, chart_type_list=["line"],
+                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID")
+        else:
+            if use_plotly:
+                charts_plotly_util.plot_multi_line_chart_w_slider_px(name, cols_to_be_plotted, chartTitle, outputDir, series_label)
+            else:
+                chart_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
+                                                "frequency_multi-line_chart", chartPackage, chart_type_list=["line"],
+                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label)
+    return chart_outputFilename
 
 # Tony Chen Gu written at April 2022 mortified at May 2022
 # remove comments before variable begin with d_id to enable complete document id function
@@ -371,7 +410,7 @@ def complete_sentence_index(file_path):
 #   [[['Sentence ID','Frequencies of series 1'],['5',302],...],[['Year','Series 2'],['1981',1000],...]]
 
 # def compute_column_frequencies_4Excel(window, inputFilename, inputDataFrame, output_dir, columns_to_be_plotted,
-#                                        select_col, hover_col, group_col, openOutputFiles, createExcelCharts=False,
+#                                        select_col, hover_col, group_col, openOutputFiles, createCharts=False,
 #                                        fileNameType='CSV', chartType='line', count_var=0):
 #     # # outputCsvfilename = IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
 #     # outputCsvfilename = inputFilename[:-4]+"_stats.csv" #IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
@@ -416,7 +455,7 @@ def complete_sentence_index(file_path):
 #         data.drop(hover_col, axis=1, inplace=True)
 #     return charts_Excel_util.prepare_csv_data_for_chart(window, inputFilename, data, output_dir, select_col,
 #                                                                 Hover_over_header, group_col, fileNameType, chartType,
-#                                                                 openOutputFiles, createExcelCharts, chartPackage, count_var)
+#                                                                 openOutputFiles, createCharts, chartPackage, count_var)
 
 
 # def multi_group_multi_hover(input, output,group_col ,hover_col):
@@ -434,7 +473,7 @@ def complete_sentence_index(file_path):
 # called from WordNet.py, CoNLL_*, Stanford_CoreNLP_date_annotator;
 #   these scripts all call compute_csv_column_frequencies but should go through this one?
 # def compute_csv_column_frequencies_NEW(window, inputFileName, inputDataFrame, output_dir, columns_to_be_plotted,
-#                                        select_col, hover_col, group_col, openOutputFiles, createExcelCharts=False,
+#                                        select_col, hover_col, group_col, openOutputFiles, createCharts=False,
 #                                        fileNameType='CSV', chartType='line', count_var=0):
 #     # # outputCsvfilename = IO_util.generate_output_file_name(inputFileName, output_dir, '.csv',fileNameType,'stats')
 #     # outputCsvfilename = inputFileName[:-4]+"_stats.csv" #IO_util.generate_output_file_name(inputFileName, output_dir, '.csv',fileNameType,'stats')
@@ -479,10 +518,10 @@ def complete_sentence_index(file_path):
 #         data.drop(hover_col, axis=1, inplace=True)
 #     return prepare_csv_data_for_chart(window, inputFileName, data, output_dir, select_col,
 #                                                                 Hover_over_header, group_col, fileNameType, chartType,
-#                                                                 openOutputFiles, createExcelCharts, chartPackage, count_var)
+#                                                                 openOutputFiles, createCharts, chartPackage, count_var)
 # group col should be from smallest group to largest group
 #
-# def compute_csv_column_frquencies1(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createExcelCharts, chartPackage,
+# def compute_csv_column_frquencies1(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createCharts, chartPackage,
 #                                         columns_to_be_plotted,
 #                                         select_col, hover_col, group_col,
 #                                        fileNameType='CSV', chartType='line'):
@@ -498,7 +537,7 @@ def complete_sentence_index(file_path):
 # select_col is also a list BUT with one item only
 # called from WordNet.py, CoNLL_*, Stanford_CoreNLP_date_annotator
 # the function exits immediately because it no longer works
-# def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createExcelCharts, chartPackage,
+# def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createCharts, chartPackage,
 #                                         columns_to_be_plotted,
 #                                         select_col, hover_col, group_col,
 #                                        fileNameType='CSV', chartType='line', count_var=0):
@@ -509,7 +548,7 @@ def complete_sentence_index(file_path):
 
 #     tempFiles=[]
 #     container = []
-#     Excel_outputFilename = []
+#     chart_outputFilename = []
 
 #     if len(inputDataFrame) != 0:
 #         data = inputDataFrame
@@ -550,19 +589,19 @@ def complete_sentence_index(file_path):
 #     freq_output = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'freq!nmbnmb')
 #     data.to_csv(freq_output, index=False)
 #     print('freq_output: ', freq_output)
-#     Excel_outputFilename = run_all()
-    # if createExcelCharts:
+#     chart_outputFilename = run_all()
+    # if createCharts:
     #     # xAxis='Sentence index'
     #     # chartTitle='Frequency distribution'
     #     # columns_to_be_plotted=[[1,3]]
 
-    #     # Excel_outputFilename=prepare_csv_data_for_chart(window, inputFilename, data, outputDir, select_col, Hover_over_header, group_col,
-    #     #                            fileNameType, chartType, openOutputFiles, createExcelCharts, chartPackage, count_var)
+    #     # chart_outputFilename=prepare_csv_data_for_chart(window, inputFilename, data, outputDir, select_col, Hover_over_header, group_col,
+    #     #                            fileNameType, chartType, openOutputFiles, createCharts, chartPackage, count_var)
     #     data = data.pivot_table(index=group_col[0], columns=select_col, values='Frequency',
     #                             fill_value=0).reset_index().rename_axis(None, axis=1)
     #     data_to_be_plotted = data.iloc[:, 0:4].T.reset_index().values.T.tolist()
 
-    #     Excel_outputFilename = create_excel_chart(window,
+    #     chart_outputFilename = create_excel_chart(window,
     #                                               data_to_be_plotted=[data_to_be_plotted],
     #                                               inputFilename=freq_output,
     #                                               outputDir=outputDir,
@@ -572,7 +611,7 @@ def complete_sentence_index(file_path):
     #                                               column_xAxis_label='Sentence index',
     #                                               column_yAxis_label='Frequency')
 
-    # return Excel_outputFilename  # 2 files
+    # return chart_outputFilename  # 2 files
 
 
 # generate a new csv file:
@@ -585,7 +624,7 @@ def complete_sentence_index(file_path):
 # called from statistics_csv_util.compute_csv_column_frequencies_NEW
 
 # TODO HOW DOES THIS DIFFER FROM def prepare_data_to_be_plotted?
-# def prepare_csv_data_for_chart(window,inputfile, inputDataFrame, outputpath, select_col : list, hover_col : list, group_col : list, fileNameType, chartType, openOutputFiles, createExcelCharts, chartPackage,count_var=0):
+# def prepare_csv_data_for_chart(window,inputfile, inputDataFrame, outputpath, select_col : list, hover_col : list, group_col : list, fileNameType, chartType, openOutputFiles, createCharts, chartPackage,count_var=0):
 #     filesToOpen=[]
 #     outputCsvfilename = IO_files_util.generate_output_file_name(inputfile, '', outputpath, '.csv')
 #     df = inputDataFrame
@@ -609,21 +648,21 @@ def complete_sentence_index(file_path):
 #     df_merged = df_merged.replace(r'^\s*$', 0, regex=True)
 #     df_merged.to_csv(outputCsvfilename,index=False) # output
 #     filesToOpen.append(outputCsvfilename)
-#     if createExcelCharts:
+#     if createCharts:
 #         columns_to_be_plotted = []
 #         for i in range(len(df_merged.columns)-1-len(group_col)):
 #             columns_to_be_plotted.append([1,len(group_col)+i])
 #         hover_label=[]
 #         for i in range(len(columns_to_be_plotted)):
 #             hover_label.append(hover_col[0])
-#         Excel_outputFilename = run_all(columns_to_be_plotted, inputfile, outputpath,
+#         chart_outputFilename = run_all(columns_to_be_plotted, inputfile, outputpath,
 #                                                   'Co-Occ_viewer',
 #                                                   chart_type_list=[chartType],
 #                                                   chart_title='Frequency Distribution', column_xAxis_label_var='',
 #                                                   hover_info_column_list=hover_label,
 #                                                   count_var=count_var)
 #
-#         # excel_outputFileName_2 = charts_Excel_util.run_all(columns_to_be_plotted, inputfile, outputpath, outputCsvfilename,
+#         # chart_outputFilename_2 = charts_Excel_util.run_all(columns_to_be_plotted, inputfile, outputpath, outputCsvfilename,
 #         #                                               chart_type_list=[chartType],
 #         #                                               chart_title='Frequency Distribution of '+ ','.join(select_col),
 #         #                                               column_xAxis_label_var='Sentence Index',
@@ -638,8 +677,8 @@ def complete_sentence_index(file_path):
 #         #                                             second_yAxis_label='',
 #         #                                             hover_var=1,
 #         #                                             hover_info_column_list=hover_label)
-#         if Excel_outputFilename != "":
-#             filesToOpen.append(Excel_outputFilename)
+#         if chart_outputFilename != "":
+#             filesToOpen.append(chart_outputFilename)
 #
 #     return filesToOpen
 #
@@ -800,7 +839,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     See https://www.pythonexcel.com/openpyxl.php
     """
 
-    # head, tail = os.path.split(Excel_outputFilename)
+    # head, tail = os.path.split(chart_outputFilename)
     head, tail = os.path.split(inputFilename)
     num_label=len(data_to_be_plotted[0])-1
 
@@ -826,7 +865,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
 
     if "_" + scriptType + "_" in inputFilename: # do not repeat the same name
         scriptType=''
-    Excel_outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, outputExtension, scriptType, chart_type_list[0],'chart')
+    chart_outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, outputExtension, scriptType, chart_type_list[0],'chart')
 
     n = len(data_to_be_plotted)
 
@@ -1171,13 +1210,13 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             ws_chart.add_chart(chartName1, "A1")
     errorFound=False
     try:
-        wb.save(Excel_outputFilename)
+        wb.save(chart_outputFilename)
     except IOError:
-        mb.showwarning(title='Output file error', message="Could not write the Excel chart file " + Excel_outputFilename + "\n\nA file with the same name is already open. Please close the Excel file and try again!")
+        mb.showwarning(title='Output file error', message="Could not write the Excel chart file " + chart_outputFilename + "\n\nA file with the same name is already open. Please close the Excel file and try again!")
         errorFound=True
     if errorFound==True:
-        Excel_outputFilename=''
-    return Excel_outputFilename
+        chart_outputFilename=''
+    return chart_outputFilename
 
 def df_to_list_w_header(df):
     res = []

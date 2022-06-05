@@ -128,7 +128,7 @@ def excludeStopWords_list(words):
     words = words_excludePunctuation
     return words
 
-def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts, chartPackage):
+def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage):
     filesToOpen=[]
     outputFilenameCSV=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'line_length')
     filesToOpen.append(outputFilenameCSV)
@@ -184,7 +184,7 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running line length analysis at', True, '', True, startTime, True)
 
     # compute statistics about line length ungrouped
-    tempOutputfile=statistics_csv_util.compute_field_statistics_NoGroupBy(window, outputFilenameCSV, outputDir, openOutputFiles, createExcelCharts, chartPackage, 3)
+    tempOutputfile=statistics_csv_util.compute_field_statistics_NoGroupBy(window, outputFilenameCSV, outputDir, openOutputFiles, createCharts, chartPackage, 3)
     if tempOutputfile!=None:
         filesToOpen.extend(tempOutputfile)
 
@@ -192,7 +192,7 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
     list=['Document ID','Document']
     tempOutputfile=statistics_csv_util.compute_field_statistics_groupBy(window, outputFilenameCSV, outputDir,
                                         list, openOutputFiles,
-                                        createExcelCharts,3) # 'Line length (in words)'
+                                        createCharts,3) # 'Line length (in words)'
     if tempOutputfile!=None:
         filesToOpen.extend(tempOutputfile)
 
@@ -205,7 +205,7 @@ def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createE
 # https://www.nltk.org/book/ch02.html
 # For the Gutenberg Corpus they provide the programming code to do it. section 1.9   Loading your own Corpus.
 # see also https://people.duke.edu/~ccc14/sta-663/TextProcessingSolutions.html
-def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutputFiles,createExcelCharts,chartPackage,excludeStopWords=True,lemmatizeWords=True):
+def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage,excludeStopWords=True,lemmatizeWords=True):
     filesToOpen=[]
     outputFilenameCSV=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus_stats', '')
     filesToOpen.append(outputFilenameCSV)
@@ -306,55 +306,57 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
         list = ['Document ID', 'Document']
         tempOutputfile = statistics_csv_util.compute_field_statistics_groupBy(window, outputFilenameCSV, outputDir,
                                                                               list, openOutputFiles,
-                                                                              createExcelCharts, 4)
+                                                                              createCharts, 4)
                                                                               # ,4)  # 'number of words in doc'
         if tempOutputfile != None:
             filesToOpen.extend(tempOutputfile)
 
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running document(s) statistics at', True, '', True, startTime, False)
 
-        if createExcelCharts==True:
+        if createCharts==True:
 
             columns_to_be_plotted=[[2,3]]
             # hover_label=['Document']
             hover_label=[]
             inputFilename=outputFilenameCSV
-            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='',
+                                                      chartPackage=chartPackage,
                                                       chart_type_list=["bar"],
                                                       chart_title='Corpus Statistics: Frequency of Sentences by Document',
                                                       column_xAxis_label_var='', #Document
                                                       hover_info_column_list=hover_label)
-            if Excel_outputFilename != "":
+            if 'Excel' in chartPackage and chart_outputFilename != "":
                 # rename output file or it will be overwritten by the next chart
-                Excel_extention = Excel_outputFilename[-5:]
-                Excel_outputFilename_new=Excel_outputFilename[:-5]+'_sen.xlsm' + Excel_extention
+                Excel_extention = chart_outputFilename[-5:]
+                chart_outputFilename_new=chart_outputFilename[:-5]+'_sen.xlsm' + Excel_extention
                 # the file already exists and must be removed
-                if os.path.isfile(Excel_outputFilename_new):
-                    os.remove(Excel_outputFilename_new)
-                os.rename(Excel_outputFilename, Excel_outputFilename_new)
-                filesToOpen.append(Excel_outputFilename_new)
+                if os.path.isfile(chart_outputFilename_new):
+                    os.remove(chart_outputFilename_new)
+                os.rename(chart_outputFilename, chart_outputFilename_new)
+                filesToOpen.append(chart_outputFilename_new)
 
             columns_to_be_plotted=[[2,4]]
             # hover_label=['Document']
             hover_label=[]
             inputFilename=outputFilenameCSV
-            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='',
+                                                      chartPackage=chartPackage,
                                                       chart_type_list=["bar"],
                                                       # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
                                                       chart_title='Corpus Statistics: Frequency of Words by Document',
                                                       column_xAxis_label_var='', #Document
                                                       hover_info_column_list=hover_label)
-            if Excel_outputFilename != "":
+            if 'Excel' in chartPackage and chart_outputFilename != "":
                 # rename output file or it will be overwritten by the next chart
-                Excel_extention = Excel_outputFilename[-5:]
-                Excel_outputFilename_new=Excel_outputFilename[:-5]+'_word'+Excel_extention
+                Excel_extention = chart_outputFilename[-5:]
+                chart_outputFilename_new=chart_outputFilename[:-5]+'_word'+Excel_extention
                 # the file already exists and must be removed
-                if os.path.isfile(Excel_outputFilename_new):
-                    os.remove(Excel_outputFilename_new)
-                os.rename(Excel_outputFilename, Excel_outputFilename_new)
-                filesToOpen.append(Excel_outputFilename_new)
+                if os.path.isfile(chart_outputFilename_new):
+                    os.remove(chart_outputFilename_new)
+                os.rename(chart_outputFilename, chart_outputFilename_new)
+                filesToOpen.append(chart_outputFilename_new)
 
         # TODO
         #   we should create 10 classes of values by distance to the median of
@@ -382,7 +384,7 @@ def same_sentence_check(jgram):
 #compute_character_word_ngrams works for BOTH character and word ngrams
 #https://stackoverflow.com/questions/18658106/quick-implementation-of-character-n-grams-for-word
 #ngrams is the type of ngrams wanted 2grams,3grams,4grams,5grams MAX
-def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngramsNumber=4, normalize=False, excludePunctuation=False, wordgram=None, frequency = None, openOutputFiles=True, createExcelCharts=True, bySentenceID=None):
+def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngramsNumber=4, normalize=False, excludePunctuation=False, wordgram=None, frequency = None, openOutputFiles=True, createCharts=True, chartPackage='Excel', bySentenceID=None):
     filesToOpen = []
     container = []
 
@@ -473,7 +475,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
 
     result=True
     # n-grams
-    # if createExcelCharts==True:
+    # if createCharts==True:
     #     if nFile>10:
     #         result = mb.askyesno("Excel charts","You have " + str(nFile) + " files for which to compute Excel charts.\n\nTHIS WILL TAKE A LONG TIME.\n\nAre you sure you want to do that?",default='no')
     if frequency == 1:  # hapax
@@ -490,31 +492,33 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
         IO_csv_util.list_to_csv(window,ngramsList, csv_outputFilename)
 
         # n-grams line chart by sentence index
-        if createExcelCharts==True and result==True:
+        if createCharts==True and result==True:
             inputFilename=csv_outputFilename
             if bySentenceID == True:
                 columns_to_be_plotted=[[2,1]]
                 hover_label=[str(index+1)+'-grams']
-                Excel_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=inputFilename,
+                chart_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=inputFilename,
                                                                                         outputDir=outputDir,
                                                                                         select_col=[],
                                                                                         group_col=['Sentence ID'],
+                                                                                        chartPackage=chartPackage,
                                                                                         chartTitle=chartTitle + str(
                                                                                             index + 1) + '-grams Frequencies by Sentence Index')
-                if Excel_outputFilename != "":
-                    filesToOpen.append(Excel_outputFilename)
+                if chart_outputFilename != "":
+                    filesToOpen.append(chart_outputFilename)
             else:
                 columns_to_be_plotted=[[2,1]] # 0,1
                 hover_label=[str(index+1)+'-grams'] # change to sentence
 
-                Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                           outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
+                                                          chartPackage=chartPackage,
                                                           chart_type_list=["bar"],
                                                           chart_title=chartTitle + str(index+1) + '-grams',
                                                           column_xAxis_label_var='',
                                                           hover_info_column_list=hover_label)
-                if Excel_outputFilename != "":
-                    filesToOpen.append(Excel_outputFilename)
+                if chart_outputFilename != "":
+                    filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                        'Finished running Word/Characters N-Grams at', True, '', True, startTime, False )
@@ -795,7 +799,7 @@ def print_results(window, words, class_word_list, header, inputFilename, outputD
 
 
 # called by sentence_analysis_main and style_analysis_main
-def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, createExcelCharts, chartPackage, processType='', excludeStopWords=True,word_length=3):
+def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, processType='', excludeStopWords=True,word_length=3):
     filesToOpen=[]
     documentID = 0
     multiple_punctuation=0
@@ -943,7 +947,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     excludePunctuation=True
                     wordgram=True
                     bySentenceID=True
-                    tempOutputFiles=compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, ngramsNumber, normalize, excludePunctuation, wordgram, frequency, openOutputFiles, createExcelCharts, chartPackage,
+                    tempOutputFiles=compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, ngramsNumber, normalize, excludePunctuation, wordgram, frequency, openOutputFiles, createCharts, chartPackage,
                                                                       bySentenceID)
                     # Excel charts are generated in compute_character_word_ngrams; return to exit here
                     return
@@ -955,43 +959,46 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
         if not IO_error:
             filesToOpen.append(outputFilename)
 
-        if createExcelCharts == True:
+        if createCharts == True:
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                          fileLabel)
             hover_label = []
             inputFilename = outputFilename
-            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                              outputFileLabel=fileLabel,
+                                                             chartPackage=chartPackage,
                                                              chart_type_list=["bar"],
                                                              chart_title=chart_title_label,
                                                              column_xAxis_label_var=column_xAxis_label,
                                                              hover_info_column_list=hover_label,
                                                              count_var=True)
-            if Excel_outputFilename != "":
-                filesToOpen.append(Excel_outputFilename)
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
 
             # should also provide a bar chart of the frequency of distinct documents by punctuation symbol
             hover_label = []
             inputFilename = outputFilename
-            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted_byDocID, inputFilename, outputDir,
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted_byDocID, inputFilename, outputDir,
                                                              outputFileLabel=fileLabel_byDocID,
+                                                             chartPackage=chartPackage,
                                                              chart_type_list=["bar"],
                                                              chart_title=chart_title_byDocID,
                                                              column_xAxis_label_var='', #Document
                                                              hover_info_column_list=hover_label,
                                                              count_var=True)
-            if Excel_outputFilename != "":
-                filesToOpen.append(Excel_outputFilename)
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
 
             # if 'by sentence index' in processType.lower():
             # line plots by sentence index -----------------------------------------------------------------------------------------------
-            Excel_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=outputFilename,
+            chart_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=outputFilename,
                                                                            outputDir=outputDir,
                                                                            select_col=select_col,
                                                                            group_col=['Sentence Index'],
-                                                                           chartTitle=chart_title_bySentID)
-            if Excel_outputFilename != None:
-                filesToOpen.append(Excel_outputFilename)
+                                                                            chartPackage=chartPackage,
+                                                                            chartTitle=chart_title_bySentID)
+            if chart_outputFilename != None:
+                filesToOpen.append(chart_outputFilename)
 
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
