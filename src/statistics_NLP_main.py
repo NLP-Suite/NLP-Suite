@@ -69,7 +69,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
         if 'stopwords' in corpus_options_menu_var:
             stopwords_var=True
         if "*" in corpus_options_menu_var or lemmatize_var==True or stopwords_var==True:
-            tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,False,createCharts,stopwords_var, lemmatize_var)
+            tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,False,createCharts, chartPackage, stopwords_var, lemmatize_var)
             if tempOutputFiles!=None:
                 filesToOpen.extend(tempOutputFiles)
 

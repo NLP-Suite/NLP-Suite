@@ -92,7 +92,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # check corpus statistics
     if corpus_analysis:
         statistics_txt_util.compute_corpus_statistics(GUI_util.window, inputDir, inputDir, outputDir, openOutputFiles,
-                                                      True)
+                                                      createCharts, chartPackage)
     # step 1: run sentiment analysis
     if sentimentAnalysis == 1:
         # run appropriate sentiment analysis method as indicated by sentimentAnalysisMethod
