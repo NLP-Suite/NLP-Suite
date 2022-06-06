@@ -344,14 +344,9 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
                                                       chart_type_list=["bar"],
                                                       # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
                                                       chart_title='Corpus Statistics: Frequency of Words by Document',
-<<<<<<< HEAD
                                                       column_xAxis_label_var='Document',
                                                       hover_info_column_list=hover_label,
                                                       graph_type = chartPackage)
-=======
-                                                      column_xAxis_label_var='', #Document
-                                                      hover_info_column_list=hover_label)
->>>>>>> 104b915f9a7fe7c7784b3b297f8ea21876fd3162
             if Excel_outputFilename != "":
                 # rename output file or it will be overwritten by the next chart
                 Excel_extention = Excel_outputFilename[-5:]
