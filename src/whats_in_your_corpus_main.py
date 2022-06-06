@@ -153,7 +153,7 @@ def run(inputFilename,inputDir, outputDir,
                 filesToOpen.extend(filesToOpen)
 
         if 'lines' in corpus_options_menu_var:
-            output = statistics_txt_util.read_line(window, inputFilename, inputDir, outputDir, False,
+            output = statistics_txt_util.compute_line_length(window, inputFilename, inputDir, outputDir, False,
                                                    createCharts, chartPackage)
             if output!=None:
                 filesToOpen.extend(output)

@@ -128,7 +128,7 @@ def excludeStopWords_list(words):
     words = words_excludePunctuation
     return words
 
-def read_line(window, inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage):
+def compute_line_length(window, inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage):
     filesToOpen=[]
     outputFilenameCSV=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'line_length')
     filesToOpen.append(outputFilenameCSV)

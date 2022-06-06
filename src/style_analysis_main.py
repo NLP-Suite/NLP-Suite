@@ -18,15 +18,9 @@ import GUI_IO_util
 import IO_files_util
 import file_spell_checker_util
 import statistics_txt_util
-import CoNLL_clause_analysis_util
-import CoNLL_noun_analysis_util
-import CoNLL_verb_analysis_util
-import IO_csv_util
-import CoNLL_util
 import sentence_analysis_util
 import concreteness_analysis_util
 import lib_util
-import charts_Excel_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

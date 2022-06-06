@@ -11,7 +11,6 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"WordNet",['os','csv',
 
 import os
 import subprocess
-import tkinter.messagebox as mb
 from nltk.corpus import wordnet as wn
 import pandas as pd
 import csv

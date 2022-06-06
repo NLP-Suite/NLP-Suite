@@ -341,6 +341,7 @@ def displayReminder(df,row_num,title, message, event, currentStatus, question, s
 
 def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_event=False):
     # * denotes messages that apply to ALL scripts
+    status=''
     if config_filename=='*':
         routine='*'
     else:
