@@ -104,7 +104,7 @@ def check_CoreNLP_language(config_filename,annotator,language):
                                      reminders_util.title_options_CoreNLP_website,
                                      reminders_util.message_CoreNLP_website,
                                      True)
-        if reminder_status == 'Yes':
+        if reminder_status == 'Yes' or reminder_status == 'ON': # 'Yes' the old way of saving reminders
             # open website
             website_name = 'CoreNLP website'
             message_title = 'CoreNLP website'

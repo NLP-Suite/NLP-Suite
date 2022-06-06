@@ -115,7 +115,7 @@ title_options_CoreNLP_NER_tags = ['CoreNLP NER tags']
 message_CoreNLP_NER_tags = "The CoNLL table produced by the CoreNLP parser has a record for each token in the document(s) processed.\n\nIf you are planning to produce frequency distributions of NER tags directly from the CoNLL table, you need to remember that tags such as 'Date' or 'City' may be grossly overestimated. For instance, in the expression 'the day before Christmas' each word 'the,' 'day,' 'before,' 'Christmas' will be tagged as NER date. The same is true for NER CITY tags such as 'New York City.'\n\nA better way to obtain frequency distributions of NER values is to run the NER annotators from the 'Stanford_CoreNLP_NER_main.py.'"
 
 title_options_CoreNLP_website = ['CoreNLP language/annotator options website']
-message_CoreNLP_website = "You will be asked next if you want to open the Stanford CoreNLP language website."
+message_CoreNLP_website = "You will be asked next if you want to open the Stanford CoreNLP language website to get a list of available annotators for each supported language.\n\nIf you do not want to be asked again to open the website, just hit 'No' below."
 
 title_options_CoreNLP_POS_NER_maxlen = ['CoreNLP POS/NER max sentence length']
 message_CoreNLP_POS_NER_maxlen = "The CoreNLP POS/NER annotators set a maximum sentence length for processing.\n\nSentences longer than your selected max length will be cut and some POS/NER tags in those long sentences may be lost."
@@ -321,15 +321,15 @@ def displayReminder(df,row_num,title, message, event, currentStatus, question, s
     answer=answer.capitalize() # Yes/No
     if seeMsgAgain==True:
         if answer == 'No':
-            status='No'
+            status='OFF'
         else:
-            status = 'Yes'
+            status = 'ON'
     else:
         if answer=='Yes':
-            if currentStatus == 'No':
-                status = 'Yes'
+            if currentStatus == 'No' or currentStatus == 'OFF': # 'No' the old way of saving reminders
+                status = 'ON'
             else:
-                status = 'No'
+                status = 'OFF'
         else:
             status=currentStatus
     if currentStatus!=status:
@@ -389,7 +389,7 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
                     silent = True
                 else:
                     silent = False
-                if status == "Yes":
+                if status == "Yes" or status == "ON": # 'Yes' the old way of saving reminders
                     if silent == False:
                         # must pass the entire dataframe and not the sub-dataframe dt1
                         displayReminder(df, row_num, title, message, event, status,
@@ -441,7 +441,7 @@ def resetReminder(config_filename,title):
 
         event = df.at[row_num, "Event"]
         status = df.at[row_num, "Status"]
-        if status == "No":  # currently off
+        if status == "No" or status == "OFF":  # 'No' the old way of saving reminders
             question = '\n\nNow this reminder is turned OFF. Do you want to turn it ON?'
         else:
             question = '\n\nNow this reminder is turned ON. Do you want to turn it OFF?'
@@ -449,7 +449,7 @@ def resetReminder(config_filename,title):
 
 
 # update do_not_show_message.csv so that we don't show the message box again
-# status: "Yes"/"No"
+# status: "Yes"/"No" old way of saving reminders; now ON/OFF
 def saveReminder(df,row_num, message, event, status):
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
     df.at[row_num, "Message"] = message # change it to yes or no

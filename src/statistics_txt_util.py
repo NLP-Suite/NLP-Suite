@@ -992,9 +992,9 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
             # if 'by sentence index' in processType.lower():
             # line plots by sentence index -----------------------------------------------------------------------------------------------
             chart_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=outputFilename,
-                                                                           outputDir=outputDir,
-                                                                           select_col=select_col,
-                                                                           group_col=['Sentence Index'],
+                                                                            outputDir=outputDir,
+                                                                            select_col=select_col,
+                                                                            group_col=['Sentence Index'],
                                                                             chartPackage=chartPackage,
                                                                             chartTitle=chart_title_bySentID)
             if chart_outputFilename != None:
