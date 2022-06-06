@@ -44,7 +44,7 @@ websites = "[.](com|net|org|io|gov)"
 
 
 def run(inputFilename, inputDir, outputDir,
-        openOutputFiles, createExcelCharts, chartPackage,
+        openOutputFiles, createCharts, chartPackage,
         memory_var,
         document_length_var,
         limit_sentence_length_var,
@@ -89,7 +89,7 @@ def run(inputFilename, inputDir, outputDir,
         # 2 items are returned: filename string and true/False for error
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
                                        outputCorefedDir,
-                                       openOutputFiles, createExcelCharts, chartPackage,
+                                       openOutputFiles, createCharts, chartPackage,
                                        memory_var,
                                        Manual_Coref_var)
         if error_indicator != 0:
@@ -136,7 +136,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_dropdown_field.get(),
                                  memory_var.get(),
                                  document_length_var.get(),
@@ -261,7 +261,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                y_multiplier_integer, language_lb, True)
 
 language_var.set('English')
-language_menu = tk.OptionMenu(window, language_var, 'English', 'Arabic','Chinese','German','Hungarian','Italian','Spanish')
+language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese','English','German','Hungarian','Italian','Spanish')
 # language_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
                                                y_multiplier_integer, language_menu)

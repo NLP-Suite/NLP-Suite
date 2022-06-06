@@ -259,7 +259,7 @@ def check(dir_path, soc_acts, nlp, compilation_path, checkNER, freq_act_miss, ac
             print('"'+missing[1]+'"')
     return freq_act_miss,act_miss_list,id_act_miss,freq_loc_miss,loc_miss_list,id_loc_miss,freq_org_miss,org_miss_list,id_org_miss,freq_per_miss,per_miss_list,id_per_miss,freq_date_miss,date_miss_list,id_date_miss, if_act, if_loc, if_org, if_per, if_date
 
-def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,openOutputFiles, createExcelCharts, chartPackage, checkNER=False):
+def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,openOutputFiles, createCharts, chartPackage, checkNER=False):
     articles_path = input_main_dir_path
     compilations_path = input_secondary_dir_path # summaries folder
     filesToOpen=[]
@@ -387,7 +387,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
     f_e.close()
     # type "sys.stdout = terminal_out" before print
     sys.stdout = terminal_out
-    if createExcelCharts:
+    if createCharts:
         if checkNER == 1:
             fileType='SSR_summary_NER'
         else:
@@ -398,14 +398,15 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
                        'List of Summary Filenames for Type of Error',
                        'List of Summary Filenames for Type of Error']
         inputFilename = outputFilename
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel=fileType,
+                                                  chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title='Missing Character (File Summaries in Error)',
                                                   column_xAxis_label_var='Type of Error',
                                                   hover_info_column_list=hover_label)
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
 
     if openOutputFiles:

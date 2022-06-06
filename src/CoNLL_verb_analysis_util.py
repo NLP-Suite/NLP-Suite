@@ -154,7 +154,7 @@ def voice_output(voice_word_list, data_divided_sents):
 	voice_act = sorted(voice_act, key=lambda x: int(x[recordID_position]))  # sort in ascending record id order
 	return voice_sorted, voice_stats, voice_pass, voice_act_aux, voice_act
 
-def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
+def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
 	filesToOpen = []  # Store all files that are to be opened once finished
 	# print ("\nRun verb voice analysis")
 	data_prep = verb_voice_data_preparation(data)
@@ -196,8 +196,8 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 		return filesToOpen
 	# filesToOpen.append(verb_stats_file_name)
 
-	if createExcelCharts == True:
-		Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+	if createCharts == True:
+		chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
 																data_to_be_plotted=[voice_stats],
 																inputFilename=verb_stats_file_name,
 																outputDir=outputDir,
@@ -207,21 +207,22 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 																column_xAxis_label="Verb voice values",
 																column_yAxis_label="Frequency")
 
-		if Excel_outputFilename != "":
-			filesToOpen.append(Excel_outputFilename)
+		if chart_outputFilename != "":
+			filesToOpen.append(chart_outputFilename)
 
 		# line plots by sentence index
 		outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=verb_file_name,
 																outputDir=outputDir,
 																select_col=['Verb Voice'],
 																group_col=['Sentence ID'],
-																chartTitle="Frequency Distribution of Verb Voice")
+															   chartPackage=chartPackage,
+															   chartTitle="Frequency Distribution of Verb Voice")
 		# outputFiles = charts_Excel_util.compute_csv_column_frequencies(window=GUI_util.window,
 		# 														inputFilename=verb_file_name_act,
 		# 														inputDataFrame='',
 		# 														outputDir=outputDir,
 		# 														openOutputFiles=openOutputFiles,
-		# 														createExcelCharts=createExcelCharts,
+		# 														createCharts=createCharts,
 		# 														columns_to_be_plotted=[[11, 14], [11, 14]],
 		# 														select_col='Verb Voice',
 		# 														hover_col=['FORM'],
@@ -296,7 +297,7 @@ def verb_modality_data_preparation(data):
 # 		return
 
 def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles,
-						createExcelCharts):
+						createCharts, chartPackage):
 	reminders_util.checkReminder(config_filename,
 								 reminders_util.title_options_CoNLL_table_verb_modality,
 								 reminders_util.message_CoNLL_table_verb_modality,
@@ -326,18 +327,18 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 		return filesToOpen
 	filesToOpen.append(verb_stats_file_name)
 
-	if createExcelCharts == True:
-		Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+	if createCharts == True:
+		chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
 															 data_to_be_plotted=[modality_stats],
 															 inputFilename=verb_stats_file_name,
 															 outputDir=outputDir,
 															 scriptType='Verb_Modal',
-															 chartTitle="Frequency Distribution of Verb Modality",
+														 	 chartTitle="Frequency Distribution of Verb Modality",
 															 chart_type_list=["pie"],
 															 column_xAxis_label="Verb Modality",
 															 column_yAxis_label="Frequency")
-		if Excel_outputFilename != "":
-			filesToOpen.append(Excel_outputFilename)
+		if chart_outputFilename != "":
+			filesToOpen.append(chart_outputFilename)
 
 		# modified by Siyan Pu November 2021
 		# temporary headers added, not sure why the verb_voice_list doesn't have headers
@@ -351,13 +352,14 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 															outputDir=outputDir,
 															select_col=['Verb Modality'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Verb Modality")
+  														    chartPackage=chartPackage,
+ 														    chartTitle="Frequency Distribution of Verb Modality")
 		# outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
 		# 														verb_file_name,
 		# 														'',
 		# 														outputDir,
 		# 														openOutputFiles,
-		# 														createExcelCharts,
+		# 														createCharts,
 		# 														[[11, 14], [11, 14]],
 		# 														'Verb Modality', 
 		# 														#['FORM', 'Sentence'],
@@ -435,7 +437,7 @@ def verb_tense_data_preparation(data):
 # 	return verb_tense_list, verb_tense_stats
 
 
-def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
+def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
 	global postag_counter
 	filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -473,9 +475,9 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 		return filesToOpen
 	filesToOpen.append(verb_stats_file_name)
 
-	if createExcelCharts == True:
+	if createCharts == True:
 
-		Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+		chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
 															 data_to_be_plotted=[verb_tense_stats],
 															 inputFilename=verb_stats_file_name,
 															 outputDir=outputDir,
@@ -485,8 +487,8 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 															 column_xAxis_label="Verb Tense",
 															 column_yAxis_label="Frequency")
 
-		if Excel_outputFilename != "":
-			filesToOpen.append(Excel_outputFilename)
+		if chart_outputFilename != "":
+			filesToOpen.append(chart_outputFilename)
 
 
 		# # modified by Siyan Pu November 2021
@@ -501,13 +503,14 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 													outputDir=outputDir,
 													select_col=['Verb Tense'],
 													group_col=['Sentence ID'],
-													chartTitle="Frequency Distribution of Verb Tense")
+												   chartPackage=chartPackage,
+												   chartTitle="Frequency Distribution of Verb Tense")
 		# outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
 		# 														verb_file_name,
 		# 														'',
 		# 														outputDir,
 		# 														openOutputFiles,
-		# 														createExcelCharts,
+		# 														createCharts,
 		# 														[[1, 4]],
 		# 														['Verb Tense'], ['FORM', 'Sentence'],
 		# 														['Document ID', 'Sentence ID', 'Document'],
@@ -520,7 +523,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	return filesToOpen
 
 
-def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
+def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
 	filesToOpen = []  # Store all files that are to be opened once finished
 
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
@@ -528,18 +531,18 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
 												   True, '', True, '', False)
 
 	outputFiles = verb_voice_stats(inputFilename, outputDir, data, data_divided_sents,
-								   openOutputFiles, createExcelCharts)
+								   openOutputFiles, createCharts, chartPackage)
 
 	if outputFiles != None:
 		filesToOpen.extend(outputFiles)
 
 	outputFiles = verb_modality_stats(config_filename, inputFilename, outputDir, data, data_divided_sents,
-									  openOutputFiles, createExcelCharts)
+									  openOutputFiles, createCharts, chartPackage)
 	if outputFiles != None:
 		filesToOpen.extend(outputFiles)
 
 	outputFiles = verb_tense_stats(inputFilename, outputDir, data, data_divided_sents,
-								   openOutputFiles, createExcelCharts)
+								   openOutputFiles, createCharts, chartPackage)
 	if outputFiles != None:
 		filesToOpen.extend(outputFiles)
 

@@ -167,19 +167,20 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
 
     return output_name
 
-def visualize_Excel_chart(createExcelCharts, inputFilename, outputDir, filesToOpen, columns_to_be_plotted,
+def visualize_chart(createCharts,chartPackage, inputFilename, outputDir, filesToOpen, columns_to_be_plotted,
                               chartType, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label):
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel=outputFileNameType,
+                                                  chartPackage=chartPackage,
                                                   chart_type_list=[chartType],
                                                   chart_title=chartTitle,
                                                   column_xAxis_label_var=column_xAxis_label,
                                                   hover_info_column_list=hover_label,
                                                   count_var=count_var)
-        return Excel_outputFilename
+        return chart_outputFilename
 
 
-def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filter_o_fileName, lemmatize_s, lemmatize_v,lemmatize_o, outputDir, createExcelCharts=True):
+def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filter_o_fileName, lemmatize_s, lemmatize_v,lemmatize_o, outputDir, createCharts=True, chartPackage='Excel'):
     """
     Filters a svo csv file based on the dictionaries given, and replaces the original output csv file
     :param svo_file_name: the name of the svo csv file
@@ -250,23 +251,23 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
     if IO_csv_util.GetNumberOfRecordInCSVFile(svo_file_name,encodingValue='utf-8')>1:
 
-        Excel_outputFilename = visualize_Excel_chart(createExcelCharts, svo_file_name, outputDir, filesToOpen, [[0, 0]], 'bar',
+        chart_outputFilename = visualize_chart(createCharts, chartPackage, svo_file_name, outputDir, filesToOpen, [[0, 0]], 'bar',
                                             'Frequency Distribution of Subjects (filtered)', 1, [], 'S_bar',
                                             'Subjects (filtered)')
-        if len(Excel_outputFilename) > 0:
-            filesToOpen.append(Excel_outputFilename)
+        if len(chart_outputFilename) > 0:
+            filesToOpen.append(chart_outputFilename)
 
-        Excel_outputFilename = visualize_Excel_chart(createExcelCharts, svo_file_name, outputDir, filesToOpen, [[1, 1]], 'bar',
+        chart_outputFilename = visualize_chart(createCharts, chartPackage, svo_file_name, outputDir, filesToOpen, [[1, 1]], 'bar',
                                             'Frequency Distribution of Verbs (filtered)', 1, [], 'V_bar',
                                             'Verbs (filtered)')
-        if len(Excel_outputFilename) > 0:
-            filesToOpen.append(Excel_outputFilename)
+        if len(chart_outputFilename) > 0:
+            filesToOpen.append(chart_outputFilename)
 
-        Excel_outputFilename = visualize_Excel_chart(createExcelCharts, svo_file_name, outputDir, filesToOpen, [[2, 2]], 'bar',
+        chart_outputFilename = visualize_chart(createCharts, chartPackage, svo_file_name, outputDir, filesToOpen, [[2, 2]], 'bar',
                                             'Frequency Distribution of Objects (filtered)', 1, [], 'O_bar',
                                             'Objects (filtered)')
-        if len(Excel_outputFilename) > 0:
-            filesToOpen.append(Excel_outputFilename)
+        if len(chart_outputFilename) > 0:
+            filesToOpen.append(chart_outputFilename)
 
     return filesToOpen
 

@@ -30,7 +30,7 @@ import CoNLL_k_sentences_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-def run(inputFilename, outputDir, openOutputFiles, createExcelCharts, chartPackage,
+def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         searchedCoNLLField, searchField_kw, postag, deprel, co_postag, co_deprel,
         k_sentences_var,
         clausal_analysis_var,
@@ -93,7 +93,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts, chartPacka
         outputFiles = CoNLL_clause_analysis_util.clause_stats(inputFilename, '', outputDir,
                                                               data,
                                                               data_divided_sents,
-                                                              openOutputFiles, createExcelCharts)
+                                                              openOutputFiles, createCharts,chartPackage)
         if outputFiles != None:
             # only open the chart files
             if len(outputFiles) > 0:
@@ -106,7 +106,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts, chartPacka
     if noun_analysis_var:
         import CoNLL_noun_analysis_util
         outputFiles = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, data_divided_sents,
-                                                          openOutputFiles, createExcelCharts)
+                                                          openOutputFiles, createCharts, chartPackage)
         # if outputFiles != None:
         #     # only open the chart files
         #     filesToOpen.append(outputFiles[6])
@@ -119,7 +119,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts, chartPacka
         import CoNLL_verb_analysis_util
 
         outputFiles = CoNLL_verb_analysis_util.verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents,
-                                                          openOutputFiles, createExcelCharts)
+                                                          openOutputFiles, createCharts, chartPackage)
 
         # # only open the chart files
         # if outputFiles != None:
@@ -134,7 +134,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts, chartPacka
 
         outputFiles = CoNLL_function_words_analysis_util.function_words_stats(inputFilename, outputDir, data,
                                                                               data_divided_sents, openOutputFiles,
-                                                                              createExcelCharts)
+                                                                              createCharts, chartPackage)
         # only open the chart files
         if outputFiles != None:
             filesToOpen.append(outputFiles[2])
@@ -242,7 +242,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts, chartPacka
                 item[9] keyword[3]/SEARCHED TOKEN POSTAG, 
                 item[10] keyword[6]/'SEARCHED TOKEN DEPREL'))
             """
-            if createExcelCharts == True:
+            if createCharts == True:
 
                 # line plot by sentence index
                 if searchedCoNLLField == 'FORM':
@@ -250,27 +250,29 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts, chartPacka
 															outputDir=outputDir,
 															select_col=['SEARCHED TOKEN POSTAG-DESCRIPTION'],
 															group_col=['Document ID'],
-															chartTitle="Frequency Distribution of SEARCHED TOKEN (FORM)",
+                                                            chartPackage=chartPackage,
+                                                            chartTitle="Frequency Distribution of SEARCHED TOKEN (FORM)",
                                                             complete_sid=False)
                     # tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
                     #                                                       [[11, 5], [11, 7], [11, 9]],
                     #                                                       ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
                     #                                                       ['SEARCHED TOKEN (FORM)', 'Sentence ID','Sentence'],
                     #                                                       ['Document ID', 'Document'],
-                    #                                                       openOutputFiles, createExcelCharts, chartPackage, 'QC', 'line')
+                    #                                                       openOutputFiles, createCharts, chartPackage, 'QC', 'line')
                 else:
                     tempFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=output_file_name,
 															outputDir=outputDir,
 															select_col=['SEARCHED TOKEN POSTAG-DESCRIPTION'],
 															group_col=['Document ID'],
-															chartTitle="Frequency Distribution of SEARCHED TOKEN (LEMMA)",
+                                                            chartPackage=chartPackage,
+                                                            chartTitle="Frequency Distribution of SEARCHED TOKEN (LEMMA)",
                                                             complete_sid=False)
                     # tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
                     #                                                       [[11, 5], [11, 7], [11, 9]],
                     #                                                       ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
                     #                                                       ['SEARCHED TOKEN (LEMMA)', 'Sentence ID','Sentence'],
                     #                                                       ['Document ID', 'Document'],
-                    #                                                       openOutputFiles, createExcelCharts, chartPackage, 'QC', 'line')
+                    #                                                       openOutputFiles, createCharts, chartPackage, 'QC', 'line')
                 filesToOpen.extend(tempFiles)
 
                 output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
@@ -355,7 +357,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts, chartPacka
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_dropdown_field.get(),
                                  searchedCoNLLField.get(),
                                  searchField_kw.get(),

@@ -156,7 +156,7 @@ def check(dir_path, soc_acts,nlp, intruder_list,id_list, has_intruder, similarit
                 print(id+","+str(len(keywords.keys()))+","+doc+","+IO_csv_util.dressFilenameForCSVHyperlink(dir_path)+","+IO_csv_util.dressFilenameForCSVHyperlink(filePath)+","+str(similar[doc]))
     return intruder_list,id_list, has_intruder,freq_intruder, num_doc
 
-def main(CoreNLPDir, inputDir, outputDir,openOutputFiles, createExcelCharts, chartPackage, similarityIndex_base):
+def main(CoreNLPDir, inputDir, outputDir,openOutputFiles, createCharts, chartPackage, similarityIndex_base):
     # similarityIndex_base = float(similarityIndex_base)
     ##
     ##This is just for evaluation purposes

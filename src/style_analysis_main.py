@@ -30,7 +30,7 @@ import charts_Excel_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,chartPackage,
+def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPackage,
     CoNLL_table_analysis_var,
     nominalization_var,
     complexity_readability_analysis_var,
@@ -67,12 +67,12 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,cha
                 return
             filesToOpen = sentence_analysis_util.sentence_complexity(GUI_util.window, inputFilename,
                                                                      inputDir, outputDir,
-                                                                     openOutputFiles, createExcelCharts)
+                                                                     openOutputFiles, createCharts, chartPackage)
         if '*' in complexity_readability_analysis_menu_var or 'Text' in complexity_readability_analysis_menu_var:
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
             sentence_analysis_util.sentence_text_readability(GUI_util.window, inputFilename, inputDir,
-                                                             outputDir, openOutputFiles, createExcelCharts)
+                                                             outputDir, openOutputFiles, createCharts, chartPackage)
 
         if complexity_readability_analysis_menu_var=='':
             mb.showwarning('Warning', 'No option has been selected for Complexity/readability analysis.\n\nPlease, select an option from the dropdown menu and try again.')
@@ -87,28 +87,28 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,cha
             return
         if '*' == vocabulary_analysis_menu_var:
             filesToOpen = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir,
-                                                                   openOutputFiles, createExcelCharts)
+                                                                   openOutputFiles, createCharts, chartPackage)
         if '*' == vocabulary_analysis_menu_var:
             filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir,
-                                                                   openOutputFiles, createExcelCharts)
+                                                                   openOutputFiles, createCharts, chartPackage)
             # if len(tempOutputfile)>0:
             #     filesToOpen.extend(tempOutputfile)
         elif 'detection' in vocabulary_analysis_menu_var:
                 filesToOpen = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir,
-                                                                         openOutputFiles, createExcelCharts)
+                                                                         openOutputFiles, createCharts, chartPackage)
         elif 'capital' in vocabulary_analysis_menu_var:
             filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir,
-                                                                   openOutputFiles, createExcelCharts, chartPackage,vocabulary_analysis_menu_var)
+                                                                   openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
         elif 'Short' in vocabulary_analysis_menu_var:
-            filesToOpen=statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,vocabulary_analysis_menu_var)
+            filesToOpen=statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
         elif 'Vowel' in vocabulary_analysis_menu_var:
-            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,vocabulary_analysis_menu_var)
+            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
         elif 'Punctuation' in vocabulary_analysis_menu_var:
-            filesToOpen=statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,vocabulary_analysis_menu_var)
+            filesToOpen=statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
             filesToOpen=statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
         if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
-            tempFiles=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, False, createExcelCharts)
+            tempFiles=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, False, createCharts, chartPackage)
             if len(tempFiles)>0:
                 filesToOpen.extend(tempFiles)
         if '*' == vocabulary_analysis_menu_var or 'Abstract' in vocabulary_analysis_menu_var:
@@ -130,7 +130,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,cha
             #     outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir, outputDir, '.csv', 'SC_dir',
             #                                                              'Concreteness', '', '', '', False, True)
 
-            filesToOpen = concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, processType='')
+            filesToOpen = concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, processType='')
 
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                                    'Finished running CONCRETENESS Analysis at', True, '', True, startTime, True)
@@ -149,7 +149,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,cha
 
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, ngramsNumber, normalize, excludePunctuation, ngramType, openOutputFiles,
-                                                              createExcelCharts,
+                                                              createCharts, chartPackage,
                                                               bySentenceIndex_var)
 
         if '*' in ngrams_analysis_menu_var or 'Hapax' in ngrams_analysis_menu_var:
@@ -160,7 +160,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,cha
 
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, ngramsNumber, normalize, excludePunctuation, ngramType, openOutputFiles,
-                                                              createExcelCharts,
+                                                              createCharts, chartPackage,
                                                               bySentenceIndex_var)
         if '*' in ngrams_analysis_menu_var or 'Repetition' in ngrams_analysis_menu_var or 'POSTAG' in ngrams_analysis_menu_var or 'DEPREL' in ngrams_analysis_menu_var or 'NER' in ngrams_analysis_menu_var:
             mb.showwarning('Warning','The selected option is not available yet.\n\nSorry!')
@@ -175,7 +175,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createExcelCharts,cha
         mb.showwarning('Warning',
                        'When the Gender Guesser (Hacker Factor) webpage opens, make sure to read carefully the page content in order to understand:\n1. how this sophisticated neural network Java tool can guess the gender identity of a text writer (male or female);\n2. the difference between formal and informal text genre;\n3. the meaning of the gender estimate as "Weak emphasis could indicate European";\n4. the limits of the algorithms (about 60-70% accuraracy).\n\nYou can also read Argamon, Shlomo, Moshe Koppel, Jonathan Fine, and Anat Rachel Shimoni. 2003. "Gender, Genre, and Writing Style in Formal Written Texts," Text, Vol. 23, No. 3, pp. 321–346.')
         IO_files_util.runScript_fromMenu_option('Gender guesser', 0, inputFilename, inputDir, outputDir,
-                                  openOutputFiles, createExcelCharts)
+                                  openOutputFiles, createCharts, chartPackage)
         return
 
     if openOutputFiles == True:
@@ -186,7 +186,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.create_Excel_chart_output_checkbox.get(),
+                                GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_dropdown_field.get(),
                                 CoNLL_table_analysis_var.get(),
                                 nominalization_var.get(),

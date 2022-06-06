@@ -33,9 +33,9 @@ import sentence_analysis_util
 
 # dateInclude indicates whether there is date embedded in the file name. 
 # 1: included 0: not included
-# def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, memory_var, date_extractor, split_files, quote_extractor, Stanza_gender_annotator, CoReference, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
+# def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, date_extractor, split_files, quote_extractor, Stanza_gender_annotator, CoReference, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         memory_var,
         manual_Coref, open_GUI, language_var, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat,
         CoNLL_table_analyzer_var, Stanza_annotators_var, Stanza_annotators_menu_var):
@@ -69,7 +69,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         # if "Neural" in Stanza_annotators_menu_var:
         #     CoRef_Option = 'Neural Network'
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
-                                                                           outputDir, openOutputFiles, createExcelCharts, chartPackage, memory_var,
+                                                                           outputDir, openOutputFiles, createCharts, chartPackage, memory_var,
                                                                            manual_Coref)
 
         if error_indicator == 0:
@@ -123,7 +123,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir,
-                                                                       openOutputFiles, createExcelCharts, chartPackage,
+                                                                       openOutputFiles, createCharts, chartPackage,
                                                                        annotator, False, #'All POS',
                                                                        memory_var, document_length_var, limit_sentence_length_var,
                                                                        extract_date_from_filename_var=dateInclude,
@@ -163,7 +163,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_dropdown_field.get(),
                                  memory_var.get(),
                                  manual_Coref_var.get(),
@@ -334,7 +334,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                y_multiplier_integer, language_lb, True)
 
 language_var.set('English')
-language_menu = tk.OptionMenu(window, language_var, 'English', 'Arabic','Chinese','German','Hungarian','Italian','Spanish')
+language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese', 'English', 'German','Hungarian','Italian','Spanish')
 # language_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
                                                y_multiplier_integer, language_menu)
@@ -516,5 +516,7 @@ readMe_message = "These Python 3 scripts will perform different types of textual
 readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+mb.showwarning(title='Option not available yet!',message='The Stanza GUI and algorithms are currently under development. None of the options will work. Sorry!')
 
 GUI_util.window.mainloop()

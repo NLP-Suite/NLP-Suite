@@ -33,9 +33,9 @@ import sentence_analysis_util
 
 # dateInclude indicates whether there is date embedded in the file name. 
 # 1: included 0: not included
-# def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, memory_var, date_extractor, split_files, quote_extractor, spaCy_gender_annotator, CoReference, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
+# def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, date_extractor, split_files, quote_extractor, spaCy_gender_annotator, CoReference, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         memory_var,
         manual_Coref, open_GUI, language_var, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat,
         CoNLL_table_analyzer_var, spaCy_annotators_var, spaCy_annotators_menu_var):
@@ -69,7 +69,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         # if "Neural" in spaCy_annotators_menu_var:
         #     CoRef_Option = 'Neural Network'
         file_open, error_indicator = spaCy_coreference_util.run(config_filename, inputFilename, inputDir,
-                                                                           outputDir, openOutputFiles, createExcelCharts, chartPackage, memory_var,
+                                                                           outputDir, openOutputFiles, createCharts, chartPackage, memory_var,
                                                                            manual_Coref)
 
         if error_indicator == 0:
@@ -130,7 +130,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
         tempOutputFiles = spaCy_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir,
-                                                                       openOutputFiles, createExcelCharts, chartPackage,
+                                                                       openOutputFiles, createCharts, chartPackage,
                                                                        annotator, False, #'All POS',
                                                                        memory_var, document_length_var, limit_sentence_length_var,
                                                                        extract_date_from_filename_var=dateInclude,
@@ -171,7 +171,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_dropdown_field.get(),
                                  memory_var.get(),
                                  manual_Coref_var.get(),
@@ -530,4 +530,5 @@ readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readM
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
+mb.showwarning(title='Option not available yet!',message='The spaCy GUI and algorithms are currently under development. None of the options will work. Sorry!')
 GUI_util.window.mainloop()

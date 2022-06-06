@@ -111,7 +111,7 @@ def noun_POSTAG_DEPREL_compute_frequencies(data, data_divided_sents):
     return list_nouns_postag, list_nouns_deprel, list_nouns_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats
 
 
-def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createExcelCharts):
+def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
     # print("\nRun noun analysis")
 
     filesToOpen = []  # Store all files that are to be opened once finished
@@ -198,11 +198,11 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         return filesToOpen
     filesToOpen.append(noun_ner_stats_file_name)
 
-    if createExcelCharts == True:
+    if createCharts == True:
 
         # pie charts -----------------------------------------------------------------------------------------------
 
-        Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+        chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
                                                              data_to_be_plotted=[noun_postag_stats],
                                                              inputFilename=noun_postag_stats_file_name,
                                                              outputDir=outputDir,
@@ -210,10 +210,10 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                              chartTitle="Noun POS Analysis",
                                                              chart_type_list=["pie"])
 
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
-        Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+        chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
                                                              data_to_be_plotted=[noun_deprel_stats],
                                                              inputFilename=noun_deprel_stats_file_name,
                                                              outputDir=outputDir,
@@ -221,10 +221,10 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                              chartTitle="Noun DEPREL Analysis",
                                                              chart_type_list=["pie"])
 
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
-        Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+        chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
                                                              data_to_be_plotted=[noun_ner_stats],
                                                              inputFilename=noun_ner_stats_file_name,
                                                              outputDir=outputDir,
@@ -232,8 +232,8 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                              chartTitle="Nouns (NER Tags)",
                                                              chart_type_list=["pie"])
 
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
         # return filesToOpen # to avoid code breaking in plot by sentence index
 
@@ -242,7 +242,8 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 															outputDir=outputDir,
 															select_col=['Noun POS Tags'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Noun POS Tags")
+                                                            chartPackage=chartPackage,
+                                                            chartTitle="Frequency Distribution of Noun POS Tags")
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 
@@ -250,7 +251,8 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 															outputDir=outputDir,
 															select_col=['Noun DEPREL Tags'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Noun DEPREL Tags")
+                                                            chartPackage=chartPackage,
+                                                            chartTitle="Frequency Distribution of Noun DEPREL Tags")
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 
@@ -259,7 +261,8 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 															outputDir=outputDir,
 															select_col=['Noun NER Tags'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Noun NER Tags")
+                                                            chartPackage=chartPackage,
+                                                            chartTitle="Frequency Distribution of Noun NER Tags")
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 

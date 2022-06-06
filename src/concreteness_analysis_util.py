@@ -175,7 +175,7 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 
 filesToOpen = []  # LINE ADDED
 
-def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createExcelCharts,chartPackage, processType=''):
+def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPackage, processType=''):
 	"""
 	Runs analyzefile on the appropriate files, provided that the input paths are valid.
 	:param inputFilename:
@@ -232,22 +232,23 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createExcel
 			else:
 				print('Input directory "' + inputDir + '" is invalid.')
 				sys.exit(0)
-	if createExcelCharts == True:
+	if createCharts == True:
 		inputFilename = outputFilename
 		print(outputFilename)
 		columns_to_be_plotted = [[7, 0], [7, 1]]
 		# hover_label = ['Sentence', 'Sentence']
 		hover_label = []
-		Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
 														 outputFileLabel='Concret',
+														 chartPackage=chartPackage,
 														 chart_type_list=["line"],
 														 chart_title='Concreteness Scores by Sentence Index\n' + chart_title,
 														 column_xAxis_label_var='Sentence ID',
 														 #hover_info_column_list=hover_label,
 														 #count_var=0,
 														 column_yAxis_label_var='Scores')
-		if Excel_outputFilename != "":
-			filesToOpen.append(Excel_outputFilename)
+		if chart_outputFilename != "":
+			filesToOpen.append(chart_outputFilename)
 
 	return filesToOpen  # LINE ADDED
 

@@ -21,7 +21,7 @@ import IO_files_util
 
 def run(input_main_dir_path, input_secondary_dir_path, output_dir_path,
         openOutputFiles,
-        createExcelCharts,
+        createCharts,
         by_date_var,
         date_format,
         date_separator,
@@ -54,7 +54,7 @@ def run(input_main_dir_path, input_secondary_dir_path, output_dir_path,
         if len(outputFiles) > 0:
             filesToOpen.append(outputFiles)
     if by_NER_var:
-        outputFiles=file_classifier_NER_util.main(GUI_util.window,input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createExcelCharts, chartPackage, similarityIndex_var)
+        outputFiles=file_classifier_NER_util.main(GUI_util.window,input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, similarityIndex_var)
         if len(outputFiles)>0:
             filesToOpen.append(outputFiles)
 
@@ -68,7 +68,7 @@ run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
                             GUI_util.input_secondary_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_dropdown_field.get(),
                             by_date_var.get(),
                             date_format.get(),

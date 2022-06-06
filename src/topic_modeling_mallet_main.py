@@ -46,12 +46,12 @@ import reminders_util
 
 # RUN section __________________________________________________________________________________________________________
 
-def run(inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, OptimizeInterval, numTopics):
+def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, OptimizeInterval, numTopics):
     if numTopics == 20:
         reminders_util.checkReminder(config_filename, reminders_util.title_options_topic_modelling_number_of_topics,
                                      reminders_util.message_topic_modelling_number_of_topics, True)
 
-    filesToOpen = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,
+    filesToOpen = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                                                  OptimizeInterval, numTopics)
 
     if openOutputFiles:
@@ -62,7 +62,7 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage, O
 def run_script_command(): return run(GUI_util.input_main_dir_path.get(),
                                      GUI_util.output_dir_path.get(),
                                      GUI_util.open_csv_output_checkbox.get(),
-                                     GUI_util.create_Excel_chart_output_checkbox.get(),
+                                     GUI_util.create_chart_output_checkbox.get(),
                                      GUI_util.charts_dropdown_field.get(),
                                      optimize_intervals_var.get(),
                                      num_topics_var.get())

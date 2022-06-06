@@ -21,7 +21,7 @@ import IO_user_interface_util
 
 def run(inputFilename,inputDir, outputDir,
     openOutputFiles,
-    createExcelCharts,
+    createCharts,
     chartPackage,
     search_options,
     search_by_dictionary,
@@ -52,7 +52,7 @@ def run(inputFilename,inputDir, outputDir,
 
     if not 'Search within document' in search_options_list:
         search_options_list.append('Search within sentence (default)')
-    filesToOpen = file_search_byWord_util.run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_keyword, search_keyword_values, search_options_list, createExcelCharts)
+    filesToOpen = file_search_byWord_util.run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_keyword, search_keyword_values, search_options_list, createCharts, chartPackage)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -62,7 +62,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_dropdown_field.get(),
                             search_options_menu_var.get(),
                             search_by_dictionary_var.get(),

@@ -33,7 +33,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_dropdown_field.get(),
                             utf8_var.get(),
                             ASCII_var.get(),
@@ -45,6 +45,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             topics_Mallet_var.get(),
                             topics_Gensim_var.get(),
                             open_tm_GUI_var.get(),
+                            language_var.get(),
                             memory_var.get(),
                             document_length_var.get(),
                             limit_sentence_length_var.get(),
@@ -59,7 +60,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 def run(inputFilename,inputDir, outputDir,
         openOutputFiles,
-        createExcelCharts,
+        createCharts,
         chartPackage,
         utf8_var,
         ASCII_var,
@@ -71,6 +72,7 @@ def run(inputFilename,inputDir, outputDir,
         topics_Mallet_var,
         topics_Gensim_var,
         open_tm_GUI_var,
+        language_var,
         memory_var,
         document_length_var,
         limit_sentence_length_var,
@@ -126,7 +128,8 @@ def run(inputFilename,inputDir, outputDir,
             lemmatize=True
 
         if '*' in corpus_options_menu_var or 'stopwords' in corpus_options_menu_var or 'Lemmatize' in corpus_options_menu_var:
-            output = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir, False, createExcelCharts, chartPackage,
+            output = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir, False,
+                                  createCharts, chartPackage,
                                   stopwords, lemmatize)
             if output!=None:
                 filesToOpen.extend(output)
@@ -139,7 +142,8 @@ def run(inputFilename,inputDir, outputDir,
 
         if '*' in corpus_options_menu_var or 'grams' in corpus_options_menu_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts, chartPackage,
+                                                              outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles,
+                                                              createCharts, chartPackage,
                                                               bySentenceIndex_word_var)
 
         if 'sentences' in corpus_options_menu_var:
@@ -149,7 +153,8 @@ def run(inputFilename,inputDir, outputDir,
                 filesToOpen.extend(filesToOpen)
 
         if 'lines' in corpus_options_menu_var:
-            output = statistics_txt_util.read_line(window, inputFilename, inputDir, outputDir, False, createExcelCharts, chartPackage)
+            output = statistics_txt_util.read_line(window, inputFilename, inputDir, outputDir, False,
+                                                   createCharts, chartPackage)
             if output!=None:
                 filesToOpen.extend(output)
 
@@ -192,7 +197,7 @@ def run(inputFilename,inputDir, outputDir,
             else:
                 # run with all default values; do not run MALLET
                 output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics=20,
-                                                      remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createExcelCharts=createExcelCharts)
+                                                      remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createCharts=createCharts, chartPackage=chartPackage)
                 if output!=None:
                     filesToOpen.extend(output)
 
@@ -201,7 +206,7 @@ def run(inputFilename,inputDir, outputDir,
                     call("python topic_modeling_mallet_main.py", shell=True)
                 else:
                     # running with default values
-                    output = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts, chartPackage=chartPackage, OptimizeInterval=True, numTopics=20)
+                    output = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles=openOutputFiles, createCharts=createCharts, chartPackage=chartPackage, OptimizeInterval=True, numTopics=20)
                     if output != None:
                         filesToOpen.extend(output)
 
@@ -212,6 +217,7 @@ def run(inputFilename,inputDir, outputDir,
     gender_var = False
     times_var = False
     locations_var = False
+    sentiments_var = False
     nature_var = False
 
     if what_else_var and what_else_menu_var == '*':
@@ -228,16 +234,18 @@ def run(inputFilename,inputDir, outputDir,
         people_organizations_var = True
     if 'male' in what_else_menu_var.lower():
         gender_var = True
-    if 'time' in what_else_menu_var.lower():
+    if 'date & time' in what_else_menu_var.lower():
         times_var = True
     if 'location' in what_else_menu_var.lower():
         locations_var=True
+    if 'sentiments' in what_else_menu_var.lower():
+        sentiments_var=True
     if 'nature' in what_else_menu_var.lower():
         nature_var=True
 
     inputFilenameSV=inputFilename #inputFilename value is changed in the WordNet function
 
-    if (what_else_var and what_else_menu_var == '*') or nouns_var==True or verbs_var==True or people_organizations_var==True or gender_var==True or dialogues_var==True or times_var==True or locations_var==True:
+    if (what_else_var and what_else_menu_var == '*') or nouns_var==True or verbs_var==True or people_organizations_var==True or gender_var==True or dialogues_var==True or times_var==True or locations_var==True or sentiments_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py')==False:
             return
 
@@ -250,9 +258,9 @@ def run(inputFilename,inputDir, outputDir,
 
                 annotator = ['POS']
                 files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                            outputDir, openOutputFiles, createExcelCharts, chartPackage,
-                                            annotator, False, memory_var, document_length_var, limit_sentence_length_var)
-                if len(files) > 0:
+                                            outputDir, openOutputFiles, createCharts, chartPackage,
+                                            annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
+            if len(files) > 0:
                     noun_verb=''
                     if verbs_var == True:
                         inputFilename = files[0] # Verbs but... double check
@@ -261,7 +269,7 @@ def run(inputFilename,inputDir, outputDir,
                         else:
                             return
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, config_filename, noun_verb,
-                                                                    openOutputFiles, createExcelCharts)
+                                                                    openOutputFiles, createCharts, chartPackage)
                         if output!=None:
                             filesToOpen.extend(output)
 
@@ -272,7 +280,7 @@ def run(inputFilename,inputDir, outputDir,
                         else:
                             return
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, config_filename, noun_verb,
-                                                                    openOutputFiles, createExcelCharts)
+                                                                    openOutputFiles, createCharts, chartPackage)
                         if output!=None:
                             filesToOpen.extend(output)
             else:
@@ -286,9 +294,10 @@ def run(inputFilename,inputDir, outputDir,
             annotator_list = ['NER', 'gender', 'quote', 'normalized-date']
             NER_list=['PERSON','ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                      outputDir, openOutputFiles, createExcelCharts, chartPackage,
+                                                                      outputDir, openOutputFiles,
+                                                                      createCharts, chartPackage,
                                                                       annotator_list, False,
-                                                                      memory_var, document_length_var, limit_sentence_length_var,
+                                                                      language_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None and output!=[]:
                 filesToOpen.extend(output)
@@ -298,9 +307,10 @@ def run(inputFilename,inputDir, outputDir,
             NER_list=['PERSON','ORGANIZATION']
 
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                      outputDir, openOutputFiles, createExcelCharts, chartPackage,
+                                                                      outputDir, openOutputFiles,
+                                                                      createCharts, chartPackage,
                                                                       annotator, False,
-                                                                      memory_var, document_length_var,
+                                                                      language_var, memory_var, document_length_var,
                                                                       limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
@@ -309,24 +319,28 @@ def run(inputFilename,inputDir, outputDir,
         if gender_var == True:
             annotator = 'gender'
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                      outputDir, openOutputFiles, createExcelCharts, chartPackage,
-                                                                      annotator, False, memory_var, document_length_var, limit_sentence_length_var)
+                                                                      outputDir, openOutputFiles,
+                                                                      createCharts, chartPackage,
+                                                                      annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
+
             if output != None:
                 filesToOpen.extend(output)
 
         if dialogues_var==True:
             annotator = 'quote'
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                      outputDir, openOutputFiles, createExcelCharts, chartPackage,
-                                                                      annotator, False, memory_var, document_length_var, limit_sentence_length_var, single_quote_var = single_quote)
+                                                                      outputDir, openOutputFiles,
+                                                                      createCharts, chartPackage,
+                                                                      annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                      single_quote_var = single_quote)
             if output != None:
                 filesToOpen.extend(output)
 
         if times_var==True:
             annotator='normalized-date'
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
-                        openOutputFiles, createExcelCharts, chartPackage,
-                        annotator, False, memory_var, document_length_var, limit_sentence_length_var)
+                        openOutputFiles, createCharts, chartPackage,
+                        annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
             if output != None:
                 filesToOpen.extend(output)
 
@@ -335,10 +349,22 @@ def run(inputFilename,inputDir, outputDir,
             NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
 
             output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                      outputDir, openOutputFiles, createExcelCharts, chartPackage,
+                                                                      outputDir, openOutputFiles,
+                                                                      createCharts, chartPackage,
                                                                       annotator, False,
-                                                                      memory_var, document_length_var, limit_sentence_length_var,
+                                                                      language_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
+            if output != None:
+                filesToOpen.extend(output)
+
+        if sentiments_var == True:
+            annotator = 'sentiment'
+            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+                                                                      outputDir, openOutputFiles,
+                                                                      createCharts, chartPackage,
+                                                                      annotator, False,
+                                                                      memory_var, document_length_var,
+                                                                      limit_sentence_length_var)
             if output != None:
                 filesToOpen.extend(output)
 
@@ -356,9 +382,9 @@ def run(inputFilename,inputDir, outputDir,
             date_position_var = 0
             locations = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                          outputDir, openOutputFiles,
-                                                                         createExcelCharts, chartPackage, 'NER',
+                                                                         createCharts, chartPackage, 'NER',
                                                                          False,
-                                                                         memory_var, document_length_var, limit_sentence_length_var,
+                                                                         language_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                          NERs=NERs,
                                                                          extract_date_from_text_var=extract_date_from_text_var,
                                                                          extract_date_from_filename_var=extract_date_from_filename_var,
@@ -432,9 +458,9 @@ def run(inputFilename,inputDir, outputDir,
             quote_filename = quote_filename
             tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                                outputDir, openOutputFiles,
-                                                                               createExcelCharts,
-                                                                               chartPackage,
+                                                                               createCharts, chartPackage,
                                                                                'SVO', False,
+                                                                               language_var,
                                                                                memory_var=memory_var,
                                                                                document_length_var=document_length_var,
                                                                                limit_sentence_length_var=limit_sentence_length_var,
@@ -509,6 +535,7 @@ topics_Mallet_var= tk.IntVar()
 topics_Gensim_var= tk.IntVar()
 open_tm_GUI_var= tk.IntVar()
 
+language_var= tk.StringVar()
 memory_var = tk.IntVar()
 nouns_var= tk.IntVar()
 verbs_var= tk.IntVar()
@@ -663,35 +690,44 @@ def activate_allOptions(*args):
         what_else_checkbox.configure(state='normal')
 open_tm_GUI_var.trace('w',activate_allOptions)
 
+# language options
+language_var_lb = tk.Label(window, text='Language ')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               language_var_lb, True)
+
+language_var.set('English')
+language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese', 'English', 'German','Hungarian','Italian','Spanish')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+70,
+                                               y_multiplier_integer, language_menu, True)
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+180, y_multiplier_integer,
                                                memory_var_lb, True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(6)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 250, y_multiplier_integer,
                                                memory_var, True)
 
 document_length_var_lb = tk.Label(window, text='Document length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+180, y_multiplier_integer,
                                                document_length_var_lb, True)
 
 document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
 document_length_var.pack()
 document_length_var.set(90000)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+150, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+300, y_multiplier_integer,
                                                document_length_var,True)
 
 limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500, y_multiplier_integer,
                                                limit_sentence_length_var_lb,True)
 
 limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
 limit_sentence_length_var.pack()
 limit_sentence_length_var.set(100)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 550, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 650, y_multiplier_integer,
                                                limit_sentence_length_var)
 
 what_else_var.set(1)
@@ -702,7 +738,8 @@ what_else_menu_var.set('*')
 what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues (CoreNLP Neural Network)','Noun and verb classes (CoreNLP NER & WordNet)', 'People & organizations (CoreNLP NER)', 'Females & males (CoreNLP Neural Network)',
                                'References to date & time (CoreNLP normalized NER dates)',
                                'References to geographical locations (CoreNLP NER)',
-                               'References to nature (CoreNLP & WordNet)')
+                               'References to nature (CoreNLP & WordNet)',
+                               'Sentiments expressed (CoreNLP)')
 what_else_menu.config(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 440, y_multiplier_integer,
                                                what_else_menu, True)

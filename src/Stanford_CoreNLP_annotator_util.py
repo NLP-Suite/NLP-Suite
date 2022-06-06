@@ -45,6 +45,73 @@ import html_annotator_dictionary_util
 import SVO_enhanced_dependencies_util # Enhanced++ dependencies
 import reminders_util
 
+def check_CoreNLP_language(config_filename,annotator,language):
+    not_available = False
+    url = 'https://stanfordnlp.github.io/CoreNLP/human-languages.html'
+    CoreNLP_web='\n\nLanguage and annotator options for Stanford CoreNLP are listed at the Stanford CoreNLP website ' + url
+    if "lemma" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP Lemma annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "normalized" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP Normalized NER annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "gender" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP gender annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "quote" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP quote annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "OpenIE" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP OpenIE annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "sentiment" in annotator.lower():
+        if language != 'English' and language != 'Chinese':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP sentiment analysis annotator is only available for Chinese and English.' + CoreNLP_web)
+            not_available = True
+    elif "coreference" in annotator.lower():
+        if language != 'English' and language != 'Chinese':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP coreference resolution annotator is only available for Chinese and English.' + CoreNLP_web)
+            not_available = True
+    elif "PCFG" in annotator.lower():
+        if language == 'English' or language == 'German':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP PCFG parser is not available for German and Hungarian.'+CoreNLP_web)
+            not_available = True
+    elif "neural network" in annotator.lower(): #parsee
+        if language == 'Arabic' or language == 'Hungarian':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP neural network parser is not available for Arabic and Hungarian.'+CoreNLP_web)
+            not_available = True
+    elif "SVO" in annotator.lower(): #parsee
+        if language == 'Arabic' or language == 'Hungarian':
+            mb.showwarning(title='Annotator availability for ' + language,
+                           message='The Stanford CoreNLP SVO annotator is not available for Arabic and Hungarian.'+CoreNLP_web)
+            not_available = True
+    if not_available:
+        reminder_status = reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_website,
+                                     reminders_util.message_CoreNLP_website,
+                                     True)
+        if reminder_status == 'Yes':
+            # open website
+            website_name = 'CoreNLP website'
+            message_title = 'CoreNLP website'
+            message="Would you like to open the Stanford CoreNLP website for annotator availability for the various languages supported by CoreNLP?"
+            IO_libraries_util.open_url(website_name, url, ask_to_open=True, message_title=message_title, message=message)
+    return not(not_available) # failed
+
 import GUI_IO_util
 # from operator import itemgetter, attrgetter
 # central CoreNLP_annotator function that pulls together our approach to processing many files,
@@ -68,11 +135,11 @@ import GUI_IO_util
 
 def CoreNLP_annotate(config_filename,inputFilename,
                      inputDir, outputDir,
-                     openOutputFiles, createExcelCharts, chartPackage,
+                     openOutputFiles, createCharts, chartPackage,
                      annotator_params,
                      DoCleanXML,
+                     language,
                      memory_var,
-                     # print_json = False,
                      document_length=90000,
                      sentence_length=1000, # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
                      print_json = True,
@@ -114,7 +181,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
     date_position_var = 0
     date_str = ''
     # language initialized here and reset later in language = value
-    language = 'English'
     NERs = []
     for key, value in kwargs.items():
         if key == 'extract_date_from_text_var' and value == True:
@@ -131,8 +197,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
             date_position_var = value
         if key == 'single_quote_var':
             single_quote_var = value
-        if key == 'language':
-            language = value
 
     global language_encoding
     if language == 'English':
@@ -238,6 +302,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # param_list_NN = []
     corefed_pronouns = 0#pronouns that are corefed
     for annotator in annotator_params:
+        if not check_CoreNLP_language(config_filename, annotator, language):
+            continue
         if "gender" in annotator or "quote" in annotator or "coref" in annotator or "SVO" in annotator or "OpenIE" in annotator or ("parser" in annotator and "nn" in annotator):
             print("Using neural network model")
             neural_network = True
@@ -276,6 +342,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # the third item in routine_list is typ[ically a single lit [], but for POS it becomes a double list ['Verbs'],[Nouns]]
     # the case needs special handling
     POS_WordNet=False
+    if routine_list==[]: # when the language check fails for an annotator
+        return filesToOpen
     if isinstance(routine_list[0][2][0],list):
         run_output = [[], []]
         POS_WordNet=True
@@ -585,55 +653,52 @@ def CoreNLP_annotate(config_filename,inputFilename,
             file_df = pd.read_csv(filesToVisualize[j])
             if not file_df.empty:
                 if "Lemma" in annotator_params:
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
+                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
                                           'Frequency Distribution of Lemmas', 1, [], 'lemma_bar','Lemma')
                 elif 'All POS' in annotator_params:
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
+                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
                                           'Frequency Distribution of POS Tag Values', 1, [], 'POS_bar','POS tag')
                 elif 'gender' in annotator_params and "gender" in filesToVisualize[j].split("_"):
                     filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j], filesToOpen)
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "Gender":
-                        filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
+                        filesToOpen = visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen,
                                                             [[1, 1]], 'bar',
                                                             'Frequency Distribution of Gender Types', 1, [],
                                                             'gender_types','Gender')
 
-                        filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
+                        filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen,
                                                           [[0, 0]], 'bar',
                                               'Frequency Distribution of Words by Gender Type', 1, ['Gender'], 'gender_words','')
 
                 elif 'quote' in annotator_params and "quote" in filesToVisualize[j].split("_"):
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[5] == "Speakers":
-                        filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
+                        filesToOpen = visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen,
                                                         [[5, 5]], 'bar',
                                                         'Frequency Distribution of Speakers', 1, [],
                                                         'quote_bar', 'Speaker')
                 elif 'date' in annotator_params:
                     # TODO put values hover-over values to pass to Excel chart as a list []
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
+                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
                                           'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Normalized date type')
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
+                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
                                                       'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type')
                 elif 'NER' in annotator_params and "NER" in filesToVisualize[j].split("_"):
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "NER Value":
-                        filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
+                        filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
                                               'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
                         # ner tags are _ separated; individual NER tags at most have 2 _ (e.g., STATE_OR_PROVINCE)
                         if len(kwargs['NERs'])>1:
                             ner_tags = 'Multi-tags'
                         else:
                             ner_tags = str(kwargs['NERs'][0])
-                        filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
+                        filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
                                               'Frequency Distribution of Words by NER ' +ner_tags, 1, ['NER Value'], 'NER_word_bar','') #NER ' +ner_tags+ ' Word
                 elif 'SVO' in annotator_params or 'OpenIE' in annotator_params:
-                    # pie chart of SVO
-                    # filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3],[4,4],[5,5]], 'pie',
-                    #                       'Frequency Distribution of SVOs', 1, [], 'SVO_pie','SVOs')
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
+                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
                                           'Frequency Distribution of Subjects (unfiltered)', 1, [], 'S_bar','Subjects (unfiltered)')
-                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
+                    filesToOpen = visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
                                                         'Frequency Distribution of Verbs (unfiltered)', 1, [], 'V_bar', 'Verbs (unfiltered)')
-                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
+                    filesToOpen = visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
                                                         'Frequency Distribution of Objects (unfiltered)', 1, [], 'O_bar', 'Objects (unfiltered)')
                     if 'SVO' in annotator_params:
                         for key, value in kwargs.items():
@@ -649,7 +714,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         param = "SVO"
                     pronoun_files = check_pronouns(config_filename, filesToVisualize[j],
                                              outputDir,
-                                             createExcelCharts, param, corefed_pronouns)
+                                             createCharts,chartPackage, param, corefed_pronouns)
                     if len(pronoun_files)>0:
                         filesToOpen.extend(pronoun_files)
 
@@ -1778,18 +1843,19 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesT
 
     return filesToOpen
 
-def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen, columns_to_be_plotted, chartType, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label):
-    if createExcelCharts == True:
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,filesToOpen, columns_to_be_plotted, chartType, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label):
+    if createCharts == True:
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel=outputFileNameType,
+                                                  chartPackage=chartPackage,
                                                   chart_type_list=[chartType],
                                                   chart_title=chartTitle,
                                                   column_xAxis_label_var=column_xAxis_label,
                                                   hover_info_column_list=hover_label,
                                                   count_var=count_var)
-        if Excel_outputFilename!=None:
-            if len(Excel_outputFilename) > 0:
-                filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename!=None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.append(chart_outputFilename)
 
         # by sentence index
         #
@@ -1799,7 +1865,7 @@ def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen,
         #                                                                    '',
         #                                                                    outputDir,
         #                                                                    openOutputFiles,
-        #                                                                    createExcelCharts,
+        #                                                                    createCharts,chartPackage,
         #                                                                    [[1, 2]],
         #                                                                    ['Normalized date'],['Word', 'Sentence'],['Document ID', 'Sentence ID','Document'],
         #                                                                    'date', 'line')
@@ -1809,7 +1875,7 @@ def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen,
 
     return filesToOpen
 
-def check_pronouns(config_filename, inputFilename, outputDir, createExcelCharts, option, corefed_pronouns):
+def check_pronouns(config_filename, inputFilename, outputDir, createCharts,chartPackage, option, corefed_pronouns):
     return_files = []
     df = pd.read_csv(inputFilename)
     if df.empty:
@@ -1859,14 +1925,14 @@ def check_pronouns(config_filename, inputFilename, outputDir, createExcelCharts,
             print("Number of pronouns: ", total_count)
             print("Number of coreferenced pronouns: ", corefed_pronouns)
             print("Pronouns coreference rate: ", str(round((corefed_pronouns / total_count) * 100, 2)) + "%")
-        if createExcelCharts:
+        if createCharts:
             data_to_be_plotted = [["Pronoun", "Pronoun Count"], ["Total Count", total_count]]
             for w in sorted(pronouns_count, key=pronouns_count.get, reverse=True):
                 data_to_be_plotted.append([w, pronouns_count[w]])
             data_to_be_plotted = [data_to_be_plotted]
-            Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window, data_to_be_plotted, inputFilename, outputDir,
+            chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window, data_to_be_plotted, inputFilename, outputDir,
                                                       "Pronouns_bar", "Frequency Distribution of Pronouns",
                                                       ["bar"], "Pronouns", "Frequency")
-            return_files.append(Excel_outputFilename)
+            return_files.append(chart_outputFilename)
     return return_files
 

@@ -56,7 +56,7 @@ def validate(date_text):
         raise ValueError("Incorrect data format, should be YYYY-MM-DD")
 
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         n_grams_var,
         n_grams_menu_var,
         n_grams_list,
@@ -154,11 +154,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 
         if n_grams_word_var or bySentenceIndex_word_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts, chartPackage,
+                                                              outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_word_var)
         if n_grams_character_var or bySentenceIndex_character_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, n_grams_size, normalize, excludePunctuation, 0, openOutputFiles, createExcelCharts, chartPackage,
+                                                              outputDir, n_grams_size, normalize, excludePunctuation, 0, openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_character_var)
 
 # VIEWER ____________________________________________________________________________________________
@@ -166,7 +166,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
     if (n_grams_viewer_var == False and CoOcc_Viewer_var == False):
         return
 
-    if (n_grams_viewer_var ==True or CoOcc_Viewer_var==True) and (createExcelCharts==False):
+    if (n_grams_viewer_var ==True or CoOcc_Viewer_var==True) and (createCharts==False):
         mb.showwarning(title='Warning',
                        message='The checkbox to compute Excel charts is unticked. Since the VIEWER produces Excel charts as output, the script will abort.\n\nPlease, tick the checkbox to produce Excel charts and try again.')
         return
@@ -248,7 +248,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
             viewer_options_list)
 
     # plot Ngrams
-    if createExcelCharts == True and n_grams_outputFile!='':
+    if createCharts == True and n_grams_outputFile!='':
         xlsxFilename = n_grams_outputFile
         filesToOpen.append(n_grams_outputFile)
         xAxis = temporal_aggregation_var
@@ -268,16 +268,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
             i += 1
             j += 1
         hover_label = []
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                                   'n-grams_viewer',
+                                                  chartPackage=chartPackage,
                                                   chart_type_list=["line"],
                                                   chart_title=chartTitle, column_xAxis_label_var=xAxis,
                                                   hover_info_column_list=hover_label)
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
     # plot co-occurrences
-    if createExcelCharts and co_occurrences_outputFile!='':
+    if createCharts and co_occurrences_outputFile!='':
         xlsxFilename = co_occurrences_outputFile
         filesToOpen.append(co_occurrences_outputFile)
         chartTitle = 'Co-Occurrences Viewer: ' + search_words
@@ -288,21 +289,22 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
         hover_label = []
         if xAxis == 'Document':
             columns_to_be_plotted = [[1, 1]]
-            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                                       'Co-Occ_viewer',
+                                                      chartPackage=chartPackage,
                                                       chart_type_list=["pie"],
                                                       chart_title=chartTitle, column_xAxis_label_var=xAxis,
                                                       hover_info_column_list=hover_label,
                                                       count_var=1)
         # else:
         #     columns_to_be_plotted = [[0, 1]]
-        #     Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+        #     chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
         #                                               'Co-Occ_viewer',
         #                                               chart_type_list=["line"],
         #                                               chart_title=chartTitle, column_xAxis_label_var=xAxis,
         #                                               hover_info_column_list=hover_label)
-        # if Excel_outputFilename != "":
-        #     filesToOpen.append(Excel_outputFilename)
+        # if chart_outputFilename != "":
+        #     filesToOpen.append(chart_outputFilename)
 
 
     # # with both Ngrams and co-occurrences
@@ -321,7 +323,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get(), GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_dropdown_field.get(),
                                  n_grams_var.get(),
                                  n_grams_menu_var.get(),
