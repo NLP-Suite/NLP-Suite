@@ -109,11 +109,10 @@ def plot_bar_chart_px(x_label, fileName, chartTitle, height = ''):
     if height == '':
         height = x_label+"_count"
         data = get_frequencies(data, x_label)
-    width = None
+    fig = px.bar(data,x=x_label,y=height)
     # to ensure the bar doesn't look to wide if x label's length is not enough
-    if len(x_label < 5):
-        width = 0.2
-    fig = px.bar(data,x=x_label,y=height, width = width)
+    if len(data[x_label]) < 5:
+        fig.update_traces(width=0.2)
     fig.update_layout(title=chartTitle, title_x=0.5)
     return fig
 

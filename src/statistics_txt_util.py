@@ -501,9 +501,10 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                                                                                         outputDir=outputDir,
                                                                                         select_col=[],
                                                                                         group_col=['Sentence ID'],
-                                                                                        chartTitle=chartTitle + str(index + 1) + '-grams Frequencies by Sentence Index')
-                if Excel_outputFilename != "":
-                    filesToOpen.append(Excel_outputFilename)
+                                                                                        chartTitle=chartTitle + str(index + 1) + '-grams Frequencies by Sentence Index',
+                                                                                        series_label = "Frequencies")
+                if chart_outputFilename != "":
+                    filesToOpen.append(chart_outputFilename)
             else:
                 columns_to_be_plotted=[[2,1]] # 0,1
                 hover_label=[str(index+1)+'-grams'] # change to sentence
@@ -516,8 +517,8 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                                                           column_xAxis_label_var='',
                                                           hover_info_column_list=hover_label,
                                                           graph_type = chartPackage)
-                if Excel_outputFilename != "":
-                    filesToOpen.append(Excel_outputFilename)
+                if chart_outputFilename != "":
+                    filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                        'Finished running Word/Characters N-Grams at', True, '', True, startTime, False )

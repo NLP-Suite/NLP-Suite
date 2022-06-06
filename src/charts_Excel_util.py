@@ -100,6 +100,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = False):
 
     use_plotly = 'plotly' in chartPackage.lower()
+    use_plotly  =True
     # added by Tony, May 2022 for complete sentence index
     # the file should have a column named Sentence ID
     # the extra parameter "complete_sid" is set to True by default to avoid extra code mortification elsewhere
@@ -313,7 +314,7 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 # enable complete_sid to make sentence index continuous
 # enable graph to make a multiline graph
 # the input should be saved to a csv file first
-def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle, graph = True, complete_sid = True, series_label = NULL, use_plotly = False):
+def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle, graph = True, complete_sid = True, series_label = NULL, chartPackage = 'Excel'):
     cols = group_col + select_col
     if 'Excel' in chartPackage:
        use_plotly = False
@@ -362,14 +363,14 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
             else:
                 Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
                                                 "frequency_multi-line_chart", chart_type_list=["line"], 
-                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID")
+                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID",chartPackage = 'Excel')
         else:
             if use_plotly:
                 charts_plotly_util.plot_multi_line_chart_w_slider_px(name, cols_to_be_plotted, chartTitle, outputDir, series_label)
             else:
                 Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
                                                 "frequency_multi-line_chart", chart_type_list=["line"], 
-                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label)
+                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label, chartPackage = 'Excel')
     return Excel_outputFilename
 
 # Tony Chen Gu written at April 2022 mortified at May 2022
