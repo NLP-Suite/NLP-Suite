@@ -79,7 +79,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
                 filesToOpen.extend(tempOutputFiles)
 
         if "Compute lines length" in corpus_options_menu_var or "*" in corpus_options_menu_var:
-            tempOutputFiles=statistics_txt_util.read_line(window, inputFilename, inputDir, outputDir,
+            tempOutputFiles=statistics_txt_util.compute_line_length(window, inputFilename, inputDir, outputDir,
                                                           False, createCharts, chartPackage)
             if tempOutputFiles!=None:
                 filesToOpen.extend(tempOutputFiles)

@@ -637,7 +637,7 @@ def complete_sentence_index(file_path):
 #     # makes those separate dataframes align to the same maximum index
 #     df_hover = slicing_dataframe(df,group_col + hover_col)
 #     df_list = align_dataframes(df_list)
-#     #append aligned dataframes as frequncy columns in the new dataframe
+#     #append aligned dataframes as frequency columns in the new dataframe
 #     df_list = [slicing_dataframe(d, group_col + select_col + ['Frequency']) for d in df_list]
 #     # rename those newly added columns
 #     df_list = [rename_df(d,select_column) for d in df_list]

@@ -25,7 +25,6 @@ Uses concreteness measures by Brysbaert, Marc, Amy Beth Warriner, and Victor Kup
 
 import sys
 
-from py import process
 import GUI_util
 import IO_libraries_util
 import IO_files_util

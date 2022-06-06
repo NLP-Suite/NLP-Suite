@@ -275,9 +275,11 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
     # generate CSV file
     df = generate_csv()
     df.to_csv((csvname), index=False)
-
     filesToOpen.append(csvname)
     clear_cache()
+
+    # add charts
+
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running DBpedia Knowledge Graph at',
                                        True, '', True, startTime)
 

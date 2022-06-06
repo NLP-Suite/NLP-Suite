@@ -18,8 +18,6 @@ import GUI_IO_util
 import IO_files_util
 import CoNLL_util
 import knowledge_graphs_WordNet_util
-import reminders_util
-import html_annotator_dictionary_util
 import sentence_analysis_util
 import Stanford_CoreNLP_annotator_util
 
@@ -31,6 +29,7 @@ pd.set_option('display.max_columns', 500)
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles,
         createCharts,
+        chartPackage,
         csv_file,
         aggregate_POS_var,
         noun_verb,
@@ -137,9 +136,10 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         nouns_var = True
         verbs_var = True
         # uses a txt fie in input
+        language_var='English'
         files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                  outputDir, openOutputFiles, createCharts, chartPackage,
-                                                                 annotator, False, memory_var)
+                                                                 annotator, False, language_var, memory_var)
         if len(files) > 0:
             noun_verb = ''
             if verbs_var == True:

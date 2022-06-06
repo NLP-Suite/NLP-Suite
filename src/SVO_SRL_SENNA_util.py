@@ -31,7 +31,7 @@ def check_system():
 
 
 def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles=False, createCharts=False,
-              filter_svo=('', '', '')) -> list:
+              chartPackage='Excel', filter_svo=('', '', '')) -> list:
     """
     Run the senna-osx with input type either file or directory
     :param inputFilename: name of the input text file
@@ -414,5 +414,5 @@ if __name__ == '__main__':
     dir_name = ''
     file_name = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/test.txt'
     output_dir = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/'
-    run_senna(file_name, dir_name, output_dir, openOutputFiles=openOutputFiles, createCharts=createCharts, chartPackage)
+    run_senna(file_name, dir_name, output_dir, openOutputFiles=openOutputFiles, createCharts=createCharts, chartPackage=chartPackage)
     # get_verb_root('taking')

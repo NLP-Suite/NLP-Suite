@@ -13,7 +13,6 @@ extended by Mino Cha April 2022
 import sys
 import GUI_util
 import IO_libraries_util
-import collections
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "file_search_byWord_util.py",
                                           ['os', 'tkinter','stanza']) == False:
@@ -23,6 +22,7 @@ import os
 import csv
 import tkinter.messagebox as mb
 from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+import collections
 
 import IO_user_interface_util
 import IO_files_util

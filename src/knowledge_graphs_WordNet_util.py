@@ -11,7 +11,6 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"WordNet",['os','csv',
 
 import os
 import subprocess
-import tkinter.messagebox as mb
 from nltk.corpus import wordnet as wn
 import pandas as pd
 import csv
@@ -21,6 +20,7 @@ import charts_Excel_util
 import IO_files_util
 import IO_user_interface_util
 import data_manager_util
+import IO_csv_util
 
 filesToOpen=[]
 
@@ -180,7 +180,6 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     outputFilenameCSV1=os.path.join(outputDir, "NLP_WordNet_UP_" + fileName+"_output.csv")
     outputFilenameCSV1_new = outputFilenameCSV1.replace("_output", "")
     if (not 'VERB' in outputFilenameCSV1_new) and (not 'NOUN' in outputFilenameCSV1_new):
-        # outputFilenameCSV1_new - with output in the filename - is the file with three columns: Word, WordNet Category, Intermediate Synsets
         outputFilenameCSV1_new = outputFilenameCSV1_new.replace("NLP_WordNet_UP_","NLP_WordNet_UP_"+noun_verb+"_")
         # outputFilenameCSV1_new = outputFilenameCSV1_new.replace("_output","")
         # the file already exists and must be removed
@@ -190,9 +189,12 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     else:
         outputFilenameCSV1_new = outputFilenameCSV1
     filesToOpen.append(outputFilenameCSV1_new)
-    complete_csv_header(outputFilenameCSV1_new,"Synsets")
+    complete_csv_header(outputFilenameCSV1_new,"Intermediate synset")
     # outputFilenameCSV2 - with frequency in the filename - is the file with the handful of WordNett aggregated synsets and their frequency
     outputFilenameCSV2 = os.path.join(outputDir, "NLP_WordNet_UP_" + fileName + "_frequency.csv")
+    # Since the original output file returned by the JAVA script WordNet_Search_UP.jar contains
+    #   the header Intermediate Synsets, this must be renamed to Intermediate synset 1
+    IO_csv_util.rename_header(outputFilenameCSV1_new, "Intermediate Synsets","Intermediate synset 1")
     if (not 'VERB' in outputFilenameCSV2) and (not 'NOUN' in outputFilenameCSV2):
         outputFilenameCSV2_new = outputFilenameCSV1.replace("NLP_WordNet_UP_","NLP_WordNet_UP_"+noun_verb+"_")
         # the file already exists and must be removed
@@ -277,6 +279,11 @@ def get_case_initial_row(inputFilename,outputDir,check_column, firstLetterCapita
     data.to_csv(outputFilename,index=False)
     return filesToOpen
 
+# The output file returned by the JAVA script WordNet_Search_UP.jar contains
+#   several intermediate synsets under the same column header Intermediate Synsets
+#   causing problems to pandas
+#   The list of Intermediate Synsets mustt be separated and ut under separate headings
+
 def complete_csv_header(inputFilename, padding_base_name):
     max_length = 0
     new_header = []
@@ -286,8 +293,6 @@ def complete_csv_header(inputFilename, padding_base_name):
         for row in reader:
             if max_length < len(row):
                 max_length = len(row)
-    
-    
     with open(inputFilename, newline='') as f:
         reader = csv.reader(f)
         # only read the first line
@@ -295,9 +300,8 @@ def complete_csv_header(inputFilename, padding_base_name):
             max_length = max_length - len(row)
             new_header = row
             for i in range(1, max_length+1):
-                new_header.append(padding_base_name + " " + str(i))
+                new_header.append(padding_base_name + " " + str(i+1))
             break
-
     tempFile = os.path.splitext(inputFilename)[0] + "_modified.csv"
     os.rename(inputFilename, tempFile)
     with open(tempFile, newline='') as fr, open(inputFilename,"w", newline='') as fw:
