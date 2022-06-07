@@ -314,13 +314,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     if IO_csv_util.GetNumberOfRecordInCSVFile(tempOutputFiles[0], encodingValue='utf-8') > 1:
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Verb (V)'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'VERB',
-                                                               openOutputFiles, createCharts, chartPackage)
+                                                               openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
                             filesToOpen.extend(output)
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'NOUN',
-                                                               openOutputFiles, createCharts, chartPackage)
+                                                               openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
                             filesToOpen.extend(output)
@@ -480,14 +480,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Verb (V)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
                                                                              config_filename, 'VERB',
-                                                                             openOutputFiles, createCharts, chartPackage)
+                                                                             openOutputFiles, createCharts, chartPackage, language_var)
                     os.remove(outputFilename)
                     if output != None:
                         filesToOpen.extend(output)
                     outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
                                                                              config_filename, 'NOUN',
-                                                                             openOutputFiles, createCharts, chartPackage)
+                                                                             openOutputFiles, createCharts, chartPackage, language_var)
                     os.remove(outputFilename)
                     if output != None:
                         filesToOpen.extend(output)

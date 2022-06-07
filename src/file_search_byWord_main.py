@@ -45,7 +45,7 @@ def run(inputFilename,inputDir, outputDir,
     if extract_sentences_var:
         import sentence_analysis_util
 
-        sentence_analysis_util.extract_sentences(window, inputFilename, inputDir, outputDir,
+        statistics_txt_util.extract_sentences(window, inputFilename, inputDir, outputDir,
                                                  extract_sentences_search_words_var)
         extract_sentences_search_words_var = ''
         search_words_entry.configure(state='disabled')

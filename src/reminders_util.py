@@ -23,6 +23,18 @@ from csv import writer
 
 # below is a lit of most reminders called from various scripts with their title_options and message
 
+title_options_language_tool = ['Language & NLP tool']
+message_language_tool = 'The selected NLP tool is not available for the selected language.'
+
+title_options_English_language_WordNet = ['English language & WordNet']
+message_English_language_WordNet = 'WordNet is only available for texts in the English language.'
+
+title_options_English_language_Gensim = ['English language & Gensim topic modeling']
+message_English_language_Gensim = 'Gensim topic modeling is only available for texts in the English language.'
+
+title_options_English_language_MALLET = ['English language & MALLET topic modeling']
+message_English_language_MALLET = 'MALLET topic modeling is only available for texts in the English language.'
+
 title_options_NLP_Suite_welcome = ['NLP Suite welcome & system requirements']
 message_NLP_Suite_welcome = 'Welcome to the NLP Suite a package of Python 3 and Java tools designed for text processing and visualization. The Suite requires several FREWARE software components in order to run. You will need to download and install them or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro).\n\n   1. JAVA. Several scripts are based on the FREEWARE Java. You can download and install Java at https://www.java.com/en/download\n\n   2. STANFORD CORENLP. The core text analyses of the NLP Suite are based on the FREEWARE Stanford CoreNLP. You can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n   3. GEPHI. The visualization of network graphs requires the installation of the FREEWARE software Gephi. You can download and install Gephi at https://gephi.org/users/download/\n\n   4. GOOGLE EARTH PRO. The visualization of geographic maps requires the installation of the FREEWARE software Google Earth Pro. You can download and install Google Earth Pro at https://www.google.com/earth/versions/#download-pro.\n\n   5. MALLET. MALLET topic modelling requires the installation of the FREEWARE MALLET. You can download and install MALLET at http://mallet.cs.umass.edu/download.php.\n\n   7. SENNA. The FREEWARE SENNA will allow you to extract Subject-Verb-Object from a text. You can download SENNA at https://ronan.collobert.com/senna/download.html.'
 

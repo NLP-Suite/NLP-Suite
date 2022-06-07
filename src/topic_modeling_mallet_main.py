@@ -198,4 +198,10 @@ readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readM
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
                     videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
+reminders_util.checkReminder(
+        config_filename,
+        reminders_util.title_options_English_language_MALLET,
+        reminders_util.message_English_language_MALLET,
+        True)
+
 GUI_util.window.mainloop()

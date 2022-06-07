@@ -74,7 +74,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
                 filesToOpen.extend(tempOutputFiles)
 
         if "Compute sentences length" in corpus_options_menu_var or "*" in corpus_options_menu_var:
-            tempOutputFiles = sentence_analysis_util.compute_sentence_length(inputFilename, inputDir, outputDir)
+            tempOutputFiles = statistics_txt_util.compute_sentence_length(inputFilename, inputDir, outputDir, createCharts, chartPackage)
             if tempOutputFiles!=None:
                 filesToOpen.extend(tempOutputFiles)
 

@@ -308,7 +308,7 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
     return data_to_be_plotted
 
 # written by Tony Chen Gu, April 2022
-# select_col should be one column name eg: ['Verb Voice']
+# select_col should be one column name to be plotted eg: ['Verb Voice']
 # group_col should be a list of column names eg ['Sentence ID']
 # enable complete_sid to make sentence index continuous
 # enable graph to make a multiline graph
@@ -342,7 +342,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
     data = data.groupby(cols).size().to_frame("count")
     data.to_csv(name)
     data = pd.read_csv(name)
-    # transform the data by the select colmuns
+    # transform the data by the select columns
     data = data.pivot(index = group_col, columns = select_col, values = "count")
     print(data)
     data.to_csv(name)
@@ -362,14 +362,14 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
             else:
                 chart_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
                                                 "frequency_multi-line_chart", chartPackage, chart_type_list=["line"],
-                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID")
+                                                chart_title=chartTitle, column_xAxis_label_var="Sentence Index")
         else:
             if use_plotly:
                 charts_plotly_util.plot_multi_line_chart_w_slider_px(name, cols_to_be_plotted, chartTitle, outputDir, series_label)
             else:
                 chart_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
-                                                "frequency_multi-line_chart", chartPackage, chart_type_list=["line"],
-                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label)
+                                                "frequency_multi_line_chart", chartPackage, chart_type_list=["line"],
+                                                chart_title=chartTitle, column_xAxis_label_var="Sentence Index",series_label_list = series_label)
     return chart_outputFilename
 
 # Tony Chen Gu written at April 2022 mortified at May 2022

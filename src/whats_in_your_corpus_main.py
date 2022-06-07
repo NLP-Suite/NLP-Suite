@@ -147,7 +147,7 @@ def run(inputFilename,inputDir, outputDir,
                                                               bySentenceIndex_word_var)
 
         if 'sentences' in corpus_options_menu_var:
-            filesToOpen = sentence_analysis_util.compute_sentence_length(inputFilename,inputDir, outputDir)
+            filesToOpen = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, createCharts, chartPackage)
 
             if filesToOpen!=None:
                 filesToOpen.extend(filesToOpen)
@@ -195,15 +195,29 @@ def run(inputFilename,inputDir, outputDir,
             if open_tm_GUI_var == True:
                 call("python topic_modeling_gensim_main.py", shell=True)
             else:
-                # run with all default values; do not run MALLET
-                output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics=20,
-                                                      remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createCharts=createCharts, chartPackage=chartPackage)
-                if output!=None:
-                    filesToOpen.extend(output)
+                if language_var != 'English':
+                    reminders_util.checkReminder(
+                        config_filename,
+                        reminders_util.title_options_English_language_Gensim,
+                        reminders_util.message_English_language_Gensim,
+                        True)
+                else:
+                    # run with all default values; do not run MALLET
+                    output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics=20,
+                                                          remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createCharts=createCharts, chartPackage=chartPackage)
+                    if output!=None:
+                        filesToOpen.extend(output)
 
-            if topics_Mallet_var==True:
-                if open_tm_GUI_var == True:
-                    call("python topic_modeling_mallet_main.py", shell=True)
+        if topics_Mallet_var==True:
+            if open_tm_GUI_var == True:
+                call("python topic_modeling_mallet_main.py", shell=True)
+            else:
+                if language_var != 'English':
+                    reminders_util.checkReminder(
+                        config_filename,
+                        reminders_util.title_options_English_language_MALLET,
+                        reminders_util.message_English_language_MALLET,
+                        True)
                 else:
                     # running with default values
                     output = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles=openOutputFiles, createCharts=createCharts, chartPackage=chartPackage, OptimizeInterval=True, numTopics=20)
@@ -250,43 +264,48 @@ def run(inputFilename,inputDir, outputDir,
             return
 
         if nouns_var or verbs_var:
-
             if nouns_var or verbs_var or what_else_menu_var == '*':
                 WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('whats_in_your_corpus', 'WordNet')
                 if WordNetDir == None:
                     return
+                if language_var != 'English':
+                    reminders_util.checkReminder(
+                        config_filename,
+                        reminders_util.title_options_English_language_WordNet,
+                        reminders_util.message_English_language_WordNet,
+                        True)
+                else:
+                    annotator = ['POS']
+                    files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+                                                outputDir, openOutputFiles, createCharts, chartPackage,
+                                                annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
+                    if len(files) > 0:
+                            noun_verb=''
+                            if verbs_var == True:
+                                inputFilename = files[0] # Verbs but... double check
+                                if "verbs" in inputFilename.lower():
+                                    noun_verb='VERB'
+                                else:
+                                    return
+                                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, config_filename, noun_verb,
+                                                                            openOutputFiles, createCharts, chartPackage, language_var)
+                                if output!=None:
+                                    filesToOpen.extend(output)
 
-                annotator = ['POS']
-                files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                            outputDir, openOutputFiles, createCharts, chartPackage,
-                                            annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
-            if len(files) > 0:
-                    noun_verb=''
-                    if verbs_var == True:
-                        inputFilename = files[0] # Verbs but... double check
-                        if "verbs" in inputFilename.lower():
-                            noun_verb='VERB'
-                        else:
-                            return
-                        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, config_filename, noun_verb,
-                                                                    openOutputFiles, createCharts, chartPackage)
-                        if output!=None:
-                            filesToOpen.extend(output)
-
-                    if nouns_var == True:
-                        inputFilename = files[1]  # Nouns but... double check
-                        if "nouns" in inputFilename.lower():
-                            noun_verb='NOUN'
-                        else:
-                            return
-                        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, config_filename, noun_verb,
-                                                                    openOutputFiles, createCharts, chartPackage)
-                        if output!=None:
-                            filesToOpen.extend(output)
-            else:
-                if (what_else_var and what_else_menu_var == '*'):
-                    IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Missing WordNet',
-                                                       'The analysis of \'What else is in your corpus\' will skip the nouns and verbs classification requiring WordNet and will continue with all other CoreNLP annotators')
+                            if nouns_var == True:
+                                inputFilename = files[1]  # Nouns but... double check
+                                if "nouns" in inputFilename.lower():
+                                    noun_verb='NOUN'
+                                else:
+                                    return
+                                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir, config_filename, noun_verb,
+                                                                            openOutputFiles, createCharts, chartPackage, language_var)
+                                if output!=None:
+                                    filesToOpen.extend(output)
+                    else:
+                        if (what_else_var and what_else_menu_var == '*'):
+                            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Missing WordNet',
+                                                               'The analysis of \'What else is in your corpus\' will skip the nouns and verbs classification requiring WordNet and will continue with all other CoreNLP annotators')
 
         if what_else_var and what_else_menu_var == '*':
             inputFilename=inputFilenameSV
@@ -512,7 +531,7 @@ config_filename = scriptName.replace('main.py', 'config.csv')
 #   input dir
 #   input secondary dir
 #   output dir
-config_input_output_numeric_options=[0,1,0,1]
+config_input_output_numeric_options=[2,1,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
