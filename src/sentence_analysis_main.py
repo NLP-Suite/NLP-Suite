@@ -42,7 +42,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             return
 
     if compute_sentence_length_var:
-        filesToOpen = sentence_analysis_util.compute_sentence_length(inputFilename,inputDir, outputDir)
+        filesToOpen = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir)
 
     if visualize_bySentenceIndex_var:
         filesToOpen = IO_files_util.runScript_fromMenu_option(script_to_run, IO_values,
@@ -53,14 +53,14 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     if sentence_complexity_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
-        filesToOpen=sentence_analysis_util.sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage)
+        filesToOpen=statistics_txt_util.sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage)
         if filesToOpen==None:
             return
 
     if text_readability_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
-        sentence_analysis_util.sentence_text_readability(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage)
+        statistics_txt_util.sentence_text_readability(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage)
 
     if visualize_sentence_structure_var==True:
         # if IO_libraries_util.check_inputPythonJavaProgramFile('DependenSee.Jar')==False:
@@ -75,7 +75,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         # subprocess.call(['java', '-jar', 'DependenSee.Jar', inputFilename, outputDir])
         # mb.showwarning(title='Analysis end',message='Finished running the Dependency tree viewer (png graphs).\n\nMake sure to open the png files in output, one graph for each sentence.')
 
-        sentence_analysis_util.sentence_structure_tree(inputFilename, outputDir)
+        statistics_txt_util.sentence_structure_tree(inputFilename, outputDir)
 
     if extract_sentences_var:
         if search_words_var=='':
@@ -198,13 +198,13 @@ pydict["Words/collocations by sentence index (GUI)"] = ["file_search_byWord_main
 pydict["WordNet categories by sentence index (GUI)"] = ["knowledge_graphs_WordNet_main.py", 1]
 
 pydict["Abstract/Concrete vocabulary analysis by sentence index"] = ["concreteness_analysis_util.main", 0, 3, 'txt']
-pydict["Dictionary items by sentence index"] = ["sentence_analysis_util.compute_sentence_length", 0, 3, 'txt']
+pydict["Dictionary items by sentence index"] = ["statistics_txt_util.compute_sentence_length", 0, 3, 'txt']
 pydict["Hapax legomena (once-occurring words) by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
 # pydict["Hapax legomena (once-occurring words) by sentence index"] = ["statistics_txt_util.compute_character_word_ngrams", 0, 3, 'txt']
 pydict["N-grams (word & character) by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
 # pydict["N-grams (word & character) by sentence index"] = ["statistics_txt_util.compute_character_word_ngrams", 0, 3, 'txt']
-pydict["Sentence complexity by sentence index"] = ["sentence_analysis_util.sentence_complexity", 0, 3, 'txt']
-pydict["Sentence/text readability by sentence index (via textstat)"] = ["sentence_analysis_util.sentence_text_readability", 0, 3, 'txt']
+pydict["Sentence complexity by sentence index"] = ["statistics_txt_util.sentence_complexity", 0, 3, 'txt']
+pydict["Sentence/text readability by sentence index (via textstat)"] = ["statistics_txt_util.sentence_text_readability", 0, 3, 'txt']
 pydict["Sentiment analysis by sentence index (GUI)"] = ["sentiment_analysis_main.py", 1]
 pydict["Short words (<4 chars) by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
 pydict["Initial-vowel words by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']

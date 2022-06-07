@@ -51,52 +51,52 @@ def check_CoreNLP_language(config_filename,annotator,language):
     CoreNLP_web='\n\nLanguage and annotator options for Stanford CoreNLP are listed at the Stanford CoreNLP website ' + url
     if "lemma" in annotator.lower():
         if language != 'English':
-            mb.showwarning(title='Annotator availability for ' + language,
-                           message='The Stanford CoreNLP Lemma annotator is only available for English.'+CoreNLP_web)
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP LEMMA annotator is only available for English.'+CoreNLP_web)
             not_available = True
     elif "normalized" in annotator.lower():
         if language != 'English':
-            mb.showwarning(title='Annotator availability for ' + language,
-                           message='The Stanford CoreNLP Normalized NER annotator is only available for English.'+CoreNLP_web)
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP NORMALIZED NER annotator is only available for English.'+CoreNLP_web)
             not_available = True
     elif "gender" in annotator.lower():
         if language != 'English':
-            mb.showwarning(title='Annotator availability for ' + language,
-                           message='The Stanford CoreNLP gender annotator is only available for English.'+CoreNLP_web)
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP GENDER annotator is only available for English.'+CoreNLP_web)
             not_available = True
     elif "quote" in annotator.lower():
         if language != 'English':
-            mb.showwarning(title='Annotator availability for ' + language,
-                           message='The Stanford CoreNLP quote annotator is only available for English.'+CoreNLP_web)
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP QUOTE annotator is only available for English.'+CoreNLP_web)
             not_available = True
     elif "OpenIE" in annotator.lower():
         if language != 'English':
-            mb.showwarning(title='Annotator availability for ' + language,
-                           message='The Stanford CoreNLP OpenIE annotator is only available for English.'+CoreNLP_web)
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP OPENIE annotator is only available for English.'+CoreNLP_web)
             not_available = True
     elif "sentiment" in annotator.lower():
         if language != 'English' and language != 'Chinese':
-            mb.showwarning(title='Annotator availability for ' + language,
-                           message='The Stanford CoreNLP sentiment analysis annotator is only available for Chinese and English.' + CoreNLP_web)
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP SENTIMENTT ANALYSIS annotator is only available for Chinese and English.' + CoreNLP_web)
             not_available = True
     elif "coreference" in annotator.lower():
         if language != 'English' and language != 'Chinese':
-            mb.showwarning(title='Annotator availability for ' + language,
-                           message='The Stanford CoreNLP coreference resolution annotator is only available for Chinese and English.' + CoreNLP_web)
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP COREFERENCE RESOLUTION annotator is only available for Chinese and English.' + CoreNLP_web)
             not_available = True
     elif "PCFG" in annotator.lower():
         if language == 'English' or language == 'German':
-            mb.showwarning(title='Annotator availability for ' + language,
-                           message='The Stanford CoreNLP PCFG parser is not available for German and Hungarian.'+CoreNLP_web)
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP PCFG PARSER is not available for German and Hungarian.'+CoreNLP_web)
             not_available = True
     elif "neural network" in annotator.lower(): #parsee
         if language == 'Arabic' or language == 'Hungarian':
-            mb.showwarning(title='Annotator availability for ' + language,
-                           message='The Stanford CoreNLP neural network parser is not available for Arabic and Hungarian.'+CoreNLP_web)
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP NEURAL NETWORK PARSER is not available for Arabic and Hungarian.'+CoreNLP_web)
             not_available = True
     elif "SVO" in annotator.lower(): #parsee
         if language == 'Arabic' or language == 'Hungarian':
-            mb.showwarning(title='Annotator availability for ' + language,
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
                            message='The Stanford CoreNLP SVO annotator is not available for Arabic and Hungarian.'+CoreNLP_web)
             not_available = True
     if not_available:

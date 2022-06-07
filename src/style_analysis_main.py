@@ -59,13 +59,13 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         if '*' in complexity_readability_analysis_menu_var or 'Sentence' in complexity_readability_analysis_menu_var:
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
-            filesToOpen = sentence_analysis_util.sentence_complexity(GUI_util.window, inputFilename,
+            filesToOpen = statistics_txt_util.sentence_complexity(GUI_util.window, inputFilename,
                                                                      inputDir, outputDir,
                                                                      openOutputFiles, createCharts, chartPackage)
         if '*' in complexity_readability_analysis_menu_var or 'Text' in complexity_readability_analysis_menu_var:
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
-            sentence_analysis_util.sentence_text_readability(GUI_util.window, inputFilename, inputDir,
+            statistics_txt_util.sentence_text_readability(GUI_util.window, inputFilename, inputDir,
                                                              outputDir, openOutputFiles, createCharts, chartPackage)
 
         if complexity_readability_analysis_menu_var=='':

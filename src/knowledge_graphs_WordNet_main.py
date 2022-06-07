@@ -20,6 +20,7 @@ import CoNLL_util
 import knowledge_graphs_WordNet_util
 import sentence_analysis_util
 import Stanford_CoreNLP_annotator_util
+import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -718,5 +719,11 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordi
 readMe_message = "The Python 3 and Java scripts interface with the lexical database WordNet to find word semantically related words.\n\nThe GUI widgets allow you to zoom IN, zoom OUT (or zoom DOWN and UP) in the WordNet database and to display WordNet categories by sentence index. The two IN/DOWN, OUT/UP Java algorithms use the MIT JWI (Java Wordnet Interface) (https://projects.csail.mit.edu/jwi/) to interface with WordNet.\n\nYou will need to download WordNet from https://wordnet.princeton.edu/download/current-version.\n\nWhen zooming IN/DOWN, you basically take a closer look at a term, going down the hierarchy (e.g., 'person' would give a list of words such as 'police', 'woman', ... or anyone who is a member of the group \'person\').\n\nWhen zooming OUT/UP, you find terms'higher-level aggregates (e.g., 'walk', 'run', 'flee'as verbs of a higher-level verb aggregate 'motion')" + webSearch
 readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+reminders_util.checkReminder(
+        config_filename,
+        reminders_util.title_options_English_language_WordNet,
+        reminders_util.message_English_language_WordNet,
+        True)
 
 GUI_util.window.mainloop()

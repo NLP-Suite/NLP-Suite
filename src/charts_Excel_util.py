@@ -309,7 +309,7 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
     return data_to_be_plotted
 
 # written by Tony Chen Gu, April 2022
-# select_col should be one column name eg: ['Verb Voice']
+# select_col should be one column name to be plotted eg: ['Verb Voice']
 # group_col should be a list of column names eg ['Sentence ID']
 # enable complete_sid to make sentence index continuous
 # enable graph to make a multiline graph
@@ -343,7 +343,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
     data = data.groupby(cols).size().to_frame("count")
     data.to_csv(name)
     data = pd.read_csv(name)
-    # transform the data by the select colmuns
+    # transform the data by the select columns
     data = data.pivot(index = group_col, columns = select_col, values = "count")
     print(data)
     data.to_csv(name)

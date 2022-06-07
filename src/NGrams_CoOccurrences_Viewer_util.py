@@ -57,6 +57,7 @@ def run(inputDir="relative_path_here",
         scaleData = True
     if 'Lemmatize' in str(viewer_options_list):
         useLemma = True
+        useLemma = True
 
 
     ################################## OPTIONS NEEDED TO BE ADD TO GUI #################################################

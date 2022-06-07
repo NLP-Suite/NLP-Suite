@@ -747,7 +747,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     def warning_message(*args):
         if charts_dropdown_field.get()!='Excel':
             mb.showwarning(title='Warning',
-                           message="The 'Python plotLy' option to draw charts is still under development. By and large workingg well, but... little improvements are under way.")
+                           message="The 'Python plotLy' option to draw charts is still under development. By and large working well, but... little improvements are under way.")
             charts_dropdown_field.set('Excel')
     charts_dropdown_field.trace('w',warning_message)
 
