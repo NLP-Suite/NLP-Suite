@@ -38,6 +38,7 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
         print("Error: failed to read the csv file named: "+inputFilename)
         return
 
+    # if we need to remove the hyperlinks, we need to make a temporary data for plotting
     if remove_hyperlinks:
         document = data['Document']
         new_document = []
@@ -73,7 +74,11 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
         else:
             print('Chart type not supported '+i+'! Skipped and continue with next chart.')
         file_list.append(save_chart(fig,outputDir,chartTitle,static_flag,column_xAxis_label,column_yAxis_label))
+    #remove the temporary file
     os.remove(inputFilename)
+    # if the length of thr file list is 1, only return the string to avoid IO_files error
+    if len(file_list) == 1:
+        return file_list[0]
     return file_list
 
 # need to discuss further
@@ -172,13 +177,14 @@ def plot_radar_chart_px(theta_label, fileName, chartTitle, r_label = None):
     fig.update_layout(title=chartTitle, title_x=0.5)
     return fig
 
-#plot 
+#plot multi line chart
 def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, series_label_list = NULL):
     data = pd.read_csv(fileName, encoding='utf-8')
     data.fillna(0, inplace=True)
     figs = make_subplots()
     col_name = list(data.head())
     default_series_name = (series_label_list == NULL)
+    # overlay subplots
     for i in range(0,len(col_to_be_ploted)):
         if default_series_name:
             series_label = col_name[col_to_be_ploted[i][1]]
@@ -190,6 +196,7 @@ def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, se
             name = series_label)
         figs.add_trace(trace)
     figs.update_layout(title=chartTitle, title_x=0.5)
+    # allow for sliders
     figs.update_layout(
         xaxis=dict(
             rangeselector=dict(
