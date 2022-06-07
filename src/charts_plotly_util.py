@@ -6,6 +6,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
+import charts_Excel_util
 import os
 
 ## NOTE:
@@ -27,7 +28,8 @@ import os
 def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_to_plot,
                         column_xAxis_label='',
                         column_yAxis_label='',
-                        static_flag=False,):
+                        remove_hyperlinks=False,
+                        static_flag=False):
     try:
         data = pd.read_csv(inputFilename, encoding='utf-8')
     except pd.errors.ParserError:
@@ -35,6 +37,16 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
     except:
         print("Error: failed to read the csv file named: "+inputFilename)
         return
+
+    if remove_hyperlinks:
+        document = data['Document']
+        new_document = []
+        for i in document:
+            new_document.append(charts_Excel_util.get_document_name(i))
+        data['Document'] = new_document
+        inputFilename = os.path.join(os.path.split(inputFilename)[0],"chart_data_"+os.path.split(inputFilename)[1])
+        data.to_csv(inputFilename, encoding='utf-8')
+
     headers = data.columns.tolist()
     file_list = []
     for j in range(0,len(chart_type_list)):
@@ -57,10 +69,11 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
             #plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, series_label_list = NULL)
             fig = plot_multi_line_chart_w_slider_px(inputFilename,chartTitle,cols_to_plot)
             file_list.append(save_chart(fig,outputDir,chartTitle,static_flag,column_xAxis_label,column_yAxis_label))
-            return file_list
+            break
         else:
             print('Chart type not supported '+i+'! Skipped and continue with next chart.')
         file_list.append(save_chart(fig,outputDir,chartTitle,static_flag,column_xAxis_label,column_yAxis_label))
+    os.remove(inputFilename)
     return file_list
 
 # need to discuss further
@@ -83,7 +96,7 @@ def get_frequencies(data, variable):
 #set up the output directory path
 #support both static and dynamic chart
 def save_chart(fig, outputDir, chartTitle, static_flag, x_label = '', y_label = ''):
-    fig.show()
+    #fig.show()
     if x_label != '':
         fig.update_layout(xaxis_title=x_label)
     if y_label != '':

@@ -97,10 +97,9 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             column_yAxis_label_var='Frequencies',
             column_yAxis_field_list = [],
             reverse_column_position_for_series_label=False,
-            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = False):
+            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = False, remove_hyperlinks=False):
 
     use_plotly = 'plotly' in chartPackage.lower()
-    use_plotly  =True
     # added by Tony, May 2022 for complete sentence index
     # the file should have a column named Sentence ID
     # the extra parameter "complete_sid" is set to True by default to avoid extra code mortification elsewhere
@@ -117,7 +116,8 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
                                                                         chart_type_list = chart_type_list,
                                                                         cols_to_plot = columns_to_be_plotted,
                                                                         column_xAxis_label = column_xAxis_label_var,
-                                                                        column_yAxis_label = column_yAxis_label_var)
+                                                                        column_yAxis_label = column_yAxis_label_var,
+                                                                        remove_hyperlinks = remove_hyperlinks)
         return Plotly_outputFilename
     
     data_to_be_plotted = prepare_data_to_be_plotted(inputFilename,

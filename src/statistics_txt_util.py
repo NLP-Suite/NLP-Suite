@@ -325,7 +325,8 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
                                                       chart_type_list=["bar"],
                                                       chart_title='Corpus Statistics: Frequency of Sentences by Document',
                                                       column_xAxis_label_var='', #Document
-                                                      hover_info_column_list=hover_label)
+                                                      hover_info_column_list=hover_label,
+                                                      remove_hyperlinks = True)
             if 'Excel' in chartPackage and chart_outputFilename != "":
                 # rename output file or it will be overwritten by the next chart
                 Excel_extention = chart_outputFilename[-5:]
@@ -502,7 +503,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                                                                                         select_col=[],
                                                                                         group_col=['Sentence ID'],
                                                                                         chartTitle=chartTitle + str(index + 1) + '-grams Frequencies by Sentence Index',
-                                                                                        series_label = "Frequencies")
+                                                                                        series_label = ["Frequencies"])
                 if chart_outputFilename != "":
                     filesToOpen.append(chart_outputFilename)
             else:
