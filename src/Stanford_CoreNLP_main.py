@@ -61,45 +61,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         mb.showinfo("Warning", "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the CoreNLP parser checkbox and try again.")
         return
 
-    if CoreNLP_annotators_var == True and 'Coreference PRONOMINAL resolution' in CoreNLP_annotators_menu_var:
-        if IO_libraries_util.check_inputPythonJavaProgramFile("Stanford_CoreNLP_coReference_util.py") == False:
-            return
-        # if not Stanford_CoreNLP_annotator_util.check_CoreNLP_language(annotator=CoreNLP_annotators_menu_var,
-        #                                                               language=language_var):
-        #     return
-        # if "Neural" in CoreNLP_annotators_menu_var:
-        #     CoRef_Option = 'Neural Network'
-        file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
-                                                                           outputDir, openOutputFiles, createCharts, chartPackage, memory_var,
-                                                                           manual_Coref)
-
-        if error_indicator == 0:
-            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
-                                               "Finished running Stanford CoreNLP Co-Reference Resolution using the 'Neural Network' approach at",
-                                               True)
-        else:
-            mb.showinfo("Coreference Resolution Error",
-                        "Since Stanford CoreNLP Co-Reference Resolution throws error, " +
-                        "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.")
-        # filesToOpen = filesToOpen + file_open
-        # print("Number of files to Open: ", len(file_open))
-        filesToOpen.extend(file_open)
-
-
     if parser or (CoreNLP_annotators_var and CoreNLP_annotators_menu_var != ''):
 
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py') == False:
             return
 
         if parser and parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
-            # if not Stanford_CoreNLP_annotator_util.check_CoreNLP_language(annotator=CoreNLP_annotators_menu_var,
-            #                                                               language=language_var):
-            #     return
             annotator='parser (pcfg)'
         elif parser_menu_var == 'Neural Network':
-            # if not Stanford_CoreNLP_annotator_util.check_CoreNLP_language(annotator=CoreNLP_annotators_menu_var,
-            #                                                               language=language_var):
-            #     return
             annotator='parser (nn)'
         else:
             if CoreNLP_annotators_var and CoreNLP_annotators_menu_var != '':
@@ -127,41 +96,60 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     annotator = ['SVO']
                 elif 'OpenIE' in CoreNLP_annotators_menu_var:
                     annotator = ['OpenIE']
+                elif 'Coreference PRONOMINAL resolution' in CoreNLP_annotators_menu_var:
+                    annotator = []
+                    if IO_libraries_util.check_inputPythonJavaProgramFile(
+                            "Stanford_CoreNLP_coReference_util.py") == False:
+                        return
+                    file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename,
+                                                                                       inputDir,
+                                                                                       outputDir, openOutputFiles,
+                                                                                       createCharts, chartPackage,
+                                                                                       language_var, memory_var,
+                                                                                       manual_Coref)
+
+                    if error_indicator != 0:
+                        mb.showinfo("Coreference Resolution Error",
+                                    "Since Stanford CoreNLP Co-Reference Resolution throws error, " +
+                                    "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.")
+                    filesToOpen.extend(file_open)
                 else:
                     return
 
-        tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                       outputDir,
-                                                                       openOutputFiles, createCharts, chartPackage,
-                                                                       annotator, False, #'All POS',
-                                                                       language_var, memory_var, document_length_var, limit_sentence_length_var,
-                                                                       extract_date_from_filename_var=dateInclude,
-                                                                       date_format=dateFormat,
-                                                                       date_separator_var=sep,
-                                                                       date_position_var=date_field_position,
-                                                                       single_quote_var = single_quote)
+        if len(annotator)>0:
+            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+                                                                           outputDir,
+                                                                           openOutputFiles, createCharts, chartPackage,
+                                                                           annotator, False, #'All POS',
+                                                                           language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                           extract_date_from_filename_var=dateInclude,
+                                                                           date_format=dateFormat,
+                                                                           date_separator_var=sep,
+                                                                           date_position_var=date_field_position,
+                                                                           single_quote_var = single_quote)
 
-        if len(tempOutputFiles)>0:
-            filesToOpen.extend(tempOutputFiles)
-            if 'parser' in annotator:
-                reminders_util.checkReminder(config_filename,
-                                             reminders_util.title_options_CoreNLP_NER_tags,
-                                             reminders_util.message_CoreNLP_NER_tags,
-                                             True)
-                if CoNLL_table_analyzer_var:
-                    if IO_libraries_util.check_inputPythonJavaProgramFile('CoNLL_table_analyzer_main.py') == False:
-                        return
-                    # open the analyzer having saved the new parser output in config so that it opens the right input file
-                    config_filename_temp = 'conll-table-analyzer_config.csv'
-                    config_input_output_alphabetic_options = ['EMPTY LINE', str(tempOutputFiles[0]), 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
-                    config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_alphabetic_options, True)
-
+            if len(tempOutputFiles)>0:
+                filesToOpen.extend(tempOutputFiles)
+                if 'parser' in annotator:
                     reminders_util.checkReminder(config_filename,
-                                                 reminders_util.title_options_CoNLL_analyzer,
-                                                 reminders_util.message_CoNLL_analyzer,
+                                                 reminders_util.title_options_CoreNLP_NER_tags,
+                                                 reminders_util.message_CoreNLP_NER_tags,
                                                  True)
+                    if CoNLL_table_analyzer_var:
+                        if IO_libraries_util.check_inputPythonJavaProgramFile('CoNLL_table_analyzer_main.py') == False:
+                            return
+                        # open the analyzer having saved the new parser output in config so that it opens the right input file
+                        config_filename_temp = 'conll_table_analyzer_config.csv'
+                        config_input_output_numeric_options = [1, 0, 0, 1]
+                        config_input_output_alphabetic_options = [str(tempOutputFiles[0]), '','',outputDir]
+                        config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
 
-                    call("python CoNLL_table_analyzer_main.py", shell=True)
+                        reminders_util.checkReminder(config_filename,
+                                                     reminders_util.title_options_CoNLL_analyzer,
+                                                     reminders_util.message_CoNLL_analyzer,
+                                                     True)
+
+                        call("python CoNLL_table_analyzer_main.py", shell=True)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -363,8 +351,6 @@ def check_CoreNLP_dateFields(*args):
         date_format_menu.config(state="disabled")
         date_separator.config(state='disabled')
         date_position_menu.config(state="disabled")
-
-
 fileName_embeds_date.trace('w', check_CoreNLP_dateFields)
 
 language_lb = tk.Label(window,text='Language')
@@ -409,14 +395,24 @@ CoNLL_table_analyzer_checkbox_msg.config(text="Open the CoNLL table analyzer GUI
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                CoNLL_table_analyzer_checkbox_msg)
 
+def activate_CoNLL_table_analyzer(*args):
+    if parser_var.get():
+        #CoNLL_table_analyzer_var.set(0)
+        CoNLL_table_analyzer_checkbox.config(state='normal')
+    else:
+        CoNLL_table_analyzer_checkbox.config(state='disabled')
+parser_var.trace('w',activate_CoNLL_table_analyzer)
+
+activate_CoNLL_table_analyzer()
+
 def check_CoNLL_table(*args):
     if CoNLL_table_analyzer_var.get() == 1:
         CoNLL_table_analyzer_checkbox_msg.config(text="Open CoNLL table analyzer GUI")
     else:
         CoNLL_table_analyzer_checkbox_msg.config(text="Do NOT open CoNLL table analyzer GUI")
-
-
 CoNLL_table_analyzer_var.trace('w', check_CoNLL_table)
+
+check_CoNLL_table()
 
 CoreNLP_annotators_checkbox = tk.Checkbutton(window, text='CoreNLP annotators', variable=CoreNLP_annotators_var,
                                              onvalue=1, offvalue=0)

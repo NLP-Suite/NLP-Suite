@@ -219,6 +219,7 @@ def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_displ
 # input_output_options[2] 0 NO input secondary dir
 # input_output_options[3] 0 NO output dir
 def write_config_file(window, config_filename, config_input_output_numeric_options, config_input_output_alphabetic_options, silent=False):
+    # print(' I AM IN def write_config_file','\n  ', config_input_output_numeric_options, '\n  ', config_input_output_alphabetic_options)
     # check that the config directory exists inside the NLP main directory
     if os.path.isdir(GUI_IO_util.configPath) == False:
         try:

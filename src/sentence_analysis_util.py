@@ -46,7 +46,6 @@ import GUI_IO_util
 def Extract(lst):
 	return [item[0] for item in lst]
 
-
 def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, createCharts, chartPackage, openOutputFiles=True,
 								  input_dictionary_file='', chartTitle=''):
 	filesToOpen = []
@@ -105,8 +104,8 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 				if word[0] not in Extract(DictionaryList):
 					DictionaryList.append(word)
 
-			DictionaryList.insert(0, ['Dict_value', 'Dict_second_value', 'Frequency', 'SentenceID', 'Sentence',
-									  'documentID', 'fileName'])
+			DictionaryList.insert(0, ['Dict_value', 'Dict_second_value', 'Frequency', 'Sentence ID', 'Sentence',
+									  'Document ID', 'Document'])
 	else:
 		dic = pd.read_csv(input_dictionary_file)
 		dic_value = dic.iloc[:, 0].tolist()
@@ -132,7 +131,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 				for word in token:
 					for dict_word in dic_value:
 						if word == dict_word.rstrip():
-							In.append([word, Sentence_ID, each_sentence, documentID, file])
+							In.append([word, Sentence_ID, each_sentence, documentID, IO_csv_util.undressFilenameForCSVHyperlink((file)])
 							break
 						else:
 							continue
@@ -145,8 +144,8 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 				if word[0] not in Extract(DictionaryList):
 					DictionaryList.append(word)
 
-			DictionaryList.insert(0, ['Dict_value', 'Frequency', 'SentenceID', 'Sentence',
-									  'documentID', 'fileName'])
+			DictionaryList.insert(0, ['Dict_value', 'Frequency', 'Sentence ID', 'Sentence',
+									  'Document ID', 'Document'])
 
 		outputFilename = IO_files_util.generate_output_file_name(file, inputDir, outputDir, '.csv',
 																 str(Sentence_ID) + '-Dict_value', 'stats', '', '', '',

@@ -166,9 +166,6 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
 																	'Verb Voice', 'stats')
 
-	# errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-	# 								 IO_CoNLL_util.sort_output_list('Verb Voice', verb_voice_list),
-	# 								 verb_file_name)
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
 											verb_voice_list,
 											verb_file_name)
@@ -182,56 +179,40 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	df.to_csv(verb_file_name,
 				header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 						"Verb Voice"])
-	# df = pd.read_csv(verb_file_name_aux, header=None)
-	# df.to_csv(verb_file_name_aux,
-	# 		  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-	# 				  "Verb Voice"])
-	# df = pd.read_csv(verb_file_name_act, header=None)
-	# df.to_csv(verb_file_name_act,
-	# 		  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-	# 				  "Verb Voice"])
-
 	errorFound = IO_csv_util.list_to_csv(GUI_util.window, voice_stats, verb_stats_file_name)
 	if errorFound == True:
 		return filesToOpen
 	# filesToOpen.append(verb_stats_file_name)
 
 	if createCharts == True:
-		chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
-																data_to_be_plotted=[voice_stats],
-																inputFilename=verb_stats_file_name,
-																outputDir=outputDir,
-																scriptType='Verb_Voice',
-																chartTitle="Frequency Distribution of Verb Voice",
-																chart_type_list=["pie"],
-																column_xAxis_label="Verb voice values",
-																column_yAxis_label="Frequency")
+		columns_to_be_plotted=[[0,1]]
+		count_var=0
+		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
+														 outputFileLabel='verb_voice',
+														 chartPackage=chartPackage,
+														 chart_type_list=['bar'],
+														 chart_title="Frequency Distribution of Verb Voice",
+														 column_xAxis_label_var='Verb Voice',
+														 hover_info_column_list=[],
+														 count_var=count_var)
+		if chart_outputFilename != None:
+			if len(chart_outputFilename) > 0:
+				filesToOpen.append(chart_outputFilename)
 
-		if chart_outputFilename != "":
-			filesToOpen.append(chart_outputFilename)
-
-		# line plots by sentence index
-		outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=verb_file_name,
-																outputDir=outputDir,
-																select_col=['Verb Voice'],
-																group_col=['Sentence ID'],
-															   chartPackage=chartPackage,
-															   chartTitle="Frequency Distribution of Verb Voice")
-		# outputFiles = charts_Excel_util.compute_csv_column_frequencies(window=GUI_util.window,
-		# 														inputFilename=verb_file_name_act,
-		# 														inputDataFrame='',
-		# 														outputDir=outputDir,
-		# 														openOutputFiles=openOutputFiles,
-		# 														createCharts=createCharts,
-		# 														columns_to_be_plotted=[[11, 14], [11, 14]],
-		# 														select_col='Verb Voice',
-		# 														hover_col=['FORM'],
-		# 														group_col=['Sentence ID'],
-		# 														fileNameType='NVA',
-		# 														chartType='line',
-		# 														count_var=1)
-		if outputFiles != "":
-			filesToOpen.append(outputFiles)
+		columns_to_be_plotted=[[11,14]] # sentence ID field comes first [11
+		count_var=0
+		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, verb_file_name, outputDir,
+														 outputFileLabel='verb_voice',
+														 chartPackage=chartPackage,
+														 chart_type_list=['line'],
+														 chart_title="Frequency Distribution of Verb Voice by Sentence Index",
+														 column_xAxis_label_var='Verb Voice',
+														 hover_info_column_list=[],
+														 count_var=count_var,
+														 complete_sid=True)
+		if chart_outputFilename != None:
+			if len(chart_outputFilename) > 0:
+				filesToOpen.append(chart_outputFilename)
 
 	return filesToOpen
 
@@ -328,49 +309,35 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 	filesToOpen.append(verb_stats_file_name)
 
 	if createCharts == True:
-		chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
-															 data_to_be_plotted=[modality_stats],
-															 inputFilename=verb_stats_file_name,
-															 outputDir=outputDir,
-															 scriptType='Verb_Modal',
-														 	 chartTitle="Frequency Distribution of Verb Modality",
-															 chart_type_list=["pie"],
-															 column_xAxis_label="Verb Modality",
-															 column_yAxis_label="Frequency")
-		if chart_outputFilename != "":
-			filesToOpen.append(chart_outputFilename)
+		columns_to_be_plotted=[[0,1]]
+		count_var=0
+		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
+														 outputFileLabel='verb_modality',
+														 chartPackage=chartPackage,
+														 chart_type_list=['bar'],
+														 chart_title="Frequency Distribution of Verb Modality",
+														 column_xAxis_label_var='Verb Modality',
+														 hover_info_column_list=[],
+														 count_var=count_var)
+		if chart_outputFilename != None:
+			if len(chart_outputFilename) > 0:
+				filesToOpen.append(chart_outputFilename)
 
-		# modified by Siyan Pu November 2021
-		# temporary headers added, not sure why the verb_voice_list doesn't have headers
-		df = pd.read_csv(verb_file_name, header=None)
-		df.to_csv(verb_file_name,
-				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "Verb Modality"])
+		columns_to_be_plotted=[[11,14]] # sentence ID field comes first [11
+		count_var=0
+		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, verb_file_name, outputDir,
+														 outputFileLabel='verb_modality',
+														 chartPackage=chartPackage,
+														 chart_type_list=['line'],
+														 chart_title="Frequency Distribution of Verb Modality by Sentence Index",
+														 column_xAxis_label_var='Verb Modality',
+														 hover_info_column_list=[],
+														 count_var=count_var,
+														 complete_sid=True)
+		if chart_outputFilename != None:
+			if len(chart_outputFilename) > 0:
+				filesToOpen.append(chart_outputFilename)
 
-		# line plots by sentence index
-		outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=verb_file_name,
-															outputDir=outputDir,
-															select_col=['Verb Modality'],
-															group_col=['Sentence ID'],
-  														    chartPackage=chartPackage,
- 														    chartTitle="Frequency Distribution of Verb Modality")
-		# outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
-		# 														verb_file_name,
-		# 														'',
-		# 														outputDir,
-		# 														openOutputFiles,
-		# 														createCharts,
-		# 														[[11, 14], [11, 14]],
-		# 														'Verb Modality', 
-		# 														#['FORM', 'Sentence'],
-		# 														['FORM'],
-		# 														#['Document ID', 'Sentence ID', 'Document'],
-		# 														['Sentence ID'],
-		# 														'NVA', 'line',1)
-		if len(outputFiles) > 0:
-			filesToOpen.extend(outputFiles)
-		if outputFiles != "":
-			filesToOpen.append(outputFiles)
 
 	return filesToOpen
 
@@ -475,36 +442,36 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 		return filesToOpen
 	filesToOpen.append(verb_stats_file_name)
 
-	if createCharts == True:
-
-		chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
-															 data_to_be_plotted=[verb_tense_stats],
-															 inputFilename=verb_stats_file_name,
-															 outputDir=outputDir,
-															 scriptType='Verb_Tense',
-															 chartTitle="Frequency Distribution of Verb Tense",
-															 chart_type_list=["pie"],
-															 column_xAxis_label="Verb Tense",
-															 column_yAxis_label="Frequency")
-
-		if chart_outputFilename != "":
-			filesToOpen.append(chart_outputFilename)
-
-
-		# # modified by Siyan Pu November 2021
-		# # temporary headers added, not sure why the verb_voice_list doesn't have headers
-		df = pd.read_csv(verb_file_name, header=None)
-		df.to_csv(verb_file_name,
-				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "Verb Tense"])
-		
-		# line plots by sentence index
-		outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=verb_file_name,
-													outputDir=outputDir,
-													select_col=['Verb Tense'],
-													group_col=['Sentence ID'],
-												   chartPackage=chartPackage,
-												   chartTitle="Frequency Distribution of Verb Tense")
+	# if createCharts == True:
+	#
+	# 	chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+	# 														 data_to_be_plotted=[verb_tense_stats],
+	# 														 inputFilename=verb_stats_file_name,
+	# 														 outputDir=outputDir,
+	# 														 scriptType='Verb_Tense',
+	# 														 chartTitle="Frequency Distribution of Verb Tense",
+	# 														 chart_type_list=["pie"],
+	# 														 column_xAxis_label="Verb Tense",
+	# 														 column_yAxis_label="Frequency")
+	#
+	# 	if chart_outputFilename != "":
+	# 		filesToOpen.append(chart_outputFilename)
+	#
+	#
+	# 	# # modified by Siyan Pu November 2021
+	# 	# # temporary headers added, not sure why the verb_voice_list doesn't have headers
+	# 	df = pd.read_csv(verb_file_name, header=None)
+	# 	df.to_csv(verb_file_name,
+	# 			  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+	# 				  "Verb Tense"])
+	#
+	# 	# line plots by sentence index
+	# 	outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=verb_file_name,
+	# 												outputDir=outputDir,
+	# 												select_col=['Verb Tense'],
+	# 												group_col=['Sentence ID'],
+	# 											   chartPackage=chartPackage,
+	# 											   chartTitle="Frequency Distribution of Verb Tense")
 		# outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
 		# 														verb_file_name,
 		# 														'',
@@ -515,10 +482,40 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 		# 														['Verb Tense'], ['FORM', 'Sentence'],
 		# 														['Document ID', 'Sentence ID', 'Document'],
 		# 														'NVA', 'line')
-		if len(outputFiles) > 0:
-			filesToOpen.extend(outputFiles)
-		if outputFiles != "":
-			filesToOpen.append(outputFiles)
+		# if len(outputFiles) > 0:
+		# 	filesToOpen.extend(outputFiles)
+		# if outputFiles != "":
+		# 	filesToOpen.append(outputFiles)
+
+	if createCharts == True:
+		columns_to_be_plotted=[[0,1]]
+		count_var=0
+		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
+														 outputFileLabel='verb_tense',
+														 chartPackage=chartPackage,
+														 chart_type_list=['bar'],
+														 chart_title="Frequency Distribution of Verb Tense",
+														 column_xAxis_label_var='Verb Tense',
+														 hover_info_column_list=[],
+														 count_var=count_var)
+		if chart_outputFilename != None:
+			if len(chart_outputFilename) > 0:
+				filesToOpen.append(chart_outputFilename)
+
+		columns_to_be_plotted=[[11,14]] # sentence ID field comes first [11
+		count_var=0
+		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, verb_file_name, outputDir,
+														 outputFileLabel='verb_tense',
+														 chartPackage=chartPackage,
+														 chart_type_list=['line'],
+														 chart_title="Frequency Distribution of Verb Tense by Sentence Index",
+														 column_xAxis_label_var='Verb Tense',
+														 hover_info_column_list=[],
+														 count_var=count_var,
+														 complete_sid=True)
+		if chart_outputFilename != None:
+			if len(chart_outputFilename) > 0:
+				filesToOpen.append(chart_outputFilename)
 
 	return filesToOpen
 

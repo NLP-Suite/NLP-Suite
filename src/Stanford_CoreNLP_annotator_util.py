@@ -712,11 +712,14 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         param = "CoNLL"
                     if "SVO" in str(annotator_params):
                         param = "SVO"
-                    pronoun_files = check_pronouns(config_filename, filesToVisualize[j],
-                                             outputDir,
+                    # pronoun_files = check_pronouns(config_filename, filesToVisualize[j],
+                    #                          outputDir, filesToOpen,
+                    #                          createCharts,chartPackage, param, corefed_pronouns)
+                    check_pronouns(config_filename, filesToVisualize[j],
+                                             outputDir, filesToOpen,
                                              createCharts,chartPackage, param, corefed_pronouns)
-                    if len(pronoun_files)>0:
-                        filesToOpen.extend(pronoun_files)
+                    # if len(pronoun_files)>0:
+                    #     filesToOpen.extend(pronoun_files)
 
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))
@@ -1875,7 +1878,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,filesToOpe
 
     return filesToOpen
 
-def check_pronouns(config_filename, inputFilename, outputDir, createCharts,chartPackage, option, corefed_pronouns):
+def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, createCharts,chartPackage, option, corefed_pronouns):
     return_files = []
     df = pd.read_csv(inputFilename)
     if df.empty:
@@ -1926,13 +1929,6 @@ def check_pronouns(config_filename, inputFilename, outputDir, createCharts,chart
             print("Number of coreferenced pronouns: ", corefed_pronouns)
             print("Pronouns coreference rate: ", str(round((corefed_pronouns / total_count) * 100, 2)) + "%")
         if createCharts:
-            data_to_be_plotted = [["Pronoun", "Pronoun Count"], ["Total Count", total_count]]
-            for w in sorted(pronouns_count, key=pronouns_count.get, reverse=True):
-                data_to_be_plotted.append([w, pronouns_count[w]])
-            data_to_be_plotted = [data_to_be_plotted]
-            chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window, data_to_be_plotted, inputFilename, outputDir,
-                                                      "Pronouns_bar", "Frequency Distribution of Pronouns",
-                                                      ["bar"], "Pronouns", "Frequency")
-            return_files.append(chart_outputFilename)
-    return return_files
-
+            visualize_chart(createCharts, chartPackage, inputFilename, outputDir, filesToOpen,
+                                          [[0, 0]], 'bar',
+                                          'Frequency Distribution of Pronouns', 1, [], 'pronouns_bar', 'Pronouns')

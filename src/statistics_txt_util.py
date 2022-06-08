@@ -346,7 +346,7 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
 
         if createCharts==True:
 
-            columns_to_be_plotted=[[2,3]]
+            columns_to_be_plotted=[[2,3]] # document ID field comes first [2
             # hover_label=['Document']
             hover_label=[]
             inputFilename=outputFilenameCSV
@@ -368,7 +368,7 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
                 os.rename(chart_outputFilename, chart_outputFilename_new)
                 filesToOpen.append(chart_outputFilename_new)
 
-            columns_to_be_plotted=[[2,4]]
+            columns_to_be_plotted=[[2,4]] # document ID field comes first [2
             # hover_label=['Document']
             hover_label=[]
             inputFilename=outputFilenameCSV
@@ -1148,13 +1148,20 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, createCharts, ch
             TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
 
     if createCharts == True:
+        hover_label=[]
+        columns_to_be_plotted=[[1,0]] # sentence ID field comes first [1
         # line plots by sentence index -----------------------------------------------------------------------------------------------
-        chart_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=outputFilename,
-                                                                                outputDir=outputDir,
-                                                                                select_col=["Sentence length (in words)"],
-                                                                                group_col=['Sentence ID'],
-                                                                                chartPackage=chartPackage,
-                                                                                chartTitle="Sentence Length (in Words) by Sentence Index)")
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                                                         outputFileLabel='sent_leng',
+                                                         chartPackage=chartPackage,
+                                                         chart_type_list=["line"],
+                                                         chart_title='Sentence Length by Sentence Index',
+                                                         column_xAxis_label_var='Sentence index',
+                                                         hover_info_column_list=hover_label,
+                                                         count_var=0,
+                                                         column_yAxis_label_var='Sentence Length',
+                                                         complete_sid=True)
+
         if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 

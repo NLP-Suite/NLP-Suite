@@ -200,7 +200,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
     if createCharts == True:
 
-        # pie charts -----------------------------------------------------------------------------------------------
+        # bar charts -----------------------------------------------------------------------------------------------
 
         chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
                                                              data_to_be_plotted=[noun_postag_stats],
@@ -208,7 +208,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                              outputDir=outputDir,
                                                              scriptType='Nouns_POS',
                                                              chartTitle="Noun POS Analysis",
-                                                             chart_type_list=["pie"])
+                                                             chart_type_list=["bar"])
 
         if chart_outputFilename != "":
             filesToOpen.append(chart_outputFilename)
@@ -219,7 +219,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                              outputDir=outputDir,
                                                              scriptType='Nouns_DEPREL',
                                                              chartTitle="Noun DEPREL Analysis",
-                                                             chart_type_list=["pie"])
+                                                             chart_type_list=["bar"])
 
         if chart_outputFilename != "":
             filesToOpen.append(chart_outputFilename)
@@ -230,7 +230,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                              outputDir=outputDir,
                                                              scriptType='Nouns_DEPREL',
                                                              chartTitle="Nouns (NER Tags)",
-                                                             chart_type_list=["pie"])
+                                                             chart_type_list=["bar"])
 
         if chart_outputFilename != "":
             filesToOpen.append(chart_outputFilename)
