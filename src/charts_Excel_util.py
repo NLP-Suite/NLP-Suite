@@ -97,7 +97,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             column_yAxis_label_var='Frequencies',
             column_yAxis_field_list = [],
             reverse_column_position_for_series_label=False,
-            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = False):
+            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = False, remove_hyperlinks=False):
 
     use_plotly = 'plotly' in chartPackage.lower()
     # added by Tony, May 2022 for complete sentence index
@@ -116,7 +116,8 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
                                                                         chart_type_list = chart_type_list,
                                                                         cols_to_plot = columns_to_be_plotted,
                                                                         column_xAxis_label = column_xAxis_label_var,
-                                                                        column_yAxis_label = column_yAxis_label_var)
+                                                                        column_yAxis_label = column_yAxis_label_var,
+                                                                        remove_hyperlinks = remove_hyperlinks)
         return Plotly_outputFilename
     
     data_to_be_plotted = prepare_data_to_be_plotted(inputFilename,
@@ -313,7 +314,7 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 # enable complete_sid to make sentence index continuous
 # enable graph to make a multiline graph
 # the input should be saved to a csv file first
-def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartPackage, chartTitle, graph = True, complete_sid = True, series_label = NULL):
+def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle, graph = True, complete_sid = True, series_label = NULL, chartPackage = 'Excel'):
     cols = group_col + select_col
     if 'Excel' in chartPackage:
        use_plotly = False
@@ -360,17 +361,17 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
             if use_plotly:
                 charts_plotly_util.plot_multi_line_chart_w_slider_px(name, cols_to_be_plotted, chartTitle, outputDir)
             else:
-                chart_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
-                                                "frequency_multi-line_chart", chartPackage, chart_type_list=["line"],
-                                                chart_title=chartTitle, column_xAxis_label_var="Sentence Index")
+                Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
+                                                "frequency_multi-line_chart", chart_type_list=["line"], 
+                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID",chartPackage = 'Excel')
         else:
             if use_plotly:
                 charts_plotly_util.plot_multi_line_chart_w_slider_px(name, cols_to_be_plotted, chartTitle, outputDir, series_label)
             else:
-                chart_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
-                                                "frequency_multi_line_chart", chartPackage, chart_type_list=["line"],
-                                                chart_title=chartTitle, column_xAxis_label_var="Sentence Index",series_label_list = series_label)
-    return chart_outputFilename
+                Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
+                                                "frequency_multi-line_chart", chart_type_list=["line"], 
+                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label, chartPackage = 'Excel')
+    return Excel_outputFilename
 
 # Tony Chen Gu written at April 2022 mortified at May 2022
 # remove comments before variable begin with d_id to enable complete document id function

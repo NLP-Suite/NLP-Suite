@@ -305,33 +305,6 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 list_to_csv(output_filename_bySentenceIndex, result1)
                 filesToOpen.append(output_filename_bySentenceIndex)
 
-                # if createCharts == True:
-                #     # line chart
-                #     columns_to_be_plotted = [[2,6]]
-                #     chartTitle='Nominalized verbs (by Sentence Index)'
-                #     xAxis='Sentence index'
-                #     yAxis='Number of nominalizations in sentence'
-                #     hover_label=''
-                #     chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, output_filename_bySentenceIndex, outputDir,
-                #                                               '',
-                #                                               chart_type_list=["line"],
-                #                                               chart_title=chartTitle,
-                #                                               column_xAxis_label_var=xAxis,
-                #                                               hover_info_column_list=hover_label,
-                #                                               column_yAxis_label_var=yAxis)
-                #     if len(chart_outputFilename) > 0:
-                #         filesToOpen.append(chart_outputFilename)
-                #
-                #     # pie chart of nominalized verbs
-                #     chart_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window,[counter_nominalized_list],fname,outputDir,'NOM_Verb',"Nominalized verbs",["pie"])
-                #     if len(chart_outputFilename) > 0:
-                #         filesToOpen.append(chart_outputFilename)
-                #
-                #     # pie chart of nouns
-                #     chart_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window,[counter_noun_list],fname,outputDir,'NOM_noun',"Nouns",["pie"])
-                #     if len(chart_outputFilename) > 0:
-                #         filesToOpen.append(chart_outputFilename)
-
         if len(inputDir)>0 and doNotListIndividualFiles == True:
             output_filename_TRUE_FALSE_dir = IO_files_util.generate_output_file_name(fname + '_TRUE_FALSE', '', outputDir, '.csv', 'NOM', '', '', '', '', False, True)
             output_filename_dir_noun_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'noun_freq', '', '', '', False, True)
@@ -363,17 +336,46 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
             filesToOpen.append(output_filename_dir_nominalized_frequencies)
 
             if createCharts == True:
-                # pie chart of nominalized verbs
-                chart_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], output_filename_dir_nominalized_frequencies,
-                                            outputDir,'NOM_verb',
-                                            "Nominalized verbs", ["pie"])
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.append(chart_outputFilename)
+                # bar chart of nominalized verbs
 
-                # pie chart of nouns
-                chart_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window, [counter_noun_list], output_filename_dir_noun_frequencies,
-                                            outputDir,'NOM_noun',
-                                            "Nouns", ["pie"])
+                inputFilename = output_filename_dir_nominalized_frequencies
+                columns_to_be_plotted = [[7, 0]]
+
+                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                                 outputFileLabel='NOM_verb',
+                                                                 chartPackage=chartPackage,
+                                                                 chart_type_list=['bar'],
+                                                                 chart_title='Nominalized Verbs',
+                                                                 column_xAxis_label_var='column_xAxis_label',
+                                                                 hover_info_column_list=[],
+                                                                 count_var=0)
+                if chart_outputFilename != None:
+                    if len(chart_outputFilename) > 0:
+                        filesToOpen.append(chart_outputFilename)
+
+                # chart_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], output_filename_dir_nominalized_frequencies,
+                #                             outputDir,'NOM_verb',
+                #                             "Nominalized verbs", ["bar"])
+                # if len(chart_outputFilename) > 0:
+                #     filesToOpen.append(chart_outputFilename)
+
+                # bar chart of nouns
+
+                inputFilename = output_filename_dir_noun_frequencies
+                columns_to_be_plotted = [[7, 0]]
+
+                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                                 outputFileLabel='NOM_noun',
+                                                                 chartPackage=chartPackage,
+                                                                 chart_type_list=['bar'],
+                                                                 chart_title='Nouns',
+                                                                 column_xAxis_label_var='column_xAxis_label',
+                                                                 hover_info_column_list=[],
+                                                                 count_var=0)
+
+                # chart_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window, [counter_noun_list], output_filename_dir_noun_frequencies,
+                #                             outputDir,'NOM_noun',
+                #                             "Nouns", ["bar"])
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 

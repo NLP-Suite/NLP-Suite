@@ -283,7 +283,7 @@ def manualCoref(original_file, corefed_file, outputFile):
 
 # return file_to_open
 def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage,
-        memory_var, manual_Coref):
+        language_var, memory_var, manual_Coref):
 
     corefed_file = []
     errorFound = False
@@ -311,7 +311,7 @@ def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, ope
     corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
                                                                     output_dir_path, openOutputFiles, createCharts, chartPackage,
                                                                     ['coref', 'coref table'], False,
-                                                                    memory_var)
+                                                                    language_var, memory_var)
 
     if manual_Coref:
         if len(input_main_dir_path) == 0 and len(inputFilename) > 0:

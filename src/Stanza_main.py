@@ -143,9 +143,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     if IO_libraries_util.check_inputPythonJavaProgramFile('CoNLL_table_analyzer_main.py') == False:
                         return
                     # open the analyzer having saved the new parser output in config so that it opens the right input file
-                    config_filename_temp = 'conll-table-analyzer_config.csv'
-                    config_input_output_alphabetic_options = ['EMPTY LINE', str(tempOutputFiles[0]), 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
-                    config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_alphabetic_options, True)
+                    config_filename_temp = 'conll_table_analyzer_config.csv'
+                    config_input_output_numeric_options = [1, 0, 0, 1]
+                    config_input_output_alphabetic_options = [str(tempOutputFiles[0]), '', '', outputDir]
+                    config_util.write_config_file(GUI_util.window, config_filename_temp,
+                                                  config_input_output_numeric_options,
+                                                  config_input_output_alphabetic_options, True)
 
                     reminders_util.checkReminder(config_filename,
                                                  reminders_util.title_options_CoNLL_analyzer,

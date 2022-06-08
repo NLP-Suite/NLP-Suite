@@ -35,6 +35,7 @@ def run(inputFilename,inputDir,outputDir,
         mean_var,
         median_var,
         SA_algorithm_var,
+        language_var,
         memory_var,
         sentence_index_var,
         shape_of_stories_var):
@@ -114,6 +115,7 @@ def run(inputFilename,inputDir,outputDir,
             memory_var=4
         outputFilename = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                           outputDir, openOutputFiles, createCharts, chartPackage,'sentiment', False,
+                                                                          language_var,
                                                                           memory_var)
         outputFilename=outputFilename[0] # annotators return a list and not a string
         if len(outputFilename)>0:
@@ -154,19 +156,21 @@ def run(inputFilename,inputDir,outputDir,
                 if chart_outputFilename != "":
                     filesToOpen.append(chart_outputFilename)
 
-                if shape_of_stories_var:
-                    if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py') == False:
-                        return
+        if shape_of_stories_var:
+            if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py') == False:
+                return
 
-                    # open the shape of stories GUI  having saved the new SA output in config so that it opens the right input file
-                    config_input_output_alphabetic_options = ['EMPTY LINE', outputFilename, 'EMPTY LINE', 'EMPTY LINE', 'EMPTY LINE', outputDir]
-                    config_util.write_config_file(GUI_util.window, 'shape-of-stories_config.csv', config_input_output_alphabetic_options, True)
+            # open the shape of stories GUI  having saved the new SA output in config so that it opens the right input file
+            config_filename_temp = 'shape_of_stories_config.csv'
+            config_input_output_numeric_options = [3, 1, 0, 1]
+            config_input_output_alphabetic_options = [outputFilename, '','',outputDir]
+            config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
 
-                    reminders_util.checkReminder(config_filename,
-                                                 reminders_util.title_options_shape_of_stories,
-                                                 reminders_util.message_shape_of_stories,
-                                                 True)
-                    call("python shape_of_stories_main.py", shell=True)
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_shape_of_stories,
+                                         reminders_util.message_shape_of_stories,
+                                         True)
+            call("python shape_of_stories_main.py", shell=True)
 
                 # outputFilenameXlsm1 = charts_Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputQuotefilePath, chart_type_list = ["bar"], chart_title=
                 # "Stanford CoreNLP (Sentiment Value)", column_xAxis_label_var = 'Sentiment value',
@@ -454,6 +458,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                mean_var.get(),
                                median_var.get(),
                                SA_algorithm_var.get(),
+                               language_var.get(),
                                memory_var.get(),
                                sentence_index_var.get(),
                                shape_of_stories_var.get())
@@ -504,6 +509,9 @@ GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_di
 mean_var = tk.IntVar()
 median_var = tk.IntVar()
 SA_algorithm_var = tk.StringVar()
+language_var = tk.StringVar()
+language_var_lb  = tk.Label(window, text='Language')
+# language_menu = tk.OptionMenu()
 memory_var = tk.IntVar()
 memory_var_lb = tk.Label(window, text='Memory ')
 
@@ -517,8 +525,10 @@ median_var.set(1)
 
 def clear(e):
     SA_algorithm_var.set('*')
+    language_var_lb.place_forget()  # invisible
     memory_var_lb.place_forget()  # invisible
     try:
+        language_var.place_forget()  # invisible
         memory_var.place_forget()  # invisible
     except:
         print()
@@ -568,23 +578,35 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_
 y_multiplier_integerSV=y_multiplier_integer-1
 
 def activate_memory_var(*args):
-    global memory_var
+    global language_var, memory_var, y_multiplier_integer
     if SA_algorithm_var.get()=='Stanford CoreNLP (Neural Network)' or SA_algorithm_var.get()=='*':
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+600, y_multiplier_integerSV,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+590, y_multiplier_integerSV,
+                                                       language_var_lb, True)
+        language_var.set('English')
+        language_menu = tk.OptionMenu(window, language_var, 'Arabic', 'Chinese', 'English', 'German', 'Hungarian',
+                                      'Italian', 'Spanish')
+        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate() + 680,
+                                                       y_multiplier_integerSV, language_menu,True)
+
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+850, y_multiplier_integerSV,
                                                        memory_var_lb, True)
 
         memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
         memory_var.pack()
         memory_var.set(6)
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+670,
-                                                       y_multiplier_integer, memory_var)
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+920,
+                                                       y_multiplier_integerSV, memory_var)
     else:
+        language_var_lb.place_forget() #invisible
         memory_var_lb.place_forget() #invisible
         try:
+            # language_var.place_forget() #invisible
             memory_var.place_forget() #invisible
         except:
             return
 SA_algorithm_var.trace('w',activate_memory_var)
+
+activate_memory_var()
 
 sentence_index_var.set(0)
 sentence_index_checkbox = tk.Checkbutton(window, state='disabled', text='Do sentiments fluctuate across a document (Sentiment scores by sentence index)', variable=sentence_index_var, onvalue=1, offvalue=0)

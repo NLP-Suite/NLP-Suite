@@ -185,7 +185,6 @@ pydict = {}
 # pydict["Sentence visualization: Dynamic sentence network viewer (Gephi graphs)"] = ["", 0] # not available
 
 # when using a function within a script
-# pydict["Dictionary items by sentence index"] = ["dictionary_items_sentenceID_util.dictionary_items_bySentenceID", 0, 3, 'txt']
 
 pydict["Annotated gender names by sentence index (GUI)"] = ["html_annotator_gender_main.py", 1]
 pydict["Annotated words (DBpedia, YAGO, dictionary) by sentence index GUI"] = ["html_annotator_main.py", 1]

@@ -90,6 +90,7 @@ def run(inputFilename, inputDir, outputDir,
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
                                        outputCorefedDir,
                                        openOutputFiles, createCharts, chartPackage,
+                                       language_var,
                                        memory_var,
                                        Manual_Coref_var)
         if error_indicator != 0:
