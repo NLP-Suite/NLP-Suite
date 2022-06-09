@@ -74,6 +74,8 @@ import textstat
 import charts_Excel_util
 import IO_files_util
 import IO_csv_util
+import reminders_util
+import TIPS_util
 
 #https://github.com/nltk/nltk/wiki/Frequently-Asked-Questions-(Stackoverflow-Edition)
 #to extract bigrams, 3-grams, ...
@@ -159,14 +161,17 @@ def excludeStopWords_list(words):
     words = words_excludePunctuation
     return words
 
-def compute_line_length(window, inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage):
+
+def compute_line_length(window, config_filename, inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage):
     filesToOpen=[]
-    outputFilenameCSV=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'line_length')
-    filesToOpen.append(outputFilenameCSV)
+    outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'line_length')
+    filesToOpen.append(outputFilename)
     inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     Ndocs = str(len(inputDocs))
     if Ndocs==0:
         return
+    reminders_util.checkReminder(config_filename, reminders_util.title_options_line_length,
+                                 reminders_util.message_line_length, True)
     fieldnames=[
         'Line length (in characters)',
         'Line length (in words)',
@@ -175,12 +180,12 @@ def compute_line_length(window, inputFilename, inputDir, outputDir,openOutputFil
         'Document ID',
         'Document'
     ]
-    if IO_csv_util.openCSVOutputFile(outputFilenameCSV):
+    if IO_csv_util.openCSVOutputFile(outputFilename):
         return
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running line length analysis at',
                                                  True, '', True, '', True)
 
-    with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
+    with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         writer = csv.writer(csvfile)
@@ -212,20 +217,37 @@ def compute_line_length(window, inputFilename, inputDir, outputDir,openOutputFil
                     line = file.readline()
     csvfile.close()
 
+    filesToOpen.append(outputFilename)
+
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running line length analysis at', True, '', True, startTime, True)
 
-    # compute statistics about line length ungrouped
-    tempOutputfile=statistics_csv_util.compute_field_statistics_NoGroupBy(window, outputFilenameCSV, outputDir, openOutputFiles, createCharts, chartPackage, 3)
+    # compute statistics about line length
+    groupByList=['Document ID','Document']
+    plotList=['Line length (in words)']
+    chart_label='Lines'
+    tempOutputfile=statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
+                                        groupByList, plotList,chart_label,
+                                        createCharts, chartPackage) # 'sentence length (in words)'
     if tempOutputfile!=None:
         filesToOpen.extend(tempOutputfile)
 
-    # compute statistics about line length grouped by Document
-    list=['Document ID','Document']
-    tempOutputfile=statistics_csv_util.compute_field_statistics_groupBy(window, outputFilenameCSV, outputDir,
-                                        list, openOutputFiles,
-                                        createCharts,3) # 'Line length (in words)'
-    if tempOutputfile!=None:
-        filesToOpen.extend(tempOutputfile)
+    if createCharts == True:
+        hover_label=[]
+        columns_to_be_plotted=[[2,1]] # line ID field comes first [2
+        # line plots by line index -----------------------------------------------------------------------------------------------
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                                                         outputFileLabel='',
+                                                         chartPackage=chartPackage,
+                                                         chart_type_list=["line"],
+                                                         chart_title='Line Length (in Number of Words) by Line Index',
+                                                         column_xAxis_label_var='Line index',
+                                                         hover_info_column_list=[],
+                                                         count_var=0,
+                                                         column_yAxis_label_var='Number of words',
+                                                         complete_sid=True)
+
+        if chart_outputFilename != None:
+            filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -238,8 +260,8 @@ def compute_line_length(window, inputFilename, inputDir, outputDir,openOutputFil
 # see also https://people.duke.edu/~ccc14/sta-663/TextProcessingSolutions.html
 def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage,excludeStopWords=True,lemmatizeWords=True):
     filesToOpen=[]
-    outputFilenameCSV=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus_stats', '')
-    filesToOpen.append(outputFilenameCSV)
+    outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus_stats', '')
+    filesToOpen.append(outputFilename)
     inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 
     # read_line(inputFilename, inputDir, outputDir)
@@ -272,13 +294,13 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
         'Word18','Frequency18',
         'Word19','Frequency19',
         'Word20','Frequency20']
-    if IO_csv_util.openCSVOutputFile(outputFilenameCSV):
+    if IO_csv_util.openCSVOutputFile(outputFilename):
         return
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running document(s) statistics at',
                                                  True, '', True, '', False)
 
-    with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
+    with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         #print("Number of corpus text documents: ",Ndocs)
@@ -333,12 +355,17 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             writer.writerows(currentLine)
         csvfile.close()
 
+
         # compute statistics about doc length grouped by Document
-        list = ['Document ID', 'Document']
-        tempOutputfile = statistics_csv_util.compute_field_statistics_groupBy(window, outputFilenameCSV, outputDir,
-                                                                              list, openOutputFiles,
-                                                                              createCharts, 4)
-                                                                              # ,4)  # 'number of words in doc'
+
+        groupByList = ['Document ID','Document']
+        plotList = ['Number of Words in Document']
+        chart_label = 'Words'
+        tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
+                                                                           groupByList, plotList, chart_label,
+                                                                           createCharts,
+                                                                           chartPackage)
+
         if tempOutputfile != None:
             filesToOpen.extend(tempOutputfile)
 
@@ -349,7 +376,7 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             columns_to_be_plotted=[[2,3]] # document ID field comes first [2
             # hover_label=['Document']
             hover_label=[]
-            inputFilename=outputFilenameCSV
+            inputFilename=outputFilename
             chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='',
                                                       chartPackage=chartPackage,
@@ -371,7 +398,7 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             columns_to_be_plotted=[[2,4]] # document ID field comes first [2
             # hover_label=['Document']
             hover_label=[]
-            inputFilename=outputFilenameCSV
+            inputFilename=outputFilename
             chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='',
                                                       chartPackage=chartPackage,
@@ -1147,24 +1174,36 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, createCharts, ch
         if answer:
             TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
 
+    filesToOpen.append(outputFilename)
+
+    # compute statistics about sentence length grouped by Document
+    groupByList=['Document ID','Document']
+    plotList=['Sentence length (in words)']
+    chart_label='Sentences'
+    tempOutputfile=statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
+                                        groupByList, plotList,chart_label,
+                                        createCharts, chartPackage) # 'sentence length (in words)'
+
+    if tempOutputfile!=None:
+        filesToOpen.extend(tempOutputfile)
+
     if createCharts == True:
         hover_label=[]
         columns_to_be_plotted=[[1,0]] # sentence ID field comes first [1
         # line plots by sentence index -----------------------------------------------------------------------------------------------
         chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                         outputFileLabel='sent_leng',
+                                                         outputFileLabel='',
                                                          chartPackage=chartPackage,
                                                          chart_type_list=["line"],
-                                                         chart_title='Sentence Length by Sentence Index',
+                                                         chart_title='Sentence Length (in Number of Tokens) by Sentence Index',
                                                          column_xAxis_label_var='Sentence index',
                                                          hover_info_column_list=hover_label,
                                                          count_var=0,
-                                                         column_yAxis_label_var='Sentence Length',
+                                                         column_yAxis_label_var='Number of tokens per sentence',
                                                          complete_sid=True)
 
         if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
-
 
     return filesToOpen
 
@@ -1322,15 +1361,15 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
     if nFile > 1:
         outputFilenameTxt = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'READ',
                                                                     'stats')
-        outputFilenameCsv = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'READ',
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'READ',
                                                                     'stats')
     else:
         outputFilenameTxt = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'READ',
                                                                     'stats')
-        outputFilenameCsv = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'READ',
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'READ',
                                                                     'stats')
     filesToOpen.append(outputFilenameTxt)
-    filesToOpen.append(outputFilenameCsv)
+    filesToOpen.append(outputFilename)
 
     fieldnames = ['Flesch Reading Ease formula',
                   'Flesch-Kincaid Grade Level',
@@ -1345,7 +1384,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                   'Sentence ID', 'Sentence',
                   'Document ID', 'Document']
 
-    with open(outputFilenameCsv, 'w', encoding='utf-8', errors='ignore', newline='') as outputCsvFile:
+    with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as outputCsvFile:
         writer = csv.DictWriter(outputCsvFile, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -1536,7 +1575,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
         # TODO YI not sure what to pass to the sort function;
         # IO filenames should be computed here
         # outputFilename1=IO_util.generate_output_file_name(inputFilename,outputDir,'.csv','READ','stats1')
-        # IO_util.sort_csvFile_by_columns(outputFilenameCsv, outputFilenameCsv, ['Document ID','Sort order'])
+        # IO_util.sort_csvFile_by_columns(outputFilename, outputFilename, ['Document ID','Sort order'])
         outputTxtFile.close()
         outputCsvFile.close()
         result = True
@@ -1555,7 +1594,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                 # hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
                 hover_label = []
 
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
+                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                                  outputFileLabel='READ',
                                                                  chartPackage=chartPackage,
                                                                  chart_type_list=["line"],
@@ -1579,7 +1618,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                     filesToOpen.append(chart_outputFilename_new)
 
                 # outputFilenameXLSM_1 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                #                                           outputFilenameCsv, chart_type_list=["line"],
+                #                                           outputFilename, chart_type_list=["line"],
                 #                                           chart_title="Text Readability",
                 #                                           column_xAxis_label_var='Sentence Index',
                 #                                           column_yAxis_label_var='Readability grade level',
@@ -1596,7 +1635,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                 # plot overall grade level
                 columns_to_be_plotted = [[10, 9]]
                 hover_label = ['Sentence']
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
+                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                                  outputFileLabel='READ',
                                                                  chartPackage=chartPackage,
                                                                  chart_type_list=["line"],
@@ -1610,7 +1649,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                     filesToOpen.append(chart_outputFilename)
 
                 # outputFilenameXLSM_2 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                #                                           outputFilenameCsv, chart_type_list=["line"],
+                #                                           outputFilename, chart_type_list=["line"],
                 #                                           chart_title="Text Readability",
                 #                                           column_xAxis_label_var='Sentence Index',
                 #                                           column_yAxis_label_var='Readability grade level',
@@ -1628,7 +1667,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
             columns_to_be_plotted = [[10, 8]]
             hover_label = []
 
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilenameCsv, outputDir,
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                              outputFileLabel='READ',
                                                              chartPackage=chartPackage,
                                                              chart_type_list=["bar"],
@@ -1640,7 +1679,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                 filesToOpen.append(chart_outputFilename)
 
             # outputFilenameXLSM_3 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-            #                                           outputFilenameCsv, chart_type_list=["bar"],
+            #                                           outputFilename, chart_type_list=["bar"],
             #                                           chart_title="Frequency of Sentences by Readability Consensus of Grade Level",
             #                                           column_xAxis_label_var='', column_yAxis_label_var='Frequency',
             #                                           outputExtension='.xlsm', label1='READ', label2='bar',

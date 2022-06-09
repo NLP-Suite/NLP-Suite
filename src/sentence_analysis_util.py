@@ -131,7 +131,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 				for word in token:
 					for dict_word in dic_value:
 						if word == dict_word.rstrip():
-							In.append([word, Sentence_ID, each_sentence, documentID, IO_csv_util.undressFilenameForCSVHyperlink((file)])
+							In.append([word, Sentence_ID, each_sentence, documentID, IO_csv_util.undressFilenameForCSVHyperlink(file)])
 							break
 						else:
 							continue

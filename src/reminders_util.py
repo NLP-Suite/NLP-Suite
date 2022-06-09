@@ -162,6 +162,9 @@ message_CoreNLP_sentence_length = "The length of the current sentence exceeds 10
 title_options_Output_directory_of_split_files = ['Output directory of split files']
 message_Output_directory_of_split_files = 'This is a reminder that all file splitter scripts save the split files inside a subdirectory by the name of split_files of the directory where the input txt files are located, regardless of the choice of output directory.'
 
+title_options_line_length = ['Line length']
+message_line_length = 'Line length only makes sense for poetry or song lyrics (or perhaps for newspaper articles to gauge the importance of the article by the column width).\n\nFor your typical document line length depends on the vaguaries of typesetting and sentence length may provide a better measure of style.'
+
 title_options_non_utf8 = ['file not utf-8 compliant']
 message_non_utf8 = 'The file contains non-utf-8 compliant characters. The file cannot be processed. Please, run he utf-8 file check to get a csv sting of all non-utf-8 compliantt characters.'
 

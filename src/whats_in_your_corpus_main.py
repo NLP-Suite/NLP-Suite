@@ -153,7 +153,7 @@ def run(inputFilename,inputDir, outputDir,
                 filesToOpen.extend(filesToOpen)
 
         if 'lines' in corpus_options_menu_var:
-            output = statistics_txt_util.compute_line_length(window, inputFilename, inputDir, outputDir, False,
+            output = statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir, False,
                                                    createCharts, chartPackage)
             if output!=None:
                 filesToOpen.extend(output)
@@ -547,6 +547,7 @@ utf8_var= tk.IntVar()
 ASCII_var= tk.IntVar()
 corpus_statistics_var= tk.IntVar()
 corpus_options_menu_var= tk.StringVar()
+corpus_statistics_options_menu_var= tk.StringVar()
 wordclouds_var = tk.IntVar()
 open_wordclouds_GUI_var = tk.IntVar()
 topics_var= tk.IntVar()
@@ -576,6 +577,7 @@ y_multiplier_integer_SV=0 # used to set the quote_var widget on the proper GUI l
 
 def clear(e):
     corpus_statistics_var.set(1)
+    corpus_statistics_options_menu_var.set('*')
     corpus_options_menu_var.set('*')
     what_else_var.set(1)
     what_else_menu_var.set('*')
@@ -601,14 +603,20 @@ ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & qu
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,ASCII_checkbox)
 
 corpus_statistics_var.set(1)
-corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute statistics (word frequency & word n-grams by document)", variable=corpus_statistics_var, onvalue=1, offvalue=0)
+corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,corpus_statistics_checkbox,True)
 
+corpus_statistics_options_menu_var.set('*')
+corpus_statistics_options_menu_lb = tk.Label(window, text='statistics options')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
+corpus_statistics_options_menu = tk.OptionMenu(window, corpus_statistics_options_menu_var, '*', 'Compute n-grams', 'Compute sentence length','Compute line length')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,corpus_statistics_options_menu, True)
+
 corpus_options_menu_var.set('*')
-corpus_options_menu_lb = tk.Label(window, text='document(s) statistics options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,corpus_options_menu_lb,True)
-corpus_options_menu = tk.OptionMenu(window, corpus_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation', 'Compute n-grams', 'Compute sentences length','Compute lines length')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+620,y_multiplier_integer,corpus_options_menu)
+corpus_options_menu_lb = tk.Label(window, text='text options')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 680,y_multiplier_integer,corpus_options_menu_lb,True)
+corpus_options_menu = tk.OptionMenu(window, corpus_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 780,y_multiplier_integer,corpus_options_menu)
 
 wordclouds_var.set(1)
 wordclouds_checkbox = tk.Checkbutton(window,text="Wordclouds", variable=wordclouds_var, onvalue=1, offvalue=0)
