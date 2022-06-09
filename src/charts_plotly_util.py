@@ -53,14 +53,14 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
     for j in range(0,len(chart_type_list)):
         i = chart_type_list[j]
         x_cols = []
-        y_cols = []
+        y_cols = ''
         fig = NULL
         x_cols = headers[cols_to_plot[j][0]]
         y_cols = headers[cols_to_plot[j][1]]
         if i == 'bar':
-            fig = plot_bar_chart_px(x_cols,inputFilename,chartTitle)
+            fig = plot_bar_chart_px(x_cols,inputFilename,chartTitle,y_cols)
         elif i == 'pie':
-            fig = plot_pie_chart_px(x_cols,inputFilename,chartTitle)
+            fig = plot_pie_chart_px(x_cols,inputFilename,chartTitle,y_cols)
         #elif(i == 'scatter' or i == 'radar'):
         elif i == 'scatter':
             fig = plot_scatter_chart_px(x_cols,y_cols,inputFilename,chartTitle)
@@ -75,7 +75,8 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
             print('Chart type not supported '+i+'! Skipped and continue with next chart.')
         file_list.append(save_chart(fig,outputDir,chartTitle,static_flag,column_xAxis_label,column_yAxis_label))
     #remove the temporary file
-    os.remove(inputFilename)
+    if remove_hyperlinks:
+        os.remove(inputFilename)
     # if the length of thr file list is 1, only return the string to avoid IO_files error
     if len(file_list) == 1:
         return file_list[0]
@@ -209,6 +210,7 @@ def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, se
             ),
         )
     )
+    #save_chart(figs, outputDir, chartTitle, False)
     return figs
 #=======================================================================================================================
 # debug use

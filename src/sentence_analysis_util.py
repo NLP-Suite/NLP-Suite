@@ -38,6 +38,7 @@ import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
 import charts_Excel_util
+import charts_plotly_util
 import statistics_csv_util
 import TIPS_util
 import GUI_IO_util
@@ -131,7 +132,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 				for word in token:
 					for dict_word in dic_value:
 						if word == dict_word.rstrip():
-							In.append([word, Sentence_ID, each_sentence, documentID, IO_csv_util.undressFilenameForCSVHyperlink((file)])
+							In.append([word, Sentence_ID, each_sentence, documentID, IO_csv_util.undressFilenameForCSVHyperlink(file)])
 							break
 						else:
 							continue
@@ -163,7 +164,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 
 
 # written by Yi Wang April 2020
-# ConnlTable is the inputFilename
+# ConllTable is the inputFilename
 def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, noun_verb, openOutputFiles,
 						 createCharts, chartPackage):
 	filesToOpen = []

@@ -85,13 +85,24 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
 					  "PRONOUNS"])
         
         if createCharts==True:
-            chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
-                                          data_to_be_plotted=[pronouns_stats],
-                                          inputFilename=function_words_stats_file_name,
-                                          outputDir=outputDir,
-                                          scriptType='FuncWords_pron',
-                                          chartTitle="Pronoun Analysis",
-                                          chart_type_list=["pie"])
+            # chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
+            #                               data_to_be_plotted=[pronouns_stats],
+            #                               inputFilename=function_words_stats_file_name,
+            #                               outputDir=outputDir,
+            #                               scriptType='FuncWords_pron',
+            #                               chartTitle="Pronoun Analysis",
+            #                               chart_type_list=["pie"])
+            columns_to_be_plotted=[[0,1]]
+            count_var=0
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+                                                            outputFileLabel='FuncWords_pron',
+                                                            chartPackage=chartPackage,
+                                                            chart_type_list=['bar'],
+                                                            chart_title="Frequency Distribution of Pronoun",
+                                                            column_xAxis_label_var='Pronoun',
+                                                            hover_info_column_list=[],
+                                                            count_var=count_var)
+
 
             if chart_outputFilename != "":
                 filesToOpen.append(chart_outputFilename)
@@ -157,13 +168,23 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
 					  "PREPOSITIONS"])
 
         if createCharts==True:
-            chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
-                                          data_to_be_plotted=[prepositions_stats],
-                                          inputFilename=function_words_stats_file_name,
-                                          outputDir=outputDir,
-                                          scriptType='FuncWords_prep',
-                                          chartTitle="Preposition Analysis",
-                                          chart_type_list=["pie"])
+            # chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
+            #                               data_to_be_plotted=[prepositions_stats],
+            #                               inputFilename=function_words_stats_file_name,
+            #                               outputDir=outputDir,
+            #                               scriptType='FuncWords_prep',
+            #                               chartTitle="Preposition Analysis",
+            #                               chart_type_list=["pie"])
+            columns_to_be_plotted=[[0,1]]
+            count_var=0
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+                                                            outputFileLabel='FuncWords_prep',
+                                                            chartPackage=chartPackage,
+                                                            chart_type_list=['bar'],
+                                                            chart_title="Frequency Distribution of Preposition",
+                                                            column_xAxis_label_var='Preposition',
+                                                            hover_info_column_list=[],
+                                                            count_var=count_var)
 
             if chart_outputFilename != "":
                 filesToOpen.append(chart_outputFilename)
@@ -231,13 +252,23 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
 					  "ARTICLES"])
 
         if createCharts==True:
-            chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
-                                          data_to_be_plotted=[article_stats],
-                                          inputFilename=function_words_stats_file_name,
-                                          outputDir=outputDir,
-                                          scriptType='CoreNLP_FuncWords',
-                                          chartTitle="Article Analysis",
-                                          chart_type_list=["pie"])
+            # chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
+            #                               data_to_be_plotted=[article_stats],
+            #                               inputFilename=function_words_stats_file_name,
+            #                               outputDir=outputDir,
+            #                               scriptType='CoreNLP_FuncWords',
+            #                               chartTitle="Article Analysis",
+            #                               chart_type_list=["pie"])
+            columns_to_be_plotted=[[0,1]]
+            count_var=0
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+                                                            outputFileLabel='FuncWords_article',
+                                                            chartPackage=chartPackage,
+                                                            chart_type_list=['bar'],
+                                                            chart_title="Frequency Distribution of Article",
+                                                            column_xAxis_label_var='Article',
+                                                            hover_info_column_list=[],
+                                                            count_var=count_var)
 
             if chart_outputFilename != "":
                 filesToOpen.append(chart_outputFilename)
@@ -304,13 +335,24 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
 					  "CONJUNCTIONS"])
 
         if createCharts==True:
-            chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
-                                                                 data_to_be_plotted=[conjunction_stats],
-                                                                 inputFilename=function_words_stats_file_name,
-                                                                 outputDir=outputDir,
-                                                                 scriptType='Conjunctions',
-                                                                 chartTitle="Frequency Distribution of Conjunctions",
-                                                                 chart_type_list=["pie"])
+            # chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+            #                                                      data_to_be_plotted=[conjunction_stats],
+            #                                                      inputFilename=function_words_stats_file_name,
+            #                                                      outputDir=outputDir,
+            #                                                      scriptType='Conjunctions',
+            #                                                      chartTitle="Frequency Distribution of Conjunctions",
+            #                                                      chart_type_list=["pie"])
+            columns_to_be_plotted=[[0,1]]
+            count_var=0
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+                                                            outputFileLabel='FuncWords_conjunction',
+                                                            chartPackage=chartPackage,
+                                                            chart_type_list=['bar'],
+                                                            chart_title="Frequency Distribution of Conjunctions",
+                                                            column_xAxis_label_var='Conjunctions',
+                                                            hover_info_column_list=[],
+                                                            count_var=count_var)
+
 
             if chart_outputFilename != "":
                 filesToOpen.append(chart_outputFilename)
@@ -378,13 +420,23 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
 					  "AUXILIARIES"])
 
         if createCharts==True:
-            chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
-                                                                 data_to_be_plotted=[auxiliary_stats],
-                                                                 inputFilename=function_words_stats_file_name,
-                                                                 outputDir=outputDir,
-                                                                 scriptType='Verb_Aux',
-                                                                 chartTitle="Frequency Distribution of Auxiliary Verbs",
-                                                                 chart_type_list=["pie"])
+            # chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+            #                                                      data_to_be_plotted=[auxiliary_stats],
+            #                                                      inputFilename=function_words_stats_file_name,
+            #                                                      outputDir=outputDir,
+            #                                                      scriptType='Verb_Aux',
+            #                                                      chartTitle="Frequency Distribution of Auxiliary Verbs",
+            #                                                      chart_type_list=["pie"])
+            columns_to_be_plotted=[[0,1]]
+            count_var=0
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+                                                            outputFileLabel='FuncWords_auxiliary',
+                                                            chartPackage=chartPackage,
+                                                            chart_type_list=['bar'],
+                                                            chart_title="Frequency Distribution of Auxiliary Verbs",
+                                                            column_xAxis_label_var='Auxiliary Verbs',
+                                                            hover_info_column_list=[],
+                                                            count_var=count_var)
 
             if chart_outputFilename != "":
                 filesToOpen.append(chart_outputFilename)
