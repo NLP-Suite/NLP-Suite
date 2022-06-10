@@ -44,6 +44,7 @@ import charts_Excel_util
 import html_annotator_dictionary_util
 import SVO_enhanced_dependencies_util # Enhanced++ dependencies
 import reminders_util
+import statistics_csv_util
 
 def check_CoreNLP_language(config_filename,annotator,language):
     not_available = False
@@ -653,53 +654,68 @@ def CoreNLP_annotate(config_filename,inputFilename,
             file_df = pd.read_csv(filesToVisualize[j])
             if not file_df.empty:
                 if "Lemma" in annotator_params:
-                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
-                                          'Frequency Distribution of Lemmas', 1, [], 'lemma_bar','Lemma')
+                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], [[2, 2]], [[2, 2]],
+                                          'Frequency Distribution of Lemmas', 1, [], 'lemma_bar','Lemma',groupByList=[],plotList=[], chart_label='')
                 elif 'All POS' in annotator_params:
-                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
-                                          'Frequency Distribution of POS Tag Values', 1, [], 'POS_bar','POS tag')
+                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], [[2, 2]], [[2, 2]],
+                                          'Frequency Distribution of POS Tag Values', 1, [], 'POS_bar','POS tag',groupByList=[],plotList=[], chart_label='')
                 elif 'gender' in annotator_params and "gender" in filesToVisualize[j].split("_"):
+                    groupByList = ['Document ID', 'Document']
+                    plotList = ['Gender']
+                    chart_label = 'Gender'
                     filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j], filesToOpen)
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "Gender":
                         filesToOpen = visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen,
-                                                            [[1, 1]], 'bar',
+                                                            # columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc,
+                                                            [[1, 1]], [[3, 1]], [[1, 5]],
                                                             'Frequency Distribution of Gender Types', 1, [],
-                                                            'gender_types','Gender')
+                                                            'gender_types','Gender',groupByList=[],plotList=[], chart_label='')
 
                         filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen,
-                                                          [[0, 0]], 'bar',
+                                                          [[0, 0]],[[0, 0]],[[0, 0]],
                                               'Frequency Distribution of Words by Gender Type', 1, ['Gender'], 'gender_words','')
+
+                elif 'sentiment' in annotator_params and "sentiment" in filesToVisualize[j].split("_"):
+                    if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[0] == "Sentiment score":
+                        groupByList = ['Document ID', 'Document']
+                        plotList = ['Sentiment score']
+                        chart_label = 'Sentiment'
+                        filesToOpen = visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen,
+                                                      # columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc,
+                                                      [[1, 1]], [[2, 0]], [[1, 5]],
+                                                        'Frequency Distribution of Sentiment', 1, [],
+                                                        'senti_bar', 'Sentiment',groupByList=groupByList,plotList=plotList, chart_label=chart_label)
 
                 elif 'quote' in annotator_params and "quote" in filesToVisualize[j].split("_"):
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[5] == "Speakers":
                         filesToOpen = visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen,
-                                                        [[5, 5]], 'bar',
+                                                        [[5, 5]], [[5, 5]],[[5, 5]],
                                                         'Frequency Distribution of Speakers', 1, [],
-                                                        'quote_bar', 'Speaker')
+                                                        'quote_bar', 'Speaker',groupByList=[],plotList=[], chart_label='')
                 elif 'date' in annotator_params:
                     # TODO put values hover-over values to pass to Excel chart as a list []
-                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
+                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], [[1, 1]], [[1, 1]],
                                           'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Normalized date type')
-                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
-                                                      'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type')
+                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], [[3, 3]], [[3, 3]],
+                                                      'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type',groupByList=[],plotList=[], chart_label='')
                 elif 'NER' in annotator_params and "NER" in filesToVisualize[j].split("_"):
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "NER Value":
-                        filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
-                                              'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
+                        filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], [[1, 1]], [[1, 1]],
+                                              'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag',groupByList=[],plotList=[], chart_label='')
                         # ner tags are _ separated; individual NER tags at most have 2 _ (e.g., STATE_OR_PROVINCE)
                         if len(kwargs['NERs'])>1:
                             ner_tags = 'Multi-tags'
                         else:
                             ner_tags = str(kwargs['NERs'][0])
-                        filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
-                                              'Frequency Distribution of Words by NER ' +ner_tags, 1, ['NER Value'], 'NER_word_bar','') #NER ' +ner_tags+ ' Word
+                        filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]],[[0, 0]],[[0, 0]],
+                                              'Frequency Distribution of Words by NER ' +ner_tags, 1, ['NER Value'], 'NER_word_bar','',groupByList=[],plotList=[], chart_label='') #NER ' +ner_tags+ ' Word
                 elif 'SVO' in annotator_params or 'OpenIE' in annotator_params:
-                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
+                    filesToOpen=visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], [[0, 0]], [[0, 0]],
                                           'Frequency Distribution of Subjects (unfiltered)', 1, [], 'S_bar','Subjects (unfiltered)')
-                    filesToOpen = visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
+                    filesToOpen = visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], [[1, 1]], [[1, 1]],
                                                         'Frequency Distribution of Verbs (unfiltered)', 1, [], 'V_bar', 'Verbs (unfiltered)')
-                    filesToOpen = visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
-                                                        'Frequency Distribution of Objects (unfiltered)', 1, [], 'O_bar', 'Objects (unfiltered)')
+                    filesToOpen = visualize_chart(createCharts,chartPackage, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]],[[2, 2]],[[2, 2]],
+                                                        'Frequency Distribution of Objects (unfiltered)', 1, [], 'O_bar', 'Objects (unfiltered)',groupByList=[],plotList=[], chart_label='')
                     if 'SVO' in annotator_params:
                         for key, value in kwargs.items():
                             if key == "gender_var" and value == True:
@@ -1846,12 +1862,16 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesT
 
     return filesToOpen
 
-def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,filesToOpen, columns_to_be_plotted, chartType, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label):
+# columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc
+#   all double lists [[]]
+# the variable groupByList,plotList, chart_label are used to compute column statistics
+def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,filesToOpen, columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_label):
     if createCharts == True:
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        # standard bar chart
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted_bar, inputFilename, outputDir,
                                                   outputFileLabel=outputFileNameType,
                                                   chartPackage=chartPackage,
-                                                  chart_type_list=[chartType],
+                                                  chart_type_list=['bar'],
                                                   chart_title=chartTitle,
                                                   column_xAxis_label_var=column_xAxis_label,
                                                   hover_info_column_list=hover_label,
@@ -1860,21 +1880,46 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,filesToOpe
             if len(chart_outputFilename) > 0:
                 filesToOpen.append(chart_outputFilename)
 
-        # by sentence index
-        #
-        #     # line plots by sentence index
-        #     outputFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
-        #                                                                    inputFilename,
-        #                                                                    '',
-        #                                                                    outputDir,
-        #                                                                    openOutputFiles,
-        #                                                                    createCharts,chartPackage,
-        #                                                                    [[1, 2]],
-        #                                                                    ['Normalized date'],['Word', 'Sentence'],['Document ID', 'Sentence ID','Document'],
-        #                                                                    'date', 'line')
-        #
-        #     if len(outputFiles) > 0:
-        #         filesToOpen.extend(outputFiles)
+        # bar charts by document
+        # # document value comes second in [[]]
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
+                                                  outputFileLabel='ByDoc',
+                                                  chartPackage=chartPackage,
+                                                  chart_type_list=['bar'],
+                                                  chart_title=chartTitle + ' by Document',
+                                                  column_xAxis_label_var='',
+                                                  hover_info_column_list=hover_label,
+                                                  count_var=1,
+                                                  remove_hyperlinks=True)
+
+        if chart_outputFilename!=None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.append(chart_outputFilename)
+
+        # line plots by sentence index
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
+                                                  outputFileLabel='BySent',
+                                                  chartPackage=chartPackage,
+                                                  chart_type_list=['line'],
+                                                  chart_title=chartTitle + ' by Sentence Index',
+                                                  column_xAxis_label_var='Sentence index',
+                                                  hover_info_column_list=hover_label,
+                                                  count_var=0,
+                                                  complete_sid=True)
+
+        if chart_outputFilename!=None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.append(chart_outputFilename)
+
+        # compute field statistics
+        if len(groupByList)>0:
+            tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, inputFilename, outputDir,
+                                                                               groupByList, plotList, chart_label,
+                                                                               createCharts,
+                                                                               chartPackage)
+
+            if tempOutputfile != None:
+                filesToOpen.extend(tempOutputfile)
 
     return filesToOpen
 
@@ -1930,5 +1975,5 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
             print("Pronouns coreference rate: ", str(round((corefed_pronouns / total_count) * 100, 2)) + "%")
         if createCharts:
             visualize_chart(createCharts, chartPackage, inputFilename, outputDir, filesToOpen,
-                                          [[0, 0]], 'bar',
-                                          'Frequency Distribution of Pronouns', 1, [], 'pronouns_bar', 'Pronouns')
+                                          [[0, 0]],[[0, 0]],[[0, 0]],
+                                          'Frequency Distribution of Pronouns', 1, [], 'pronouns_bar', 'Pronouns',groupByList=[],plotList=[], chart_label='')

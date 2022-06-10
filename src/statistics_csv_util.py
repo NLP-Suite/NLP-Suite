@@ -191,7 +191,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, group
         column_to_be_plotted = 2 # Mode
         column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[column_to_be_plotted]
         # Plot Mean and Mode
-        columns_to_be_plotted=[[2,column_to_be_plotted+2], [2,column_to_be_plotted+3]] # document ID field comes first [1
+        columns_to_be_plotted=[[2,column_to_be_plotted+2], [2,column_to_be_plotted+3]] # document field comes first [2
         # hover_label=['Document']
         hover_label=[]
         inputFilename=outputFilename

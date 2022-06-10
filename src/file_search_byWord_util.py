@@ -261,6 +261,7 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
     filesToOpen.append(outputFileName)
 
     if createCharts == True:
+
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                  'search')
         columns_to_be_plotted=[[0,0]]
@@ -277,7 +278,6 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
         if chart_outputFilename != "":
             filesToOpen.append(chart_outputFilename)
 
-        # should also provide a bar chart of the frequency of distinct documents by punctuation symbol
         columns_to_be_plotted=[[0,9]]
         hover_label = []
         inputFilename = outputFilename
@@ -288,7 +288,8 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                                                          chart_title='Frequency of search words By Document',
                                                          column_xAxis_label_var='Document',
                                                          hover_info_column_list=hover_label,
-                                                         count_var=True)
+                                                         count_var=True,
+                                                         remove_hyperlinks=True)
         if chart_outputFilename != "":
             filesToOpen.append(chart_outputFilename)
 

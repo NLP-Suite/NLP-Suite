@@ -15,6 +15,7 @@ import re
 from collections import Counter
 import string
 from nltk.stem.porter import PorterStemmer
+from asyncio.windows_events import NULL
 
 import csv
 import nltk
@@ -227,16 +228,49 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
     chart_label='Lines'
     tempOutputfile=statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
                                         groupByList, plotList,chart_label,
-                                        createCharts, chartPackage) # 'sentence length (in words)'
+                                        createCharts, chartPackage)
     if tempOutputfile!=None:
         filesToOpen.extend(tempOutputfile)
 
     if createCharts == True:
         hover_label=[]
-        columns_to_be_plotted=[[2,1]] # line ID field comes first [2
-        # line plots by line index -----------------------------------------------------------------------------------------------
+        # bar chart  -----------------------------------------------------------------------------------------------
+        columns_to_be_plotted=[[1,1]]
         chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                          outputFileLabel='',
+                                                         chartPackage=chartPackage,
+                                                         chart_type_list=["bar"],
+                                                         chart_title='Line Length (in Number of Words)',
+                                                         column_xAxis_label_var='Number of lines',
+                                                         column_yAxis_label_var='Number of words',
+                                                         hover_info_column_list=[],
+                                                         count_var=1)
+
+        if chart_outputFilename != None:
+            filesToOpen.append(chart_outputFilename)
+
+        # bar chart by document
+        columns_to_be_plotted=[[1,5]] # document field comes second [5
+        # hover_label=['Document']
+        hover_label=[]
+
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                                                  outputFileLabel='ByDoc',
+                                                  chartPackage=chartPackage,
+                                                  chart_type_list=["bar"],
+                                                  chart_title='Frequency of Lines by Document',
+                                                  column_xAxis_label_var='', #Document
+                                                  hover_info_column_list=hover_label,
+                                                  count_var=1,
+                                                  remove_hyperlinks = True)
+
+        if chart_outputFilename != None:
+            filesToOpen.append(chart_outputFilename)
+
+        # line plots by line index -----------------------------------------------------------------------------------------------
+        columns_to_be_plotted=[[2,1]] # line ID field comes first [2
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                                                         outputFileLabel='ByLine',
                                                          chartPackage=chartPackage,
                                                          chart_type_list=["line"],
                                                          chart_title='Line Length (in Number of Words) by Line Index',
@@ -359,7 +393,7 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
         # compute statistics about doc length grouped by Document
 
         groupByList = ['Document ID','Document']
-        plotList = ['Number of Words in Document']
+        plotList = ['Number of Sentences in Document']
         chart_label = 'Words'
         tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
                                                                            groupByList, plotList, chart_label,
@@ -372,50 +406,86 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running document(s) statistics at', True, '', True, startTime, False)
 
         if createCharts==True:
+            inputFilename=outputFilename
 
-            columns_to_be_plotted=[[2,3]] # document ID field comes first [2
+            # bar chart
+            columns_to_be_plotted=[[3,3]]
             # hover_label=['Document']
             hover_label=[]
-            inputFilename=outputFilename
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                      outputFileLabel='bar_sent',
+                                                      chartPackage=chartPackage,
+                                                      chart_type_list=["bar"],
+                                                      chart_title='Frequency of Sentences',
+                                                      column_xAxis_label_var='', #Document
+                                                      hover_info_column_list=hover_label,
+                                                      count_var=1)
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
+
+            # bar chart
+            columns_to_be_plotted=[[4,4]]
+            # hover_label=['Document']
+            hover_label=[]
             chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["bar"],
-                                                      chart_title='Corpus Statistics: Frequency of Sentences by Document',
+                                                      chart_title='Frequency of Words',
                                                       column_xAxis_label_var='', #Document
                                                       hover_info_column_list=hover_label,
-                                                      remove_hyperlinks = True)
-            if 'Excel' in chartPackage and chart_outputFilename != "":
-                # rename output file or it will be overwritten by the next chart
-                Excel_extention = chart_outputFilename[-5:]
-                chart_outputFilename_new=chart_outputFilename[:-5]+'_sen.xlsm' + Excel_extention
-                # the file already exists and must be removed
-                if os.path.isfile(chart_outputFilename_new):
-                    os.remove(chart_outputFilename_new)
-                os.rename(chart_outputFilename, chart_outputFilename_new)
-                filesToOpen.append(chart_outputFilename_new)
+                                                      count_var=1)
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
 
-            columns_to_be_plotted=[[2,4]] # document ID field comes first [2
+            # bar chart by document
+            columns_to_be_plotted=[[3,2]] # document field comes second [2
             # hover_label=['Document']
             hover_label=[]
-            inputFilename=outputFilename
             chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                      outputFileLabel='',
+                                                      outputFileLabel='ByDoc_sent',
+                                                      chartPackage=chartPackage,
+                                                      chart_type_list=["bar"],
+                                                      chart_title='Frequency of Sentences by Document',
+                                                      column_xAxis_label_var='', #Document
+                                                      hover_info_column_list=hover_label,
+                                                      count_var=1,
+                                                      remove_hyperlinks = True)
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
+
+            columns_to_be_plotted=[[4,2]] # document field comes second [2
+            # hover_label=['Document']
+            hover_label=[]
+            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                                                      outputFileLabel='ByDoc_words',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["bar"],
                                                       # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
-                                                      chart_title='Corpus Statistics: Frequency of Words by Document',
+                                                      chart_title='Frequency of Words by Document',
                                                       column_xAxis_label_var='', #Document
-                                                      hover_info_column_list=hover_label)
-            if 'Excel' in chartPackage and chart_outputFilename != "":
-                # rename output file or it will be overwritten by the next chart
-                Excel_extention = chart_outputFilename[-5:]
-                chart_outputFilename_new=chart_outputFilename[:-5]+'_word'+Excel_extention
-                # the file already exists and must be removed
-                if os.path.isfile(chart_outputFilename_new):
-                    os.remove(chart_outputFilename_new)
-                os.rename(chart_outputFilename, chart_outputFilename_new)
-                filesToOpen.append(chart_outputFilename_new)
+                                                      hover_info_column_list=hover_label,
+                                                      count_var=1,
+                                                      remove_hyperlinks=True)
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
+
+            # line chart by sentence index
+            # THERE IS NO SENTENCE ID IN THE FILE!!!
+            columns_to_be_plotted=[[3,2]] # sentence field comes first [2
+            # # hover_label=['Document']
+            # hover_label=[]
+            # chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            #                                           outputFileLabel='Byline_sent',
+            #                                           chartPackage=chartPackage,
+            #                                           chart_type_list=["line"],
+            #                                           chart_title='Frequency of Sentences by Sentence Index',
+            #                                           column_xAxis_label_var='', #Document
+            #                                           hover_info_column_list=hover_label,
+            #                                           count_var=1,
+            #                                           remove_hyperlinks = True)
+            # if chart_outputFilename != "":
+            #     filesToOpen.append(chart_outputFilename)
 
         # TODO
         #   we should create 10 classes of values by distance to the median of
@@ -1188,11 +1258,46 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, createCharts, ch
         filesToOpen.extend(tempOutputfile)
 
     if createCharts == True:
+
+        # bar chart -----------------------------------------------------------------------------------------------
         hover_label=[]
-        columns_to_be_plotted=[[1,0]] # sentence ID field comes first [1
-        # line plots by sentence index -----------------------------------------------------------------------------------------------
+        columns_to_be_plotted=[[0,0]]
         chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                          outputFileLabel='',
+                                                         chartPackage=chartPackage,
+                                                         chart_type_list=["bar"],
+                                                         chart_title='Sentence Length (in Number of Tokens)',
+                                                         column_xAxis_label_var='Number of sentences',
+                                                         hover_info_column_list=hover_label,
+                                                         count_var=1,
+                                                         column_yAxis_label_var='Number of tokens per sentence')
+
+        if chart_outputFilename != None:
+            filesToOpen.append(chart_outputFilename)
+
+        # bar chart by document -----------------------------------------------------------------------------------------------
+
+        hover_label=[]
+        columns_to_be_plotted=[[0,4]] # document comes second [4
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                                                         outputFileLabel='ByDoc',
+                                                         chartPackage=chartPackage,
+                                                         chart_type_list=["bar"],
+                                                         chart_title='Sentence Length (in Number of Tokens) by Document',
+                                                         column_xAxis_label_var='',
+                                                         hover_info_column_list=hover_label,
+                                                         column_yAxis_label_var='Number of tokens per sentence',
+                                                         count_var=1,
+                                                         remove_hyperlinks=True)
+
+        if chart_outputFilename != None:
+            filesToOpen.append(chart_outputFilename)
+
+        # line plots by sentence index -----------------------------------------------------------------------------------------------
+        hover_label=[]
+        columns_to_be_plotted=[[1,0]] # sentence ID field comes first [1
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                                                         outputFileLabel='ByLine',
                                                          chartPackage=chartPackage,
                                                          chart_type_list=["line"],
                                                          chart_title='Sentence Length (in Number of Tokens) by Sentence Index',
