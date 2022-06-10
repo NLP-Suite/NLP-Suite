@@ -88,13 +88,11 @@ def compute_stats_CoreNLP_tag(data_list,column_to_be_counted,column_name,CoreNLP
 #       or on a specific field passed
 
 def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, createCharts, chartPackage, columnNumber=-1):
-    filesToOpen = []
     if inputFilename[-4:]!='.csv':
         mb.showwarning(title='File type error', message="The input file\n\n" + inputFilename + "\n\nis not a csv file. The statistical function only works with input csv files.\n\nPlease, select a csv file in input and try again!")
         return None
 
     output_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'ungroup_stats')
-    filesToOpen.append(output_file_name)
 
     stats=[]
     if columnNumber > -1:
@@ -134,7 +132,7 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, cre
             currentLine.extend(currentStats)
             stats.append(currentLine)
 
-    return filesToOpen
+    return output_file_name
 
 def percentile(n):
     def percentile_(x):
@@ -228,7 +226,8 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, p
     if len(groupByList)>0:
         temp_outputfile=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,groupByList,plotList,chart_label,createCharts,chartPackage)
         if temp_outputfile != '':
-            filesToOpen.append(temp_outputfile)
+            # extend because temp_outputfile is a list
+            filesToOpen.extend(temp_outputfile)
     return filesToOpen
 
 # # 1.22 Yi we do not need a columns_to_be_plotted variable in this function, passing numbers of columns to prepare_csv_data_for_chart will cause error

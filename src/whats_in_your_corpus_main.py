@@ -38,7 +38,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             utf8_var.get(),
                             ASCII_var.get(),
                             corpus_statistics_var.get(),
-                            corpus_options_menu_var.get(),
+                            corpus_statistics_options_menu_var.get(),
+                            corpus_text_options_menu_var.get(),
                             wordclouds_var.get(),
                             open_wordclouds_GUI_var.get(),
                             topics_var.get(),
@@ -65,7 +66,8 @@ def run(inputFilename,inputDir, outputDir,
         utf8_var,
         ASCII_var,
         corpus_statistics_var,
-        corpus_options_menu_var,
+        corpus_statistics_options_menu_var,
+        corpus_text_options_menu_var,
         wordclouds_var,
         open_wordclouds_GUI_var,
         topics_var,
@@ -119,44 +121,54 @@ def run(inputFilename,inputDir, outputDir,
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
 
+        # compute corpus statistics: -------------------------------
+
         lemmatize = False
         stopwords = False
 
-        if '*' in corpus_options_menu_var or 'stopwords' in corpus_options_menu_var:
+        if '*' in corpus_text_options_menu_var or 'stopwords' in corpus_text_options_menu_var:
             stopwords = True
-        if '*' in corpus_options_menu_var or 'Lemmatize' in corpus_options_menu_var:
+        if '*' in corpus_text_options_menu_var or 'Lemmatize' in corpus_text_options_menu_var:
             lemmatize=True
 
-        if '*' in corpus_options_menu_var or 'stopwords' in corpus_options_menu_var or 'Lemmatize' in corpus_options_menu_var:
+        if '*' in corpus_statistics_options_menu_var or 'statistics' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir, False,
                                   createCharts, chartPackage,
                                   stopwords, lemmatize)
+            # extend because output contains a list of files rather than a single file string
             if output!=None:
                 filesToOpen.extend(output)
 
-        # inputFilename = ''  # for now we only process a whole directory
+        # compute ngrams ----------------------------------------------------
+
         excludePunctuation=True
         n_grams_size=3
         bySentenceIndex_word_var=False
         normalize=False
 
-        if '*' in corpus_options_menu_var or 'grams' in corpus_options_menu_var:
+        if '*' in corpus_statistics_options_menu_var or 'grams' in corpus_statistics_options_menu_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles,
                                                               createCharts, chartPackage,
                                                               bySentenceIndex_word_var)
 
-        if 'sentences' in corpus_options_menu_var:
-            filesToOpen = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, createCharts, chartPackage)
+        # compute sentence length ----------------------------------------------------
 
-            if filesToOpen!=None:
-                filesToOpen.extend(filesToOpen)
+        if 'sentence length' in corpus_statistics_options_menu_var:
+            output = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, createCharts, chartPackage)
 
-        if 'lines' in corpus_options_menu_var:
+            if output!=None:
+                filesToOpen.extend(output)
+
+        # compute line length ----------------------------------------------------
+
+        if 'line length' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir, False,
                                                    createCharts, chartPackage)
             if output!=None:
                 filesToOpen.extend(output)
+
+    # wordclouds --------------------------------------------------------------
 
     if wordclouds_var==True:
         if open_wordclouds_GUI_var == True:
@@ -546,7 +558,7 @@ GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_di
 utf8_var= tk.IntVar()
 ASCII_var= tk.IntVar()
 corpus_statistics_var= tk.IntVar()
-corpus_options_menu_var= tk.StringVar()
+corpus_text_options_menu_var= tk.StringVar()
 corpus_statistics_options_menu_var= tk.StringVar()
 wordclouds_var = tk.IntVar()
 open_wordclouds_GUI_var = tk.IntVar()
@@ -578,7 +590,7 @@ y_multiplier_integer_SV=0 # used to set the quote_var widget on the proper GUI l
 def clear(e):
     corpus_statistics_var.set(1)
     corpus_statistics_options_menu_var.set('*')
-    corpus_options_menu_var.set('*')
+    corpus_text_options_menu_var.set('*')
     what_else_var.set(1)
     what_else_menu_var.set('*')
     quote_checkbox.place_forget()  # invisible
@@ -607,15 +619,15 @@ corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute statistics", va
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,corpus_statistics_checkbox,True)
 
 corpus_statistics_options_menu_var.set('*')
-corpus_statistics_options_menu_lb = tk.Label(window, text='statistics options')
+corpus_statistics_options_menu_lb = tk.Label(window, text='Statistics options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
-corpus_statistics_options_menu = tk.OptionMenu(window, corpus_statistics_options_menu_var, '*', 'Compute n-grams', 'Compute sentence length','Compute line length')
+corpus_statistics_options_menu = tk.OptionMenu(window, corpus_statistics_options_menu_var, '*', 'Compute statistics (sentences, words, syllables)', 'Compute n-grams', 'Compute sentence length','Compute line length')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,corpus_statistics_options_menu, True)
 
-corpus_options_menu_var.set('*')
-corpus_options_menu_lb = tk.Label(window, text='text options')
+corpus_text_options_menu_var.set('*')
+corpus_options_menu_lb = tk.Label(window, text='Text options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 680,y_multiplier_integer,corpus_options_menu_lb,True)
-corpus_options_menu = tk.OptionMenu(window, corpus_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
+corpus_options_menu = tk.OptionMenu(window, corpus_text_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 780,y_multiplier_integer,corpus_options_menu)
 
 wordclouds_var.set(1)
@@ -623,7 +635,7 @@ wordclouds_checkbox = tk.Checkbutton(window,text="Wordclouds", variable=wordclou
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,wordclouds_checkbox, True)
 
 open_wordclouds_GUI_var.set(0) # wordclouds GUI
-open_wordclouds_GUI_checkbox = tk.Checkbutton(window,text="open wordclouds GUI", state='disabled', variable=open_wordclouds_GUI_var, onvalue=1, offvalue=0)
+open_wordclouds_GUI_checkbox = tk.Checkbutton(window,text="Open wordclouds GUI", state='disabled', variable=open_wordclouds_GUI_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,open_wordclouds_GUI_checkbox)
 
 def activate_wordclouds_GUI(*args):
@@ -661,7 +673,7 @@ topics_Gensim_checkbox = tk.Checkbutton(window,text="via Gensim", variable=topic
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,topics_Gensim_checkbox,True)
 
 open_tm_GUI_var.set(0) # topic modeling GUI
-open_GUI_checkbox = tk.Checkbutton(window,text="open Gensim/MALLET GUI", variable=open_tm_GUI_var, onvalue=1, offvalue=0)
+open_GUI_checkbox = tk.Checkbutton(window,text="Open Gensim/MALLET GUI", variable=open_tm_GUI_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,open_GUI_checkbox)
 
 def activate_topics(*args):
@@ -805,7 +817,7 @@ GIS_checkbox = tk.Checkbutton(window,text="GIS (Geographic Information System) p
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,GIS_checkbox, True)
 
 open_GIS_GUI_var.set(0) # GIS GUI
-open_GIS_GUI_checkbox = tk.Checkbutton(window,text="open GIS GUI", state='disabled', variable=open_GIS_GUI_var, onvalue=1, offvalue=0)
+open_GIS_GUI_checkbox = tk.Checkbutton(window,text="Open GIS GUI", state='disabled', variable=open_GIS_GUI_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,open_GIS_GUI_checkbox)
 
 def activate_GIS_GUI(*args):
@@ -823,7 +835,7 @@ SVO_checkbox = tk.Checkbutton(window,text="SVO (Subject-Verb-Object) pipeline", 
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SVO_checkbox, True)
 
 open_SVO_GUI_var.set(0) # SVO GUI
-open_SVO_GUI_checkbox = tk.Checkbutton(window,text="open SVO GUI", state='disabled', variable=open_SVO_GUI_var, onvalue=1, offvalue=0)
+open_SVO_GUI_checkbox = tk.Checkbutton(window,text="Open SVO GUI", state='disabled', variable=open_SVO_GUI_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,open_SVO_GUI_checkbox)
 
 def activate_SVO_GUI(*args):

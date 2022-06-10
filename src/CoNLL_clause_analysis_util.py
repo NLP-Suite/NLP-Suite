@@ -159,15 +159,25 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
     
 
     if createCharts==True:
-        chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
-                                        data_to_be_plotted=[clausal_stats],
-                                        inputFilename=clausal_analysis_stats_file_name,
-                                        outputDir=outputDir,
-                                        scriptType='CoNLL_Clause',
-                                        chartTitle="Frequency Distribution of Clause Type",
-                                        chart_type_list=["pie"],
-                                        column_xAxis_label="Clause Tags",
-                                        column_yAxis_label="Frequency")
+        # chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
+        #                                 data_to_be_plotted=[clausal_stats],
+        #                                 inputFilename=clausal_analysis_stats_file_name,
+        #                                 outputDir=outputDir,
+        #                                 scriptType='CoNLL_Clause',
+        #                                 chartTitle="Frequency Distribution of Clause Type",
+        #                                 chart_type_list=["pie"],
+        #                                 column_xAxis_label="Clause Tags",
+        #                                 column_yAxis_label="Frequency")
+        columns_to_be_plotted=[[0,1]]
+        count_var=0
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, clausal_analysis_stats_file_name, outputDir,
+                                                        outputFileLabel='clausal_stats',
+                                                        chartPackage=chartPackage,
+                                                        chart_type_list=['bar'],
+                                                        chart_title="Frequency Distribution of Clause Type",
+                                                        column_xAxis_label_var='Clause Type',
+                                                        hover_info_column_list=[],
+                                                        count_var=count_var)
         if chart_outputFilename != "":
             filesToOpen.append(chart_outputFilename)
 

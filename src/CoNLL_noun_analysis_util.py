@@ -202,35 +202,61 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
         # bar charts -----------------------------------------------------------------------------------------------
 
-        chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
-                                                             data_to_be_plotted=[noun_postag_stats],
-                                                             inputFilename=noun_postag_stats_file_name,
-                                                             outputDir=outputDir,
-                                                             scriptType='Nouns_POS',
-                                                             chartTitle="Noun POS Analysis",
-                                                             chart_type_list=["bar"])
+        # chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+        #                                                      data_to_be_plotted=[noun_postag_stats],
+        #                                                      inputFilename=noun_postag_stats_file_name,
+        #                                                      outputDir=outputDir,
+        #                                                      scriptType='Nouns_POS',
+        #                                                      chartTitle="Noun POS Analysis",
+        #                                                      chart_type_list=["bar"])
+        columns_to_be_plotted=[[0,1]]
+        count_var=0
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, noun_postag_stats_file_name, outputDir,
+														 outputFileLabel='Nouns_POS',
+														 chartPackage=chartPackage,
+														 chart_type_list=['bar'],
+														 chart_title="Frequency Distribution of Nouns POSTags",
+														 column_xAxis_label_var='Nouns POSTags',
+														 hover_info_column_list=[],
+														 count_var=count_var)
 
         if chart_outputFilename != "":
             filesToOpen.append(chart_outputFilename)
 
-        chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
-                                                             data_to_be_plotted=[noun_deprel_stats],
-                                                             inputFilename=noun_deprel_stats_file_name,
-                                                             outputDir=outputDir,
-                                                             scriptType='Nouns_DEPREL',
-                                                             chartTitle="Noun DEPREL Analysis",
-                                                             chart_type_list=["bar"])
+        # chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+        #                                                      data_to_be_plotted=[noun_deprel_stats],
+        #                                                      inputFilename=noun_deprel_stats_file_name,
+        #                                                      outputDir=outputDir,
+        #                                                      scriptType='Nouns_DEPREL',
+        #                                                      chartTitle="Noun DEPREL Analysis",
+        #                                                      chart_type_list=["bar"])
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, noun_deprel_stats_file_name, outputDir,
+														 outputFileLabel='Nouns_DEPREL',
+														 chartPackage=chartPackage,
+														 chart_type_list=['bar'],
+														 chart_title="Frequency Distribution of Nouns DEPREL",
+														 column_xAxis_label_var='Nouns DEPREL',
+														 hover_info_column_list=[],
+														 count_var=count_var)
 
         if chart_outputFilename != "":
             filesToOpen.append(chart_outputFilename)
 
-        chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
-                                                             data_to_be_plotted=[noun_ner_stats],
-                                                             inputFilename=noun_ner_stats_file_name,
-                                                             outputDir=outputDir,
-                                                             scriptType='Nouns_DEPREL',
-                                                             chartTitle="Nouns (NER Tags)",
-                                                             chart_type_list=["bar"])
+        # chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+        #                                                      data_to_be_plotted=[noun_ner_stats],
+        #                                                      inputFilename=noun_ner_stats_file_name,
+        #                                                      outputDir=outputDir,
+        #                                                      scriptType='Nouns_DEPREL',
+        #                                                      chartTitle="Nouns (NER Tags)",
+        #                                                      chart_type_list=["bar"])
+        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, noun_ner_stats_file_name, outputDir,
+														 outputFileLabel='Nouns_NER',
+														 chartPackage=chartPackage,
+														 chart_type_list=['bar'],
+														 chart_title="Frequency Distribution of Nouns NER",
+														 column_xAxis_label_var='Nouns NER',
+														 hover_info_column_list=[],
+														 count_var=count_var)
 
         if chart_outputFilename != "":
             filesToOpen.append(chart_outputFilename)

@@ -309,6 +309,10 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
     return data_to_be_plotted
 
 # written by Tony Chen Gu, April 2022
+# the three steps function computes 
+#   1. the frequencies of a given csv field (select_col) aggregating the results by (group_col and select_col).
+#   2. the resulting frequencies are pivoted in order plot the data in a multi-line chart (one chart for every distinct value of select_col) by Sentence ID.
+#   3. the result of pivoting is then plotted  
 # select_col should be one column name to be plotted eg: ['Verb Voice']
 # group_col should be a list of column names eg ['Sentence ID']
 # enable complete_sid to make sentence index continuous
@@ -344,9 +348,11 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
     data.to_csv(name)
     data = pd.read_csv(name)
     # transform the data by the select columns
+    # Reshape data (produce a “pivot” table) based on column values. Uses unique values from specified index / columns to form axes of the resulting DataFrame.
     data = data.pivot(index = group_col, columns = select_col, values = "count")
     print(data)
     data.to_csv(name)
+    # complete sentence id if needed
     if(complete_sid):
         print("Completing sentence index...")
         complete_sentence_index(name)
@@ -358,19 +364,13 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         for i in range(1,len(data.columns)):
             cols_to_be_plotted.append([0,i])
         if series_label == NULL:
-            if use_plotly:
-                charts_plotly_util.plot_multi_line_chart_w_slider_px(name, cols_to_be_plotted, chartTitle, outputDir)
-            else:
-                Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
-                                                "frequency_multi-line_chart", chart_type_list=["line"], 
-                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID",chartPackage = 'Excel')
+            Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
+                                            "frequency_multi-line_chart", chart_type_list=["line"], 
+                                            chart_title=os.path.splitext(os.path.basename(inputFilename))[0]+"_"+chartTitle, column_xAxis_label_var="Sentence ID",chartPackage = chartPackage)
         else:
-            if use_plotly:
-                charts_plotly_util.plot_multi_line_chart_w_slider_px(name, cols_to_be_plotted, chartTitle, outputDir, series_label)
-            else:
-                Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
-                                                "frequency_multi-line_chart", chart_type_list=["line"], 
-                                                chart_title=chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label, chartPackage = 'Excel')
+            Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
+                                            "frequency_multi-line_chart", chart_type_list=["line"], 
+                                            chart_title=os.path.splitext(os.path.basename(inputFilename))[0]+"_"+chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label, chartPackage = chartPackage)
     return Excel_outputFilename
 
 # Tony Chen Gu written at April 2022 mortified at May 2022
