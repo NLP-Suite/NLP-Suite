@@ -556,7 +556,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
             if bySentenceID == True:
                 columns_to_be_plotted=[[2,1]] # sentence ID field comes first [2
                 hover_label=[str(index+1)+'-grams']
-                chart_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=inputFilename,
+                chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=inputFilename,
                                                                                         outputDir=outputDir,
                                                                                         select_col=[],
                                                                                         group_col=['Sentence ID'],
@@ -1051,7 +1051,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
             # if 'by sentence index' in processType.lower():
             # n-grams
             # line plots by sentence index -----------------------------------------------------------------------------------------------
-            chart_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=outputFilename,
+            chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=outputFilename,
                                                                             outputDir=outputDir,
                                                                             select_col=select_col,
                                                                             group_col=['Sentence ID'],

@@ -264,7 +264,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         # return filesToOpen # to avoid code breaking in plot by sentence index
 
         # line plots by sentence index -----------------------------------------------------------------------------------------------
-        outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=noun_postag_file_name,
+        outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=noun_postag_file_name,
 															outputDir=outputDir,
 															select_col=['Noun POS Tags'],
 															group_col=['Sentence ID'],
@@ -273,7 +273,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         if len(outputFiles)>0:
             filesToOpen.extend(outputFiles)
 
-        outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=noun_deprel_file_name,
+        outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=noun_deprel_file_name,
 															outputDir=outputDir,
 															select_col=['Noun DEPREL Tags'],
 															group_col=['Sentence ID'],
@@ -283,7 +283,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
             filesToOpen.extend(outputFiles)
 
 
-        outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=noun_ner_file_name,
+        outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=noun_ner_file_name,
 															outputDir=outputDir,
 															select_col=['Noun NER Tags'],
 															group_col=['Sentence ID'],

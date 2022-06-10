@@ -15,6 +15,7 @@ import csv
 import pandas as pd
 import numpy as np
 from scipy import stats
+from asyncio.windows_events import NULL
 
 import IO_files_util
 import IO_csv_util
@@ -209,6 +210,70 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, group
     return filesToOpen
 
 
+# written by Tony Chen Gu, April 2022
+# the three steps function computes
+#   1. the frequencies of a given csv field (select_col) aggregating the results by (group_col and select_col).
+#   2. the resulting frequencies are pivoted in order plot the data in a multi-line chart (one chart for every distinct value of select_col) by Sentence ID.
+#   3. the result of pivoting is then plotted
+# select_col should be one column name to be plotted eg: ['Verb Voice']
+# group_col should be a list of column names eg ['Sentence ID']
+# enable complete_sid to make sentence index continuous
+# enable graph to make a multiline graph
+# the input should be saved to a csv file first
+def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle, graph = True, complete_sid = True, series_label = NULL, chartPackage = 'Excel'):
+    cols = group_col + select_col
+    if 'Excel' in chartPackage:
+       use_plotly = False
+    else:
+        use_plotly = True
+    try:
+        data,header = IO_csv_util.get_csv_data(inputFilename, True)
+        data = pd.DataFrame(data, columns=header)
+    except:
+        # an error message about unable to read the file
+        print("Error: cannot read the csv file " + inputFilename)
+        return
+    #data = CoNLL_verb_analysis_util.verb_voice_data_preparation(data)
+    #data,stats,pas,aux,act = CoNLL_verb_analysis_util.voice_output(data, group_col)
+    #data = pd.DataFrame(data,columns=header+["Verb Voice"])
+    try:
+        print(data[select_col])
+        print(data[group_col])
+    except:
+        # an error message about wrong csv file without the necessary columns
+        print("Please select the correct csv file, with correct columns")
+        return
+    name = outputDir + os.sep + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
+    data.to_csv(name)
+    # group by both group col and select cols and get a row named count to count the number of frequencies
+    data = data.groupby(cols).size().to_frame("count")
+    data.to_csv(name)
+    data = pd.read_csv(name)
+    # transform the data by the select columns
+    # Reshape data (produce a “pivot” table) based on column values. Uses unique values from specified index / columns to form axes of the resulting DataFrame.
+    data = data.pivot(index = group_col, columns = select_col, values = "count")
+    print(data)
+    data.to_csv(name)
+    # complete sentence id if needed
+    if(complete_sid):
+        print("Completing sentence index...")
+        charts_Excel_util.complete_sentence_index(name)
+    print(name)
+    if(graph):
+        #TODO: need filename generation and chartTitle generation
+        data = pd.read_csv(name,header=0)
+        cols_to_be_plotted = []
+        for i in range(1,len(data.columns)):
+            cols_to_be_plotted.append([0,i])
+        if series_label == NULL:
+            Excel_outputFilename = charts_Excel_util.run_all(cols_to_be_plotted,name,outputDir,
+                                            "frequency_multi-line_chart", chart_type_list=["line"],
+                                            chart_title=os.path.splitext(os.path.basename(inputFilename))[0]+"_"+chartTitle, column_xAxis_label_var="Sentence ID",chartPackage = chartPackage)
+        else:
+            Excel_outputFilename = charts_Excel_util.run_all(cols_to_be_plotted,name,outputDir,
+                                            "frequency_multi-line_chart", chart_type_list=["line"],
+                                            chart_title=os.path.splitext(os.path.basename(inputFilename))[0]+"_"+chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label, chartPackage = chartPackage)
+    return Excel_outputFilename
 
 
 # The function will provide several statistical measure for a csv field valuues: 'Count', 'Mean', 'Mode', 'Median', 'Standard deviation', 'Minimum', 'Maximum',

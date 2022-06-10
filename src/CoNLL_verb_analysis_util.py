@@ -24,6 +24,7 @@ import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
 import charts_Excel_util
+import statistics_csv_util
 import Stanford_CoreNLP_tags_util
 import reminders_util
 
@@ -330,7 +331,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 					  "Verb Modality"])
 
 		# line plots by sentence index
-		chart_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=verb_file_name,
+		chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=verb_file_name,
 															outputDir=outputDir,
 															select_col=['Verb Modality'],
 															group_col=['Sentence ID'],
@@ -467,7 +468,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 					  "Verb Tense"])
 		
 		# line plots by sentence index
-		chart_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=verb_file_name,
+		chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=verb_file_name,
 													outputDir=outputDir,
 													select_col=['Verb Tense'],
 													group_col=['Sentence ID'],
@@ -486,7 +487,7 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
 
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
 												   'Started running VERB ANALYSES at',
-												   True, '', True, '', False)
+												   True, '', True, '', True)
 
 	outputFiles = verb_voice_stats(inputFilename, outputDir, data, data_divided_sents,
 								   openOutputFiles, createCharts, chartPackage)
@@ -505,7 +506,7 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
 		filesToOpen.extend(outputFiles)
 
 	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VERB ANALYSES at', True,
-									   '', True, startTime, False)
+									   '', True, startTime, True)
 
 	return filesToOpen
 

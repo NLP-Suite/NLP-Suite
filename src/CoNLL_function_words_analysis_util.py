@@ -27,6 +27,7 @@ import pandas as pd
 
 import CoNLL_util
 import charts_Excel_util
+import statistics_csv_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
@@ -108,13 +109,13 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
                 filesToOpen.append(chart_outputFilename)
 
             # line plot by sentence index
-            outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
+            outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
 															outputDir=outputDir,
 															select_col=['PRONOUNS'],
 															group_col=['Sentence ID'],
                                                             chartPackage=chartPackage,
                                                             chartTitle="Frequency Distribution of Pronoun")
-            # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+            # outputFiles=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
@@ -189,7 +190,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
             if chart_outputFilename != "":
                 filesToOpen.append(chart_outputFilename)
             
-            outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
+            outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
 															outputDir=outputDir,
 															select_col=['PREPOSITIONS'],
 															group_col=['Sentence ID'],
@@ -197,7 +198,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
                                                             chartTitle="Frequency Distribution of Prepositions")
             
             # line plot by sentence index
-            # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+            # outputFiles=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
@@ -278,13 +279,13 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
             # "Article Analysis",["pie"])
 
             # line plot by sentence index
-            outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
+            outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
 															outputDir=outputDir,
 															select_col=['ARTICLES'],
 															group_col=['Sentence ID'],
                                                             chartPackage=chartPackage,
                                                             chartTitle="Frequency Distribution of Articles")
-            # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+            # outputFiles=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
@@ -362,13 +363,13 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
             # chart_outputFilename =charts_Excel_util.create_excel_chart(GUI_util.window,[conjunction_stats],function_words_stats_file_name,"Conjunction Analysis",["pie"])
 
             # line plot by sentence index
-            outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
+            outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
 															outputDir=outputDir,
 															select_col=['CONJUNCTIONS'],
 															group_col=['Sentence ID'],
                                                             chartPackage=chartPackage,
                                                             chartTitle="Frequency Distribution of Conjunctions")
-            # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+            # outputFiles=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
@@ -444,13 +445,13 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
             # return filesToOpen  # to avoid code breaking in plot by sentence index
 
             # line plots by sentence index
-            outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
+            outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
 															outputDir=outputDir,
 															select_col=['AUXILIARIES'],
 															group_col=['Sentence ID'],
                                                             chartPackage=chartPackage,
                                                             chartTitle="Frequency Distribution of Auxiliary Verbs")
-            # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+            # outputFiles=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,

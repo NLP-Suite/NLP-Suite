@@ -1863,7 +1863,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,filesToOpe
         # by sentence index
         #
         #     # line plots by sentence index
-        #     outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+        #     outputFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
         #                                                                    inputFilename,
         #                                                                    '',
         #                                                                    outputDir,
