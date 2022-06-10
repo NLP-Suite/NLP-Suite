@@ -18,7 +18,8 @@ import sentence_analysis_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage,
-        corpus_stats, corpus_options_menu_var, n_grams, n_grams_menu_var, n_grams_list, all_csv_stats,csv_field_stats,
+        corpus_stats, corpus_statistics_options_menu_var, corpus_text_options_menu_var,
+        n_grams, n_grams_menu_var, n_grams_list, all_csv_stats,csv_field_stats,
         csv_list,hover_over_list, groupBy_list, script_to_run):
 
     filesToOpen=[]
@@ -61,24 +62,24 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
     if corpus_stats:
         stopwords_var = False
         lemmatize_var = False
-        if corpus_options_menu_var=='*':
+        if corpus_text_options_menu_var=='*':
             stopwords_var=True
             lemmatize_var=True
-        if 'Lemmatize' in corpus_options_menu_var:
+        if 'Lemmatize' in corpus_text_options_menu_var:
             lemmatize_var=True
-        if 'stopwords' in corpus_options_menu_var:
+        if 'stopwords' in corpus_text_options_menu_var:
             stopwords_var=True
-        if "*" in corpus_options_menu_var or lemmatize_var==True or stopwords_var==True:
+        if "*" in corpus_statistics_options_menu_var or 'Compute statistics' in corpus_statistics_options_menu_var:
             tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,False,createCharts, chartPackage, stopwords_var, lemmatize_var)
             if tempOutputFiles!=None:
                 filesToOpen.extend(tempOutputFiles)
 
-        if "Compute sentence length" in corpus_options_menu_var or "*" in corpus_options_menu_var:
+        if "Compute sentence length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
             tempOutputFiles = statistics_txt_util.compute_sentence_length(inputFilename, inputDir, outputDir, createCharts, chartPackage)
             if tempOutputFiles!=None:
                 filesToOpen.extend(tempOutputFiles)
 
-        if "Compute line length" in corpus_options_menu_var or "*" in corpus_options_menu_var:
+        if "Compute line length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
             tempOutputFiles=statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir,
                                                           False, createCharts, chartPackage)
             if tempOutputFiles!=None:
@@ -150,10 +151,9 @@ run_script_command=lambda: run(
                 GUI_util.open_csv_output_checkbox.get(),
                 GUI_util.create_chart_output_checkbox.get(),
                 GUI_util.charts_dropdown_field.get(),
-                corpus_stats_var.get(),
-                corpus_options_menu_var.get(),
-                # stopwords_var.get(),
-                # lemmatize_var.get(),
+                corpus_statistics_var.get(),
+                corpus_statistics_options_menu_var.get(),
+                corpus_text_options_menu_var.get(),
                 n_grams_var.get(),
                 n_grams_menu_var.get(),
                 n_grams_list,
@@ -211,16 +211,16 @@ csv_list = []
 hover_over_list = []
 groupBy_list = []
 
-corpus_stats_var = tk.IntVar()
-corpus_options_menu_var = tk.StringVar()
-# stopwords_var = tk.IntVar()
-# lemmatize_var = tk.IntVar()
-
 all_csv_stats_var = tk.IntVar()
 csv_field_stats_var = tk.IntVar()
 csv_field_var = tk.StringVar()
 csv_hover_over_field_var = tk.StringVar()
 csv_groupBy_field_var = tk.StringVar()
+
+corpus_statistics_var = tk.IntVar()
+corpus_statistics_options_menu_var = tk.StringVar()
+corpus_text_options_menu_var = tk.StringVar()
+
 n_grams_var = tk.IntVar()
 n_grams_menu_var = tk.StringVar()
 csv_options_menu_var = tk.StringVar()
@@ -235,8 +235,9 @@ def get_script_to_run(text):
 
 
 def clear(e):
-    corpus_stats_var.set(0)
-    corpus_options_menu_var.set('*')
+    corpus_statistics_var.set(0)
+    corpus_statistics_options_menu_var.set('*')
+    corpus_text_options_menu_var.set('')
     all_csv_stats_var.set(0)
     csv_field_stats_var.set(0)
     n_grams_menu_var.set('Word')
@@ -246,24 +247,30 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 
-corpus_stats_var.set(0)
-corpus_field_checkbox = tk.Checkbutton(window, text='Compute document(s) statistics', variable=corpus_stats_var, onvalue=1,
-                                       offvalue=0, command=lambda: get_script_to_run('Compute document(s) statistics'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               corpus_field_checkbox, True)
+corpus_statistics_var.set(1)
+corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,corpus_statistics_checkbox,True)
 
-corpus_options_menu_var.set('*')
-corpus_options_menu_lb = tk.Label(window, text='Document(s) statistics options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,corpus_options_menu_lb,True)
-corpus_options_menu = tk.OptionMenu(window, corpus_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation', 'Compute sentence length', 'Compute line length')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+580,y_multiplier_integer,corpus_options_menu)
+corpus_statistics_options_menu_var.set('*')
+corpus_statistics_options_menu_lb = tk.Label(window, text='Statistics options')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
+corpus_statistics_options_menu = tk.OptionMenu(window, corpus_statistics_options_menu_var, '*', 'Compute statistics (sentences, words, syllables)', 'Compute sentence length','Compute line length')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,corpus_statistics_options_menu, True)
+
+corpus_text_options_menu_var.set('')
+corpus_options_menu_lb = tk.Label(window, text='Text options')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 680,y_multiplier_integer,corpus_options_menu_lb,True)
+corpus_text_options_menu = tk.OptionMenu(window, corpus_text_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 780,y_multiplier_integer,corpus_text_options_menu)
 
 def activate_corpus_options(*args):
-    if corpus_stats_var.get()==True:
-        corpus_options_menu.configure(state='normal')
+    if corpus_statistics_var.get()==True:
+        corpus_statistics_options_menu.configure(state='normal')
+        corpus_text_options_menu.configure(state='normal')
     else:
-        corpus_options_menu.configure(state='disabled')
-corpus_stats_var.trace('w',activate_corpus_options)
+        corpus_statistics_options_menu.configure(state='disabled')
+        corpus_text_options_menu.configure(state='disabled')
+corpus_statistics_var.trace('w',activate_corpus_options)
 
 n_grams_var.set(0)
 n_grams_checkbox = tk.Checkbutton(window, text='Compute N-grams', variable=n_grams_var, onvalue=1, offvalue=0)
@@ -455,7 +462,7 @@ csv_groupBy_field_var.trace('w', activate_plus3)
 
 def activate_allOptions(menu_values, from_csv_field_stats_var=False):
     if inputFilename.get()[-4:] == '.txt':
-        corpus_field_checkbox.configure(state='normal')
+        corpus_statistics_checkbox.configure(state='normal')
         all_csv_field_checkbox.configure(state='disabled')
         csv_field_checkbox.configure(state='disabled')
         n_grams_checkbox.configure(state='normal')
@@ -464,19 +471,19 @@ def activate_allOptions(menu_values, from_csv_field_stats_var=False):
     elif inputFilename.get()[-4:] == '.csv':
         all_csv_field_checkbox.configure(state='normal')
         csv_field_checkbox.configure(state='normal')
-        corpus_field_checkbox.configure(state='disabled')
+        corpus_statistics_checkbox.configure(state='disabled')
         n_grams_checkbox.configure(state='disabled')
         n_grams_menu.configure(state='disabled')
         n_grams_options_menu .configure(state='disabled')
     else:
-        corpus_field_checkbox.configure(state='normal')
+        corpus_statistics_checkbox.configure(state='normal')
         all_csv_field_checkbox.configure(state='normal')
         csv_field_checkbox.configure(state='normal')
         n_grams_checkbox.configure(state='normal')
         n_grams_menu.configure(state='disabled')
         n_grams_options_menu.configure(state='disabled')
 
-    if corpus_stats_var.get() == 1:
+    if corpus_statistics_var.get() == 1:
         all_csv_field_checkbox.configure(state='disabled')
         csv_field_checkbox.configure(state='disabled')
         n_grams_checkbox.configure(state='disabled')
@@ -484,7 +491,7 @@ def activate_allOptions(menu_values, from_csv_field_stats_var=False):
         n_grams_options_menu .configure(state='disabled')
 
     if all_csv_stats_var.get() == 1:
-        corpus_field_checkbox.configure(state='disabled')
+        corpus_statistics_checkbox.configure(state='disabled')
         csv_field_checkbox.configure(state='disabled')
         n_grams_checkbox.configure(state='disabled')
         n_grams_menu.configure(state='disabled')
@@ -494,7 +501,7 @@ def activate_allOptions(menu_values, from_csv_field_stats_var=False):
         if from_csv_field_stats_var == True:
             if menu_values == ['']:  # first time through
                 changed_filename()
-        corpus_field_checkbox.configure(state='disabled')
+        corpus_statistics_checkbox.configure(state='disabled')
         all_csv_field_checkbox.configure(state='disabled')
         n_grams_checkbox.configure(state='disabled')
         n_grams_menu.configure(state='disabled')
@@ -514,7 +521,7 @@ def activate_allOptions(menu_values, from_csv_field_stats_var=False):
         csv_groupBy_field_menu.configure(state='disabled')
 
     if n_grams_var.get() == 1:
-        corpus_field_checkbox.configure(state='disabled')
+        corpus_statistics_checkbox.configure(state='disabled')
         all_csv_field_checkbox.configure(state='disabled')
         csv_field_checkbox.configure(state='disabled')
         n_grams_menu.configure(state='normal')
@@ -523,7 +530,7 @@ def activate_allOptions(menu_values, from_csv_field_stats_var=False):
         n_grams_menu.configure(state='disabled')
         n_grams_options_menu.configure(state='disabled')
 
-corpus_stats_var.trace('w', lambda x, y, z: activate_allOptions(menu_values))
+corpus_statistics_var.trace('w', lambda x, y, z: activate_allOptions(menu_values))
 all_csv_stats_var.trace('w', lambda x, y, z: activate_allOptions(menu_values))
 csv_field_stats_var.trace('w', lambda x, y, z: activate_allOptions(menu_values, True))
 n_grams_var.trace('w', lambda x, y, z: activate_allOptions(menu_values))

@@ -117,44 +117,44 @@ def run(inputFilename,inputDir,outputDir,
                                                                           outputDir, openOutputFiles, createCharts, chartPackage,'sentiment', False,
                                                                           language_var,
                                                                           memory_var)
-        outputFilename=outputFilename[0] # annotators return a list and not a string
+        # outputFilename=outputFilename[0] # annotators return a list and not a string
         if len(outputFilename)>0:
-            filesToOpen.append(outputFilename)
+            filesToOpen.extend(outputFilename)
         #@ not longer need to call java subprocess @
         # subprocess.call(['java', '-jar', 'Stanford_CoreNLP_sentiment_analysis.jar', inputDir, inputFilename, outputDir, flag])
-        if not usedir:
-            if createCharts==True:
-                # CoreNLP only computes mean values
-                columns_to_be_plotted = [[2,0]]
-                hover_label=['Sentence']
-                # inputFilename = outputFilename
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                          outputFileLabel='CoreNLP_sent',
-                                                          chartPackage=chartPackage,
-                                                          chart_type_list=["line"],
-                                                          chart_title='Stanford CoreNLP - Sentiment Scores by Sentence Index',
-                                                          column_xAxis_label_var='Sentence index',
-                                                          hover_info_column_list=hover_label,
-                                                          count_var=0,
-                                                          column_yAxis_label_var='Scores')
-                if chart_outputFilename != "":
-                    filesToOpen.append(chart_outputFilename)
-
-                columns_to_be_plotted = [[0,0]]
-                hover_label=[]
-                # inputFilename = inputFilename
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                          outputFileLabel='CoreNLP_SA',
-                                                          chartPackage=chartPackage,
-                                                          chart_type_list=["bar"],
-                                                          chart_title='Stanford CoreNLP - Sentiment Scores',
-                                                          column_xAxis_label_var='Sentiment score',
-                                                          hover_info_column_list=hover_label,
-                                                          count_var=1,
-                                                          column_yAxis_label_var='Frequencies')
-
-                if chart_outputFilename != "":
-                    filesToOpen.append(chart_outputFilename)
+        # if not usedir:
+            # if createCharts==True:
+                # # CoreNLP only computes mean values
+                # columns_to_be_plotted = [[2,0]]
+                # hover_label=['Sentence']
+                # # inputFilename = outputFilename
+                # chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                #                                           outputFileLabel='CoreNLP_sent',
+                #                                           chartPackage=chartPackage,
+                #                                           chart_type_list=["line"],
+                #                                           chart_title='Stanford CoreNLP - Sentiment Scores by Sentence Index',
+                #                                           column_xAxis_label_var='Sentence index',
+                #                                           hover_info_column_list=hover_label,
+                #                                           count_var=0,
+                #                                           column_yAxis_label_var='Scores')
+                # if chart_outputFilename != "":
+                #     filesToOpen.append(chart_outputFilename)
+                #
+                # columns_to_be_plotted = [[0,0]]
+                # hover_label=[]
+                # # inputFilename = inputFilename
+                # chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                #                                           outputFileLabel='CoreNLP_SA',
+                #                                           chartPackage=chartPackage,
+                #                                           chart_type_list=["bar"],
+                #                                           chart_title='Stanford CoreNLP - Sentiment Scores',
+                #                                           column_xAxis_label_var='Sentiment score',
+                #                                           hover_info_column_list=hover_label,
+                #                                           count_var=1,
+                #                                           column_yAxis_label_var='Frequencies')
+                #
+                # if chart_outputFilename != "":
+                #     filesToOpen.append(chart_outputFilename)
 
         if shape_of_stories_var:
             if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py') == False:
@@ -510,7 +510,7 @@ mean_var = tk.IntVar()
 median_var = tk.IntVar()
 SA_algorithm_var = tk.StringVar()
 language_var = tk.StringVar()
-language_var_lb  = tk.Label(window, text='Language')
+language_var_lb = tk.Label(window, text='Language')
 # language_menu = tk.OptionMenu()
 memory_var = tk.IntVar()
 memory_var_lb = tk.Label(window, text='Memory ')
@@ -525,13 +525,6 @@ median_var.set(1)
 
 def clear(e):
     SA_algorithm_var.set('*')
-    language_var_lb.place_forget()  # invisible
-    memory_var_lb.place_forget()  # invisible
-    try:
-        language_var.place_forget()  # invisible
-        memory_var.place_forget()  # invisible
-    except:
-        print()
     activate_SOS()
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
@@ -578,7 +571,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_
 y_multiplier_integerSV=y_multiplier_integer-1
 
 def activate_memory_var(*args):
-    global language_var, memory_var, y_multiplier_integer
+
+    global language_var, memory_var, y_multiplier_integer, language_menu
     if SA_algorithm_var.get()=='Stanford CoreNLP (Neural Network)' or SA_algorithm_var.get()=='*':
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+590, y_multiplier_integerSV,
                                                        language_var_lb, True)
@@ -600,7 +594,7 @@ def activate_memory_var(*args):
         language_var_lb.place_forget() #invisible
         memory_var_lb.place_forget() #invisible
         try:
-            # language_var.place_forget() #invisible
+            language_menu.place_forget()  # invisible
             memory_var.place_forget() #invisible
         except:
             return

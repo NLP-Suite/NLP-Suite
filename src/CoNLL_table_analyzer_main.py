@@ -94,12 +94,12 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                                                               data,
                                                               data_divided_sents,
                                                               openOutputFiles, createCharts,chartPackage)
-        if outputFiles != None:
-            # only open the chart files
-            if len(outputFiles) > 0:
-                filesToOpen.append(outputFiles[1])
-            if len(outputFiles) > 2:
-                filesToOpen.append(outputFiles[2])
+        # if outputFiles != None:
+        #     # only open the chart files
+        #     if len(outputFiles) > 0:
+        #         filesToOpen.append(outputFiles[1])
+        #     if len(outputFiles) > 2:
+        #         filesToOpen.append(outputFiles[2])
 
         right_hand_side = True
 
@@ -136,12 +136,12 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                                                                               data_divided_sents, openOutputFiles,
                                                                               createCharts, chartPackage)
         # only open the chart files
-        if outputFiles != None:
-            filesToOpen.append(outputFiles[2])
-            filesToOpen.append(outputFiles[5])
-            filesToOpen.append(outputFiles[8])
-            filesToOpen.append(outputFiles[11])
-            filesToOpen.append(outputFiles[14])
+        # if outputFiles != None:
+        #     filesToOpen.append(outputFiles[2])
+        #     filesToOpen.append(outputFiles[5])
+        #     filesToOpen.append(outputFiles[8])
+        #     filesToOpen.append(outputFiles[11])
+        #     filesToOpen.append(outputFiles[14])
 
         right_hand_side = True
 
@@ -153,7 +153,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         if openOutputFiles == True:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
             mb.showwarning(title='Output files',
-                           message="The analysis of the CoNLL table for clauses, nouns, verbs, and function words opens only the Excel chart files. But the script produces in output many more csv files.\n\nPlease, check your output directory for more file output.")
+                           message="The analysis of the CoNLL table for clauses, nouns, verbs, and function words produces too many files to open them all automatically.\n\nPlease, check your output directory for file output. All chart files are listed with extension xlsx or xlxm (for hover-over effects).")
         filesToOpen = []  # Store all files that are to be opened once finished
         outputFiles = []
         return
@@ -246,28 +246,28 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
 
                 # line plot by sentence index
                 if searchedCoNLLField == 'FORM':
-                    tempFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=output_file_name,
+                    tempFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=output_file_name,
 															outputDir=outputDir,
 															select_col=['SEARCHED TOKEN POSTAG-DESCRIPTION'],
 															group_col=['Document ID'],
                                                             chartPackage=chartPackage,
                                                             chartTitle="Frequency Distribution of SEARCHED TOKEN (FORM)",
                                                             complete_sid=False)
-                    # tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
+                    # tempFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
                     #                                                       [[11, 5], [11, 7], [11, 9]],
                     #                                                       ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
                     #                                                       ['SEARCHED TOKEN (FORM)', 'Sentence ID','Sentence'],
                     #                                                       ['Document ID', 'Document'],
                     #                                                       openOutputFiles, createCharts, chartPackage, 'QC', 'line')
                 else:
-                    tempFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=output_file_name,
+                    tempFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=output_file_name,
 															outputDir=outputDir,
 															select_col=['SEARCHED TOKEN POSTAG-DESCRIPTION'],
 															group_col=['Document ID'],
                                                             chartPackage=chartPackage,
                                                             chartTitle="Frequency Distribution of SEARCHED TOKEN (LEMMA)",
                                                             complete_sid=False)
-                    # tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
+                    # tempFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
                     #                                                       [[11, 5], [11, 7], [11, 9]],
                     #                                                       ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
                     #                                                       ['SEARCHED TOKEN (LEMMA)', 'Sentence ID','Sentence'],

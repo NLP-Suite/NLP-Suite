@@ -558,7 +558,7 @@ GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_di
 utf8_var= tk.IntVar()
 ASCII_var= tk.IntVar()
 corpus_statistics_var= tk.IntVar()
-corpus_text_options_menu_var= tk.StringVar()
+corpus_statistics_options_menu_var = tk.StringVar()
 corpus_statistics_options_menu_var= tk.StringVar()
 wordclouds_var = tk.IntVar()
 open_wordclouds_GUI_var = tk.IntVar()

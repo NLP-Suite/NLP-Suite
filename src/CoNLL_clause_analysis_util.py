@@ -184,13 +184,13 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         # return filesToOpen # to avoid code breaking in plot by sentence index
 
         # line plot by sentence index
-        chart_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=clause_file_name,
+        chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=clause_file_name,
                                         outputDir=outputDir,
                                         select_col=['Clause Tags'],
                                         group_col=['Sentence ID'],
                                         chartPackage=chartPackage,
                                         chartTitle="Frequency Distribution of Clause")
-        # chart_outputFilename=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+        # chart_outputFilename=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
         #                                                                 clausal_analysis_file_name,
         #                                                                 '',
         #                                                                 outputDir,

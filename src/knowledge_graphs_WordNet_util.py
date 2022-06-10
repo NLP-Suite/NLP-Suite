@@ -76,7 +76,7 @@ filesToOpen=[]
 #     df.to_csv(outputFilename,index=False)
 #
 #     if createCharts:
-#         outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+#         outputFiles=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
 #                                     ConnlTable,
 #                                     df,
 #                                     outputDir,

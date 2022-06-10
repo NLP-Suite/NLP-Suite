@@ -28,7 +28,6 @@ import sys
 import GUI_util
 import IO_libraries_util
 import IO_files_util
-import charts_Excel_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "Concreteness Analysis",
 										  ['os', 'csv', 'statistics', 'argparse', 'pandas', 'tkinter',
@@ -48,6 +47,8 @@ from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize
 
 import GUI_IO_util
 import IO_csv_util
+import charts_Excel_util
+import statistics_csv_util
 
 fin = open('../lib/wordLists/stopwords.txt', 'r')
 stops = set(fin.read().splitlines())
@@ -231,9 +232,40 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 			else:
 				print('Input directory "' + inputDir + '" is invalid.')
 				sys.exit(0)
+
+	# compute statistics about sentence length grouped by Document
+	groupByList = ['Document ID', 'Document']
+	plotList = ['Concreteness (Mean score)']
+	chart_label = 'Sentences'
+	tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
+																	   groupByList, plotList, chart_label,
+																	   createCharts,
+																	   chartPackage)  # 'sentence length (in words)'
+
+	if tempOutputfile != None:
+		filesToOpen.extend(tempOutputfile)
+
 	if createCharts == True:
 		inputFilename = outputFilename
-		print(outputFilename)
+
+		# bar chart by document
+		columns_to_be_plotted = [[0,10]] # document comes second 10]
+		# hover_label = ['Sentence', 'Sentence']
+		hover_label = []
+		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+														 outputFileLabel='ByDoc',
+														 chartPackage=chartPackage,
+														 chart_type_list=["bar"],
+														 chart_title='Concreteness Scores by Document\n' + chart_title,
+														 column_xAxis_label_var='',
+														 hover_info_column_list=hover_label,
+														 count_var=1,
+														 column_yAxis_label_var='Scores',
+														 remove_hyperlinks=True)
+		if chart_outputFilename != "":
+			filesToOpen.append(chart_outputFilename)
+
+		# line plots by sentence index
 		columns_to_be_plotted = [[7, 0], [7, 1]]
 		# hover_label = ['Sentence', 'Sentence']
 		hover_label = []
@@ -242,10 +274,11 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 														 chartPackage=chartPackage,
 														 chart_type_list=["line"],
 														 chart_title='Concreteness Scores by Sentence Index\n' + chart_title,
-														 column_xAxis_label_var='Sentence ID',
-														 #hover_info_column_list=hover_label,
-														 #count_var=0,
-														 column_yAxis_label_var='Scores')
+														 column_xAxis_label_var='Sentence index',
+														 hover_info_column_list=hover_label,
+														 count_var=0,
+														 column_yAxis_label_var='Scores',
+														 complete_sid=True)
 		if chart_outputFilename != "":
 			filesToOpen.append(chart_outputFilename)
 
