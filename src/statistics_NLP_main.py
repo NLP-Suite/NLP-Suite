@@ -73,19 +73,19 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
             if tempOutputFiles!=None:
                 filesToOpen.extend(tempOutputFiles)
 
-        if "Compute sentences length" in corpus_options_menu_var or "*" in corpus_options_menu_var:
+        if "Compute sentence length" in corpus_options_menu_var or "*" in corpus_options_menu_var:
             tempOutputFiles = statistics_txt_util.compute_sentence_length(inputFilename, inputDir, outputDir, createCharts, chartPackage)
             if tempOutputFiles!=None:
                 filesToOpen.extend(tempOutputFiles)
 
-        if "Compute lines length" in corpus_options_menu_var or "*" in corpus_options_menu_var:
-            tempOutputFiles=statistics_txt_util.compute_line_length(window, inputFilename, inputDir, outputDir,
+        if "Compute line length" in corpus_options_menu_var or "*" in corpus_options_menu_var:
+            tempOutputFiles=statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir,
                                                           False, createCharts, chartPackage)
             if tempOutputFiles!=None:
                 filesToOpen.extend(tempOutputFiles)
 
     elif all_csv_stats:
-        tempOutputFiles=statistics_csv_util.compute_field_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,createCharts, chartPackage)
+        tempOutputFiles=statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,createCharts, chartPackage)
     elif csv_field_stats:
         if len(csv_list) == 0:
             mb.showwarning(title='Warning', message='You have selected to compute the frequency of a csv file field but no field has been selected.\n\nPlease, select a csv file field and try again.')
@@ -255,7 +255,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 corpus_options_menu_var.set('*')
 corpus_options_menu_lb = tk.Label(window, text='Document(s) statistics options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,corpus_options_menu_lb,True)
-corpus_options_menu = tk.OptionMenu(window, corpus_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation', 'Compute sentences length', 'Compute lines length')
+corpus_options_menu = tk.OptionMenu(window, corpus_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation', 'Compute sentence length', 'Compute line length')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+580,y_multiplier_integer,corpus_options_menu)
 
 def activate_corpus_options(*args):
