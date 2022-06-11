@@ -19,7 +19,7 @@ import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
 import CoNLL_util
-import charts_Excel_util
+import charts_util
 import statistics_csv_util
 import Stanford_CoreNLP_tags_util
 
@@ -170,7 +170,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         #                                 column_yAxis_label="Frequency")
         columns_to_be_plotted=[[0,1]]
         count_var=0
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, clausal_analysis_stats_file_name, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, clausal_analysis_stats_file_name, outputDir,
                                                         outputFileLabel='clausal_stats',
                                                         chartPackage=chartPackage,
                                                         chart_type_list=['bar'],
@@ -210,7 +210,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         # columns_to_be_plotted = [[1, 8]]
         # hover_label = ['CLAUSAL TAG-DESCRIPTION']
         # inputFilename = clausal_analysis_file_name
-        # chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted,
+        # chart_outputFilename = charts_util.run_all(columns_to_be_plotted,
         #                                             inputFilename, outputDir,
         #                                             outputFileLabel='CoNLL_Clause',
         #                                             chart_type_list=["line"],

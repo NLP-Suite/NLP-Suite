@@ -39,7 +39,7 @@ from collections import Counter
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
-import charts_Excel_util
+import charts_util
 import GUI_IO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -341,7 +341,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 inputFilename = output_filename_dir_nominalized_frequencies
                 columns_to_be_plotted = [[0, 1]]
 
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                                  outputFileLabel='NOM_verb',
                                                                  chartPackage=chartPackage,
                                                                  chart_type_list=['bar'],
@@ -364,7 +364,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 inputFilename = output_filename_dir_noun_frequencies
                 columns_to_be_plotted = [[0, 1]]
 
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                                  outputFileLabel='NOM_noun',
                                                                  chartPackage=chartPackage,
                                                                  chart_type_list=['bar'],

@@ -9,7 +9,7 @@ from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize
 
 import IO_files_util
 import IO_user_interface_util
-import charts_Excel_util
+import charts_util
 import IO_csv_util
 import reminders_util
 
@@ -169,7 +169,7 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
 
 def visualize_chart(createCharts,chartPackage, inputFilename, outputDir, filesToOpen, columns_to_be_plotted,
                               chartType, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label):
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel=outputFileNameType,
                                                   chartPackage=chartPackage,
                                                   chart_type_list=[chartType],

@@ -14,7 +14,7 @@ import GUI_IO_util
 import CoNLL_util
 import CoNLL_table_search_util
 import statistics_csv_util
-import charts_Excel_util
+import charts_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
@@ -290,7 +290,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                 #                                                       outputDir, "QueryCoNLL_POS",
                 #                                                       "Searched token POStag Values (" + searchField_kw + ")",
                 #                                                       ["pie"])
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
                                                                 outputFileLabel='QueryCoNLL_POS (' + searchField_kw + ')',
                                                                 chartPackage=chartPackage,
                                                                 chart_type_list=['bar'],
@@ -313,7 +313,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                 #                                                       "Searched token DEPrel Values (" + searchField_kw + ")",
                 #                                                       ["pie"])
                 
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
                                                                 outputFileLabel='QueryCoNLL_DepRel (' + searchField_kw + ')',
                                                                 chartPackage=chartPackage,
                                                                 chart_type_list=['bar'],
@@ -335,7 +335,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                 #                                                       "QueryCoNLL_CoOcc_POS",
                 #                                                       "Co-token POStag Values (" + searchField_kw + ")",
                 #                                                       ["pie"])
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
                                                                 outputFileLabel='QueryCoNLL_CoOcc_POS (' + searchField_kw + ')',
                                                                 chartPackage=chartPackage,
                                                                 chart_type_list=['bar'],
@@ -358,7 +358,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                 #                                                       "QueryCoNLL_CoOcc_DEP",
                 #                                                       "Co-token DEPrel Values (" + searchField_kw + ")",
                 #                                                       ["pie"])
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
                                                                 outputFileLabel='QueryCoNLL_CoOcc_DEP (' + searchField_kw + ')',
                                                                 chartPackage=chartPackage,
                                                                 chart_type_list=['bar'],

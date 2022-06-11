@@ -15,10 +15,6 @@ import re
 from collections import Counter
 import string
 from nltk.stem.porter import PorterStemmer
-from asyncio.windows_events import NULL
-
-import csv
-import nltk
 
 import statistics_csv_util
 import IO_user_interface_util
@@ -72,7 +68,8 @@ from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize
 from itertools import groupby
 import textstat
 
-import charts_Excel_util
+import charts_util
+import charts_util
 import IO_files_util
 import IO_csv_util
 import reminders_util
@@ -218,74 +215,20 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
                     line = file.readline()
     csvfile.close()
 
-    filesToOpen.append(outputFilename)
-
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running line length analysis at', True, '', True, startTime, True)
 
-    # compute statistics about line length
-    groupByList=['Document ID','Document']
-    plotList=['Line length (in words)']
-    chart_label='Lines'
-    tempOutputfile=statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
-                                        groupByList, plotList,chart_label,
-                                        createCharts, chartPackage)
-    if tempOutputfile!=None:
-        filesToOpen.extend(tempOutputfile)
+    # produce all charts
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                              columns_to_be_plotted_bar=[[1, 1]],
+                                              columns_to_be_plotted_bySent=[[2, 1]],
+                                              columns_to_be_plotted_byDoc=[[1, 5]],
+                                              chartTitle='Frequency Distribution of Line Length',
+                                              count_var=1, hover_label=[],
+                                              outputFileNameType='line_bar', column_xAxis_label='Line length',
+                                              groupByList=['Document ID','Document'], plotList=['Line length (in words)'], chart_label='Lines')
 
-    if createCharts == True:
-        hover_label=[]
-        # bar chart  -----------------------------------------------------------------------------------------------
-        columns_to_be_plotted=[[1,1]]
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                         outputFileLabel='',
-                                                         chartPackage=chartPackage,
-                                                         chart_type_list=["bar"],
-                                                         chart_title='Line Length (in Number of Words)',
-                                                         column_xAxis_label_var='Number of lines',
-                                                         column_yAxis_label_var='Number of words',
-                                                         hover_info_column_list=[],
-                                                         count_var=1)
-
-        if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
-
-        # bar chart by document
-        columns_to_be_plotted=[[1,5]] # document field comes second [5
-        # hover_label=['Document']
-        hover_label=[]
-
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                  outputFileLabel='ByDoc',
-                                                  chartPackage=chartPackage,
-                                                  chart_type_list=["bar"],
-                                                  chart_title='Frequency of Lines by Document',
-                                                  column_xAxis_label_var='', #Document
-                                                  hover_info_column_list=hover_label,
-                                                  count_var=1,
-                                                  remove_hyperlinks = True)
-
-        if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
-
-        # line plots by line index -----------------------------------------------------------------------------------------------
-        columns_to_be_plotted=[[2,1]] # line ID field comes first [2
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                         outputFileLabel='ByLine',
-                                                         chartPackage=chartPackage,
-                                                         chart_type_list=["line"],
-                                                         chart_title='Line Length (in Number of Words) by Line Index',
-                                                         column_xAxis_label_var='Line index',
-                                                         hover_info_column_list=[],
-                                                         count_var=0,
-                                                         column_yAxis_label_var='Number of words',
-                                                         complete_sid=True)
-
-        if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
-
-    if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
-        filesToOpen=[] # to avoid re-opening in calling function
+    if chart_outputFilename != None:
+        filesToOpen.extend(chart_outputFilename)
 
     return filesToOpen
 
@@ -389,103 +332,51 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
             writer.writerows(currentLine)
         csvfile.close()
 
+        # number of sentences in input
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                           columns_to_be_plotted_bar=[[3, 3]],
+                                                           columns_to_be_plotted_bySent=[[]], # sentence not available
+                                                           columns_to_be_plotted_byDoc=[[3, 2]],
+                                                           chartTitle='Frequency of Sentences',
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='line_bar',
+                                                           column_xAxis_label='Line length',
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Number of Sentences in Document'], chart_label='Sentences')
 
-        # compute statistics about doc length grouped by Document
+        if chart_outputFilename != None:
+            filesToOpen.extend(chart_outputFilename)
 
-        groupByList = ['Document ID','Document']
-        plotList = ['Number of Sentences in Document']
-        chart_label = 'Words'
-        tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
-                                                                           groupByList, plotList, chart_label,
-                                                                           createCharts,
-                                                                           chartPackage)
+        # number of words in input
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                           columns_to_be_plotted_bar=[[4, 4]],
+                                                           columns_to_be_plotted_bySent=[[]], # sentence not available
+                                                           columns_to_be_plotted_byDoc=[[4, 2]],
+                                                           chartTitle='Frequency of Words',
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='line_bar',
+                                                           column_xAxis_label='Line length',
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Number of Words in Document'], chart_label='Words')
 
-        if tempOutputfile != None:
-            filesToOpen.extend(tempOutputfile)
+        if chart_outputFilename != None:
+            filesToOpen.extend(chart_outputFilename)
 
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running document(s) statistics at', True, '', True, startTime, False)
 
-        if createCharts==True:
-            inputFilename=outputFilename
+        # number of syllables in input
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                           columns_to_be_plotted_bar=[[5, 5]],
+                                                           columns_to_be_plotted_bySent=[[]], # sentence not available
+                                                           columns_to_be_plotted_byDoc=[[5, 2]],
+                                                           chartTitle='Frequency of Syllables',
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='syll_bar',
+                                                           column_xAxis_label='Syllable length',
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Number of Syllables in Document'], chart_label='Syllables')
 
-            # bar chart
-            columns_to_be_plotted=[[3,3]]
-            # hover_label=['Document']
-            hover_label=[]
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                      outputFileLabel='bar_sent',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["bar"],
-                                                      chart_title='Frequency of Sentences',
-                                                      column_xAxis_label_var='', #Document
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1)
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-
-            # bar chart
-            columns_to_be_plotted=[[4,4]]
-            # hover_label=['Document']
-            hover_label=[]
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                      outputFileLabel='',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["bar"],
-                                                      chart_title='Frequency of Words',
-                                                      column_xAxis_label_var='', #Document
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1)
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-
-            # bar chart by document
-            columns_to_be_plotted=[[3,2]] # document field comes second [2
-            # hover_label=['Document']
-            hover_label=[]
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                      outputFileLabel='ByDoc_sent',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["bar"],
-                                                      chart_title='Frequency of Sentences by Document',
-                                                      column_xAxis_label_var='', #Document
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1,
-                                                      remove_hyperlinks = True)
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-
-            columns_to_be_plotted=[[4,2]] # document field comes second [2
-            # hover_label=['Document']
-            hover_label=[]
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                      outputFileLabel='ByDoc_words',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["bar"],
-                                                      # chart_title='Corpus statistics\nCorpus directory: '+inputDir,
-                                                      chart_title='Frequency of Words by Document',
-                                                      column_xAxis_label_var='', #Document
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1,
-                                                      remove_hyperlinks=True)
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-
-            # line chart by sentence index
-            # THERE IS NO SENTENCE ID IN THE FILE!!!
-            columns_to_be_plotted=[[3,2]] # sentence field comes first [2
-            # # hover_label=['Document']
-            # hover_label=[]
-            # chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-            #                                           outputFileLabel='Byline_sent',
-            #                                           chartPackage=chartPackage,
-            #                                           chart_type_list=["line"],
-            #                                           chart_title='Frequency of Sentences by Sentence Index',
-            #                                           column_xAxis_label_var='', #Document
-            #                                           hover_info_column_list=hover_label,
-            #                                           count_var=1,
-            #                                           remove_hyperlinks = True)
-            # if chart_outputFilename != "":
-            #     filesToOpen.append(chart_outputFilename)
+        if chart_outputFilename != None:
+            filesToOpen.extend(chart_outputFilename)
 
         # TODO
         #   we should create 10 classes of values by distance to the median of
@@ -493,8 +384,8 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
         #   -0-10 11-20 21-30,… 91-100 
         #   and plot them as column charts. 
         
-        if openOutputFiles==True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        # if openOutputFiles==True:
+        #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
     return filesToOpen
 
 def Extract(lst):
@@ -638,7 +529,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                 columns_to_be_plotted=[[2,1]] # sentence ID field comes first [2
                 hover_label=[str(index+1)+'-grams'] # change to sentence
 
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                           outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
                                                           chartPackage=chartPackage,
                                                           chart_type_list=["bar"],
@@ -1093,7 +984,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                                                                          fileLabel)
             hover_label = []
             inputFilename = outputFilename
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                              outputFileLabel=fileLabel,
                                                              chartPackage=chartPackage,
                                                              chart_type_list=["bar"],
@@ -1107,7 +998,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
             # should also provide a bar chart of the frequency of distinct documents by punctuation symbol
             hover_label = []
             inputFilename = outputFilename
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted_byDocID, inputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted_byDocID, inputFilename, outputDir,
                                                              outputFileLabel=fileLabel_byDocID,
                                                              chartPackage=chartPackage,
                                                              chart_type_list=["bar"],
@@ -1246,69 +1137,20 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, createCharts, ch
 
     filesToOpen.append(outputFilename)
 
-    # compute statistics about sentence length grouped by Document
-    groupByList=['Document ID','Document']
-    plotList=['Sentence length (in words)']
-    chart_label='Sentences'
-    tempOutputfile=statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
-                                        groupByList, plotList,chart_label,
-                                        createCharts, chartPackage) # 'sentence length (in words)'
+    # number of sentences in input
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                       columns_to_be_plotted_bar=[[0, 0]],
+                                                       columns_to_be_plotted_bySent=[[1,0]],
+                                                       columns_to_be_plotted_byDoc=[[0, 4]],
+                                                       chartTitle='Frequency of Sentences',
+                                                       count_var=1, hover_label=[],
+                                                       outputFileNameType='line_bar',
+                                                       column_xAxis_label='Sentence length',
+                                                       groupByList=['Document ID', 'Document'],
+                                                       plotList=['Sentence length (in words)'], chart_label='Sentences')
 
-    if tempOutputfile!=None:
-        filesToOpen.extend(tempOutputfile)
-
-    if createCharts == True:
-
-        # bar chart -----------------------------------------------------------------------------------------------
-        hover_label=[]
-        columns_to_be_plotted=[[0,0]]
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                         outputFileLabel='',
-                                                         chartPackage=chartPackage,
-                                                         chart_type_list=["bar"],
-                                                         chart_title='Sentence Length (in Number of Tokens)',
-                                                         column_xAxis_label_var='Number of sentences',
-                                                         hover_info_column_list=hover_label,
-                                                         count_var=1,
-                                                         column_yAxis_label_var='Number of tokens per sentence')
-
-        if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
-
-        # bar chart by document -----------------------------------------------------------------------------------------------
-
-        hover_label=[]
-        columns_to_be_plotted=[[0,4]] # document comes second [4
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                         outputFileLabel='ByDoc',
-                                                         chartPackage=chartPackage,
-                                                         chart_type_list=["bar"],
-                                                         chart_title='Sentence Length (in Number of Tokens) by Document',
-                                                         column_xAxis_label_var='',
-                                                         hover_info_column_list=hover_label,
-                                                         column_yAxis_label_var='Number of tokens per sentence',
-                                                         count_var=1,
-                                                         remove_hyperlinks=True)
-
-        if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
-
-        # line plots by sentence index -----------------------------------------------------------------------------------------------
-        hover_label=[]
-        columns_to_be_plotted=[[1,0]] # sentence ID field comes first [1
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                         outputFileLabel='ByLine',
-                                                         chartPackage=chartPackage,
-                                                         chart_type_list=["line"],
-                                                         chart_title='Sentence Length (in Number of Tokens) by Sentence Index',
-                                                         column_xAxis_label_var='Sentence index',
-                                                         hover_info_column_list=hover_label,
-                                                         count_var=0,
-                                                         column_yAxis_label_var='Number of tokens per sentence',
-                                                         complete_sid=True)
-
-        if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+    if chart_outputFilename != None:
+        filesToOpen.extend(chart_outputFilename)
 
     return filesToOpen
 
@@ -1699,7 +1541,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                 # hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
                 hover_label = []
 
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                                  outputFileLabel='READ',
                                                                  chartPackage=chartPackage,
                                                                  chart_type_list=["line"],
@@ -1722,7 +1564,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
 
                     filesToOpen.append(chart_outputFilename_new)
 
-                # outputFilenameXLSM_1 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                # outputFilenameXLSM_1 = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                 #                                           outputFilename, chart_type_list=["line"],
                 #                                           chart_title="Text Readability",
                 #                                           column_xAxis_label_var='Sentence Index',
@@ -1740,7 +1582,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                 # plot overall grade level
                 columns_to_be_plotted = [[10, 9]]
                 hover_label = ['Sentence']
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                                  outputFileLabel='READ',
                                                                  chartPackage=chartPackage,
                                                                  chart_type_list=["line"],
@@ -1753,7 +1595,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                 if chart_outputFilename != "":
                     filesToOpen.append(chart_outputFilename)
 
-                # outputFilenameXLSM_2 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                # outputFilenameXLSM_2 = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                 #                                           outputFilename, chart_type_list=["line"],
                 #                                           chart_title="Text Readability",
                 #                                           column_xAxis_label_var='Sentence Index',
@@ -1772,7 +1614,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
             columns_to_be_plotted = [[10, 8]]
             hover_label = []
 
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                              outputFileLabel='READ',
                                                              chartPackage=chartPackage,
                                                              chart_type_list=["bar"],
@@ -1783,7 +1625,7 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
             if chart_outputFilename != "":
                 filesToOpen.append(chart_outputFilename)
 
-            # outputFilenameXLSM_3 = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            # outputFilenameXLSM_3 = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
             #                                           outputFilename, chart_type_list=["bar"],
             #                                           chart_title="Frequency of Sentences by Readability Consensus of Grade Level",
             #                                           column_xAxis_label_var='', column_yAxis_label_var='Frequency',
@@ -1868,7 +1710,7 @@ def sentence_structure_tree(inputFilename, outputDir):
             cf.print_to_file(outputDir + '/' + os.path.basename(inputFilename) + '_' + str(sentenceID) + '_tree.ps')
 
 # written by Mino Cha March/April 2022
-def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
+def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
     ## list for csv file
     documentID = []
     document = []
@@ -1967,23 +1809,80 @@ def sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFi
     op.to_csv(outputFilename, index=False)
     filesToOpen.append(outputFilename)
 
-    if createCharts == True:
-        inputFilename = outputFilename
-        columns_to_be_plotted = [[5, 1], [5, 3]] # sentence ID field comes first [5
-        # hover_label = ['Sentence', 'Sentence']
-        hover_label = []
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                         outputFileLabel='Complex',
-                                                         chartPackage=chartPackage,
-                                                         chart_type_list=["line"],
-                                                         chart_title='Complexity Scores (Yngve, Frazier) by Sentence Index',
-                                                         column_xAxis_label_var='Sentence index',
-                                                         hover_info_column_list=hover_label,
-                                                         count_var=0,
-                                                         column_yAxis_label_var='Scores')
-        if chart_outputFilename != "":
-            filesToOpen.append(chart_outputFilename)
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                       columns_to_be_plotted_bar=[[1, 1], [3, 3]],
+                                                       columns_to_be_plotted_bySent=[[5, 1], [5, 3]],
+                                                       columns_to_be_plotted_byDoc=[[1,8], [3,8]],
+                                                       chartTitle='Frequency Distribution of Complexity Scores',
+                                                       count_var=1, hover_label=[],
+                                                       outputFileNameType='pronouns_bar',
+                                                       column_xAxis_label='Complexity scores',
+                                                       groupByList=['Document ID','Document'],
+                                                       plotList=['Yngve score','Frazier score'],
+                                                       chart_label='Complexity')
+    if chart_outputFilename != None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
 
+    # # compute statistics about complexity measures
+    # groupByList=['Document ID','Document']
+    # plotList=['Yngve score',['Frazier score']]
+    # chart_label='Complexity'
+    # tempOutputfile=statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
+    #                                     groupByList, plotList,chart_label,
+    #                                     createCharts, chartPackage)
+    # if tempOutputfile!=None:
+    #     filesToOpen.extend(tempOutputfile)
+    #
+    # if createCharts == True:
+    #     inputFilename = outputFilename
+
+        # columns_to_be_plotted = [[1, 1], [3, 3]]
+        # # hover_label = ['Sentence', 'Sentence']
+        # hover_label = []
+        # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        #                                                  outputFileLabel='Complex',
+        #                                                  chartPackage=chartPackage,
+        #                                                  chart_type_list=["bar"],
+        #                                                  chart_title='Complexity Scores (Yngve, Frazier)',
+        #                                                  column_xAxis_label_var='',
+        #                                                  hover_info_column_list=hover_label,
+        #                                                  count_var=1,
+        #                                                  column_yAxis_label_var='Scores')
+        # if chart_outputFilename != "":
+        #     filesToOpen.append(chart_outputFilename)
+
+        # columns_to_be_plotted = [[5, 1], [5, 3]] # sentence ID field comes first [5
+        # # hover_label = ['Sentence', 'Sentence']
+        # hover_label = []
+        # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        #                                                  outputFileLabel='Complex',
+        #                                                  chartPackage=chartPackage,
+        #                                                  chart_type_list=["line"],
+        #                                                  chart_title='Complexity Scores (Yngve, Frazier) by Sentence Index',
+        #                                                  column_xAxis_label_var='Sentence index',
+        #                                                  hover_info_column_list=hover_label,
+        #                                                  count_var=0,
+        #                                                  column_yAxis_label_var='Scores',
+        #                                                  complete_sid=True)
+        # if chart_outputFilename != "":
+        #     filesToOpen.append(chart_outputFilename)
+
+        # columns_to_be_plotted = [[1,8], [3,8]] # Document comes second [5
+        # # hover_label = ['Sentence', 'Sentence']
+        # hover_label = []
+        # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        #                                                  outputFileLabel='ByDoc',
+        #                                                  chartPackage=chartPackage,
+        #                                                  chart_type_list=["bar"],
+        #                                                  chart_title='Complexity Scores (Yngve, Frazier) by Document',
+        #                                                  column_xAxis_label_var='',
+        #                                                  hover_info_column_list=hover_label,
+        #                                                  count_var=1,
+        #                                                  column_yAxis_label_var='Scores',
+        #                                                  remove_hyperlinks=True)
+        # if chart_outputFilename != "":
+        #     filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                        'Finished running Sentence Complexity at', True, '', True, startTime)

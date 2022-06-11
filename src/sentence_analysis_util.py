@@ -33,12 +33,11 @@ import tree
 import node_sentence_complexity as Node
 import stanza
 
-import charts_Excel_util
+import charts_util
 import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
-import charts_Excel_util
-import charts_plotly_util
+import charts_util
 import statistics_csv_util
 import TIPS_util
 import GUI_IO_util

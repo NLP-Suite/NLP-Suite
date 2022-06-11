@@ -27,7 +27,7 @@ import collections
 import IO_user_interface_util
 import IO_files_util
 import IO_csv_util
-import charts_Excel_util
+import charts_util
 
 def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_search_keywords, search_keywords_list,
         search_options_list, createCharts, chartPackage):
@@ -267,7 +267,7 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
         columns_to_be_plotted=[[0,0]]
         hover_label = []
         inputFilename = outputFilename
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                          outputFileLabel='search',
                                                          chartPackage=chartPackage,
                                                          chart_type_list=["bar"],
@@ -281,7 +281,7 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
         columns_to_be_plotted=[[0,9]]
         hover_label = []
         inputFilename = outputFilename
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                          outputFileLabel='search_byDoc',
                                                          chartPackage=chartPackage,
                                                          chart_type_list=["bar"],

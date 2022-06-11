@@ -16,7 +16,7 @@ import pandas as pd
 import csv
 
 import reminders_util
-import charts_Excel_util
+import charts_util
 import IO_files_util
 import IO_user_interface_util
 import data_manager_util
@@ -216,7 +216,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb
         hover_label=['Word']
         inputFilename = outputFilenameCSV1_new
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
@@ -250,7 +250,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
             chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)'
             hover_label=[]
             inputFilename = outputFilenameCSV3_new
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["bar"],

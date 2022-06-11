@@ -23,7 +23,7 @@ import IO_files_util
 import GUI_IO_util
 import IO_user_interface_util
 import lib_util
-import charts_Excel_util
+import charts_util
 import reminders_util
 import file_summary_checker_util
 import file_find_non_related_documents_util
@@ -190,7 +190,7 @@ def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, c
         inputFilename = outputFilenameCSV_1
         columns_to_be_plotted = [[0, 1]]
         hover_label = ['List of Documents in Category']
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='SSR_plagiar',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
@@ -207,7 +207,7 @@ def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, c
             inputFilename = outputFilenameCSV_2
             columns_to_be_plotted = [[0, 1], [0, 2], [0, 3]]
             hover_label = ['', '', '']
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='SSR_plagiar',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["line"],
@@ -226,7 +226,7 @@ def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, c
         columns_to_be_plotted = [[0, 1],[0, 2],[0, 3]]
         hover_label = ['']
         inputFilename = outputFilenameCSV_4
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='SSR_plagiar',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],

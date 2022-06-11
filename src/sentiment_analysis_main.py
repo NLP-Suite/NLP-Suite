@@ -15,7 +15,7 @@ from subprocess import call
 
 import IO_files_util
 import IO_user_interface_util
-import charts_Excel_util
+import charts_util
 import lib_util
 import GUI_IO_util
 import reminders_util
@@ -128,7 +128,7 @@ def run(inputFilename,inputDir,outputDir,
                 # columns_to_be_plotted = [[2,0]]
                 # hover_label=['Sentence']
                 # # inputFilename = outputFilename
-                # chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                 #                                           outputFileLabel='CoreNLP_sent',
                 #                                           chartPackage=chartPackage,
                 #                                           chart_type_list=["line"],
@@ -143,7 +143,7 @@ def run(inputFilename,inputDir,outputDir,
                 # columns_to_be_plotted = [[0,0]]
                 # hover_label=[]
                 # # inputFilename = inputFilename
-                # chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                 #                                           outputFileLabel='CoreNLP_SA',
                 #                                           chartPackage=chartPackage,
                 #                                           chart_type_list=["bar"],
@@ -172,7 +172,7 @@ def run(inputFilename,inputDir,outputDir,
                                          True)
             call("python shape_of_stories_main.py", shell=True)
 
-                # outputFilenameXlsm1 = charts_Excel_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputQuotefilePath, chart_type_list = ["bar"], chart_title=
+                # outputFilenameXlsm1 = charts_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputQuotefilePath, chart_type_list = ["bar"], chart_title=
                 # "Stanford CoreNLP (Sentiment Value)", column_xAxis_label_var = 'Sentiment value',
                 # column_yAxis_label_var = 'Frequency of sentiment value',outputExtension = '.xlsm',
                 # label1='SC',label2='CoreNLP_Sentiment',label3='bar',label4='chart',label5='',
@@ -216,7 +216,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[6,0]]
                 hover_label=['Sentence']
             # inputFilename = outputFilename
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='Hedo_sent',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["line"],
@@ -231,7 +231,7 @@ def run(inputFilename,inputDir,outputDir,
             columns_to_be_plotted = [[0,0]]
             hover_label=[]
             # inputFilename = outputFilename
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='Hedo_sent',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["bar"],
@@ -267,7 +267,7 @@ def run(inputFilename,inputDir,outputDir,
             hover_label=['Sentence']
 
             # inputFilename = outputFilename
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='SentiWordNet_sent',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["line"],
@@ -281,7 +281,7 @@ def run(inputFilename,inputDir,outputDir,
 
             columns_to_be_plotted = [[0,0]]
             hover_label=[]
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='SentiWordNet_sent',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["bar"],
@@ -319,7 +319,7 @@ def run(inputFilename,inputDir,outputDir,
             hover_label=['Sentence']
             # inputFilename = outputFilename
 
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='VADER_sent',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["line"],
@@ -334,7 +334,7 @@ def run(inputFilename,inputDir,outputDir,
             columns_to_be_plotted = [[0,0]]
             hover_label=[]
             # inputFilename = outputFilename
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='VADER_sent',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["bar"],
@@ -370,7 +370,7 @@ def run(inputFilename,inputDir,outputDir,
                 hover_label=['Sentence','Sentence','Sentence']
 
             # inputFilename = outputFilename
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_sent',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["line"],
@@ -389,7 +389,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[5,5]]
             hover_label=[]
             # inputFilename = outputFilename
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_sent',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["bar"],
@@ -409,7 +409,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[7,7]]
             hover_label=[]
             # inputFilename = outputFilename
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_arous',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["bar"],
@@ -429,7 +429,7 @@ def run(inputFilename,inputDir,outputDir,
                 columns_to_be_plotted = [[9,9]]
             hover_label=[]
             # inputFilename = outputFilename
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='ANEW_dom',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["bar"],

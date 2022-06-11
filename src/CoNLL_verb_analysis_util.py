@@ -23,7 +23,7 @@ import CoNLL_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
-import charts_Excel_util
+import charts_util
 import statistics_csv_util
 import Stanford_CoreNLP_tags_util
 import reminders_util
@@ -188,7 +188,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	if createCharts == True:
 		columns_to_be_plotted=[[0,1]]
 		count_var=0
-		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
+		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
 														 outputFileLabel='verb_voice',
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],
@@ -202,7 +202,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 		columns_to_be_plotted=[[11,14]] # sentence ID field comes first [11
 		count_var=0
-		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, verb_file_name, outputDir,
+		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, verb_file_name, outputDir,
 														 outputFileLabel='verb_voice',
 														 chartPackage=chartPackage,
 														 chart_type_list=['line'],
@@ -312,7 +312,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 	if createCharts == True:
 		columns_to_be_plotted=[[0,1]]
 		count_var=0
-		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
+		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
 														 outputFileLabel='verb_modality',
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],
@@ -449,7 +449,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	if createCharts == True:
 		columns_to_be_plotted=[[0,1]]
 		count_var=0
-		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
+		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
 														 outputFileLabel='verb_tense',
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],
