@@ -20,7 +20,7 @@ import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
 import CoNLL_util
-import charts_Excel_util
+import charts_util
 import statistics_csv_util
 import Stanford_CoreNLP_tags_util
 
@@ -211,7 +211,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         #                                                      chart_type_list=["bar"])
         columns_to_be_plotted=[[0,1]]
         count_var=0
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, noun_postag_stats_file_name, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, noun_postag_stats_file_name, outputDir,
 														 outputFileLabel='Nouns_POS',
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],
@@ -230,7 +230,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         #                                                      scriptType='Nouns_DEPREL',
         #                                                      chartTitle="Noun DEPREL Analysis",
         #                                                      chart_type_list=["bar"])
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, noun_deprel_stats_file_name, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, noun_deprel_stats_file_name, outputDir,
 														 outputFileLabel='Nouns_DEPREL',
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],
@@ -249,7 +249,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         #                                                      scriptType='Nouns_DEPREL',
         #                                                      chartTitle="Nouns (NER Tags)",
         #                                                      chart_type_list=["bar"])
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, noun_ner_stats_file_name, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, noun_ner_stats_file_name, outputDir,
 														 outputFileLabel='Nouns_NER',
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],

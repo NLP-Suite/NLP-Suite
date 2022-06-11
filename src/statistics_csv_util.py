@@ -19,7 +19,7 @@ from asyncio.windows_events import NULL
 
 import IO_files_util
 import IO_csv_util
-import charts_Excel_util
+import charts_util
 import GUI_IO_util
 
 
@@ -186,16 +186,15 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, group
     filesToOpen.append(outputFilename)
 
     if createCharts==True:
-        column_to_be_plotted = 1 # Mean
-        column_name_to_be_plotted=headers_stats[column_to_be_plotted]
-        column_to_be_plotted = 2 # Mode
-        column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[column_to_be_plotted]
-        # Plot Mean and Mode
-        columns_to_be_plotted=[[2,column_to_be_plotted+2], [2,column_to_be_plotted+3]] # document field comes first [2
+        column_name_to_be_plotted=headers_stats[1] # Mean
+        column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[2] # Mode
+        column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[7] # Skewness
+        column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[8] # Kurtosis
+        # Plot Mean, Mode, Skewness, Kurtosis
+        columns_to_be_plotted=[[2,4], [2,5], [2,10], [2,11]] # document field comes first [2
         # hover_label=['Document']
         hover_label=[]
-        inputFilename=outputFilename
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                   outputFileLabel='',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
@@ -257,7 +256,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
     # complete sentence id if needed
     if(complete_sid):
         print("Completing sentence index...")
-        charts_Excel_util.complete_sentence_index(name)
+        charts_util.complete_sentence_index(name)
     print(name)
     if(graph):
         #TODO: need filename generation and chartTitle generation
@@ -266,11 +265,11 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         for i in range(1,len(data.columns)):
             cols_to_be_plotted.append([0,i])
         if series_label == NULL:
-            Excel_outputFilename = charts_Excel_util.run_all(cols_to_be_plotted,name,outputDir,
+            Excel_outputFilename = charts_util.run_all(cols_to_be_plotted,name,outputDir,
                                             "frequency_multi-line_chart", chart_type_list=["line"],
                                             chart_title=os.path.splitext(os.path.basename(inputFilename))[0]+"_"+chartTitle, column_xAxis_label_var="Sentence ID",chartPackage = chartPackage)
         else:
-            Excel_outputFilename = charts_Excel_util.run_all(cols_to_be_plotted,name,outputDir,
+            Excel_outputFilename = charts_util.run_all(cols_to_be_plotted,name,outputDir,
                                             "frequency_multi-line_chart", chart_type_list=["line"],
                                             chart_title=os.path.splitext(os.path.basename(inputFilename))[0]+"_"+chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label, chartPackage = chartPackage)
     return Excel_outputFilename
@@ -338,7 +337,7 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
 
             if createCharts:
                 # columns_to_be_plotted = [[1, 2]] # hard code Yi
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel=fileNameType,
                                                       chartPackage=chartPackage,
                                                       chart_type_list=chartType,
@@ -361,7 +360,7 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
             filesToOpen.append(output_file_name)
             if createCharts:
                 # columns_to_be_plotted = [[1, 2]] # hard code Yi
-                chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel=fileNameType,
                                                       chartPackage=chartPackage,
                                                       chart_type_list=chartType,
@@ -373,7 +372,7 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
                     filesToOpen.append(chart_outputFilename)
 
                 # # columns_to_be_plotted = [[1, 2]] # hard code Yi
-                # chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                 #                                       outputFileLabel=fileNameType,
                 #                                       chart_type_list=[chartType],
                 #                                       chart_title='',
@@ -410,7 +409,7 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
 
         if createCharts:
             # columns_to_be_plotted = [[1, 2]] # hard code Yi
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel=fileNameType,
                                                       chartPackage=chartPackage,
                                                       chart_type_list=chartType,

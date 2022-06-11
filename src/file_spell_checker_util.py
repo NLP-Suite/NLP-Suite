@@ -41,7 +41,7 @@ import fuzzywuzzy
 from fuzzywuzzy import fuzz
 
 import file_cleaner_util
-import charts_Excel_util
+import charts_util
 import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
@@ -120,7 +120,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         columns_to_be_plotted = [[2,2]]
         hover_label=['']
         inputFilename=outputFilename
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                    outputFileLabel='NLTK_spell',
                                                    chartPackage=chartPackage,
                                                    chart_type_list=["bar"],
@@ -146,7 +146,7 @@ def generate_simple_csv(Dataframe):
     pass
 
 def createChart(inputFilename,outputDir,columns_to_be_plotted,hover_label):
-    chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+    chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                               outputFileLabel='Leven_spell',
                                               chartPackage=chartPackage,
                                               chart_type_list=["pie"],
@@ -910,7 +910,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
         chart_title='Frequency of Languages Detected by 3 Algorithms'
         hover_label=['LANGDETECT', 'SPACY', 'LANGID']
         inputFilename = outputFilenameCSV
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='_bar_chart',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],

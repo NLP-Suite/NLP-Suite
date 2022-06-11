@@ -37,7 +37,7 @@ import GIS_location_util
 import GIS_geocode_util
 import IO_files_util
 import IO_user_interface_util
-import charts_Excel_util
+import charts_util
 import IO_csv_util
 import IO_internet_util
 
@@ -51,7 +51,7 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
     else:
         chartTitle = 'Geodesic distance in miles from ' + baselineLocation
     columns_to_be_plotted = [[3,6]]
-    chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+    chart_outputFilename = charts_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                               '',
                                               chartPackage=chartPackage,
                                               chart_type_list=["bar"],
@@ -79,7 +79,7 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
     else:
         chartTitle = 'Great circle distance in miles from ' + baselineLocation
     columns_to_be_plotted = [[3,8]]
-    chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+    chart_outputFilename = charts_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                               '',
                                               chartPackage=chartPackage,
                                               chart_type_list=["bar"],

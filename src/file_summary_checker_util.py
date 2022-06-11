@@ -16,7 +16,7 @@ import os
 from glob import glob
 import IO_files_util
 import GUI_IO_util
-import charts_Excel_util
+import charts_util
 import IO_user_interface_util
 
 # check WordNet
@@ -398,7 +398,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
                        'List of Summary Filenames for Type of Error',
                        'List of Summary Filenames for Type of Error']
         inputFilename = outputFilename
-        chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel=fileType,
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],

@@ -87,6 +87,8 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
 
     elif all_csv_stats:
         tempOutputFiles=statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,createCharts, chartPackage)
+        if tempOutputFiles != None:
+            filesToOpen.extend(tempOutputFiles)
     elif csv_field_stats:
         if len(csv_list) == 0:
             mb.showwarning(title='Warning', message='You have selected to compute the frequency of a csv file field but no field has been selected.\n\nPlease, select a csv file field and try again.')
@@ -139,7 +141,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
             tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,n_grams_size, normalize, excludePunctuation,  0, openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_character_var)
         # statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_mai
-    if openOutputFiles == 1:
+    if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated

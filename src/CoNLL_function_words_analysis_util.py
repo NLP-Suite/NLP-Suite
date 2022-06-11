@@ -26,7 +26,7 @@ import tkinter.messagebox as mb
 import pandas as pd
 
 import CoNLL_util
-import charts_Excel_util
+import charts_util
 import statistics_csv_util
 import IO_files_util
 import IO_csv_util
@@ -95,7 +95,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
             #                               chart_type_list=["pie"])
             columns_to_be_plotted=[[0,1]]
             count_var=0
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_pron',
                                                             chartPackage=chartPackage,
                                                             chart_type_list=['bar'],
@@ -178,7 +178,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
             #                               chart_type_list=["pie"])
             columns_to_be_plotted=[[0,1]]
             count_var=0
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_prep',
                                                             chartPackage=chartPackage,
                                                             chart_type_list=['bar'],
@@ -262,7 +262,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
             #                               chart_type_list=["pie"])
             columns_to_be_plotted=[[0,1]]
             count_var=0
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_article',
                                                             chartPackage=chartPackage,
                                                             chart_type_list=['bar'],
@@ -345,7 +345,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
             #                                                      chart_type_list=["pie"])
             columns_to_be_plotted=[[0,1]]
             count_var=0
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_conjunction',
                                                             chartPackage=chartPackage,
                                                             chart_type_list=['bar'],
@@ -430,7 +430,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
             #                                                      chart_type_list=["pie"])
             columns_to_be_plotted=[[0,1]]
             count_var=0
-            chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_auxiliary',
                                                             chartPackage=chartPackage,
                                                             chart_type_list=['bar'],

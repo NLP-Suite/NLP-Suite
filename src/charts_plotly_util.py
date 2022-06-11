@@ -6,8 +6,9 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
-import charts_Excel_util
 import os
+
+import IO_files_util
 
 ## NOTE:
 ## some graphing functions has a column placed at the end
@@ -43,7 +44,8 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
         document = data['Document']
         new_document = []
         for i in document:
-            new_document.append(charts_Excel_util.get_document_name(i))
+            # new_document.append(charts_util.get_document_name(i))
+            new_document.append(IO_files_util.getFilename(i)[0])
         data['Document'] = new_document
         inputFilename = os.path.join(os.path.split(inputFilename)[0],"chart_data_"+os.path.split(inputFilename)[1])
         data.to_csv(inputFilename, encoding='utf-8')

@@ -47,7 +47,7 @@ from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize
 
 import GUI_IO_util
 import IO_csv_util
-import charts_Excel_util
+import charts_util
 import statistics_csv_util
 
 fin = open('../lib/wordLists/stopwords.txt', 'r')
@@ -252,7 +252,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 		columns_to_be_plotted = [[0,10]] # document comes second 10]
 		# hover_label = ['Sentence', 'Sentence']
 		hover_label = []
-		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
 														 outputFileLabel='ByDoc',
 														 chartPackage=chartPackage,
 														 chart_type_list=["bar"],
@@ -269,7 +269,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 		columns_to_be_plotted = [[7, 0], [7, 1]]
 		# hover_label = ['Sentence', 'Sentence']
 		hover_label = []
-		chart_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
 														 outputFileLabel='Concret',
 														 chartPackage=chartPackage,
 														 chart_type_list=["line"],

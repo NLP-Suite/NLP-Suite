@@ -26,6 +26,7 @@ import reminders_util
 import CoNLL_util
 import IO_user_interface_util
 import GUI_IO_util
+import IO_csv_util
 
 # There are 3 methods and a 2 constants present:
 # abspath returns absolute path of a path
@@ -351,6 +352,9 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen):
             filesToOpen = list(set(filesToOpen))
         else:
             filesToOpen = list(filesToOpen)
+    if len(filesToOpen)>10:
+        mb.showwarning(title='Too many files',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files. Please, check the output directory and select the files you want/need to open.')
+        return
     if len(filesToOpen) == 1:
         singularPlural = 'file'
     else:
@@ -383,11 +387,24 @@ def getFileExtension(inputFilename):
     inputfile, extension = os.path.splitext(inputfile)  # remove/take out the extension
     return extension
 
+def getFilename(passed_string):
 
-def getFilename(inputFilename):
-    path, inputfile = ntpath.split(inputFilename)  # remove/take out path
-    inputfile, extension = os.path.splitext(inputfile)  # remove/take out the extension
-    return inputfile
+    # when X-axis values contain a document dressed for hyperlink and with full path
+    #   undressed the hyperlink and only display the tail of the document
+    tail=passed_string
+    tail_noExtension=''
+    if '=hyperlink' in passed_string:
+        passed_string=IO_csv_util.undressFilenameForCSVHyperlink(passed_string)
+    if os.path.isfile(passed_string):
+        head, tail = os.path.split(passed_string)
+        tail_noExtension = tail.replace(getFileExtension(tail),'')
+    return tail, tail_noExtension
+
+
+# def getFilename(inputFilename):
+#     path, inputfile = ntpath.split(inputFilename)  # remove/take out path
+#     inputfile, extension = os.path.splitext(inputfile)  # remove/take out the extension
+#     return inputfile
 
 
 # inputFilename is the input filename with path
@@ -402,8 +419,11 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
     if inputDir!='':
         Dir = os.path.basename(os.path.normpath(inputDir))
         inputfile='Dir_' + Dir
+        inputfile_noExtension=''
     else:
-        inputfile = getFilename(inputFilename)
+        inputfile, inputfile_noExtension = getFilename(inputFilename)
+        # use inputfile_noExtension for json
+        inputfile = inputfile_noExtension
     default_outputFilename_str =''
     # do not add the NLP_ prefix if processing a file previously processed and with the prefix already added
     if inputfile[0:4]!='NLP_': #"NLP_" not in inputfile:
@@ -564,7 +584,7 @@ def run_jar_script(scriptName, inputFilename, input_main_dir_path, output_dir_pa
     #     if createCharts:
     #         columns_to_be_plotted = [[1,3], [1,4], [1,6], [1,7]]
     #         hover_label=['Sentence','Sentence','Sentence','Sentence']
-    #         outputFilenameXLSM_1 = charts_Excel_util.run_all(columns_to_be_plotted,inputFilename,output_dir_path, outputFilename, chart_type_list = ["line"], chart_title= "Sentence complexity", column_xAxis_label_var = 'Sentence ID',column_yAxis_label_var = 'Complexity',outputExtension = '.xlsm',label1='Scomp',label2='line',label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=0, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
+    #         outputFilenameXLSM_1 = charts_util.run_all(columns_to_be_plotted,inputFilename,output_dir_path, outputFilename, chart_type_list = ["line"], chart_title= "Sentence complexity", column_xAxis_label_var = 'Sentence ID',column_yAxis_label_var = 'Complexity',outputExtension = '.xlsm',label1='Scomp',label2='line',label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=0, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
     #         if outputFilenameXLSM_1 != "":
     #             filesToOpen.append(outputFilenameXLSM_1)
 
