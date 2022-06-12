@@ -219,7 +219,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         'Finished running Shape of Stories at', True, '', True, startTime)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated

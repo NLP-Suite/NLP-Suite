@@ -31,7 +31,7 @@ import file_find_non_related_documents_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 
-def check_filename(output_dir_path):
+def check_filename(outputDir):
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_checker_converter_cleaner_main.py') == False:
         return
     if platform == "win32":
@@ -42,7 +42,7 @@ def check_filename(output_dir_path):
     # files are opened in the file_filename_checker_main GUI
 
 
-def character(output_dir_path):
+def character(outputDir):
     if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py') == False:
         return
     if platform == "win32":
@@ -52,7 +52,7 @@ def character(output_dir_path):
         subprocess.call("sudo Python knowledge_graphs_WordNet_main.py character", shell=True)
     # files are opened in the WordNet GUI
 
-def find_character_home(output_dir_path):
+def find_character_home(outputDir):
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_classifier_main.py') == False:
         return
     if platform == "win32":
@@ -62,20 +62,20 @@ def find_character_home(output_dir_path):
         subprocess.call("sudo Python file_classifier_main.py character home", shell=True)
     # files are opened in the file_classifier_main.py GUI
 
-def missing_character(CoreNLPdir, input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, checkNER):
+def missing_character(CoreNLPdir, inputDir, input_secondary_dir_path, outputDir, openOutputFiles, createCharts, chartPackage, checkNER):
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_summary_checker_util.py') == False:
         return
-    Excel_outputFile=file_summary_checker_util.main(CoreNLPdir, input_main_dir_path,input_secondary_dir_path,output_dir_path,openOutputFiles, createCharts, chartPackage, checkNER)
+    Excel_outputFile=file_summary_checker_util.main(CoreNLPdir, inputDir,input_secondary_dir_path,outputDir,openOutputFiles, createCharts, chartPackage, checkNER)
     if Excel_outputFile!="":
         filesToOpen.extend(Excel_outputFile)
 
-def intruder(CoreNLPdir,input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var):
+def intruder(CoreNLPdir,inputDir, outputDir, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var):
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_find_non_related_documents_util.py') == False:
         return
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running INTRUDER at',
                                                  True, '', True, '', True)
     # Windows...
-    outputFiles=file_find_non_related_documents_util.main(CoreNLPdir, input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var)
+    outputFiles=file_find_non_related_documents_util.main(CoreNLPdir, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var)
 
     if outputFiles!='':
         filesToOpen.extend(outputFiles)
@@ -83,7 +83,7 @@ def intruder(CoreNLPdir,input_main_dir_path, output_dir_path, openOutputFiles, c
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running INTRUDER at', True, '', True, startTime, True)
 
 
-def ancestor(input_main_dir_path, output_dir_path):
+def ancestor(inputDir, outputDir):
     if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py') == False:
         return
     if platform == "win32":
@@ -143,7 +143,7 @@ def group_newspaper(document_class_csv, output_filename):
             writer.writerow(to_write)
 
 
-def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, createCharts,
+def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
                similarityIndex_Plagiarist_var, fileName_embeds_date, DateFormat, DatePosition, DateCharacterSeparator):
     if similarityIndex_Plagiarist_var < .8:
         mb.showwarning(title='Similarity Index warning', message="The level of similarity was set at " + str(
@@ -162,31 +162,31 @@ def plagiarist(input_main_dir_path, output_dir_path, open_csv_output_checkbox, c
         errorFound, error_code, system_output = IO_libraries_util.check_java_installation('Lucene')
         if errorFound:
             return
-        subprocess.call(['java', '-jar', 'Lucene.jar', '-inputDir', input_main_dir_path + os.sep, '-outputDir',
-                         output_dir_path + os.sep
+        subprocess.call(['java', '-jar', 'Lucene.jar', '-inputDir', inputDir + os.sep, '-outputDir',
+                         outputDir + os.sep
                             , '-stopword', lib_stopwords, '-embedsDate', str(fileName_embeds_date), '-dateFormat',
                          DateFormat
                             , '-datePos', str(DatePosition), '-itemsDelim', DateCharacterSeparator, '-similarityIndex',
                          str(similarityIndex_Plagiarist_var)])
-        filesToOpen.append(output_dir_path + os.sep + "document_duplicates.txt")
+        filesToOpen.append(outputDir + os.sep + "document_duplicates.txt")
 
-        outputFilenameCSV_1 = output_dir_path + os.sep + "Lucene_classes_freq.csv"
+        outputFilenameCSV_1 = outputDir + os.sep + "Lucene_classes_freq.csv"
         filesToOpen.append(outputFilenameCSV_1)
 
         if fileName_embeds_date:
-            outputFilenameCSV_2 = output_dir_path + os.sep + "Lucene_classes_time_freq.csv"
+            outputFilenameCSV_2 = outputDir + os.sep + "Lucene_classes_time_freq.csv"
             filesToOpen.append(outputFilenameCSV_2)
 
-        outputFilenameCSV_3 = output_dir_path + os.sep + "Lucene_document_instance_classes_freq.csv"
+        outputFilenameCSV_3 = outputDir + os.sep + "Lucene_document_instance_classes_freq.csv"
         filesToOpen.append(outputFilenameCSV_3)
 
-        outputFilenameCSV_4 = output_dir_path + os.sep + "Lucene_Document_classes_freq.csv"
+        outputFilenameCSV_4 = outputDir + os.sep + "Lucene_Document_classes_freq.csv"
         group_newspaper(outputFilenameCSV_3, outputFilenameCSV_4)
         filesToOpen.append(outputFilenameCSV_4)
 
     if createCharts:
         # Lucene_classes_freq.csv; outputFilenameCSV_1
-        outputDir=output_dir_path
+        outputDir=outputDir
         inputFilename = outputFilenameCSV_1
         columns_to_be_plotted = [[0, 1]]
         hover_label = ['List of Documents in Category']
@@ -249,7 +249,7 @@ def Levenshtein():
     # files are opened in the spell_checker_main
 
 
-def run(input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage,
+def run(inputDir, input_secondary_dir_path, outputDir, openOutputFiles, createCharts, chartPackage,
         fileName_embeds_date, DateFormat, DatePosition, DateCharacterSeparator,
         check_filename_var, character_var, character_home_var, missing_character_var, NER_var, intruder_var,
         similarityIndex_Intruder_var, ancestor_var, nouns_verbs,
@@ -267,25 +267,25 @@ def run(input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutp
         return
 
     if check_filename_var == True:
-        check_filename(output_dir_path)
+        check_filename(outputDir)
     elif character_var == True:
-        character(output_dir_path)
+        character(outputDir)
     elif character_home_var == True:
-        find_character_home(output_dir_path)
+        find_character_home(outputDir)
     elif missing_character_var == True:
-        missing_character(CoreNLPdir, input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, NER_var)
+        missing_character(CoreNLPdir, inputDir, input_secondary_dir_path, outputDir, openOutputFiles, createCharts, chartPackage, NER_var)
     elif intruder_var == True:
-        intruder(CoreNLPdir, input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var)
+        intruder(CoreNLPdir, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var)
     elif ancestor_var == True:
-        ancestor(input_main_dir_path, output_dir_path)
+        ancestor(inputDir, outputDir)
     elif plagiarist_var == True:
-        plagiarist(input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage,
+        plagiarist(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                    similarityIndex_Plagiarist_var, fileName_embeds_date, DateFormat, DatePosition,
                    DateCharacterSeparator)
     elif Levenshtein_var == True:
         Levenshtein()
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated

@@ -28,7 +28,7 @@ def create_timedelta(date_distance_value, date_type):
 
 # input_first_dir is the source dir containing a list of files
 # input_sec_dir is the target directory containing a set of subdirs
-def classifier(input_first_dir, input_sec_dir,output_dir_path,openOutputFiles, date_format,date_separator,date_position,date_distance_value, date_type):
+def classifier(input_first_dir, input_sec_dir,outputDir,openOutputFiles, date_format,date_separator,date_position,date_distance_value, date_type):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        'Started running the File Classifier by embedded date at',
                                                  True, '', True, '', True)
@@ -79,7 +79,7 @@ def classifier(input_first_dir, input_sec_dir,output_dir_path,openOutputFiles, d
                                 data.append([IO_csv_util.dressFilenameForCSVHyperlink(input_first_dir + os.sep + ungrouped), IO_csv_util.dressFilenameForCSVHyperlink(folder), 'Successfully Copied!', splitDuration])
                             else:
                                 data.append([IO_csv_util.dressFilenameForCSVHyperlink(input_first_dir + os.sep + ungrouped), IO_csv_util.dressFilenameForCSVHyperlink(folder), 'Processed but did not copy!', splitDuration])
-    output_filename = IO_files_util.generate_output_file_name('', input_first_dir, output_dir_path, '.csv')
+    output_filename = IO_files_util.generate_output_file_name('', input_first_dir, outputDir, '.csv')
     filesToOpen.append(output_filename)
     df = pd.DataFrame(data, columns= ['Source_file_path', 'Target_directory','File_status','Date_range'])
     df.to_csv(output_filename,index=False)
@@ -98,7 +98,7 @@ def classifier(input_first_dir, input_sec_dir,output_dir_path,openOutputFiles, d
             + "\nNumber of finenames with wrong embedded date: "  + str(nDateErrors))
 
     if openOutputFiles==True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen=[] # to avoid opening twice here and in calling fuunction
 
     return filesToOpen

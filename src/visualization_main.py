@@ -41,7 +41,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, csv_file_field_list
         gexf_file = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
         filesToOpen.append(gexf_file)
         if openOutputFiles and len(filesToOpen) > 0:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated

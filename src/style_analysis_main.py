@@ -73,6 +73,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             return
 
     if vocabulary_analysis_var == True:
+        openOutputFilesSV=openOutputFiles
+        openOutputFiles = False  # to make sure files are only opened at the end of this multi-tool script
         if vocabulary_analysis_menu_var=='':
             mb.showwarning('Warning', 'No option has been selected for Vocabulary analysis.\n\nPlease, select an option and try again.')
             return
@@ -80,29 +82,37 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!\n\nDo check out the repetition finder algorithm in the CoNLL Table Analyzer GUI.')
             return
         if '*' == vocabulary_analysis_menu_var:
-            filesToOpen = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir,
+            outputDir_style = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                                   label='style',
+                                                                   silent=True)
+            if outputDir_style == '':
+                return
+        else:
+            outputDir_style=outputDir
+
+            filesToOpen = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage)
         if '*' == vocabulary_analysis_menu_var:
-            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir,
+            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage)
             # if len(tempOutputfile)>0:
             #     filesToOpen.extend(tempOutputfile)
         elif 'detection' in vocabulary_analysis_menu_var:
-                filesToOpen = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir,
+                filesToOpen = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style,
                                                                          openOutputFiles, createCharts, chartPackage)
         elif 'capital' in vocabulary_analysis_menu_var:
-            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir,
+            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
         elif 'Short' in vocabulary_analysis_menu_var:
-            filesToOpen=statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
+            filesToOpen=statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
         elif 'Vowel' in vocabulary_analysis_menu_var:
-            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
+            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
         elif 'Punctuation' in vocabulary_analysis_menu_var:
-            filesToOpen=statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
+            filesToOpen=statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
             filesToOpen=statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
         if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
-            tempFiles=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, False, createCharts, chartPackage)
+            tempFiles=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, False, createCharts, chartPackage)
             if len(tempFiles)>0:
                 filesToOpen.extend(tempFiles)
         if '*' == vocabulary_analysis_menu_var or 'Abstract' in vocabulary_analysis_menu_var:
@@ -124,7 +134,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             #     outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir, outputDir, '.csv', 'SC_dir',
             #                                                              'Concreteness', '', '', '', False, True)
 
-            filesToOpen = concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, processType='')
+            filesToOpen = concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage, processType='')
 
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                                    'Finished running CONCRETENESS Analysis at', True, '', True, startTime, True)
@@ -172,8 +182,9 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                                   openOutputFiles, createCharts, chartPackage)
         return
 
+    openOutputFiles=openOutputFilesSV
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir_style)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -202,8 +213,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=520, # height at brief display
-                             GUI_height_full=560, # height at full display
+                             GUI_height_brief=480, # height at brief display
+                             GUI_height_full=520, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -276,12 +287,6 @@ complexity_readability_analysis_menu_var=tk.StringVar()
 vocabulary_analysis_menu_var=tk.StringVar()
 ngrams_analysis_menu_var=tk.StringVar()
 
-bySentenceIndex_var.set(0)
-bySentenceIndex_checkbox = tk.Checkbutton(window, text='By sentence index', variable=bySentenceIndex_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,bySentenceIndex_checkbox)
-
-bySentenceIndex_checkbox.configure(state='disabled')
-
 CoNLL_table_analysis_var.set(0)
 CoNLL_table_analysis_checkbox = tk.Checkbutton(window, text='CoNLL table analysis (GUI)', variable=CoNLL_table_analysis_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoNLL_table_analysis_checkbox)
@@ -310,7 +315,17 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 vocabulary_analysis_lb = tk.Label(window, text='Select the vocabulary analysis you wish to perform')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,vocabulary_analysis_lb,True)
-vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*','Abstract/concrete vocabulary','Vocabulary richness (word type/token ratio or Yule’s K)','Punctuation as figures of pathos (? !)','Short words (<4 characters)','Vowel words','Words with capital initial (proper nouns)','Unusual words (via NLTK)','Language detection','Repetition: Last N words of a sentence/First N words of next sentence','Repetition across sentences (special ngrams)')
+vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*',
+                                         'Abstract/concrete vocabulary',
+                                         'Vocabulary richness (word type/token ratio or Yule’s K)',
+                                         'Punctuation as figures of pathos (? !)',
+                                         'Short words (<4 characters)',
+                                         'Vowel words',
+                                         'Words with capital initial (proper nouns)',
+                                         'Unusual words (via NLTK)',
+                                         'Language detection',
+                                         'Repetition: Last N words of a sentence/First N words of next sentence',
+                                         'Repetition across sentences (special ngrams)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400, y_multiplier_integer,vocabulary_analysis_menu)
 
 ngrams_analysis_var.set(0)
@@ -426,7 +441,6 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'By sentence index\' checkbox if you wish to analyze any selected option with sentence information.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'CoNLL table analysis\' checkbox if you wish to open the CoNLL table analyzer GUI to analyze various items in the CoNLL table, such as\n\n   1. Clause\n   2. Noun\n   3. Verb\n   4. Function words\n   5. DEPREL\n   6. POSTAG\n   7. NER\n\nYou will also be able to run specialized functions such as\n\n   1. CoNLL table searches\n   2. K sentences analyszer')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'Nominalization\' checkbox if you wish to open the Nominalization GUI to analyze instances of nominalization (i.e., turning verbs into nouns - Latin nomen=noun).')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'Complex\\readability analysis\' checkbox if you wish to analyze the complexity or readability of sentences and documents.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Sentence complexity to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure. The Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\n   2. Text readability to compute various measures of text readability.\n 12 readability score requires HIGHSCHOOL education;\n 16 readability score requires COLLEGE education;\n 18 readability score requires MASTER education;\n 24 readability score requires DOCTORAL education;\n >24 readability score requires POSTDOC education.')

@@ -378,3 +378,111 @@ def export_csv_to_text(inputFilename, outputDir, column=None, column_list=[]):
         text = text.replace(",", " ")
         with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w") as text_file:
             text_file.write(text)
+
+def df_to_list_w_header(df):
+    res = []
+    header = list(df.columns)
+    res.append(header)
+    for index, row in df.iterrows():
+        temp = [row[tag] for tag in header]
+        res.append(temp)
+    return res
+
+
+def df_to_list(df):
+    res = []
+    header = list(df.columns)
+    for index, row in df.iterrows():
+        temp = [row[tag] for tag in header]
+        res.append(temp)
+    return res
+
+
+def list_to_df(tag_list):
+    header = tag_list[0]
+    df = pd.DataFrame(tag_list[1:], columns=header)
+    return df
+
+def header_check(inputFile):
+    sentenceID_pos=''
+    docID_pos=''
+    docName_pos=''
+
+    if isinstance(inputFile, pd.DataFrame):
+        header = list(inputFile.columns)
+    else:
+        header = IO_csv_util.get_csvfile_headers(inputFile)
+    if 'Sentence ID' in header:
+        sentenceID_pos = header.index('Sentence ID')
+    else:
+        pass
+
+    if 'Document ID' in header:
+        docID_pos = header.index('Document ID')
+    else:
+        pass
+
+    if 'Document' in header:
+        docName_pos = header.index('Document')
+    else:
+        pass
+    return sentenceID_pos, docID_pos, docName_pos, header
+
+
+def sort_by_column(input, column):
+    if isinstance(input, pd.DataFrame):
+        df = input
+    else:
+        df = pd.read_csv(input)
+    col_list = set(df[column].tolist())
+    df_list = [df[df[column] == value] for value in col_list]
+    return df_list
+
+
+def align_dataframes(df_list):
+    max = 0
+    for df in df_list:
+        header = list(df.columns)
+        if 'Sentence ID' in header:
+            sentenceID = 'Sentence ID'
+        if df[sentenceID].max() > max:
+            max = df[sentenceID].max()
+    new_list = []
+    for df in df_list:
+        if df.empty:
+            continue
+        temp = df.iloc[-1,:]
+        if temp[sentenceID] != max:
+            # TODO solve warning issue
+            # https://www.dataquest.io/blog/settingwithcopywarning/
+            # ​​​​SettingwithCopyWarning
+            temp[sentenceID] = max
+            temp['Frequency'] = 0
+            new_df = df.append(temp,ignore_index=True)
+        else:
+            new_df = df
+        new_list.append(new_df)
+
+    df_list = [add_missing_IDs(data) for data in new_list if not data.empty]
+    return df_list
+
+
+def slicing_dataframe(df,columns):
+    df = df[columns]
+    return df
+
+
+def rename_df(df,col):
+    for index, row in df.iterrows():
+        if row[col] != '':
+            name = row[col]
+            break
+    df.rename(columns={"Frequency": name + " Frequency"},inplace=True)
+    df = df.drop(columns=[col])
+    return df
+
+#sortOrder = True (descending 3, 2, 1)
+#sortOrder = False (ascending 1, 2, 3)
+def sort_data (ExcelChartData, sortColumn,sortOrder):
+    sorted_data = sorted(ExcelChartData, key=lambda tup:tup[sortColumn],reverse=sortOrder)
+    return sorted_data

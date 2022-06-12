@@ -126,7 +126,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCha
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running html annotator extractor at', True, '', True, startTime)
     
     if openOutputFiles==True :
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 # Testing program
 def main():

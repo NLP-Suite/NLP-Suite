@@ -27,6 +27,7 @@ import CoNLL_util
 import IO_user_interface_util
 import GUI_IO_util
 import IO_csv_util
+import IO_files_util
 
 # There are 3 methods and a 2 constants present:
 # abspath returns absolute path of a path
@@ -342,7 +343,7 @@ def openFile(window, inputFilename):
 
 
 # open a set of output files (csv, txt,...) stored as a list in filesToOpen []
-def OpenOutputFiles(window, openOutputFiles, filesToOpen):
+def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir):
     if filesToOpen == None:
         return
     if len(filesToOpen) == 0:
@@ -353,7 +354,9 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen):
         else:
             filesToOpen = list(filesToOpen)
     if len(filesToOpen)>10:
-        mb.showwarning(title='Too many files',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files. Please, check the output directory and select the files you want/need to open.')
+        mb.showwarning(title='Too many files to open',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files.\n\nFor your convenience, you will be placed next in the output directory\n\n'+outputDir+'\n\nYou can select there the files you want/need to open.')
+        # open outputDir
+        IO_files_util.openExplorer(window, outputDir)
         return
     if len(filesToOpen) == 1:
         singularPlural = 'file'

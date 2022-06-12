@@ -159,7 +159,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 		charts_Excel_util.create_excel_chart(GUI_util.window, [DictionaryList], outputFilename, chartTitle, ["bar"])
 
 	if openOutputFiles == True:
-		IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+		IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 # written by Yi Wang April 2020

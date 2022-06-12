@@ -181,4 +181,4 @@ def run_default(window, in_search_path, outputDir, csv_file, openOutputFiles, pa
         filesToOpen.append(matched_filename)
         filesToOpen.append(unmatched_filename)
         filesToOpen.append(duplicates_filename)
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

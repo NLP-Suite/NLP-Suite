@@ -142,7 +142,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
                                                               bySentenceIndex_character_var)
         # statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_mai
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 #def run(inputFilename,inputDir,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
@@ -250,13 +250,19 @@ window.bind("<Escape>", clear)
 
 
 corpus_statistics_var.set(1)
-corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0)
+corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute document(s) statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,corpus_statistics_checkbox,True)
 
 corpus_statistics_options_menu_var.set('*')
 corpus_statistics_options_menu_lb = tk.Label(window, text='Statistics options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
-corpus_statistics_options_menu = tk.OptionMenu(window, corpus_statistics_options_menu_var, '*', 'Compute statistics (sentences, words, syllables)', 'Compute sentence length','Compute line length')
+
+corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_menu_var,
+                                                '*',
+                                               'Compute statistics (sentences, words, syllables)',
+                                               'Compute sentence length',
+                                               'Compute line length',
+                                               )
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,corpus_statistics_options_menu, True)
 
 corpus_text_options_menu_var.set('')

@@ -158,7 +158,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     call("python CoNLL_table_analyzer_main.py", shell=True)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated

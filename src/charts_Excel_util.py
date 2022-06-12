@@ -37,6 +37,57 @@ def checkExcel_extension(output_file_name,hover_info_column_list):
                 output_file_name = filename + '.xlsx'
     return str(output_file_name)
 
+
+# when hover-over data (Labels) are displayed the Excel filename extension MUST be xlsm (for macro VBA enabling)
+def prepare_hover_data(inputFilename, hover_info_column, index):
+    hover_data = []
+    withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
+    data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
+    if withHeader_var:
+        if hover_info_column >= 0:
+            hover_data.append([headers[hover_info_column]])
+        else:
+            hover_data.append(['Hover-over data for series ' + str(index+1)])
+    else:
+        hover_data.append(['Hover-over data for series ' + str(index+1)])
+
+
+    for i in range(len(data)):
+        if hover_info_column >= 0:
+            hover_data.append([data[i][hover_info_column]])
+        else:
+            hover_data.append([''])
+        # print("hover_data",hover_data)
+    return hover_data
+
+def get_hover_column_numbers(withHeader_var, headers, hover_info_column_list):
+    hover_column_numbers = []
+
+    for i in range(len(
+            hover_info_column_list)):  # iterate n times (i.e., len(selected_series), where n is the number of series
+        if withHeader_var == 1:
+            if hover_info_column_list[i] in headers:
+                x = headers.index(hover_info_column_list[i])
+            else:
+                if len(hover_info_column_list[i]) > 0:
+                    mb.showwarning(
+                        title='Series No.' + str(i + 1) + ' ' + hover_info_column_list[i] + 'Hover Data Warning',
+                        message='The hover-over data column for series No.' + str(
+                            i + 1) + ' will be empty.\n\nYou may have entered a column name which does not exist in the input CSV file.\n\nPlease, exit the program, check your input and try again.')
+                x = -1
+            # y=headers.index(selected_series[i][1])
+        else:  # NO headers
+            try:
+                x = int(hover_info_column_list[i])
+            except:
+                mb.showwarning(title='Series No.' + str(i + 1) + ' ' + hover_info_column_list[i] + ' Hover Data Header',
+                               message='The input csv file has no header so the expected hover-over column header should be numbers(o for A, 1 for B,...) but the ENTERED hover-over data column for series No.' + str(
+                                   i + 1) + ' is not a number.\n\nPlease, exit the program, check your input and try again.')
+                return
+        hover_column_numbers.append(x)
+    return hover_column_numbers
+
+
 #data_to_be_plotted contains the values to be plotted
 #   the variable has this format:
 #   this includes both headers AND data
@@ -243,7 +294,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             index = 0
             for stats_list in data_to_be_plotted: # Iterate through all the lists
                 if i < len(stats_list): # if i is smaller than the length of the current series
-                    tail = get_document_name(str(stats_list[i][0]))
+                    tail, tail_noExtension = IO_files_util.getFilename(str(stats_list[i][0]))
                     stats_list[i][0] = tail
                     if index > 0:
                         row.append(stats_list[i][1]) # then we append the data

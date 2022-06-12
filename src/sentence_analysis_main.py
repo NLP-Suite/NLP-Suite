@@ -13,8 +13,7 @@ import subprocess
 
 import GUI_IO_util
 import IO_files_util
-import sentence_analysis_util
-import IO_user_interface_util
+import statistics_txt_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -85,7 +84,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     if openOutputFiles == 1:
         if filesToOpen == None:
             return
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -113,7 +112,7 @@ GUI_util.run_button.configure(command=run_script_command)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
 GUI_width=GUI_IO_util.get_GUI_width(3)
-GUI_height=560 # height of GUI with full I/O display
+GUI_height=520 # height of GUI with full I/O display
 
 if IO_setup_display_brief:
     GUI_height = GUI_height - 80
@@ -186,29 +185,29 @@ pydict = {}
 
 # when using a function within a script
 
-pydict["Annotated gender names by sentence index (GUI)"] = ["html_annotator_gender_main.py", 1]
-pydict["Annotated words (DBpedia, YAGO, dictionary) by sentence index GUI"] = ["html_annotator_main.py", 1]
-pydict["Clause analysis by sentence index (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
-pydict["Noun analysis by sentence index (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
-pydict["Verb analysis by sentence index (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
-pydict["Function words analysis by sentence index (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
-pydict["NER tags (e.g., Location, Time) by sentence index (GUI)"] = ["Stanford_CoreNLP_NER_main.py", 1]
-pydict["Words/collocations by sentence index (GUI)"] = ["file_search_byWord_main.py", 1]
-pydict["WordNet categories by sentence index (GUI)"] = ["knowledge_graphs_WordNet_main.py", 1]
+pydict["Annotated gender names (GUI)"] = ["html_annotator_gender_main.py", 1]
+pydict["Annotated words (DBpedia, YAGO, dictionary) GUI"] = ["html_annotator_main.py", 1]
+pydict["Clause analysis (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
+pydict["Noun analysis (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
+pydict["Verb analysis (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
+pydict["Function words analysis (via CoNLL) GUI"] = ["CoNLL_table_analyzer_main.py", 1]
+pydict["NER tags (e.g., Location, Time) (GUI)"] = ["Stanford_CoreNLP_NER_main.py", 1]
+pydict["Words/collocations (GUI)"] = ["file_search_byWord_main.py", 1]
+pydict["WordNet categories (GUI)"] = ["knowledge_graphs_WordNet_main.py", 1]
 
-pydict["Abstract/Concrete vocabulary analysis by sentence index"] = ["concreteness_analysis_util.main", 0, 3, 'txt']
-pydict["Dictionary items by sentence index"] = ["statistics_txt_util.compute_sentence_length", 0, 3, 'txt']
-pydict["Hapax legomena (once-occurring words) by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
-# pydict["Hapax legomena (once-occurring words) by sentence index"] = ["statistics_txt_util.compute_character_word_ngrams", 0, 3, 'txt']
-pydict["N-grams (word & character) by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
-# pydict["N-grams (word & character) by sentence index"] = ["statistics_txt_util.compute_character_word_ngrams", 0, 3, 'txt']
-pydict["Sentence complexity by sentence index"] = ["statistics_txt_util.sentence_complexity", 0, 3, 'txt']
-pydict["Sentence/text readability by sentence index (via textstat)"] = ["statistics_txt_util.sentence_text_readability", 0, 3, 'txt']
-pydict["Sentiment analysis by sentence index (GUI)"] = ["sentiment_analysis_main.py", 1]
-pydict["Short words (<4 chars) by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
-pydict["Initial-vowel words by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
-pydict["Initial-capital words by sentence index"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
-pydict["Unusual words (via NLTK) by sentence index"] = ["file_spell_checker_util.nltk_unusual_words", 0, 3, 'txt']
+pydict["Abstract/Concrete vocabulary analysis"] = ["concreteness_analysis_util.main", 0, 3, 'txt']
+pydict["Dictionary items"] = ["statistics_txt_util.compute_sentence_length", 0, 3, 'txt']
+pydict["Hapax legomena (once-occurring words)"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
+# pydict["Hapax legomena (once-occurring words)"] = ["statistics_txt_util.compute_character_word_ngrams", 0, 3, 'txt']
+pydict["N-grams (word & character)"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
+# pydict["N-grams (word & character)"] = ["statistics_txt_util.compute_character_word_ngrams", 0, 3, 'txt']
+pydict["Sentence complexity"] = ["statistics_txt_util.sentence_complexity", 0, 3, 'txt']
+pydict["Sentence/text readability (via textstat)"] = ["statistics_txt_util.sentence_text_readability", 0, 3, 'txt']
+pydict["Sentiment analysis (GUI)"] = ["sentiment_analysis_main.py", 1]
+pydict["Short words (<4 chars)"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
+pydict["Initial-vowel words"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
+pydict["Initial-capital words"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
+pydict["Unusual words (via NLTK)"] = ["file_spell_checker_util.nltk_unusual_words", 0, 3, 'txt']
 
 compute_sentence_length_var=tk.IntVar()
 visualize_bySentenceIndex_var=tk.IntVar()
@@ -230,35 +229,6 @@ window.bind("<Escape>", clear)
 
 compute_sentence_length_checkbox = tk.Checkbutton(window, text='Compute sentence length', variable=compute_sentence_length_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,compute_sentence_length_checkbox)
-
-visualize_bySentenceIndex_var.set(0)
-visualize_bySentenceIndex_options_var.set('')
-visualize_bySentenceIndex_checkbox = tk.Checkbutton(window, text='Visualize text features by sentence index (line plots)', variable=visualize_bySentenceIndex_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,visualize_bySentenceIndex_checkbox,True)
-visualize_bySentenceIndex_lb = tk.Label(window, text='Select visualization option')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,visualize_bySentenceIndex_lb,True)
-visualize_bySentenceIndex_menu = tk.OptionMenu(window,visualize_bySentenceIndex_options_var,
-                                               'Annotated gender names by sentence index (GUI)',
-                                               'Annotated words (DBpedia, YAGO, dictionary) by sentence index GUI',
-                                               'Clause analysis by sentence index (via CoNLL) GUI',
-                                               'Noun analysis by sentence index (via CoNLL) GUI',
-                                               'Verb analysis by sentence index (via CoNLL) GUI',
-                                               'Function words analysis by sentence index (via CoNLL) GUI',
-                                               'NER tags (e.g., Location, Time) by sentence index (GUI)',
-                                               'Sentiment analysis by sentence index (GUI)',
-                                               'Words/collocations by sentence index (GUI)',
-                                               'WordNet categories by sentence index (GUI)',
-                                               'Abstract/Concrete vocabulary analysis by sentence index',
-                                               'Sentence complexity by sentence index',
-                                               'Sentence/text readability by sentence index (via textstat)',
-                                               'N-grams (word & character) by sentence index',
-                                               'Hapax legomena (once-occurring words) by sentence index',
-                                               'Unusual words (via NLTK) by sentence index',
-                                               'Short words (<4 chars) by sentence index',
-                                               'Initial-capital words by sentence index',
-                                               'Initial-vowel words by sentence index'
-                                               )
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,visualize_bySentenceIndex_menu)
 
 sentence_complexity_var.set(0)
 sentence_complexity_checkbox = tk.Checkbutton(window, text='Sentence complexity', variable=sentence_complexity_var, onvalue=1, offvalue=0)
@@ -290,15 +260,6 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 search_words_entry = tk.Entry(window, textvariable=search_words_var)
 search_words_entry.configure(width=100)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+340,y_multiplier_integer,search_words_entry)
-
-def activate_visualize_bySentenceIndex_options(*args):
-    if visualize_bySentenceIndex_var.get()==False:
-        visualize_bySentenceIndex_menu.configure(state='disabled')
-    else:
-        visualize_bySentenceIndex_menu.configure(state='normal')
-visualize_bySentenceIndex_var.trace('w',activate_visualize_bySentenceIndex_options)
-
-activate_visualize_bySentenceIndex_options()
 
 def activate_extract_sentences(*args):
     if extract_sentences_var.get()==False:
@@ -337,8 +298,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to compute the sentence lengths of your document(s).\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.'+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to visualize in an Excel line chart various text characteristics by sentence index.\n\nThe chart will give you a sense of the tempo of the text from one sentence to the next.\n\nOnce you have ticked the checkbox you will need to select one of the many visualization options available.\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.'+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to run the Java Sentence_Complexity.jar script to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure.\n\nThe Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.'+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to run the sentence complexity algorithm to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure.\n\nThe Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.'+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to run the Python 3 sentence_text_readability function to compute various measures of text readability, also closely associated to the sentence clause structure.\n\n  12 readability score requires HIGHSCHOOL education;\n  16 readability score requires COLLEGE education;\n  18 readability score requires MASTER education;\n  24 readability score requires DOCTORAL education;\n  >24 readability score requires POSTDOC education.\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.\n\nIn OUTPUT, the script produces a txt file with readability scores for an entire text and a csv file with readability scores for each sentence in a text.'+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to visualize the sentence structure as a png image of the dependency tree.'+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words).\n\nThe widget 'Words in sentence' will become available once you select the option. You will need to enter there the words/set of words that a sentence must contain in order to be extracted from input and saved in output. Words/set of words must be entered in DOUBLE QUOTES (e.g., \"The New York Times\") and comma separated (e.g., \"The New York Times\" , \"The Boston Globe\"). When running the script, the script will ask you if you want to process the search word(s) as case sensitive (thus, if you opt for case sensitive searches, a sentence containing the word 'King' will not be selected in output if in the widget 'Word(s) in sentence' you have entered 'king').\n\nIn INPUT, the script expects a single txt file or a directory.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract.txt and containing, for each input file, all the sentences that have the search word(s);\n2. files ending with _extract_minus.txt and containing, for each input file, the sentences that do NOT have the search word(s).\n\nOutput files are saved in two subdirectories 'sentences\extract' and 'sentences\extract_minus' of the output directory."+GUI_IO_util.msg_Esc)
@@ -347,7 +307,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
 
 # change the value of the readMe_message
-readMe_message="The Python 3 scripts provide a variety of tools for fine-grained analyses of texts by sentence index, visualizing the ebb and flow of writing, the tempo of writing."
+readMe_message="The Python 3 scripts provide a variety of tools for fine-grained analyses of texts, visualizing the ebb and flow of writing, the tempo of writing."
 readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 

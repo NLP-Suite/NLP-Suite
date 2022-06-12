@@ -40,6 +40,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                         openOutputFiles, createCharts, chartPackage,
                                                         'NER',
+                                                        language=language_var,
                                                         NERs=NER_list,
                                                         DoCleanXML=False,
                                                         memory_var=memory_var,
@@ -72,7 +73,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # filesToOpen.append(output_filename)
 
     if openOutputFiles==True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(
