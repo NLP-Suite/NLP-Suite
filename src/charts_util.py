@@ -17,8 +17,117 @@ import pandas as pd
 import IO_csv_util
 import IO_user_interface_util
 import charts_plotly_util
-import charts_util
+import charts_Excel_util
 import statistics_csv_util
+
+# TODO HOW DOES THIS DIFFER FROM def prepare_data_to_be_plotted?
+# def prepare_csv_data_for_chart(window,inputfile, inputDataFrame, outputpath, select_col : list, hover_col : list, group_col : list, fileNameType, chartType, openOutputFiles, createExcelCharts, chartPackage,count_var=0):
+#     filesToOpen=[]
+#     outputCsvfilename = IO_files_util.generate_output_file_name(inputfile, '', outputpath, '.csv')
+#     df = inputDataFrame
+#     # df = pd.read_csv(inputfile)
+#     # convert a list to a str
+#     select_column = select_col[0]
+#     # separate a complete csv file into multiple dataframes filter by select_col, which will produce unequal index numbers
+#     df_list = sort_by_column(df, select_column)
+#     # makes those separate dataframes align to the same maximum index
+#     df_hover = slicing_dataframe(df,group_col + hover_col)
+#     df_list = align_dataframes(df_list)
+#     #append aligned dataframes as frequency columns in the new dataframe
+#     df_list = [slicing_dataframe(d, group_col + select_col + ['Frequency']) for d in df_list]
+#     # rename those newly added columns
+#     df_list = [rename_df(d,select_column) for d in df_list]
+#     # append the hover-over data (Labels) in the original csv file
+#     df_list.append(df_hover)
+#     # horizontally concatenate all the frequency dataframes and the hover-over dataframe
+#     df_merged = reduce(lambda left, right: pd.merge(left, right, how='outer',on=group_col), df_list)
+#     # replace all the empty strings inside this new df_merged dataframe with 0
+#     df_merged = df_merged.replace(r'^\s*$', 0, regex=True)
+#     df_merged.to_csv(outputCsvfilename,index=False) # output
+#     filesToOpen.append(outputCsvfilename)
+#     if createExcelCharts:
+#         columns_to_be_plotted = []
+#         for i in range(len(df_merged.columns)-1-len(group_col)):
+#             columns_to_be_plotted.append([1,len(group_col)+i])
+#         hover_label=[]
+#         for i in range(len(columns_to_be_plotted)):
+#             hover_label.append(hover_col[0])
+#         Excel_outputFilename = run_all(columns_to_be_plotted, inputfile, outputpath,
+#                                                   'Co-Occ_viewer',
+#                                                   chart_type_list=[chartType],
+#                                                   chart_title='Frequency Distribution', column_xAxis_label_var='',
+#                                                   hover_info_column_list=hover_label,
+#                                                   count_var=count_var)
+#
+#         # excel_outputFileName_2 = charts_Excel_util.run_all(columns_to_be_plotted, inputfile, outputpath, outputCsvfilename,
+#         #                                               chart_type_list=[chartType],
+#         #                                               chart_title='Frequency Distribution of '+ ','.join(select_col),
+#         #                                               column_xAxis_label_var='Sentence Index',
+#         #                                               column_yAxis_label_var='Frequency',
+#         #                                               outputExtension = '.xlsm', label1=fileNameType,label2=chartType,label3='chart',label4='',label5='', useTime=False,disable_suffix=True,
+#         #                                               numeric_values_of_column_given = 1,
+#         #                                             count_var=count_var,
+#         #                                             column_yAxis_field_list = [],
+#         #                                             reverse_column_position_for_series_label=False ,
+#         #                                             series_label_list=[],
+#         #                                             second_y_var=0,
+#         #                                             second_yAxis_label='',
+#         #                                             hover_var=1,
+#         #                                             hover_info_column_list=hover_label)
+#         if Excel_outputFilename != "":
+#             filesToOpen.append(Excel_outputFilename)
+#
+#     return filesToOpen
+#
+
+# TODO does it compute frequencies by some aggregate values (e.g., document ID)?
+# def compute_column_frequencies_4Excel(columns_to_be_plotted, data_list, headers,specific_column_value_list=[]):
+#     column_list=[]
+#     column_frequencies=[]
+#     column_stats=[]
+#     specific_column_value=''
+#     complete_column_frequencies=[]
+#     if len(data_list) != 0:
+#         for k in range(len(columns_to_be_plotted)):
+#             res=[]
+#             if len(specific_column_value_list)>0:
+#                 specific_column_value=specific_column_value_list[k]
+#             #get all the values in the selected column
+#             column_list = [i[1] for i in data_list[k]]
+#             counts = Counter(column_list).most_common()
+#             if len(headers) > 0:
+#                 id_name_num = columns_to_be_plotted[k][0]
+#                 id_name = headers[id_name_num]
+#                 column_name_num = columns_to_be_plotted[k][1]
+#                 column_name = headers[column_name_num]
+#                 if len(specific_column_value_list)==0:
+#                     column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
+#                 else:
+#                     for y in range(len(specific_column_value_list)):
+#                         column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column " + str(column_name)]]
+#             else:
+#                 id_name_num = columns_to_be_plotted[k][0]
+#                 id_name = "column_" + str(id_name_num+1)
+#                 column_name_num = columns_to_be_plotted[k][1]
+#                 column_name = "column_" + str(column_name_num+1)
+#                 if len(specific_column_value)==0:
+#                     column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
+#                 else:
+#                     for y in range(len(specific_column_value_list)):
+#                         column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column_" + str(column_name_num+1)]]
+#             if len(specific_column_value) == 0:
+#                 for value, count in counts:
+#                     column_frequencies.append([value, count])
+#             else:
+#                 for i in range(len(column_list)):
+#                     if column_list[i] == specific_column_value:
+#                         res.append(1)
+#                     else:
+#                         res.append(0)
+#                 for j in range(len(data_list[k])):
+#                     column_frequencies.append([data_list[k][j][0], res[j]])
+#             complete_column_frequencies.append(column_frequencies)
+#     return complete_column_frequencies
 
 # Prepare the data (data_to_be_plotted) to be used in charts_Excel_util.create_excel_chart with the format:
 #   the variable has this format:
@@ -202,12 +311,6 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
                                                   series_label_list, second_y_var, second_yAxis_label)
     return chart_outputFilename
 
-#sortOrder = True (descending 3, 2, 1)
-#sortOrder = False (ascending 1, 2, 3)
-def sort_data (ExcelChartData, sortColumn,sortOrder):
-    sorted_data = sorted(ExcelChartData, key=lambda tup:tup[sortColumn],reverse=sortOrder)
-    return sorted_data
-
 def build_timed_alert_message(chart_type,withHeader_var,count_var):
     if withHeader_var==1:
         withHeader_msg='WITH HEADERS'
@@ -218,27 +321,6 @@ def build_timed_alert_message(chart_type,withHeader_var,count_var):
     else:
         count_msg='WITHOUT COUNTS'
     return withHeader_msg, count_msg
-
-def get_hover_column_numbers(withHeader_var,headers,hover_info_column_list):
-    hover_column_numbers = []
-    
-    for i in range(len(hover_info_column_list)): # iterate n times (i.e., len(selected_series), where n is the number of series
-        if withHeader_var==1:
-            if hover_info_column_list[i] in headers:
-                x=headers.index(hover_info_column_list[i])
-            else:
-                if len(hover_info_column_list[i]) > 0:
-                    mb.showwarning(title='Series No.'+ str(i+1) + ' ' + hover_info_column_list[i] + 'Hover Data Warning', message='The hover-over data column for series No.' + str(i+1) + ' will be empty.\n\nYou may have entered a column name which does not exist in the input CSV file.\n\nPlease, exit the program, check your input and try again.')
-                x=-1
-            # y=headers.index(selected_series[i][1])
-        else: #NO headers
-            try:
-                x=int(hover_info_column_list[i])
-            except:
-                mb.showwarning(title='Series No.'+ str(i+1) + ' ' + hover_info_column_list[i] +' Hover Data Header', message='The input csv file has no header so the expected hover-over column header should be numbers(o for A, 1 for B,...) but the ENTERED hover-over data column for series No.' + str(i+1) + ' is not a number.\n\nPlease, exit the program, check your input and try again.')
-                return
-        hover_column_numbers.append(x)
-    return hover_column_numbers
 
 
 # split the pairs of gui x y values into two separate lists of x axis values and y axis value
@@ -365,28 +447,6 @@ def complete_sentence_index(file_path):
     data.to_csv(file_path, index = False)
     return
 
-# when hover-over data (Labels) are displayed the Excel filename extension MUST be xlsm (for macro VBA enabling)
-def prepare_hover_data(inputFilename, hover_info_column, index):
-    hover_data = []
-    withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
-    data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
-    if withHeader_var:
-        if hover_info_column >= 0:
-            hover_data.append([headers[hover_info_column]])
-        else:
-            hover_data.append(['Hover-over data for series ' + str(index+1)])
-    else:
-        hover_data.append(['Hover-over data for series ' + str(index+1)])
-
-
-    for i in range(len(data)):
-        if hover_info_column >= 0:
-            hover_data.append([data[i][hover_info_column]])
-        else:
-            hover_data.append([''])
-        # print("hover_data",hover_data)
-    return hover_data
-
 #data_to_be_plotted contains the values to be plotted
 #   the variable has this format:
 #   this includes both headers AND data
@@ -406,56 +466,56 @@ def prepare_hover_data(inputFilename, hover_info_column, index):
 
 # when NO hover-over data are displayed the Excel filename extension MUST be xlsx and NOT xlsm (becauuse no macro VBA is enabled in this case)
 
-def df_to_list_w_header(df):
-    res = []
-    header = list(df.columns)
-    res.append(header)
-    for index, row in df.iterrows():
-        temp = [row[tag] for tag in header]
-        res.append(temp)
-    return res
-
-
-def df_to_list(df):
-    res = []
-    header = list(df.columns)
-    for index, row in df.iterrows():
-        temp = [row[tag] for tag in header]
-        res.append(temp)
-    return res
-
-
-def list_to_df(tag_list):
-    header = tag_list[0]
-    df = pd.DataFrame(tag_list[1:], columns=header)
-    return df
-
-
-def header_check(inputFile):
-    sentenceID_pos=''
-    docID_pos=''
-    docName_pos=''
-
-    if isinstance(inputFile, pd.DataFrame):
-        header = list(inputFile.columns)
-    else:
-        header = IO_csv_util.get_csvfile_headers(inputFile)
-    if 'Sentence ID' in header:
-        sentenceID_pos = header.index('Sentence ID')
-    else:
-        pass
-
-    if 'Document ID' in header:
-        docID_pos = header.index('Document ID')
-    else:
-        pass
-
-    if 'Document' in header:
-        docName_pos = header.index('Document')
-    else:
-        pass
-    return sentenceID_pos, docID_pos, docName_pos, header
-
+# def df_to_list_w_header(df):
+#     res = []
+#     header = list(df.columns)
+#     res.append(header)
+#     for index, row in df.iterrows():
+#         temp = [row[tag] for tag in header]
+#         res.append(temp)
+#     return res
+#
+#
+# def df_to_list(df):
+#     res = []
+#     header = list(df.columns)
+#     for index, row in df.iterrows():
+#         temp = [row[tag] for tag in header]
+#         res.append(temp)
+#     return res
+#
+#
+# def list_to_df(tag_list):
+#     header = tag_list[0]
+#     df = pd.DataFrame(tag_list[1:], columns=header)
+#     return df
+#
+#
+# def header_check(inputFile):
+#     sentenceID_pos=''
+#     docID_pos=''
+#     docName_pos=''
+#
+#     if isinstance(inputFile, pd.DataFrame):
+#         header = list(inputFile.columns)
+#     else:
+#         header = IO_csv_util.get_csvfile_headers(inputFile)
+#     if 'Sentence ID' in header:
+#         sentenceID_pos = header.index('Sentence ID')
+#     else:
+#         pass
+#
+#     if 'Document ID' in header:
+#         docID_pos = header.index('Document ID')
+#     else:
+#         pass
+#
+#     if 'Document' in header:
+#         docName_pos = header.index('Document')
+#     else:
+#         pass
+#     return sentenceID_pos, docID_pos, docName_pos, header
+#
 
 # input can be a csv filename or a dataFrame
 # output is a dataFrame
@@ -494,55 +554,55 @@ def add_missing_IDs(input):
     df = pd.DataFrame(Row_list,columns=header)
     return df
 
-
-def sort_by_column(input, column):
-    if isinstance(input, pd.DataFrame):
-        df = input
-    else:
-        df = pd.read_csv(input)
-    col_list = set(df[column].tolist())
-    df_list = [df[df[column] == value] for value in col_list]
-    return df_list
-
-
-def align_dataframes(df_list):
-    max = 0
-    for df in df_list:
-        header = list(df.columns)
-        if 'Sentence ID' in header:
-            sentenceID = 'Sentence ID'
-        if df[sentenceID].max() > max:
-            max = df[sentenceID].max()
-    new_list = []
-    for df in df_list:
-        if df.empty:
-            continue
-        temp = df.iloc[-1,:]
-        if temp[sentenceID] != max:
-            # TODO solve warning issue
-            # https://www.dataquest.io/blog/settingwithcopywarning/
-            # ​​​​SettingwithCopyWarning
-            temp[sentenceID] = max
-            temp['Frequency'] = 0
-            new_df = df.append(temp,ignore_index=True)
-        else:
-            new_df = df
-        new_list.append(new_df)
-
-    df_list = [add_missing_IDs(data) for data in new_list if not data.empty]
-    return df_list
-
-
-def slicing_dataframe(df,columns):
-    df = df[columns]
-    return df
-
-
-def rename_df(df,col):
-    for index, row in df.iterrows():
-        if row[col] != '':
-            name = row[col]
-            break
-    df.rename(columns={"Frequency": name + " Frequency"},inplace=True)
-    df = df.drop(columns=[col])
-    return df
+#
+# def sort_by_column(input, column):
+#     if isinstance(input, pd.DataFrame):
+#         df = input
+#     else:
+#         df = pd.read_csv(input)
+#     col_list = set(df[column].tolist())
+#     df_list = [df[df[column] == value] for value in col_list]
+#     return df_list
+#
+#
+# def align_dataframes(df_list):
+#     max = 0
+#     for df in df_list:
+#         header = list(df.columns)
+#         if 'Sentence ID' in header:
+#             sentenceID = 'Sentence ID'
+#         if df[sentenceID].max() > max:
+#             max = df[sentenceID].max()
+#     new_list = []
+#     for df in df_list:
+#         if df.empty:
+#             continue
+#         temp = df.iloc[-1,:]
+#         if temp[sentenceID] != max:
+#             # TODO solve warning issue
+#             # https://www.dataquest.io/blog/settingwithcopywarning/
+#             # ​​​​SettingwithCopyWarning
+#             temp[sentenceID] = max
+#             temp['Frequency'] = 0
+#             new_df = df.append(temp,ignore_index=True)
+#         else:
+#             new_df = df
+#         new_list.append(new_df)
+#
+#     df_list = [add_missing_IDs(data) for data in new_list if not data.empty]
+#     return df_list
+#
+#
+# def slicing_dataframe(df,columns):
+#     df = df[columns]
+#     return df
+#
+#
+# def rename_df(df,col):
+#     for index, row in df.iterrows():
+#         if row[col] != '':
+#             name = row[col]
+#             break
+#     df.rename(columns={"Frequency": name + " Frequency"},inplace=True)
+#     df = df.drop(columns=[col])
+#     return df

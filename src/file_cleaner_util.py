@@ -488,5 +488,5 @@ def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFil
     if not IO_error:
         filesToOpen.append(outputFilename)
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 

@@ -151,7 +151,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                                                'Finished running CoNLL table analyses at',
                                                True, '', True, startTime, False)
         if openOutputFiles == True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
             mb.showwarning(title='Output files',
                            message="The analysis of the CoNLL table for clauses, nouns, verbs, and function words produces too many files to open them all automatically.\n\nPlease, check your output directory for file output. All chart files are listed with extension xlsx or xlxm (for hover-over effects).")
         filesToOpen = []  # Store all files that are to be opened once finished
@@ -280,7 +280,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
 
                 output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
                                                                                 'kw_postag', 'stats_pie_chart')
-                column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 9,
+                column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 9,
                                                                              "Searched token Postag Values (" + searchField_kw + ")",
                                                                              "POSTAG")
                 errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
@@ -302,7 +302,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
 
                 output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
                                                                                 'kw_deprel', 'stats_pie_chart')
-                column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 10,
+                column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 10,
                                                                              "Searched token Deprel values (" + searchField_kw + ")",
                                                                              "DEPREL")
                 errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
@@ -325,7 +325,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
 
                 output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
                                                                                 'co_kw_postag', 'stats_pie_chart')
-                column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 1,
+                column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 1,
                                                                              "Co-token Postag values (" + searchField_kw + ")",
                                                                              "POSTAG")
                 errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
@@ -347,7 +347,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
 
                 output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
                                                                                 'co_kw_deprel', 'stats_pie_chart')
-                column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 2,
+                column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 2,
                                                                              "Co-token Deprel values (" + searchField_kw + ")",
                                                                              "DEPREL")
                 errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
@@ -388,7 +388,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
             mb.showwarning(title='Empty query results', message=noResults)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.output_dir_path.get(),

@@ -174,7 +174,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         sentence_analysis_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,createCharts, chartPackage)
 
     if openOutputFiles==True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),

@@ -29,7 +29,7 @@ import GUI_IO_util
 #most_common([n])
 #Return a list of n elements and their counts. 
 #When n is omitted or None, most_common() returns all elements in the counter.
-def compute_stats_CoreNLP_tag(data_list,column_to_be_counted,column_name,CoreNLP_tag):
+def compute_statistics_CoreNLP_CoNLL_tag(data_list,column_to_be_counted,column_name,CoreNLP_tag):
     import Stanford_CoreNLP_tags_util
     column_list=[]
     column_stats=[]
@@ -53,7 +53,7 @@ def compute_stats_CoreNLP_tag(data_list,column_to_be_counted,column_name,CoreNLP
                 if value in Stanford_CoreNLP_tags_util.dict_CLAUSALTAG:
                     description= Stanford_CoreNLP_tags_util.dict_CLAUSALTAG[value]
                     column_stats.append([value + " - " + description, count])
-    # print("in compute_stats_CoreNLP_tag column_stats ",column_stats)
+    # print("in compute_statistics_CoreNLP_CoNLL_tag column_stats ",column_stats)
     return column_stats
 
 # https://datatofish.com/use-pandas-to-calculate-stats-from-an-imported-csv-file/
@@ -143,8 +143,10 @@ def percentile(n):
 
 
 #written by Yi Wang March 2020, edited Landau/Franzosi February 20021
+
 # lists are the columns to be used for grouping (e.g., Document ID, Document) ['Document ID', 'Document']
 # plotField are the columns to be used for plotting (e.g., Mean, Mode)) ['Mean', 'Mode'] or ['Mean']
+#   columns MUST contain NUMERIC values
 def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, groupByField: list, plotField: list, chart_label, createCharts, chartPackage):
     filesToOpen=[]
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'group_stats')
@@ -208,6 +210,26 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, group
 
     return filesToOpen
 
+
+# The function will provide several statistical measure for a csv field valuues: 'Count', 'Mean', 'Mode', 'Median', 'Standard deviation', 'Minimum', 'Maximum',
+#   csv field values MUST be NUMERIC!
+#   'Skewness', 'Kurtosis', '25% quantile', '50% quantile', '75% quantile'
+#   it will provide statistics both ungrouped and grouped by Document ID
+def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, plotList, chart_label='', createCharts=False, chartPackage='Excel'):
+    filesToOpen=[]
+    if len(groupByList)==0:
+        command = tk.messagebox.askyesno("Groupby fields", "Do you want to compute statistics grouping results by the values of one or more fields (e.g., the DocumentID of a CoNLL table)?")
+        if command ==True:
+            groupByList=GUI_IO_util.slider_widget(GUI_util.window,"Enter comma-separated csv headers for GroupBy option",1,10,'')
+    temp_outputfile = compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,createCharts,chartPackage)
+    if temp_outputfile!='':
+        filesToOpen.append(temp_outputfile)
+    if len(groupByList)>0:
+        temp_outputfile=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,groupByList,plotList,chart_label,createCharts,chartPackage)
+        if temp_outputfile != '':
+            # extend because temp_outputfile is a list
+            filesToOpen.extend(temp_outputfile)
+    return filesToOpen
 
 # written by Tony Chen Gu, April 2022
 # the three steps function computes
@@ -274,25 +296,6 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
                                             chart_title=os.path.splitext(os.path.basename(inputFilename))[0]+"_"+chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label, chartPackage = chartPackage)
     return Excel_outputFilename
 
-
-# The function will provide several statistical measure for a csv field valuues: 'Count', 'Mean', 'Mode', 'Median', 'Standard deviation', 'Minimum', 'Maximum',
-#   'Skewness', 'Kurtosis', '25% quantile', '50% quantile', '75% quantile'
-#   it will provide statistics both ungrouped and grouped by Document ID
-def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, plotList, chart_label='', createCharts=False, chartPackage='Excel'):
-    filesToOpen=[]
-    if len(groupByList)==0:
-        command = tk.messagebox.askyesno("Groupby fields", "Do you want to compute statistics grouping results by the values of one or more fields (e.g., the DocumentID of a CoNLL table)?")
-        if command ==True:
-            groupByList=GUI_IO_util.slider_widget(GUI_util.window,"Enter comma-separated csv headers for GroupBy option",1,10,'')
-    temp_outputfile = compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,createCharts,chartPackage)
-    if temp_outputfile!='':
-        filesToOpen.append(temp_outputfile)
-    if len(groupByList)>0:
-        temp_outputfile=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,groupByList,plotList,chart_label,createCharts,chartPackage)
-        if temp_outputfile != '':
-            # extend because temp_outputfile is a list
-            filesToOpen.extend(temp_outputfile)
-    return filesToOpen
 
 # # 1.22 Yi we do not need a columns_to_be_plotted variable in this function, passing numbers of columns to prepare_csv_data_for_chart will cause error
 def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
@@ -427,7 +430,7 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
         #                                                         Hover_over_header, group_col, fileNameType,
         #                                                         chartType,openOutputFiles, createCharts, chartPackage)
     if openOutputFiles == 1:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen=[] # empty list not to display twice
 
     return filesToOpen #2 files

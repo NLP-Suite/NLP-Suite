@@ -209,7 +209,7 @@ def run(inputFilename,
         if kmloutputFilename!='':
             filesToOpen.append(kmloutputFilename)
         if len(filesToOpen)>0:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
     else:
         if GIS_package_var!='':
             mb.showwarning("Option not available","The " + GIS_package_var + " option is not available yet.\n\nSorry! Please, check back soon...")

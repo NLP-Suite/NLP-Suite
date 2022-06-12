@@ -276,4 +276,4 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
             filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

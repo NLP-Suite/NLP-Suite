@@ -22,7 +22,8 @@ import reminders_util
 # https://www.geeksforgeeks.org/create-find-and-replace-features-in-tkinter-text-widget/
 def createCompareWindow(origin_display, coref_display, origin_non_coref, corefed_non_coref, root, result):
     top = Toplevel(root)
-    top.title("Comparing results from {0} LEFT: ORIGINAL text; in BLUE pronouns NOT corefed; in YELLOW pronouns corefed; RIGHT: COREFED text; in RED pronouns corefed; Edit text on the right and Save".format('Neural Network'))
+    # top.title("Comparing results from {0} LEFT: ORIGINAL text; in BLUE pronouns NOT corefed; in YELLOW pronouns corefed; RIGHT: COREFED text; in RED pronouns corefed; Edit text on the right and Save".format('Neural Network'))
+    top.title("Comparing coref results (LEFT: ORIGINAL text; RIGHT: COREFED text). In BLUE pronouns NOT corefed; in RED pronouns corefed. EDIT text on the right and Save (or Quit). Use FIND bar to search text.".format('Neural Network'))
     # adding of single line text box
     topFrame = tk.Frame(top)
     topFrame.pack(fill="both", expand=False, side=tk.TOP, padx=300)

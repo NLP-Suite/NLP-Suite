@@ -55,7 +55,7 @@ def run(inputFilename,inputDir, outputDir,
     filesToOpen = file_search_byWord_util.run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_keyword, search_keyword_values, search_options_list, createCharts, chartPackage)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),

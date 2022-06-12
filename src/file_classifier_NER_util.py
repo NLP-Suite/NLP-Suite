@@ -235,7 +235,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
         filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen = []  # to avoid opening twice here and in calling fuunction
 
     return filesToOpen

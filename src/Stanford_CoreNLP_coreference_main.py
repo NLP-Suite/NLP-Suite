@@ -25,6 +25,7 @@ import IO_files_util
 import GUI_util
 import Stanford_CoreNLP_coreference_util
 import file_splitter_merged_txt_util
+import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -130,7 +131,7 @@ def run(inputFilename, inputDir, outputDir,
             error = Stanford_CoreNLP_coreference_util.manualCoref(inputFilename, corefed_txt_file, corefed_txt_file)
 
     if openOutputFiles == True and len(filesToOpen) > 0:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
@@ -332,9 +333,12 @@ continue_manual_Coref_var_checkbox.configure(state='disabled')
 
 
 def activateCoRefOptions(*args):
+
     if CoRef_var.get() == 1:
         memory_var.configure(state='normal')
         if input_main_dir_path.get()!='':
+            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
+                                         reminders_util.message_CoreNLP_coref, True)
             manual_Coref_checkbox.configure(state='disabled')
             manual_Coref_var.set(0)
         else:
@@ -411,5 +415,9 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordi
 readMe_message = "This set of Python 3 scripts implement a Stanford CoreNLP neural network approach to coreference resolution for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nThe NLP Suite implements only PRONOMINAL coreference but NOT NOMINAL.\n\nIn INPUT the scripts expect either a single txt file or a set of txt files in a directory.\n\nIn OUTPUT, the scripts will produce a coreferenced txt file. If manual edit is selected, the script will also display a split-screen file for manual editing. On the left-hand side, pronouns cross-referenced by CoreNLP are tagged in YELLOW; pronouns NOT cross-referenced by CoreNLP are tagged in BLUE. On the right-hand side, pronouns cross-referenced by CoreNLP are tagged in RED, with the pronouns replaced by the referenced nouns.\n\nThe user can edit any unresolved or wrongly resolved pronominal cases directly on the right panel, as if it were any text editor and then save the changes."
 readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,'Stanford_CoreNLP_coreference_main')
+
+if input_main_dir_path.get()!='':
+    reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
+                                 reminders_util.message_CoreNLP_coref, True)
 
 GUI_util.window.mainloop()

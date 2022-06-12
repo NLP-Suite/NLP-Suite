@@ -461,12 +461,12 @@ def run(inputFilename,inputDir, outputDir,
         if kmloutputFilename!='':
             filesToOpen.append(kmloutputFilename)
         if len(filesToOpen)>0:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
     if SVO_var==True:
         outputLocations = []
         if open_SVO_GUI_var == True:
-            call("python SVO_main.py", shell=True)
+            call("python Stanford_CoreNLP_SVO_main.py", shell=True)
         else:
             # run with all default values;
             location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
@@ -511,7 +511,7 @@ def run(inputFilename,inputDir, outputDir,
             # filesToOpen.append(out_file)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -559,7 +559,7 @@ utf8_var= tk.IntVar()
 ASCII_var= tk.IntVar()
 corpus_statistics_var= tk.IntVar()
 corpus_statistics_options_menu_var = tk.StringVar()
-corpus_statistics_options_menu_var= tk.StringVar()
+corpus_text_options_menu_var = tk.StringVar()
 wordclouds_var = tk.IntVar()
 open_wordclouds_GUI_var = tk.IntVar()
 topics_var= tk.IntVar()

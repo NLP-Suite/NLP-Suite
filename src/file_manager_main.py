@@ -366,7 +366,7 @@ def run(inputDir, outputDir,
             mb.showwarning(title='File manager', message=str(i) + ' files ' + msg + operation + '.')
             filesToOpen=[]
             filesToOpen.append(os.path.join(outputDir,output_filename))
-            IO_files_util.OpenOutputFiles(GUI_util.window, True, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, True, filesToOpen, outputDir)
     else:
         mb.showwarning(title='File manager', message='No files ' + msg + operation + '.\n\nPlease, check the following information:\n  1. INPUT files directory;\n  2. selected file type (if you ticked the By file type option);\n  3. Include subdirectory option.')
 

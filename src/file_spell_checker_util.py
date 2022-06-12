@@ -187,7 +187,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
                 filesToOpen.append(chart_outputFilename)
 
         if openOutputFiles == True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
             filesToOpen=[] # empty the list to avoid opening files twice
 
     return filesToOpen
@@ -922,7 +922,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 def get_lang_detector(nlp, name):
     return LanguageDetector()

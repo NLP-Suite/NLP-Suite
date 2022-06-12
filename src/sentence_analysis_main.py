@@ -85,7 +85,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     if openOutputFiles == 1:
         if filesToOpen == None:
             return
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),

@@ -97,7 +97,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,SQL_quer
         filesToOpen=[outputDir+os.sep+'sql_result.csv']
         IO_csv_util.list_to_csv(GUI_util.window, results, outputDir+os.sep+'sql_result.csv', colnum=0)
         if openOutputFiles:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
         cur.close()

@@ -23,7 +23,7 @@ import shutil
 import IO_csv_util
 import IO_files_util
 
-def splitDocument_byTOC(window,inputDocumentTobeSplit,inputTOCfile,outputPath,openOutputFiles):
+def splitDocument_byTOC(window,inputDocumentTobeSplit,inputTOCfile,outputDir,openOutputFiles):
 
     # print("nputDocumentTobeSplit",inputDocumentTobeSplit)
     #
@@ -38,15 +38,15 @@ def splitDocument_byTOC(window,inputDocumentTobeSplit,inputTOCfile,outputPath,op
         return
 
     # Get current directory and create "chapters folder"
-    # newOutputPath = inputDir + os.sep + "split_files_" + split_docLength + "_" + title
+    # newoutputDir = inputDir + os.sep + "split_files_" + split_docLength + "_" + title
 
     head, tail = os.path.split(inputDocumentTobeSplit) # head contains the path part of the filename
     # tail contains the filename only
 
-    newOutputPath = os.path.join(head, inputDocNoPathNoExtension+'_sections')
-    if not os.path.exists(newOutputPath):
-        os.mkdir(newOutputPath)
-    outputHeadingsNotfound=os.path.join(newOutputPath,outputHeadingsNotfound)
+    newoutputDir = os.path.join(head, inputDocNoPathNoExtension+'_sections')
+    if not os.path.exists(newoutputDir):
+        os.mkdir(newoutputDir)
+    outputHeadingsNotfound=os.path.join(newoutputDir,outputHeadingsNotfound)
 
     filesToOpen=[]
     headings = []
@@ -72,7 +72,7 @@ def splitDocument_byTOC(window,inputDocumentTobeSplit,inputTOCfile,outputPath,op
             else extractSection(fileContent, headings[i], None)
         if sectionContent:
             #split file saved in the document_section folder with filename = document name + section name
-            sectionFileName=os.path.join(newOutputPath, inputDocNoPathNoExtension + "_" + headings[i] + '.txt')
+            sectionFileName=os.path.join(newoutputDir, inputDocNoPathNoExtension + "_" + headings[i] + '.txt')
             newFile = io.open(sectionFileName, "w+", encoding='utf-8', errors='ignore')
             newFile.write(sectionContent.strip())
         else:
@@ -83,13 +83,13 @@ def splitDocument_byTOC(window,inputDocumentTobeSplit,inputTOCfile,outputPath,op
     if errorFound==True:
         outputHeadingsNotfound=''
     if j>0:
-        mb.showwarning(title='Output split files', message=str(count) + " headings from the TOC file were processed and exported to the directory " + newOutputPath + ".\n\n" + str(j) + " headings were not found in the main document \'" + inputDocumentTobeSplit + "\'\n\nPlease, check the list of headings in the TOC file against the document content.")
+        mb.showwarning(title='Output split files', message=str(count) + " headings from the TOC file were processed and exported to the directory " + newoutputDir + ".\n\n" + str(j) + " headings were not found in the main document \'" + inputDocumentTobeSplit + "\'\n\nPlease, check the list of headings in the TOC file against the document content.")
         filesToOpen.append(outputHeadingsNotfound)
         # open the csv file containing the list of TOC headings not found in the text
         if openOutputFiles==True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
     else:
-        mb.showwarning(title='Error found', message=str(count) + " headings from the TOC file were all successfully processed and all sections exported to the directory " + newOutputPath)
+        mb.showwarning(title='Error found', message=str(count) + " headings from the TOC file were all successfully processed and all sections exported to the directory " + newoutputDir)
         outputHeadingsNotfound=''
     return outputHeadingsNotfound
 

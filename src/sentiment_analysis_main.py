@@ -446,7 +446,7 @@ def run(inputFilename,inputDir,outputDir,
 
     if openOutputFiles==True:
         # IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Warning', 'All csv output files have been saved to ' + outputDir)
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),

@@ -14,7 +14,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "SVO extractor",
 
 # from collections import defaultdict
 import os
-import SVO_util
+import Stanford_CoreNLP_SVO_util
 import csv
 import tkinter as tk
 import tkinter.messagebox as mb
@@ -256,8 +256,24 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # create a subdirectory of the output directory
         #     # remove NLP_CoreNLP_ from filename (could have been added to filename in case of coref)
         #     # the replace will be ignored when there is no NLP_CoreNLP_ in the filename
-        outputDir = IO_files_util.make_output_subdirectory(inputFilename.replace("NLP_CoreNLP_", ""), inputDir, outputDir, label='SVO',
+
+        label = ''
+        if CoreNLP_SVO_extractor_var:
+            label='SVO'
+        if CoreNLP_OpenIE_var:
+            if label!='':
+                label=label+'_'+ 'OpenIE'
+            else:
+                label='OpenIE'
+        if SENNA_SVO_extractor_var:
+            if label!='':
+                label=label+'_'+ 'SENNA'
+            else:
+                label='SENNA'
+
+        outputSVODir = IO_files_util.make_output_subdirectory(inputFilename.replace("NLP_CoreNLP_", ""), inputDir, outputDir, label=label,
                                                             silent=True)
+        outputDir = outputSVODir
         if outputDir == '':
             return
 
@@ -303,7 +319,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                        quote_var = quote_var, quote_filename = quote_filename)
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                output = Stanford_CoreNLP_SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
@@ -357,7 +373,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             # fName is the filename returned by Java SVO The Three Little Pigs SHORT-svoResult-woFilter.txt
             fName = os.path.join(outputDir, inputFileBase + "-svoResult-woFilter.txt")
             toProcess_list.append(fName)
-        else:
+        else: # directory
+            outputSVODir = inputDir
             for tmp in os.listdir(outputSVODir):
                 # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
                 # THE SUBSCRIPT _coref_ IS CHECKED BELOW
@@ -415,7 +432,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_SENNA_files:
-                output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+                output = Stanford_CoreNLP_SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
@@ -434,8 +451,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if len(os.listdir(outputSVODir)) > 0:
             if svo_CoreNLP_merged_file and svo_SENNA_file:
                 CoreNLP_PlusPlus_file = svo_CoreNLP_merged_file
-                freq_csv, compare_outout_name = SVO_util.count_frequency_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
-                combined_csv = SVO_util.combine_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
+                freq_csv, compare_outout_name = Stanford_CoreNLP_SVO_util.count_frequency_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
+                combined_csv = Stanford_CoreNLP_SVO_util.combine_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
                 filesToOpen.extend(freq_csv)
                 filesToOpen.append(combined_csv)
 
@@ -468,7 +485,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                output = Stanford_CoreNLP_SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
@@ -596,7 +613,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         filesToOpen.append(kmloutputFilename)
 
     if openOutputFiles == True and len(filesToOpen) > 0:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         # if google_earth_var == True:
         #     if kmloutputFilename != '':
         #         IO_files_util.open_kmlFile(kmloutputFilename)
@@ -871,6 +888,9 @@ def activateCoRefOptions(*args):
     if CoRef_var.get() == 1:
         # CoRef_menu.configure(state='normal')
         if input_main_dir_path.get()!='':
+            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
+                                         reminders_util.message_CoreNLP_coref, True)
+            manual_Coref_var.set(0)
             manual_Coref_checkbox.configure(state='disabled')
         else:
             manual_Coref_checkbox.configure(state='normal')
@@ -886,6 +906,10 @@ def activateCoRefOptions(*args):
 CoRef_var.trace('w', activateCoRefOptions)
 
 activateCoRefOptions()
+
+def changed_filename(tracedInputFile):
+    activateCoRefOptions()
+GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
 
 # extracted in SVO
 # date_extractor_checkbox = tk.Checkbutton(window, text='Extract normalized NER dates (via Stanford CoreNLP)',

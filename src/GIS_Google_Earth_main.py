@@ -115,7 +115,7 @@ def run(inputFilename, outputDir, openOutputFiles,
     # # always open the kml file
     # IO_files_util.open_kmlFile(kmloutputFilename)
     if openOutputFiles == 1:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 # def run(inputFilename, outputDir, openOutputFiles,
 #             encoding_var,

@@ -75,7 +75,7 @@ def run(inputFilename,inputDir, outputDir,
             filesToOpen.extend(outputFile)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
     # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
     #                                        'Started running ' + menu_option + ' at', True,

@@ -23,7 +23,7 @@ import constants_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createCharts, chartPackage,
+def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createCharts, chartPackage,
         knowledge_graphs_DBpedia_YAGO_var,
         knowledge_graphs_WordNet_var,
         html_gender_annotator_var,
@@ -72,16 +72,16 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
             return
         if csv_field2_var=='':
             csvValue_color_list=[]
-        filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, output_dir_path, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.txt')
+        filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.txt')
     elif html_annotator_add_dictionary_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_dictionary_util.py')==False:
             return
-        filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, output_dir_path, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.html')
+        filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.html')
     elif html_annotator_extractor==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_extractor_util.py')==False:
             return
         import html_annotator_extractor_util
-        html_annotator_extractor_util.buildcsv(inputFilename, input_main_dir_path, output_dir_path,openOutputFiles,createCharts, chartPackage)
+        html_annotator_extractor_util.buildcsv(inputFilename, input_main_dir_path, outputDir,openOutputFiles,createCharts, chartPackage)
     elif html_gender_annotator_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_gender_main.py')==False:
             return
@@ -102,10 +102,10 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
             mb.showwarning(title='Warning', message='There are too many output files (' + str(nFile) + ') to be opened automatically.\n\nPlease, do not forget to check the HTML files in your selected output directory.')
             return
         else:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-#def run(inputFilename,input_main_dir_path,output_dir_path, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
+#def run(inputFilename,input_main_dir_path,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
                 GUI_util.output_dir_path.get(),

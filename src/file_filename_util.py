@@ -68,7 +68,7 @@ def dateGreater(d1, d2):
         return dt1.date() > dt2.date()
 
 
-def purge_duplicate_rows_byFilename(window, inputFilename, output_path, openOutputFiles, filenameCol):
+def purge_duplicate_rows_byFilename(window, inputFilename, outputDir, openOutputFiles, filenameCol):
     bestFiles = {}
     filenameColNum = 2
     with open(inputFilename, 'r', encoding="utf-8", errors='ignore') as read_obj:
@@ -105,10 +105,10 @@ def purge_duplicate_rows_byFilename(window, inputFilename, output_path, openOutp
                         deleteList.append([row[filenameColNum]])
 
     # Now, we can call list_to_csv so that we can generate a new CSV with the list of files to be deleted
-    filesToOpen = [output_path + os.sep + 'files_to_delete.csv']
-    IO_csv_util.list_to_csv(window, deleteList, output_path + os.sep + 'files_to_delete.csv', colnum=0)
+    filesToOpen = [outputDir + os.sep + 'files_to_delete.csv']
+    IO_csv_util.list_to_csv(window, deleteList, outputDir + os.sep + 'files_to_delete.csv', colnum=0)
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 def fill_dictionary(row, dict, nameColNum=0, filenameColNum=2):
@@ -133,7 +133,7 @@ def fill_dictionary(row, dict, nameColNum=0, filenameColNum=2):
         dict[name] = row
 
 
-def purge_partial_matches(window, inputFilename, output_path, openOutputFiles, nameCol, filenameCol):
+def purge_partial_matches(window, inputFilename, outputDir, openOutputFiles, nameCol, filenameCol):
     pdfdict = {}
     docxdict = {}
     nameColNum = 0
@@ -172,10 +172,10 @@ def purge_partial_matches(window, inputFilename, output_path, openOutputFiles, n
                         deleteList.append([row[filenameColNum]])
 
     # Now, we can call list_to_csv so that we can generate a new CSV with the list of files to be deleted
-    filesToOpen = [output_path + os.sep + 'files_to_delete.csv']
-    IO_csv_util.list_to_csv(window, deleteList, output_path + os.sep + 'files_to_delete.csv', colnum=0)
+    filesToOpen = [outputDir + os.sep + 'files_to_delete.csv']
+    IO_csv_util.list_to_csv(window, deleteList, outputDir + os.sep + 'files_to_delete.csv', colnum=0)
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 def writeOutput(inputPath, input_filename, outputPath, output_filename, fieldnames,

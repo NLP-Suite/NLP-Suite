@@ -19,7 +19,7 @@ import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(input_main_dir_path, input_secondary_dir_path, output_dir_path,
+def run(input_main_dir_path, input_secondary_dir_path, outputDir,
         openOutputFiles,
         createCharts,
         by_date_var,
@@ -49,17 +49,17 @@ def run(input_main_dir_path, input_secondary_dir_path, output_dir_path,
         if date_type=='':
             mb.showwarning("Warning", "The required 'Date type' value is missing.\n\nPlease, enter a 'Date type' value and try again.")
             return
-        outputFiles=file_classifier_date_util.classifier(input_main_dir_path, input_secondary_dir_path, output_dir_path,openOutputFiles,
+        outputFiles=file_classifier_date_util.classifier(input_main_dir_path, input_secondary_dir_path, outputDir,openOutputFiles,
                         date_format,date_separator,date_position, date_distance_value, date_type)
         if len(outputFiles) > 0:
             filesToOpen.append(outputFiles)
     if by_NER_var:
-        outputFiles=file_classifier_NER_util.main(GUI_util.window,input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, similarityIndex_var)
+        outputFiles=file_classifier_NER_util.main(GUI_util.window,input_main_dir_path, input_secondary_dir_path, outputDir, openOutputFiles, createCharts, chartPackage, similarityIndex_var)
         if len(outputFiles)>0:
             filesToOpen.append(outputFiles)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running the File Classifier at', True, '', True, startTime)
 

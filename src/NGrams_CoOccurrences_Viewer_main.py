@@ -117,7 +117,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                            total_file_number) + ' processed in the selected input directory with errors in either the date format or the date position. \n\nThe selected date format is '+ str(date_format)+' and the selected date position is ' + str(date_position_var) + '.\n\nClick OK to open a csv file with a list of files with erroneous dates. Check carefully, both date format and date position. Any erroneous file will need to be fixed or removed from the input directory before processing. You may also simply need to select a different date format and/or date position.')
         filesToOpen.append(error_output)
         if openOutputFiles == True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         return
 
 
@@ -317,7 +317,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime,True)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated

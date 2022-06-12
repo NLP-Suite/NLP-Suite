@@ -410,7 +410,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
 
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen=[] # avoid opening twice in the calling function
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running MISSING CHARACTER at',

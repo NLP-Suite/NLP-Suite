@@ -98,9 +98,9 @@ def run(inputFilename,inputdirname, outdirname,
         call("python GIS_main.py", shell=True)
 
     if SVO_var==True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('SVO_main.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_SVO_main.py')==False:
             return
-        call("python SVO_main.py", shell=True)
+        call("python Stanford_CoreNLP_SVO_main.py", shell=True)
 
     if shape_stories_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py')==False:
