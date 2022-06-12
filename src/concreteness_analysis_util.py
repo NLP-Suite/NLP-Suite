@@ -41,7 +41,7 @@ import time
 import argparse
 import pandas as pd
 import tkinter.messagebox as mb
-
+import IO_user_interface_util
 
 from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
@@ -190,6 +190,8 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 	elif len(inputFilename) == 0 and len(inputDir) == 0:  # empty input
 		print('No input specified. Please give either a single file or a directory of files to analyze.')
 		sys.exit(1)
+	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+	                                               'Started running CONCRETENESS Analysis at', True,silent=True)
 	outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
 																			   '.csv', 'abstr-concret-vocab', 'stats')
 	with open(outputFilename, 'w', encoding='utf-8', errors='ignore') as csvfile:
@@ -281,6 +283,9 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 														 complete_sid=True)
 		if chart_outputFilename != "":
 			filesToOpen.append(chart_outputFilename)
+
+	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+	                                       'Finished running CONCRETENESS Analysis at', True, '', True, startTime, True)
 
 	return filesToOpen  # LINE ADDED
 

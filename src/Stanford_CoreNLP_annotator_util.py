@@ -711,8 +711,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
 
-
-                    filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j], filesToOpen)
+                    chart_outputFilename = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j])
+                    if chart_outputFilename!=None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
                 elif 'sentiment' in str(annotator_params): # and "sentiment" in filesToVisualize[j].split("_"):
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[0] == "Sentiment score":
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
@@ -893,8 +895,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     if 'SVO' in str(annotator_params):
                         for key, value in kwargs.items():
                             if key == "gender_var" and value == True:
-                                filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, kwargs["gender_filename"],
-                                                                  filesToOpen, genderCol=["S Gender", "O Gender"], wordCol=["Subject (S)", "Object (O)"])
+                                chart_outputFilename = visualize_html_file(inputFilename, inputDir, outputDir, kwargs["gender_filename"],
+                                                                  genderCol=["S Gender", "O Gender"], wordCol=["Subject (S)", "Object (O)"])
+                                if chart_outputFilename!=None:
+                                    if len(chart_outputFilename) > 0:
+                                        filesToOpen.extend(chart_outputFilename)
+
                 if "coref table" in str(annotator_params) or "parser" in str(annotator_params) or "SVO" in str(annotator_params):
                     if "coref table" in str(annotator_params):
                         param = "coref table"
@@ -2018,24 +2024,21 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
         df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False, encoding = language_encoding)
 
 # the gender annotator displays results in an html file
-def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesToOpen, genderCol=["Gender"], wordCol=[]):
+def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, genderCol=["Gender"], wordCol=[]):
+    chart_outputFilename=[]
     for col in genderCol:
         if col not in IO_csv_util.get_csvfile_headers(dictFilename, False):
-         return
-
+            return chart_outputFilename
     # annotate the input file(s) for gender values
     csvValue_color_list = [genderCol, '|', 'FEMALE', 'red', '|', 'MALE', 'blue', '|']
     bold_var = True
     tagAnnotations = ['<span style="color: blue; font-weight: bold">', '</span>']
-    tempFilename = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
+    chart_outputFilename = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
                                                              dictFilename, wordCol,
                                                              csvValue_color_list, bold_var, tagAnnotations,
                                                              fileType='.txt')
     # the annotator returns a list rather than a string
-    if len(tempFilename) > 0:
-        filesToOpen.append(tempFilename[0])
-
-    return filesToOpen
+    return chart_outputFilename
 
 # # columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc
 # #   all double lists [[]]

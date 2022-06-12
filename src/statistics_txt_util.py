@@ -404,7 +404,7 @@ def same_sentence_check(jgram):
 #compute_character_word_ngrams works for BOTH character and word ngrams
 #https://stackoverflow.com/questions/18658106/quick-implementation-of-character-n-grams-for-word
 #ngrams is the type of ngrams wanted 2grams,3grams,4grams,5grams MAX
-def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngramsNumber=4, normalize=False, excludePunctuation=False, wordgram=None, frequency = None, openOutputFiles=True, createCharts=True, chartPackage='Excel', bySentenceID=None):
+def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngramsNumber=3, normalize=False, excludePunctuation=False, wordgram=None, frequency = None, openOutputFiles=False, createCharts=True, chartPackage='Excel', bySentenceID=None):
     filesToOpen = []
     container = []
 
@@ -535,8 +535,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                                                           chart_type_list=["bar"],
                                                           chart_title=chartTitle + str(index+1) + '-grams',
                                                           column_xAxis_label_var='',
-                                                          hover_info_column_list=hover_label,
-                                                          graph_type = chartPackage)
+                                                          hover_info_column_list=hover_label)
                 if chart_outputFilename != "":
                     filesToOpen.append(chart_outputFilename)
 
@@ -549,6 +548,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
+    return filesToOpen
 
 def get_ngramlist(inputFilename,ngramsNumber=4, wordgram=1, excludePunctuation=False, frequency = None, bySentenceID=False, isdir=False):
 
@@ -780,9 +780,8 @@ def yule(window, inputFilename, inputDir, outputDir, hideMessage=False):
 
         # print results
         if inputFilename!='' and hideMessage==False:
-            mb.showinfo(title='Results', message='The value for the vocabulary richness statistics (word type/token ratio or Yule’s K) is: '+str(result) + '\n\nThe higher the value (0-100) and the richer is the vocabulary.')
-
-        # print('   Yule’s K value: ' + str(result) + ' Value range: 0-100 (higher value, richer vocabulary)')
+            IO_user_interface_util.timed_alert(GUI_util.window, 4000, message_title='Yule’s K Vocabulary richness', message_text='The value for the vocabulary richness statistics (word type/token ratio or Yule’s K) is: '+str(result) + '\n\nValue range: 0-100. The higher the value, the richer the vocabulary.')
+            print('The value for the vocabulary richness statistics (word type/token ratio or Yule’s K) is: '+str(result) + '\n\nThe higher the value (0-100) and the richer is the vocabulary.\n\nValue range: 0-100. The higher the value, the richer the vocabulary.')
         temp = [result,index,IO_csv_util.dressFilenameForCSVHyperlink(doc)]
         Yule_value_list.append(temp)
     IO_error=IO_csv_util.list_to_csv(window, Yule_value_list, outputFilename)
@@ -966,7 +965,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     normalize=False
                     excludePunctuation=True
                     wordgram=True
-                    bySentenceID=True
+                    bySentenceID=False
                     tempOutputFiles=compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, ngramsNumber, normalize, excludePunctuation, wordgram, frequency, openOutputFiles, createCharts, chartPackage,
                                                                       bySentenceID)
                     # Excel charts are generated in compute_character_word_ngrams; return to exit here
