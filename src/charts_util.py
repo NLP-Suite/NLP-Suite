@@ -16,6 +16,7 @@ import pandas as pd
 
 import IO_csv_util
 import IO_user_interface_util
+import charts_Excel_util
 import charts_plotly_util
 import charts_util
 import statistics_csv_util
@@ -180,7 +181,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
 
     transform_list = []
     # the following is deciding which type of data is returned from prepare_data_to_be_plotted
-    # for the function prepare_data_to_be_plotted branch into two different data handling functions which retruns different data type
+    # for the function prepare_data_to_be_plotted branch into two different data handling functions which returns different data type
     # and due to complexity reasons, we keep them in this way:
     # check the data type for the return value and decide which step to take next
     if not(isinstance(data_to_be_plotted[0], list)):
