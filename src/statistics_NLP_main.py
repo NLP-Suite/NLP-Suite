@@ -93,7 +93,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
         if len(csv_list) == 0:
             mb.showwarning(title='Warning', message='You have selected to compute the frequency of a csv file field but no field has been selected.\n\nPlease, select a csv file field and try again.')
             return
-        tempOutputFiles=statistics_csv_util.compute_stats_NLP_main(window,
+        tempOutputFiles=statistics_csv_util.compute_csv_column_frequencies_with_aggregation(window,
                                                            inputFilename,
                                                            '',
                                                            outputDir,

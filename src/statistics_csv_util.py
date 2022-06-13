@@ -93,7 +93,7 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, cre
         mb.showwarning(title='File type error', message="The input file\n\n" + inputFilename + "\n\nis not a csv file. The statistical function only works with input csv files.\n\nPlease, select a csv file in input and try again!")
         return None
 
-    output_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'ungroup_stats')
+    outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'ungroup_stats')
 
     stats=[]
     if columnNumber > -1:
@@ -133,7 +133,7 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, cre
             currentLine.extend(currentStats)
             stats.append(currentLine)
 
-    return output_file_name
+    return outputFilename
 
 def percentile(n):
     def percentile_(x):
@@ -231,6 +231,153 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, p
             filesToOpen.extend(temp_outputfile)
     return filesToOpen
 
+
+# TODO HOW DOES THIS DIFFER FROM def prepare_data_to_be_plotted?
+# compute frequencies of a field for a specific value and with hover-over effects (e.g., NER field, value Location)
+# the function does not aggregate the values by another field (e.g., NER field by Document ID)
+# in INPUT the function can use either a csv file or a data frame
+#   either or both????
+# in OUTPUT the function returns a csv file with frequencies for the selected field
+# it does not seem to provide a way to aggregate by specific fields (e.g., Document ID)
+#   as done by compute_csv_column_frequencies_with_aggregation
+# def prepare_csv_data_for_chart(window,inputFlename, inputDataFrame, outputDir, select_col : list, hover_col : list, group_col : list, fileNameType, chartType, openOutputFiles, createExcelCharts, chartPackage,count_var=0):
+#     outputFilename = IO_files_util.generate_output_file_name(inputFlename, '', outputDir, '.csv')
+#     if len(inputDataFrame) != 0:
+#             df = inputDataFrame
+#         else:
+#             with open(inputFilename, encoding='utf-8', errors='ignore') as infile:
+#                 reader = csv.reader(x.replace('\0', '') for x in infile)
+#                 headers = next(reader)
+#             header_indices = [i for i, item in enumerate(headers) if item]
+#             df = pd.read_csv(inputFilename, usecols=header_indices, encoding='utf-8')
+#     # convert a list to a str
+#     select_column = select_col[0]
+#     # separate a complete csv file into multiple dataframes filter by select_col, which will produce unequal index numbers
+#     df_list = sort_by_column(df, select_column)
+#     # makes those separate dataframes align to the same maximum index
+#     df_hover = slicing_dataframe(df,group_col + hover_col)
+#     df_list = align_dataframes(df_list)
+#     #append aligned dataframes as frequency columns in the new dataframe
+#     df_list = [slicing_dataframe(d, group_col + select_col + ['Frequency']) for d in df_list]
+#     # rename those newly added columns
+#     df_list = [rename_df(d,select_column) for d in df_list]
+#     # append the hover-over data (Labels) in the original csv file
+#     df_list.append(df_hover)
+#     # horizontally concatenate all the frequency dataframes and the hover-over dataframe
+#     df_merged = reduce(lambda left, right: pd.merge(left, right, how='outer',on=group_col), df_list)
+#     # replace all the empty strings inside this new df_merged dataframe with 0
+#     df_merged = df_merged.replace(r'^\s*$', 0, regex=True)
+#     df_merged.to_csv(outputFilename,index=False) # output
+#     return outputFilename
+#
+#
+# def sort_by_column(input, column):
+#     if isinstance(input, pd.DataFrame):
+#         df = input
+#     else:
+#         df = pd.read_csv(input)
+#     col_list = set(df[column].tolist())
+#     df_list = [df[df[column] == value] for value in col_list]
+#     return df_list
+#
+#
+# def align_dataframes(df_list):
+#     max = 0
+#     for df in df_list:
+#         header = list(df.columns)
+#         if 'Sentence ID' in header:
+#             sentenceID = 'Sentence ID'
+#         if df[sentenceID].max() > max:
+#             max = df[sentenceID].max()
+#     new_list = []
+#     for df in df_list:
+#         if df.empty:
+#             continue
+#         temp = df.iloc[-1,:]
+#         if temp[sentenceID] != max:
+#             # TODO solve warning issue
+#             # https://www.dataquest.io/blog/settingwithcopywarning/
+#             # ​​​​SettingwithCopyWarning
+#             temp[sentenceID] = max
+#             temp['Frequency'] = 0
+#             new_df = df.append(temp,ignore_index=True)
+#         else:
+#             new_df = df
+#         new_list.append(new_df)
+#
+#     df_list = [add_missing_IDs(data) for data in new_list if not data.empty]
+#     return df_list
+#
+#
+# def slicing_dataframe(df,columns):
+#     df = df[columns]
+#     return df
+#
+#
+# def rename_df(df,col):
+#     for index, row in df.iterrows():
+#         if row[col] != '':
+#             name = row[col]
+#             break
+#     df.rename(columns={"Frequency": name + " Frequency"},inplace=True)
+#     df = df.drop(columns=[col])
+#     return df
+
+# compute frequencies of a field for a specific value (e.g., NER field, value Location)
+# the function does not aggregate the values by another field (e.g., NER field by Document ID)
+#   as done by compute_csv_column_frequencies_with_aggregation
+# in INPUT it uses a data list, rather than filename, and returns
+# in OUTPUT a list complete_column_frequencies
+# TODO does it compute frequencies by some aggregate values (e.g., document ID)?
+# def compute_column_frequencies_4Excel(columns_to_be_plotted, data_list, headers,specific_column_value_list=[]):
+#     column_list=[]
+#     column_frequencies=[]
+#     column_stats=[]
+#     specific_column_value=''
+#     complete_column_frequencies=[]
+#     if len(data_list) != 0:
+#         for k in range(len(columns_to_be_plotted)):
+#             res=[]
+#             if len(specific_column_value_list)>0:
+#                 specific_column_value=specific_column_value_list[k]
+#             #get all the values in the selected column
+#             column_list = [i[1] for i in data_list[k]]
+#             counts = Counter(column_list).most_common()
+#             if len(headers) > 0:
+#                 id_name_num = columns_to_be_plotted[k][0]
+#                 id_name = headers[id_name_num]
+#                 column_name_num = columns_to_be_plotted[k][1]
+#                 column_name = headers[column_name_num]
+#                 if len(specific_column_value_list)==0:
+#                     column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
+#                 else:
+#                     for y in range(len(specific_column_value_list)):
+#                         column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column " + str(column_name)]]
+#             else:
+#                 id_name_num = columns_to_be_plotted[k][0]
+#                 id_name = "column_" + str(id_name_num+1)
+#                 column_name_num = columns_to_be_plotted[k][1]
+#                 column_name = "column_" + str(column_name_num+1)
+#                 if len(specific_column_value)==0:
+#                     column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
+#                 else:
+#                     for y in range(len(specific_column_value_list)):
+#                         column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column_" + str(column_name_num+1)]]
+#             if len(specific_column_value) == 0:
+#                 for value, count in counts:
+#                     column_frequencies.append([value, count])
+#             else:
+#                 for i in range(len(column_list)):
+#                     if column_list[i] == specific_column_value:
+#                         res.append(1)
+#                     else:
+#                         res.append(0)
+#                 for j in range(len(data_list[k])):
+#                     column_frequencies.append([data_list[k][j][0], res[j]])
+#             complete_column_frequencies.append(column_frequencies)
+#     return complete_column_frequencies
+
+
 # written by Tony Chen Gu, April 2022
 # the three steps function computes
 #   1. the frequencies of a given csv field (select_col) aggregating the results by (group_col and select_col).
@@ -298,8 +445,8 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
 
 
 # written by Roberto June 2022
-def get_columns_to_be_plotted(output_file_name,col):
-    headers = IO_csv_util.get_csvfile_headers(output_file_name)
+def get_columns_to_be_plotted(outputFilename,col):
+    headers = IO_csv_util.get_csvfile_headers(outputFilename)
     col1_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, col)
     col2_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Frequency')
     columns_to_be_plotted = [[col1_nunmber, col2_nunmber]]
@@ -307,7 +454,13 @@ def get_columns_to_be_plotted(output_file_name,col):
 
 # written by Yi Wang
 # edited by Roberto June 2022
-def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
+
+# compute frequencies of a field for a specific field value and with hover-over effects (e.g., NER field, value Location)
+# the function also aggregates the values by another field (e.g., NER field by Document ID)
+# in INPUT the function can use either a csv file or a data frame
+# in OUTPUT the function returns a csv file with frequencies for the selected field
+
+def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputDataFrame, outputDir,
             openOutputFiles,createCharts,chartPackage,
             selected_col, hover_col, group_col,
             fileNameType='CSV',chartType='line'):
@@ -330,7 +483,7 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
     elif len(selected_col) != 0 and len(group_col) == 0:
         # no aggregation by group_col --------------------------------------------------------
         for col in selected_col:
-            output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
             data = data[col].value_counts().to_frame().reset_index()
             hdr = [col, col + ' Frequency']
 
@@ -346,50 +499,24 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
                 data.drop(hover_col, axis=1, inplace=True)
             else:
                 data.columns = hdr
-            data.to_csv(output_file_name,index=False)
-            filesToOpen.append(output_file_name)
-
-            if createCharts:
-                columns_to_be_plotted = get_columns_to_be_plotted(output_file_name,col)
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                      outputFileLabel=fileNameType,
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=chartType,
-                                                      chart_title='Frequency Distribution of ' + col + ' Values',
-                                                      column_xAxis_label_var=col,
-                                                      hover_info_column_list=hover_over_header)
-                if chart_outputFilename != "":
-                    filesToOpen.append(chart_outputFilename)
-
+            data.to_csv(outputFilename,index=False)
     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
         # aggregation by group_col NO hover over ----------------------------------------
         for col in selected_col:
-            output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
             temp = group_col.copy()
             temp.append(col)
             data = data.groupby(temp).size().reset_index(name='Frequency')
             for index, row in data.iterrows():
                 if row[col] == '':
                     data.at[index,'Frequency'] = 0
-            data.to_csv(output_file_name,index=False)
-            filesToOpen.append(output_file_name)
-            if createCharts:
-                columns_to_be_plotted = get_columns_to_be_plotted(output_file_name,col)
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name, outputDir,
-                                                      outputFileLabel=fileNameType,
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=['bar'],
-                                                      chart_title='Frequency Distribution of ' + col + ' Values Aggregated by ' + (', '.join(str(x) for x in group_col)),
-                                                      column_xAxis_label_var=col,
-                                                      hover_info_column_list=hover_over_header)
-                filesToOpen.append(chart_outputFilename)
-                if chart_outputFilename != "":
-                    filesToOpen.append(chart_outputFilename)
+            data.to_csv(outputFilename,index=False)
+            filesToOpen.append(outputFilename)
 
     else: # aggregation by group_col & hover over -----------------------------------------------
         for col_hover in hover_col:
             col = str(selected_col[0])
-            output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col_hover)
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col_hover)
             temp = group_col.copy()
             temp.append(col_hover)
             c = data.groupby(group_col)[col_hover].apply(list).to_dict()
@@ -417,24 +544,18 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
         # data['Hover_over: ' + hover_header] = IO_csv_util.undressFilenameForCSVHyperlink(data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1))
         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1)
         data.drop(hover_col, axis=1, inplace=True)
-        data.to_csv(output_file_name, index=False)
+        data.to_csv(outputFilename, index=False)
+        filesToOpen.appeand(outputFilename)
+    # if createCharts:
+    #     columns_to_be_plotted = get_columns_to_be_plotted(outputFilename,col)
+    #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+    #                                           outputFileLabel=fileNameType,
+    #                                           chartPackage=chartPackage,
+    #                                           chart_type_list=chartType,
+    #                                           chart_title='Frequency Distribution of ' + col + ' Values',
+    #                                           column_xAxis_label_var=col,
+    #                                           hover_info_column_list=hover_over_header)
+    #     if chart_outputFilename != None:
+    #         filesToOpen.filesToOpen(chart_outputFilename)
 
-        if createCharts:
-            # in hover over case, the select col is a list rather than a string as in the other two cases
-            columns_to_be_plotted = get_columns_to_be_plotted(output_file_name,col)
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name, outputDir,
-                                                      outputFileLabel=fileNameType,
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=['bar'],
-                                                      chart_title='Frequency Distribution of ' + col + ' Values Aggregated by ' + (', '.join(str(x) for x in group_col)),
-                                                      column_xAxis_label_var=col_hover,
-                                                      hover_info_column_list=hover_over_header)
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-            
-    if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-        filesToOpen=[] # empty list not to display twice
-
-    return filesToOpen #2 files
-
+    return filesToOpen # several files with the charts

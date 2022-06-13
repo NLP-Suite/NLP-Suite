@@ -171,7 +171,9 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
             return
         outputFilename=IO_files_util.generate_output_file_name(csv_file, outputDir, '.csv', 'WordNet', 'conll')
         filesToOpen.append(outputFilename)
-        sentence_analysis_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,createCharts, chartPackage)
+        temp_outputfiles = knowledge_graphs_WordNet_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,createCharts, chartPackage)
+        if temp_outputfiles!=None:
+            filesToOpen.extend(temp_outputfiles)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
