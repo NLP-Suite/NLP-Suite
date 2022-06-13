@@ -321,6 +321,8 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 # remove comments before variable begin with d_id to enable complete document id function
 # need to have a document id column and sentence id column
 # would complete the file (make document id and sentence id continuous) and padding zero values for the added rows
+# TODO how does this differ from add_missing_IDs
+# # edited by Roberto June 2022
 def complete_sentence_index(file_path):
     data = pd.read_csv(file_path)
     try:
@@ -408,41 +410,4 @@ def complete_sentence_index(file_path):
 #         pass
 #     return sentenceID_pos, docID_pos, docName_pos, header
 #
-
-# input can be a csv filename or a dataFrame
-# output is a dataFrame
-# TODO any funtion that plots data by sentence index should really check that the required sentence IDs are all there and insert them otherwise
-def add_missing_IDs(input):
-    if isinstance(input, pd.DataFrame):
-        df = input
-    else:
-        df = pd.read_csv(input)
-    sentenceID_pos, docID_pos, docName_pos, header = header_check(input)
-    Row_list = df_to_list(df)
-    for index,row in enumerate(Row_list):
-        if index == 0 and Row_list[index][sentenceID_pos] != 1:
-            for i in range(Row_list[index][sentenceID_pos]-1,0,-1):
-                temp= [''] * len(header)
-                for j in range(len(header)):
-                    if j == sentenceID_pos:
-                        temp[j] = i
-                    elif j == docID_pos:
-                        temp[j] = Row_list[index][docID_pos]
-                    elif j == docName_pos:
-                        temp[j] = Row_list[index][docName_pos]
-                Row_list.insert(0,temp)
-        else:
-            if index < len(Row_list)-1 and Row_list[index+1][sentenceID_pos] - Row_list[index][sentenceID_pos] > 1:
-                for i in range(Row_list[index+1][sentenceID_pos]-1,Row_list[index][sentenceID_pos],-1):
-                    temp = [''] * len(header)
-                    for j in range(len(header)):
-                        if j == sentenceID_pos:
-                            temp[j] = i
-                        elif j == docID_pos:
-                            temp[j] = Row_list[index][docID_pos]
-                        elif j == docName_pos:
-                            temp[j] = Row_list[index][docName_pos]
-                    Row_list.insert(index+1,temp)
-    df = pd.DataFrame(Row_list,columns=header)
-    return df
 

@@ -21,6 +21,7 @@ import IO_files_util
 import IO_user_interface_util
 import data_manager_util
 import IO_csv_util
+import statistics_csv_util
 
 filesToOpen=[]
 
@@ -262,7 +263,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
 					Row_list.insert(index + 1, ['', '', '', '', i, Row_list[index][5], Row_list[index][6]])
 	df = pd.DataFrame(Row_list,
 					  index=['Form', 'Lemma', 'POStag', 'WordNet Category', 'Sentence ID', 'Document ID', 'Document'])
-	df = IO_csv_util.add_missing_IDs(df)
+	df = statistics_csv_util.add_missing_IDs(df)
 	df.to_csv(outputFilename, index=False)
 
 	if createCharts:

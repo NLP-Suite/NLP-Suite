@@ -93,7 +93,7 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, cre
         mb.showwarning(title='File type error', message="The input file\n\n" + inputFilename + "\n\nis not a csv file. The statistical function only works with input csv files.\n\nPlease, select a csv file in input and try again!")
         return None
 
-    outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'ungroup_stats')
+    outputFilename=IO_files_util.generate_outputFilename(inputFilename, '', outputDir, '.csv', '', 'ungroup_stats')
 
     stats=[]
     if columnNumber > -1:
@@ -149,7 +149,7 @@ def percentile(n):
 #   columns MUST contain NUMERIC values
 def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, groupByField: list, plotField: list, chart_label, createCharts, chartPackage):
     filesToOpen=[]
-    outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'group_stats')
+    outputFilename=IO_files_util.generate_outputFilename(inputFilename, '', outputDir, '.csv', '', 'group_stats')
     # filesToOpen.append(output_name)
 
     if not set(groupByField).issubset(set(IO_csv_util.get_csvfile_headers(inputFilename))):
@@ -377,6 +377,45 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, p
 #             complete_column_frequencies.append(column_frequencies)
 #     return complete_column_frequencies
 
+# input can be a csv filename or a dataFrame
+# output is a dataFrame
+# TODO how does this differ from complete_sentence_index(file_path)
+# TODO any funtion that plots data by sentence index should really check that the required sentence IDs are all there and insert them otherwise
+def add_missing_IDs(input):
+    if isinstance(input, pd.DataFrame):
+        df = input
+    else:
+        df = pd.read_csv(input)
+    sentenceID_pos, docID_pos, docName_pos, header = header_check(input)
+    Row_list = IO_csv_util.df_to_list(df)
+    for index,row in enumerate(Row_list):
+        if index == 0 and Row_list[index][sentenceID_pos] != 1:
+            for i in range(Row_list[index][sentenceID_pos]-1,0,-1):
+                temp= [''] * len(header)
+                for j in range(len(header)):
+                    if j == sentenceID_pos:
+                        temp[j] = i
+                    elif j == docID_pos:
+                        temp[j] = Row_list[index][docID_pos]
+                    elif j == docName_pos:
+                        temp[j] = Row_list[index][docName_pos]
+                Row_list.insert(0,temp)
+        else:
+            if index < len(Row_list)-1 and Row_list[index+1][sentenceID_pos] - Row_list[index][sentenceID_pos] > 1:
+                for i in range(Row_list[index+1][sentenceID_pos]-1,Row_list[index][sentenceID_pos],-1):
+                    temp = [''] * len(header)
+                    for j in range(len(header)):
+                        if j == sentenceID_pos:
+                            temp[j] = i
+                        elif j == docID_pos:
+                            temp[j] = Row_list[index][docID_pos]
+                        elif j == docName_pos:
+                            temp[j] = Row_list[index][docName_pos]
+                    Row_list.insert(index+1,temp)
+    df = pd.DataFrame(Row_list,columns=header)
+    return df
+
+
 
 # written by Tony Chen Gu, April 2022
 # the three steps function computes
@@ -483,7 +522,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     elif len(selected_col) != 0 and len(group_col) == 0:
         # no aggregation by group_col --------------------------------------------------------
         for col in selected_col:
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
+            outputFilename = IO_files_util.generate_outputFilename(inputFilename, '', outputDir, '.csv', col)
             data = data[col].value_counts().to_frame().reset_index()
             hdr = [col, col + ' Frequency']
 
@@ -503,7 +542,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
         # aggregation by group_col NO hover over ----------------------------------------
         for col in selected_col:
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
+            outputFilename = IO_files_util.generate_outputFilename(inputFilename, '', outputDir, '.csv', col)
             temp = group_col.copy()
             temp.append(col)
             data = data.groupby(temp).size().reset_index(name='Frequency')
@@ -516,7 +555,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     else: # aggregation by group_col & hover over -----------------------------------------------
         for col_hover in hover_col:
             col = str(selected_col[0])
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col_hover)
+            outputFilename = IO_files_util.generate_outputFilename(inputFilename, '', outputDir, '.csv', col_hover)
             temp = group_col.copy()
             temp.append(col_hover)
             c = data.groupby(group_col)[col_hover].apply(list).to_dict()
