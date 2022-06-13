@@ -297,14 +297,24 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
     return Excel_outputFilename
 
 
-# # 1.22 Yi we do not need a columns_to_be_plotted variable in this function, passing numbers of columns to prepare_csv_data_for_chart will cause error
+# written by Roberto June 2022
+def get_columns_to_be_plotted(output_file_name,col):
+    headers = IO_csv_util.get_csvfile_headers(output_file_name)
+    col1_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, col)
+    col2_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Frequency')
+    columns_to_be_plotted = [[col1_nunmber, col2_nunmber]]
+    return columns_to_be_plotted
+
+# written by Yi Wang
+# edited by Roberto June 2022
 def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
             openOutputFiles,createCharts,chartPackage,
-            columns_to_be_plotted,selected_col, hover_col, group_col,
+            selected_col, hover_col, group_col,
             fileNameType='CSV',chartType='line'):
 
     filesToOpen = []
     container = []
+    hover_over_header = []
     if len(inputDataFrame)!=0:
         data = inputDataFrame
     else:
@@ -318,16 +328,17 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
         mb.showwarning('Missing field', 'You have not selected the csv field for which to compute frequencies.\n\nPlease, select the field and try again.')
 
     elif len(selected_col) != 0 and len(group_col) == 0:
+        # no aggregation by group_col --------------------------------------------------------
         for col in selected_col:
             output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
             data = data[col].value_counts().to_frame().reset_index()
             hdr = [col, col + ' Frequency']
 
-            Hover_over_header = []
+            hover_over_header = []
             if len(hover_col) != 0:
                 hover_header = ', '.join(hover_col)
-                Hover_over_header = ['Hover_over: ' + hover_header]
-                hdr.append(Hover_over_header)
+                hover_over_header = ['Hover_over: ' + hover_header]
+                hdr.append(hover_over_header)
                 data.columns = hdr
                 temp_str = '%s' + '\n%s' * (len(hover_col) - 1)
                 data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),
@@ -339,18 +350,19 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
             filesToOpen.append(output_file_name)
 
             if createCharts:
-                # columns_to_be_plotted = [[1, 2]] # hard code Yi
+                columns_to_be_plotted = get_columns_to_be_plotted(output_file_name,col)
                 chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel=fileNameType,
                                                       chartPackage=chartPackage,
                                                       chart_type_list=chartType,
-                                                      chart_title='',
+                                                      chart_title='Frequency Distribution of ' + col + ' Values',
                                                       column_xAxis_label_var=col,
-                                                      hover_info_column_list=Hover_over_header)
+                                                      hover_info_column_list=hover_over_header)
                 if chart_outputFilename != "":
                     filesToOpen.append(chart_outputFilename)
 
     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
+        # aggregation by group_col NO hover over ----------------------------------------
         for col in selected_col:
             output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
             temp = group_col.copy()
@@ -362,44 +374,37 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
             data.to_csv(output_file_name,index=False)
             filesToOpen.append(output_file_name)
             if createCharts:
-                # columns_to_be_plotted = [[1, 2]] # hard code Yi
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                columns_to_be_plotted = get_columns_to_be_plotted(output_file_name,col)
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name, outputDir,
                                                       outputFileLabel=fileNameType,
                                                       chartPackage=chartPackage,
-                                                      chart_type_list=chartType,
-                                                      chart_title='',
+                                                      chart_type_list=['bar'],
+                                                      chart_title='Frequency Distribution of ' + col + ' Values Aggregated by ' + (', '.join(str(x) for x in group_col)),
                                                       column_xAxis_label_var=col,
-                                                      hover_info_column_list=Hover_over_header)
+                                                      hover_info_column_list=hover_over_header)
                 filesToOpen.append(chart_outputFilename)
                 if chart_outputFilename != "":
                     filesToOpen.append(chart_outputFilename)
 
-                # # columns_to_be_plotted = [[1, 2]] # hard code Yi
-                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                #                                       outputFileLabel=fileNameType,
-                #                                       chart_type_list=[chartType],
-                #                                       chart_title='',
-                #                                       column_xAxis_label_var=col,
-                #                                       hover_info_column_list=Hover_over_header)
-                # filesToOpen.append(chart_outputFilename)
-    else:
-        for col in hover_col:
+    else: # aggregation by group_col & hover over -----------------------------------------------
+        for col_hover in hover_col:
+            col = str(selected_col[0])
+            output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col_hover)
             temp = group_col.copy()
-            temp.append(col)
-            c = data.groupby(group_col)[col].apply(list).to_dict()
+            temp.append(col_hover)
+            c = data.groupby(group_col)[col_hover].apply(list).to_dict()
 
             container.append(c)
 
         temp = group_col.copy()
-        temp.extend(selected_col)
+        temp.extend(selected_col) # plotting variable
         data = data.groupby(temp).size().reset_index(name='Frequency')
         for index, row in data.iterrows():
             if row[selected_col[0]] == '':
                 data.at[index,'Frequency'] = 0
 
         hover_header = ', '.join(hover_col)
-        Hover_over_header=['Hover_over: ' + hover_header]
-
+        hover_over_header=['Hover_over: ' + hover_header]
         for index, hover in enumerate(hover_col):
             df = pd.Series(container[index]).reset_index()
             temp = group_col.copy()
@@ -407,29 +412,27 @@ def compute_stats_NLP_main(window,inputFilename, inputDataFrame, outputDir,
             df.columns = temp
             data = data.merge(df, how = 'left', left_on= group_col,right_on = group_col)
         temp_str = '%s'+'\n%s'* (len(hover_col)-1)
+        # TONY need to remove hyperlink from hover over data in case hover_over_header is Document
+        # hover_over_value=IO_csv_util.undressFilenameForCSVHyperlink(hover_over_value)
+        # data['Hover_over: ' + hover_header] = IO_csv_util.undressFilenameForCSVHyperlink(data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1))
         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1)
         data.drop(hover_col, axis=1, inplace=True)
+        data.to_csv(output_file_name, index=False)
 
         if createCharts:
-            # columns_to_be_plotted = [[1, 2]] # hard code Yi
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            # in hover over case, the select col is a list rather than a string as in the other two cases
+            columns_to_be_plotted = get_columns_to_be_plotted(output_file_name,col)
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name, outputDir,
                                                       outputFileLabel=fileNameType,
                                                       chartPackage=chartPackage,
-                                                      chart_type_list=chartType,
-                                                      chart_title='',
-                                                      column_xAxis_label_var=col,
-                                                      hover_info_column_list=Hover_over_header)
+                                                      chart_type_list=['bar'],
+                                                      chart_title='Frequency Distribution of ' + col + ' Values Aggregated by ' + (', '.join(str(x) for x in group_col)),
+                                                      column_xAxis_label_var=col_hover,
+                                                      hover_info_column_list=hover_over_header)
             if chart_outputFilename != "":
                 filesToOpen.append(chart_outputFilename)
             
-        # need change, put run_all
-        # if createCharts:
-        #     filesToOpen=charts_Excel_util.prepare_csv_data_for_chart(window,
-        #                                                         inputFilename, data, outputDir,
-        #                                                         selected_col,
-        #                                                         Hover_over_header, group_col, fileNameType,
-        #                                                         chartType,openOutputFiles, createCharts, chartPackage)
-    if openOutputFiles == 1:
+    if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen=[] # empty list not to display twice
 

@@ -18,7 +18,6 @@ import GUI_IO_util
 import IO_files_util
 import file_spell_checker_util
 import statistics_txt_util
-import sentence_analysis_util
 import concreteness_analysis_util
 import lib_util
 
@@ -90,31 +89,41 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         else:
             outputDir_style=outputDir
 
-            filesToOpen = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style,
+            output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage)
-        if '*' == vocabulary_analysis_menu_var:
-            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
-                                                                   openOutputFiles, createCharts, chartPackage)
-            # if len(tempOutputfile)>0:
-            #     filesToOpen.extend(tempOutputfile)
-        elif 'detection' in vocabulary_analysis_menu_var:
-                filesToOpen = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style,
+            if output != None:
+                filesToOpen.extend(output)
+
+        if 'detection' in vocabulary_analysis_menu_var:
+                output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style,
                                                                          openOutputFiles, createCharts, chartPackage)
+                if output != None:
+                    filesToOpen.extend(output)
         elif 'capital' in vocabulary_analysis_menu_var:
-            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
+            if output != None:
+                filesToOpen.extend(output)
         elif 'Short' in vocabulary_analysis_menu_var:
-            filesToOpen=statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
+            output =statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
+            if output != None:
+                filesToOpen.extend(output)
         elif 'Vowel' in vocabulary_analysis_menu_var:
-            filesToOpen = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
+            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
+            if output != None:
+                filesToOpen.extend(output)
         elif 'Punctuation' in vocabulary_analysis_menu_var:
-            filesToOpen=statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
+            output =statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
+            if output != None:
+                filesToOpen.extend(output)
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
-            filesToOpen=statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
+            output =statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
+            if output != None:
+                filesToOpen.extend(output)
         if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
-            tempFiles=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, False, createCharts, chartPackage)
-            if len(tempFiles)>0:
-                filesToOpen.extend(tempFiles)
+            output =file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, False, createCharts, chartPackage)
+            if output != None:
+                filesToOpen.extend(output)
         if '*' == vocabulary_analysis_menu_var or 'Abstract' in vocabulary_analysis_menu_var:
             # ABSTRACT/CONCRETENESS _______________________________________________________
             mode = "both" # mean, median, both (calculates both mean and median)
@@ -134,7 +143,9 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             #     outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir, outputDir, '.csv', 'SC_dir',
             #                                                              'Concreteness', '', '', '', False, True)
 
-            filesToOpen = concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage, processType='')
+            output = concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage, processType='')
+            if output != None:
+                filesToOpen.extend(output)
 
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                                    'Finished running CONCRETENESS Analysis at', True, '', True, startTime, True)

@@ -93,15 +93,15 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
         if len(csv_list) == 0:
             mb.showwarning(title='Warning', message='You have selected to compute the frequency of a csv file field but no field has been selected.\n\nPlease, select a csv file field and try again.')
             return
-        columns_to_be_plotted=[] # field not used
         tempOutputFiles=statistics_csv_util.compute_stats_NLP_main(window,
                                                            inputFilename,
                                                            '',
                                                            outputDir,
                                                            openOutputFiles, createCharts, chartPackage,
-                                                           columns_to_be_plotted,
                                                            csv_list,hover_over_list,groupBy_list,
                                                            'CSV')
+        if tempOutputFiles != None:
+            filesToOpen.extend(tempOutputFiles)
     elif n_grams:
         n_grams_word_var = False
         n_grams_character_var = False
@@ -137,10 +137,14 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
         if n_grams_word_var or bySentenceIndex_word_var:
             tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_word_var)
+            if tempOutputFiles != None:
+                filesToOpen.extend(tempOutputFiles)
         if n_grams_character_var or bySentenceIndex_character_var:
             tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,n_grams_size, normalize, excludePunctuation,  0, openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_character_var)
-        # statistics_txt_util.compute_character_word_ngrams(window,inputFilename,input_mai
+            if tempOutputFiles != None:
+                filesToOpen.extend(tempOutputFiles)
+
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
