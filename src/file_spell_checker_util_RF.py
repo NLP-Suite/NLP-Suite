@@ -109,7 +109,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         if nFile==1:
             return
 
-    if not silent: IO_user_interface_util.single_file_output_save(inputDir,'NLTK')
+    # if not silent: IO_user_interface_util.single_file_output_save(inputDir,'NLTK')
 
     # NLTK unusual words
     if createCharts:

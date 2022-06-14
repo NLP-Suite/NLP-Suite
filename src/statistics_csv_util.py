@@ -21,7 +21,7 @@ import IO_files_util
 import IO_csv_util
 import charts_util
 import GUI_IO_util
-
+import IO_user_interface_util
 
 #column_to_be_counted is the column number (starting 0 in data_list for which a count is required)
 #column_name is the name that will appear as the chart name
@@ -93,7 +93,7 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, cre
         mb.showwarning(title='File type error', message="The input file\n\n" + inputFilename + "\n\nis not a csv file. The statistical function only works with input csv files.\n\nPlease, select a csv file in input and try again!")
         return None
 
-    outputFilename=IO_files_util.generate_outputFilename(inputFilename, '', outputDir, '.csv', '', 'ungroup_stats')
+    outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'ungroup_stats')
 
     stats=[]
     if columnNumber > -1:
@@ -147,9 +147,10 @@ def percentile(n):
 # lists are the columns to be used for grouping (e.g., Document ID, Document) ['Document ID', 'Document']
 # plotField are the columns to be used for plotting (e.g., Mean, Mode)) ['Mean', 'Mode'] or ['Mean']
 #   columns MUST contain NUMERIC values
+# chart_label is used as part of the the chart_title
 def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, groupByField: list, plotField: list, chart_label, createCharts, chartPackage):
     filesToOpen=[]
-    outputFilename=IO_files_util.generate_outputFilename(inputFilename, '', outputDir, '.csv', '', 'group_stats')
+    outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'group_stats')
     # filesToOpen.append(output_name)
 
     if not set(groupByField).issubset(set(IO_csv_util.get_csvfile_headers(inputFilename))):
@@ -169,10 +170,16 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, group
         return None
 
     if len(groupByField)>0:
-        df_group = df.groupby(groupByField).agg([np.sum, np.mean, lambda x: stats.mode(x)[0], np.median,
-                                                 np.std, np.min, np.max,
-                                                 stats.skew, stats.kurtosis,
-                                                 percentile(25), percentile(50), percentile(75)])
+        try:
+            df_group = df.groupby(groupByField).agg([np.sum, np.mean, lambda x: stats.mode(x)[0], np.median,
+                                                     np.std, np.min, np.max,
+                                                     stats.skew, stats.kurtosis,
+                                                     percentile(25), percentile(50), percentile(75)])
+        except: # the np.sum etc. will break the code if the field passed is alphabetic
+            IO_user_interface_util.timed_alert(window, 4000, 'Warning',
+                                               "The fields to be grouped by " + str(groupByField) + " are alphabetic and statistical measures cannot be computed.",
+                                               False, '', True, '', False)
+            return
     if len(plotField) > 0:
         column_name=plotField[0]
         df_group = df_group[[column_name]]
@@ -200,7 +207,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, group
                                                   outputFileLabel='',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
-                                                  chart_title=column_name_to_be_plotted + ' Number of ' + chart_label + ' by Document',
+                                                  chart_title=column_name_to_be_plotted + '\n' + chart_label + ' by Document',
                                                   column_xAxis_label_var='', #Document
                                                   column_yAxis_label_var=column_name_to_be_plotted,
                                                   hover_info_column_list=hover_label,
@@ -226,13 +233,13 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, p
         filesToOpen.append(temp_outputfile)
     if len(groupByList)>0:
         temp_outputfile=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,groupByList,plotList,chart_label,createCharts,chartPackage)
-        if temp_outputfile != '':
+        if temp_outputfile != None:
             # extend because temp_outputfile is a list
             filesToOpen.extend(temp_outputfile)
     return filesToOpen
 
 
-# TODO HOW DOES THIS DIFFER FROM def prepare_data_to_be_plotted?
+# TODO TONY HOW DOES THIS DIFFER FROM def prepare_data_to_be_plotted_inExcel?
 # compute frequencies of a field for a specific value and with hover-over effects (e.g., NER field, value Location)
 # the function does not aggregate the values by another field (e.g., NER field by Document ID)
 # in INPUT the function can use either a csv file or a data frame
@@ -379,8 +386,8 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, p
 
 # input can be a csv filename or a dataFrame
 # output is a dataFrame
-# TODO how does this differ from complete_sentence_index(file_path)
-# TODO any funtion that plots data by sentence index should really check that the required sentence IDs are all there and insert them otherwise
+# TODO TONY  how does this differ from complete_sentence_index(file_path)
+# TODO TONY any funtion that plots data by sentence index should really check that the required sentence IDs are all there and insert them otherwise
 def add_missing_IDs(input):
     if isinstance(input, pd.DataFrame):
         df = input
@@ -418,6 +425,7 @@ def add_missing_IDs(input):
 
 
 # written by Tony Chen Gu, April 2022
+# TODO TONY How does this differ from the several compute frequency options that I have extensively commented for clarity
 # the three steps function computes
 #   1. the frequencies of a given csv field (select_col) aggregating the results by (group_col and select_col).
 #   2. the resulting frequencies are pivoted in order plot the data in a multi-line chart (one chart for every distinct value of select_col) by Sentence ID.
@@ -522,7 +530,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     elif len(selected_col) != 0 and len(group_col) == 0:
         # no aggregation by group_col --------------------------------------------------------
         for col in selected_col:
-            outputFilename = IO_files_util.generate_outputFilename(inputFilename, '', outputDir, '.csv', col)
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
             data = data[col].value_counts().to_frame().reset_index()
             hdr = [col, col + ' Frequency']
 
@@ -542,7 +550,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
         # aggregation by group_col NO hover over ----------------------------------------
         for col in selected_col:
-            outputFilename = IO_files_util.generate_outputFilename(inputFilename, '', outputDir, '.csv', col)
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
             temp = group_col.copy()
             temp.append(col)
             data = data.groupby(temp).size().reset_index(name='Frequency')
@@ -555,7 +563,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     else: # aggregation by group_col & hover over -----------------------------------------------
         for col_hover in hover_col:
             col = str(selected_col[0])
-            outputFilename = IO_files_util.generate_outputFilename(inputFilename, '', outputDir, '.csv', col_hover)
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col_hover)
             temp = group_col.copy()
             temp.append(col_hover)
             c = data.groupby(group_col)[col_hover].apply(list).to_dict()
@@ -578,9 +586,9 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             df.columns = temp
             data = data.merge(df, how = 'left', left_on= group_col,right_on = group_col)
         temp_str = '%s'+'\n%s'* (len(hover_col)-1)
-        # TONY need to remove hyperlink from hover over data in case hover_over_header is Document
-        # hover_over_value=IO_csv_util.undressFilenameForCSVHyperlink(hover_over_value)
-        # data['Hover_over: ' + hover_header] = IO_csv_util.undressFilenameForCSVHyperlink(data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1))
+        # TODO TONY need to remove hyperlink from hover over data in case hover_over_header is Document
+        #   hover_over_value=IO_csv_util.undressFilenameForCSVHyperlink(hover_over_value)
+        #   data['Hover_over: ' + hover_header] = IO_csv_util.undressFilenameForCSVHyperlink(data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1))
         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1)
         data.drop(hover_col, axis=1, inplace=True)
         data.to_csv(outputFilename, index=False)

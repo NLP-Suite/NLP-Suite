@@ -91,17 +91,16 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         # text_vocab = set(lemmatizer.lemmatize(w.lower()) for w in text.split(" ") if w.isalpha())
         text_vocab = set(lemmatizing(w.lower()) for w in text.split(" ") if w.isalpha())
         english_vocab = set([w.lower() for w in nltk.corpus.words.words()])
-        print("english_vocab",english_vocab)
-        print("text_vocab",text_vocab)
+        # print("Using NLTK English_vocab",english_vocab)
+        # print("text_vocab",text_vocab)
         unusual = text_vocab - english_vocab
         #convert the set to a list
         unusual=list(unusual)
         #sort the list
         unusual.sort()
-        # unusual = [[documentID, file, word] for word in unusual]
-        unusual = [[documentID, IO_csv_util.dressFilenameForCSVHyperlink(file), word] for word in unusual]
+        unusual = [[word,documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)] for word in unusual]
         container.extend(unusual)
-    container.insert(0, ['Document ID', 'Document', 'Misspelled/unusual word'])
+    container.insert(0, ['Misspelled/unusual word','Document ID', 'Document'])
     if len(container)>0:
         if IO_csv_util.list_to_csv(window,container,outputFilename): return
     else:
@@ -109,7 +108,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         if nFile==1:
             return
 
-    if not silent: IO_user_interface_util.single_file_output_save(inputDir,'NLTK')
+    # if not silent: IO_user_interface_util.single_file_output_save(inputDir,'NLTK Unusual Words')
 
     # NLTK unusual words
     if createCharts:
@@ -117,29 +116,31 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
              result = mb.askyesno("Excel charts","You have " + str(nFile) + " files for which to compute Excel charts.\n\nTHIS WILL TAKE A LONG TIME.\n\nAre you sure you want to do that?")
              if result==False:
                  pass
-        columns_to_be_plotted = [[2,2]]
-        hover_label=['']
-        inputFilename=outputFilename
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                   outputFileLabel='NLTK_spell',
-                                                   chartPackage=chartPackage,
-                                                   chart_type_list=["bar"],
-                                                   chart_title='Misspelled/Unusual Words Frequency',
-                                                   column_xAxis_label_var='',
-                                                   hover_info_column_list=hover_label,
-                                                   count_var=1)
-        if chart_outputFilename != "":
-             filesToOpen.append(chart_outputFilename)
+
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                   columns_to_be_plotted_bar=[[2, 2]],
+                                                   columns_to_be_plotted_bySent=[[]], # no sent in NLTK unusual
+                                                   columns_to_be_plotted_byDoc=[[0,2]],
+                                                   chartTitle='Frequency of Misspelled/Unusual Words',
+                                                   count_var=1, hover_label=[],
+                                                   outputFileNameType='',  # 'line_bar',
+                                                   column_xAxis_label='Word',
+                                                   groupByList=['Document ID', 'Document'],
+                                                   plotList=['Misspelled/Unusual Words Statistics'],
+                                                   chart_label='')
+
+        if chart_outputFilename != None:
+            filesToOpen.extend(chart_outputFilename)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
         filesToOpen=[] # do not open twice, hee and calling function
     # already shown in NLP.py
     # IO_util.timed_alert(GUI_util.window,3000,'Analysis end','Finished running NLTK unusual words at',True)
-    for u in unusual:
-        print(u[-1])
-
-    print(len(unusual))
+    # for u in unusual:
+    #     print(u[-1])
+    #
+    # print(len(unusual))
     return filesToOpen
 
 def generate_simple_csv(Dataframe):

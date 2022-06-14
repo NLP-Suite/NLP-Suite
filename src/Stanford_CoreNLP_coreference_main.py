@@ -132,7 +132,7 @@ def run(inputFilename, inputDir, outputDir,
 
     if openOutputFiles == True and len(filesToOpen) > 0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-
+`
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
