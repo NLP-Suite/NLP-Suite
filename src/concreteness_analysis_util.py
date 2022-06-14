@@ -1,7 +1,7 @@
 """
 Author: Doris Zhou February 19, 2018
 Modified by Gabriel Wang May 2018
-Modified by Roberto Franzosi February 2019
+Modified by Roberto Franzosi February 2019, June 2022
 Modified by Josh Karol October 2019
 
 Performs concreteness analysis on a text file using Brysbaert et al. concreteness ratings.
@@ -42,6 +42,7 @@ import argparse
 import pandas as pd
 import tkinter.messagebox as mb
 import IO_user_interface_util
+import lib_util
 
 from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
@@ -89,11 +90,11 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 	# sentences = tokenize.sent_tokenize(fulltext)
 	sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
 
-	i = 1  # to store sentence index
 	# check each word in sentence for concreteness and write to outputFilename
-
 	# analyze each sentence for concreteness
+	i = 0  # to store sentence index
 	for s in sentences:
+		i = i + 1
 		# print("S" + str(i) +": " + s)
 		all_words = []
 		found_words = []
@@ -101,8 +102,6 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 		score_list = []  # use the Conc.M as scores to calculate the concreteness
 
 		# search for each valid word's concreteness ratings
-		# words = nlp.pos_tag(s.lower())
-		# words = word_tokenize(s.lower())
 		words = word_tokenize_stanza(stanzaPipeLine(s.lower()))
 
 		filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
@@ -110,56 +109,28 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 			# don't process stopwords
 			if w in stops:
 				continue
-
-			# lemmatize word
-			# lmtzr = WordNetLemmatizer()
-			# lemma = lmtzr.lemmatize(w, pos='v')
 			lemma = lemmatize_stanza(stanzaPipeLine(w))
-			# if lemma == w:
-			# 	lemma = lmtzr.lemmatize(w, pos='n')
-
 			all_words.append(str(lemma))
-
 			if lemma in data_dict['Word']:
 				index = data_dict['Word'].index(lemma)
-				score = float(data_dict['Conc.M'][index])
+				score = round(float(data_dict['Conc.M'][index]), 2)
 				found_words.append('(' + str(lemma) + ', ' + str(score) + ')')
 				score_list.append(score)
-			# print('score: '+ str(score) + ' LEMMA: ' + str(lemma))
-
-			# search for lemmatized word in Brysbaert et al. concreteness ratings
-			if len(found_words) == 0:  # no words found in Brysbaert et al. concreteness ratings for this sentence
-				# writer.writerow({'Concreteness (Mean score)': 'N/A',
-				# 				 'Concreteness (Median score)': 'N/A',
-				# 				 'Standard Deviation': 'N/A',
-				writer.writerow({'Concreteness (Mean score)': 0,
-								 'Concreteness (Median score)': 0,
-							     'Standard Deviation': 0,
-								 '# Words Found': 0,
-								 'Percentage': '0.0%',
-								 'Found Words': 0,
-								 'All Words': all_words,
-								 'Sentence ID': i,
-								 'Sentence': s, 'Document ID': documentID,
-								 'Document': IO_csv_util.dressFilenameForCSVHyperlink(documentName)
-								 })
-				i += 1
-		else:  # output concreteness info for this sentence
-
-			# print('score_list: '+ str(score_list) + ' LEMMA: ' + str(lemma))
-
-			if len(score_list) > 1:
-				conc_median = statistics.median(score_list)
-				conc_mean = statistics.mean(score_list)
-				conc_sd = statistics.stdev(score_list)
-				# conc_sd = 'N/A'
-				# if len(score_list) > 1:
-				# print(conc_m,conc_sd)
+				# print('score: '+ str(score) + ' LEMMA: ' + str(lemma))
+		# else:  # output concreteness info for this sentence
+		if len(score_list) > 0:
+			conc_median = round(float(statistics.median(score_list)), 2)
+			conc_mean = round(float(statistics.mean(score_list)), 2)
+			if len(score_list) == 1:
+				conc_sd = 0
+			else:
+				conc_sd = round(float(statistics.stdev(score_list)), 2)
+			if conc_median!=0 and conc_mean!=0:
 				writer.writerow({'Concreteness (Mean score)': conc_mean,
 								 'Concreteness (Median score)': conc_median,
 								 'Standard Deviation': conc_sd,
 								 '# Words Found': "%d out of %d" % (len(found_words), len(all_words)),
-								 'Percentage': str(100 * (float(len(found_words)) / float(len(all_words)))) + '%',
+								 'Percentage': str(100 * (round(float(len(found_words)) / float(len(all_words)), 2))) + '%',
 								 'Found Words': ', '.join(found_words),
 								 'All Words': ', '.join(all_words),
 								 'Sentence ID': i,
@@ -167,9 +138,6 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 								 'Document ID': documentID,
 								 'Document': IO_csv_util.dressFilenameForCSVHyperlink(documentName)
 								 })
-
-			i += 1
-
 
 	return outputFilename  # LINE ADDED
 
@@ -183,6 +151,11 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 	:param outputDir:
 	:return:
 	"""
+
+	if lib_util.checklibFile(
+			GUI_IO_util.concreteness_libPath + os.sep + 'Concreteness_ratings_Brysbaert_et_al_BRM.csv',
+			'concreteness_analysis_util.py') == False:
+		return
 
 	if len(outputDir) < 0 or not os.path.exists(outputDir):  # empty output
 		print('No output directory specified, or path does not exist')
@@ -200,6 +173,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 					  '# Words Found', 'Percentage', 'Found Words', 'All Words',
 					  'Sentence ID', 'Sentence','Document ID', 'Document']
 		global writer
+		# writer = csv.DictWriter(csvfile, fieldnames=fieldnames, lineterminator='\n')
 		writer = csv.DictWriter(csvfile, fieldnames=fieldnames, lineterminator='\n')
 		writer.writeheader()
 
@@ -235,59 +209,27 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 				print('Input directory "' + inputDir + '" is invalid.')
 				sys.exit(0)
 
-	# compute statistics about sentence length grouped by Document
-	groupByList = ['Document ID', 'Document']
-	plotList = ['Concreteness (Mean score)']
-	chart_label = 'Sentences'
-	tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
-																	   groupByList, plotList, chart_label,
-																	   createCharts,
-																	   chartPackage)  # 'sentence length (in words)'
+	chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+													   columns_to_be_plotted_bar=[[0,0]],
+													   columns_to_be_plotted_bySent= [[7, 0]],
+													   columns_to_be_plotted_byDoc=[[10, 0]],
+													   chartTitle='Frequency Distribution of Concrete/Abstract Scores',
+													   count_var=0, # to be used for byDoc, as a numeric field
+													   hover_label=[],
+													   outputFileNameType='',
+													   column_xAxis_label='Concreteness scores',
+													   groupByList=['Document ID', 'Document'],
+													   plotList=['Concreteness (Mean score)'],
+													   chart_label='Concreteness Statistics')
+	if chart_outputFilename != None:
+		if len(chart_outputFilename) > 0:
+			filesToOpen.extend(chart_outputFilename)
 
-	if tempOutputfile != None:
-		filesToOpen.extend(tempOutputfile)
-
-	if createCharts == True:
-		inputFilename = outputFilename
-
-		# bar chart by document
-		columns_to_be_plotted = [[0,10]] # document comes second 10]
-		# hover_label = ['Sentence', 'Sentence']
-		hover_label = []
-		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-														 outputFileLabel='ByDoc',
-														 chartPackage=chartPackage,
-														 chart_type_list=["bar"],
-														 chart_title='Concreteness Scores by Document\n' + chart_title,
-														 column_xAxis_label_var='',
-														 hover_info_column_list=hover_label,
-														 count_var=1,
-														 column_yAxis_label_var='Scores',
-														 remove_hyperlinks=True)
-		if chart_outputFilename != "":
-			filesToOpen.append(chart_outputFilename)
-
-		# line plots by sentence index
-		columns_to_be_plotted = [[7, 0], [7, 1]]
-		# hover_label = ['Sentence', 'Sentence']
-		hover_label = []
-		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-														 outputFileLabel='Concret',
-														 chartPackage=chartPackage,
-														 chart_type_list=["line"],
-														 chart_title='Concreteness Scores by Sentence Index\n' + chart_title,
-														 column_xAxis_label_var='Sentence index',
-														 hover_info_column_list=hover_label,
-														 count_var=0,
-														 column_yAxis_label_var='Scores',
-														 complete_sid=True)
-		if chart_outputFilename != "":
-			filesToOpen.append(chart_outputFilename)
 
 	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
 	                                       'Finished running CONCRETENESS Analysis at', True, '', True, startTime, True)
 
-	return filesToOpen  # LINE ADDED
+	return filesToOpen
 
 if __name__ == '__main__':
 	# get arguments from command line

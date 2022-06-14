@@ -96,6 +96,7 @@ def get_hover_column_numbers(withHeader_var, headers, hover_info_column_list):
 #   three series: [[['Name1','Frequency'], ['A', 7]], [['Name2','Frequency'], ['B', 4]], [['Name3','Frequency'], ['C', 9]]]
 #   more series: ..........
 #chartTitle is the name of the sheet
+# the title_series is displayed to the right of the chart as the title of the series
 #num_label number of bars, for instance, that will be displayed in a bar chart 
 #second_y_var is a boolean that tells the function whether a second y axis is needed 
 #   because it has a different scale and plotted values would otherwise be "masked"
@@ -282,7 +283,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             ws2.delete_rows(row_count2 - i)
 
         if reverse_column_position_for_series_label == True:
-            mb.showwarning(title='Reverse Series Label var Warning', message="The system indicates that you set reverse var for series labels to be true; however, in the hover-over feature, the series labels can only be the header of the Y-axis values (Column B, C, D,... in 'Data' sheet). Or you can specify series labels in series_label_list.\n\nPlease click 'OK' and continue.")
+            mb.showwarning(title='Reverse Series Label Variable Warning', message="The system indicates that you set reverse var for series labels to be true; however, in the hover-over feature, the series labels can only be the header of the Y-axis values (Column B, C, D,... in 'Data' sheet). Or you can specify series labels in series_label_list.\n\nPlease click 'OK' and continue.")
 
         for i in range(len(series_label_list)):
             if len(series_label_list[i]) > 0:

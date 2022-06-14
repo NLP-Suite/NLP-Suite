@@ -36,6 +36,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     gender_guesser_var):
 
     filesToOpen = []  # Store all files that are to be opened once finished
+    openOutputFilesSV=openOutputFiles
+    outputDir_style=outputDir
 
     if (CoNLL_table_analysis_var==False and
         nominalization_var==False and
@@ -89,66 +91,42 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         else:
             outputDir_style=outputDir
 
-            output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style,
-                                                                   openOutputFiles, createCharts, chartPackage)
+        if '*' in vocabulary_analysis_menu_var or 'capital' in vocabulary_analysis_menu_var:
+            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+                                                                   openOutputFiles, createCharts, chartPackage,'capital')
+            if output != None:
+                filesToOpen.extend(output)
+        if '*' in vocabulary_analysis_menu_var or 'Short' in vocabulary_analysis_menu_var:
+            output =statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Short')
+            if output != None:
+                filesToOpen.extend(output)
+        if '*' in vocabulary_analysis_menu_var or 'Vowel' in vocabulary_analysis_menu_var:
+            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Vowel')
+            if output != None:
+                filesToOpen.extend(output)
+        if '*' in vocabulary_analysis_menu_var or 'Punctuation' in vocabulary_analysis_menu_var:
+            output =statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Punctuation')
             if output != None:
                 filesToOpen.extend(output)
 
-        if 'detection' in vocabulary_analysis_menu_var:
-                output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style,
-                                                                         openOutputFiles, createCharts, chartPackage)
-                if output != None:
-                    filesToOpen.extend(output)
-        elif 'capital' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
-                                                                   openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
+        if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
+            output =file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, False, createCharts, chartPackage)
             if output != None:
                 filesToOpen.extend(output)
-        elif 'Short' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
-            if output != None:
-                filesToOpen.extend(output)
-        elif 'Vowel' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
-            if output != None:
-                filesToOpen.extend(output)
-        elif 'Punctuation' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var)
+        if '*' == vocabulary_analysis_menu_var or 'Abstract' in vocabulary_analysis_menu_var:
+            mode = "both" # mean, median, both (calculates both mean and median)
+            output = concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage, processType='')
             if output != None:
                 filesToOpen.extend(output)
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
             output =statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
             if output != None:
                 filesToOpen.extend(output)
-        if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
-            output =file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, False, createCharts, chartPackage)
-            if output != None:
-                filesToOpen.extend(output)
-        if '*' == vocabulary_analysis_menu_var or 'Abstract' in vocabulary_analysis_menu_var:
-            # ABSTRACT/CONCRETENESS _______________________________________________________
-            mode = "both" # mean, median, both (calculates both mean and median)
-            if lib_util.checklibFile(
-                    GUI_IO_util.concreteness_libPath + os.sep + 'Concreteness_ratings_Brysbaert_et_al_BRM.csv',
-                    'concreteness_analysis_util.py') == False:
-                return
-            if IO_libraries_util.check_inputPythonJavaProgramFile('concreteness_analysis_util.py') == False:
-                return
-
-            startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
-                                                           'Started running CONCRETENESS Analysis at', True)
-            # if len(inputFilename) > 0:
-            #     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,outputDir, '.csv', 'SC',
-            #                                                              'Concreteness', '', '', '', False, True)
-            # else:
-            #     outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir, outputDir, '.csv', 'SC_dir',
-            #                                                              'Concreteness', '', '', '', False, True)
-
-            output = concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage, processType='')
-            if output != None:
-                filesToOpen.extend(output)
-
-            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-                                                   'Finished running CONCRETENESS Analysis at', True, '', True, startTime, True)
+        if '*' in vocabulary_analysis_menu_var or 'detection' in vocabulary_analysis_menu_var:
+                output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style,
+                                                                         openOutputFiles, createCharts, chartPackage)
+                if output != None:
+                    filesToOpen.extend(output)
 
     if ngrams_analysis_var == True:
         if '*' in ngrams_analysis_menu_var or 'Character' in ngrams_analysis_menu_var or 'Word' in ngrams_analysis_menu_var:
@@ -315,6 +293,7 @@ complexity_readability_analysis_var.set(0)
 complexity_readability_analysis_checkbox = tk.Checkbutton(window, text='Complexity/readability analysis', variable=complexity_readability_analysis_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,complexity_readability_analysis_checkbox,True)
 
+complexity_readability_analysis_menu_var.set('*')
 complexity_readability_analysis_lb = tk.Label(window, text='Select the complexity/readability analysis you wish to perform')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,complexity_readability_analysis_lb,True)
 complexity_readability_analysis_menu = tk.OptionMenu(window,complexity_readability_analysis_menu_var,'*','Sentence complexity','Text readability')
@@ -324,6 +303,7 @@ vocabulary_analysis_var.set(0)
 vocabulary_analysis_checkbox = tk.Checkbutton(window, text='Vocabulary analysis', variable=vocabulary_analysis_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,vocabulary_analysis_checkbox,True)
 
+vocabulary_analysis_menu_var.set('*')
 vocabulary_analysis_lb = tk.Label(window, text='Select the vocabulary analysis you wish to perform')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,vocabulary_analysis_lb,True)
 vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*',
@@ -343,6 +323,7 @@ ngrams_analysis_var.set(0)
 ngrams_analysis_checkbox = tk.Checkbutton(window, text='N-grams analysis', variable=ngrams_analysis_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,ngrams_analysis_checkbox,True)
 
+ngrams_analysis_menu_var.set('*')
 ngrams_lb = tk.Label(window, text='Select the n-grams analysis you wish to perform')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,ngrams_lb,True)
 ngrams_analysis_menu = tk.OptionMenu(window,ngrams_analysis_menu_var,'*','Characters','Words','Hapax legomena (once-occurring words)','DEPREL','POSTAG','NER','Repetition of words (last N words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')

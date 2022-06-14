@@ -205,6 +205,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
 
 # written by Yi Wang April 2020
 # ConnlTable is the inputFilename
+# TODO TONY do we need this now? Don't we have more general ways of dealing with this?
 def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, noun_verb, openOutputFiles,
 						 createCharts, chartPackage):
 	filesToOpen = []

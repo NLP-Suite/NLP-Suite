@@ -11,8 +11,8 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"charts_Excel_util",['
 
 import tkinter.messagebox as mb
 from collections import Counter
-
 import pandas as pd
+import os
 
 import IO_csv_util
 import IO_user_interface_util
@@ -31,7 +31,7 @@ import statistics_csv_util
 # inputFilename has the full path
 # columns_to_be_plotted is a double list [[0, 1], [0, 2], [0, 3]]
 # TODO HOW DOES THIS DIFFER FROM def prepare_csv_data_for_chart?
-def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_list,
+def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, chart_type_list,
                                count_var=0, column_yAxis_field_list = []):
     withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
     data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
@@ -44,6 +44,12 @@ def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_
         # TODO hover_over_values not being passed, neither are any potential aggregate columns
         #   get_data_to_be_plotted_with_counts is less general than
         data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange)
+        # TODO TONY
+        # when counting because we are dealing with an alphabetic field, we should export the frequency values
+        #   to be used in the visualization of field statistics; but... not sure how to do it since it
+        #   exports the data as lists
+        # outputFilename = inputFilename.replace('.csv','1.csv')
+        # IO_csv_util.list_to_csv(GUI_util.window, data_to_be_plotted, outputFilename)
     else:
         try:
             data = pd.read_csv(inputFilename,encoding='utf-8')
@@ -55,7 +61,7 @@ def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_
                 print("Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 encoding in reading into pandas the csv file " + inputFilename)
             except ValueError as err:
                 if 'codec' in str(err):
-                    err=str(err) + '\n\nExcel-util encountered errors with both utf-8 and ISO-8859-1 encoding in the function \'prepare_data_to_be_plotted\' while reading into pandas the csv file\n\n' + inputFilename + '\n\nPlease, check carefully the data in the csv file; it may contain filenames with non-utf-8/ISO-8859-1 characters; less likely, the data in the txt files that generated the csv file may also contain non-compliant characters. Run the utf-8 compliance algorithm and, perhaps, run the cleaning algorithm that converts apostrophes.\n\nNO EXCEL CHART PRODUCED.'
+                    err=str(err) + '\n\nExcel-util encountered errors with both utf-8 and ISO-8859-1 encoding in the function \'prepare_data_to_be_plotted_inExcel\' while reading into pandas the csv file\n\n' + inputFilename + '\n\nPlease, check carefully the data in the csv file; it may contain filenames with non-utf-8/ISO-8859-1 characters; less likely, the data in the txt files that generated the csv file may also contain non-compliant characters. Run the utf-8 compliance algorithm and, perhaps, run the cleaning algorithm that converts apostrophes.\n\nNO EXCEL CHART PRODUCED.'
                 mb.showwarning(title='Input file read error',
                        message=str(err))
                 return
@@ -65,12 +71,18 @@ def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_
 # columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc
 #   all double lists [[]]
 # the variable groupByList,plotList, chart_label are used to compute column statistics
+#   groupByList is typically the list ['Document ID', 'Document']
+#   plotList is the list of fields that want to be plotted
+#   chart_label is used as part of the the chart_title when plotting the fields statistics
 def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc,
                     chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_label):
     if createCharts == True:
+        chart_outputFilenameSV=''
         filesToOpen=[]
-        # standard bar chart ------------------------------------------------------------------------------
+
+# count_var should always be TRUE to get frequency distributions
+# standard bar chart ------------------------------------------------------------------------------
         if len(columns_to_be_plotted_bar[0])>0: # compute only if the double list is not empty
             chart_outputFilename = run_all(columns_to_be_plotted_bar, inputFilename, outputDir,
                                                       outputFileLabel=outputFileNameType,
@@ -79,14 +91,20 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                       chart_title=chartTitle,
                                                       column_xAxis_label_var=column_xAxis_label,
                                                       hover_info_column_list=hover_label,
-                                                      count_var=1)
+                                                      count_var=1) #always 1 to get frequencies of values
 
             if chart_outputFilename!=None:
+                chart_outputFilenameSV=chart_outputFilename
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
-        # bar charts by document
-        # # document value are the second item in the list [[3,2]] i.e. 2
+# bar charts by document ------------------------------------------------------------------------
+        # TODO in byDoc count_var should be
+        #   FALSE (0) for numeric fields;
+        #   TRUE for alphabetic fields
+        # document value are the first item in the list [[2,3]] i.e. 2
+        # TODO for alphabetic fields with multiple values (e.g., NER, POS), we should compute the list of values and
+        #   ask the user which field to focus on for the plot, e.g., NER PERSON, POS NN
         if len(columns_to_be_plotted_byDoc[0])>0: # compute only if the double list is not empty
             chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
                                                       outputFileLabel='ByDoc',
@@ -95,15 +113,17 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                       chart_title=chartTitle + ' by Document',
                                                       column_xAxis_label_var='',
                                                       hover_info_column_list=hover_label,
-                                                      count_var=1,
+                                                      # count_var is set in the calling function
+                                                      #     0 for numeric fields; 1 for non-numeric fields
+                                                      count_var=count_var,
                                                       remove_hyperlinks=True)
 
             if chart_outputFilename!=None:
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
-        # line plots by sentence index
-        # # values to be plotted are the first item in the list [[3,2]] i.e. 3
+# line plots by sentence index -----------------------------------------------------------------------
+        # values to be plotted are the first item in the list [[3,2]] i.e. 3
         if len(columns_to_be_plotted_bySent[0])>0: # compute only if the double list is not empty
             chart_outputFilename = run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
                                                       outputFileLabel='BySent',
@@ -119,11 +139,16 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
-        # compute field statistics;
-        # THE FIELD MUST CONTAIN NUMERIC VALUES
+# compute field statistics ---------------------------------------------------------------------------
+        # TODO THE FIELD MUST CONTAIN NUMERIC VALUES
         # plotList (a list []) contains the columns headers to be used to compute their stats
         if len(groupByList)>0: # compute only if list is not empty
-            tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, inputFilename, outputDir,
+            # if count_var==1:
+            #     outputFilename = inputFilename.replace('.csv', '1.csv')
+            # else:
+            #     outputFilename = inputFilename
+            outputFilename = inputFilename
+            tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
                                                                                groupByList, plotList, chart_label,
                                                                                createCharts,
                                                                                chartPackage)
@@ -139,8 +164,9 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 # each series plotted has its own hover-over column
 #   if the column is the same (e.g., sentence), this must be repeated as many times as there are series 
 
-# columns_to_be_plotted is a double list [[0, 1], [0, 2], [0, 3]] where the first number refers to the x-axis value and the second to the y-axis value
-# when count_var=1 the second number gets counted
+# columns_to_be_plotted is a double list [[0, 1], [0, 2], [0, 3]] where
+#   the first number refers to the x-axis value and the second to the y-axis value
+# when count_var=1 the second number gets counted (non numeric values MUST be counted)
 # the complete sid need to be tested as na would be filled with 0
 def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             chartPackage, chart_type_list,chart_title, column_xAxis_label_var,
@@ -158,10 +184,6 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
     if complete_sid:
         complete_sentence_index(inputFilename)
     if use_plotly:
-        # def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_to_plot,
-        #                 column_xAxis_label='',
-        #                 column_yAxis_label='',
-        #                 static_flag=False,):
         Plotly_outputFilename = charts_plotly_util.create_plotly_chart(inputFilename = inputFilename,
                                                                         outputDir = outputDir,
                                                                         chartTitle = chart_title,
@@ -172,7 +194,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
                                                                         remove_hyperlinks = remove_hyperlinks)
         return Plotly_outputFilename
     
-    data_to_be_plotted = prepare_data_to_be_plotted(inputFilename,
+    data_to_be_plotted = prepare_data_to_be_plotted_inExcel(inputFilename,
                                 columns_to_be_plotted,
                                 chart_type_list,count_var,
                                 column_yAxis_field_list)
@@ -180,8 +202,8 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             return ''
 
     transform_list = []
-    # the following is deciding which type of data is returned from prepare_data_to_be_plotted
-    # for the function prepare_data_to_be_plotted branch into two different data handling functions which returns different data type
+    # the following is deciding which type of data is returned from prepare_data_to_be_plotted_inExcel
+    # for the function prepare_data_to_be_plotted_inExcel branch into two different data handling functions which retruns different data type
     # and due to complexity reasons, we keep them in this way:
     # check the data type for the return value and decide which step to take next
     if not(isinstance(data_to_be_plotted[0], list)):
@@ -235,7 +257,7 @@ def get_dataRange(columns_to_be_plotted, data):
 # TODO if hover_over columns are passed, it should concatenate all values, instead of displaying the first one only
 #   (e.g. an example run the going UP function in WordNet)
 # this function seems to be less general than def compute_csv_column_frequencies; that function handl;es aggregation and hover over effects
-# we should consolidate the two and use the most general one under he heading get_data_to_be_plotted_with_counts
+# we should consolidate the two and use the most general one under the heading get_data_to_be_plotted_with_counts
 
 # def get_data_to_be_plotted_with_counts(inputFileName,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange):
 #     CALL compute_column_frequencies(columns_to_be_plotted, dataRange, headers,column_yAxis_field_list)
@@ -322,14 +344,16 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 # remove comments before variable begin with d_id to enable complete document id function
 # need to have a document id column and sentence id column
 # would complete the file (make document id and sentence id continuous) and padding zero values for the added rows
-# TODO how does this differ from add_missing_IDs
+# TODO TONY how does this differ from add_missing_IDs in statistics_csv_util;
+#   that one seems to be more general, accounting for both Sentence ID and Document ID
+#   it is used by def Wordnet_bySentenceID
 # # edited by Roberto June 2022
 def complete_sentence_index(file_path):
     data = pd.read_csv(file_path)
-    try:
-        print(data["Sentence ID"])
-    except:
-        print("Only enable complete sentence index when there is a Sentence ID column in the csv file")
+    if not 'Sentence ID' in data:
+        head, tail = os.path.split(file_path)
+        mb.showwarning(title='Wrong csv file',
+                       message='The csv file\n' + tail + '\n does not contain a "Sentence ID" header. A sentence ID value cannot be added.')
         return
     if(len(data) == 1):
         return data
