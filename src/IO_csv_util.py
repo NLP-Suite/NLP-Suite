@@ -304,7 +304,6 @@ def undressFilenameForCSVHyperlink(fileName):
     fileName=fileName.replace('")','')
     return fileName
 
-
 # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location' in GIS files
 def rename_header(inputFilename, header1, header2):
     headerFound=False
