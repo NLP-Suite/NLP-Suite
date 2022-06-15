@@ -158,7 +158,7 @@ def run(inputFilename,inputDir, outputDir,
         # compute sentence length ----------------------------------------------------
 
         if 'sentence length' in corpus_statistics_options_menu_var:
-            output = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, createCharts, chartPackage)
+            output = statistics_txt_util.compute_sentence_length(config_filename, inputFilename,inputDir, outputDir, createCharts, chartPackage)
 
             if output!=None:
                 filesToOpen.extend(output)

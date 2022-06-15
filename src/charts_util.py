@@ -29,7 +29,7 @@ import statistics_csv_util
 #   more series: ..........
 # inputFilename has the full path
 # columns_to_be_plotted is a double list [[0, 1], [0, 2], [0, 3]]
-# TODO HOW DOES THIS DIFFER FROM def prepare_csv_data_for_chart?
+# TODO HOW DOES THIS DIFFER FROM def prepare_csv_data_for_chart in statistics_csv_util?
 def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, chart_type_list,
                                count_var=0, column_yAxis_field_list = []):
     withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
@@ -47,8 +47,8 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
         # when counting because we are dealing with an alphabetic field, we should export the frequency values
         #   to be used in the visualization of field statistics; but... not sure how to do it since it
         #   exports the data as lists
-        # outputFilename = inputFilename.replace('.csv','1.csv')
-        # IO_csv_util.list_to_csv(GUI_util.window, data_to_be_plotted, outputFilename)
+        outputFilename = inputFilename.replace('.csv','1.csv')
+        IO_csv_util.list_to_csv(GUI_util.window, data_to_be_plotted[0], outputFilename)
     else:
         try:
             data = pd.read_csv(inputFilename,encoding='utf-8')
@@ -98,13 +98,29 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     filesToOpen.append(chart_outputFilename)
 
 # bar charts by document ------------------------------------------------------------------------
-        # TODO in byDoc count_var should be
+        # document value are the first item in the list [[3,2]] i.e. 3
+        #   plot values are the second item in the list [[3,2]] i.e. 2
+        #  count_var should be
         #   FALSE (0) for numeric fields;
-        #   TRUE for alphabetic fields
-        # document value are the first item in the list [[2,3]] i.e. 2
-        # TODO for alphabetic fields with multiple values (e.g., NER, POS), we should compute the list of values and
+        #   TRUE (1) for alphabetic fields
+        # TODO for alphabetic fields with multiple values (e.g., NER, POS),
+        #   we should compute the list of values and
         #   ask the user which field to focus on for the plot, e.g., NER PERSON, POS NN
+        # TODO for numeric fields, with multiple values,
+        #   it should provide classes of values
+        #   and allow you to select a class, like for alphabetic values above
         if len(columns_to_be_plotted_byDoc[0])>0: # compute only if the double list is not empty
+            if count_var==1:
+                # TODO TONY trying to get the new file with frequencies for qualitative column values
+                data, headers = IO_csv_util.get_csv_data(inputFilename, True)  # get the data and header
+                column_name = IO_csv_util.get_headerValue_from_columnNumber(headers, (columns_to_be_plotted_byDoc[0])[1])
+                column_values = IO_csv_util.get_columnNumber_from_headerValue(headers, column_name)
+                csv_field_values = IO_csv_util.get_csv_field_values(inputFilename, column_name)
+                column_number = (columns_to_be_plotted_byDoc[0])[1]
+                specific_column_value_list=['NN']
+                dataRange = get_dataRange([[column_number,column_number]], data)
+                data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename, True, headers, [column_number], specific_column_value_list, dataRange)
+
             chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
                                                       outputFileLabel='ByDoc',
                                                       chartPackage=chartPackage,
@@ -113,7 +129,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                       column_xAxis_label_var='',
                                                       hover_info_column_list=hover_label,
                                                       # count_var is set in the calling function
-                                                      #     0 for numeric fields; 1 for non-numeric fields
+                                                      #     0 for numeric fields;
+                                                      #     1 for non-numeric fields
                                                       count_var=count_var,
                                                       remove_hyperlinks=True)
 
@@ -122,7 +139,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     filesToOpen.append(chart_outputFilename)
 
 # line plots by sentence index -----------------------------------------------------------------------
-        # values to be plotted are the first item in the list [[3,2]] i.e. 3
+        # sentence index value are the first item in the list [[7,2]] i.e. 7
+        #   plot values are the second item in the list [[7,2]] i.e. 2
         if len(columns_to_be_plotted_bySent[0])>0: # compute only if the double list is not empty
             chart_outputFilename = run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
                                                       outputFileLabel='BySent',
@@ -131,7 +149,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                       chart_title=chartTitle + ' by Sentence Index',
                                                       column_xAxis_label_var='Sentence index',
                                                       hover_info_column_list=hover_label,
-                                                      count_var=0,
+                                                      count_var=0, # always 0 when plotting by sentence index
                                                       complete_sid=True)
 
             if chart_outputFilename!=None:
@@ -276,7 +294,8 @@ def get_dataRange(columns_to_be_plotted, data):
 # also IO_csv_util.get_csv_field_values(inputfile_name, column_name)
 
 
-def get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,specific_column_value_list,data_list):
+def get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,
+                                       specific_column_value_list,data_list):
     data_to_be_plotted=[]
     # data_to_be_plotted = compute_column_frequencies_4Excel(columns_to_be_plotted, dataRange, headers, column_yAxis_field_list)
 
@@ -351,8 +370,9 @@ def complete_sentence_index(file_path):
     data = pd.read_csv(file_path)
     if not 'Sentence ID' in data:
         head, tail = os.path.split(file_path)
-        mb.showwarning(title='Wrong csv file',
-                       message='The csv file\n' + tail + '\n does not contain a "Sentence ID" header. A sentence ID value cannot be added.')
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Wrong csv file',
+                                                       'The csv file\n' + tail + '\n does not contain a "Sentence ID" header. A sentence ID value cannot be added.',
+                                                       True, '', True, '', False)
         return
     if(len(data) == 1):
         return data

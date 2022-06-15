@@ -288,30 +288,22 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             xAxis = temporal_aggregation_var
         hover_label = []
         if xAxis == 'Document':
-            columns_to_be_plotted = [[1, 1]]
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
-                                                      'Co-Occ_viewer',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["pie"],
-                                                      chart_title=chartTitle, column_xAxis_label_var=xAxis,
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1)
-        # else:
-        #     columns_to_be_plotted = [[0, 1]]
-        #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
-        #                                               'Co-Occ_viewer',
-        #                                               chart_type_list=["line"],
-        #                                               chart_title=chartTitle, column_xAxis_label_var=xAxis,
-        #                                               hover_info_column_list=hover_label)
-        # if chart_outputFilename != "":
-        #     filesToOpen.append(chart_outputFilename)
 
-
-    # # with both Ngrams and co-occurrences
-    # if n_grams_viewer_var == 1 and CoOcc_Viewer_var == 1 and CoOcc_Viewer_var == 1 and len(search_words) > 0:
-    #     n_grams_co_occurrences_outputFile = os.path.join(outputDir, 'N-Grams_CoOccurrences_Statistics.csv')
-    #     filesToOpen.append(n_grams_co_occurrences_outputFile)
-    #     chartTitle = ''
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, xlsxFilename, outputDir,
+                                                               columns_to_be_plotted_bar=[[1, 1]],
+                                                               columns_to_be_plotted_bySent=[[]],
+                                                               columns_to_be_plotted_byDoc=[[3, 1]],
+                                                               chartTitle='Frequency Distribution of Co-Occurring Words',
+                                                               count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                               hover_label=[],
+                                                               outputFileNameType='',
+                                                               column_xAxis_label='Co-occurring word',
+                                                               groupByList=[],
+                                                               plotList=[],
+                                                               chart_label='')
+            if chart_outputFilename != None:
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences end',
                         'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime,True)

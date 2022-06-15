@@ -83,7 +83,7 @@ def get_columnNumber_from_headerValue(headers,header_value):
 
 # convert header alphabetic value for CSV files with or without headers to its numeric column value
 # column numbers start at 0
-def get_headerValue_fromcolumnNumber(headers,column_number=0):
+def get_headerValue_from_columnNumber(headers,column_number=0):
     for i in range(len(headers)):
         if i==column_number:
             header_value= headers[i]
@@ -94,12 +94,13 @@ def get_headerValue_fromcolumnNumber(headers,column_number=0):
 # the function is used, for instance, to create the values of a dropdown menu
 #   for an example, see annotator_GUI.py
 #   column_name is the header
-def get_csv_field_values(inputfile_name, column_name):
+# returns a sorted list
+def get_csv_field_values(inputFilename, column_name):
     unique_values = set()
-    if inputfile_name == '' or column_name == '':
+    if inputFilename == '' or column_name == '':
         return ['']
 
-    with open(inputfile_name, 'r', encoding="utf-8", errors='ignore') as f:
+    with open(inputFilename, 'r', encoding="utf-8", errors='ignore') as f:
         csvreader = csv.reader(f)
         fields = next(csvreader)
         # from the column header get the column number that we want to extract

@@ -335,7 +335,7 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, p
 #   as done by compute_csv_column_frequencies_with_aggregation
 # in INPUT it uses a data list, rather than filename, and returns
 # in OUTPUT a list complete_column_frequencies
-# TODO does it compute frequencies by some aggregate values (e.g., document ID)?
+# TODO does it compute frequencies by some aggregate values (e.g., Document ID)?
 # def compute_column_frequencies_4Excel(columns_to_be_plotted, data_list, headers,specific_column_value_list=[]):
 #     column_list=[]
 #     column_frequencies=[]
@@ -592,7 +592,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1)
         data.drop(hover_col, axis=1, inplace=True)
         data.to_csv(outputFilename, index=False)
-        filesToOpen.appeand(outputFilename)
+        filesToOpen.append(outputFilename)
     # if createCharts:
     #     columns_to_be_plotted = get_columns_to_be_plotted(outputFilename,col)
     #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,

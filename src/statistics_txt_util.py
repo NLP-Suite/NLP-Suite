@@ -225,7 +225,8 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
                                               chartTitle='Frequency Distribution of Line Length',
                                               count_var=1, hover_label=[],
                                               outputFileNameType='', #'line_bar', column_xAxis_label='Line length',
-                                              groupByList=['Document ID','Document'], plotList=['Line length (in words)'], chart_label='Lines')
+                                              column_xAxis_label='Line length',
+                                              groupByList=['Document ID','Document'], plotList=['Line length (in words)'], chart_label='Statistical Measures for Line Length')
 
     if chart_outputFilename != None:
         filesToOpen.extend(chart_outputFilename)
@@ -340,9 +341,9 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
                                                            chartTitle='Frequency of Sentences',
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='', #'line_bar',
-                                                           column_xAxis_label='Line length',
+                                                           column_xAxis_label='Sentence',
                                                            groupByList=['Document ID', 'Document'],
-                                                           plotList=['Number of Sentences in Document'], chart_label='Sentences')
+                                                           plotList=['Number of Sentences in Document'], chart_label='Statistical Measures for Number of Sentences')
 
         if chart_outputFilename != None:
             filesToOpen.extend(chart_outputFilename)
@@ -355,9 +356,9 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
                                                            chartTitle='Frequency of Words',
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='', #'line_bar',
-                                                           column_xAxis_label='Line length',
+                                                           column_xAxis_label='Word',
                                                            groupByList=['Document ID', 'Document'],
-                                                           plotList=['Number of Words in Document'], chart_label='Words')
+                                                           plotList=['Number of Words in Document'], chart_label='Statistical Measures for Number of Words')
 
         if chart_outputFilename != None:
             filesToOpen.extend(chart_outputFilename)
@@ -369,11 +370,12 @@ def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutput
                                                            columns_to_be_plotted_bySent=[[]], # sentence not available
                                                            columns_to_be_plotted_byDoc=[[5, 2]],
                                                            chartTitle='Frequency of Syllables',
-                                                           count_var=1, hover_label=[],
+                                                           count_var=1,
+                                                           hover_label=[],
                                                            outputFileNameType='', #'syll_bar',
                                                            column_xAxis_label='Syllable length',
                                                            groupByList=['Document ID', 'Document'],
-                                                           plotList=['Number of Syllables in Document'], chart_label='Syllables')
+                                                           plotList=['Number of Syllables in Document'], chart_label='Statistical Measures for Number of Syllables')
 
         if chart_outputFilename != None:
             filesToOpen.extend(chart_outputFilename)
@@ -989,58 +991,15 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                                                    columns_to_be_plotted_bar=[[0, 0]],
                                                    columns_to_be_plotted_bySent=[[1, 0]],
                                                    columns_to_be_plotted_byDoc=[[0, 4]],
-                                                   chartTitle='Frequency of Sentences',
+                                                   chartTitle='Frequency of Sentence Lengths',
                                                    count_var=1, hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',
                                                    column_xAxis_label='Sentence length',
                                                    groupByList=['Document ID', 'Document'],
-                                                   plotList=['Sentence length (in words)'], chart_label='Sentences')
+                                                   plotList=['Sentence length (in words)'], chart_label='Statistical Measures for Sentence Length')
 
         if chart_outputFilename != None:
             filesToOpen.extend(chart_outputFilename)
-
-# if createCharts == True:
-        #     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-        #                                                                  fileLabel)
-        #     hover_label = []
-        #     inputFilename = outputFilename
-        #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-        #                                                      outputFileLabel=fileLabel,
-        #                                                      chartPackage=chartPackage,
-        #                                                      chart_type_list=["bar"],
-        #                                                      chart_title=chart_title_label,
-        #                                                      column_xAxis_label_var=column_xAxis_label,
-        #                                                      hover_info_column_list=hover_label,
-        #                                                      count_var=True)
-        #     if chart_outputFilename != "":
-        #         filesToOpen.append(chart_outputFilename)
-        #
-        #     # should also provide a bar chart of the frequency of distinct documents by punctuation symbol
-        #     hover_label = []
-        #     inputFilename = outputFilename
-        #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted_byDocID, inputFilename, outputDir,
-        #                                                      outputFileLabel=fileLabel_byDocID,
-        #                                                      chartPackage=chartPackage,
-        #                                                      chart_type_list=["bar"],
-        #                                                      chart_title=chart_title_byDocID,
-        #                                                      column_xAxis_label_var='', #Document
-        #                                                      hover_info_column_list=hover_label,
-        #                                                      count_var=True)
-        #     if chart_outputFilename != "":
-        #         filesToOpen.append(chart_outputFilename)
-
-            # if 'by sentence index' in processType.lower():
-            # n-grams
-            # line plots by sentence index -----------------------------------------------------------------------------------------------
-            # chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=outputFilename,
-            #                                                                 outputDir=outputDir,
-            #                                                                 select_col=select_col,
-            #                                                                 group_col=['Sentence ID'],
-            #                                                                 chartPackage=chartPackage,
-            #                                                                 chartTitle=chart_title_bySentID)
-            # if chart_outputFilename != None:
-            #     filesToOpen.append(chart_outputFilename)
-            #
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
                                            'Finished running ' + processType + ' at', True, '', True, startTime)
@@ -1111,7 +1070,7 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
                 text_vocab = set(lemmatize_stanza(stanzaPipeLine(w.lower())) for w in fullText.split(" ") if w.isalpha())
                 words = set(lemmatizing(w.lower()) for w in words if w.isalpha()) # fullText.split(" ") if w.isalpha())
 
-def compute_sentence_length(inputFilename, inputDir, outputDir, createCharts, chartPackage):
+def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir, createCharts, chartPackage):
     filesToOpen = []
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     Ndocs = len(inputDocs)
@@ -1148,13 +1107,18 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, createCharts, ch
                     writer.writerow(
                         [len(tokens), sentenceID, sentence, fileID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
         csvOut.close()
+        reminder_status = reminders_util.checkReminder(config_filename,
+                                                       reminders_util.title_options_TIPS_file,
+                                                       reminders_util.message_TIPS_file,
+                                                       True)
+        if reminder_status == 'Yes' or reminder_status == 'ON':  # 'Yes' the old way of saving reminders
 
-        answer = tk.messagebox.askyesno("TIPS file on memory issues", str(Ndocs) + " file(s) processed in input.\n\n" +
-                                        "Output csv file written to the output directory " + outputDir + "\n\n" +
-                                        str(
-                                            long_sentences) + " SENTENCES WERE LONGER THAN 100 WORDS (the average sentence length in modern English is 20 words).\n\nMore to the point... Stanford CoreNLP would heavily tax memory resources with such long sentences.\n\nYou should consider editing these sentences if Stanford CoreNLP takes too long to process the file or runs out of memory.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?")
-        if answer:
-            TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
+            answer = tk.messagebox.askyesno("TIPS file on memory issues", str(Ndocs) + " file(s) processed in input.\n\n" +
+                                            "Output csv file written to the output directory " + outputDir + "\n\n" +
+                                            str(
+                                                long_sentences) + " SENTENCES WERE LONGER THAN 100 WORDS (the average sentence length in modern English is 20 words).\n\nMore to the point... Stanford CoreNLP would heavily tax memory resources with such long sentences.\n\nYou should consider editing these sentences if Stanford CoreNLP takes too long to process the file or runs out of memory.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?")
+            if answer:
+                TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
 
     filesToOpen.append(outputFilename)
 
@@ -1163,12 +1127,12 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, createCharts, ch
                                                        columns_to_be_plotted_bar=[[0, 0]],
                                                        columns_to_be_plotted_bySent=[[1,0]],
                                                        columns_to_be_plotted_byDoc=[[0, 4]],
-                                                       chartTitle='Frequency of Sentences',
+                                                       chartTitle='Frequency of Sentence Lengths',
                                                        count_var=1, hover_label=[],
                                                        outputFileNameType='', #'line_bar',
                                                        column_xAxis_label='Sentence length',
                                                        groupByList=['Document ID', 'Document'],
-                                                       plotList=['Sentence length (in words)'], chart_label='Sentences')
+                                                       plotList=['Sentence length (in words)'], chart_label='Statistical Measures for Sentence Lenghts')
 
     if chart_outputFilename != None:
         filesToOpen.extend(chart_outputFilename)
@@ -1835,13 +1799,13 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
                                                        columns_to_be_plotted_bySent=[[5, 1], [5, 3]],
                                                        columns_to_be_plotted_byDoc=[[8,1], [8,3]],
                                                        chartTitle='Frequency Distribution of Complexity Scores',
-                                                       count_var=0, # to be used for byDoc, as a numeric field
+                                                       count_var=0, # to be used for byDoc, 0 for numeric field
                                                        hover_label=[],
                                                        outputFileNameType='', #'' #'complexity_bar',
                                                        column_xAxis_label='Complexity scores',
                                                        groupByList=['Document ID','Document'],
                                                        plotList=['Yngve score','Frazier score'],
-                                                       chart_label='Complexity Statistics')
+                                                       chart_label='Statistical Measures for Complexity Scores')
     if chart_outputFilename != None:
         if len(chart_outputFilename) > 0:
             filesToOpen.extend(chart_outputFilename)

@@ -146,20 +146,9 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
 def generate_simple_csv(Dataframe):
     pass
 
-def createChart(inputFilename,outputDir,columns_to_be_plotted,hover_label):
-    chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                              outputFileLabel='Leven_spell',
-                                              chartPackage=chartPackage,
-                                              chart_type_list=["pie"],
-                                              chart_title='Frequency of Potential Typos',
-                                              column_xAxis_label_var='',
-                                              hover_info_column_list=hover_label,
-                                              count_var=1)
-    return chart_outputFilename
-
 
 # check within subdirectory
-def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, NERs, similarity_value, by_all_tokens_var,spelling_checker_var):
+def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, NERs, similarity_value, by_all_tokens_var,spelling_checker_var=False):
     filesToOpen=[]
     if inputDir=='':
         return
@@ -182,10 +171,22 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
         filesToOpen.append(outputFileName_simple)
         filesToOpen.append(outputFileName_complete)
 
-        if createCharts:
-            chart_outputFilename = createChart(outputFileName_simple,outputDir, [[10, 10]], '')
-            if chart_outputFilename!="":
-                filesToOpen.append(chart_outputFilename)
+
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename, outputDir,
+                                                           columns_to_be_plotted_bar=[[10, 10]],
+                                                           columns_to_be_plotted_bySent=[[]],
+                                                           columns_to_be_plotted_byDoc=[[]],
+                                                           chartTitle='Frequency of Potential Typos',
+                                                           count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                           hover_label=[],
+                                                           outputFileNameType='Leven_spell',
+                                                           column_xAxis_label='Typo',
+                                                           groupByList=[],
+                                                           plotList=[],
+                                                           chart_label='')
+        if chart_outputFilename != None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
         if openOutputFiles == True:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -476,14 +477,24 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity end',
                                                'Finished running Word similarity at', True, '', True, startTime, True)
 
-            if createCharts:
-                chart_outputFilename=createChart(outputFileName_simple, outputDir, [[10, 10]], '')
-
-                if chart_outputFilename != "":
-                    filesToOpen.append(chart_outputFilename)
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFileName_simple, outputDir,
+                                                               columns_to_be_plotted_bar=[[10, 10]],
+                                                               columns_to_be_plotted_bySent=[[]],
+                                                               columns_to_be_plotted_byDoc=[[]],
+                                                               chartTitle='Frequency of Potential Typos',
+                                                               count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                               hover_label=[],
+                                                               outputFileNameType='Leven_spell',
+                                                               column_xAxis_label='Typo',
+                                                               groupByList=[],
+                                                               plotList=[],
+                                                               chart_label='')
+            if chart_outputFilename != None:
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen=[] # empty the list to avoid opening files twice
 
     p.kill()
