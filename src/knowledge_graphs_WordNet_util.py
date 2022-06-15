@@ -205,7 +205,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
 
 # written by Yi Wang April 2020
 # ConnlTable is the inputFilename
-# TODO TONY do we need this now? Don't we have more general ways of dealing with this?
+# TODO TONY1 do we need this now? Don't we have more general ways of dealing with this?   怎么打开？？？
 def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, noun_verb, openOutputFiles,
 						 createCharts, chartPackage):
 	filesToOpen = []
@@ -217,7 +217,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
 		checklist = ['NN', 'NNP', 'NNPS', 'NNS']
 	else:
 		checklist = ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']
-	# read in the CoreNLP CoNLL table
+	# read in the CoreNLP CoNLL tablereturn
 	connl = pd.read_csv(ConnlTable)
 	# read in the dictionary file to be used to filter CoNLL values
 	# The file is expected to have 2 columns with headers: Word, WordNet Category

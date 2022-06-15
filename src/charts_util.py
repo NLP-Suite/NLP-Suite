@@ -44,12 +44,14 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
         # TODO hover_over_values not being passed, neither are any potential aggregate columns
         #   get_data_to_be_plotted_with_counts is less general than
         data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange)
-        # TODO TONY
+        # TODO TONY1
         # when counting because we are dealing with an alphabetic field, we should export the frequency values
         #   to be used in the visualization of field statistics; but... not sure how to do it since it
         #   exports the data as lists
-        # outputFilename = inputFilename.replace('.csv','1.csv')
-        # IO_csv_util.list_to_csv(GUI_util.window, data_to_be_plotted, outputFilename)
+        outputFilename = inputFilename.replace('.csv','1.csv')
+        # the data_to_be_plotted is a triple list while the input for list to csv should be a double list so we use data_to_be_plotted[0] instead of data_to_be_plotted
+        IO_csv_util.list_to_csv(GUI_util.window, data_to_be_plotted[0], outputFilename)
+        print(data_to_be_plotted)
     else:
         try:
             data = pd.read_csv(inputFilename,encoding='utf-8')
@@ -344,7 +346,8 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 # remove comments before variable begin with d_id to enable complete document id function
 # need to have a document id column and sentence id column
 # would complete the file (make document id and sentence id continuous) and padding zero values for the added rows
-# TODO TONY how does this differ from add_missing_IDs in statistics_csv_util;
+# TODO TONY1 how does this differ from add_missing_IDs in statistics_csv_util;
+#   can be more general by adding another parameter for select the column to be completed (the adding missing id seems to only works with standard conll table)
 #   that one seems to be more general, accounting for both Sentence ID and Document ID
 #   it is used by def Wordnet_bySentenceID
 # # edited by Roberto June 2022

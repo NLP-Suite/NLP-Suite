@@ -142,7 +142,7 @@ def percentile(n):
     return percentile_
 
 
-#written by Yi Wang March 2020, edited Landau/Franzosi February 20021
+#written by Yi Wang March 2020, edited Landau/Franzosi February 2021
 
 # lists are the columns to be used for grouping (e.g., Document ID, Document) ['Document ID', 'Document']
 # plotField are the columns to be used for plotting (e.g., Mean, Mode)) ['Mean', 'Mode'] or ['Mean']
@@ -386,8 +386,9 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, p
 
 # input can be a csv filename or a dataFrame
 # output is a dataFrame
-# TODO TONY  how does this differ from complete_sentence_index(file_path)
-# TODO TONY any funtion that plots data by sentence index should really check that the required sentence IDs are all there and insert them otherwise
+# TODO TONY1  how does this differ from complete_sentence_index(file_path)
+# TODO TONY1 any function that plots data by sentence index should really check that the required sentence IDs are all there and insert them otherwise
+#   if using complete sentence index, that would be unnecessary (very little performance loss calling complete_sentence_index)
 def add_missing_IDs(input):
     if isinstance(input, pd.DataFrame):
         df = input
@@ -426,6 +427,7 @@ def add_missing_IDs(input):
 
 # written by Tony Chen Gu, April 2022
 # TODO TONY How does this differ from the several compute frequency options that I have extensively commented for clarity
+    # the latter one seems doing the same staff  but the former one is only for stats results
 # the three steps function computes
 #   1. the frequencies of a given csv field (select_col) aggregating the results by (group_col and select_col).
 #   2. the resulting frequencies are pivoted in order plot the data in a multi-line chart (one chart for every distinct value of select_col) by Sentence ID.
@@ -586,13 +588,13 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             df.columns = temp
             data = data.merge(df, how = 'left', left_on= group_col,right_on = group_col)
         temp_str = '%s'+'\n%s'* (len(hover_col)-1)
-        # TODO TONY need to remove hyperlink from hover over data in case hover_over_header is Document
+        # TODO TONY1 need to remove hyperlink from hover over data in case hover_over_header is Document
         #   hover_over_value=IO_csv_util.undressFilenameForCSVHyperlink(hover_over_value)
         #   data['Hover_over: ' + hover_header] = IO_csv_util.undressFilenameForCSVHyperlink(data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1))
         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1)
         data.drop(hover_col, axis=1, inplace=True)
         data.to_csv(outputFilename, index=False)
-        filesToOpen.appeand(outputFilename)
+        filesToOpen.append(outputFilename)
     # if createCharts:
     #     columns_to_be_plotted = get_columns_to_be_plotted(outputFilename,col)
     #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
