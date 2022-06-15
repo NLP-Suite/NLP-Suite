@@ -23,7 +23,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
         csv_list,hover_over_list, groupBy_list, script_to_run):
 
     filesToOpen=[]
-    csv_field_stats = True
+    csv_field_stats = True # need remove
     window=GUI_util.window
 
     # if inputDir=='' and corpus_stats:
