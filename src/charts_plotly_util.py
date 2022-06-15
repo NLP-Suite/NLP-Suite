@@ -7,6 +7,7 @@ import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 import os
+import charts_util
 
 import IO_files_util
 
@@ -31,6 +32,10 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
                         column_yAxis_label='',
                         remove_hyperlinks=False,
                         static_flag=False):
+    # if we need to remove the hyperlinks, we need to make a temporary data for plotting
+    if remove_hyperlinks:
+        remove_hyperlinks,inputFilename = charts_util.remove_hyperlinks(inputFilename)
+    
     try:
         data = pd.read_csv(inputFilename, encoding='utf-8')
     except pd.errors.ParserError:
@@ -38,16 +43,6 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
     except:
         print("Error: failed to read the csv file named: "+inputFilename)
         return
-
-    # if we need to remove the hyperlinks, we need to make a temporary data for plotting
-    if remove_hyperlinks:
-        document = data['Document']
-        new_document = []
-        for i in document:
-            new_document.append(IO_files_util.getFilename(i)[0])
-        data['Document'] = new_document
-        inputFilename = os.path.join(os.path.split(inputFilename)[0],"chart_data_"+os.path.split(inputFilename)[1])
-        data.to_csv(inputFilename, encoding='utf-8')
 
     headers = data.columns.tolist()
     file_list = []

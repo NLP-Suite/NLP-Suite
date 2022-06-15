@@ -20,6 +20,7 @@ import charts_Excel_util
 import charts_plotly_util
 import charts_Excel_util
 import statistics_csv_util
+import IO_files_util
 
 # Prepare the data (data_to_be_plotted) to be used in charts_Excel_util.create_excel_chart with the format:
 #   the variable has this format:
@@ -120,7 +121,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 column_number = (columns_to_be_plotted_byDoc[0])[1]
                 specific_column_value_list=['NN']
                 dataRange = get_dataRange([[column_number,column_number]], data)
-                data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename, True, headers, [column_number], specific_column_value_list, dataRange)
+                data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename, True, headers, [[column_number,column_number]], specific_column_value_list, dataRange)
+
 
             chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
                                                       outputFileLabel='ByDoc',
@@ -311,7 +313,7 @@ def get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,colu
             if len(specific_column_value_list)>0:
                 specific_column_value=specific_column_value_list[k]
             #get all the values in the selected column
-            column_list = [i[1] for i in data_list[k]]
+            column_list = [i[1] for i in data_list[k]] # here is the problem   TODO TONY the datalist is like [['NN','NN'], ...]
             counts = Counter(column_list).most_common()
             if len(headers) > 0:
                 id_name_num = columns_to_be_plotted[k][0]
@@ -386,6 +388,24 @@ def complete_sentence_index(file_path):
     data = data.fillna(0)
     data.to_csv(file_path, index = False)
     return
+
+def remove_hyperlinks(inputFilename):
+    try:
+        data = pd.read_csv(inputFilename, encoding='utf-8')
+    except pd.errors.ParserError:
+        data = pd.read_csv(inputFilename, encoding='utf-8', sep='delimiter')
+    except:
+        print("Error: failed to read the csv file named: "+inputFilename)
+        return False
+    data = pd.read_csv(inputFilename)
+    document = data['Document']
+    new_document = []
+    for i in document:
+        new_document.append(IO_files_util.getFilename(i)[0])
+    data['Document'] = new_document
+    no_hyperlink_filename = os.path.join(os.path.split(inputFilename)[0],"chart_data_"+os.path.split(inputFilename)[1])
+    data.to_csv(no_hyperlink_filename, encoding='utf-8')
+    return True, no_hyperlink_filename
 
 #data_to_be_plotted contains the values to be plotted
 #   the variable has this format:

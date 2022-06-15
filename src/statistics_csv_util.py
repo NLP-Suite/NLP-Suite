@@ -21,6 +21,7 @@ import IO_files_util
 import IO_csv_util
 import charts_util
 import GUI_IO_util
+import charts_Excel_util
 import IO_user_interface_util
 
 #column_to_be_counted is the column number (starting 0 in data_list for which a count is required)
@@ -335,7 +336,7 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, p
 #   as done by compute_csv_column_frequencies_with_aggregation
 # in INPUT it uses a data list, rather than filename, and returns
 # in OUTPUT a list complete_column_frequencies
-# TODO does it compute frequencies by some aggregate values (e.g., Document ID)?
+# TODO does it compute frequencies by some aggregate values (e.g., document ID)?
 # def compute_column_frequencies_4Excel(columns_to_be_plotted, data_list, headers,specific_column_value_list=[]):
 #     column_list=[]
 #     column_frequencies=[]
@@ -394,7 +395,7 @@ def add_missing_IDs(input):
         df = input
     else:
         df = pd.read_csv(input)
-    sentenceID_pos, docID_pos, docName_pos, header = header_check(input)
+    sentenceID_pos, docID_pos, docName_pos, header = charts_Excel_util.header_check(input)
     Row_list = IO_csv_util.df_to_list(df)
     for index,row in enumerate(Row_list):
         if index == 0 and Row_list[index][sentenceID_pos] != 1:
@@ -517,6 +518,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     filesToOpen = []
     container = []
     hover_over_header = []
+    removed_hyperlinks = False
     if len(inputDataFrame)!=0:
         data = inputDataFrame
     else:
@@ -525,6 +527,11 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             headers = next(reader)
         header_indices = [i for i, item in enumerate(headers) if item]
         data = pd.read_csv(inputFilename, usecols=header_indices,encoding='utf-8')
+
+    # remove hyperlink before processing
+    data.to_csv(inputFilename)
+    removed_hyperlinks, inputFilename = charts_util.remove_hyperlinks(inputFilename)
+    data = pd.read_csv(inputFilename,encoding='utf-8')
 
     if len(selected_col) == 0:
         mb.showwarning('Missing field', 'You have not selected the csv field for which to compute frequencies.\n\nPlease, select the field and try again.')
@@ -606,5 +613,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     #                                           hover_info_column_list=hover_over_header)
     #     if chart_outputFilename != None:
     #         filesToOpen.filesToOpen(chart_outputFilename)
-
+    
+    if removed_hyperlinks:
+        os.remove(inputFilename)
     return filesToOpen # several files with the charts
