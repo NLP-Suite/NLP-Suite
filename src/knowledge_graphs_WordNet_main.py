@@ -45,6 +45,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         dict_WordNet_filename_var):
 
     filesToOpen = []  # Store all files that are to be opened once finished
+    language_var='English' # WordNet works only for English language
 
     WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet')
     if WordNetDir == None:
@@ -112,7 +113,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 if result==False:
                     return
         filesToOpen = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, config_filename, noun_verb, openOutputFiles,
-                                                     createCharts, chartPackage)
+                                                     createCharts, chartPackage, language_var)
 
     if extract_nouns_verbs_from_CoNLL_var==True:
         # check that input file is a CoNLL table
@@ -150,7 +151,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 else:
                     return
                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
-                                                        openOutputFiles, createCharts, chartPackage)
+                                                        openOutputFiles, createCharts, chartPackage, language_var)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -161,7 +162,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 else:
                     return
                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
-                                                        openOutputFiles, createCharts, chartPackage)
+                                                        openOutputFiles, createCharts, chartPackage, language_var)
                 if output != None:
                     filesToOpen.extend(output)
 

@@ -55,11 +55,11 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
             search_within_sentence = True
         elif search_option == "Lemmatize":  # not available yet
             lemmatize = True
-    outputFileName = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'search')
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'search')
     docIndex = 0
     first_occurrence_index = -1
-    csvExist = os.path.exists(outputFileName)
-    with open(outputFileName, "a", newline="", encoding='utf-8', errors='ignore') as csvFile:
+    csvExist = os.path.exists(outputFilename)
+    with open(outputFilename, "a", newline="", encoding='utf-8', errors='ignore') as csvFile:
         writer = csv.writer(csvFile)
         if csvExist:
             csvFile.truncate(0)
@@ -92,7 +92,7 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
         # if lemmatize:
         #     csvtitle = outputDir+'/'+os.path.split(os.path.split(outputDir)[0])[1]+"_"+search_keywords_list+'_lemma.csv'
 
-        with open(outputFileName, "a", newline="", encoding='utf-8', errors='ignore') as csvFile:
+        with open(outputFilename, "a", newline="", encoding='utf-8', errors='ignore') as csvFile:
             writer = csv.writer(csvFile)
             f = open(file, "r", encoding='utf-8', errors='ignore')
             docText = f.read()
@@ -257,41 +257,57 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
     if search_keywords_found == False:
         mb.showwarning(title='Search string(s) not found',
                        message='The search keywords:\n\n   ' + search_keywords_list + '\n\nwere not found in your input document(s).')
-        outputFileName = ''
-    filesToOpen.append(outputFileName)
+        outputFilename = ''
+    filesToOpen.append(outputFilename)
 
-    if createCharts == True:
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                       columns_to_be_plotted_bar=[[0, 0]],
+                                                       columns_to_be_plotted_bySent=[[]],
+                                                       columns_to_be_plotted_byDoc=[[9, 0]],
+                                                       chartTitle='Frequency Distribution of Search Words',
+                                                       count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                       hover_label=[],
+                                                       outputFileNameType='',
+                                                       column_xAxis_label='Search word',
+                                                       groupByList=[],
+                                                       plotList=[],
+                                                       chart_label='')
+    if chart_outputFilename != None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
 
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                 'search')
-        columns_to_be_plotted=[[0,0]]
-        hover_label = []
-        inputFilename = outputFilename
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                         outputFileLabel='search',
-                                                         chartPackage=chartPackage,
-                                                         chart_type_list=["bar"],
-                                                         chart_title='Frequency of search words',
-                                                         column_xAxis_label_var='Search words',
-                                                         hover_info_column_list=hover_label,
-                                                         count_var=True)
-        if chart_outputFilename != "":
-            filesToOpen.append(chart_outputFilename)
-
-        columns_to_be_plotted=[[0,9]]
-        hover_label = []
-        inputFilename = outputFilename
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                         outputFileLabel='search_byDoc',
-                                                         chartPackage=chartPackage,
-                                                         chart_type_list=["bar"],
-                                                         chart_title='Frequency of search words By Document',
-                                                         column_xAxis_label_var='Document',
-                                                         hover_info_column_list=hover_label,
-                                                         count_var=True,
-                                                         remove_hyperlinks=True)
-        if chart_outputFilename != "":
-            filesToOpen.append(chart_outputFilename)
+    # if createCharts == True:
+    #
+    #     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+    #                                                              'search')
+    #     columns_to_be_plotted=[[0,0]]
+    #     hover_label = []
+    #     inputFilename = outputFilename
+    #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+    #                                                      outputFileLabel='search',
+    #                                                      chartPackage=chartPackage,
+    #                                                      chart_type_list=["bar"],
+    #                                                      chart_title='Frequency of Search Words',
+    #                                                      column_xAxis_label_var='Search words',
+    #                                                      hover_info_column_list=hover_label,
+    #                                                      count_var=1)
+    #     if chart_outputFilename != "":
+    #         filesToOpen.append(chart_outputFilename)
+    #
+    #     columns_to_be_plotted=[[0,9]]
+    #     hover_label = []
+    #     inputFilename = outputFilename
+    #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+    #                                                      outputFileLabel='search_byDoc',
+    #                                                      chartPackage=chartPackage,
+    #                                                      chart_type_list=["bar"],
+    #                                                      chart_title='Frequency of search words By Document',
+    #                                                      column_xAxis_label_var='Document',
+    #                                                      hover_info_column_list=hover_label,
+    #                                                      count_var=1,
+    #                                                      remove_hyperlinks=True)
+    #     if chart_outputFilename != "":
+    #         filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end",
                                        "Finished running the file search script at", True)

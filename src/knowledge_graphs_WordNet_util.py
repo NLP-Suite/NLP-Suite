@@ -146,25 +146,21 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         outputFilenameCSV2_new = outputFilenameCSV2
     filesToOpen.append(outputFilenameCSV2_new)
 
-    if createCharts:
-        columns_to_be_plotted = [[1, 1]]
-        chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb
-        hover_label=['Word']
-
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilenameCSV1_new, outputDir,
-                                                  outputFileLabel='',
-                                                  chartPackage=chartPackage,
-                                                  chart_type_list=["bar"],
-                                                  chart_title=chart_title,
-                                                  column_xAxis_label_var='WordNet ' + noun_verb + ' category',
-                                                  hover_info_column_list=hover_label,
-                                                  count_var=1)
-
-        if chart_outputFilename != "":
-            filesToOpen.append(chart_outputFilename)
-
-    # from outputFilenameCSV1_new exclude the auxiliary verbs be and have not to bias
-    #   the aggregate categories STATIVE and POSSESSION that include these verbs respectively
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilenameCSV1_new, outputDir,
+                                                       columns_to_be_plotted_bar=[[1, 1]],
+                                                       columns_to_be_plotted_bySent=[[]],
+                                                       columns_to_be_plotted_byDoc=[[]],  # there is no document field
+                                                       chartTitle='Frequency of WordNet Aggregate Categories for ' + noun_verb,
+                                                       count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                       hover_label=[],
+                                                       outputFileNameType='',
+                                                       column_xAxis_label='WordNet ' + noun_verb + ' category',
+                                                       groupByList=[],
+                                                       plotList=[],
+                                                       chart_label='')
+    if chart_outputFilename != None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
 
     if noun_verb == 'VERB':
         operation_results_text_list=[]
@@ -180,21 +176,22 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         # outputFilenameCSV3_new = data_manager_util.export_csv_to_csv_txt(outputFilenameCSV3_new, operation_results_text_list,'.csv',[0,1])
         outputFilenameCSV3_new = data_manager_util.export_csv_to_csv_txt(outputDir,operation_results_text_list,'.csv',[0,1])
 
-        if createCharts:
-            columns_to_be_plotted = [[1, 1]]
-            chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)'
-            hover_label=[]
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilenameCSV3_new, outputDir,
-                                                      outputFileLabel='',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["bar"],
-                                                      chart_title=chart_title,
-                                                      column_xAxis_label_var='WordNet ' + noun_verb + ' category',
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1)
-
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilenameCSV3_new,
+                                                           outputDir,
+                                                           columns_to_be_plotted_bar=[[1, 1]],
+                                                           columns_to_be_plotted_bySent=[[]],
+                                                           columns_to_be_plotted_byDoc=[[]], # there is no document field
+                                                           chartTitle='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)',
+                                                           count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                           hover_label=[],
+                                                           outputFileNameType='',
+                                                           column_xAxis_label='WordNet ' + noun_verb + ' category',
+                                                           groupByList=[],
+                                                           plotList=[],
+                                                           chart_label='')
+        if chart_outputFilename != None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
         if outputFilenameCSV3_new != "":
             os.remove(outputFilenameCSV3_new)
@@ -207,85 +204,85 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
 # ConnlTable is the inputFilename
 # TODO TONY1 do we need this now? Don't we have more general ways of dealing with this?   怎么打开？？？
 def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, noun_verb, openOutputFiles,
-						 createCharts, chartPackage):
-	filesToOpen = []
-	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
-												   'Started running WordNet charts by sentence index at',
-												   True, '', True, '', False)
+                         createCharts, chartPackage):
+    filesToOpen = []
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+                                                   'Started running WordNet charts by sentence index at',
+                                                   True, '', True, '', False)
 
-	if noun_verb == 'NOUN':
-		checklist = ['NN', 'NNP', 'NNPS', 'NNS']
-	else:
-		checklist = ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']
-	# read in the CoreNLP CoNLL tablereturn
-	connl = pd.read_csv(ConnlTable)
-	# read in the dictionary file to be used to filter CoNLL values
-	# The file is expected to have 2 columns with headers: Word, WordNet Category
-	try:
-		dict = pd.read_csv(wordnetDict)
-	except:
-		mb.showwarning("Warning",
-					   "The file \n\n" + wordnetDict + "\n\ndoes not have the expected 2 columns: Word, WordNet Category. You may have selected the wrong input file.\n\nPlease, select the right input file and try again.")
-		return
-	# set up the double list conll from the conll data
-	try:
-		connl = connl[['Form', 'Lemma', 'POStag', 'Sentence ID', 'Document ID', 'Document']]
-	except:
-		mb.showwarning("Warning",
-					   "The file \n\n" + ConnlTable + "\n\ndoes not appear to be a CoNLL table with expected column names: Form,Lemma,Postag, SentenceID, DocumentID, Document.\n\nPlease, select the right input file and try again.")
-		return
-	# filter the list by noun or verb
-	connl = connl[connl['Postag'].isin(checklist)]
-	# eliminate any duplicate value in Word (Form))
-	dict = dict.drop_duplicates().rename(columns={'Word': 'Lemma', 'WordNet Category': 'Category'})
-	# ?
-	connl = connl.merge(dict, how='left', on='Lemma')
-	# the CoNLL table value is not found in the dictionary Word value
-	connl.fillna('Not in INPUT dictionary for ' + noun_verb, inplace=True)
-	# add the WordNet category to the conll list
-	connl = connl[['Form', 'Lemma', 'POStag', 'Category', 'Sentence ID', 'Document ID', 'Document']]
-	# put headers on conll list
-	connl.columns = ['Form', 'Lemma', 'POStag', 'Category', 'Sentence ID', 'Document ID', 'Document']
+    if noun_verb == 'NOUN':
+        checklist = ['NN', 'NNP', 'NNPS', 'NNS']
+    else:
+        checklist = ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']
+    # read in the CoreNLP CoNLL table
+    connl = pd.read_csv(ConnlTable)
+    # read in the dictionary file to be used to filter CoNLL values
+    # The file is expected to have 2 columns with headers: Word, WordNet Category
+    try:
+        dict = pd.read_csv(wordnetDict)
+    except:
+        mb.showwarning("Warning",
+                       "The file \n\n" + wordnetDict + "\n\ndoes not have the expected 2 columns: Word, WordNet Category. You may have selected the wrong input file.\n\nPlease, select the right input file and try again.")
+        return
+    # set up the double list conll from the conll data
+    try:
+        connl = connl[['Form', 'Lemma', 'POStag', 'Sentence ID', 'Document ID', 'Document']]
+    except:
+        mb.showwarning("Warning",
+                       "The file \n\n" + ConnlTable + "\n\ndoes not appear to be a CoNLL table with expected column names: Form,Lemma,Postag, SentenceID, DocumentID, Document.\n\nPlease, select the right input file and try again.")
+        return
+    # filter the list by noun or verb
+    connl = connl[connl['Postag'].isin(checklist)]
+    # eliminate any duplicate value in Word (Form))
+    dict = dict.drop_duplicates().rename(columns={'Word': 'Lemma', 'WordNet Category': 'Category'})
+    # ?
+    connl = connl.merge(dict, how='left', on='Lemma')
+    # the CoNLL table value is not found in the dictionary Word value
+    connl.fillna('Not in INPUT dictionary for ' + noun_verb, inplace=True)
+    # add the WordNet category to the conll list
+    connl = connl[['Form', 'Lemma', 'POStag', 'Category', 'Sentence ID', 'Document ID', 'Document']]
+    # put headers on conll list
+    connl.columns = ['Form', 'Lemma', 'POStag', 'Category', 'Sentence ID', 'Document ID', 'Document']
 
-	Row_list = []
-	# Iterate over each row
-	for index, rows in connl.iterrows():
-		# Create list for the current row
-		my_list = [rows.word, rows.lemma, rows.postag, rows.Category, rows.SentenceID, rows.DocumentID, rows.Document]
-		# append the list to the final list
-		Row_list.append(my_list)
-	for index, row in enumerate(Row_list):
-		if index == 0 and Row_list[index][4] != 1:
-			for i in range(Row_list[index][4] - 1, 0, -1):
-				Row_list.insert(0, ['', '', '', '', i, Row_list[index][5], Row_list[index][6]])
-		else:
-			if index < len(Row_list) - 1 and Row_list[index + 1][4] - Row_list[index][4] > 1:
-				for i in range(Row_list[index + 1][4] - 1, Row_list[index][4], -1):
-					Row_list.insert(index + 1, ['', '', '', '', i, Row_list[index][5], Row_list[index][6]])
-	df = pd.DataFrame(Row_list,
-					  index=['Form', 'Lemma', 'POStag', 'WordNet Category', 'Sentence ID', 'Document ID', 'Document'])
-	df = statistics_csv_util.add_missing_IDs(df)
-	df.to_csv(outputFilename, index=False)
+    Row_list = []
+    # Iterate over each row
+    for index, rows in connl.iterrows():
+        # Create list for the current row
+        my_list = [rows.word, rows.lemma, rows.postag, rows.Category, rows.SentenceID, rows.DocumentID, rows.Document]
+        # append the list to the final list
+        Row_list.append(my_list)
+    for index, row in enumerate(Row_list):
+        if index == 0 and Row_list[index][4] != 1:
+            for i in range(Row_list[index][4] - 1, 0, -1):
+                Row_list.insert(0, ['', '', '', '', i, Row_list[index][5], Row_list[index][6]])
+        else:
+            if index < len(Row_list) - 1 and Row_list[index + 1][4] - Row_list[index][4] > 1:
+                for i in range(Row_list[index + 1][4] - 1, Row_list[index][4], -1):
+                    Row_list.insert(index + 1, ['', '', '', '', i, Row_list[index][5], Row_list[index][6]])
+    df = pd.DataFrame(Row_list,
+                      index=['Form', 'Lemma', 'POStag', 'WordNet Category', 'Sentence ID', 'Document ID', 'Document'])
+    df = statistics_csv_util.add_missing_IDs(df)
+    df.to_csv(outputFilename, index=False)
 
-	if createCharts:
-		outputFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
-																	   ConnlTable,
-																	   df,
-																	   outputDir,
-																	   openOutputFiles,
-																	   createCharts,
-																	   chartPackage,
-																	   [[4, 5]],
-																	   ['WordNet Category'], ['Form'],
-																	   ['Sentence ID', 'Document ID', 'Document'],
-																	   )
-		if len(outputFiles) > 0:
-			filesToOpen.extend(outputFiles)
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-									   'Finished running WordNet charts by sentence index at', True, '', True,
-									   startTime)
+    if createCharts:
+        outputFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
+                                                                       ConnlTable,
+                                                                       df,
+                                                                       outputDir,
+                                                                       openOutputFiles,
+                                                                       createCharts,
+                                                                       chartPackage,
+                                                                       [[4, 5]],
+                                                                       ['WordNet Category'], ['Form'],
+                                                                       ['Sentence ID', 'Document ID', 'Document'],
+                                                                       )
+        if len(outputFiles) > 0:
+            filesToOpen.extend(outputFiles)
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+                                       'Finished running WordNet charts by sentence index at', True, '', True,
+                                       startTime)
 
-	return filesToOpen
+    return filesToOpen
 
 def get_case_initial_row(inputFilename,outputDir,check_column, firstLetterCapitalized=True):
     if firstLetterCapitalized:

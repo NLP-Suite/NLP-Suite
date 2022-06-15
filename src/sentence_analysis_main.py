@@ -41,7 +41,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             return
 
     if compute_sentence_length_var:
-        filesToOpen = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir)
+        filesToOpen = statistics_txt_util.compute_sentence_length(config_filename, inputFilename,inputDir, outputDir)
 
     if visualize_bySentenceIndex_var:
         filesToOpen = IO_files_util.runScript_fromMenu_option(script_to_run, IO_values,
