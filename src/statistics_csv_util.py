@@ -21,6 +21,7 @@ import IO_files_util
 import IO_csv_util
 import charts_util
 import GUI_IO_util
+import charts_Excel_util
 import IO_user_interface_util
 
 #column_to_be_counted is the column number (starting 0 in data_list for which a count is required)
@@ -142,7 +143,7 @@ def percentile(n):
     return percentile_
 
 
-#written by Yi Wang March 2020, edited Landau/Franzosi February 20021
+#written by Yi Wang March 2020, edited Landau/Franzosi February 2021
 
 # lists are the columns to be used for grouping (e.g., Document ID, Document) ['Document ID', 'Document']
 # plotField are the columns to be used for plotting (e.g., Mean, Mode)) ['Mean', 'Mode'] or ['Mean']
@@ -335,7 +336,7 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, p
 #   as done by compute_csv_column_frequencies_with_aggregation
 # in INPUT it uses a data list, rather than filename, and returns
 # in OUTPUT a list complete_column_frequencies
-# TODO does it compute frequencies by some aggregate values (e.g., Document ID)?
+# TODO does it compute frequencies by some aggregate values (e.g., document ID)?
 # def compute_column_frequencies_4Excel(columns_to_be_plotted, data_list, headers,specific_column_value_list=[]):
 #     column_list=[]
 #     column_frequencies=[]
@@ -386,14 +387,15 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, p
 
 # input can be a csv filename or a dataFrame
 # output is a dataFrame
-# TODO TONY  how does this differ from complete_sentence_index(file_path)
-# TODO TONY any funtion that plots data by sentence index should really check that the required sentence IDs are all there and insert them otherwise
+# TODO TONY1  how does this differ from complete_sentence_index(file_path)
+# TODO TONY1 any function that plots data by sentence index should really check that the required sentence IDs are all there and insert them otherwise
+#   if using complete sentence index, that would be unnecessary (very little performance loss calling complete_sentence_index)
 def add_missing_IDs(input):
     if isinstance(input, pd.DataFrame):
         df = input
     else:
         df = pd.read_csv(input)
-    sentenceID_pos, docID_pos, docName_pos, header = header_check(input)
+    sentenceID_pos, docID_pos, docName_pos, header = charts_Excel_util.header_check(input)
     Row_list = IO_csv_util.df_to_list(df)
     for index,row in enumerate(Row_list):
         if index == 0 and Row_list[index][sentenceID_pos] != 1:
@@ -426,6 +428,7 @@ def add_missing_IDs(input):
 
 # written by Tony Chen Gu, April 2022
 # TODO TONY How does this differ from the several compute frequency options that I have extensively commented for clarity
+    # the latter one seems doing the same staff  but the former one is only for stats results
 # the three steps function computes
 #   1. the frequencies of a given csv field (select_col) aggregating the results by (group_col and select_col).
 #   2. the resulting frequencies are pivoted in order plot the data in a multi-line chart (one chart for every distinct value of select_col) by Sentence ID.
@@ -460,6 +463,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         return
     name = outputDir + os.sep + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
     data.to_csv(name)
+    Excel_outputFilename=name
     # group by both group col and select cols and get a row named count to count the number of frequencies
     data = data.groupby(cols).size().to_frame("count")
     data.to_csv(name)
@@ -515,14 +519,21 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     filesToOpen = []
     container = []
     hover_over_header = []
-    if len(inputDataFrame)!=0:
-        data = inputDataFrame
+    removed_hyperlinks = False
+    if inputDataFrame!=None:
+        if len(inputDataFrame)!=0:
+            data = inputDataFrame
     else:
         with open(inputFilename,encoding='utf-8',errors='ignore') as infile:
             reader = csv.reader(x.replace('\0', '') for x in infile)
             headers = next(reader)
         header_indices = [i for i, item in enumerate(headers) if item]
         data = pd.read_csv(inputFilename, usecols=header_indices,encoding='utf-8')
+
+    # remove hyperlink before processing
+    data.to_csv(inputFilename)
+    removed_hyperlinks, inputFilename = charts_util.remove_hyperlinks(inputFilename)
+    data = pd.read_csv(inputFilename,encoding='utf-8')
 
     if len(selected_col) == 0:
         mb.showwarning('Missing field', 'You have not selected the csv field for which to compute frequencies.\n\nPlease, select the field and try again.')
@@ -553,7 +564,8 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
             temp = group_col.copy()
             temp.append(col)
-            data = data.groupby(temp).size().reset_index(name='Frequency')
+            column_name = IO_csv_util.get_headerValue_from_columnNumber(headers, group_col[0]) #temp[0])
+            data = data.groupby(column_name).size().reset_index(name='Frequency')
             for index, row in data.iterrows():
                 if row[col] == '':
                     data.at[index,'Frequency'] = 0
@@ -586,7 +598,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             df.columns = temp
             data = data.merge(df, how = 'left', left_on= group_col,right_on = group_col)
         temp_str = '%s'+'\n%s'* (len(hover_col)-1)
-        # TODO TONY need to remove hyperlink from hover over data in case hover_over_header is Document
+        # TODO TONY1 need to remove hyperlink from hover over data in case hover_over_header is Document
         #   hover_over_value=IO_csv_util.undressFilenameForCSVHyperlink(hover_over_value)
         #   data['Hover_over: ' + hover_header] = IO_csv_util.undressFilenameForCSVHyperlink(data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1))
         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1)
@@ -604,5 +616,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     #                                           hover_info_column_list=hover_over_header)
     #     if chart_outputFilename != None:
     #         filesToOpen.filesToOpen(chart_outputFilename)
-
+    
+    if removed_hyperlinks:
+        os.remove(inputFilename)
     return filesToOpen # several files with the charts

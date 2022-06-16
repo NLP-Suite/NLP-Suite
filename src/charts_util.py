@@ -16,9 +16,11 @@ import os
 
 import IO_csv_util
 import IO_user_interface_util
+import charts_Excel_util
 import charts_plotly_util
 import charts_Excel_util
 import statistics_csv_util
+import IO_files_util
 
 # Prepare the data (data_to_be_plotted) to be used in charts_Excel_util.create_excel_chart with the format:
 #   the variable has this format:
@@ -43,7 +45,7 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
         # TODO hover_over_values not being passed, neither are any potential aggregate columns
         #   get_data_to_be_plotted_with_counts is less general than
         data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange)
-        # TODO TONY
+        # TODO TONY1
         # when counting because we are dealing with an alphabetic field, we should export the frequency values
         #   to be used in the visualization of field statistics; but... not sure how to do it since it
         #   exports the data as lists
@@ -111,15 +113,25 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         #   and allow you to select a class, like for alphabetic values above
         if len(columns_to_be_plotted_byDoc[0])>0: # compute only if the double list is not empty
             if count_var==1:
+                # data, headers = IO_csv_util.get_csv_data(inputFilename, True)  # get the data and header
+                # column_name = IO_csv_util.get_headerValue_from_columnNumber(headers, (columns_to_be_plotted_byDoc[0])[1])
+                # column_number = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID')
+                # csv_field_values = IO_csv_util.get_csv_field_values(inputFilename, column_name)
+                # column_number = (columns_to_be_plotted_byDoc[0])[1]
+                temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window, inputFilename, None, outputDir,
+                                                                False, createCharts, chartPackage,
+                                                                [(columns_to_be_plotted_byDoc[0])[1]], [], [(columns_to_be_plotted_byDoc[0])[0]],
+                                                                fileNameType='CSV', chartType='line')
+
                 # TODO TONY trying to get the new file with frequencies for qualitative column values
-                data, headers = IO_csv_util.get_csv_data(inputFilename, True)  # get the data and header
-                column_name = IO_csv_util.get_headerValue_from_columnNumber(headers, (columns_to_be_plotted_byDoc[0])[1])
-                column_values = IO_csv_util.get_columnNumber_from_headerValue(headers, column_name)
-                csv_field_values = IO_csv_util.get_csv_field_values(inputFilename, column_name)
-                column_number = (columns_to_be_plotted_byDoc[0])[1]
-                specific_column_value_list=['NN']
-                dataRange = get_dataRange([[column_number,column_number]], data)
-                data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename, True, headers, [column_number], specific_column_value_list, dataRange)
+                # data, headers = IO_csv_util.get_csv_data(inputFilename, True)  # get the data and header
+                # column_name = IO_csv_util.get_headerValue_from_columnNumber(headers, (columns_to_be_plotted_byDoc[0])[1])
+                # column_values = IO_csv_util.get_columnNumber_from_headerValue(headers, column_name)
+                # csv_field_values = IO_csv_util.get_csv_field_values(inputFilename, column_name)
+                # column_number = (columns_to_be_plotted_byDoc[0])[1]
+                # specific_column_value_list=['NN']
+                # dataRange = get_dataRange([[column_number,column_number]], data)
+                # data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename, True, headers, [[column_number,column_number]], specific_column_value_list, dataRange)
 
             chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
                                                       outputFileLabel='ByDoc',
@@ -310,7 +322,7 @@ def get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,colu
             if len(specific_column_value_list)>0:
                 specific_column_value=specific_column_value_list[k]
             #get all the values in the selected column
-            column_list = [i[1] for i in data_list[k]]
+            column_list = [i[1] for i in data_list[k]] # here is the problem   TODO TONY the datalist is like [['NN','NN'], ...]
             counts = Counter(column_list).most_common()
             if len(headers) > 0:
                 id_name_num = columns_to_be_plotted[k][0]
@@ -362,7 +374,8 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 # remove comments before variable begin with d_id to enable complete document id function
 # need to have a document id column and sentence id column
 # would complete the file (make document id and sentence id continuous) and padding zero values for the added rows
-# TODO TONY how does this differ from add_missing_IDs in statistics_csv_util;
+# TODO TONY1 how does this differ from add_missing_IDs in statistics_csv_util;
+#   can be more general by adding another parameter for select the column to be completed (the adding missing id seems to only works with standard conll table)
 #   that one seems to be more general, accounting for both Sentence ID and Document ID
 #   it is used by def Wordnet_bySentenceID
 # # edited by Roberto June 2022
@@ -384,6 +397,24 @@ def complete_sentence_index(file_path):
     data = data.fillna(0)
     data.to_csv(file_path, index = False)
     return
+
+def remove_hyperlinks(inputFilename):
+    try:
+        data = pd.read_csv(inputFilename, encoding='utf-8')
+    except pd.errors.ParserError:
+        data = pd.read_csv(inputFilename, encoding='utf-8', sep='delimiter')
+    except:
+        print("Error: failed to read the csv file named: "+inputFilename)
+        return False
+    data = pd.read_csv(inputFilename)
+    document = data['Document']
+    new_document = []
+    for i in document:
+        new_document.append(IO_files_util.getFilename(i)[0])
+    data['Document'] = new_document
+    no_hyperlink_filename = os.path.join(os.path.split(inputFilename)[0],"chart_data_"+os.path.split(inputFilename)[1])
+    data.to_csv(no_hyperlink_filename, encoding='utf-8')
+    return True, no_hyperlink_filename
 
 #data_to_be_plotted contains the values to be plotted
 #   the variable has this format:

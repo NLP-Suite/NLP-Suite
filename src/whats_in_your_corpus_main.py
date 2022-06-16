@@ -235,15 +235,16 @@ def run(inputFilename,inputDir, outputDir,
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
             ngramsNumber=3
-            frequency=3
+            frequency=0
             normalize = False
             excludePunctuation = False
             bySentenceIndex_var=False
 
             # n-grams
             output = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, ngramsNumber, normalize, excludePunctuation, ngramType, frequency, openOutputFiles,
-                                                              createCharts, chartPackage,
+                                                              outputDir, ngramsNumber, normalize,
+                                                              excludePunctuation, ngramType, frequency,
+                                                              openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_var)
             if output != None:
                 filesToOpen.extend(output)

@@ -154,11 +154,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if n_grams_word_var or bySentenceIndex_word_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createCharts, chartPackage,
+                                                              outputDir, n_grams_size, normalize,
+                                                              excludePunctuation, 1, openOutputFiles,
+                                                              createCharts, chartPackage,
                                                               bySentenceIndex_word_var)
         if n_grams_character_var or bySentenceIndex_character_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, n_grams_size, normalize, excludePunctuation, 0, openOutputFiles, createCharts, chartPackage,
+                                                              outputDir, n_grams_size, normalize,
+                                                              excludePunctuation, 0, openOutputFiles,
+                                                              createCharts, chartPackage,
                                                               bySentenceIndex_character_var)
 
 # VIEWER ____________________________________________________________________________________________

@@ -167,18 +167,6 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
 
     return output_name
 
-def visualize_chart(createCharts,chartPackage, inputFilename, outputDir, filesToOpen, columns_to_be_plotted,
-                              chartType, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label):
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                  outputFileLabel=outputFileNameType,
-                                                  chartPackage=chartPackage,
-                                                  chart_type_list=[chartType],
-                                                  chart_title=chartTitle,
-                                                  column_xAxis_label_var=column_xAxis_label,
-                                                  hover_info_column_list=hover_label,
-                                                  count_var=count_var)
-        return chart_outputFilename
-
 
 def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filter_o_fileName, lemmatize_s, lemmatize_v,lemmatize_o, outputDir, createCharts=True, chartPackage='Excel'):
     """
@@ -251,23 +239,59 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
     if IO_csv_util.GetNumberOfRecordInCSVFile(svo_file_name,encodingValue='utf-8')>1:
 
-        chart_outputFilename = visualize_chart(createCharts, chartPackage, svo_file_name, outputDir, filesToOpen, [[0, 0]], 'bar',
-                                            'Frequency Distribution of Subjects (filtered)', 1, [], 'S_bar',
-                                            'Subjects (filtered)')
-        if len(chart_outputFilename) > 0:
-            filesToOpen.append(chart_outputFilename)
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
+                                                           outputDir,
+                                                           columns_to_be_plotted_bar=[[0, 0]],
+                                                           # columns_to_be_plotted_bySent=[[4, 2]],
+                                                           # the fields must be numeric?
+                                                           columns_to_be_plotted_bySent=[[]],
+                                                           columns_to_be_plotted_byDoc=[[]],
+                                                           chartTitle='Frequency Distribution of Subjects (filtered)',
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='',  # 'POS_bar',
+                                                           column_xAxis_label='Subjects (filtered)',
+                                                           groupByList=[],
+                                                           plotList=[],
+                                                           chart_label='')
+        if chart_outputFilename != None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
-        chart_outputFilename = visualize_chart(createCharts, chartPackage, svo_file_name, outputDir, filesToOpen, [[1, 1]], 'bar',
-                                            'Frequency Distribution of Verbs (filtered)', 1, [], 'V_bar',
-                                            'Verbs (filtered)')
-        if len(chart_outputFilename) > 0:
-            filesToOpen.append(chart_outputFilename)
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
+                                                           outputDir,
+                                                           columns_to_be_plotted_bar=[[1, 1]],
+                                                           # columns_to_be_plotted_bySent=[[4, 2]],
+                                                           # the fields must be numeric?
+                                                           columns_to_be_plotted_bySent=[[]],
+                                                           columns_to_be_plotted_byDoc=[[]],
+                                                           chartTitle='Frequency Distribution of Verbs (filtered)',
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='',  # 'POS_bar',
+                                                           column_xAxis_label='Verbs (filtered)',
+                                                           groupByList=[],
+                                                           plotList=[],
+                                                           chart_label='')
+        if chart_outputFilename != None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
-        chart_outputFilename = visualize_chart(createCharts, chartPackage, svo_file_name, outputDir, filesToOpen, [[2, 2]], 'bar',
-                                            'Frequency Distribution of Objects (filtered)', 1, [], 'O_bar',
-                                            'Objects (filtered)')
-        if len(chart_outputFilename) > 0:
-            filesToOpen.append(chart_outputFilename)
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
+                                                           outputDir,
+                                                           columns_to_be_plotted_bar=[[2, 2]],
+                                                           # columns_to_be_plotted_bySent=[[4, 2]],
+                                                           # the fields must be numeric?
+                                                           columns_to_be_plotted_bySent=[[]],
+                                                           columns_to_be_plotted_byDoc=[[]],
+                                                           chartTitle='Frequency Distribution of Objects (filtered)',
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='',  # 'POS_bar',
+                                                           column_xAxis_label='Objects (filtered)',
+                                                           groupByList=[],
+                                                           plotList=[],
+                                                           chart_label='')
+        if chart_outputFilename != None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
     return filesToOpen
 
