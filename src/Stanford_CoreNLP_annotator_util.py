@@ -680,7 +680,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        # columns_to_be_plotted_bySent=[[4, 2]],
                                                                        # the fields must be numeric?
                                                                        columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[2, 6]],
+                                                                       columns_to_be_plotted_byDoc=[[2], [5, 6]],
                                                                        chartTitle='Frequency Distribution of POS Tag Values',
                                                                        count_var=1, hover_label=[],
                                                                        outputFileNameType='', #'POS_bar',

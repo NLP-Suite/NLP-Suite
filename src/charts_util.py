@@ -32,6 +32,7 @@ import IO_files_util
 # inputFilename has the full path
 # columns_to_be_plotted is a double list [[0, 1], [0, 2], [0, 3]]
 # TODO HOW DOES THIS DIFFER FROM def prepare_csv_data_for_chart in statistics_csv_util?
+# TODO ROBY
 def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, chart_type_list,
                                count_var=0, column_yAxis_field_list = []):
     withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
@@ -100,39 +101,30 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     filesToOpen.append(chart_outputFilename)
 
 # bar charts by document ------------------------------------------------------------------------
+        # columns_to_be_plotted_byDoc is a double list [[][]] with
+        #   select-columns in the first list
+        #   group by columns in the second list
+        #   e.g., [[2],[5,6]] or [[2, 3],[5,6, 8]]
         # document value are the first item in the list [[3,2]] i.e. 3
         #   plot values are the second item in the list [[3,2]] i.e. 2
         #  count_var should be
         #   FALSE (0) for numeric fields;
         #   TRUE (1) for alphabetic fields
-        # TODO for alphabetic fields with multiple values (e.g., NER, POS),
-        #   we should compute the list of values and
-        #   ask the user which field to focus on for the plot, e.g., NER PERSON, POS NN
-        # TODO for numeric fields, with multiple values,
-        #   it should provide classes of values
-        #   and allow you to select a class, like for alphabetic values above
         if len(columns_to_be_plotted_byDoc[0])>0: # compute only if the double list is not empty
-            if count_var==1:
-                # data, headers = IO_csv_util.get_csv_data(inputFilename, True)  # get the data and header
-                # column_name = IO_csv_util.get_headerValue_from_columnNumber(headers, (columns_to_be_plotted_byDoc[0])[1])
-                # column_number = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID')
-                # csv_field_values = IO_csv_util.get_csv_field_values(inputFilename, column_name)
-                # column_number = (columns_to_be_plotted_byDoc[0])[1]
-                temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window, inputFilename, None, outputDir,
-                                                                False, createCharts, chartPackage,
-                                                                [(columns_to_be_plotted_byDoc[0])[1]], [], [(columns_to_be_plotted_byDoc[0])[0]],
-                                                                fileNameType='CSV', chartType='line')
 
-                # TODO TONY trying to get the new file with frequencies for qualitative column values
-                # data, headers = IO_csv_util.get_csv_data(inputFilename, True)  # get the data and header
-                # column_name = IO_csv_util.get_headerValue_from_columnNumber(headers, (columns_to_be_plotted_byDoc[0])[1])
-                # column_values = IO_csv_util.get_columnNumber_from_headerValue(headers, column_name)
-                # csv_field_values = IO_csv_util.get_csv_field_values(inputFilename, column_name)
-                # column_number = (columns_to_be_plotted_byDoc[0])[1]
-                # specific_column_value_list=['NN']
-                # dataRange = get_dataRange([[column_number,column_number]], data)
-                # data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename, True, headers, [[column_number,column_number]], specific_column_value_list, dataRange)
-
+            # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, True,
+            #                                complete_sid=False,  chartPackage='Excel')
+            # if count_var==1:
+            #     temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window, inputFilename, None, outputDir,
+            #                                                     False, createCharts, chartPackage,
+            #                                                     # select columns, hover over columns, groupBy columns
+            #                                                     columns_to_be_plotted_byDoc[0], [], columns_to_be_plotted_byDoc[1],
+            #                                                     fileNameType='CSV', chartType='line')
+            #
+            #     count_var = 0
+            #     print('STOP')
+            # columns_to_be_plotted_byDoc=[[1,2,3]]
+            # chart_outputFilename = run_all(columns_to_be_plotted_byDoc, temp_outputFilename[0], outputDir,
             chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
                                                       outputFileLabel='ByDoc',
                                                       chartPackage=chartPackage,
@@ -222,7 +214,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
                                                                         column_yAxis_label = column_yAxis_label_var,
                                                                         remove_hyperlinks = remove_hyperlinks)
         return Plotly_outputFilename
-    
+    # TODO ROBY
     data_to_be_plotted = prepare_data_to_be_plotted_inExcel(inputFilename,
                                 columns_to_be_plotted,
                                 chart_type_list,count_var,
