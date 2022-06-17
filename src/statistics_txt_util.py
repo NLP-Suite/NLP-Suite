@@ -499,35 +499,6 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
 
     return filesToOpen
 
-# def character_ngram():
-#     char_tokens = []
-#     char_tokens.append([''.join(word_tokenize_stanza(stanzaPipeLine(each_sentence))), Sentence_ID])
-#     for j in range(1, ngramsNumber + 1):
-#         ngramsList = []
-#         In = []
-#         for sent in char_tokens:
-#             for i in range(len(sent[0]) - (j - 1)):
-#                 In.append([sent[0][i:i + j], sent[1]])
-#         # all ngrams
-#         ctr = collections.Counter(Extract(In))
-#         for jgrams in In:
-#             jgrams.insert(1, ctr.get(jgrams[0]))
-#         # ngram     freq     sentenceID
-#         for i in In:
-#             if i[0] not in Extract(ngramsList):
-#                 ngramsList.append(i)
-#         ngramsList = sorted(ngramsList, key=lambda x: x[1])
-#         for ng in ngramsList:
-#             char_flag = False
-#             for char in ng[0]:
-#                 if char in string.punctuation:
-#                     ng.insert(1, 'yes')
-#                     char_flag = True
-#                     break
-#                 else:
-#                     continue
-#             if not char_flag:
-#                 ng.insert(1, 'no')
 
 def process_punctuation(inputFilename, excludePunctuation, In, ctr, documentID):
     if not excludePunctuation:
@@ -542,20 +513,22 @@ def process_punctuation(inputFilename, excludePunctuation, In, ctr, documentID):
                     continue
             if not char_flag:
                 ngrams.insert(1, 'no')  # insert punctuation
-            ngrams.insert(2, ctr.get(ngrams[0]))  # insert sentence frequency
-            ngrams.insert(3, documentID)  # insert document ID
-            ngrams.insert(4, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))  # insert document
-        return In
+    In.insert(2, ctr.get(ngrams[0]))  # insert sentence frequency
+    In.insert(5, documentID)  # insert document ID, after Sentence
+    In.insert(6, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))  # insert document
+    return In
 
+# process the sentence ngramsList for frequency = 1 only
 def process_hapax(ngramsList, frequency):
     # for hapax legomana only keep frequencies of 1
-    for i in ngramsList:
-        if i[0] not in Extract(ngramsList):
-            if frequency == 0:  # ngrams
-                ngramsList.append(i)
-            else:  # hapax legomena with frequency=1; exclude items with frequency>1, i.e. i[1] > 1
-                if i[1] == 1:
-                    ngramsList.append(i)
+    for ngram in ngramsList:
+        if frequency == 1:  # ngrams
+            # hapax legomena with frequency=1; exclude items with frequency>1, i.e. i[1] > 1
+            try:
+                if ngram[2] != 1: # frequencies are stored in the third field
+                    ngramsList.remove(ngram)
+            except:
+                ngramsList.remove(ngram)
     return ngramsList
 
 # return a list for each sentence of each document
@@ -583,8 +556,6 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
         gram_type_label_full="Character"
 
     filesToOpen = []
-
-    ngramsNumber=2 # TODO ROBY
 
     if frequency==1: # hapax
         hapax_label="_hapax_"
@@ -625,32 +596,61 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                         tokens.append([tk, Sentence_ID, each_sentence])
                     # loop through n-gram lengths in each sentence
                     for j in range(1,gram+1):
-                        In=[tokens[i:i+j] for i in range(len(tokens)-(j-1))] # all ngrams
+                        In = [tokens[i:i+j] for i in range(len(tokens)-(j-1))] # all ngrams
                         In = transform([tk for tk in In if same_sentence_check(tk)])
                         ctr_sentence = collections.Counter(Extract(In))
                         sentence_ngramsList=process_punctuation(file, excludePunctuation, In, ctr_sentence, documentID)
                         sentence_ngramsList = process_hapax(sentence_ngramsList, frequency)
                         ngramsList.extend(sentence_ngramsList)
-                # else: # character ngrams
-                #     character_ngram()
+                else: # character ngrams
+                    char_tokens = []
+                    char_tokens.append([''.join(word_tokenize_stanza(stanzaPipeLine(each_sentence))), Sentence_ID])
+                    for j in range(1, ngramsNumber + 1):
+                        ngramsList = []
+                        In = []
+                        for sent in char_tokens:
+                            for i in range(len(sent[0]) - (j - 1)):
+                                In.append([sent[0][i:i + j], sent[1],Sentence_ID, each_sentence])
+                        # all ngrams
+                        ctr = collections.Counter(Extract(In))
+                        for jgrams in In:
+                            jgrams.insert(1, ctr.get(jgrams[0]))
+                        # ngram     freq     sentenceID
+                        for i in In:
+                            if i[0] not in Extract(ngramsList):
+                                ngramsList.append(i)
+                        ngramsList=process_punctuation(file, excludePunctuation, In, ctr, documentID)
+                        ngramsList = sorted(ngramsList, key=lambda x: x[1])
+                        # for ng in ngramsList:
+                        #     char_flag = False
+                        #     for char in ng[0]:
+                        #         if char in string.punctuation:
+                        #             ng.insert(1, 'yes')
+                        #             char_flag = True
+                        #             break
+                        #         else:
+                        #             continue
+                        #     if not char_flag:
+                        #         ng.insert(1, 'no')
 
-            # TODO TONY
-            # compute n-grams document frequencies
-            ngramsList.insert(3, collections.Counter(Extract(ngramsList)))  # insert document frequency
-
-        # compute n-grams corpus frequencies
+        # compute n-grams frequencies must be separated by document and by entire corpus
         # TODO TONY
-        ngramsList.insert(4, collections.Counter(Extract(ngramsList)))  # insert corpus frequency
+
+        # ctr = collections.Counter(Extract(ngramsList))
+        # for ngrams in ngramsList:
+        #     ngrams.insert(3, ctr.get(ngrams[0])) # compute n-grams document frequencies
+        #     ngrams.insert(4, ctr.get(ngrams[0])) # compute n-grams corpus frequencies
 
         # ngramsList = sorted(ngramsList, key=lambda x: x[1])
-        container.extend(ngramsList)
+        # container.extend(ngramsList)
         # save output file after each n-gram value in the range
         # container = sorted(container, key=lambda x: x[1])
         csv_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                     'n-grams' + str(gram) + '_',
-                                                                     gram_type_label_short + hapax_label + 'stats', '', '',
+                                                                     'n-grams' + str(gram) + '_' + gram_type_label_short,
+                                                                     hapax_label + 'stats', '', '',
                                                                      '', False, True)
-        IO_csv_util.list_to_csv(GUI_util.window, container, csv_outputFilename)
+        # TODO TONY all of sudden this command breaks in IO_csv_util.list_to_csv
+        IO_csv_util.list_to_csv(GUI_util.window, ngramsList, csv_outputFilename)
         filesToOpen.append(csv_outputFilename)
 
             #         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,

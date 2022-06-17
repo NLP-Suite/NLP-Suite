@@ -185,7 +185,7 @@ def GetNumberOfSentencesInCSVfile(inputFilename,algorithm,columnHeader='Sentence
 # path_output is the name of the outputfile with path
 # returns True when an error is found
 def list_to_csv(window,list_output,path_output,colnum=0):
-    if list_output==None:
+    if not isinstance(list_output, list):
         return True
     try:
         #if a specific column number is given, generate only the colnum columns as output
