@@ -404,7 +404,7 @@ def remove_hyperlinks(inputFilename):
         new_document.append(IO_files_util.getFilename(i)[0])
     data['Document'] = new_document
     no_hyperlink_filename = os.path.join(os.path.split(inputFilename)[0],"chart_data_"+os.path.split(inputFilename)[1])
-    data.to_csv(no_hyperlink_filename, encoding='utf-8')
+    data.to_csv(no_hyperlink_filename, encoding='utf-8', index=False)
     return True, no_hyperlink_filename
 
 #data_to_be_plotted contains the values to be plotted
