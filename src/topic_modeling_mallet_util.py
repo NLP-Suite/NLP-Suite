@@ -256,13 +256,32 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
     filesToOpen.append(Composition_FileName)
 
     if createCharts:
-        columns_to_be_plotted = [[0, 1]]
-        hover_label = [2]
+        # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, Keys_FileName,
+        #                                                    outputDir,
+        #                                                    columns_to_be_plotted_bar=[[0, 1]],
+        #                                                    # columns_to_be_plotted_bySent=[[4, 2]],
+        #                                                    # the fields must be numeric?
+        #                                                    columns_to_be_plotted_bySent=[[]],
+        #                                                    columns_to_be_plotted_byDoc=[[]],
+        #                                                    chartTitle='Mallet Topics',
+        #                                                    count_var=0, hover_label=[2],
+        #                                                    outputFileNameType='',  # 'POS_bar',
+        #                                                    column_xAxis_label='Topic #',
+        #                                                    column_yAxis_label='Topic weight',
+        #                                                    groupByList=[],
+        #                                                    plotList=[],
+        #                                                    chart_label='')
+        # if chart_outputFilename != None:
+        #     if len(chart_outputFilename) > 0:
+        #         filesToOpen.extend(chart_outputFilename)
+
+        columns_to_be_plotted=[[0, 1]]
+        hover_label=[2]
         chartTitle = 'Mallet Topics'
         xAxis = 'Topic #'
         yAxis = 'Topic weight'
-        fileName = Keys_FileName
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, fileName, outputDir,
+
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, Keys_FileName, outputDir,
                                                   'Mallet_TM',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],

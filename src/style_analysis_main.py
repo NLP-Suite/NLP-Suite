@@ -139,10 +139,12 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             ngramsNumber=4
             normalize = False
             excludePunctuation = False
+            frequency=0
 
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, ngramsNumber, normalize, excludePunctuation, ngramType, openOutputFiles,
-                                                              createCharts, chartPackage,
+                                                              outputDir, ngramsNumber, normalize,
+                                                              excludePunctuation, ngramType, frequency,
+                                                              openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_var)
 
         if '*' in ngrams_analysis_menu_var or 'Hapax' in ngrams_analysis_menu_var:
@@ -150,10 +152,15 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             ngramType = 1
             normalize = False
             excludePunctuation = False
+            if 'Hapax' in ngrams_analysis_menu_var:
+                frequency = 1
+            else:
+                frequency = 0
 
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, ngramsNumber, normalize, excludePunctuation, ngramType, openOutputFiles,
-                                                              createCharts, chartPackage,
+                                                              outputDir, ngramsNumber, normalize,
+                                                              excludePunctuation, ngramType, frequency,
+                                                              openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_var)
         if '*' in ngrams_analysis_menu_var or 'Repetition' in ngrams_analysis_menu_var or 'POSTAG' in ngrams_analysis_menu_var or 'DEPREL' in ngrams_analysis_menu_var or 'NER' in ngrams_analysis_menu_var:
             mb.showwarning('Warning','The selected option is not available yet.\n\nSorry!')

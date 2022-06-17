@@ -134,14 +134,10 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
 
-        if n_grams_word_var or bySentenceIndex_word_var:
-            tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createCharts, chartPackage,
-                                                              bySentenceIndex_word_var)
-            if tempOutputFiles != None:
-                filesToOpen.extend(tempOutputFiles)
-        if n_grams_character_var or bySentenceIndex_character_var:
-            tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,n_grams_size, normalize, excludePunctuation,  0, openOutputFiles, createCharts, chartPackage,
-                                                              bySentenceIndex_character_var)
+            tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,n_grams_size,
+                                                            normalize, excludePunctuation, n_grams_word_var, 0,
+                                                            openOutputFiles, createCharts, chartPackage,
+                                                            bySentenceIndex_word_var)
             if tempOutputFiles != None:
                 filesToOpen.extend(tempOutputFiles)
 

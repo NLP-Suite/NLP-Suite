@@ -1,7 +1,6 @@
 # Written by Tony Chen Gu in Feb 2022
 # Contact: chentony2011@hotmail.com
 
-from asyncio.windows_events import NULL
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
@@ -50,7 +49,7 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
         i = chart_type_list[j]
         x_cols = []
         y_cols = ''
-        fig = NULL
+        fig = None
         x_cols = headers[cols_to_plot[j][0]]
         y_cols = headers[cols_to_plot[j][1]]
         if i == 'bar':
@@ -175,12 +174,12 @@ def plot_radar_chart_px(theta_label, fileName, chartTitle, r_label = None):
     return fig
 
 #plot multi line chart
-def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, series_label_list = NULL):
+def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, series_label_list = None):
     data = pd.read_csv(fileName, encoding='utf-8')
     data.fillna(0, inplace=True)
     figs = make_subplots()
     col_name = list(data.head())
-    default_series_name = (series_label_list == NULL)
+    default_series_name = (series_label_list is None)
     # overlay subplots
     for i in range(0,len(col_to_be_ploted)):
         if default_series_name:

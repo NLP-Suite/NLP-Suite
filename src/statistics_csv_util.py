@@ -15,7 +15,6 @@ import csv
 import pandas as pd
 import numpy as np
 from scipy import stats
-from asyncio.windows_events import NULL
 
 import IO_files_util
 import IO_csv_util
@@ -234,7 +233,7 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, p
         filesToOpen.append(temp_outputfile)
     if len(groupByList)>0:
         temp_outputfile=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,groupByList,plotList,chart_label,createCharts,chartPackage)
-        if temp_outputfile != None:
+        if not (temp_outputfile is None):
             # extend because temp_outputfile is a list
             filesToOpen.extend(temp_outputfile)
     return filesToOpen
@@ -438,7 +437,8 @@ def add_missing_IDs(input):
 # enable complete_sid to make sentence index continuous
 # enable graph to make a multiline graph
 # the input should be saved to a csv file first
-def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle, graph = True, complete_sid = True, series_label = NULL, chartPackage = 'Excel'):
+def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle,
+        graph = True, complete_sid = True, series_label = None, chartPackage = 'Excel'):
     cols = group_col + select_col
     if 'Excel' in chartPackage:
        use_plotly = False
@@ -463,6 +463,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         return
     name = outputDir + os.sep + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
     data.to_csv(name)
+    Excel_outputFilename=name
     # group by both group col and select cols and get a row named count to count the number of frequencies
     data = data.groupby(cols).size().to_frame("count")
     data.to_csv(name)
@@ -483,7 +484,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         cols_to_be_plotted = []
         for i in range(1,len(data.columns)):
             cols_to_be_plotted.append([0,i])
-        if series_label == NULL:
+        if series_label is None:
             Excel_outputFilename = charts_util.run_all(cols_to_be_plotted,name,outputDir,
                                             "frequency_multi-line_chart", chart_type_list=["line"],
                                             chart_title=os.path.splitext(os.path.basename(inputFilename))[0]+"_"+chartTitle, column_xAxis_label_var="Sentence ID",chartPackage = chartPackage)
@@ -519,8 +520,9 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     container = []
     hover_over_header = []
     removed_hyperlinks = False
-    if len(inputDataFrame)!=0:
-        data = inputDataFrame
+    if inputDataFrame is not None:
+        if len(inputDataFrame)!=0:
+            data = inputDataFrame
     else:
         with open(inputFilename,encoding='utf-8',errors='ignore') as infile:
             reader = csv.reader(x.replace('\0', '') for x in infile)
@@ -529,7 +531,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
         data = pd.read_csv(inputFilename, usecols=header_indices,encoding='utf-8')
 
     # remove hyperlink before processing
-    data.to_csv(inputFilename)
+    data.to_csv(inputFilename,index=False)
     removed_hyperlinks, inputFilename = charts_util.remove_hyperlinks(inputFilename)
     data = pd.read_csv(inputFilename,encoding='utf-8')
 
@@ -562,13 +564,12 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
             temp = group_col.copy()
             temp.append(col)
-            data = data.groupby(temp).size().reset_index(name='Frequency')
-            for index, row in data.iterrows():
-                if row[col] == '':
-                    data.at[index,'Frequency'] = 0
+            column_name=[]
+            for t in temp:
+                column_name.append(IO_csv_util.get_headerValue_from_columnNumber(headers, t)) #temp[0])
+            data = data.groupby(column_name).size().reset_index(name='Frequency')
             data.to_csv(outputFilename,index=False)
             filesToOpen.append(outputFilename)
-
     else: # aggregation by group_col & hover over -----------------------------------------------
         for col_hover in hover_col:
             col = str(selected_col[0])
