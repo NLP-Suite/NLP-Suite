@@ -511,7 +511,7 @@ def get_columns_to_be_plotted(outputFilename,col):
 # in INPUT the function can use either a csv file or a data frame
 # in OUTPUT the function returns a csv file with frequencies for the selected field
 
-# selected_col, hover_col, group_col are single lists with the column headers
+# selected_col, hover_col, group_col are single lists with the column headers (alphabetic, rather than column number)
 #   selected_col=['POStag'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
 def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputDataFrame, outputDir,
             openOutputFiles,createCharts,chartPackage,
@@ -534,8 +534,10 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
 
     # remove hyperlink before processing
     data.to_csv(inputFilename,index=False)
-    removed_hyperlinks, inputFilename = charts_util.remove_hyperlinks(inputFilename)
+    removed_hyperlinks, inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
     data = pd.read_csv(inputFilename,encoding='utf-8')
+
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'col-freq')
 
     if len(selected_col) == 0:
         mb.showwarning('Missing field', 'You have not selected the csv field for which to compute frequencies.\n\nPlease, select the field and try again.')
@@ -543,10 +545,8 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     elif len(selected_col) != 0 and len(group_col) == 0:
         # no aggregation by group_col --------------------------------------------------------
         for col in selected_col:
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
             data = data[col].value_counts().to_frame().reset_index()
             hdr = [col, col + ' Frequency']
-
             hover_over_header = []
             if len(hover_col) != 0:
                 hover_header = ', '.join(hover_col)
@@ -563,7 +563,6 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
         # aggregation by group_col NO hover over ----------------------------------------
         for col in selected_col:
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
             # selected_col, hover_col, group_col are single lists with the column headers
             #   selected_col=['POStag'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
             # the aggregation can deal with column items passed as integer (from visualization_chart) or
@@ -586,7 +585,6 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     else: # aggregation by group_col & hover over -----------------------------------------------
         for col_hover in hover_col:
             col = str(selected_col[0])
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col_hover)
             temp = group_col.copy()
             temp.append(col_hover)
             c = data.groupby(group_col)[col_hover].apply(list).to_dict()
@@ -609,9 +607,6 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             df.columns = temp
             data = data.merge(df, how = 'left', left_on= group_col,right_on = group_col)
         temp_str = '%s'+'\n%s'* (len(hover_col)-1)
-        # TODO TONY1 need to remove hyperlink from hover over data in case hover_over_header is Document
-        #   hover_over_value=IO_csv_util.undressFilenameForCSVHyperlink(hover_over_value)
-        #   data['Hover_over: ' + hover_header] = IO_csv_util.undressFilenameForCSVHyperlink(data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1))
         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1)
         data.drop(hover_col, axis=1, inplace=True)
         data.to_csv(outputFilename, index=False)
@@ -627,7 +622,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     #                                           hover_info_column_list=hover_over_header)
     #     if chart_outputFilename != None:
     #         filesToOpen.filesToOpen(chart_outputFilename)
-    
+
     if removed_hyperlinks:
         os.remove(inputFilename)
     return filesToOpen # several files with the charts
