@@ -46,12 +46,7 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
         # TODO hover_over_values not being passed, neither are any potential aggregate columns
         #   get_data_to_be_plotted_with_counts is less general than
         data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange)
-        # TODO TONY1
-        # when counting because we are dealing with an alphabetic field, we should export the frequency values
-        #   to be used in the visualization of field statistics; but... not sure how to do it since it
-        #   exports the data as lists
-        outputFilename = inputFilename.replace('.csv','1.csv')
-        IO_csv_util.list_to_csv(GUI_util.window, data_to_be_plotted[0], outputFilename)
+        # IO_csv_util.list_to_csv(GUI_util.window, data_to_be_plotted[0], outputFilename)
     else:
         try:
             data = pd.read_csv(inputFilename,encoding='utf-8')
@@ -100,7 +95,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
-# bar charts by document ------------------------------------------------------------------------
+# bar charts by DOCUMENT ------------------------------------------------------------------------
         # columns_to_be_plotted_byDoc is a double list [[][]] with
         #   select-columns in the first list
         #   group by columns in the second list
@@ -112,19 +107,21 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         #   TRUE (1) for alphabetic fields
         if len(columns_to_be_plotted_byDoc[0])>0: # compute only if the double list is not empty
 
-            # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, True,
-            #                                complete_sid=False,  chartPackage='Excel')
-            # if count_var==1:
-            #     temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window, inputFilename, None, outputDir,
-            #                                                     False, createCharts, chartPackage,
-            #                                                     # select columns, hover over columns, groupBy columns
-            #                                                     columns_to_be_plotted_byDoc[0], [], columns_to_be_plotted_byDoc[1],
-            #                                                     fileNameType='CSV', chartType='line')
-            #
-            #     count_var = 0
-            #     print('STOP')
-            # columns_to_be_plotted_byDoc=[[1,2,3]]
-            # chart_outputFilename = run_all(columns_to_be_plotted_byDoc, temp_outputFilename[0], outputDir,
+            if count_var==1: # for alphabetic fields that need to be counted for display in a chart
+              # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, graph=False,
+              #                              complete_sid=False,  chartPackage='Excel')
+
+                # TODO ROBY select_col any changes in the inputfile layout of columns will change the [0][0]
+                selected_col=[[columns_to_be_plotted_bar[0][0]]]
+                temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window, inputFilename, None, outputDir,
+                                                                False, createCharts, chartPackage,
+                                                                selected_col=selected_col, hover_col=[],
+                                                                group_col=columns_to_be_plotted_byDoc,
+                                                                fileNameType='CSV', chartType='')
+                count_var=0
+                # 2,3 are the columns in temp_outputFilename
+                columns_to_be_plotted_byDoc = [[2,3]]
+                inputFilename=temp_outputFilename[0]
             chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
                                                       outputFileLabel='ByDoc',
                                                       chartPackage=chartPackage,
@@ -142,7 +139,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
-# line plots by sentence index -----------------------------------------------------------------------
+# line plots by SENTENCE index -----------------------------------------------------------------------
         # sentence index value are the first item in the list [[7,2]] i.e. 7
         #   plot values are the second item in the list [[7,2]] i.e. 2
         if len(columns_to_be_plotted_bySent[0])>0: # compute only if the double list is not empty
@@ -160,7 +157,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
-# compute field statistics ---------------------------------------------------------------------------
+# compute field STATISTICS ---------------------------------------------------------------------------
         # TODO THE FIELD MUST CONTAIN NUMERIC VALUES
         # plotList (a list []) contains the columns headers to be used to compute their stats
         if len(groupByList)>0: # compute only if list is not empty
@@ -185,7 +182,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 # each series plotted has its own hover-over column
 #   if the column is the same (e.g., sentence), this must be repeated as many times as there are series 
 
-# columns_to_be_plotted is a double list [[0, 1], [0, 2], [0, 3]] where
+# columns_to_be_plotted is a double list of 2 items for each list [[0, 1], [0, 2], [0, 3]] where
 #   the first number refers to the x-axis value and the second to the y-axis value
 # when count_var=1 the second number gets counted (non numeric values MUST be counted)
 # the complete sid need to be tested as na would be filled with 0
@@ -389,24 +386,6 @@ def complete_sentence_index(file_path):
     data = data.fillna(0)
     data.to_csv(file_path, index = False)
     return
-
-def remove_hyperlinks(inputFilename):
-    try:
-        data = pd.read_csv(inputFilename, encoding='utf-8')
-    except pd.errors.ParserError:
-        data = pd.read_csv(inputFilename, encoding='utf-8', sep='delimiter')
-    except:
-        print("Error: failed to read the csv file named: "+inputFilename)
-        return False
-    data = pd.read_csv(inputFilename)
-    document = data['Document']
-    new_document = []
-    for i in document:
-        new_document.append(IO_files_util.getFilename(i)[0])
-    data['Document'] = new_document
-    no_hyperlink_filename = os.path.join(os.path.split(inputFilename)[0],"chart_data_"+os.path.split(inputFilename)[1])
-    data.to_csv(no_hyperlink_filename, encoding='utf-8', index=False)
-    return True, no_hyperlink_filename
 
 #data_to_be_plotted contains the values to be plotted
 #   the variable has this format:

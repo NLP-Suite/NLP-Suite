@@ -552,7 +552,40 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
 
     return filesToOpen
 
-def get_ngramlist(inputFilename,ngramsNumber=4, wordgram=1, excludePunctuation=False, frequency = None, bySentenceID=False, isdir=False):
+
+def process_punctuation(inputFilename, excludePunctuation, In, ctr, documentID):
+    if not excludePunctuation:
+        for ngrams in In:
+            char_flag = False
+            for char in ngrams[0]:
+                if char in string.punctuation:
+                    ngrams.insert(1, 'yes')  # insert punctuation
+                    char_flag = True
+                    break
+                else:
+                    continue
+            if not char_flag:
+                ngrams.insert(1, 'no')  # insert punctuation
+    In.insert(2, ctr.get(ngrams[0]))  # insert sentence frequency
+    In.insert(5, documentID)  # insert document ID, after Sentence
+    In.insert(6, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))  # insert document
+    return In
+
+# process the sentence ngramsList for frequency = 1 only
+def process_hapax(ngramsList, frequency):
+    # for hapax legomana only keep frequencies of 1
+    for ngram in ngramsList:
+        if frequency == 1:  # ngrams
+            # hapax legomena with frequency=1; exclude items with frequency>1, i.e. i[1] > 1
+            try:
+                if ngram[2] != 1: # frequencies are stored in the third field
+                    ngramsList.remove(ngram)
+            except:
+                ngramsList.remove(ngram)
+    return ngramsList
+
+# return a list for each sentence of each document
+def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1, excludePunctuation=False, frequency = None, bySentenceID=False, isdir=False, createCharts=True,chartPackage='Excel'):
 
     def transform(arr):
         t = []
@@ -563,15 +596,34 @@ def get_ngramlist(inputFilename,ngramsNumber=4, wordgram=1, excludePunctuation=F
             t.append([str, jgramlist[0][1],jgramlist[0][2]])
         return t
 
-    container = []
-    Sentence_ID = 0
-    tokens = []
-    char_tokens = []
-    text = (open(inputFilename, "r", encoding="utf-8", errors='ignore').read())
-    # split into sentences
-    # sentences = nltk.sent_tokenize(text)
-    sentences = sent_tokenize_stanza(stanzaPipeLine(text))
-    for each_sentence in sentences:
+    files = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
+    nFile=len(files)
+    if nFile==0:
+        return
+
+    if wordgram==1:
+        gram_type_label_short="Wd"
+        gram_type_label_full="Word"
+    else:
+        gram_type_label_short="Ch"
+        gram_type_label_full="Character"
+
+    filesToOpen = []
+
+    if frequency==1: # hapax
+        hapax_label="_hapax_"
+        ngramsNumber=1 # if hapax, there is no point computing higher-level n-grams
+    else:
+        hapax_label=""
+
+    gram = 1
+    while gram <= ngramsNumber:
+        container = []
+        Sentence_ID = 0
+        documentID = 0
+        ngramsList = []
+        print("Processing " + gram_type_label_full + " n-gram " + str(gram) + "/" + str(ngramsNumber))
+        # insert headers
         if excludePunctuation:
             each_sentence = each_sentence.translate(str.maketrans('', '', string.punctuation))
         Sentence_ID += 1
@@ -579,144 +631,104 @@ def get_ngramlist(inputFilename,ngramsNumber=4, wordgram=1, excludePunctuation=F
             # char_tokens.append([''.join(nltk.word_tokenize(each_sentence)),Sentence_ID])
             char_tokens.append([''.join(word_tokenize_stanza(stanzaPipeLine(each_sentence))),Sentence_ID])
         else:
-            # for tk in nltk.word_tokenize(each_sentence):
-            for tk in word_tokenize_stanza(stanzaPipeLine(each_sentence)):
-                tokens.append([tk, Sentence_ID, each_sentence])
-    # 1:
-    if wordgram==1: # word ngrams
-        for j in range(1,ngramsNumber+1):
-            ngramsList = []
-            In=[tokens[i:i+j] for i in range(len(tokens)-(j-1))] # all jgrams
-            In = transform([tk for tk in In if same_sentence_check(tk)])
-            ctr = collections.Counter(Extract(In))
-            for jgrams in In:
-                jgrams.insert(1, ctr.get(jgrams[0]))
-            # ngram     freq     sentenceID
-            for i in In:
-                if i[0] not in Extract(ngramsList):
-                    if frequency == None:
-                        ngramsList.append(i)
-                    else: # hapax legomena with frequency=1; exclude items with frequency>1, i.e. i[1] > 1
-                        if i[1] == 1:
-                            ngramsList.append(i)
-            ngramsList=sorted(ngramsList, key = lambda x: x[1])
-            if excludePunctuation:
-                if isdir:
-                    for n in ngramsList:
-                        # n.append(inputFilename)
-                        n.append(IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))
-                    if bySentenceID == True:
-                        ngramsList.insert(0, [str(j) + '-grams',  'Frequency', 'Sentence ID', 'Sentence',
-                                              'Document'])
-                    else:
-                        for ngram in ngramsList:
-                            ngram.pop(3)
-                        ngramsList.insert(0, [str(j) + '-grams',  'Frequency', 'Sentence', 'Document'])
-                else:
-                    if bySentenceID == True:
-                        ngramsList.insert(0, [str(j) + '-grams',  'Frequency', 'Sentence ID', 'Sentence'])
-                    else:
-                        for ngram in ngramsList:
-                            ngram.pop(3)
-                        ngramsList.insert(0, [str(j) + '-grams', 'Frequency'])
-                container.append(ngramsList)
-            else:
-                for ng in ngramsList:
-                    char_flag = False
-                    for char in ng[0]:
-                        if char in string.punctuation:
-                            ng.insert(1,'yes')
-                            char_flag = True
-                            break
-                        else:
-                            continue
-                    if not char_flag:
-                        ng.insert(1,'no')
-                if isdir:
-                    for n in ngramsList:
-                        # n.append(inputFilename)
-                        n.append(IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))
-                    if bySentenceID == True:
-                        ngramsList.insert(0, [str(j) + '-grams', 'Punctuation','Frequency', 'Sentence ID', 'Sentence', 'Document'])
-                    else:
-                        for ngram in ngramsList:
-                            ngram.pop(3)
-                        ngramsList.insert(0, [str(j) + '-grams','Punctuation', 'Frequency','Sentence', 'Document'])
-                else:
-                    if bySentenceID == True:
-                        ngramsList.insert(0, [str(j) + '-grams','Punctuation', 'Frequency', 'Sentence ID', 'Sentence'])
-                    else:
-                        for ngram in ngramsList:
-                            ngram.pop(3)
-                        ngramsList.insert(0, [str(j) + '-grams', 'Punctuation','Frequency'])
-                container.append(ngramsList)
-    else: # character ngrams
-        for j in range(1,ngramsNumber+1):
-            ngramsList = []
-            In = []
-            for sent in char_tokens:
-                for i in range(len(sent[0]) - (j - 1)):
-                    In.append([sent[0][i:i + j], sent[1]])
-            # all jgrams
-            ctr = collections.Counter(Extract(In))
-            for jgrams in In:
-                jgrams.insert(1, ctr.get(jgrams[0]))
-            # ngram     freq     sentenceID
-            for i in In:
-                if i[0] not in Extract(ngramsList):
-                    ngramsList.append(i)
-            ngramsList=sorted(ngramsList, key = lambda x: x[1])
-            if excludePunctuation:
-                if isdir:
-                    for n in ngramsList:
-                        # n.append(inputFilename)
-                        n.append(IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))
-                    if bySentenceID == True:
-                        ngramsList.insert(0, [str(j) + '-grams',  'Frequency', 'Sentence ID', 'Document'])
-                    else:
-                        for ngram in ngramsList:
-                            ngram.pop(3)
-                        ngramsList.insert(0, [str(j) + '-grams',  'Frequency', 'Document'])
-                else:
-                    if bySentenceID == True:
-                        ngramsList.insert(0, [str(j) + '-grams',  'Frequency', 'Sentence ID', 'Sentence'])
-                    else:
-                        for ngram in ngramsList:
-                            ngram.pop(3)
-                        ngramsList.insert(0, [str(j) + '-grams',  'Frequency'])
-                container.append(ngramsList)
-            else:
-                for ng in ngramsList:
-                    char_flag = False
-                    for char in ng[0]:
-                        if char in string.punctuation:
-                            ng.insert(1,'yes')
-                            char_flag = True
-                            break
-                        else:
-                            continue
-                    if not char_flag:
-                        ng.insert(1,'no')
-                if isdir:
-                    for n in ngramsList:
-                        # n.append(inputFilename)
-                        n.append(IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))
-                    if bySentenceID == True:
-                        ngramsList.insert(0, [str(j) + '-grams',  'Punctuation','Frequency', 'Sentence ID', 'Document'])
-                    else:
-                        for ngram in ngramsList:
-                            ngram.pop(3)
-                        ngramsList.insert(0, [str(j) + '-grams', 'Punctuation', 'Frequency', 'Document'])
-                else:
-                    if bySentenceID == True:
-                        ngramsList.insert(0, [str(j) + '-grams',  'Punctuation','Frequency', 'Sentence ID', 'Sentence'])
-                    else:
-                        for ngram in ngramsList:
-                            ngram.pop(3)
-                        ngramsList.insert(0, [str(j) + '-grams', 'Punctuation', 'Frequency'])
-                container.append(ngramsList)
+            container.insert(0, [str(gram) + '-grams', 'Punctuation', 'Frequency in Sentence', 'Frequency in Document', 'Frequency in Corpus',
+                                 'Sentence ID', 'Sentence',
+                                 'Document ID', 'Document'])
+        for file in files:
+            head, tail = os.path.split(file)
+            documentID += 1
+            print("   Processing file " + str(documentID) + "/" + str(nFile) + ' ' + tail)
+            text = (open(file, "r", encoding="utf-8", errors='ignore').read())
+            # split into sentences
+            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+            for each_sentence in sentences:
+                if excludePunctuation:
+                    each_sentence = each_sentence.translate(str.maketrans('', '', string.punctuation))
+                Sentence_ID += 1
+                # word ngrams
+                if wordgram==1: # word ngrams
+                    tokens=[]
+                    for tk in word_tokenize_stanza(stanzaPipeLine(each_sentence)):
+                        tokens.append([tk, Sentence_ID, each_sentence])
+                    # loop through n-gram lengths in each sentence
+                    for j in range(1,gram+1):
+                        In = [tokens[i:i+j] for i in range(len(tokens)-(j-1))] # all ngrams
+                        In = transform([tk for tk in In if same_sentence_check(tk)])
+                        ctr_sentence = collections.Counter(Extract(In))
+                        sentence_ngramsList=process_punctuation(file, excludePunctuation, In, ctr_sentence, documentID)
+                        sentence_ngramsList = process_hapax(sentence_ngramsList, frequency)
+                        ngramsList.extend(sentence_ngramsList)
+                else: # character ngrams
+                    char_tokens = []
+                    char_tokens.append([''.join(word_tokenize_stanza(stanzaPipeLine(each_sentence))), Sentence_ID])
+                    for j in range(1, ngramsNumber + 1):
+                        ngramsList = []
+                        In = []
+                        for sent in char_tokens:
+                            for i in range(len(sent[0]) - (j - 1)):
+                                In.append([sent[0][i:i + j], sent[1],Sentence_ID, each_sentence])
+                        # all ngrams
+                        ctr = collections.Counter(Extract(In))
+                        for jgrams in In:
+                            jgrams.insert(1, ctr.get(jgrams[0]))
+                        # ngram     freq     sentenceID
+                        for i in In:
+                            if i[0] not in Extract(ngramsList):
+                                ngramsList.append(i)
+                        ngramsList=process_punctuation(file, excludePunctuation, In, ctr, documentID)
+                        ngramsList = sorted(ngramsList, key=lambda x: x[1])
+                        # for ng in ngramsList:
+                        #     char_flag = False
+                        #     for char in ng[0]:
+                        #         if char in string.punctuation:
+                        #             ng.insert(1, 'yes')
+                        #             char_flag = True
+                        #             break
+                        #         else:
+                        #             continue
+                        #     if not char_flag:
+                        #         ng.insert(1, 'no')
 
-    return container
+        # compute n-grams frequencies must be separated by document and by entire corpus
+        # TODO TONY
+
+        # ctr = collections.Counter(Extract(ngramsList))
+        # for ngrams in ngramsList:
+        #     ngrams.insert(3, ctr.get(ngrams[0])) # compute n-grams document frequencies
+        #     ngrams.insert(4, ctr.get(ngrams[0])) # compute n-grams corpus frequencies
+
+        # ngramsList = sorted(ngramsList, key=lambda x: x[1])
+        # container.extend(ngramsList)
+        # save output file after each n-gram value in the range
+        # container = sorted(container, key=lambda x: x[1])
+        csv_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                     'n-grams' + str(gram) + '_' + gram_type_label_short,
+                                                                     hapax_label + 'stats', '', '',
+                                                                     '', False, True)
+        # TODO TONY all of sudden this command breaks in IO_csv_util.list_to_csv
+        IO_csv_util.list_to_csv(GUI_util.window, ngramsList, csv_outputFilename)
+        filesToOpen.append(csv_outputFilename)
+
+            #         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
+            #                                                            outputDir,
+            #                                                            columns_to_be_plotted_bar=columns_to_be_plotted,
+            #                                                            # columns_to_be_plotted_bySent=[[4, 2]],
+            #                                                            # the fields must be numeric?
+            #                                                            columns_to_be_plotted_bySent=[[]],
+            #                                                            columns_to_be_plotted_byDoc=[[]],
+            #                                                            chartTitle='Frequency of ' + chartTitle + str(documentID) + '-grams',
+            #                                                            count_var=1, hover_label=[], #hover_label,
+            #                                                            outputFileNameType='n-grams_'+str(documentID)+'_'+ tail,
+            #                                                            column_xAxis_label='',
+            #                                                            groupByList=[],
+            #                                                            plotList=[],
+            #                                                            chart_label='')
+            #         if chart_outputFilename != None:
+            #             if len(chart_outputFilename) > 0:
+            #                 filesToOpen.extend(chart_outputFilename)
+
+        gram += 1
+    return filesToOpen
 
 def tokenize(s):
     tokens = re.split(r"[^0-9A-Za-z\-'_]+", s)

@@ -33,7 +33,7 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
                         static_flag=False):
     # if we need to remove the hyperlinks, we need to make a temporary data for plotting
     if remove_hyperlinks:
-        remove_hyperlinks,inputFilename = charts_util.remove_hyperlinks(inputFilename)
+        remove_hyperlinks,inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
     
     try:
         data = pd.read_csv(inputFilename, encoding='utf-8')

@@ -155,7 +155,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             if 'Hapax' in ngrams_analysis_menu_var:
                 frequency = 1
             else:
-                frequency = 0
+                frequency = None
 
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, ngramsNumber, normalize,

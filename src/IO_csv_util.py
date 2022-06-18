@@ -11,7 +11,7 @@ import tkinter.messagebox as mb
 import pandas as pd
 import os
 import stat
-
+import IO_files_util
 
 #if any column header contains just numbers the function will return FALSE
 def csvFile_has_header(file_path):
@@ -185,7 +185,7 @@ def GetNumberOfSentencesInCSVfile(inputFilename,algorithm,columnHeader='Sentence
 # path_output is the name of the outputfile with path
 # returns True when an error is found
 def list_to_csv(window,list_output,path_output,colnum=0):
-    if list_output==None:
+    if not isinstance(list_output, list):
         return True
     try:
         #if a specific column number is given, generate only the colnum columns as output
@@ -297,6 +297,7 @@ def dressFilenameForCSVHyperlink(fileName):
         fileName=tempFileName
     return fileName
 
+# the function takes a string (i.e., a filename) and removes the hyperlinks
 def undressFilenameForCSVHyperlink(fileName):
     try:
         fileName=fileName.replace('=hyperlink("','')
@@ -304,6 +305,25 @@ def undressFilenameForCSVHyperlink(fileName):
         return fileName
     fileName=fileName.replace('")','')
     return fileName
+
+# given a csv file containing a document field with filenames with hyperlinks, the function will remove the hyperlinks from every col & row
+def remove_hyperlinks(inputFilename):
+    try:
+        data = pd.read_csv(inputFilename, encoding='utf-8')
+    except pd.errors.ParserError:
+        data = pd.read_csv(inputFilename, encoding='utf-8', sep='delimiter')
+    except:
+        print("Error: failed to read the csv file named: "+inputFilename)
+        return False
+    data = pd.read_csv(inputFilename)
+    document = data['Document']
+    new_document = []
+    for i in document:
+        new_document.append(IO_files_util.getFilename(i)[0])
+    data['Document'] = new_document
+    no_hyperlink_filename = os.path.join(os.path.split(inputFilename)[0],os.path.split(inputFilename)[1])[:-4] +"_no_hyperlinks.csv"
+    data.to_csv(no_hyperlink_filename, encoding='utf-8')
+    return True, no_hyperlink_filename
 
 # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location' in GIS files
 def rename_header(inputFilename, header1, header2):

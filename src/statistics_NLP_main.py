@@ -95,7 +95,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
             return
         tempOutputFiles=statistics_csv_util.compute_csv_column_frequencies_with_aggregation(window,
                                                            inputFilename,
-                                                           '',
+                                                           None,
                                                            outputDir,
                                                            openOutputFiles, createCharts, chartPackage,
                                                            csv_list,hover_over_list,groupBy_list,
@@ -103,6 +103,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
         if tempOutputFiles != None:
             filesToOpen.extend(tempOutputFiles)
     elif n_grams:
+        frequency = 0 # default compute n-grams and not hapax; default value changed below for hapax
         n_grams_word_var = False
         n_grams_character_var = False
         normalize = False
@@ -117,6 +118,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
         bySentenceIndex_character_var = False
         if 'Hapax' in str(n_grams_list):
             n_grams_size = 1
+            frequency=1
         if 'punctuation' in str(n_grams_list):
             excludePunctuation = True
         if 'sentence index' in str(n_grams_list):
@@ -135,7 +137,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
                 return
 
             tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,n_grams_size,
-                                                            normalize, excludePunctuation, n_grams_word_var, 0,
+                                                            normalize, excludePunctuation, n_grams_word_var, frequency,
                                                             openOutputFiles, createCharts, chartPackage,
                                                             bySentenceIndex_word_var)
             if tempOutputFiles != None:
