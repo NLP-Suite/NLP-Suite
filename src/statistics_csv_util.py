@@ -511,6 +511,8 @@ def get_columns_to_be_plotted(outputFilename,col):
 # in INPUT the function can use either a csv file or a data frame
 # in OUTPUT the function returns a csv file with frequencies for the selected field
 
+# selected_col, hover_col, group_col are single lists with the column headers
+#   selected_col=['POStag'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
 def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputDataFrame, outputDir,
             openOutputFiles,createCharts,chartPackage,
             selected_col, hover_col, group_col,
@@ -562,12 +564,23 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
         # aggregation by group_col NO hover over ----------------------------------------
         for col in selected_col:
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', col)
-            temp = group_col.copy()
-            temp.append(col)
-            column_name=[]
-            for t in temp:
-                column_name.append(IO_csv_util.get_headerValue_from_columnNumber(headers, t)) #temp[0])
-            data = data.groupby(column_name).size().reset_index(name='Frequency')
+            # selected_col, hover_col, group_col are single lists with the column headers
+            #   selected_col=['POStag'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
+            # the aggregation can deal with column items passed as integer (from visualization_chart) or
+            #   alphabetic values (from statistics_NLP_main)
+            group_column_names=[]
+            # create a single list
+            temp_group_column_names = selected_col + group_col
+            # test for list of lists [[],[]]
+            if any(isinstance(el, list) for el in temp_group_column_names):
+                # flatten the list of lists to a single list
+                temp_group_column_names = [x for xs in temp_group_column_names for x in xs]
+            for t in temp_group_column_names:
+                if isinstance(t, (int, float)):
+                    group_column_names.append(IO_csv_util.get_headerValue_from_columnNumber(headers, t))
+            if len(group_column_names)==0:
+                group_column_names=temp_group_column_names
+            data = data.groupby(group_column_names).size().reset_index(name='Frequency')
             data.to_csv(outputFilename,index=False)
             filesToOpen.append(outputFilename)
     else: # aggregation by group_col & hover over -----------------------------------------------

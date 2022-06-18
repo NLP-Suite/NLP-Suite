@@ -95,7 +95,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
             return
         tempOutputFiles=statistics_csv_util.compute_csv_column_frequencies_with_aggregation(window,
                                                            inputFilename,
-                                                           '',
+                                                           None,
                                                            outputDir,
                                                            openOutputFiles, createCharts, chartPackage,
                                                            csv_list,hover_over_list,groupBy_list,

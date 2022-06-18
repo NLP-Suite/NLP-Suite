@@ -100,7 +100,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
-# bar charts by document ------------------------------------------------------------------------
+# bar charts by DOCUMENT ------------------------------------------------------------------------
         # columns_to_be_plotted_byDoc is a double list [[][]] with
         #   select-columns in the first list
         #   group by columns in the second list
@@ -112,19 +112,19 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         #   TRUE (1) for alphabetic fields
         if len(columns_to_be_plotted_byDoc[0])>0: # compute only if the double list is not empty
 
-            # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, True,
-            #                                complete_sid=False,  chartPackage='Excel')
-            # if count_var==1:
-            #     temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window, inputFilename, None, outputDir,
-            #                                                     False, createCharts, chartPackage,
-            #                                                     # select columns, hover over columns, groupBy columns
-            #                                                     columns_to_be_plotted_byDoc[0], [], columns_to_be_plotted_byDoc[1],
-            #                                                     fileNameType='CSV', chartType='line')
-            #
-            #     count_var = 0
-            #     print('STOP')
-            # columns_to_be_plotted_byDoc=[[1,2,3]]
-            # chart_outputFilename = run_all(columns_to_be_plotted_byDoc, temp_outputFilename[0], outputDir,
+            if count_var==1:
+              # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, graph=False,
+              #                              complete_sid=False,  chartPackage='Excel')
+
+                temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window, inputFilename, None, outputDir,
+                                                                False, createCharts, chartPackage,
+                                                                selected_col=[[2]], hover_col=[],
+                                                                # columns_to_be_plotted_byDoc[0], [], columns_to_be_plotted_byDoc[1],
+                                                                group_col=columns_to_be_plotted_byDoc,
+                                                                fileNameType='CSV', chartType='')
+            count_var=0
+            columns_to_be_plotted_byDoc = [[2,3]]
+            inputFilename=temp_outputFilename[0]
             chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
                                                       outputFileLabel='ByDoc',
                                                       chartPackage=chartPackage,
@@ -142,7 +142,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
-# line plots by sentence index -----------------------------------------------------------------------
+# line plots by SENTENCE index -----------------------------------------------------------------------
         # sentence index value are the first item in the list [[7,2]] i.e. 7
         #   plot values are the second item in the list [[7,2]] i.e. 2
         if len(columns_to_be_plotted_bySent[0])>0: # compute only if the double list is not empty
@@ -160,7 +160,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
-# compute field statistics ---------------------------------------------------------------------------
+# compute field STATISTICS ---------------------------------------------------------------------------
         # TODO THE FIELD MUST CONTAIN NUMERIC VALUES
         # plotList (a list []) contains the columns headers to be used to compute their stats
         if len(groupByList)>0: # compute only if list is not empty
