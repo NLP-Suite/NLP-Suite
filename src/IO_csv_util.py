@@ -322,7 +322,7 @@ def remove_hyperlinks(inputFilename):
         new_document.append(IO_files_util.getFilename(i)[0])
     data['Document'] = new_document
     no_hyperlink_filename = os.path.join(os.path.split(inputFilename)[0],os.path.split(inputFilename)[1])[:-4] +"_no_hyperlinks.csv"
-    data.to_csv(no_hyperlink_filename, encoding='utf-8')
+    data.to_csv(no_hyperlink_filename, encoding='utf-8',index=0)
     return True, no_hyperlink_filename
 
 # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location' in GIS files

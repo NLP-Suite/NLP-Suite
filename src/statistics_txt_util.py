@@ -21,6 +21,8 @@ import IO_user_interface_util
 
 import csv
 import nltk
+import GUI_IO_util
+
 # from nltk import tokenize
 # from nltk import word_tokenize
 from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
@@ -159,6 +161,389 @@ def excludeStopWords_list(words):
     return words
 
 
+# https://www.nltk.org/book/ch02.html
+# For the Gutenberg Corpus they provide the programming code to do it. section 1.9   Loading your own Corpus.
+# see also https://people.duke.edu/~ccc14/sta-663/TextProcessingSolutions.html
+def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
+                              excludeStopWords=True, lemmatizeWords=True):
+    filesToOpen = []
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus_stats',
+                                                             '')
+    filesToOpen.append(outputFilename)
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+
+    # read_line(inputFilename, inputDir, outputDir)
+    # return
+
+    Ndocs = str(len(inputDocs))
+    fieldnames = ['Number of documents in corpus',
+                  'Document ID',
+                  'Document',
+                  'Number of Sentences in Document',
+                  'Number of Words in Document',
+                  'Number of Syllables in Document',
+                  'Word1', 'Frequency1',
+                  'Word2', 'Frequency2',
+                  'Word3', 'Frequency3',
+                  'Word4', 'Frequency4',
+                  'Word5', 'Frequency5',
+                  'Word6', 'Frequency6',
+                  'Word7', 'Frequency7',
+                  'Word8', 'Frequency8',
+                  'Word9', 'Frequency9',
+                  'Word10', 'Frequency10',
+                  'Word11', 'Frequency11',
+                  'Word12', 'Frequency12',
+                  'Word13', 'Frequency13',
+                  'Word14', 'Frequency14',
+                  'Word15', 'Frequency15',
+                  'Word16', 'Frequency16',
+                  'Word17', 'Frequency17',
+                  'Word18', 'Frequency18',
+                  'Word19', 'Frequency19',
+                  'Word20', 'Frequency20']
+    if IO_csv_util.openCSVOutputFile(outputFilename):
+        return
+
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                   'Started running document(s) statistics at',
+                                                   True, '', True, '', False)
+
+    with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+        # print("Number of corpus text documents: ",Ndocs)
+        # currentLine.append([Ndocs])
+        documentID = 0
+        for doc in inputDocs:
+            head, tail = os.path.split(doc)
+            documentID = documentID + 1
+            # currentLine.append([documentID])
+            print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
+            # currentLine.append([doc])
+            fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
+
+            Nsentences = str(textstat.sentence_count(fullText))
+            # print('TOTAL number of sentences: ',Nsentences)
+
+            Nwords = str(textstat.lexicon_count(fullText, removepunct=True))
+            # print('TOTAL number of words: ',Nwords)
+
+            Nsyllables = textstat.syllable_count(fullText, lang='en_US')
+            # print('TOTAL number of Syllables: ',Nsyllables)
+
+            # words = fullText.split()
+            # words = nltk.word_tokenize(fullText)
+            words = word_tokenize_stanza(stanzaPipeLine(fullText))
+
+            if excludeStopWords:
+                words = excludeStopWords_list(words)
+
+            if lemmatizeWords:
+                # lemmatizer = WordNetLemmatizer()
+                text_vocab = []
+                for w in words:
+                    if w.isalpha():
+                        # text_vocab.append(lemmatizer.lemmatize(w.lower()))
+                        text_vocab.append(lemmatize_stanza(stanzaPipeLine(w.lower())))
+
+                words = text_vocab
+
+            word_counts = Counter(words)
+
+            # 20 most frequent words in the document
+            # print("\n\nTOP 20 most frequent words  ----------------------------")
+            # for item in word_counts.most_common(20):
+            #     print(item)
+            # currentLine=[[Ndocs,documentID,doc,Nsentences,Nwords,Nsyllables]]
+            currentLine = [
+                [Ndocs, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc), Nsentences, Nwords, Nsyllables]]
+            for item in word_counts.most_common(20):
+                currentLine[0].append(item[0])  # word
+                currentLine[0].append(item[1])  # frequency
+            writer = csv.writer(csvfile)
+            writer.writerows(currentLine)
+        csvfile.close()
+
+        # number of sentences in input
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                           columns_to_be_plotted_bar=[[3, 3]],
+                                                           columns_to_be_plotted_bySent=[[]],  # sentence not available
+                                                           columns_to_be_plotted_byDoc=[[3, 2]],
+                                                           chartTitle='Frequency of Sentences',
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='',  # 'line_bar',
+                                                           column_xAxis_label='Sentence',
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Number of Sentences in Document'],
+                                                           chart_label='Statistical Measures for Number of Sentences')
+
+        if chart_outputFilename != None:
+            filesToOpen.extend(chart_outputFilename)
+
+        # number of words in input
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                           columns_to_be_plotted_bar=[[4, 4]],
+                                                           columns_to_be_plotted_bySent=[[]],  # sentence not available
+                                                           columns_to_be_plotted_byDoc=[[4, 2]],
+                                                           chartTitle='Frequency of Words',
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='',  # 'line_bar',
+                                                           column_xAxis_label='Word',
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Number of Words in Document'],
+                                                           chart_label='Statistical Measures for Number of Words')
+
+        if chart_outputFilename != None:
+            filesToOpen.extend(chart_outputFilename)
+
+        # number of syllables in input
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                           columns_to_be_plotted_bar=[[5, 5]],
+                                                           columns_to_be_plotted_bySent=[[]],  # sentence not available
+                                                           columns_to_be_plotted_byDoc=[[5, 2]],
+                                                           chartTitle='Frequency of Syllables',
+                                                           count_var=1,
+                                                           hover_label=[],
+                                                           outputFileNameType='',  # 'syll_bar',
+                                                           column_xAxis_label='Syllable length',
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Number of Syllables in Document'],
+                                                           chart_label='Statistical Measures for Number of Syllables')
+
+        if chart_outputFilename != None:
+            filesToOpen.extend(chart_outputFilename)
+
+        # TODO
+        #   we should create 10 classes of values by distance to the median of
+        #       each value in the Number of Words in Document Col. E
+        #   -0-10 11-20 21-30,… 91-100
+        #   and plot them as column charts.
+
+        # if openOutputFiles==True:
+        #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+    return filesToOpen
+
+
+def Extract(lst):
+    return [item[0] for item in lst]
+
+
+def same_sentence_check(jgram):
+    sentenceID = jgram[0][1]
+    for token in jgram:
+        if token[1] != sentenceID:
+            return False
+        else:
+            continue
+    return True
+
+
+def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir, createCharts, chartPackage):
+    filesToOpen = []
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    Ndocs = len(inputDocs)
+    if Ndocs == 0:
+        return
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                   'Started running sentence length algorithm at',
+                                                   True, '', True, '', False)
+
+    fileID = 0
+    long_sentences = 0
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                             'sentence_length')
+    csv_headers = ['Sentence length (in words)', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+
+    with open(outputFilename, 'w', newline="", encoding='utf-8', errors='ignore') as csvOut:
+        writer = csv.writer(csvOut)
+        writer.writerow(csv_headers)
+        for doc in inputDocs:
+            sentenceID = 0
+            fileID = fileID + 1
+            head, tail = os.path.split(doc)
+            print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
+            with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
+                text = inputFile.read().replace("\n", " ")
+                # sentences = tokenize.sent_tokenize(text)
+                sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+                for sentence in sentences:
+                    # tokens = nltk.word_tokenize(sentence)
+                    tokens = word_tokenize_stanza(stanzaPipeLine(sentence))
+                    if len(tokens) > 100:
+                        long_sentences = long_sentences + 1
+                    sentenceID = sentenceID + 1
+                    writer.writerow(
+                        [len(tokens), sentenceID, sentence, fileID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+        csvOut.close()
+        reminder_status = reminders_util.checkReminder(config_filename,
+                                                       reminders_util.title_options_TIPS_file,
+                                                       reminders_util.message_TIPS_file,
+                                                       True)
+        if reminder_status == 'Yes' or reminder_status == 'ON':  # 'Yes' the old way of saving reminders
+            answer = tk.messagebox.askyesno("TIPS file on memory issues", str(Ndocs) + " file(s) processed in input.\n\n" +
+                                            "Output csv file written to the output directory " + outputDir + "\n\n" +
+                                            str(
+                                                long_sentences) + " SENTENCES WERE LONGER THAN 100 WORDS (the average sentence length in modern English is 20 words).\n\nMore to the point... Stanford CoreNLP would heavily tax memory resources with such long sentences.\n\nYou should consider editing these sentences if Stanford CoreNLP takes too long to process the file or runs out of memory.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?")
+            if answer:
+                TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
+
+    filesToOpen.append(outputFilename)
+
+    # number of sentences in input
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                       columns_to_be_plotted_bar=[[0, 0]],
+                                                       columns_to_be_plotted_bySent=[[1,0]],
+                                                       columns_to_be_plotted_byDoc=[[0, 4]],
+                                                       chartTitle='Frequency of Sentence Lengths',
+                                                       count_var=1, hover_label=[],
+                                                       outputFileNameType='', #'line_bar',
+                                                       column_xAxis_label='Sentence length',
+                                                       groupByList=['Document ID', 'Document'],
+                                                       plotList=['Sentence length (in words)'], chart_label='Statistical Measures for Sentence Lenghts')
+
+    if chart_outputFilename != None:
+        filesToOpen.extend(chart_outputFilename)
+
+    return filesToOpen
+
+# wordList is a string
+def extract_sentences(window, inputFilename, inputDir, outputDir, inputString):
+    filesToOpen=[]
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    Ndocs = len(inputDocs)
+    if Ndocs == 0:
+        return
+
+    # Win/Mac may use different quotation, we replace any directional quotes to straight ones
+    right_double = u"\u201C"  # “
+    left_double = u"\u201D"  # ”
+    straight_double = u"\u0022"  # "
+    if (right_double in inputString) or (left_double in inputString):
+        inputString = inputString.replace(right_double, straight_double)
+        inputString = inputString.replace(left_double, straight_double)
+    if inputString.count(straight_double) == 2:
+        # Append ', ' to the end of search_words_var so that literal_eval creates a list
+        inputString += ', '
+    # convert the string inputString to a list []
+    def Convert(inputString):
+        wordList = list(inputString.split(","))
+        return wordList
+
+    wordList = Convert(inputString)
+
+    # wordList = ast.literal_eval(inputString)
+    # print('wordList',wordList)
+    # try:
+    # 	wordList = ast.literal_eval(inputString)
+    # except:
+    # 	mb.showwarning(title='Search error',message='The search function encountered an error. If you have entered multi-word expressions (e.g. beautiful girl make sure to enclose them in double quotes "beautiful girl"). Also, make sure to separate single-word expressions, with a comma (e.g., go, come).')
+    # 	return
+    caseSensitive = mb.askyesno("Python", "Do you want to process your search word(s) as case sensitive?")
+
+    if inputFilename!='':
+        inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
+        outputDir_sentences = os.path.join(outputDir, "sentences_" + inputFileBase)
+    else:
+        # processing a directory
+        inputDirBase = os.path.basename(inputDir)
+        outputDir_sentences = os.path.join(outputDir, "sentences_Dir_" + inputDirBase)
+
+    # create a subdirectory in the output directory
+    outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract', silent=True)
+    if outputDir_sentences_extract == '':
+        return
+    outputDir_sentences_extract_minus = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_minus', silent=True)
+    if outputDir_sentences_extract_minus == '':
+        return
+
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                   'Started running the Word search function at',
+                                                   True, '', True)
+
+    fileID = 0
+    file_extract_written = False
+    file_extract_minus_written = False
+    nDocsExtractOutput = 0
+    nDocsExtractMinusOutput = 0
+
+    for doc in inputDocs:
+        wordFound = False
+        fileID = fileID + 1
+        head, tail = os.path.split(doc)
+        print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
+        with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
+            text = inputFile.read().replace("\n", " ")
+        outputFilename_extract = os.path.join(outputDir_sentences_extract,tail[:-4]) + "_extract.txt"
+        outputFilename_extract_minus = os.path.join(outputDir_sentences_extract_minus,tail[:-4]) + "_extract_minus.txt"
+        with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
+                outputFilename_extract_minus, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_minus:
+            # sentences = tokenize.sent_tokenize(text)
+            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+            n_sentences_extract = 0
+            n_sentences_extract_minus = 0
+            for sentence in sentences:
+                wordFound = False
+                sentenceSV = sentence
+                nextSentence = False
+                for word in wordList:
+                    if nextSentence == True:
+                        # go to next sentence; do not write the same sentence several times if it contains several words in wordList
+                        break
+                    #
+                    if caseSensitive==False:
+                        sentence = sentence.lower()
+                        word = word.lower()
+                    if word in sentence:
+                        wordFound = True
+                        nextSentence = True
+                        n_sentences_extract += 1
+                        outputFile_extract.write(sentenceSV + " ")  # write out original sentence
+                        file_extract_written = True
+                        # if none of the words in wordList are found in a sentence write the sentence to the extract_minus file
+                if wordFound == False:
+                    n_sentences_extract_minus += 1
+                    outputFile_extract_minus.write(sentenceSV + " ")  # write out original sentence
+                    file_extract_minus_written = True
+        if file_extract_written == True:
+            # filesToOpen.append(outputFilename_extract)
+            nDocsExtractOutput += 1
+            file_extract_written = False
+        outputFile_extract.close()
+        if n_sentences_extract == 0: # remove empty file
+            os.remove(outputFilename_extract)
+        if file_extract_minus_written:
+            # filesToOpen.append(outputFilename_extract_minus)
+            nDocsExtractMinusOutput += 1
+            file_extract_minus_written = False
+        outputFile_extract_minus.close()
+        if n_sentences_extract_minus == 0: # remove empty file
+            os.remove(outputFilename_extract_minus)
+    if Ndocs == 1:
+        msg1 = str(Ndocs) + " file was"
+    else:
+        msg1 = str(Ndocs) + " files were"
+    if nDocsExtractOutput == 1:
+        msg2 = str(nDocsExtractOutput) + " file was"
+    else:
+        msg2 = str(nDocsExtractOutput) + " files were"
+    if nDocsExtractMinusOutput == 1:
+        msg3 = str(nDocsExtractMinusOutput) + " file was"
+    else:
+        msg3 = str(nDocsExtractMinusOutput) + " files were"
+    mb.showwarning("Warning", msg1 + " processed in input.\n\n" +
+                   msg2 + " written with _extract in the filename.\n\n" +
+                   msg3 + " written with _extract_minus in the filename.\n\n" +
+                   "Files were written to the subdirectories " + outputDir_sentences_extract + " and " + outputDir_sentences_extract_minus + " of the output directory." +
+                   "\n\nPlease, check the output subdirectories for filenames ending with _extract.txt and _extract_minus.txt.")
+
+    IO_files_util.openExplorer(window, outputDir_sentences)
+
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                   'Finished running the Word search unction at', True)
+
+
 def compute_line_length(window, config_filename, inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage):
     filesToOpen=[]
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'line_length')
@@ -232,175 +617,6 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
 
     return filesToOpen
 
-# https://www.nltk.org/book/ch02.html
-# For the Gutenberg Corpus they provide the programming code to do it. section 1.9   Loading your own Corpus.
-# see also https://people.duke.edu/~ccc14/sta-663/TextProcessingSolutions.html
-def compute_corpus_statistics(window,inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage,excludeStopWords=True,lemmatizeWords=True):
-    filesToOpen=[]
-    outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus_stats', '')
-    filesToOpen.append(outputFilename)
-    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
-
-    # read_line(inputFilename, inputDir, outputDir)
-    # return
-
-    Ndocs=str(len(inputDocs))
-    fieldnames=['Number of documents in corpus',
-        'Document ID',
-        'Document',
-        'Number of Sentences in Document',
-        'Number of Words in Document',
-        'Number of Syllables in Document',
-        'Word1','Frequency1',
-        'Word2','Frequency2',
-        'Word3','Frequency3',
-        'Word4','Frequency4',
-        'Word5','Frequency5',
-        'Word6','Frequency6',
-        'Word7','Frequency7',
-        'Word8','Frequency8',
-        'Word9','Frequency9',
-        'Word10','Frequency10',
-        'Word11','Frequency11',
-        'Word12','Frequency12',
-        'Word13','Frequency13',
-        'Word14','Frequency14',
-        'Word15','Frequency15',
-        'Word16','Frequency16',
-        'Word17','Frequency17',
-        'Word18','Frequency18',
-        'Word19','Frequency19',
-        'Word20','Frequency20']
-    if IO_csv_util.openCSVOutputFile(outputFilename):
-        return
-
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running document(s) statistics at',
-                                                 True, '', True, '', False)
-
-    with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        writer.writeheader()
-        #print("Number of corpus text documents: ",Ndocs)
-        #currentLine.append([Ndocs])
-        documentID=0
-        for doc in inputDocs:
-            head, tail = os.path.split(doc)
-            documentID=documentID+1
-            # currentLine.append([documentID])
-            print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
-            #currentLine.append([doc])
-            fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
-
-            Nsentences=str(textstat.sentence_count(fullText))
-            #print('TOTAL number of sentences: ',Nsentences)
-
-            Nwords=str(textstat.lexicon_count(fullText, removepunct=True))
-            #print('TOTAL number of words: ',Nwords)
-
-            Nsyllables =textstat.syllable_count(fullText, lang='en_US')
-            #print('TOTAL number of Syllables: ',Nsyllables)
-
-            # words = fullText.split()
-            # words = nltk.word_tokenize(fullText)
-            words = word_tokenize_stanza(stanzaPipeLine(fullText))
-
-            if excludeStopWords:
-                words = excludeStopWords_list(words)
-
-            if lemmatizeWords:
-                # lemmatizer = WordNetLemmatizer()
-                text_vocab = []
-                for w in words:
-                    if w.isalpha():
-                        # text_vocab.append(lemmatizer.lemmatize(w.lower()))
-                        text_vocab.append(lemmatize_stanza(stanzaPipeLine(w.lower())))
-
-                words = text_vocab
-
-            word_counts = Counter(words)
-
-            # 20 most frequent words in the document
-            #print("\n\nTOP 20 most frequent words  ----------------------------")
-            # for item in word_counts.most_common(20):
-            #     print(item)
-            # currentLine=[[Ndocs,documentID,doc,Nsentences,Nwords,Nsyllables]]
-            currentLine=[[Ndocs,documentID,IO_csv_util.dressFilenameForCSVHyperlink(doc),Nsentences,Nwords,Nsyllables]]
-            for item in word_counts.most_common(20):
-                currentLine[0].append(item[0])  # word
-                currentLine[0].append(item[1]) # frequency
-            writer = csv.writer(csvfile)
-            writer.writerows(currentLine)
-        csvfile.close()
-
-        # number of sentences in input
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                           columns_to_be_plotted_bar=[[3, 3]],
-                                                           columns_to_be_plotted_bySent=[[]], # sentence not available
-                                                           columns_to_be_plotted_byDoc=[[3, 2]],
-                                                           chartTitle='Frequency of Sentences',
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='', #'line_bar',
-                                                           column_xAxis_label='Sentence',
-                                                           groupByList=['Document ID', 'Document'],
-                                                           plotList=['Number of Sentences in Document'], chart_label='Statistical Measures for Number of Sentences')
-
-        if chart_outputFilename != None:
-            filesToOpen.extend(chart_outputFilename)
-
-        # number of words in input
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                           columns_to_be_plotted_bar=[[4, 4]],
-                                                           columns_to_be_plotted_bySent=[[]], # sentence not available
-                                                           columns_to_be_plotted_byDoc=[[4, 2]],
-                                                           chartTitle='Frequency of Words',
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='', #'line_bar',
-                                                           column_xAxis_label='Word',
-                                                           groupByList=['Document ID', 'Document'],
-                                                           plotList=['Number of Words in Document'], chart_label='Statistical Measures for Number of Words')
-
-        if chart_outputFilename != None:
-            filesToOpen.extend(chart_outputFilename)
-
-
-        # number of syllables in input
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                           columns_to_be_plotted_bar=[[5, 5]],
-                                                           columns_to_be_plotted_bySent=[[]], # sentence not available
-                                                           columns_to_be_plotted_byDoc=[[5, 2]],
-                                                           chartTitle='Frequency of Syllables',
-                                                           count_var=1,
-                                                           hover_label=[],
-                                                           outputFileNameType='', #'syll_bar',
-                                                           column_xAxis_label='Syllable length',
-                                                           groupByList=['Document ID', 'Document'],
-                                                           plotList=['Number of Syllables in Document'], chart_label='Statistical Measures for Number of Syllables')
-
-        if chart_outputFilename != None:
-            filesToOpen.extend(chart_outputFilename)
-
-        # TODO
-        #   we should create 10 classes of values by distance to the median of
-        #       each value in the Number of Words in Document Col. E
-        #   -0-10 11-20 21-30,… 91-100 
-        #   and plot them as column charts. 
-        
-        # if openOutputFiles==True:
-        #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
-    return filesToOpen
-
-def Extract(lst):
-    return [item[0] for item in lst]
-
-
-def same_sentence_check(jgram):
-    sentenceID = jgram[0][1]
-    for token in jgram:
-        if token[1] != sentenceID:
-            return False
-        else:
-            continue
-    return True
 
 #compute_character_word_ngrams works for BOTH character and word ngrams
 #https://stackoverflow.com/questions/18658106/quick-implementation-of-character-n-grams-for-word
@@ -1027,213 +1243,9 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
                 text_vocab = set(lemmatize_stanza(stanzaPipeLine(w.lower())) for w in fullText.split(" ") if w.isalpha())
                 words = set(lemmatizing(w.lower()) for w in words if w.isalpha()) # fullText.split(" ") if w.isalpha())
 
-def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir, createCharts, chartPackage):
-    filesToOpen = []
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
-    Ndocs = len(inputDocs)
-    if Ndocs == 0:
-        return
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                   'Started running sentence length algorithm at',
-                                                   True, '', True, '', False)
-
-    fileID = 0
-    long_sentences = 0
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                             'sentence_length')
-    csv_headers = ['Sentence length (in words)', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
-
-    with open(outputFilename, 'w', newline="", encoding='utf-8', errors='ignore') as csvOut:
-        writer = csv.writer(csvOut)
-        writer.writerow(csv_headers)
-        for doc in inputDocs:
-            sentenceID = 0
-            fileID = fileID + 1
-            head, tail = os.path.split(doc)
-            print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
-            with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
-                text = inputFile.read().replace("\n", " ")
-                # sentences = tokenize.sent_tokenize(text)
-                sentences = sent_tokenize_stanza(stanzaPipeLine(text))
-                for sentence in sentences:
-                    # tokens = nltk.word_tokenize(sentence)
-                    tokens = word_tokenize_stanza(stanzaPipeLine(sentence))
-                    if len(tokens) > 100:
-                        long_sentences = long_sentences + 1
-                    sentenceID = sentenceID + 1
-                    writer.writerow(
-                        [len(tokens), sentenceID, sentence, fileID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-        csvOut.close()
-        reminder_status = reminders_util.checkReminder(config_filename,
-                                                       reminders_util.title_options_TIPS_file,
-                                                       reminders_util.message_TIPS_file,
-                                                       True)
-        if reminder_status == 'Yes' or reminder_status == 'ON':  # 'Yes' the old way of saving reminders
-            answer = tk.messagebox.askyesno("TIPS file on memory issues", str(Ndocs) + " file(s) processed in input.\n\n" +
-                                            "Output csv file written to the output directory " + outputDir + "\n\n" +
-                                            str(
-                                                long_sentences) + " SENTENCES WERE LONGER THAN 100 WORDS (the average sentence length in modern English is 20 words).\n\nMore to the point... Stanford CoreNLP would heavily tax memory resources with such long sentences.\n\nYou should consider editing these sentences if Stanford CoreNLP takes too long to process the file or runs out of memory.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?")
-            if answer:
-                TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
-
-    filesToOpen.append(outputFilename)
-
-    # number of sentences in input
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                       columns_to_be_plotted_bar=[[0, 0]],
-                                                       columns_to_be_plotted_bySent=[[1,0]],
-                                                       columns_to_be_plotted_byDoc=[[0, 4]],
-                                                       chartTitle='Frequency of Sentence Lengths',
-                                                       count_var=1, hover_label=[],
-                                                       outputFileNameType='', #'line_bar',
-                                                       column_xAxis_label='Sentence length',
-                                                       groupByList=['Document ID', 'Document'],
-                                                       plotList=['Sentence length (in words)'], chart_label='Statistical Measures for Sentence Lenghts')
-
-    if chart_outputFilename != None:
-        filesToOpen.extend(chart_outputFilename)
-
-    return filesToOpen
-
-# wordList is a string
-def extract_sentences(window, inputFilename, inputDir, outputDir, inputString):
-    filesToOpen=[]
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
-    Ndocs = len(inputDocs)
-    if Ndocs == 0:
-        return
-
-    # Win/Mac may use different quotation, we replace any directional quotes to straight ones
-    right_double = u"\u201C"  # “
-    left_double = u"\u201D"  # ”
-    straight_double = u"\u0022"  # "
-    if (right_double in inputString) or (left_double in inputString):
-        inputString = inputString.replace(right_double, straight_double)
-        inputString = inputString.replace(left_double, straight_double)
-    if inputString.count(straight_double) == 2:
-        # Append ', ' to the end of search_words_var so that literal_eval creates a list
-        inputString += ', '
-    # convert the string inputString to a list []
-    def Convert(inputString):
-        wordList = list(inputString.split(","))
-        return wordList
-
-    wordList = Convert(inputString)
-
-    # wordList = ast.literal_eval(inputString)
-    # print('wordList',wordList)
-    # try:
-    # 	wordList = ast.literal_eval(inputString)
-    # except:
-    # 	mb.showwarning(title='Search error',message='The search function encountered an error. If you have entered multi-word expressions (e.g. beautiful girl make sure to enclose them in double quotes "beautiful girl"). Also, make sure to separate single-word expressions, with a comma (e.g., go, come).')
-    # 	return
-    caseSensitive = mb.askyesno("Python", "Do you want to process your search word(s) as case sensitive?")
-
-    if inputFilename!='':
-        inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
-        outputDir_sentences = os.path.join(outputDir, "sentences_" + inputFileBase)
-    else:
-        # processing a directory
-        inputDirBase = os.path.basename(inputDir)
-        outputDir_sentences = os.path.join(outputDir, "sentences_Dir_" + inputDirBase)
-
-    # create a subdirectory in the output directory
-    outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract', silent=True)
-    if outputDir_sentences_extract == '':
-        return
-    outputDir_sentences_extract_minus = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_minus', silent=True)
-    if outputDir_sentences_extract_minus == '':
-        return
-
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                   'Started running the Word search function at',
-                                                   True, '', True)
-
-    fileID = 0
-    file_extract_written = False
-    file_extract_minus_written = False
-    nDocsExtractOutput = 0
-    nDocsExtractMinusOutput = 0
-
-    for doc in inputDocs:
-        wordFound = False
-        fileID = fileID + 1
-        head, tail = os.path.split(doc)
-        print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
-        with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
-            text = inputFile.read().replace("\n", " ")
-        outputFilename_extract = os.path.join(outputDir_sentences_extract,tail[:-4]) + "_extract.txt"
-        outputFilename_extract_minus = os.path.join(outputDir_sentences_extract_minus,tail[:-4]) + "_extract_minus.txt"
-        with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
-                outputFilename_extract_minus, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_minus:
-            # sentences = tokenize.sent_tokenize(text)
-            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
-            n_sentences_extract = 0
-            n_sentences_extract_minus = 0
-            for sentence in sentences:
-                wordFound = False
-                sentenceSV = sentence
-                nextSentence = False
-                for word in wordList:
-                    if nextSentence == True:
-                        # go to next sentence; do not write the same sentence several times if it contains several words in wordList
-                        break
-                    #
-                    if caseSensitive==False:
-                        sentence = sentence.lower()
-                        word = word.lower()
-                    if word in sentence:
-                        wordFound = True
-                        nextSentence = True
-                        n_sentences_extract += 1
-                        outputFile_extract.write(sentenceSV + " ")  # write out original sentence
-                        file_extract_written = True
-                        # if none of the words in wordList are found in a sentence write the sentence to the extract_minus file
-                if wordFound == False:
-                    n_sentences_extract_minus += 1
-                    outputFile_extract_minus.write(sentenceSV + " ")  # write out original sentence
-                    file_extract_minus_written = True
-        if file_extract_written == True:
-            # filesToOpen.append(outputFilename_extract)
-            nDocsExtractOutput += 1
-            file_extract_written = False
-        outputFile_extract.close()
-        if n_sentences_extract == 0: # remove empty file
-            os.remove(outputFilename_extract)
-        if file_extract_minus_written:
-            # filesToOpen.append(outputFilename_extract_minus)
-            nDocsExtractMinusOutput += 1
-            file_extract_minus_written = False
-        outputFile_extract_minus.close()
-        if n_sentences_extract_minus == 0: # remove empty file
-            os.remove(outputFilename_extract_minus)
-    if Ndocs == 1:
-        msg1 = str(Ndocs) + " file was"
-    else:
-        msg1 = str(Ndocs) + " files were"
-    if nDocsExtractOutput == 1:
-        msg2 = str(nDocsExtractOutput) + " file was"
-    else:
-        msg2 = str(nDocsExtractOutput) + " files were"
-    if nDocsExtractMinusOutput == 1:
-        msg3 = str(nDocsExtractMinusOutput) + " file was"
-    else:
-        msg3 = str(nDocsExtractMinusOutput) + " files were"
-    mb.showwarning("Warning", msg1 + " processed in input.\n\n" +
-                   msg2 + " written with _extract in the filename.\n\n" +
-                   msg3 + " written with _extract_minus in the filename.\n\n" +
-                   "Files were written to the subdirectories " + outputDir_sentences_extract + " and " + outputDir_sentences_extract_minus + " of the output directory." +
-                   "\n\nPlease, check the output subdirectories for filenames ending with _extract.txt and _extract_minus.txt.")
-
-    IO_files_util.openExplorer(window, outputDir_sentences)
-
-
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                   'Finished running the Word search unction at', True)
-
 
 # https://pypi.org/project/textstat/
-def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, processType):
+def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
     filesToOpen = []
     documentID = 0
 
@@ -1482,46 +1494,66 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                 # hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
                 hover_label = []
 
-                # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
-                #                                                    outputDir,
-                #                                                    columns_to_be_plotted_bar=[[2, 2]],
-                #                                                    # columns_to_be_plotted_bySent=[[4, 2]],
-                #                                                    # the fields must be numeric?
-                #                                                    columns_to_be_plotted_bySent=[[]],
-                #                                                    columns_to_be_plotted_byDoc=[[]],
-                #                                                    chartTitle='Frequency Distribution of Objects (filtered)',
-                #                                                    count_var=1, hover_label=[],
-                #                                                    outputFileNameType='',  # 'POS_bar',
-                #                                                    column_xAxis_label='Objects (filtered)',
-                #                                                    groupByList=[],
-                #                                                    plotList=[],
-                #                                                    chart_label='')
-                # if chart_outputFilename != None:
-                #     if len(chart_outputFilename) > 0:
-                #         filesToOpen.extend(chart_outputFilename)
+                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                   outputDir,
+                                                                   columns_to_be_plotted_bar=columns_to_be_plotted,
+                                                                   # columns_to_be_plotted_bySent=[[4, 2]],
+                                                                   # the fields must be numeric?
+                                                                   columns_to_be_plotted_bySent=[[]],
+                                                                   columns_to_be_plotted_byDoc=[[]],
+                                                                   chartTitle='Text Readability (6 Readability Measures)',
+                                                                   count_var=1, hover_label=[],
+                                                                   outputFileNameType='',  # 'READ_bar',
+                                                                   column_xAxis_label='6 Readability measures',
+                                                                   groupByList=[],
+                                                                   plotList=[],
+                                                                   chart_label='')
+                if chart_outputFilename != None:
+                    if len(chart_outputFilename) > 0:
+                        filesToOpen.extend(chart_outputFilename)
 
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                                 outputFileLabel='READ',
-                                                                 chartPackage=chartPackage,
-                                                                 chart_type_list=["line"],
-                                                                 chart_title='Text Readability (6 Readability Measures)',
-                                                                 column_xAxis_label_var='Sentence index',
-                                                                 hover_info_column_list=hover_label,
-                                                                 count_var=0,
-                                                                 column_yAxis_label_var='6 Readability measures')
+                # overall grade level
+                hover_label = []
+                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                   outputDir,
+                                                                   columns_to_be_plotted_bar=[[9,9]],
+                                                                   # columns_to_be_plotted_bySent=[[4, 2]],
+                                                                   # the fields must be numeric?
+                                                                   columns_to_be_plotted_bySent=[[10,9]],
+                                                                   columns_to_be_plotted_byDoc=[[13,9]],
+                                                                   chartTitle='Text Readability (Overall Grade Level)',
+                                                                   count_var=0, hover_label=[],
+                                                                   outputFileNameType='',  # 'READ_bar',
+                                                                   column_xAxis_label='Grade level',
+                                                                   groupByList=[],
+                                                                   plotList=[],
+                                                                   chart_label='')
+                if chart_outputFilename != None:
+                    if len(chart_outputFilename) > 0:
+                        filesToOpen.extend(chart_outputFilename)
 
-                if chart_outputFilename != "":
-                    # rename filename not be overwritten by next line plot
-                    try:
-                        chart_outputFilename_new = chart_outputFilename.replace("line_chart", "ALL_line_chart")
-                        os.rename(chart_outputFilename, chart_outputFilename_new)
-                    except:
-                        # the file already exists and must be removed
-                        if os.path.isfile(chart_outputFilename_new):
-                            os.remove(chart_outputFilename_new)
-                        os.rename(chart_outputFilename, chart_outputFilename_new)
-
-                    filesToOpen.append(chart_outputFilename_new)
+                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                #                                                  outputFileLabel='READ',
+                #                                                  chartPackage=chartPackage,
+                #                                                  chart_type_list=["line"],
+                #                                                  chart_title='Text Readability (6 Readability Measures) by Sentence Index',
+                #                                                  column_xAxis_label_var='Sentence index',
+                #                                                  hover_info_column_list=hover_label,
+                #                                                  count_var=0,
+                #                                                  column_yAxis_label_var='6 Readability measures')
+                #
+                # if chart_outputFilename != "":
+                #     # rename filename not be overwritten by next line plot
+                #     try:
+                #         chart_outputFilename_new = chart_outputFilename.replace("line_chart", "ALL_line_chart")
+                #         os.rename(chart_outputFilename, chart_outputFilename_new)
+                #     except:
+                #         # the file already exists and must be removed
+                #         if os.path.isfile(chart_outputFilename_new):
+                #             os.remove(chart_outputFilename_new)
+                #         os.rename(chart_outputFilename, chart_outputFilename_new)
+                #
+                #     filesToOpen.append(chart_outputFilename_new)
 
                 # outputFilenameXLSM_1 = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                 #                                           outputFilename, chart_type_list=["line"],
@@ -1539,21 +1571,21 @@ def sentence_text_readability(window, inputFilename, inputDir, outputDir, openOu
                 #     filesToOpen.append(outputFilenameXLSM_1)
 
                 # plot overall grade level
-                columns_to_be_plotted = [[10, 9]]
-                hover_label = ['Sentence']
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                                 outputFileLabel='READ',
-                                                                 chartPackage=chartPackage,
-                                                                 chart_type_list=["line"],
-                                                                 chart_title='Text Readability (Readability Grade Level)',
-                                                                 column_xAxis_label_var='Sentence index',
-                                                                 hover_info_column_list=hover_label,
-                                                                 count_var=0,
-                                                                 column_yAxis_label_var='Readability grade level')
-
-                if chart_outputFilename != "":
-                    filesToOpen.append(chart_outputFilename)
-
+                # columns_to_be_plotted = [[10, 9]] # Sentence ID, grade level
+                # hover_label = ['Sentence']
+                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                #                                                  outputFileLabel='READ',
+                #                                                  chartPackage=chartPackage,
+                #                                                  chart_type_list=["line"],
+                #                                                  chart_title='Text Readability (Readability Grade Level)',
+                #                                                  column_xAxis_label_var='Sentence index',
+                #                                                  hover_info_column_list=hover_label,
+                #                                                  count_var=0,
+                #                                                  column_yAxis_label_var='Readability grade level')
+                #
+                # if chart_outputFilename != "":
+                #     filesToOpen.append(chart_outputFilename)
+                #
                 # outputFilenameXLSM_2 = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                 #                                           outputFilename, chart_type_list=["line"],
                 #                                           chart_title="Text Readability",

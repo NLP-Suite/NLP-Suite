@@ -577,6 +577,8 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             for t in temp_group_column_names:
                 if isinstance(t, (int, float)):
                     group_column_names.append(IO_csv_util.get_headerValue_from_columnNumber(headers, t))
+                else:
+                    group_column_names.append(t)
             if len(group_column_names)==0:
                 group_column_names=temp_group_column_names
             data = data.groupby(group_column_names).size().reset_index(name='Frequency')
