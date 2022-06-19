@@ -108,10 +108,12 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         if len(columns_to_be_plotted_byDoc[0])>0: # compute only if the double list is not empty
 
             if count_var==1: # for alphabetic fields that need to be counted for display in a chart
+              # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted tyo be used
               # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, graph=False,
               #                              complete_sid=False,  chartPackage='Excel')
 
-                # TODO ROBY select_col any changes in the inputfile layout of columns will change the [0][0]
+                # TODO ROBY select_col any changes in the inputfile layout of columns
+              #     will change the [0][0] items for selected_col
                 selected_col=[[columns_to_be_plotted_bar[0][0]]]
                 temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window, inputFilename, None, outputDir,
                                                                 False, createCharts, chartPackage,
@@ -120,7 +122,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                                 fileNameType='CSV', chartType='')
                 count_var=0
                 # 2,3 are the columns in temp_outputFilename
-                columns_to_be_plotted_byDoc = [[2,3]]
+                columns_to_be_plotted_byDoc = [[2,3]] # document 2, first; frequencies 2
                 inputFilename=temp_outputFilename[0]
             chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
                                                       outputFileLabel='ByDoc',

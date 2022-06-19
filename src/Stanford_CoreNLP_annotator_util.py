@@ -690,65 +690,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
 
-                elif 'gender' in str(annotator_params): # and "gender" in filesToVisualize[j].split("_"):
-                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                                                       outputDir,
-                                                                       columns_to_be_plotted_bar=[[1, 1]],
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[4, 5]],
-                                                                       chartTitle='Frequency Distribution of Gender Values',
-                                                                       # count_var = 1 for columns of alphabetic values
-                                                                       count_var=1, hover_label=[],
-                                                                       outputFileNameType='', #'gender_bar',
-                                                                       column_xAxis_label='Gender values',
-                                                                       groupByList=[],
-                                                                       plotList=[],
-                                                                       chart_label='')
-                    if chart_outputFilename!=None:
-                        if len(chart_outputFilename) > 0:
-                            filesToOpen.extend(chart_outputFilename)
-
-                    chart_outputFilename = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j])
-                    if chart_outputFilename!=None:
-                        if len(chart_outputFilename) > 0:
-                            filesToOpen.extend(chart_outputFilename)
-                elif 'sentiment' in str(annotator_params): # and "sentiment" in filesToVisualize[j].split("_"):
-                    if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[0] == "Sentiment score":
-                        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                                                           outputDir,
-                                                                           columns_to_be_plotted_bar=[[1, 1]],
-                                                                           columns_to_be_plotted_bySent=[[2,0]],
-                                                                           columns_to_be_plotted_byDoc=[[4, 5]],
-                                                                           chartTitle='Frequency Distribution of Sentiment Scores',
-                                                                           # count_var = 1 for columns of alphabetic values
-                                                                           # counting sentiment alphabetic labels (negative, neutral, positive) rather than numeric values
-                                                                           count_var=1, hover_label=[],
-                                                                           outputFileNameType='', #'senti_bar',
-                                                                           column_xAxis_label='Gender values',
-                                                                           groupByList=['Document ID', 'Document'],
-                                                                           plotList=['Sentiment score'],
-                                                                           chart_label='Sentiment Statistics')
-                        if chart_outputFilename != None:
-                            if len(chart_outputFilename) > 0:
-                                filesToOpen.extend(chart_outputFilename)
-
-                elif 'quote' in str(annotator_params): # and "quote" in filesToVisualize[j].split("_"):
-                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                                                       outputDir,
-                                                                       columns_to_be_plotted_bar=[[1, 1]],
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[4, 5]],
-                                                                       chartTitle='Frequency Distribution of Speakers',
-                                                                       # count_var = 1 for columns of alphabetic values
-                                                                       count_var=1, hover_label=[],
-                                                                       outputFileNameType='', #'quote_bar',
-                                                                       column_xAxis_label='Speakers',
-                                                                       groupByList=[],
-                                                                       plotList=[],
-                                                                       chart_label='')
-                    if chart_outputFilename != None:
-                        if len(chart_outputFilename) > 0:
-                            filesToOpen.extend(chart_outputFilename)
                 elif 'date' in str(annotator_params):
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
@@ -785,6 +726,69 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
+
+                elif 'gender' in str(annotator_params): # and "gender" in filesToVisualize[j].split("_"):
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[1, 1]],
+                                                                       # columns_to_be_plotted_bySent=[[3,1]],
+                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_byDoc=[[4, 5]],
+                                                                       chartTitle='Frequency Distribution of Gender Values',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='', #'gender_bar',
+                                                                       column_xAxis_label='Gender values',
+                                                                       groupByList=[],
+                                                                       plotList=[],
+                                                                       chart_label='')
+                    if chart_outputFilename!=None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+                    chart_outputFilename = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j])
+                    if chart_outputFilename!=None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+                elif 'quote' in str(annotator_params): # and "quote" in filesToVisualize[j].split("_"):
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[1, 1]],
+                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_byDoc=[[4, 5]],
+                                                                       chartTitle='Frequency Distribution of Speakers',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='', #'quote_bar',
+                                                                       column_xAxis_label='Speakers',
+                                                                       groupByList=[],
+                                                                       plotList=[],
+                                                                       chart_label='')
+                    if chart_outputFilename != None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+                elif 'sentiment' in str(annotator_params): # and "sentiment" in filesToVisualize[j].split("_"):
+                    if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[0] == "Sentiment score":
+                        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                           outputDir,
+                                                                           columns_to_be_plotted_bar=[[0, 0]], # sentiment score
+                                                                           columns_to_be_plotted_bySent=[[2,0]],
+                                                                           columns_to_be_plotted_byDoc=[[5,0]],
+                                                                           chartTitle='Frequency Distribution of Sentiment Scores',
+                                                                           # count_var = 1 for columns of alphabetic values
+                                                                           # counting sentiment alphabetic labels (negative, neutral, positive) rather than numeric values
+                                                                           count_var=0, hover_label=[],
+                                                                           outputFileNameType='', #'senti_bar',
+                                                                           column_xAxis_label='Sentiment score',
+                                                                           groupByList=['Document ID', 'Document'],
+                                                                           plotList=['Sentiment score'],
+                                                                           chart_label='Sentiment Statistics')
+                        if chart_outputFilename != None:
+                            if len(chart_outputFilename) > 0:
+                                filesToOpen.extend(chart_outputFilename)
+
 
                 elif 'NER' in str(annotator_params): # and "NER" in filesToVisualize[j].split("_"):
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "NER Value":
