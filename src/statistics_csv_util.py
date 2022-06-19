@@ -207,7 +207,8 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, group
                                                   outputFileLabel='',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
-                                                  chart_title=column_name_to_be_plotted + '\n' + chart_label + ' by Document',
+                                                  #chart_title=column_name_to_be_plotted + '\n' + chart_label + ' by Document',
+                                                  chart_title=column_name_to_be_plotted + '_' + chart_label + ' by Document',
                                                   column_xAxis_label_var='', #Document
                                                   column_yAxis_label_var=column_name_to_be_plotted,
                                                   hover_info_column_list=hover_label,
@@ -516,7 +517,7 @@ def get_columns_to_be_plotted(outputFilename,col):
 def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputDataFrame, outputDir,
             openOutputFiles,createCharts,chartPackage,
             selected_col, hover_col, group_col,
-            fileNameType='CSV',chartType='line'):
+            fileNameType='CSV',chartType='line',pivot=True):
 
     filesToOpen = []
     container = []
@@ -582,7 +583,15 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             if len(group_column_names)==0:
                 group_column_names=temp_group_column_names
             data = data.groupby(group_column_names).size().reset_index(name='Frequency')
-            data.to_csv(outputFilename,index=False)
+            # added TONY1
+            if pivot:
+                data = data.pivot(index = group_column_names[1:], columns = group_column_names[0], values = "Frequency")
+                data.fillna(0, inplace=True)
+                #data.reset_index("Document")
+                data.to_csv(outputFilename)
+            # end add
+            else:
+                data.to_csv(outputFilename,index=False)
             filesToOpen.append(outputFilename)
     else: # aggregation by group_col & hover over -----------------------------------------------
         for col_hover in hover_col:

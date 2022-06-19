@@ -7,7 +7,7 @@ import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 import os
 import charts_util
-
+import IO_csv_util
 import IO_files_util
 
 ## NOTE:
@@ -53,7 +53,12 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
         x_cols = headers[cols_to_plot[j][0]]
         y_cols = headers[cols_to_plot[j][1]]
         if i == 'bar':
-            fig = plot_bar_chart_px(x_cols,inputFilename,chartTitle,y_cols)
+            if len(chart_type_list) < len(cols_to_plot):
+                fig = plot_multi_bar_chart_px(data, chartTitle, cols_to_plot)
+                file_list.append(save_chart(fig,outputDir,chartTitle,static_flag,column_xAxis_label,column_yAxis_label))
+                break
+            else:
+                fig = plot_bar_chart_px(x_cols,inputFilename,chartTitle,y_cols)
         elif i == 'pie':
             fig = plot_pie_chart_px(x_cols,inputFilename,chartTitle,y_cols)
         #elif(i == 'scatter' or i == 'radar'):
@@ -171,6 +176,19 @@ def plot_radar_chart_px(theta_label, fileName, chartTitle, r_label = None):
     fig = px.line_polar(data, r=r_label, theta=theta_label, line_close=True)
     fig.update_traces(fill='toself')
     fig.update_layout(title=chartTitle, title_x=0.5)
+    return fig
+
+#plot multi bar chart (data should be already preprocessed)
+# cols_to_plot just like Excel is a double list eg [[1,2],[1,3]]
+# no need to call prepare data to be plotted first, all subplots shared the same x axis
+def plot_multi_bar_chart_px(data, chartTitle, cols_to_plot):
+    fig = go.Figure()
+    headers = data.columns.values.tolist()
+    for col in cols_to_plot:
+        fig.add_trace(go.Bar(x=data[headers[col[0]]], y=data[headers[col[1]]], name=headers[col[0]]))
+    fig.update_layout(title=chartTitle, title_x=0.5)
+    if len(cols_to_plot) < 5:
+        fig.update_traces(width=0.2)
     return fig
 
 #plot multi line chart

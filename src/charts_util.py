@@ -73,7 +73,7 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
 #   chart_label is used as part of the the chart_title when plotting the fields statistics
 def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc,
-                    chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_label):
+                    chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_label,pivot = False):
     if createCharts == True:
         chart_outputFilenameSV=''
         filesToOpen=[]
@@ -119,10 +119,19 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                                 False, createCharts, chartPackage,
                                                                 selected_col=selected_col, hover_col=[],
                                                                 group_col=columns_to_be_plotted_byDoc,
-                                                                fileNameType='CSV', chartType='')
+                                                                fileNameType='CSV', chartType='',pivot = pivot)
                 count_var=0
                 # 2,3 are the columns in temp_outputFilename
-                columns_to_be_plotted_byDoc = [[2,3]] # document 2, first; frequencies 2
+                #columns_to_be_plotted_byDoc = [[2,3]] # document 2, first; frequencies 2
+                #columns_to_be_plotted_byDoc = [[1,2],[1,3]]
+                if pivot:
+                    columns_to_be_plotted_byDoc_len = len(columns_to_be_plotted_byDoc[0])
+                    columns_to_be_plotted_byDoc = []
+                    headers = IO_csv_util.get_csvfile_headers(temp_outputFilename[0])
+                    for i in range(columns_to_be_plotted_byDoc_len,len(headers)):
+                        columns_to_be_plotted_byDoc.append([columns_to_be_plotted_byDoc_len-1,i])
+                else:
+                    columns_to_be_plotted_byDoc = [[2,3]]
                 inputFilename=temp_outputFilename[0]
             chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
                                                       outputFileLabel='ByDoc',
