@@ -676,7 +676,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
                                                                        columns_to_be_plotted_bar=[[2,2]],
-                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_bySent=[[4,2]],
                                                                        columns_to_be_plotted_byDoc=[[5, 6]],
                                                                        chartTitle='Frequency Distribution of POS Tag Values',
                                                                        # count_var = 1 for columns of alphabetic values

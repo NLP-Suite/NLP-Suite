@@ -637,3 +637,13 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     if removed_hyperlinks:
         os.remove(inputFilename)
     return filesToOpen # several files with the charts
+
+def get_csv_column_unique_val_list(inputFilename, col):
+    '''
+    inputFilename (str) : csv file path
+    col (int)           : the column number of the desired colum
+    returns (list)      : list of unique values in the csv file
+    '''
+    data = pd.read_csv(inputFilename, encoding='utf-8')
+    return list(set(data.iloc[:col]))
+    

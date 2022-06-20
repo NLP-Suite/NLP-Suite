@@ -124,6 +124,13 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 # 2,3 are the columns in temp_outputFilename
                 #columns_to_be_plotted_byDoc = [[2,3]] # document 2, first; frequencies 2
                 #columns_to_be_plotted_byDoc = [[1,2],[1,3]]
+
+                # test if there are too much unique values in the column
+                # if that's the case, as the user to select certain values
+                # val_list = statistics_csv_util.get_csv_column_unique_val_list(inputFilename, selected_col)
+                # if len(val_list)>5:
+                #     print("do sth") # TODO
+                #pivot = True
                 if pivot:
                     columns_to_be_plotted_byDoc_len = len(columns_to_be_plotted_byDoc[0])
                     columns_to_be_plotted_byDoc = []
@@ -132,8 +139,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                         columns_to_be_plotted_byDoc.append([columns_to_be_plotted_byDoc_len-1,i])
                 else:
                     columns_to_be_plotted_byDoc = [[2,3]]
-                inputFilename=temp_outputFilename[0]
-            chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
+                #inputFilename=temp_outputFilename[0]
+            chart_outputFilename = run_all(columns_to_be_plotted_byDoc, temp_outputFilename[0], outputDir,
                                                       outputFileLabel='ByDoc',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=['bar'],
@@ -153,7 +160,9 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 # line plots by SENTENCE index -----------------------------------------------------------------------
         # sentence index value are the first item in the list [[7,2]] i.e. 7
         #   plot values are the second item in the list [[7,2]] i.e. 2
-        if len(columns_to_be_plotted_bySent[0])>0: # compute only if the double list is not empty
+        # if len(columns_to_be_plotted_bySent[0])>0: # compute only if the double list is not empty
+        #     chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=inputFilename,group_col=['Sentence ID']
+        #                                                 ,select_col=['POStag'],outputDir=outputDir,chartTitle=chartTitle + ' by Sentence Index')
             chart_outputFilename = run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
                                                       outputFileLabel='BySent',
                                                       chartPackage=chartPackage,
