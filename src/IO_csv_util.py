@@ -181,6 +181,15 @@ def GetNumberOfSentencesInCSVfile(inputFilename,algorithm,columnHeader='Sentence
     return maxnum
 
 
+# triggered by a df.to_csv
+def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, language_encoding = 'utf-8'):
+    try:
+        data_frame.to_csv(outputFilename, columns=headers, index=False, encoding = language_encoding)
+        return outputFilename
+    except IOError:
+        mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and try again!")
+        return ''
+
 # list_output has the following type format [['PRONOUN ANALYSIS','FREQUENCY'], ['PRP', 105], ['PRP$', 11], ['WP', 5], ['WP$', 0]]
 # path_output is the name of the outputfile with path
 # returns True when an error is found
@@ -235,15 +244,6 @@ def openCSVOutputFile(outputCSVFilename, IO='w', encoding='utf-8',errors='ignore
             mb.showwarning(title='Output file error',
                            message="Could not write the file " + outputCSVFilename + "\n\nThe following error occurred while opening the file in output:\n\n" + str(e) + "\n\nPlease, close the Excel file and try again!")
         return True
-
-# triggered by a df.to_csv
-def df_to_csv(window,data_frame, outputFilename, headers=None, index=False):
-    try:
-        data_frame.to_csv(outputFilename, columns=headers, index=False)
-        return outputFilename
-    except IOError:
-        mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and try again!")
-        return ''
 
 
 def extract_from_csv(inputFilename, outputDir, data_files, columns_to_exported=None):
@@ -422,6 +422,7 @@ def list_to_df(tag_list):
     header = tag_list[0]
     df = pd.DataFrame(tag_list[1:], columns=header)
     return df
+
 
 def header_check(inputFile):
     sentenceID_pos=''
