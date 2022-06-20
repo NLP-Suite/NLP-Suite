@@ -1135,12 +1135,12 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     header = ['Initial-capital words', 'Word ID (in sentence)', 'Number of words in sentence', 'Sentence ID', 'Sentence', 'Document ID','Document']
                     select_col = ['Initial-capital words']
                     fileLabel='init_cap_words'
-                    fileLabel_byDocID = 'vowel_words_byDoc'
+                    fileLabel_byDocID = '' # 'capital_words_byDoc'
                     columns_to_be_plotted = [[0, 0]] # bar chart
                     columns_to_be_plotted_byDocID = [[6, 6]] # bar chart
                     chart_title_label = 'Frequency of Initial-Capital Words'
                     chart_title_byDocID ='Frequency of Initial-Capital Words by Document'
-                    chart_title_bySentID ='Frequency of Initial-Vowel Words by Sentence Index'
+                    chart_title_bySentID ='Frequency of Initial-Capital Words by Sentence Index'
                     column_xAxis_label = 'Initial-Capital Words'
 
                     if word and word and word[0].isupper():
@@ -1155,14 +1155,13 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     fileLabel='vowel_words'
                     fileLabel_byDocID = 'vowel_words_byDoc'
                     columns_to_be_plotted = [[0, 0]] # bar chart
-                    columns_to_be_plotted_byDocID = [[6, 6]] # bar chart
+                    columns_to_be_plotted_byDocID = [[6, 5]] # bar chart
                     chart_title_label = 'Frequency of Initial-Vowel Words'
                     chart_title_byDocID='Frequency of Initial-Vowel Words by Document'
                     chart_title_bySentID = 'Frequency of Initial-Vowel Words by Sentence Index'
                     column_xAxis_label = 'Initial-Vowel Words'
-                    if word and word and word[0] in "aeiou" and word.isalpha():
+                    if word and word and word[0].lower() in "aeiou" and word.isalpha():
                         word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-
 # PUNCTUATION SYMBOLS --------------------------------------------------------------------------
 
                 if processType == '' or "punctuation" in processType.lower():
@@ -1205,8 +1204,8 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                                                                     normalize, excludePunctuation, wordgram, frequency,
                                                                     openOutputFiles, createCharts, chartPackage,
                                                                     bySentenceID)
-                # Excel charts are generated in compute_character_word_ngrams; return to exit here
-                return
+                    # Excel charts are generated in compute_character_word_ngrams; return to exit here
+                    return
 
         word_list.insert(0, header)
 
@@ -1217,14 +1216,15 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                    columns_to_be_plotted_bar=[[0, 0]],
-                                                   columns_to_be_plotted_bySent=[[1, 0]],
-                                                   columns_to_be_plotted_byDoc=[[0, 4]],
-                                                   chartTitle='Frequency of Sentence Lengths',
+                                                   columns_to_be_plotted_bySent=[[3, 0]],
+                                                   columns_to_be_plotted_byDoc=[[6, 0]],
+                                                   chartTitle=chart_title_label,
                                                    count_var=1, hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',
-                                                   column_xAxis_label='Sentence length',
+                                                   column_xAxis_label=column_xAxis_label,
                                                    groupByList=['Document ID', 'Document'],
-                                                   plotList=['Sentence length (in words)'], chart_label='Statistical Measures for Sentence Length')
+                                                   plotList=[],
+                                                   chart_label='Statistical Measures for ')
 
         if chart_outputFilename != None:
             filesToOpen.extend(chart_outputFilename)
@@ -1758,6 +1758,7 @@ def sentence_structure_tree(inputFilename, outputDir):
 # written by Mino Cha March/April 2022
 def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
     ## list for csv file
+    columns=[]
     documentID = []
     document = []
     documentName = []
@@ -1801,10 +1802,10 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
     document_df = pd.DataFrame({'Document ID': documentID, 'Document': document})
     document_df = document_df.astype('str')
 
+    columns = ['Sentence length (No. of words)', 'Yngve score', 'Yngve sum', 'Frazier score', 'Frazier sum',
+               'Sentence ID', 'Sentence', 'Document ID', 'Document']
     nlp = stanza.Pipeline(lang='en', processors='tokenize,pos, constituency',use_gpu=False)
-    op = pd.DataFrame(
-        columns=['Sentence length (No. of words)', 'Yngve score', 'Yngve sum', 'Frazier score', 'Frazier sum',
-                 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+    op = pd.DataFrame(columns=columns)
     for idx, txt in enumerate(all_input_docs.items()):
         doc = nlp(txt[1])
         tail = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document[idx]))[1]
@@ -1852,13 +1853,14 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                              'SentenceComplexity')
-    op.to_csv(outputFilename, index=False)
+    IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, 'utf-8')
+    # op.to_csv(outputFilename, index=False)
     filesToOpen.append(outputFilename)
 
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                        columns_to_be_plotted_bar=[[1, 1], [3, 3]],
                                                        columns_to_be_plotted_bySent=[[5, 1], [5, 3]],
-                                                       columns_to_be_plotted_byDoc=[[8,1], [8,3]], # doucment first then other
+                                                       columns_to_be_plotted_byDoc= [[8,1], [8,3]],
                                                        chartTitle='Frequency Distribution of Complexity Scores',
                                                        count_var=0, # to be used for byDoc, 0 for numeric field
                                                        hover_label=[],

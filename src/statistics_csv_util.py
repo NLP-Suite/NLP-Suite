@@ -634,8 +634,8 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     #     if chart_outputFilename != None:
     #         filesToOpen.filesToOpen(chart_outputFilename)
 
-    if removed_hyperlinks:
-        os.remove(inputFilename)
+    # if removed_hyperlinks:
+    #     os.remove(inputFilename)
     return filesToOpen # several files with the charts
 
 def get_csv_column_unique_val_list(inputFilename, col):

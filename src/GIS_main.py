@@ -45,6 +45,7 @@ def run(inputFilename,
         date_format,
         date_separator_var,
         date_position_var,
+        language_var,
         memory_var,
         NER_extractor,
         location_menu,
@@ -128,6 +129,7 @@ def run(inputFilename,
 
         locations = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                 outputDir, openOutputFiles, createCharts, chartPackage, 'NER', False,
+                                                                language_var,
                                                                 memory_var,
                                                                 NERs=NERs,
                                                                 extract_date_from_text_var=extract_date_from_text_var,
@@ -230,6 +232,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             date_format.get(),
                             date_separator_var.get(),
                             date_position_var.get(),
+                            language_var.get(),
                             memory_var.get(),
                             NER_extractor_var.get(),
                             location_menu_var.get(),
@@ -286,6 +289,7 @@ GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_di
 csv_file_var= tk.StringVar()
 
 encoding_var=tk.StringVar()
+language_var= tk.StringVar()
 memory_var = tk.IntVar()
 
 extract_date_from_text_var= tk.IntVar()
@@ -480,16 +484,25 @@ encoding_var.set('utf-8')
 encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le','latin-1','ISO-8859-1')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,encodingValue,True)
 
+# language options
+language_var_lb = tk.Label(window, text='Language ')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+450, y_multiplier_integer,
+                                               language_var_lb, True)
+
+language_var.set('English')
+language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese', 'English', 'German','Hungarian','Italian','Spanish')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+550,
+                                               y_multiplier_integer, language_menu, True)
 
 #memory options
 
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 190,y_multiplier_integer,memory_var_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 700,y_multiplier_integer,memory_var_lb,True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(4)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 270,y_multiplier_integer,memory_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 800,y_multiplier_integer,memory_var)
 
 extract_date_lb = tk.Label(window, text='Extract date (for dynamic GIS)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_date_lb,True)

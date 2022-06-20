@@ -265,7 +265,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'coref table': ["Pronoun", "Reference", "Reference Start ID in Sentence",
                         "First Reference Sentence ID", "First Reference Sentence", "Pronoun Start ID in Reference Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
         'gender':['Word', 'Gender', 'Sentence ID', 'Sentence','Document ID', 'Document'],
-        'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
+        'normalized-date':["Word", "Normalized date", "tid","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
         'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Time','Time normalized NER','Sentence ID', 'Sentence','Document ID', 'Document'],
         'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Location", 'Person', 'Time',
                    'Time normalized NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
@@ -641,7 +641,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 #count the number of corefed pronouns (COREF annotator)
                 if annotator_chosen == 'coref table':
                     corefed_pronouns = df.shape[0]
-                df.to_csv(outputFilename, index=False, encoding = language_encoding)
+                IO_csv_util.df_to_csv(GUI_util.window, df, outputFilename, headers=output_format, index=True)
     # print("Length of Files to Open after generating files: ", len(filesToOpen))
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
@@ -684,8 +684,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        outputFileNameType='', #'POS_bar',
                                                                        column_xAxis_label='POS tag',
                                                                        groupByList=['Document ID','Document'],
-                                                                       plotList=[],
-                                                                       chart_label='')
+                                                                       plotList=['POStag'],
+                                                                       chart_label='POStag')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
@@ -714,8 +714,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        # columns_to_be_plotted_bySent=[[3, 1]],
                                                                        # the fields must be numeric?
                                                                        columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[3, 7]],
-                                                                       chartTitle='Frequency Distribution of Information of Normalized Dates',
+                                                                       columns_to_be_plotted_byDoc=[[6, 7]],
+                                                                       chartTitle='Frequency Distribution of Date Types',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
                                                                        outputFileNameType='', #'NER_info_bar',
@@ -1019,7 +1019,7 @@ def date_in_filename(document, **kwargs):
                                                            date_format)
     return date_str
 
-# ["Word", "Normalized date", "tid","tense","information","Sentence ID", "Sentence", "Document ID", "Document"],
+# ["Word", "Normalized date", "tid","tense","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
 def date_get_tense(norm_date):
     tense = ''
     # print(norm_date)
@@ -2002,6 +2002,17 @@ def similar_string_floor_filter(str1, str2):
         return True
     else:
         return False
+
+# From Tony Chen Gu to Everyone 10:03 PM
+def get_csv_column_unique_val_list(inputFilename, col):
+    '''
+    inputFilename (str) : csv file path
+    col (int)           : the column number of the desired colum
+    returns (list)      : list of unique values in the csv file
+    '''
+    data = pd.read_csv(inputFilename, encoding='utf-8')
+    return list(set(data.iloc[:col]))
+
 
 def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
     # columns: Location, NER Value, Sentence ID, Sentence, Document ID, Document
