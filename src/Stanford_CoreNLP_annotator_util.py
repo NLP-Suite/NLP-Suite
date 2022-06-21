@@ -684,7 +684,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        outputFileNameType='', #'POS_bar',
                                                                        column_xAxis_label='POS tag',
                                                                        groupByList=['Document ID','Document'],
-                                                                       plotList=['POStag'],
+                                                                       plotList=[''],
                                                                        chart_label='POStag')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:

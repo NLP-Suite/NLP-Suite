@@ -81,6 +81,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 # pivot = True will list for every document all the separate values of the selected item to be plotted
 #       = False will sum all the individual values
 # count_var should always be TRUE to get frequency distributions
+
 # standard bar chart ------------------------------------------------------------------------------
         if len(columns_to_be_plotted_bar[0])>0: # compute only if the double list is not empty
             chart_outputFilename = run_all(columns_to_be_plotted_bar, inputFilename, outputDir,
@@ -107,8 +108,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         #  count_var should be
         #   FALSE (0) for numeric fields;
         #   TRUE (1) for alphabetic fields
-# by DOCUMENT
 
+# by DOCUMENT
         if len(columns_to_be_plotted_byDoc[0])>0: # compute only if the double list is not empty
 
             if count_var==1: # for alphabetic fields that need to be counted for display in a chart
@@ -124,10 +125,12 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                                 selected_col=selected_col, hover_col=[],
                                                                 group_col=columns_to_be_plotted_byDoc,
                                                                 fileNameType='CSV', chartType='',pivot = pivot)
-                count_var=0
+                inputFilename=temp_outputFilename[0]
+                # count_var=0
                 # 2,3 are the columns in temp_outputFilename
                 #columns_to_be_plotted_byDoc = [[2,3]] # document 2, first; frequencies 2
                 #columns_to_be_plotted_byDoc = [[1,2],[1,3]]
+                # pivot = True
                 if pivot:
                     columns_to_be_plotted_byDoc_len = len(columns_to_be_plotted_byDoc[0])
                     columns_to_be_plotted_byDoc = []
@@ -136,8 +139,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                         columns_to_be_plotted_byDoc.append([columns_to_be_plotted_byDoc_len-1,i])
                 else:
                     columns_to_be_plotted_byDoc = [[2,3]]
-
-            chart_outputFilename = run_all(columns_to_be_plotted_byDoc, temp_outputFilename[0], outputDir,
+            chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
                                                       outputFileLabel='ByDoc',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=['bar'],
@@ -158,28 +160,29 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         # sentence index value are the first item in the list [[7,2]] i.e. 7
         #   plot values are the second item in the list [[7,2]] i.e. 2
         if len(columns_to_be_plotted_bySent[0])>0: # compute only if the double list is not empty
-            selected_col = [[columns_to_be_plotted_bySent[0][1]]]
-            columns_to_be_plotted_bySent = [[columns_to_be_plotted_bySent[0][0]]]
-            temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
-                                                          inputFilename,
-                                                          None, outputDir,
-                                                          False,
-                                                          createCharts,
-                                                          chartPackage,
-                                                          selected_col=selected_col,
-                                                          hover_col=[],
-                                                          group_col=columns_to_be_plotted_bySent,
-                                                          fileNameType='CSV',
-                                                          chartType='',
-                                                          pivot=pivot)
-            if pivot:
-                columns_to_be_plotted_bySent_len = len(columns_to_be_plotted_bySent[0])
-                columns_to_be_plotted_bySent = []
-                headers = IO_csv_util.get_csvfile_headers(temp_outputFilename[0])
-                for i in range(columns_to_be_plotted_bySent_len, len(headers)):
-                    columns_to_be_plotted_bySent.append([columns_to_be_plotted_bySent_len - 1, i])
-            else:
-                columns_to_be_plotted_bySent = [[1, 2]]
+            # selected_col = [[columns_to_be_plotted_bySent[0][1]]]
+            # columns_to_be_plotted_bySent = [[columns_to_be_plotted_bySent[0][0]]]
+            # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
+            # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
+            #                                               inputFilename,
+            #                                               None, outputDir,
+            #                                               False,
+            #                                               createCharts,
+            #                                               chartPackage,
+            #                                               selected_col=selected_col,
+            #                                               hover_col=[],
+            #                                               group_col=columns_to_be_plotted_bySent,
+            #                                               fileNameType='CSV',
+            #                                               chartType='',
+            #                                               pivot=pivot)
+            # if pivot:
+            #     columns_to_be_plotted_bySent_len = len(columns_to_be_plotted_bySent[0])
+            #     columns_to_be_plotted_bySent = []
+            #     headers = IO_csv_util.get_csvfile_headers(temp_outputFilename[0])
+            #     for i in range(columns_to_be_plotted_bySent_len, len(headers)):
+            #         columns_to_be_plotted_bySent.append([columns_to_be_plotted_bySent_len - 1, i])
+            # else:
+            #     columns_to_be_plotted_bySent = [[1, 2]]
 
             chart_outputFilename = run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
                                                       outputFileLabel='BySent',
@@ -189,7 +192,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                       column_xAxis_label_var='Sentence index',
                                                       hover_info_column_list=hover_label,
                                                       count_var=0, # always 0 when plotting by sentence index
-                                                      complete_sid=True)
+                                                      complete_sid=True) # TODO RF set = True
 
             if chart_outputFilename!=None:
                 if len(chart_outputFilename) > 0:
@@ -199,12 +202,12 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         # TODO THE FIELD MUST CONTAIN NUMERIC VALUES
         # plotList (a list []) contains the columns headers to be used to compute their stats
         if len(groupByList)>0: # compute only if list is not empty
-            # if count_var==1:
-            #     outputFilename = inputFilename.replace('.csv', '1.csv')
-            # else:
-            #     outputFilename = inputFilename
-            plotList = ['Mean', 'Mode', 'Skewness', 'Kurtosis']
-            outputFilename = inputFilename
+            if count_var==1:
+                outputFilename = temp_outputFilename[0] #inputFilename.replace('.csv', '1.csv')
+            else:
+                outputFilename = inputFilename
+            if plotList == []:
+                plotList = ['Frequency']
             tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
                                                                                groupByList, plotList, chart_label,
                                                                                createCharts,

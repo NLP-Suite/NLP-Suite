@@ -149,6 +149,7 @@ def hover_over_widget(window,x_coordinate,y_coordinate,widget_name,no_hover_over
             else:
                 widget_name.bind('<Leave>', lambda e: e.widget.config(foreground='black',text=label))
 
+# when a widget has hover-over effects, thea parameter no_hover_over_widget is set to False
 def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90, x_coordinate_hover_over = 90, text_info=''):
     #basic_y_coordinate = 90
     y_step = 40 #the line-by-line increment on the GUI
@@ -159,6 +160,7 @@ def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False
     # use the following command to change the color of any label to any value
     # widget_name.config(foreground='red')
 
+    # when a widget has hover-over effects, thea parameter no_hover_over_widget is set to False
     hover_over_widget(window,x_coordinate, basic_y_coordinate + y_step*y_multiplier_integer,widget_name, no_hover_over_widget, whole_widget_red, x_coordinate_hover_over, text_info)
 
     if sameY==False:
