@@ -225,8 +225,10 @@ def get_dictionary_file(window,title,fileType):
         selectedCsvFile_var.set(filePath)
 
 #setup a button to open Windows Explorer on the selected input directory
-current_y_multiplier_integer=y_multiplier_integer-1
-openInputFile_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
+# current_y_multiplier_integer=y_multiplier_integer-1
+openInputFile_button = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.get_labels_x_coordinate()+180, y_multiplier_integer,
     openInputFile_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+180, "Open selected csv dictionary file")

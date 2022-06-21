@@ -189,13 +189,11 @@ construct_SQLite_DB_button=tk.Button(window, width=23, text='Construct SQLite da
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_button)
 
 select_SQLite_DB_button=tk.Button(window, width=23, text='Select SQLite database',command=lambda: get_SQLite_file(window,'Select INPUT SQLite file', [("SQLite files", "*.sqlite")]))
-# select_SQLite_DB_button.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,select_SQLite_DB_button,True)
 
-openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, select_SQLite_DB_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,
-    openInputFile_button, True)
+openInputFile_button = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, select_SQLite_DB_var.get()))
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,openInputFile_button,True, False, True,False, 90, GUI_IO_util.get_labels_x_coordinate()+190, "Open INPUT SQLite database")
 
 SQLite_DB_file=tk.Entry(window, width=100,textvariable=select_SQLite_DB_var)
 SQLite_DB_file.config(state='disabled')

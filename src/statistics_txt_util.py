@@ -1859,7 +1859,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
 
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                        columns_to_be_plotted_bar=[[1, 1], [3, 3]],
-                                                       columns_to_be_plotted_bySent=[[5, 1], [5, 3]],
+                                                       columns_to_be_plotted_bySent=[[8, 5, 1], [8, 5, 3]],
                                                        columns_to_be_plotted_byDoc= [[8,1], [8,3]],
                                                        chartTitle='Frequency Distribution of Complexity Scores',
                                                        count_var=0, # to be used for byDoc, 0 for numeric field

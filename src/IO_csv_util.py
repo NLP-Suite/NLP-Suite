@@ -278,11 +278,11 @@ def convert_Excel_to_csv(inputFilename,outputDir, headers=None):
     # show the dataframe
 
 # sort a csv file by a set of columns
-# headers_tobe_sorted is a list of type ['Document ID','Sort order']
+# headers_tobe_sorted is a list of type ['Document ID','Sentence ID']
 def sort_csvFile_by_columns(inputFilename, outputFilename, headers_tobe_sorted):
     df = pd.read_csv(inputFilename)
     df = df.sort_values(by=headers_tobe_sorted)
-    df.to_csv(outputFilename)
+    df.to_csv(outputFilename,index=False)
 
 # the function dresses a filename as an hyperlink
 #   to be used in a csv file;
