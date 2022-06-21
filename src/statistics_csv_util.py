@@ -105,7 +105,8 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, cre
     headers=['Column header','Number of documents',
              'Count','Mean','Mode','Median','Standard deviation','Minimum','Maximum',
                    'Skewness','Kurtosis','25% quantile','50% quantile','75% quantile']
-    stats.append(headers)
+    #stats.append(headers)
+    new_headers = []
     for currentColumn in loopValue:
         #reading csv file
         try:
@@ -129,10 +130,13 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, cre
                 nDocs=1
             currentStats=nDocs,df.iloc[:, currentColumn].sum(), df.iloc[:, currentColumn].mean(), df.iloc[:, currentColumn].mode(), df.iloc[:, currentColumn].median(), df.iloc[:, currentColumn].std(), df.iloc[:, currentColumn].min(), df.iloc[:, currentColumn].max(), df.iloc[:, currentColumn].kurt(),df.iloc[:, currentColumn].kurt(), df.iloc[:, currentColumn].quantile(0.25), df.iloc[:, currentColumn].quantile(0.50), df.iloc[:, currentColumn].quantile(0.75)
             currentLine=[]
+            new_headers.extend([currentName]+headers)
             currentLine.append(currentName)
             currentLine.extend(currentStats)
+            currentLine.extend(currentStats)
             stats.append(currentLine)
-
+    outputdf = pd.DataFrame(stats)
+    outputdf.to_csv(outputFilename, index=False, header=False)
     return outputFilename
 
 def percentile(n):
