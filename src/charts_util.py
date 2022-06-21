@@ -119,11 +119,12 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 
                 # TODO ROBY select_col any changes in the inputfile layout of columns
               #     will change the [0][0] items for selected_col
-                selected_col=[[columns_to_be_plotted_bar[0][0]]]
+                # selected_col=[[columns_to_be_plotted_bar[0][0]]]
                 temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window, inputFilename, None, outputDir,
                                                                 False, createCharts, chartPackage,
-                                                                selected_col=selected_col, hover_col=[],
-                                                                group_col=columns_to_be_plotted_byDoc,
+                                                                selected_col=columns_to_be_plotted_byDoc[0],
+                                                                hover_col=[],
+                                                                group_col=columns_to_be_plotted_byDoc[1],
                                                                 fileNameType='CSV', chartType='',pivot = pivot)
                 inputFilename=temp_outputFilename[0]
                 # count_var=0

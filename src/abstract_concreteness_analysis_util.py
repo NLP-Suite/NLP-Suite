@@ -211,12 +211,12 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 				sys.exit(0)
 
 		# should sort by Document ID and Sentence ID
-		IO_csv_util.sort_csvFile_by_columns(outputFilename, outputFilename, ['Document ID', 'Sentence ID'])
+		# IO_csv_util.sort_csvFile_by_columns(outputFilename, outputFilename, ['Document ID', 'Sentence ID'])
 
 	chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
 													   columns_to_be_plotted_bar=[[0,0]],
-													   columns_to_be_plotted_bySent= [[7, 0]],
 													   columns_to_be_plotted_byDoc=[[10, 0]],
+													   columns_to_be_plotted_bySent= [[10, 7, 0]],
 													   chartTitle='Frequency Distribution of Abstract/Concrete Scores',
 													   count_var=0, # to be used for byDoc, 0 for numeric field
 													   hover_label=[],
