@@ -836,6 +836,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 print("  Unknown file read error.")
                 continue
             value=str(value[0]).split(':')
+            # TODO MINO get the value from the list in constants_util
             language=value[0]
             probability=round(float(value[1]),2)
             # https://pypi.org/project/langdetect/
@@ -861,6 +862,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 continue
             value = doc._.language
             language=value['language']
+            # TODO MINO get the value from the list in constants_util
             probability=round(float(value['score']),2)
             # probability=round(value['score'],2)
             #
@@ -876,6 +878,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                     filenameSV=filename
                 print("  Unknown file read error.")
                 continue
+            # TODO MINO get the value from the list in constants_util
             language=value[0]
             probability=round(float(value[1]),2)
             # LANGID ``langid.py`` comes pre-trained on 97 languages (ISO 639-1 codes given)

@@ -343,7 +343,17 @@ language_lb = tk.Label(window,text='Language')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                y_multiplier_integer, language_lb, True)
 
+# TODO MINO we need to get the list of Stanza supported languages from this script
+#   https://github.com/stanfordnlp/stanza/issues/511
+# def list_all_languages(model_dir=DEFAULT_MODEL_DIR):
+#     with open(os.path.join(model_dir, 'resources.json')) as fin:
+#         resources = json.load(fin)
+#     languages = [lang for lang in resources if 'alias' not in resources[lang]]
+#     languages = sorted(languages)
+#     return languages
+
 language_var.set('English')
+# language_menu = tk.OptionMenu(window, language_var, command=lambda: list_all_languages())
 language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese', 'English', 'German','Hungarian','Italian','Spanish')
 # language_menu.configure(state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
