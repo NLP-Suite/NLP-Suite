@@ -18,12 +18,13 @@ import IO_user_interface_util
 import config_util
 import reminders_util
 import IO_internet_util
-import Stanford_CoreNLP_annotator_util
+import Stanza_util
+# import Stanford_CoreNLP_annotator_util
 import Stanford_CoreNLP_coreference_util
-import CoNLL_util
-import file_checker_util
-import file_cleaner_util
-import sentence_analysis_util
+# import CoNLL_util
+# import file_checker_util
+# import file_cleaner_util
+# import sentence_analysis_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -36,9 +37,11 @@ import sentence_analysis_util
 # def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, date_extractor, split_files, quote_extractor, Stanza_gender_annotator, CoReference, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
-        memory_var,
-        manual_Coref, open_GUI, language_var, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat,
-        CoNLL_table_analyzer_var, Stanza_annotators_var, Stanza_annotators_menu_var):
+        memory_var, manual_Coref, open_GUI, language_var,
+        parser, parser_menu_var,
+        dateInclude, sep, date_field_position, dateFormat,
+        CoNLL_table_analyzer_var,
+        Stanza_annotators_var, Stanza_annotators_menu_var):
 
     filesToOpen = []
     outputCoNLLfilePath = ''
@@ -95,13 +98,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 mb.showwarning(title='Language',
                                message='The Stanford CoreNLP Probabilistic Context Free Grammar (PCFG) is not available for German and Hungarian.')
                 return
-            annotator='parser (nn)'
+            annotator='depparse'
         else:
             if Stanza_annotators_var and Stanza_annotators_menu_var != '':
                 if 'NER annotator' in Stanza_annotators_menu_var: # NER annotator
                     if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_NER_main.py') == False:
                         return
                     call("python Stanford_CoreNLP_NER_main.py", shell=True)
+                    annotator = 'NER'
                 elif 'Sentence splitter (with sentence length)' in Stanza_annotators_menu_var:
                     annotator = 'Sentence'
                 elif 'Lemma annotator' in Stanza_annotators_menu_var:
@@ -117,11 +121,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         mb.showwarning(title='Language',
                                        message='The Stanford CoreNLP sentiment analysis annotator is only available for English.')
                         return
-                    annotator = ['sentiment']
+                    # annotator = ['sentiment']
+                    annotator = 'sentiment'
                 else:
                     return
 
-        tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+        document_length_var = 1
+        limit_sentence_length_var = 1000
+        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir,
                                                                        openOutputFiles, createCharts, chartPackage,
                                                                        annotator, False, #'All POS',
@@ -129,8 +136,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                        extract_date_from_filename_var=dateInclude,
                                                                        date_format=dateFormat,
                                                                        date_separator_var=sep,
-                                                                       date_position_var=date_field_position,
-                                                                       language = language_var)
+                                                                       date_position_var=date_field_position)
+                                                                    #    language = language_var)
 
         if len(tempOutputFiles)>0:
             filesToOpen.extend(tempOutputFiles)
@@ -157,8 +164,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
                     call("python CoNLL_table_analyzer_main.py", shell=True)
 
-    if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+    # if openOutputFiles:
+        # IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
