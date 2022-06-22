@@ -19,6 +19,7 @@ import config_util
 import reminders_util
 import IO_internet_util
 import Stanza_util
+import constants_util
 # import Stanford_CoreNLP_annotator_util
 import Stanford_CoreNLP_coreference_util
 # import CoNLL_util
@@ -32,7 +33,7 @@ import Stanford_CoreNLP_coreference_util
 # for the Error [Thread-0] INFO CoreNLP - CoreNLP Server is shutting down
 # sometimes the error appears but processing actually continues; but rebooting should do the trick if processing does not continue
 
-# dateInclude indicates whether there is date embedded in the file name. 
+# dateInclude indicates whether there is date embedded in the file name.
 # 1: included 0: not included
 # def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, date_extractor, split_files, quote_extractor, Stanza_gender_annotator, CoReference, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
 
@@ -164,9 +165,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
                     call("python CoNLL_table_analyzer_main.py", shell=True)
 
-    # if openOutputFiles:
-        # IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-
+    if openOutputFiles:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
@@ -351,11 +351,26 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 #     languages = [lang for lang in resources if 'alias' not in resources[lang]]
 #     languages = sorted(languages)
 #     return languages
+import json
+import stanza.resources.common
+DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
+from tkinter import *
+lang_dict  = dict(constants_util.languages)
+
+def print_it(event):
+    print(language_var.get())
 
 language_var.set('English')
-# language_menu = tk.OptionMenu(window, language_var, command=lambda: list_all_languages())
-language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese', 'English', 'German','Hungarian','Italian','Spanish')
-# language_menu.configure(state="disabled")
+def list_all_languages(model_dir=DEFAULT_MODEL_DIR):
+    with open(os.path.join(model_dir, 'resources.json')) as fin:
+        resources = json.load(fin)
+    languages = [lang for lang in resources if 'alias' not in resources[lang]]
+    languages = sorted(languages)
+    return languages
+
+langs = list_all_languages()
+langs_full = [lang_dict[x] for x in langs]
+language_menu = tk.OptionMenu(window, language_var, *langs_full, command=print_it)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
                                                y_multiplier_integer, language_menu)
 
@@ -537,6 +552,6 @@ readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readM
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
-mb.showwarning(title='Option not available yet!',message='The Stanza GUI and algorithms are currently under development. None of the options will work. Sorry!')
+mb.showwarning(title='Option not available yet!',message='The Stanza GUI and algorithms are currently under development. Some of the options are not available yet. Sorry!')
 
 GUI_util.window.mainloop()

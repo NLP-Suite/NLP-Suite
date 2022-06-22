@@ -8,6 +8,7 @@ import IO_csv_util
 import file_splitter_merged_txt_util
 import file_splitter_ByLength_util
 import GUI_util
+import IO_user_interface_util
 
 # Stanza annotate functions
 def Stanza_annotate(config_filename, inputFilename, inputDir,
@@ -21,6 +22,9 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                     sentence_length=1000,
                     print_json = True,
                     **kwargs):
+
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Stanza at',
+                                                 True, '', True, '', True)
 
     output_format_option = {
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"]
@@ -50,6 +54,19 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     total_length = 0
     # record the time consumption before annotating text in each file
     processing_doc = ''
+
+    if "Lemma"  in annotator_params:
+        nlp = stanza.Pipeline(lang='en', processors='tokenize,lemma', verbose=False)
+    elif "NER" in annotator_params:
+        nlp = stanza.Pipeline(lang='en', processors='tokenize,ner',  verbose=False)
+    elif "All POS" in annotator_params:
+        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos', verbose=False)
+    # elif "sentiment" in annotator_params:
+    #     nlp = stanza.Pipeline(lang='en', processors='tokenize,sentiment')
+    elif "depparse" in annotator_params:
+        nlp = stanza.Pipeline('en', processors='tokenize,ner,mwt,pos,lemma,depparse', verbose=False)
+
+    df = pd.DataFrame()
     for docName in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(docName)
@@ -65,16 +82,6 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         else:
             split_file = []
             split_file.append(docName)
-            if "Lemma"  in annotator_params:
-                nlp = stanza.Pipeline(lang='en', processors='tokenize,lemma')
-            elif "NER" in annotator_params:
-                nlp = stanza.Pipeline(lang='en', processors='tokenize,ner')
-            elif "All POS" in annotator_params:
-                nlp = stanza.Pipeline(lang='en', processors='tokenize,pos')
-            # elif "sentiment" in annotator_params:
-            #     nlp = stanza.Pipeline(lang='en', processors='tokenize,sentiment')
-            elif "depparse" in annotator_params:
-                nlp = stanza.Pipeline('en', processors='tokenize,ner,mwt,pos,lemma,depparse')
 
         nSplitDocs = len(split_file)
         split_docID = 0
@@ -85,8 +92,8 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             
             if docName != doc:
                 print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
-            else:
-                print("   Processing a file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
+            # else:
+            #     print("   Processing a file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
 
             text = open(doc, 'r', encoding=language_encoding, errors='ignore').read().replace("\n", " ")
             
@@ -95,13 +102,17 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
             Stanza_output = nlp(text)
 
-
-            outputFilename = IO_files_util.generate_output_file_name(str(doc), inputDir, outputDir,'.csv',
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,'.csv',
                                                                               'Stanza_'+'DepRel'+'_'+annotator_params)
             filesToOpen.append(outputFilename)
 
-            df = convertStanzaDoctoDf(Stanza_output, inputFilename, annotator_params)
-            df.to_csv(outputFilename, index=False, encoding = language_encoding)
+            temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, annotator_params)
+            df = pd.concat([df, temp_df], ignore_index=True, axis=0)
+            # df = df.reset_index(drop=True)
+            if len(inputDocs) == docID:
+                df.to_csv(outputFilename, index=False, encoding = language_encoding)
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, True)
 
     return filesToOpen
 
