@@ -837,7 +837,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 continue
             value=str(value[0]).split(':')
             language=value[0]
-            probability=value[1]
+            probability=round(float(value[1]),2)
             # https://pypi.org/project/langdetect/
             # langdetect supports 55 languages out of the box (ISO 639-1 codes)
             # af, ar, bg, bn, ca, cs, cy, da, de, el, en, es, et, fa, fi, fr, gu, he,
@@ -861,7 +861,8 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 continue
             value = doc._.language
             language=value['language']
-            probability=value['score']
+            probability=round(float(value['score']),2)
+            # probability=round(value['score'],2)
             #
             print('   SPACY', language, probability)  # {'language': 'en', 'score': 0.9999978351575265}
             currentLine.extend(['SPACY', language, probability])
@@ -876,7 +877,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 print("  Unknown file read error.")
                 continue
             language=value[0]
-            probability=value[1]
+            probability=round(float(value[1]),2)
             # LANGID ``langid.py`` comes pre-trained on 97 languages (ISO 639-1 codes given)
             # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes for ISO codes
             # https://pypi.org/project/langid/1.1.5/

@@ -69,7 +69,7 @@ def run(inputFilename,inputDir, outputDir,
         elif 'sentence_length' in function_to_run:
             outputFile=func(inputFilename,inputDir,outputDir)
         else:
-            func(GUI_util.window,inputFilename,inputDir, outputDir,openOutputFiles)
+            func(GUI_util.window,inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPackage)
 
         if len(outputFile)>0:
             filesToOpen.extend(outputFile)
@@ -154,6 +154,7 @@ pydict["Document converter (rtf --> txt)"] = ["file_type_converter_util.rtf_conv
 pydict["Check utf-8 encoding compliance"] = ["file_checker_util.check_utf8_compliance"]
 pydict["Check empty file"] = ["file_checker_util.check_empty_file"]
 pydict["Check sentence length (extracting sentences)"] = ["sentence_analysis_util.extract_sentence_length"]
+pydict["Language detector"] = ["file_spell_checker_util.language_detection"]
 pydict["Predict encoding (via chardet)"] = ["file_checker_util.predict_encoding"]
 pydict["Spelling checker/Unusual words (via nltk)"] = ["file_spell_checker_util.nltk_unusual_words"]
 pydict["Spelling checker (via SpellChecker)"] = ["file_spell_checker_util.check_for_typo"]
@@ -192,6 +193,7 @@ check_menu = tk.OptionMenu(window,check_tools_var,
                     'Check utf-8 encoding compliance',
                     'Check empty file',
                     'Check sentence length (extracting sentences)',
+                    'Language detector',
                     'Predict encoding (via chardet)',
                     'Spelling checker/Unusual words (via nltk)',
                     'Spelling checker (via SpellChecker)')
