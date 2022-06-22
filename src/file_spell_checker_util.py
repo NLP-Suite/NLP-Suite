@@ -774,6 +774,9 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
 # TODO print all languages and their probabilities in a csv file, with Language, Probability, Document ID, Document (with hyperlink)
 def language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
 
+    # TODO MINO we need to add the Stanza language detection function
+    #   see https://stanfordnlp.github.io/stanza/langid.html
+
     folderID = 0
     fileID = 0
     filesToOpen=[]
