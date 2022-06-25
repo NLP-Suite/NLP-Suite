@@ -276,7 +276,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                                                            column_xAxis_label='Sentence',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Number of Sentences in Document'],
-                                                           chart_label='Statistical Measures for Number of Sentences')
+                                                           chart_title_label='Statistical Measures for Number of Sentences')
 
         if chart_outputFilename != None:
             filesToOpen.extend(chart_outputFilename)
@@ -292,7 +292,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                                                            column_xAxis_label='Word',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Number of Words in Document'],
-                                                           chart_label='Statistical Measures for Number of Words')
+                                                           chart_title_label='Statistical Measures for Number of Words')
 
         if chart_outputFilename != None:
             filesToOpen.extend(chart_outputFilename)
@@ -309,7 +309,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                                                            column_xAxis_label='Syllable length',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Number of Syllables in Document'],
-                                                           chart_label='Statistical Measures for Number of Syllables')
+                                                           chart_title_label='Statistical Measures for Number of Syllables')
 
         if chart_outputFilename != None:
             filesToOpen.extend(chart_outputFilename)
@@ -400,7 +400,7 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
                                                        outputFileNameType='', #'line_bar',
                                                        column_xAxis_label='Sentence length',
                                                        groupByList=['Document ID', 'Document'],
-                                                       plotList=['Sentence length (in words)'], chart_label='Statistical Measures for Sentence Lenghts')
+                                                       plotList=['Sentence length (in words)'], chart_title_label='Statistical Measures for Sentence Lenghts')
 
     if chart_outputFilename != None:
         filesToOpen.extend(chart_outputFilename)
@@ -610,7 +610,7 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
                                               count_var=1, hover_label=[],
                                               outputFileNameType='', #'line_bar', column_xAxis_label='Line length',
                                               column_xAxis_label='Line length',
-                                              groupByList=['Document ID','Document'], plotList=['Line length (in words)'], chart_label='Statistical Measures for Line Length')
+                                              groupByList=['Document ID','Document'], plotList=['Line length (in words)'], chart_title_label='Statistical Measures for Line Length')
 
     if chart_outputFilename != None:
         filesToOpen.extend(chart_outputFilename)
@@ -689,7 +689,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
     #                                                                column_xAxis_label='',
     #                                                                groupByList=[],
     #                                                                plotList=[],
-    #                                                                chart_label='')
+    #                                                                chart_title_label='')
     #             if chart_outputFilename != None:
     #                 if len(chart_outputFilename) > 0:
     #                     filesToOpen.extend(chart_outputFilename)
@@ -882,7 +882,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
             #                                                            column_xAxis_label='',
             #                                                            groupByList=[],
             #                                                            plotList=[],
-            #                                                            chart_label='')
+            #                                                            chart_title_label='')
             #         if chart_outputFilename != None:
             #             if len(chart_outputFilename) > 0:
             #                 filesToOpen.extend(chart_outputFilename)
@@ -1068,6 +1068,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     chart_title_byDocID='Frequency of Short Words by Document'
                     chart_title_bySentID ='Frequency of Short Words by Sentence Index'
                     column_xAxis_label = 'Short Words (<4 Characters)'
+                    plotList=['Short words (<4 characters)']
 
                     # exclude numbers from list
                     if word and len(word) <= int(word_length) and word.isalpha():
@@ -1086,6 +1087,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     chart_title_byDocID ='Frequency of Initial-Capital Words by Document'
                     chart_title_bySentID ='Frequency of Initial-Capital Words by Sentence Index'
                     column_xAxis_label = 'Initial-Capital Words'
+                    plotList=['Initial-capital words']
 
                     if word and word and word[0].isupper():
                         word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID,
@@ -1094,7 +1096,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
 # INITIAL-VOWEL WORDS --------------------------------------------------------------------------
 
                 if processType=='' or "vowel" in processType.lower():
-                    header = ['Initial-vowel', 'Word ID (in sentence)', 'Number of words in sentence', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
+                    header = ['Initial vowel', 'Word ID (in sentence)', 'Number of words in sentence', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
                     select_col = ['Initial-vowel words']
                     fileLabel='vowel_words'
                     fileLabel_byDocID = 'vowel_words_byDoc'
@@ -1104,6 +1106,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     chart_title_byDocID='Frequency of Initial-Vowel Words by Document'
                     chart_title_bySentID = 'Frequency of Initial-Vowel Words by Sentence Index'
                     column_xAxis_label = 'Initial-Vowel Words'
+                    plotList=['Initial vowel']
                     if word and word and word[0].lower() in "aeiou" and word.isalpha():
                         word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 # PUNCTUATION SYMBOLS --------------------------------------------------------------------------
@@ -1119,6 +1122,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     chart_title_byDocID='Frequency of Punctuation Symbols of Pathos (?!) by Document'
                     chart_title_bySentID='Frequency of Punctuation Symbols of Pathos (?!) by Sentence Index'
                     column_xAxis_label = 'Punctuation symbols of pathos (?!)'
+                    plotList=['Punctuation symbols of pathos (?!)']
                     if word != '!' and word != '?':
                         continue
                     word_list.extend([[word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
@@ -1152,27 +1156,27 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     # Excel charts are generated in compute_character_word_ngrams; return to exit here
                     return
 
-        word_list.insert(0, header)
+    word_list.insert(0, header)
 
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', fileLabel)
-        IO_error=IO_csv_util.list_to_csv(window, word_list, outputFilename)
-        if not IO_error:
-            filesToOpen.append(outputFilename)
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', fileLabel)
+    IO_error=IO_csv_util.list_to_csv(window, word_list, outputFilename)
+    if not IO_error:
+        filesToOpen.append(outputFilename)
 
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                   columns_to_be_plotted_bar=[[0, 0]],
-                                                   columns_to_be_plotted_bySent=[[3, 0]],
-                                                   columns_to_be_plotted_byDoc=[[6, 0]],
-                                                   chartTitle=chart_title_label,
-                                                   count_var=1, hover_label=[],
-                                                   outputFileNameType='',  # 'line_bar',
-                                                   column_xAxis_label=column_xAxis_label,
-                                                   groupByList=['Document ID', 'Document'],
-                                                   plotList=[],
-                                                   chart_label='Statistical Measures for ')
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                               columns_to_be_plotted_bar=[[0, 0]],
+                                               columns_to_be_plotted_bySent=[[3, 0]],
+                                               columns_to_be_plotted_byDoc=[[5, 6]],
+                                               chartTitle=chart_title_label,
+                                               count_var=1, hover_label=[],
+                                               outputFileNameType='',  # 'line_bar',
+                                               column_xAxis_label=column_xAxis_label,
+                                               groupByList=['Document ID', 'Document'],
+                                               plotList=plotList,
+                                               chart_title_label='Statistical Measures for ')
 
-        if chart_outputFilename != None:
-            filesToOpen.extend(chart_outputFilename)
+    if chart_outputFilename != None:
+        filesToOpen.extend(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
                                            'Finished running ' + processType + ' at', True, '', True, startTime)
@@ -1507,7 +1511,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                                                                    column_xAxis_label='6 Readability measures',
                                                                    groupByList=[],
                                                                    plotList=[],
-                                                                   chart_label='')
+                                                                   chart_title_label='')
                 if chart_outputFilename != None:
                     if len(chart_outputFilename) > 0:
                         filesToOpen.extend(chart_outputFilename)
@@ -1527,7 +1531,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                                                                    column_xAxis_label='Grade level',
                                                                    groupByList=[],
                                                                    plotList=[],
-                                                                   chart_label='')
+                                                                   chart_title_label='')
                 if chart_outputFilename != None:
                     if len(chart_outputFilename) > 0:
                         filesToOpen.extend(chart_outputFilename)
@@ -1813,7 +1817,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
                                                        column_xAxis_label='Complexity scores',
                                                        groupByList=['Document ID','Document'],
                                                        plotList=['Yngve score','Frazier score'],
-                                                       chart_label='Statistical Measures for Complexity Scores')
+                                                       chart_title_label='Statistical Measures for Complexity Scores')
     if chart_outputFilename != None:
         if len(chart_outputFilename) > 0:
             filesToOpen.extend(chart_outputFilename)

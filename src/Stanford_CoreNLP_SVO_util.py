@@ -252,7 +252,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            column_xAxis_label='Subjects (filtered)',
                                                            groupByList=[],
                                                            plotList=[],
-                                                           chart_label='')
+                                                           chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
@@ -270,7 +270,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            column_xAxis_label='Verbs (filtered)',
                                                            groupByList=[],
                                                            plotList=[],
-                                                           chart_label='')
+                                                           chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
@@ -288,7 +288,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            column_xAxis_label='Objects (filtered)',
                                                            groupByList=[],
                                                            plotList=[],
-                                                           chart_label='')
+                                                           chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)

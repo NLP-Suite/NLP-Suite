@@ -52,7 +52,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     if sentence_complexity_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
-        filesToOpen=statistics_txt_util.sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage)
+        filesToOpen=statistics_txt_util.compute_sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage)
         if filesToOpen==None:
             return
 

@@ -127,7 +127,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                                                    column_xAxis_label='Word',
                                                    groupByList=['Document ID', 'Document'],
                                                    plotList=['Misspelled/Unusual Words Statistics'],
-                                                   chart_label='')
+                                                   chart_title_label='')
 
         if chart_outputFilename != None:
             filesToOpen.extend(chart_outputFilename)
@@ -183,7 +183,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
                                                            column_xAxis_label='Typo',
                                                            groupByList=[],
                                                            plotList=[],
-                                                           chart_label='')
+                                                           chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
@@ -488,7 +488,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                                column_xAxis_label='Typo',
                                                                groupByList=[],
                                                                plotList=[],
-                                                               chart_label='')
+                                                               chart_title_label='')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
                     filesToOpen.extend(chart_outputFilename)

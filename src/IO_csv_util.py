@@ -133,14 +133,17 @@ def GetNumberOfRecordInCSVFile(inputFilename,encodingValue='utf-8'):
         return sum(1 for line in f)
 
 # inputFile has path
-def GetNumberOfDocumentsInCSVfile(inputFilename,algorithm,columnHeader='Document ID',encodingValue='utf-8'):
+def GetNumberOfDocumentsInCSVfile(inputFilename,algorithm='',columnHeader='Document ID',encodingValue='utf-8'):
+    msg = ""
     with open(inputFilename,encoding=encodingValue,errors='ignore') as f:
         reader = csv.reader(f)
         next(reader) # skip header row
         headers=get_csvfile_headers(inputFilename)
         if not columnHeader in str(headers):
+            if algorithm!='':
+                msg = "\n\nThe '" + algorithm + "' algorithm requires in input a csv file with a \'Document ID\' column."
             mb.showwarning(title='csv file error',
-                           message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + "\n\nThe '" + algorithm + "' algorithm requires in input a csv file with a \'Document ID\' column.\n\nPlease, select a different csv file in input and try again!")
+                           message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + msg + "\n\nPlease, select a different csv file in input and try again!")
             return 0
         columnNumber=get_columnNumber_from_headerValue(headers,columnHeader)
 
@@ -187,7 +190,7 @@ def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, lang
         data_frame.to_csv(outputFilename, columns=headers, index=False, encoding = language_encoding)
         return outputFilename
     except IOError:
-        mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and try again!")
+        mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
         return ''
 
 # list_output has the following type format [['PRONOUN ANALYSIS','FREQUENCY'], ['PRP', 105], ['PRP$', 11], ['WP', 5], ['WP$', 0]]

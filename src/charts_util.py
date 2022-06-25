@@ -67,36 +67,37 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
 
 # columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc
 #   all double lists [[]]
-# the variable groupByList,plotList, chart_label are used to compute column statistics
+# the variable groupByList,plotList, chart_title_label are used to compute column statistics
 #   groupByList is typically the list ['Document ID', 'Document']
 #   plotList is the list of fields that want to be plotted
-#   chart_label is used as part of the the chart_title when plotting the fields statistics
+#   chart_title_label is used as part of the the chart_title when plotting the fields statistics
 def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc,
-                    chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_label,pivot = False):
+                    chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_title_label,pivot = False):
     if createCharts == True:
         chart_outputFilenameSV=''
-        filesToOpen=[]
+
+    filesToOpen=[]
 
 # pivot = True will list for every document all the separate values of the selected item to be plotted
 #       = False will sum all the individual values
 # count_var should always be TRUE to get frequency distributions
 
 # standard bar chart ------------------------------------------------------------------------------
-        if len(columns_to_be_plotted_bar[0])>0: # compute only if the double list is not empty
-            chart_outputFilename = run_all(columns_to_be_plotted_bar, inputFilename, outputDir,
-                                                      outputFileLabel=outputFileNameType,
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=['bar'],
-                                                      chart_title=chartTitle,
-                                                      column_xAxis_label_var=column_xAxis_label,
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1) #always 1 to get frequencies of values
+    if len(columns_to_be_plotted_bar[0])>0: # compute only if the double list is not empty
+        chart_outputFilename = run_all(columns_to_be_plotted_bar, inputFilename, outputDir,
+                                                  outputFileLabel=outputFileNameType,
+                                                  chartPackage=chartPackage,
+                                                  chart_type_list=['bar'],
+                                                  chart_title=chartTitle,
+                                                  column_xAxis_label_var=column_xAxis_label,
+                                                  hover_info_column_list=hover_label,
+                                                  count_var=1) #always 1 to get frequencies of values
 
-            if chart_outputFilename!=None:
-                chart_outputFilenameSV=chart_outputFilename
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.append(chart_outputFilename)
+        if chart_outputFilename!=None:
+            chart_outputFilenameSV=chart_outputFilename
+            if len(chart_outputFilename) > 0:
+                filesToOpen.append(chart_outputFilename)
 
 # bar charts by DOCUMENT ------------------------------------------------------------------------
         # columns_to_be_plotted_byDoc is a double list [[][]] with
@@ -110,57 +111,71 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         #   TRUE (1) for alphabetic fields
 
 # by DOCUMENT
+        byDoc=False
+
         if len(columns_to_be_plotted_byDoc[0])>0: # compute only if the double list is not empty
+            remove_hyperlinks=True
+            if IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename) > 1:
+                if count_var==1: # for alphabetic fields that need to be counted for display in a chart
+                  # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted tyo be used
+                  # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, graph=False,
+                  #                              complete_sid=False,  chartPackage='Excel')
 
-            if count_var==1: # for alphabetic fields that need to be counted for display in a chart
-              # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted tyo be used
-              # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, graph=False,
-              #                              complete_sid=False,  chartPackage='Excel')
-
-                # TODO ROBY select_col any changes in the inputfile layout of columns
-              #     will change the [0][0] items for selected_col
-                # selected_col=[[columns_to_be_plotted_bar[0][0]]]
-                temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window, inputFilename, None, outputDir,
-                                                                False, createCharts, chartPackage,
-                                                                selected_col=columns_to_be_plotted_byDoc[0],
-                                                                hover_col=[],
-                                                                group_col=columns_to_be_plotted_byDoc[1],
-                                                                fileNameType='CSV', chartType='',pivot = pivot)
-                inputFilename=temp_outputFilename[0]
-                # count_var=0
-                # 2,3 are the columns in temp_outputFilename
-                #columns_to_be_plotted_byDoc = [[2,3]] # document 2, first; frequencies 2
-                #columns_to_be_plotted_byDoc = [[1,2],[1,3]]
-                # pivot = True
-                if pivot:
-                    columns_to_be_plotted_byDoc_len = len(columns_to_be_plotted_byDoc[0])
-                    columns_to_be_plotted_byDoc = []
-                    headers = IO_csv_util.get_csvfile_headers(temp_outputFilename[0])
-                    for i in range(columns_to_be_plotted_byDoc_len,len(headers)):
-                        columns_to_be_plotted_byDoc.append([columns_to_be_plotted_byDoc_len-1,i])
-                else:
-                    columns_to_be_plotted_byDoc = [[2,3]]
-            chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
-                                                      outputFileLabel='ByDoc',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=['bar'],
-                                                      chart_title=chartTitle + ' by Document',
-                                                      column_xAxis_label_var='',
-                                                      hover_info_column_list=hover_label,
-                                                      # count_var is set in the calling function
-                                                      #     0 for numeric fields;
-                                                      #     1 for non-numeric fields
-                                                      count_var=count_var,
-                                                      remove_hyperlinks=True)
-
-            if chart_outputFilename!=None:
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.append(chart_outputFilename)
+                    # TODO ROBY select_col any changes in the inputfile layout of columns
+                  #     will change the [0][0] items for selected_col
+                    selected_col=[[columns_to_be_plotted_bar[0][0]]]
+                    temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
+                                                                    inputFilename, None, outputDir,
+                                                                    False, createCharts, chartPackage,
+                                                                    # selected_col=columns_to_be_plotted_byDoc[0],
+                                                                    selected_col=selected_col,
+                                                                    hover_col=[],
+                                                                    # group_col=columns_to_be_plotted_byDoc[1],
+                                                                    group_col=columns_to_be_plotted_byDoc,
+                                                                    fileNameType='CSV', chartType='',pivot = pivot)
+                    inputFilename=temp_outputFilename[0]
+                    count_var=0
+                    remove_hyperlinks = False # already removed in compute frequencies
+                    # 2,3 are the Document and Frequency columns in temp_outputFilename
+                    #columns_to_be_plotted_byDoc = [[2,3]] # document 2, first; frequencies 2
+                    #columns_to_be_plotted_byDoc = [[1,2],[1,3]]
+                    # pivot = True
+                    if pivot:
+                        columns_to_be_plotted_byDoc_len = len(columns_to_be_plotted_byDoc[0])
+                        columns_to_be_plotted_byDoc = []
+                        headers = IO_csv_util.get_csvfile_headers(temp_outputFilename[0])
+                        for i in range(columns_to_be_plotted_byDoc_len,len(headers)):
+                            columns_to_be_plotted_byDoc.append([columns_to_be_plotted_byDoc_len-1,i])
+                    else:
+                        # 1 is the Document with no-hyperlinks,
+                        # 3 is Frequency,
+                        # 2 is the column plotted (e.g., Gender) in temp_outputFilename
+                        # [[1, 3, 2]] will give different bars for each value
+                        # [[1, 3]] will give one bar for each doc, the sum of all values in selected_column to be plotted
+                        columns_to_be_plotted_byDoc = [[1, 3, 2]]
+                        # columns_to_be_plotted_byDoc = [[1, 3]]
+                chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
+                                                          outputFileLabel='ByDoc',
+                                                          chartPackage=chartPackage,
+                                                          chart_type_list=['bar'],
+                                                          chart_title=chartTitle + ' by Document',
+                                                          column_xAxis_label_var='',
+                                                          hover_info_column_list=hover_label,
+                                                          # count_var is set in the calling function
+                                                          #     0 for numeric fields;
+                                                          #     1 for non-numeric fields
+                                                          count_var=count_var,
+                                                          remove_hyperlinks=remove_hyperlinks)
+                if chart_outputFilename!=None:
+                    if len(chart_outputFilename) > 0:
+                        filesToOpen.append(chart_outputFilename)
 
 # line plots by SENTENCE index -----------------------------------------------------------------------
         # sentence index value are the first item in the list [[7,2]] i.e. 7
         #   plot values are the second item in the list [[7,2]] i.e. 2
-        if len(columns_to_be_plotted_bySent[0])>0: # compute only if the double list is not empty
+        # TODO TONY temporarily disconnected
+        bySent=False
+        if bySent and len(columns_to_be_plotted_bySent[0])>0: # compute only if the double list is not empty
             # selected_col = [[columns_to_be_plotted_bySent[0][1]]]
             # columns_to_be_plotted_bySent = [[columns_to_be_plotted_bySent[0][0]]]
             # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
@@ -203,14 +218,14 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         # TODO THE FIELD MUST CONTAIN NUMERIC VALUES
         # plotList (a list []) contains the columns headers to be used to compute their stats
         if len(groupByList)>0: # compute only if list is not empty
-            if count_var==1:
-                outputFilename = temp_outputFilename[0] #inputFilename.replace('.csv', '1.csv')
-            else:
-                outputFilename = inputFilename
+            # if count_var==1:
+            #     outputFilename = temp_outputFilename[0]
+            # else:
+            #     outputFilename = inputFilename
             if plotList == []:
                 plotList = ['Frequency']
-            tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, outputFilename, outputDir,
-                                                                               groupByList, plotList, chart_label,
+            tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, inputFilename, outputDir,
+                                                                               groupByList, plotList, chart_title_label,
                                                                                createCharts,
                                                                                chartPackage)
 

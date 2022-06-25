@@ -211,6 +211,9 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     else:
         insertLines = '\n\n'
 
+    # https://stackoverflow.com/questions/51140466/openpyxl-set-color-of-bar-in-bar-chart
+    # for color in bar charts depending upon value
+
     # ensure filename extension is correct for hover_over effects (xlxm) and no effects (xlsx)
     # output_file_name = str(checkExcel_extension(output_file_name,hover_info_column_list))
     if len(hover_info_column_list)>0: # hover-over effects are invoked and the Excel filename extension MUST be xlsm

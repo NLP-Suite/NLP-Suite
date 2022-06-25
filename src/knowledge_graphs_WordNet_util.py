@@ -157,7 +157,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
                                                        column_xAxis_label='WordNet ' + noun_verb + ' category',
                                                        groupByList=[],
                                                        plotList=[],
-                                                       chart_label='')
+                                                       chart_title_label='')
     if chart_outputFilename != None:
         if len(chart_outputFilename) > 0:
             filesToOpen.extend(chart_outputFilename)
@@ -188,7 +188,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
                                                            column_xAxis_label='WordNet ' + noun_verb + ' category',
                                                            groupByList=[],
                                                            plotList=[],
-                                                           chart_label='')
+                                                           chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)

@@ -654,23 +654,28 @@ def CoreNLP_annotate(config_filename,inputFilename,
         if filesToVisualize[j][-4:] == ".csv":
             file_df = pd.read_csv(filesToVisualize[j])
             if not file_df.empty:
+
+# Lemma ________________________________________________________________
+
                 if "Lemma" in str(annotator_params):
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[2, 2]],
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[0, 6]],
-                                                                       chartTitle='Frequency Distribution of Lemmas',
+                                                                       columns_to_be_plotted_bar=[[2,2]],
+                                                                       columns_to_be_plotted_byDoc=[[2], [5, 6]],
+                                                                       columns_to_be_plotted_bySent=[[4,2]],
+                                                                       chartTitle='Frequency Distribution of Lemma Values',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
-                                                                       outputFileNameType='', #'lemma_bar',
+                                                                       outputFileNameType='', #'POS_bar',
                                                                        column_xAxis_label='Lemma values',
-                                                                       groupByList=[],
-                                                                       plotList=[],
-                                                                       chart_label='')
+                                                                       groupByList=['Document ID','Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Lemma Values')
+
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
+# All POS ________________________________________________________________
 
                 elif 'All POS' in str(annotator_params):
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
@@ -682,13 +687,15 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
                                                                        outputFileNameType='', #'POS_bar',
-                                                                       column_xAxis_label='POS tag',
+                                                                       column_xAxis_label='POS tag values',
                                                                        groupByList=['Document ID','Document'],
-                                                                       plotList=[''],
-                                                                       chart_label='POStag')
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='POS Tag Values')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
+
+# date ________________________________________________________________
 
                 elif 'date' in str(annotator_params):
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
@@ -701,9 +708,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        count_var=1, hover_label=[],
                                                                        outputFileNameType='', #'NER_date_bar',
                                                                        column_xAxis_label='Normalized date type',
-                                                                       groupByList=[],
-                                                                       plotList=[],
-                                                                       chart_label='')
+                                                                       groupByList=['Document ID','Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Normalized Dates')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
@@ -720,12 +727,14 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        count_var=1, hover_label=[],
                                                                        outputFileNameType='', #'NER_info_bar',
                                                                        column_xAxis_label='Date type',
-                                                                       groupByList=[],
-                                                                       plotList=[],
-                                                                       chart_label='')
+                                                                       groupByList=['Document ID','Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Date Types')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
+
+# gender ________________________________________________________________
 
                 elif 'gender' in str(annotator_params): # and "gender" in filesToVisualize[j].split("_"):
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
@@ -739,9 +748,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        count_var=1, hover_label=[],
                                                                        outputFileNameType='', #'gender_bar',
                                                                        column_xAxis_label='Gender values',
-                                                                       groupByList=[],
-                                                                       plotList=[],
-                                                                       chart_label='')
+                                                                       groupByList=['Document ID', 'Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Statistical Measures for Gender')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
@@ -750,6 +759,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
+
+# quote ________________________________________________________________
 
                 elif 'quote' in str(annotator_params): # and "quote" in filesToVisualize[j].split("_"):
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
@@ -762,12 +773,13 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        count_var=1, hover_label=[],
                                                                        outputFileNameType='', #'quote_bar',
                                                                        column_xAxis_label='Speakers',
-                                                                       groupByList=[],
-                                                                       plotList=[],
-                                                                       chart_label='')
+                                                                       groupByList=['Document ID', 'Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Statistical Measures for Quotes')
                     if chart_outputFilename != None:
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
+# sentiment ________________________________________________________________
 
                 elif 'sentiment' in str(annotator_params): # and "sentiment" in filesToVisualize[j].split("_"):
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[0] == "Sentiment score":
@@ -784,30 +796,31 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                            column_xAxis_label='Sentiment score',
                                                                            groupByList=['Document ID', 'Document'],
                                                                            plotList=['Sentiment score'],
-                                                                           chart_label='Sentiment Statistics')
+                                                                           chart_title_label='Sentiment Statistics')
                         if chart_outputFilename != None:
                             if len(chart_outputFilename) > 0:
                                 filesToOpen.extend(chart_outputFilename)
 
+# NER ________________________________________________________________
 
                 elif 'NER' in str(annotator_params): # and "NER" in filesToVisualize[j].split("_"):
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "NER Value":
-                        # roberto
+                        # plot NER tag (e.g, LOCATION)
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                            outputDir,
                                                                            columns_to_be_plotted_bar=[[1, 1]],
                                                                            # columns_to_be_plotted_bySent=[[3, 1]],
                                                                            # the fields must be numeric?
                                                                            columns_to_be_plotted_bySent=[[]],
-                                                                           columns_to_be_plotted_byDoc=[[3, 7]],
+                                                                           columns_to_be_plotted_byDoc=[[6, 7]],
                                                                            chartTitle='Frequency Distribution of NER Tags',
                                                                            # count_var = 1 for columns of alphabetic values
                                                                            count_var=1, hover_label=[],
                                                                            outputFileNameType='', #'NER_tag_bar',
                                                                            column_xAxis_label='NER tag',
-                                                                           groupByList=[],
-                                                                           plotList=[],
-                                                                           chart_label='')
+                                                                           groupByList=['Document ID','Document'],
+                                                                           plotList=['Frequency'],
+                                                                           chart_title_label='NER tag')
                         if chart_outputFilename != None:
                             if len(chart_outputFilename) > 0:
                                 filesToOpen.extend(chart_outputFilename)
@@ -816,25 +829,25 @@ def CoreNLP_annotate(config_filename,inputFilename,
                             ner_tags = 'Multi-tags'
                         else:
                             ner_tags = str(kwargs['NERs'][0])
-                        # roberto
+                        # plot the words contained in each NER tag (e.g, the word 'Rome' in NER tag LOCATION)
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                            outputDir,
                                                                            columns_to_be_plotted_bar=[[0, 0]],
-                                                                           # columns_to_be_plotted_bySent=[[3, 1]],
-                                                                           # the fields must be numeric?
                                                                            columns_to_be_plotted_bySent=[[]],
-                                                                           columns_to_be_plotted_byDoc=[[0, 7]],
+                                                                           columns_to_be_plotted_byDoc=[[6, 7]],
                                                                            chartTitle='Frequency Distribution of Words by NER Tag' +ner_tags,
                                                                            # count_var = 1 for columns of alphabetic values
                                                                            count_var=1, hover_label=[],
                                                                            outputFileNameType='', #'NER_word_bar',
                                                                            column_xAxis_label='NER word',
-                                                                           groupByList=[],
-                                                                           plotList=[],
-                                                                           chart_label='')
+                                                                           groupByList=['Document ID','Document'],
+                                                                           plotList=['Frequency'],
+                                                                           chart_title_label='NER Words')
                         if chart_outputFilename != None:
                             if len(chart_outputFilename) > 0:
                                 filesToOpen.extend(chart_outputFilename)
+
+# SVO ________________________________________________________________
 
                 elif 'SVO' in str(annotator_params) or 'OpenIE' in str(annotator_params):
                     # plot Subjects
@@ -852,7 +865,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        column_xAxis_label='Subjects (unfiltered)',
                                                                        groupByList=[],
                                                                        plotList=[],
-                                                                       chart_label='')
+                                                                       chart_title_label='')
                     if chart_outputFilename != None:
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
@@ -872,7 +885,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        column_xAxis_label='Verbs (unfiltered)',
                                                                        groupByList=[],
                                                                        plotList=[],
-                                                                       chart_label='')
+                                                                       chart_title_label='')
                     if chart_outputFilename != None:
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
@@ -892,7 +905,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        column_xAxis_label='Objects (unfiltered)',
                                                                        groupByList=[],
                                                                        plotList=[],
-                                                                       chart_label='')
+                                                                       chart_title_label='')
                     if chart_outputFilename != None:
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
@@ -905,6 +918,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                 if chart_outputFilename!=None:
                                     if len(chart_outputFilename) > 0:
                                         filesToOpen.extend(chart_outputFilename)
+# coref ________________________________________________________________
 
                 if "coref table" in str(annotator_params) or "parser" in str(annotator_params) or "SVO" in str(annotator_params):
                     if "coref table" in str(annotator_params):
@@ -2058,8 +2072,8 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, gender
 
 # # columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc
 # #   all double lists [[]]
-# # the variable groupByList,plotList, chart_label are used to compute column statistics
-# def charts_util.visualize_chart(createCharts,chartPackage,inputFilename,outputDir,filesToOpen, columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_label):
+# # the variable groupByList,plotList, chart_title_label are used to compute column statistics
+# def charts_util.visualize_chart(createCharts,chartPackage,inputFilename,outputDir,filesToOpen, columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_title_label):
 #     if createCharts == True:
 #         # standard bar chart
 #         chart_outputFilename = charts_util.run_all(columns_to_be_plotted_bar, inputFilename, outputDir,
@@ -2108,7 +2122,7 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, gender
 #         # compute field statistics
 #         if len(groupByList)>0:
 #             tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, inputFilename, outputDir,
-#                                                                                groupByList, plotList, chart_label,
+#                                                                                groupByList, plotList, chart_title_label,
 #                                                                                createCharts,
 #                                                                                chartPackage)
 #
@@ -2167,20 +2181,21 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
             print("Number of pronouns: ", total_count)
             print("Number of coreferenced pronouns: ", corefed_pronouns)
             print("Pronouns coreference rate: ", str(round((corefed_pronouns / total_count) * 100, 2)) + "%")
-        if createCharts:
-            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
-                                                               outputDir,
-                                                               columns_to_be_plotted_bar=[[0, 0]],
-                                                               columns_to_be_plotted_bySent=[[]],
-                                                               columns_to_be_plotted_byDoc=[[8,9]],
-                                                               chartTitle='Frequency Distribution of Pronouns',
-                                                               # count_var = 1 for columns of alphabetic values
-                                                               count_var=1, hover_label=[],
-                                                               outputFileNameType='', #'pronouns_bar',
-                                                               column_xAxis_label='Pronouns',
-                                                               groupByList=[],
-                                                               plotList=[],
-                                                               chart_label='')
-            if chart_outputFilename != None:
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
+        # TODO CLAUDE the code will break
+        # if createCharts:
+        #     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
+        #                                                        outputDir,
+        #                                                        columns_to_be_plotted_bar=[[0, 0]],
+        #                                                        columns_to_be_plotted_bySent=[[]],
+        #                                                        columns_to_be_plotted_byDoc=[[10,11]],
+        #                                                        chartTitle='Frequency Distribution of Pronouns',
+        #                                                        # count_var = 1 for columns of alphabetic values
+        #                                                        count_var=1, hover_label=[],
+        #                                                        outputFileNameType='', #'pronouns_bar',
+        #                                                        column_xAxis_label='Pronouns',
+        #                                                        groupByList=[],
+        #                                                        plotList=[],
+        #                                                        chart_title_label='')
+        #     if chart_outputFilename != None:
+        #         if len(chart_outputFilename) > 0:
+        #             filesToOpen.extend(chart_outputFilename)

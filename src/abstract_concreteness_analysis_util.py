@@ -224,7 +224,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 													   column_xAxis_label='Concreteness scores',
 													   groupByList=['Document ID', 'Document'],
 													   plotList=['Concreteness (Mean score)'],
-													   chart_label='Concreteness Statistics')
+													   chart_title_label='Concreteness Statistics')
 	if chart_outputFilename != None:
 		if len(chart_outputFilename) > 0:
 			filesToOpen.extend(chart_outputFilename)
