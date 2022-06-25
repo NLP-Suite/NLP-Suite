@@ -195,7 +195,7 @@ pydict["NER tags (e.g., Location, Time) (GUI)"] = ["Stanford_CoreNLP_NER_main.py
 pydict["Words/collocations (GUI)"] = ["file_search_byWord_main.py", 1]
 pydict["WordNet categories (GUI)"] = ["knowledge_graphs_WordNet_main.py", 1]
 
-pydict["Abstract/Concrete vocabulary analysis"] = ["concreteness_analysis_util.main", 0, 3, 'txt']
+pydict["Abstract/Concrete vocabulary analysis"] = ["abstract_concreteness_analysis_util.main", 0, 3, 'txt']
 pydict["Dictionary items"] = ["statistics_txt_util.compute_sentence_length", 0, 3, 'txt']
 pydict["Hapax legomena (once-occurring words)"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
 # pydict["Hapax legomena (once-occurring words)"] = ["statistics_txt_util.compute_character_word_ngrams", 0, 3, 'txt']

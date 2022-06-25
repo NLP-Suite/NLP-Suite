@@ -94,7 +94,7 @@ def get_headerValue_from_columnNumber(headers,column_number=0):
 # the function is used, for instance, to create the values of a dropdown menu
 #   for an example, see annotator_GUI.py
 #   column_name is the header
-# returns a sorted list
+# returns a sorted list of DISTINCT values
 def get_csv_field_values(inputFilename, column_name):
     unique_values = set()
     if inputFilename == '' or column_name == '':

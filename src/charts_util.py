@@ -9,6 +9,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window,"charts_Excel_util",['csv','tkinter','os','collections','openpyxl'])==False:
     sys.exit(0)
 
+import tkinter as tk
 import tkinter.messagebox as mb
 from collections import Counter
 import pandas as pd
@@ -117,13 +118,16 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
             remove_hyperlinks=True
             if IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename) > 1:
                 if count_var==1: # for alphabetic fields that need to be counted for display in a chart
-                  # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted tyo be used
-                  # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, graph=False,
-                  #                              complete_sid=False,  chartPackage='Excel')
+                    # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted tyo be used
+                    # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, graph=False,
+                    #                              complete_sid=False,  chartPackage='Excel')
 
-                    # TODO ROBY select_col any changes in the inputfile layout of columns
-                  #     will change the [0][0] items for selected_col
+                    # TODO select_col any changes in the inputfile layout of columns
+                    #     will change the [0][0] items for selected_col
                     selected_col=[[columns_to_be_plotted_bar[0][0]]]
+                    # TODO TONY the compute_csv_column_frequencies_with_aggregation should export the distinct values of a column
+                    #   in separate columns so that they will be plotted with different colors as separate series
+
                     temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
                                                                     inputFilename, None, outputDir,
                                                                     False, createCharts, chartPackage,
@@ -140,10 +144,10 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     #columns_to_be_plotted_byDoc = [[2,3]] # document 2, first; frequencies 2
                     #columns_to_be_plotted_byDoc = [[1,2],[1,3]]
                     # pivot = True
+                    headers = IO_csv_util.get_csvfile_headers(temp_outputFilename[0])
                     if pivot:
                         columns_to_be_plotted_byDoc_len = len(columns_to_be_plotted_byDoc[0])
                         columns_to_be_plotted_byDoc = []
-                        headers = IO_csv_util.get_csvfile_headers(temp_outputFilename[0])
                         for i in range(columns_to_be_plotted_byDoc_len,len(headers)):
                             columns_to_be_plotted_byDoc.append([columns_to_be_plotted_byDoc_len-1,i])
                     else:
@@ -152,8 +156,18 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                         # 2 is the column plotted (e.g., Gender) in temp_outputFilename
                         # [[1, 3, 2]] will give different bars for each value
                         # [[1, 3]] will give one bar for each doc, the sum of all values in selected_column to be plotted
-                        columns_to_be_plotted_byDoc = [[1, 3, 2]]
-                        # columns_to_be_plotted_byDoc = [[1, 3]]
+                        # TODO TONY we should ask the same type of question for columns that are already in quantitative form if we want to compute a single mean value
+                        if chartPackage=="Excel":
+                            column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,1)
+                            number_column_entries = len(IO_csv_util.get_csv_field_values(inputFilename, column_name))
+                            if number_column_entries > 1:
+                                answer = tk.messagebox.askyesno("Warning", "For the chart, do you want to:\n  (Y) sum all " + str(number_column_entries) + " column values;\n  (N) use all " + str(number_column_entries) + " distinct column values.")
+                                if answer:
+                                    columns_to_be_plotted_byDoc = [[1, 3]]
+                                else:
+                                    columns_to_be_plotted_byDoc = [[1, 3, 2]]
+                        else:
+                            columns_to_be_plotted_byDoc = [[1, 3, 2]]
                 chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
                                                           outputFileLabel='ByDoc',
                                                           chartPackage=chartPackage,
@@ -208,7 +222,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                       column_xAxis_label_var='Sentence index',
                                                       hover_info_column_list=hover_label,
                                                       count_var=0, # always 0 when plotting by sentence index
-                                                      complete_sid=True) # TODO RF set = True
+                                                      complete_sid=True)
 
             if chart_outputFilename!=None:
                 if len(chart_outputFilename) > 0:
@@ -269,7 +283,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
                                                                         column_yAxis_label = column_yAxis_label_var,
                                                                         remove_hyperlinks = remove_hyperlinks)
         return Plotly_outputFilename
-    # TODO ROBY
+    # TODO
     data_to_be_plotted = prepare_data_to_be_plotted_inExcel(inputFilename,
                                 columns_to_be_plotted,
                                 chart_type_list,count_var,
