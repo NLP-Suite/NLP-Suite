@@ -134,11 +134,12 @@ videos_options = 'No videos available'
 TIPS_lookup = {"Mallet installation":"TIPS_NLP_Topic modeling Mallet installation.pdf",
                'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
                "Topic modeling in Mallet":"TIPS_NLP_Topic modeling Mallet.pdf",
                "Topic modeling in Gensim":"TIPS_NLP_Topic modeling Gensim.pdf",
                'Topic modeling and corpus size':'TIPS_NLP_Topic modeling and corpus size.pdf'}
 #               "JAVA installation": "TIPS_NLP_Java download install run.pdf"}
-TIPS_options='Topic modeling in Mallet','Mallet installation','Excel - Enabling Macros','csv files - Problems & solutions','Topic modeling in Gensim','Topic modeling and corpus size' #, 'JAVA installation'
+TIPS_options='Topic modeling in Mallet','Mallet installation','Excel - Enabling Macros','csv files - Problems & solutions', 'Statistical measures', 'Topic modeling in Gensim','Topic modeling and corpus size'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

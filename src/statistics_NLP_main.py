@@ -574,7 +574,8 @@ def changed_filename(*args):
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Statistical tools in the NLP Suite': 'TIPS_NLP_Statistical tools.pdf',
+TIPS_lookup = {'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical tools in the NLP Suite': 'TIPS_NLP_Statistical tools.pdf',
                'Statistical descriptive measures': "TIPS_NLP_Statistical measures.pdf",
                'Lemmas & stopwords':'TIPS_NLP_NLP Basic Language.pdf',
                'Style measures': 'TIPS_NLP_Style measures.pdf',
@@ -582,7 +583,7 @@ TIPS_lookup = {'Statistical tools in the NLP Suite': 'TIPS_NLP_Statistical tools
                'NLP Ngram and Word Co-Occurrence Viewer': "TIPS_NLP_NLP Ngram and Co-Occurrence Viewer.pdf",
                'Google Ngram Viewer': 'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf'}
-TIPS_options = 'Statistical tools in the NLP Suite', 'Statistical descriptive measures', 'Lemmas & stopwords','Style measures', 'N-Grams (word & character)', 'NLP Ngram and Word Co-Occurrence VIEWER', 'Google Ngram Viewer','Excel smoothing data series'
+TIPS_options = 'Statistical tools in the NLP Suite', 'Statistical descriptive measures', 'csv files - Problems & solutions', 'Lemmas & stopwords','Style measures', 'N-Grams (word & character)', 'NLP Ngram and Word Co-Occurrence VIEWER', 'Google Ngram Viewer','Excel smoothing data series'
 
 
 # add all the lines lines to the end to every special GUI

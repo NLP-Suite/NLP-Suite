@@ -1,6 +1,6 @@
 import stanza
 import pandas as pd
-import time
+import tkinter.messagebox as mb
 import os
 
 import IO_files_util
@@ -23,22 +23,30 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                     print_json = True,
                     **kwargs):
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Stanza at',
-                                                 True, '', True, '', True)
+    language_encoding = 'utf-8'
+    filesToOpen = []
 
     output_format_option = {
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"]
     }
     for annotator in annotator_params:
+        # TODO MINO must expand the check for the allowed combinations of annotator and language
+        if language=='Latin' and annotator=='NER':
+            mb.showinfo("Warning",
+                        "Stanza does not currently support the " + annotator + " annotator for " + language + ".\n\nPlease, select a different annotator or a different language.")
+            return filesToOpen
         # routine = routine_option.get(annotator)
         output_format = output_format_option.get(annotator)
-    language_encoding = 'utf-8'
-    filesToOpen = []
+
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Stanza at',
+                                                 True, '', True, '', True)
+
 
     # decide on directory or single file
     if inputDir != '':
         inputFilename = inputDir
-    
+
+
     #collecting input txt files
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     nDocs = len(inputDocs)

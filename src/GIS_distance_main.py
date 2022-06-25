@@ -317,8 +317,8 @@ changed_GIS_filename()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {"Geocoding":"TIPS_NLP_Geocoding.pdf","Geographic distances":"TIPS_NLP_GIS distances.pdf"}
-TIPS_options='Geocoding', 'Geographic distances'
+TIPS_lookup = {"Geocoding":"TIPS_NLP_Geocoding.pdf","Geographic distances":"TIPS_NLP_GIS distances.pdf",'Statistical measures':'TIPS_NLP_Statistical measures.pdf'}
+TIPS_options='Geocoding', 'Geographic distances', 'Statistical measures'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -340,7 +340,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the column containing the SECOND set of location names (e.g., Location2)."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
-    retrun y_multiplier_integer -1
+    return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
 
 # change the value of the readMe_message

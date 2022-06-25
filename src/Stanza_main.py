@@ -9,6 +9,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "Stanza_main.py", ['t
 
 import os
 import tkinter as tk
+from tkinter import ttk
 import tkinter.messagebox as mb
 from subprocess import call
 
@@ -103,9 +104,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         else:
             if Stanza_annotators_var and Stanza_annotators_menu_var != '':
                 if 'NER annotator' in Stanza_annotators_menu_var: # NER annotator
-                    if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_NER_main.py') == False:
-                        return
-                    call("python Stanford_CoreNLP_NER_main.py", shell=True)
+                    # if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_NER_main.py') == False:
+                    #     return
+                    # call("python Stanford_CoreNLP_NER_main.py", shell=True)
                     annotator = 'NER'
                 elif 'Sentence splitter (with sentence length)' in Stanza_annotators_menu_var:
                     annotator = 'Sentence'
@@ -131,14 +132,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         limit_sentence_length_var = 1000
         tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir,
-                                                                       openOutputFiles, createCharts, chartPackage,
-                                                                       annotator, False, #'All POS',
+                                                                       openOutputFiles,
+                                                                       createCharts, chartPackage,
+                                                                       annotator, False,
+                                                                       language_var,
                                                                        memory_var, document_length_var, limit_sentence_length_var,
                                                                        extract_date_from_filename_var=dateInclude,
                                                                        date_format=dateFormat,
                                                                        date_separator_var=sep,
                                                                        date_position_var=date_field_position)
-                                                                    #    language = language_var)
+            # ,
+            #                                                            language=language_var)
+            #                                                         #    language = language_var)
 
         if len(tempOutputFiles)>0:
             filesToOpen.extend(tempOutputFiles)
@@ -369,8 +374,9 @@ def list_all_languages(model_dir=DEFAULT_MODEL_DIR):
     return languages
 
 langs = list_all_languages()
-langs_full = [lang_dict[x] for x in langs]
-language_menu = tk.OptionMenu(window, language_var, *langs_full, command=print_it)
+langs_full = sorted([lang_dict[x] for x in langs])
+language_menu = ttk.Combobox(window, width = 70, textvariable = language_var)
+language_menu['values'] = langs_full
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
                                                y_multiplier_integer, language_menu)
 
@@ -496,6 +502,7 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
                'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
                'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
                'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
@@ -509,7 +516,7 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                'Clause Analysis': 'TIPS_NLP_Clause analysis.pdf'}
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf',
 # TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy', 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'Stanford CoreNLP OpenIE', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'NER (Named Entity Recognition)', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'English Language Benchmarks' #, 'Java download install run'
-TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy', 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'NER (Named Entity Recognition)','Gender annotator','Sentiment analysis','Things to do with words: Overall view' #, 'Java download install run'
+TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy', 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'NER (Named Entity Recognition)','Gender annotator','Sentiment analysis','Things to do with words: Overall view' #, 'Java download install run'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

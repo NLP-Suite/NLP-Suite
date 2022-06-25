@@ -428,8 +428,11 @@ TIPS_lookup = {'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP
                'Stanford CoreNLP memory issues': 'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
                'NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf',
                'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
-               'POSTAG (Part of Speech Tags)':'TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf'}
-TIPS_options='Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues','NER (Named Entity Recognition)','CoNLL Table','POSTAG (Part of Speech Tags)'
+               'POSTAG (Part of Speech Tags)':'TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf',
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
+TIPS_options='Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues','NER (Named Entity Recognition)','CoNLL Table','POSTAG (Part of Speech Tags)','csv files - Problems & solutions','Statistical measures'
+
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

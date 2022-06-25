@@ -552,8 +552,11 @@ TIPS_lookup = {'Shape of stories':'TIPS_NLP_Shape of stories.pdf',
                'Data reduction algorithms: Non-negative Matrix Factorization (NMF)':'TIPS_NLP_Data reduction algorithms_Non-negative Matrix Factorization (NMF).pdf',
                'Shape of stories: Best topic estimation':'TIPS_NLP_Shape of stories_Best topic estimation.pdf',
                'Sentiment analysis':'TIPS_NLP_Sentiment analysis.pdf',
-               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf'}
-TIPS_options='Shape of stories','Sentiment analysis','Data reduction algorithms: Parameters formulae','Data reduction algorithms: Hierarchical clustering (HC)','Data reduction algorithms: Singular Value Decomposition (SVD)','Data reduction algorithms: Non-negative Matrix Factorization (NMF)','Shape of stories: Best topic estimation','Excel smoothing data series'
+               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
+               'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
+TIPS_options='Shape of stories','Sentiment analysis','Data reduction algorithms: Parameters formulae','Data reduction algorithms: Hierarchical clustering (HC)','Data reduction algorithms: Singular Value Decomposition (SVD)','Data reduction algorithms: Non-negative Matrix Factorization (NMF)','Shape of stories: Best topic estimation','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
+
 
 def display_reminder(*args):
     if best_topic_estimation_var.get():
