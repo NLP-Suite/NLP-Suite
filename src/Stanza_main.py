@@ -48,13 +48,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     filesToOpen = []
     outputCoNLLfilePath = ''
 
-    if open_GUI:
-        call("python Stanford_CoreNLP_coreference_main.py", shell=True)
-        return
-
-    # check internet connection
-    if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
-        return
+    # # check internet connection
+    # if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
+    #     return
+    #
 
     if parser == 0 and CoNLL_table_analyzer_var == 0 and Stanza_annotators_var == 0:
         mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
@@ -64,69 +61,39 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         mb.showinfo("Warning", "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the CoreNLP parser checkbox and try again.")
         return
 
-    if Stanza_annotators_var == True and 'Coreference PRONOMINAL resolution' in Stanza_annotators_menu_var:
-        if IO_libraries_util.check_inputPythonJavaProgramFile("Stanford_CoreNLP_coReference_util.py") == False:
+    if parser:
+        if parser_menu_var == 'Constituency parser':
+            # TODO MINO
+            #   connect to Stanza annotator
+            mb.showwarning('Warning',
+                           'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
             return
-        if language_var!='English' and language_var!='Chinese':
-            mb.showwarning(title='Language',message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
+        annotator='depparse'
+    if Stanza_annotators_var and Stanza_annotators_menu_var != '':
+        if 'Sentence splitter (with sentence length)' in Stanza_annotators_menu_var:
+            annotator = 'Sentence'
+        elif 'Lemma annotator' in Stanza_annotators_menu_var:
+            annotator = 'Lemma'
+        elif 'POS annotator' in Stanza_annotators_menu_var:
+            annotator = 'All POS'
+        elif 'NER annotator' in Stanza_annotators_menu_var:  # NER annotator
+            annotator = 'NER'
+        elif 'Coreference' in Stanza_annotators_menu_var:
+            # TODO MINO
+            #   connect to Stanza annotator
+            annotator = 'coref'
+            mb.showwarning('Warning',
+                           'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
             return
-
-        # if "Neural" in Stanza_annotators_menu_var:
-        #     CoRef_Option = 'Neural Network'
-        file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
-                                                                           outputDir, openOutputFiles, createCharts, chartPackage, memory_var,
-                                                                           manual_Coref)
-
-        if error_indicator == 0:
-            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
-                                               "Finished running Stanford CoreNLP Co-Reference Resolution using the 'Neural Network' approach at",
-                                               True)
+        elif 'Sentiment analysis' in Stanza_annotators_menu_var:
+            # TODO MINO
+            #   connect to Stanza annotator
+            annotator = 'sentiment'
+            mb.showwarning('Warning',
+                           'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
+            return
         else:
-            mb.showinfo("Coreference Resolution Error",
-                        "Since Stanford CoreNLP Co-Reference Resolution throws error, " +
-                        "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.")
-        # filesToOpen = filesToOpen + file_open
-        # print("Number of files to Open: ", len(file_open))
-        filesToOpen.extend(file_open)
-
-
-    if parser or (Stanza_annotators_var and Stanza_annotators_menu_var != ''):
-
-        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py') == False:
             return
-
-        if parser and parser_menu_var == 'Dependency parser':
-            if language_var == 'German' or language_var == 'Hungarian':
-                mb.showwarning(title='Language',
-                               message='The Stanford CoreNLP Probabilistic Context Free Grammar (PCFG) is not available for German and Hungarian.')
-                return
-            annotator='depparse'
-        else:
-            if Stanza_annotators_var and Stanza_annotators_menu_var != '':
-                if 'NER annotator' in Stanza_annotators_menu_var: # NER annotator
-                    # if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_NER_main.py') == False:
-                    #     return
-                    # call("python Stanford_CoreNLP_NER_main.py", shell=True)
-                    annotator = 'NER'
-                elif 'Sentence splitter (with sentence length)' in Stanza_annotators_menu_var:
-                    annotator = 'Sentence'
-                elif 'Lemma annotator' in Stanza_annotators_menu_var:
-                    if language_var != 'English':
-                        mb.showwarning(title='Language',
-                                       message='The Stanford CoreNLP lemmatizer is only available for English.')
-                        return
-                    annotator = 'Lemma'
-                elif 'POS annotator' in Stanza_annotators_menu_var:
-                    annotator = 'All POS'
-                elif 'Sentiment analysis' in Stanza_annotators_menu_var:
-                    if language_var != 'English':
-                        mb.showwarning(title='Language',
-                                       message='The Stanford CoreNLP sentiment analysis annotator is only available for English.')
-                        return
-                    # annotator = ['sentiment']
-                    annotator = 'sentiment'
-                else:
-                    return
 
         document_length_var = 1
         limit_sentence_length_var = 1000
@@ -386,7 +353,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                parser_checkbox, True)
 
 parser_menu_var.set("Dependency parser")
-parser_menu = tk.OptionMenu(window, parser_menu_var, 'Dependency parser')
+parser_menu = tk.OptionMenu(window, parser_menu_var, 'Constituency parser','Dependency parser')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                parser_menu)
 

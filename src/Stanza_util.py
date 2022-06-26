@@ -43,8 +43,8 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
 
     # decide on directory or single file
-    if inputDir != '':
-        inputFilename = inputDir
+    # if inputDir != '':
+    #     inputFilename = inputDir
 
 
     #collecting input txt files
@@ -75,6 +75,8 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         nlp = stanza.Pipeline('en', processors='tokenize,ner,mwt,pos,lemma,depparse', verbose=False)
 
     df = pd.DataFrame()
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                             'Stanza_' + 'DepRel' + '_' + annotator_params)
     for docName in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(docName)
@@ -110,15 +112,14 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
             Stanza_output = nlp(text)
 
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,'.csv',
-                                                                              'Stanza_'+'DepRel'+'_'+annotator_params)
-            filesToOpen.append(outputFilename)
-
             temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, annotator_params)
             df = pd.concat([df, temp_df], ignore_index=True, axis=0)
             # df = df.reset_index(drop=True)
-            if len(inputDocs) == docID:
-                df.to_csv(outputFilename, index=False, encoding = language_encoding)
+        # TODO MINO the way you had it, the annotators produced n output files as many n input files;
+        # this is wrong; but... not sure what you are doing here
+        # if len(inputDocs) == docID:
+        df.to_csv(outputFilename, index=False, encoding = language_encoding)
+        filesToOpen.append(outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, True)
 
