@@ -1,4 +1,5 @@
 import sys
+from tabnanny import verbose
 import GUI_util
 import IO_libraries_util
 
@@ -39,6 +40,7 @@ import subprocess
 import time
 import fuzzywuzzy
 from fuzzywuzzy import fuzz
+from stanza.pipeline.multilingual import MultilingualPipeline
 
 import file_cleaner_util
 import charts_util
@@ -47,6 +49,7 @@ import IO_files_util
 import IO_user_interface_util
 from IO_files_util import make_directory
 import reminders_util
+import constants_util
 
 def lemmatizing(word):#edited by Claude Hu 08/2020
     #https://stackoverflow.com/questions/15586721/wordnet-lemmatization-and-pos-tagging-in-python
@@ -800,6 +803,9 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                   'LANGID',
                   'Language',
                   'Probability',
+                  'Stanza',
+                  'Language',
+                  'Probability',
                   'Document ID',
                   'Document']
 
@@ -812,6 +818,9 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        'Started running language detection algorithms at',
                                                  True, '', True, '', True)
+    # Stanza's multilingual pipeline needs to load only once, therefore called outside the for-loop
+    nlp_stanza = MultilingualPipeline()
+    lang_dict  = dict(constants_util.languages)
 
     with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -839,8 +848,9 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 print("  Unknown file read error.")
                 continue
             value=str(value[0]).split(':')
-            # TODO MINO get the value from the list in constants_util
+            # TODO MINO get the value from the list in constants_util 
             language=value[0]
+            language = lang_dict.get(language)
             probability=round(float(value[1]),2)
             # https://pypi.org/project/langdetect/
             # langdetect supports 55 languages out of the box (ISO 639-1 codes)
@@ -866,6 +876,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             value = doc._.language
             language=value['language']
             # TODO MINO get the value from the list in constants_util
+            language = lang_dict.get(language)
             probability=round(float(value['score']),2)
             # probability=round(value['score'],2)
             #
@@ -883,6 +894,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 continue
             # TODO MINO get the value from the list in constants_util
             language=value[0]
+            language = lang_dict.get(language)
             probability=round(float(value[1]),2)
             # LANGID ``langid.py`` comes pre-trained on 97 languages (ISO 639-1 codes given)
             # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes for ISO codes
@@ -900,6 +912,14 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             print('   LANGID', language, probability)  # ('en', 0.999999999999998)
             print()
             currentLine.extend(['LANGID',  language, probability])
+
+            # Stanza Language Identification
+            doc = nlp_stanza(text)
+            language = doc.lang
+            language = lang_dict.get(language)
+            print('   Stanza', language, probability)
+            currentLine.extend(['Stanza',  language, probability])
+
             currentLine.extend([fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
 
             writer = csv.writer(csvfile)
