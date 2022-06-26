@@ -18,7 +18,7 @@ import GUI_IO_util
 import IO_files_util
 import file_spell_checker_util
 import statistics_txt_util
-import abstract_abstract_concreteness_analysis_util
+import abstract_concreteness_analysis_util
 import lib_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -115,7 +115,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                 filesToOpen.extend(output)
         if '*' == vocabulary_analysis_menu_var or 'Abstract' in vocabulary_analysis_menu_var:
             mode = "both" # mean, median, both (calculates both mean and median)
-            output = abstract_abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage, processType='')
+            output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage, processType='')
             if output != None:
                 filesToOpen.extend(output)
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
