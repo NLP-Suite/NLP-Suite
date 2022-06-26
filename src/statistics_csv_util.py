@@ -182,6 +182,8 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, group
             return
     if len(plotField) > 0:
         column_name=plotField[0]
+        # TODO Mino the code breaks with "['Initial vowel'] not in index" under column_name
+        # testing with style_main and vocabulary analysis Vowel words
         df_group = df_group[[column_name]]
         df_list = [pd.concat([df_group[column_name]],keys=[column_name],names=['Column header'])]
     else:
