@@ -43,13 +43,8 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         # routine = routine_option.get(annotator)
         output_format = output_format_option.get(annotator)
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Stanza at',
-                                                 True, '', True, '', True)
-
-
-    # decide on directory or single file
-    # if inputDir != '':
-    #     inputFilename = inputDir
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Stanza at',
+                                                 True, '', True, '', False)
 
 
     #collecting input txt files
@@ -107,8 +102,6 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             
             if docName != doc:
                 print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
-            # else:
-            #     print("   Processing a file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
 
             text = open(doc, 'r', encoding=language_encoding, errors='ignore').read().replace("\n", " ")
             
@@ -117,21 +110,21 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
             Stanza_output = nlp(text)
 
-            temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, annotator_params)
+            temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, inputDir, tail, docID, annotator_params)
             df = pd.concat([df, temp_df], ignore_index=True, axis=0)
             # df = df.reset_index(drop=True)
-        # TODO MINO the way you had it, the annotators produced n output files as many n input files;
-        # this is wrong; but... not sure what you are doing here
-        # if len(inputDocs) == docID:
-        df.to_csv(outputFilename, index=False, encoding = language_encoding)
-        filesToOpen.append(outputFilename)
+    df.to_csv(outputFilename, index=False, encoding = language_encoding)
+    filesToOpen.append(outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, False)
 
     return filesToOpen
 
 # Convert Stanza doc to pandas Dataframe
-def convertStanzaDoctoDf(stanza_doc, inputFilename, annotator_params):
+def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annotator_params):
+    if inputDir != '':
+        inputFilename = inputDir + tail
+    
     dicts = stanza_doc.to_dict()
     out_df = pd.DataFrame()
     
@@ -176,7 +169,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, annotator_params):
                         ]
     out_df['Record ID'] = None
     out_df['Sentence ID'] = None
-    out_df['Document ID'] = 1
+    out_df['Document ID'] = docID
     out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
 
     i = 0

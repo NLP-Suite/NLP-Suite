@@ -95,31 +95,31 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         else:
             return
 
-        document_length_var = 1
-        limit_sentence_length_var = 1000
-        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
-                                                                       outputDir,
-                                                                       openOutputFiles,
-                                                                       createCharts, chartPackage,
-                                                                       annotator, False,
-                                                                       language_var,
-                                                                       memory_var, document_length_var, limit_sentence_length_var,
-                                                                       extract_date_from_filename_var=dateInclude,
-                                                                       date_format=dateFormat,
-                                                                       date_separator_var=sep,
-                                                                       date_position_var=date_field_position)
-            # ,
-            #                                                            language=language_var)
-            #                                                         #    language = language_var)
+    document_length_var = 1
+    limit_sentence_length_var = 1000
+    tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+                                                                   outputDir,
+                                                                   openOutputFiles,
+                                                                   createCharts, chartPackage,
+                                                                   annotator, False,
+                                                                   language_var,
+                                                                   memory_var, document_length_var, limit_sentence_length_var,
+                                                                   extract_date_from_filename_var=dateInclude,
+                                                                   date_format=dateFormat,
+                                                                   date_separator_var=sep,
+                                                                   date_position_var=date_field_position)
+        # ,
+        #                                                            language=language_var)
+        #                                                         #    language = language_var)
 
-        if len(tempOutputFiles)>0:
-            filesToOpen.extend(tempOutputFiles)
-            if 'parser' in annotator:
-                reminders_util.checkReminder(config_filename,
-                                             reminders_util.title_options_CoreNLP_NER_tags,
-                                             reminders_util.message_CoreNLP_NER_tags,
-                                             True)
-                if CoNLL_table_analyzer_var:
+    if len(tempOutputFiles)>0:
+        filesToOpen.extend(tempOutputFiles)
+        if 'parser' in annotator:
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_CoreNLP_NER_tags,
+                                         reminders_util.message_CoreNLP_NER_tags,
+                                         True)
+            if CoNLL_table_analyzer_var:
                     if IO_libraries_util.check_inputPythonJavaProgramFile('CoNLL_table_analyzer_main.py') == False:
                         return
                     # open the analyzer having saved the new parser output in config so that it opens the right input file
