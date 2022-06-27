@@ -9,6 +9,7 @@ import file_splitter_merged_txt_util
 import file_splitter_ByLength_util
 import GUI_util
 import IO_user_interface_util
+import constants_util
 
 # Stanza annotate functions
 def Stanza_annotate(config_filename, inputFilename, inputDir,
@@ -29,9 +30,13 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     output_format_option = {
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"]
     }
+    for k,v in lang_dict.items():
+        if v == language:
+            lang = k
+            break
     for annotator in annotator_params:
         # TODO MINO must expand the check for the allowed combinations of annotator and language
-        if language=='Latin' and annotator=='NER':
+        if lang not in available_NER and annotator=='NER': # Latin language is not available in NER models
             mb.showinfo("Warning",
                         "Stanza does not currently support the " + annotator + " annotator for " + language + ".\n\nPlease, select a different annotator or a different language.")
             return filesToOpen
@@ -186,3 +191,33 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, annotator_params):
         i+=1
 
     return out_df
+
+# Python dictionary of language (values) and their acronyms (keys)
+lang_dict  = dict(constants_util.languages)
+
+# Available Stanza NER models for languages
+available_NER = [
+    "af",
+    "ar",
+    "bg",
+    "zh",
+    "da",
+    "nl",
+    "en",
+    "fi",
+    "fr",
+    "de",
+    "hu",
+    "it",
+    "ja",
+    "my",
+    "nb",
+    "nn",
+    "fa",
+    "ru",
+    "es",
+    "sv",
+    "tr",
+    "uk",
+    "vi",
+    ]

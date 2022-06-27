@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "Stanford_CoreNLP.py", ['tkinter', 'subprocess']) == False:
+if IO_libraries_util.install_all_packages(GUI_util.window, "spaCy.py", ['tkinter', 'subprocess']) == False:
     sys.exit(0)
 
 import os
@@ -43,10 +43,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     filesToOpen = []
     outputCoNLLfilePath = ''
 
-    if open_GUI:
-        call("python spaCy_coreference_main.py", shell=True)
-        return
-
     # check internet connection
     if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
         return
@@ -59,76 +55,42 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         mb.showinfo("Warning", "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the CoreNLP parser checkbox and try again.")
         return
 
-    if spaCy_annotators_var == True and 'Coreference PRONOMINAL resolution' in spaCy_annotators_menu_var:
-        if IO_libraries_util.check_inputPythonJavaProgramFile("spaCy_coReference_util.py") == False:
+    if parser:
+        if parser_menu_var == 'Constituency parser':
+            # TODO MINO
+            #   connect to Stanza annotator
+            mb.showwarning('Warning',
+                           'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
             return
-        if language_var!='English' and language_var!='Chinese':
-            mb.showwarning(title='Language',message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
+        annotator = 'depparse'
+
+    if spaCy_annotators_var and spaCy_annotators_menu_var != '':
+        if 'Sentence splitter (with sentence length)' in spaCy_annotators_menu_var:
+            annotator = 'Sentence'
+        elif 'Lemma annotator' in spaCy_annotators_menu_var:
+            annotator = 'Lemma'
+        elif 'POS annotator' in spaCy_annotators_menu_var:
+            annotator = 'All POS'
+        elif 'NER annotator' in spaCy_annotators_menu_var:  # NER annotator
+            annotator = 'NER'
+        elif 'Coreference' in spaCy_annotators_menu_var:
+            # TODO MINO
+            #   connect to spaCy annotator
+            annotator = 'coref'
+            mb.showwarning('Warning',
+                           'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
             return
-
-        # if "Neural" in spaCy_annotators_menu_var:
-        #     CoRef_Option = 'Neural Network'
-        file_open, error_indicator = spaCy_coreference_util.run(config_filename, inputFilename, inputDir,
-                                                                           outputDir, openOutputFiles, createCharts, chartPackage, memory_var,
-                                                                           manual_Coref)
-
-        if error_indicator == 0:
-            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
-                                               "Finished running Stanford CoreNLP Co-Reference Resolution using the 'Neural Network' approach at",
-                                               True)
+        elif 'Sentiment analysis' in spaCy_annotators_menu_var:
+            # TODO MINO
+            #   connect to spaCy annotator
+            annotator = 'sentiment'
+            mb.showwarning('Warning',
+                           'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
+            return
         else:
-            mb.showinfo("Coreference Resolution Error",
-                        "Since Stanford CoreNLP Co-Reference Resolution throws error, " +
-                        "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.")
-        # filesToOpen = filesToOpen + file_open
-        # print("Number of files to Open: ", len(file_open))
-        filesToOpen.extend(file_open)
-
-
-    if parser or (CoreNLP_annotators_var and spaCy_annotators_menu_var != ''):
-
-        if IO_libraries_util.check_inputPythonJavaProgramFile('spaCy_annotator_util.py') == False:
             return
 
-        if parser and parser_menu_var == 'Dependency parser':
-            if language_var == 'German' or language_var == 'Hungarian':
-                mb.showwarning(title='Language',
-                               message='The Stanford CoreNLP Probabilistic Context Free Grammar (PCFG) is not available for German and Hungarian.')
-                return
-            annotator='parser (pcfg)'
-            annotator='parser (nn)'
-        else:
-            if spaCy_annotators_var and spaCy_annotators_menu_var != '':
-                if 'NER (GUI)' in spaCy_annotators_menu_var: # NER annotator
-                    if IO_libraries_util.check_inputPythonJavaProgramFile('spaCy_NER_main.py') == False:
-                        return
-                    call("python spaCy_NER_main.py", shell=True)
-                elif 'Sentence splitter (with sentence length)' in spaCy_annotators_menu_var:
-                    annotator = 'Sentence'
-                elif 'Lemma annotator' in spaCy_annotators_menu_var:
-                    if language_var != 'English':
-                        mb.showwarning(title='Language',
-                                       message='The Stanford CoreNLP lemmatizer is only available for English.')
-                        return
-                    annotator = 'Lemma'
-                elif 'POS annotator' in spaCy_annotators_menu_var:
-                    annotator = 'All POS'
-                elif 'Sentiment analysis' in spaCy_annotators_menu_var:
-                    if language_var != 'English':
-                        mb.showwarning(title='Language',
-                                       message='The Stanford CoreNLP sentiment analysis annotator is only available for English.')
-                        return
-                    annotator = ['sentiment']
-                elif 'Word2Vec' in spaCy_annotators_menu_var:
-                    if language_var == 'Arabic' or language_var == 'Hungarian':
-                        mb.showwarning(title='Language',
-                                       message='The Stanford CoreNLP SVO annotator is not available for Arabic and Hungarian.')
-                        return
-                    annotator = ['Word2Vec']
-                else:
-                    return
-
-        tempOutputFiles = spaCy_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+        tempOutputFiles = spaCy_annotator_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir,
                                                                        openOutputFiles, createCharts, chartPackage,
                                                                        annotator, False, #'All POS',
@@ -427,8 +389,6 @@ def activate_spaCy_annotators_menu(*args):
                 spaCy_annotators_menu_var.set('')
                 return
         spaCy_annotators_menu.configure(state='normal')
-        if y_multiplier_integer_SV == 0:
-            y_multiplier_integer_SV = y_multiplier_integer
 
         if 'Coreference' in spaCy_annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer-1

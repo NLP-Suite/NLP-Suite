@@ -40,6 +40,7 @@ import subprocess
 import time
 import fuzzywuzzy
 from fuzzywuzzy import fuzz
+import stanza
 from stanza.pipeline.multilingual import MultilingualPipeline
 
 import file_cleaner_util
@@ -815,8 +816,14 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        'Started running language detection algorithms at',
                                                  True, '', True, '', True)
+
     # Stanza's multilingual pipeline needs to load only once, therefore called outside the for-loop
-    nlp_stanza = MultilingualPipeline()
+    try:
+        nlp_stanza = MultilingualPipeline()
+    except LanguageNotDownloadedError as err:
+        stanza.download(lang="multilingual", verbose=False)
+        nlp_stanza = MultilingualPipeline()
+    
     lang_dict  = dict(constants_util.languages)
 
     with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
