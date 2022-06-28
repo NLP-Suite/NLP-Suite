@@ -820,10 +820,10 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
     # Stanza's multilingual pipeline needs to load only once, therefore called outside the for-loop
     try:
         nlp_stanza = MultilingualPipeline()
-    except LanguageNotDownloadedError as err:
+    except:
         stanza.download(lang="multilingual", verbose=False)
         nlp_stanza = MultilingualPipeline()
-    
+
     lang_dict  = dict(constants_util.languages)
 
     with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
@@ -851,6 +851,9 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 docErrors_unknown=docErrors_unknown+1
                 print("  Unknown file read error.")
                 continue
+
+# LANGDETECT ----------------------------------------------------------
+
             value=str(value[0]).split(':')
             # TODO MINO get the value from the list in constants_util 
             language=value[0]
@@ -866,6 +869,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             # print('   LANGDETECT',value[0],value[1])  # [cs:0.7142840957132709, pl:0.14285810606233737, sk:0.14285779665739756]
             currentLine = ['LANGDETECT', language, probability]
 
+# spaCY ----------------------------------------------------------
             nlp_spacy = spacy.load('en_core_web_sm')
             Language.factory("language_detector", func=get_lang_detector)
             nlp_spacy.add_pipe('language_detector', last=True)
@@ -897,6 +901,9 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 print("  Unknown file read error.")
                 continue
             # TODO MINO get the value from the list in constants_util
+
+# LANGID ----------------------------------------------------------
+
             language=value[0]
             language = lang_dict.get(language)
             probability=round(float(value[1]),2)
@@ -914,13 +921,14 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             # sr, sv, sw, ta, te, th, tl, tr, ug, uk,
             # ur, vi, vo, wa, xh, zh, zu
             print('   LANGID', language, probability)  # ('en', 0.999999999999998)
-            print()
             currentLine.extend(['LANGID',  language, probability])
 
-            # Stanza Language Identification
+# Stanza  ----------------------------------------------------------
+
             doc = nlp_stanza(text)
             language = doc.lang
             language = lang_dict.get(language)
+            probability = ''
             print('   Stanza', language, probability)
             currentLine.extend(['Stanza',  language, probability])
 
@@ -964,8 +972,9 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
         if chartPackage=='Excel' and chart_outputFilename!='':
             filesToOpen.append(chart_outputFilename)
 
-    if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+    # if openOutputFiles:
+    #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+    return filesToOpen
 
 def get_lang_detector(nlp, name):
     return LanguageDetector()

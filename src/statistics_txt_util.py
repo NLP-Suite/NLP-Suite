@@ -610,7 +610,8 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
                                               count_var=1, hover_label=[],
                                               outputFileNameType='', #'line_bar', column_xAxis_label='Line length',
                                               column_xAxis_label='Line length',
-                                              groupByList=['Document ID','Document'], plotList=['Line length (in words)'], chart_title_label='Statistical Measures for Line Length')
+                                              groupByList=['Document ID','Document'],
+                                              plotList=['Line length (in words)'], chart_title_label='Statistical Measures for Line Length')
 
     if chart_outputFilename != None:
         filesToOpen.extend(chart_outputFilename)
@@ -1068,7 +1069,6 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     chart_title_byDocID='Frequency of Short Words by Document'
                     chart_title_bySentID ='Frequency of Short Words by Sentence Index'
                     column_xAxis_label = 'Short Words (<4 Characters)'
-                    plotList=['Short words (<4 characters)']
 
                     # exclude numbers from list
                     if word and len(word) <= int(word_length) and word.isalpha():
@@ -1087,7 +1087,6 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     chart_title_byDocID ='Frequency of Initial-Capital Words by Document'
                     chart_title_bySentID ='Frequency of Initial-Capital Words by Sentence Index'
                     column_xAxis_label = 'Initial-Capital Words'
-                    plotList=['Initial-capital words']
 
                     if word and word and word[0].isupper():
                         word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID,
@@ -1106,7 +1105,6 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     chart_title_byDocID='Frequency of Initial-Vowel Words by Document'
                     chart_title_bySentID = 'Frequency of Initial-Vowel Words by Sentence Index'
                     column_xAxis_label = 'Initial-Vowel Words'
-                    plotList=['Initial vowel']
                     if word and word and word[0].lower() in "aeiou" and word.isalpha():
                         word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 # PUNCTUATION SYMBOLS --------------------------------------------------------------------------
@@ -1122,7 +1120,6 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     chart_title_byDocID='Frequency of Punctuation Symbols of Pathos (?!) by Document'
                     chart_title_bySentID='Frequency of Punctuation Symbols of Pathos (?!) by Sentence Index'
                     column_xAxis_label = 'Punctuation symbols of pathos (?!)'
-                    plotList=['Punctuation symbols of pathos (?!)']
                     if word != '!' and word != '?':
                         continue
                     word_list.extend([[word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
@@ -1172,8 +1169,8 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                                                outputFileNameType='',  # 'line_bar',
                                                column_xAxis_label=column_xAxis_label,
                                                groupByList=['Document ID', 'Document'],
-                                               plotList=plotList,
-                                               chart_title_label='Statistical Measures for ')
+                                               plotList=['Frequency'],
+                                               chart_title_label='Statistical Measures for ' + column_xAxis_label)
 
     if chart_outputFilename != None:
         filesToOpen.extend(chart_outputFilename)
