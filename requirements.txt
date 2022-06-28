@@ -15,11 +15,11 @@ Pillow
 
 striprtf
 
-#used by nominalization; pyword sense disambiguation; MUST USE THIS VERSION OR CODE WILL BREAK; no longer true
-# pywsd==1.2.4
-pywsd
-# pywsd depends upon wn==0.0.23
-wn
+#used by nominalization; pyword sense disambiguation; MUST USE THIS VERSION OR CODE WILL BREAK; # # no longer true
+pywsd~=1.2.4
+# pywsd
+#pywsd depends upon wn==0.0.23
+wn==0.0.23
 
 #used by stats_visuals_util.text_readability
 textstat~=0.7.0

@@ -46,23 +46,24 @@ import reminders_util
 
 # RUN section __________________________________________________________________________________________________________
 
-def run(inputDir, outputDir, openOutputFiles, createExcelCharts, OptimizeInterval, numTopics):
+def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, OptimizeInterval, numTopics):
     if numTopics == 20:
         reminders_util.checkReminder(config_filename, reminders_util.title_options_topic_modelling_number_of_topics,
                                      reminders_util.message_topic_modelling_number_of_topics, True)
 
-    filesToOpen = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles, createExcelCharts,
+    filesToOpen = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                                                  OptimizeInterval, numTopics)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 def run_script_command(): return run(GUI_util.input_main_dir_path.get(),
                                      GUI_util.output_dir_path.get(),
                                      GUI_util.open_csv_output_checkbox.get(),
-                                     GUI_util.create_Excel_chart_output_checkbox.get(),
+                                     GUI_util.create_chart_output_checkbox.get(),
+                                     GUI_util.charts_dropdown_field.get(),
                                      optimize_intervals_var.get(),
                                      num_topics_var.get())
 
@@ -133,11 +134,12 @@ videos_options = 'No videos available'
 TIPS_lookup = {"Mallet installation":"TIPS_NLP_Topic modeling Mallet installation.pdf",
                'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
                "Topic modeling in Mallet":"TIPS_NLP_Topic modeling Mallet.pdf",
                "Topic modeling in Gensim":"TIPS_NLP_Topic modeling Gensim.pdf",
                'Topic modeling and corpus size':'TIPS_NLP_Topic modeling and corpus size.pdf'}
 #               "JAVA installation": "TIPS_NLP_Java download install run.pdf"}
-TIPS_options='Topic modeling in Mallet','Mallet installation','Excel - Enabling Macros','csv files - Problems & solutions','Topic modeling in Gensim','Topic modeling and corpus size' #, 'JAVA installation'
+TIPS_options='Topic modeling in Mallet','Mallet installation','Excel - Enabling Macros','csv files - Problems & solutions', 'Statistical measures', 'Topic modeling in Gensim','Topic modeling and corpus size'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -196,5 +198,11 @@ readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readM
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
                     videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+reminders_util.checkReminder(
+        config_filename,
+        reminders_util.title_options_English_language_MALLET,
+        reminders_util.message_English_language_MALLET,
+        True)
 
 GUI_util.window.mainloop()

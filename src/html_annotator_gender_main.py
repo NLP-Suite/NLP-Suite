@@ -22,7 +22,7 @@ import html_annotator_dictionary_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createExcelCharts,
+def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createCharts, chartPackage,
         CoreNLP_gender_annotator_var, memory_var, CoreNLP_download_gender_file_var, CoreNLP_upload_gender_file_var,
         annotator_dictionary_var, annotator_dictionary_file_var,personal_pronouns_var,plot_var, year_state_var, firstName_entry_var, new_SS_folders):
 
@@ -39,7 +39,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
     #CoreNLP annotate
     if CoreNLP_gender_annotator_var==True:
         output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
-                                                               output_dir_path, openOutputFiles, createExcelCharts, 'gender', False, memory_var)
+                                                               outputDir, openOutputFiles, createCharts, chartPackage, 'gender', False, memory_var)
         # annotator returns a list and not a string
         # the gender annotator returns 2 Excel charts in addition to the csv file
         if len(output)>0:
@@ -52,7 +52,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
             return
         import annotator_gender_dictionary_util
         # csvValue_color_list, bold_var, tagAnnotations, '.txt'
-        output= annotator_gender_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts, memory_var, annotator_dictionary_file_var,personal_pronouns_var)
+        output= annotator_gender_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, annotator_dictionary_file_var,personal_pronouns_var)
         if len(output)>0:
             # output=output[0]
             filesToOpen.extend(output)
@@ -72,7 +72,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
             mb.showwarning(title='Warning', message="The plot option requires both 'By year/state' value and first name(s) in the 'Enter firt name(s)' widget.\n\nPlease, enter the required information and try again.")
             return
         else:
-            output = annotator_gender_dictionary_util.SSA_annotate(year_state_var,firstName_entry_var,output_dir_path)
+            output = annotator_gender_dictionary_util.SSA_annotate(year_state_var,firstName_entry_var,outputDir)
             if len(output)>0:
                 # output=output[0]
                 filesToOpen.extend(output)
@@ -83,15 +83,17 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
             mb.showwarning(title='Warning', message='There are too many output files (' + str(nFile) + ') to be opened automatically.\n\nPlease, do not forget to check the html files in your selected output directory.')
             return
         else:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-#def run(inputFilename,input_main_dir_path,output_dir_path, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
+#def run(inputFilename,input_main_dir_path,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
-                GUI_util.output_dir_path.get(),
+                GUI_util.outputDir.get(),
                 GUI_util.open_csv_output_checkbox.get(),
-                GUI_util.create_Excel_chart_output_checkbox.get(),
+                                                GUI_util.create_chart_output_checkbox.get(),
+                                GUI_util.charts_dropdown_field.get(),
+
                 CoreNLP_gender_annotator_var.get(),
                 memory_var.get(),
                 CoreNLP_download_gender_file_var.get(),
@@ -197,6 +199,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 #setup a button to open Windows Explorer on the selected input directory
 openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, annotator_dictionary_file_var.get()))
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,
     openInputFile_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 190, "Open csv dictionary file")
@@ -266,7 +270,9 @@ new_SS_select_button.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20, y_multiplier_integer,new_SS_select_button,True)
 
 #setup a button to open Windows Explorer on the selected input directory
-open_new_SS_folder_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openExplorer(window, new_SS_folder_var.get()))
+open_new_SS_folder_button = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openExplorer(window, new_SS_folder_var.get()))
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.get_labels_x_coordinate()+190,
     y_multiplier_integer,
@@ -348,8 +354,8 @@ activate_all_options()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Gender annotator':'TIPS_NLP_Gender annotator.pdf','NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition) Stanford CoreNLP.pdf','CoreNLP Coref':'TIPS_NLP_Stanford CoreNLP coreference resolution.pdf'}
-TIPS_options='Gender annotator', 'NER (Named Entity Recognition)', 'CoreNLP Coref'
+TIPS_lookup = {'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','Gender annotator':'TIPS_NLP_Gender annotator.pdf','NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition) Stanford CoreNLP.pdf','CoreNLP Coref':'TIPS_NLP_Stanford CoreNLP coreference resolution.pdf'}
+TIPS_options='csv files - Problems & solutions','Statistical measures','Gender annotator', 'NER (Named Entity Recognition)', 'CoreNLP Coref'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

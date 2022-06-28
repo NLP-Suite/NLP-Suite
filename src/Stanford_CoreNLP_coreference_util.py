@@ -20,9 +20,10 @@ import reminders_util
 
 # part of the code about search text function is adapted from 
 # https://www.geeksforgeeks.org/create-find-and-replace-features-in-tkinter-text-widget/
-def createCompareWindow(origin_display, coref_display, origin_non_coref, root, result):
+def createCompareWindow(origin_display, coref_display, origin_non_coref, corefed_non_coref, root, result):
     top = Toplevel(root)
-    top.title("Comparing results from {0} LEFT: ORIGINAL text; in BLUE pronouns NOT corefed; in YELLOW pronouns corefed; RIGHT: COREFED text; in RED pronouns corefed; Edit text on the right and Save".format('Neural Network'))
+    # top.title("Comparing results from {0} LEFT: ORIGINAL text; in BLUE pronouns NOT corefed; in YELLOW pronouns corefed; RIGHT: COREFED text; in RED pronouns corefed; Edit text on the right and Save".format('Neural Network'))
+    top.title("Comparing coref results (LEFT: ORIGINAL text; RIGHT: COREFED text). In BLUE pronouns NOT corefed; in RED pronouns corefed. EDIT text on the right and Save (or Quit). Use FIND bar to search text.".format('Neural Network'))
     # adding of single line text box
     topFrame = tk.Frame(top)
     topFrame.pack(fill="both", expand=False, side=tk.TOP, padx=300)
@@ -48,7 +49,7 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, root, r
                           str(i + 1) + "." + str(highlight[0]),
                           str(i + 1) + "." + str(highlight[1]))
             text1.tag_config("here",
-                             background="yellow", foreground="blue")
+                             background="red", foreground="blue")
         for highlight in non_coref[1]:
             text1.tag_add("coref",
                           str(i + 1) + "." + str(highlight[0]),
@@ -63,6 +64,7 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, root, r
     for i in range(len(coref_display)):
         each = coref_display[i]
         text2.insert(tk.INSERT, each[0] + '\n')
+        non_coref = corefed_non_coref[i]
 
         for highlight in each[1]:
             text2.tag_add("here",
@@ -70,6 +72,13 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, root, r
                           str(i + 1) + "." + str(highlight[1]))
             text2.tag_config("here",
                              background="red", foreground="blue")
+        for highlight in non_coref[1]:
+            text2.tag_add("coref",
+                          str(i + 1) + "." + str(highlight[0]),
+                          str(i + 1) + "." + str(highlight[1]))
+            text2.tag_config("coref",
+                             background="blue", foreground="yellow")
+
     text2.pack(side=tk.LEFT)
     scroll.pack(side=tk.RIGHT, fill=tk.Y)
 
@@ -89,6 +98,7 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, root, r
     def find():
         # remove tag 'found' from index 1 to END
         text2.tag_remove('found', '1.0', END)
+        text1.tag_remove('found', '1.0', END)
         # returns to widget currently in focus
         s = searchBox.get()
         
@@ -108,6 +118,21 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, root, r
     
             # mark located string as red    
             text2.tag_config('found', foreground ='red', background='gainsboro')
+            idx = '1.0'
+            while 1:
+                # searches for desired string from index 1
+                idx = text1.search(s, idx, nocase=1,
+                                   stopindex=END)
+                if not idx: break
+                # last index sum of current index and
+                # length of text
+                lastidx = '% s+% dc' % (idx, len(s))
+                # overwrite 'Found' at idx
+                text1.tag_add('found', idx, lastidx)
+                idx = lastidx
+
+            # mark located string as red
+            text1.tag_config('found', foreground='red', background='gainsboro')
         searchBox.focus_set()
     findButton.config(command = find)
 
@@ -179,6 +204,7 @@ def compare_results(origin_text,corefed_text):
     origin_display = []
     corefed_display = []
     origin_non_coref = []
+    corefed_non_coref = []
     """
     SequenceMatcher gave matching point for each sentences;
     We use this to find the difference.
@@ -234,7 +260,24 @@ def compare_results(origin_text,corefed_text):
                     m_new[1] = m_new[1]
                 non_coref.append(tuple(m_new))
         origin_non_coref.append((origin_sentences[i], non_coref))
-    return origin_display, corefed_display, origin_non_coref
+        non_coref = []
+        match = [(a.start(), a.end()) for a in list(re.finditer(pronouns, corefed_sentences[i].lower()))]
+        for m in match:
+            # check if this match overlap with any text that is already highlighted
+            overlap = False
+            for highlighted in corefed_display_highlighted:
+                if (m[0] <= highlighted[0] <= m[1]) or (highlighted[0] <= m[0] <= highlighted[1]):
+                    overlap = True
+                    break
+            if overlap == False:
+                m_new = [m[0], m[1]]
+                if corefed_sentences[i][m_new[0]] == " ":
+                    m_new[0] = m_new[0] + 1
+                if corefed_sentences[i][m_new[1]] == " ":
+                    m_new[1] = m_new[1]
+                non_coref.append(tuple(m_new))
+        corefed_non_coref.append((corefed_sentences[i], non_coref))
+    return origin_display, corefed_display, origin_non_coref, corefed_non_coref
 
 
 # return error indicator: 1 error; 0 no error
@@ -246,13 +289,13 @@ def manualCoref(original_file, corefed_file, outputFile):
     corefed_text = f.read()
     f.close()
 
-    origin_display, corefed_display, origin_non_coref = compare_results(original_text, corefed_text)
+    origin_display, corefed_display, origin_non_coref, corefed_non_coref = compare_results(original_text, corefed_text)
     # cannot do manual coref
     if len(corefed_display) == 0 and len(origin_display) == 0:
         return 1
     result = []
     result.append("\n".join(corefed_text.split("\n")[2:])) 
-    createCompareWindow(origin_display, corefed_display, origin_non_coref, GUI_util.window, result)
+    createCompareWindow(origin_display, corefed_display, origin_non_coref, corefed_non_coref, GUI_util.window, result)
     f = open(outputFile, "w", encoding='utf-8', errors='ignore')
     try:
         f.write(result[0])
@@ -266,8 +309,8 @@ def manualCoref(original_file, corefed_file, outputFile):
     return 0
 
 # return file_to_open
-def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts,
-        memory_var, manual_Coref):
+def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage,
+        language_var, memory_var, manual_Coref):
 
     corefed_file = []
     errorFound = False
@@ -293,9 +336,9 @@ def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, ope
                                      reminders_util.message_CoreNLP_coref, True)
 
     corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
-                                                                    output_dir_path, openOutputFiles, createExcelCharts,
+                                                                    output_dir_path, openOutputFiles, createCharts, chartPackage,
                                                                     ['coref', 'coref table'], False,
-                                                                    memory_var)
+                                                                    language_var, memory_var)
 
     if manual_Coref:
         if len(input_main_dir_path) == 0 and len(inputFilename) > 0:

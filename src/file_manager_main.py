@@ -21,7 +21,11 @@ import IO_user_interface_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 
-def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
+def run(inputDir, outputDir,
+        openOutputFiles,
+        createCharts,
+        chartPackage,
+        selectedCsvFile_var, selectedCsvFile_colName,
         utf8_var,
         ASCII_var,
         list_var,
@@ -362,13 +366,16 @@ def run(inputDir, outputDir, selectedCsvFile_var, selectedCsvFile_colName,
             mb.showwarning(title='File manager', message=str(i) + ' files ' + msg + operation + '.')
             filesToOpen=[]
             filesToOpen.append(os.path.join(outputDir,output_filename))
-            IO_files_util.OpenOutputFiles(GUI_util.window, True, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, True, filesToOpen, outputDir)
     else:
         mb.showwarning(title='File manager', message='No files ' + msg + operation + '.\n\nPlease, check the following information:\n  1. INPUT files directory;\n  2. selected file type (if you ticked the By file type option);\n  3. Include subdirectory option.')
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
+                                GUI_util.open_csv_output_checkbox.get(),
+                                GUI_util.create_chart_output_checkbox.get(),
+                                GUI_util.charts_dropdown_field.get(),
                                 selectedCsvFile_var.get(),
                                 select_csv_field_var.get(),
                                 utf8_var.get(),

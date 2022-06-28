@@ -19,7 +19,8 @@ import file_spell_checker_util
 
 def run(inputFilename, inputDir, outputDir,
         openOutputFiles,
-        createExcelCharts,
+        createCharts,
+        chartPackage,
         by_all_tokens_var,
         byNER_value_var,
         NER_list,
@@ -44,10 +45,10 @@ def run(inputFilename, inputDir, outputDir,
                 silent=False
             # openOutputFiles=False
             filesToOpen=file_spell_checker_util.nltk_unusual_words(GUI_util.window, inputFilename, inputDir, outputDir, False,
-													   createExcelCharts,silent)
+													   createCharts,chartPackage, silent)
 
         if checker_value_var == '*' or "detector" in checker_value_var:
-            file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts)
+            file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage)
 
         if checker_value_var == '*' or 'autocorrect' in checker_value_var or 'pyspellchecker' in checker_value_var or 'textblob' in checker_value_var:
             autocorrect_df, pyspellchecker_df,textblob_df = file_spell_checker_util.spellcheck(inputFilename, inputDir, checker_value_var, check_withinSubDir_spell_checker_var)
@@ -92,12 +93,12 @@ def run(inputFilename, inputDir, outputDir,
         if check_withinSubDir and (not spelling_checker_var):
             # TODO files need t be added to filesToOpen
             outputFiles = file_spell_checker_util.check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles,
-																		 createExcelCharts, NER_list, similarity_value,
+																		 createCharts, NER_list, similarity_value,
 																		 by_all_tokens_var,
                                                                          spelling_checker_var)
         else:
             outputFiles = file_spell_checker_util.check_for_typo(inputDir, outputDir,
-                                                                 openOutputFiles, createExcelCharts,
+                                                                 openOutputFiles, createCharts, chartPackage,
                                                                  NER_list, similarity_value,
 																 by_all_tokens_var)
 
@@ -106,7 +107,7 @@ def run(inputFilename, inputDir, outputDir,
 
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_similarity_command = lambda: run(
@@ -114,7 +115,8 @@ run_similarity_command = lambda: run(
                                      GUI_util.input_main_dir_path.get(),
                                      GUI_util.output_dir_path.get(),
                                      GUI_util.open_csv_output_checkbox.get(),
-                                     GUI_util.create_Excel_chart_output_checkbox.get(),
+                                     GUI_util.create_chart_output_checkbox.get(),
+                                     GUI_util.charts_dropdown_field.get(),
                                      by_all_tokens_var.get(),
                                      byNER_value_var.get(),
                                      NER_list,
@@ -363,7 +365,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  'Please, tick the checkbox if you wish to use Levenshtein\' edit distance algorithm..' + GUI_IO_util.msg_Esc)
+                                  'Please, tick the checkbox if you wish to use Levenshtein\' edit distance algorithm.' + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, tick the checkbox if you wish to find the edit distance of any token (word) in your input document(s), regardless of their NER value.' + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -373,7 +375,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, enter the value of word length (in number of characters) to be used to gage Levenshtein\'s edit distance or word similarity (default value 80). You can enter a number on a scale from 0 to 100, with 100 being completely the same.\n\nIf a word is shorter than the selected word lenght (in number of characters):\n   1 or more character difference will be considered as a possible typo;\n\nIf a word is equal or longer than the selected word lenght (in number of characters):\n   2 or more characters difference will be considered as a possible typo.\n\nYou have the option of checking for selected NER values WITHIN each subdirectory only or ACROSS all subdirectories (or an entire directory, for that matter); in this second option, the algorithm will take much longer to process.\n\nThe output list fully processes words with a frequency greater than 1.' + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  'Please, tick the checkbox if you wish to run a spelling checker.\n\nLanguage detection is carried out via LANGDETECT, LANGID, SPACY. Languages are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages (check here for the list https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).' + GUI_IO_util.msg_Esc)
+                                  'Please, tick the checkbox if you wish to run a spelling checker.\n\nLanguage detection is carried out via LANGDETECT, LANGID, SPACY, STANZA. Languages are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages (check here for the list https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).\nAll language detection algorithms, except for Stanza, export the probability of detection of a specific detected language.' + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

@@ -19,7 +19,7 @@ import GUI_IO_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
-import charts_Excel_util
+import charts_util
 
 from stanza_functions import stanzaPipeLine, lemmatize_stanza
 
@@ -164,7 +164,7 @@ def find(doc_dir, soc_acts, nlp, compare, sim_base, f, terminal_output):
 # CoreNLPDir: the path to stanfordCoreNLP folder. example name is "stanford-corenlp-4.2.0"
 # inputDir: the path to a folder that stores ungrouped documents in txt format. 
 # inputTargetDir: the path to a folder that stores several folders which contains several documents of the same target
-def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createExcelCharts, relativity_threshold):
+def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCharts, chartPackage, relativity_threshold):
 
     filesToOpen = []
     # check that the CoreNLPdir has been setup
@@ -219,22 +219,23 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createExc
     nlp.close()
     f.close()
 
-    if createExcelCharts == True:
+    if createCharts == True:
         columns_to_be_plotted = [[3, 3]]
         hover_label=''
         inputFilename = outputFilename
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='SSR_NER_home',
+                                                  chartPackage=chartPackage,
                                                   chart_type_list=["pie"],
                                                   chart_title='Frequency Distribution of Find a Home Outcome',
                                                   column_xAxis_label_var='',
                                                   hover_info_column_list=hover_label,
                                                   count_var=1)
-    if Excel_outputFilename != "":
-        filesToOpen.append(Excel_outputFilename)
+    if chart_outputFilename != "":
+        filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen = []  # to avoid opening twice here and in calling fuunction
 
     return filesToOpen

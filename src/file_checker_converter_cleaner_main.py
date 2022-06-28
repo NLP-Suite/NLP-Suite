@@ -22,9 +22,10 @@ import IO_files_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 
-def run(inputFilename,input_main_dir_path, output_dir_path,
+def run(inputFilename,inputDir, outputDir,
     openOutputFiles,
-    createExcelCharts,
+    createCharts,
+    chartPackage,
     check_tools,
     convert_tools,
     clean_tools,
@@ -42,7 +43,7 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
         mb.showwarning(title='rtf --> txt converter (Mac OS)', message='In a Mac OS, there is a simple way to batch convert a set of rtf files to txt. THIS ONLY APPLIES TO MAC OS!\n\nOpen the command prompt and change directory to where the rtf files are stored, then type:\n\nfind . -name \*.rtf -print0 | xargs -0 textutil -convert txt\n\nHit return. All txt converted files will be found in the same input directory as the original rtf files.\n\nFor more information, see the post by Alexander Refsum Jensenius at:\nhttps://www.arj.no/2013/01/08/batch-convert-rtf-files-to-txt/.')
         # return
 
-    if ((check_tools!='') and (clean_tools!='')) and ((input_main_dir_path=="") and (inputFilename=="")):
+    if ((check_tools!='') and (clean_tools!='')) and ((inputDir=="") and (inputFilename=="")):
         mb.showwarning(title='Input error', message='The selected option - ' + menu_option + ' - requires either a txt file or a directory in input.\n\nPlease, select a txt file or directory and try again.')
         return
 
@@ -64,17 +65,17 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
 
         if 'predict_encoding' in function_to_run or 'empty_file' in function_to_run:
             # use default first 20 lines
-            func(inputFilename,input_main_dir_path)
+            func(inputFilename,inputDir)
         elif 'sentence_length' in function_to_run:
-            outputFile=func(inputFilename,input_main_dir_path,output_dir_path)
+            outputFile=func(inputFilename,inputDir,outputDir)
         else:
-            func(GUI_util.window,inputFilename,input_main_dir_path, output_dir_path,openOutputFiles)
+            func(GUI_util.window,inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPackage)
 
         if len(outputFile)>0:
             filesToOpen.extend(outputFile)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
     # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
     #                                        'Started running ' + menu_option + ' at', True,
@@ -87,7 +88,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.create_chart_output_checkbox.get(),
+                            GUI_util.charts_dropdown_field.get(),
                             check_tools_var.get(),
                             convert_tools_var.get(),
                             clean_tools_var.get(),
@@ -135,8 +137,8 @@ GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_nu
 window=GUI_util.window
 config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
 config_filename=GUI_util.config_filename
-input_main_dir_path =GUI_util.input_main_dir_path
-output_dir_path =GUI_util.output_dir_path
+inputDir =GUI_util.input_main_dir_path
+outputDir =GUI_util.output_dir_path
 
 GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 
@@ -152,6 +154,7 @@ pydict["Document converter (rtf --> txt)"] = ["file_type_converter_util.rtf_conv
 pydict["Check utf-8 encoding compliance"] = ["file_checker_util.check_utf8_compliance"]
 pydict["Check empty file"] = ["file_checker_util.check_empty_file"]
 pydict["Check sentence length (extracting sentences)"] = ["sentence_analysis_util.extract_sentence_length"]
+pydict["Language detector"] = ["file_spell_checker_util.language_detection"]
 pydict["Predict encoding (via chardet)"] = ["file_checker_util.predict_encoding"]
 pydict["Spelling checker/Unusual words (via nltk)"] = ["file_spell_checker_util.nltk_unusual_words"]
 pydict["Spelling checker (via SpellChecker)"] = ["file_spell_checker_util.check_for_typo"]
@@ -190,6 +193,7 @@ check_menu = tk.OptionMenu(window,check_tools_var,
                     'Check utf-8 encoding compliance',
                     'Check empty file',
                     'Check sentence length (extracting sentences)',
+                    'Language detector',
                     'Predict encoding (via chardet)',
                     'Spelling checker/Unusual words (via nltk)',
                     'Spelling checker (via SpellChecker)')

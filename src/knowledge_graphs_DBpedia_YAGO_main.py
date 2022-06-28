@@ -24,7 +24,7 @@ import constants_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, createExcelCharts,
+def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
         knowledge_graphs_DBpedia_var,
         knowledge_graphs_YAGO_var,
         confidence_level,
@@ -85,8 +85,8 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
         # for a complete list of annotator types:
         #http://mappings.DBpedia.org/server/ontology/classes/
         final_check()
-        filesToOpen = knowledge_graphs_DBpedia_util.DBpedia_annotate(inputFilename, input_main_dir_path,
-                                                                     output_dir_path,0,
+        filesToOpen = knowledge_graphs_DBpedia_util.DBpedia_annotate(inputFilename, inputDir,
+                                                                     outputDir,0,
                                                                      ontology_list, colorls, confidence_level)
 
     elif knowledge_graphs_YAGO_var==True:
@@ -101,7 +101,7 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
         color1 = 'black'
         final_check()
 
-        filesToOpen = knowledge_graphs_YAGO_util.YAGO_annotate(inputFilename, input_main_dir_path, output_dir_path,
+        filesToOpen = knowledge_graphs_YAGO_util.YAGO_annotate(inputFilename, inputDir, outputDir,
                                                                 ontology_list, color1, colorls)
 
     else:
@@ -120,15 +120,17 @@ def run(inputFilename,input_main_dir_path,output_dir_path, openOutputFiles, crea
             mb.showwarning(title='Warning', message='There are too many output files (' + str(nFile) + ') to be opened automatically.\n\nPlease, do not forget to check the html files in your selected output directory.')
             return
         else:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-#def run(inputFilename,input_main_dir_path,output_dir_path, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
+#def run(inputFilename,input_main_dir_path,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
                 GUI_util.output_dir_path.get(),
                 GUI_util.open_csv_output_checkbox.get(),
-                GUI_util.create_Excel_chart_output_checkbox.get(),
+                                                GUI_util.create_chart_output_checkbox.get(),
+                                GUI_util.charts_dropdown_field.get(),
+
                 knowledge_graphs_DBpedia_var.get(),
                 knowledge_graphs_YAGO_var.get(),
                 confidence_level_entry.get(),
@@ -555,8 +557,8 @@ color_palette_DBpedia_YAGO_var.trace('w',activate_class_color_combo)
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Annotator':'TIPS_NLP_Annotator.pdf','Annotator DBpedia':'TIPS_NLP_Annotator DBpedia.pdf','DBpedia ontology classes':'TIPS_NLP_Annotator DBpedia ontology classes.pdf','YAGO (schema.org) ontology classes':'TIPS_NLP_Annotator YAGO (schema.org) ontology classes.pdf','YAGO (REDUCED schema.org) ontology classes':'TIPS_NLP_Annotator YAGO (schema reduced).pdf','The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf','W3C, OWL, RDF, SPARQL':'TIPS_NLP_W3C OWL RDF SPARQL.pdf','Annotator dictionary':'TIPS_NLP_Annotator dictionary.pdf','Annotator extractor':'TIPS_NLP_Annotator extractor.pdf','Gender annotator':'TIPS_NLP_Gender annotator.pdf'}
-TIPS_options='Annotator','Annotator DBpedia','DBpedia ontology classes','YAGO (schema.org) ontology classes','YAGO (REDUCED schema.org) ontology classes','The world of emotions and sentiments','W3C, OWL, RDF, SPARQL', 'Annotator dictionary','Annotator extractor','Gender annotator'
+TIPS_lookup = {'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','Annotator':'TIPS_NLP_Annotator.pdf','Annotator DBpedia':'TIPS_NLP_Annotator DBpedia.pdf','DBpedia ontology classes':'TIPS_NLP_Annotator DBpedia ontology classes.pdf','YAGO (schema.org) ontology classes':'TIPS_NLP_Annotator YAGO (schema.org) ontology classes.pdf','YAGO (REDUCED schema.org) ontology classes':'TIPS_NLP_Annotator YAGO (schema reduced).pdf','The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf','W3C, OWL, RDF, SPARQL':'TIPS_NLP_W3C OWL RDF SPARQL.pdf','Annotator dictionary':'TIPS_NLP_Annotator dictionary.pdf','Annotator extractor':'TIPS_NLP_Annotator extractor.pdf','Gender annotator':'TIPS_NLP_Gender annotator.pdf'}
+TIPS_options='csv files - Problems & solutions','Statistical measures','Annotator','Annotator DBpedia','DBpedia ontology classes','YAGO (schema.org) ontology classes','YAGO (REDUCED schema.org) ontology classes','The world of emotions and sentiments','W3C, OWL, RDF, SPARQL', 'Annotator dictionary','Annotator extractor','Gender annotator'
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.

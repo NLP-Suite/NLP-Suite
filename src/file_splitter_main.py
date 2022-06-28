@@ -22,7 +22,8 @@ import file_cleaner_util
 
 def run(inputFilename,inputDir, outputDir, 
     openOutputFiles,
-    createExcelCharts,
+    createCharts,
+    chartPackage,
     utf8_var,
     ASCII_var,
     split_mergedFile,
@@ -46,15 +47,6 @@ def run(inputFilename,inputDir, outputDir,
     split_csv_by_documentID_var,
     menu_option):
 
-    if inputDir=='' and inputFilename!='':
-        inputDir=os.path.dirname(inputFilename)
-        files=[inputFilename]
-    elif inputDir!='':
-        inputDir=inputDir
-        files= IO_files_util.getFileList(inputFilename, inputDir, 'txt')
-    if len(files) == 0:
-        return
-
     if utf8_var==True:
         startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
                             'Started running utf8 compliance test at', True)
@@ -65,10 +57,21 @@ def run(inputFilename,inputDir, outputDir,
                             'Started running characters conversion at', True)
         file_cleaner_util.convert_quotes(GUI_util.window,inputFilename, inputDir)
 
+    if extract_sentences_var:
+        import sentence_analysis_util
+        sentence_analysis_util.extract_sentences(window, inputFilename, inputDir, outputDir, extract_sentences_search_words_var)
+        return
 
-    # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-    #                                   "Started running " + menu_option + " at", True)
-    #
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                      "Started running " + menu_option + " at", True)
+
+    if inputDir=='' and inputFilename!='':
+        files=[inputFilename]
+    elif inputDir!='':
+        files= IO_files_util.getFileList(inputFilename, inputDir, 'txt')
+    if len(files) == 0:
+        return
+
     for file in files:
         #print("file",file)
         docname = os.path.split(file)[1]
@@ -141,11 +144,6 @@ def run(inputFilename,inputDir, outputDir,
             spot_one=-7
             spot_two=-5
             file_splitter_ByString_util.splitDocument_byStrings(file, outputDir, target, spot_one, spot_two, True)
-
-        elif extract_sentences_var:
-            import sentence_analysis_util
-            sentence_analysis_util.extract_sentences(file, inputDir, outputDir, extract_sentences_search_words_var)
-
         elif blankLine_var:
             import file_splitter_ByString_util
             file_splitter_ByString_util.split_by_blanks(file, outputDir)
@@ -166,7 +164,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.create_chart_output_checkbox.get(),
+                            GUI_util.charts_dropdown_field.get(),
                             utf8_var.get(),
                             ASCII_var.get(),
                             split_mergedFile_var.get(),
@@ -571,6 +570,7 @@ extract_sentences_var.trace('w', activate_allOptions)
 string_var.trace('w', activate_allOptions)
 blankLine_var.trace('w', activate_allOptions)
 number_var.trace('w', activate_allOptions)
+extract_sentences_var.trace('w', activate_allOptions)
 
 activate_allOptions()
 

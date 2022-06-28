@@ -20,7 +20,7 @@ import IO_libraries_util
 import config_util
 import TIPS_util
 
-# The script is used by SVO_main and by Google_Earth_main to run a csv file that 1. needs geocoding; 2. mapping geocoded location onto Google Earth Pro.
+# The script is used by Stanford_CoreNLP_SVO_main and by Google_Earth_main to run a csv file that 1. needs geocoding; 2. mapping geocoded location onto Google Earth Pro.
 import IO_user_interface_util
 
 # Google_config: 'Google-geocode-API_config.csv' or 'Google-Maps-API_config.csv'
@@ -104,6 +104,9 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
     inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
 
     locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName)
+
+    if locationColumnNumber == None:
+        return
 
     dateColumnNumber = -1
     if datePresent == True:

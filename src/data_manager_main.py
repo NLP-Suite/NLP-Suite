@@ -99,7 +99,7 @@ def run(inputFilename,
             file_filename_util.purge_partial_matches(GUI_util.window,inputFilename, outputDir, openOutputFiles, select_csv_field_purge_var, select_csv_field2_purge_var)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated

@@ -11,8 +11,9 @@ import GUI_IO_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run():
-    print()
-#the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
+    print('Exit')
+
+# the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run()
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -55,20 +56,15 @@ config_filename=GUI_util.config_filename
 
 GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 
-def clear(e):
-    GUI_util.clear("Escape")
-window.bind("<Escape>", clear)
-
-
 #setup GUI widgets
 
 y_multiplier_integer = 0
 
-open_word_search_GUI_button = tk.Button(window, text='Open GUI for words/collocations searches',width=40,command=lambda: call("python file_search_byWord_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_word_search_GUI_button)
-
 open_CoNLL_search_GUI_button = tk.Button(window, text='Open GUI for CoNLL table searches',width=40,command=lambda: call("python CoNLL_table_analyzer_main.py", shell=True))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_CoNLL_search_GUI_button)
+
+open_word_search_GUI_button = tk.Button(window, text='Open GUI for words/collocations searches',width=40,command=lambda: call("python file_search_byWord_main.py", shell=True))
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_word_search_GUI_button)
 
 open_nGram_VIEWER_search_GUI_button = tk.Button(window, text='Open GUI for N-grams/co-occurrences searches',width=40,command=lambda: call("python NGrams_CoOccurrences_Viewer_main.py", shell=True))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_nGram_VIEWER_search_GUI_button)
@@ -92,8 +88,8 @@ TIPS_options='No TIPS available'
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the button to open the GUI for searching words and collocations in text file(s).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the button to open the GUI for searching a CoNLL table.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the button to open the GUI for searching words and collocations in text file(s).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for an N-grams/Co_occurrences VIEWER similar to Google Ngrams Viewer (https://books.google.com/ngrams) but applied to your own corpus.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for searching words in the WordNet knowledge graph.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for searching (and manipulating) files saved in your machine.")

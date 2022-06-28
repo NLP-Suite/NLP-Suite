@@ -2,6 +2,7 @@
 # re-written by Roberto Franzosi October 2021
 # completed by Austin Cai October 2021
 
+import GUI_util
 import pandas as pd
 import csv
 import numpy as np
@@ -11,6 +12,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 
 import IO_files_util
 import IO_csv_util
+import IO_user_interface_util
 
 """
 NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences data
@@ -31,6 +33,10 @@ def run(inputDir="relative_path_here",
         temporalAggregation="",
         viewer_options_list=[]):
 
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
+                                       'Started running Word/Characters N-Grams at',
+                                       True, '', True, '', False)
+
     if search_wordsLists is None:
         search_wordsLists = []
     checkCoOccList = False
@@ -50,6 +56,7 @@ def run(inputDir="relative_path_here",
     if 'Scale' in str(viewer_options_list):
         scaleData = True
     if 'Lemmatize' in str(viewer_options_list):
+        useLemma = True
         useLemma = True
 
 
@@ -329,6 +336,10 @@ def run(inputDir="relative_path_here",
 
     # pprint.pprint(coOcc_results_binary)
     NgramsFileName, coOccFileName = save(NgramsFileName, coOccFileName, ngram_results, coOcc_results_binary, aggregateBy, temporal_aggregation)
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+                                       'Finished running Word/Characters N-Grams at', True, '', True, startTime, False)
+
     return NgramsFileName, coOccFileName
 
 

@@ -26,7 +26,8 @@ import tkinter.messagebox as mb
 import pandas as pd
 
 import CoNLL_util
-import charts_Excel_util
+import charts_util
+import statistics_csv_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
@@ -45,7 +46,7 @@ def compute_stats(data):
     deprel_counter = Counter(deprel_list)
     return postag_list, postag_counter, deprel_list, deprel_counter
 
-def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputFiles,createExcelCharts):
+def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputFiles,createCharts, chartPackage):
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -84,29 +85,41 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "PRONOUNS"])
         
-        if createExcelCharts==True:
-            Excel_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
-                                          data_to_be_plotted=[pronouns_stats],
-                                          inputFilename=function_words_stats_file_name,
-                                          outputDir=outputDir,
-                                          scriptType='FuncWords_pron',
-                                          chartTitle="Pronoun Analysis",
-                                          chart_type_list=["pie"])
+        if createCharts==True:
+            # chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
+            #                               data_to_be_plotted=[pronouns_stats],
+            #                               inputFilename=function_words_stats_file_name,
+            #                               outputDir=outputDir,
+            #                               scriptType='FuncWords_pron',
+            #                               chartTitle="Pronoun Analysis",
+            #                               chart_type_list=["pie"])
+            columns_to_be_plotted=[[0,1]]
+            count_var=0
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+                                                            outputFileLabel='FuncWords_pron',
+                                                            chartPackage=chartPackage,
+                                                            chart_type_list=['bar'],
+                                                            chart_title="Frequency Distribution of Pronoun",
+                                                            column_xAxis_label_var='Pronoun',
+                                                            hover_info_column_list=[],
+                                                            count_var=count_var)
 
-            if Excel_outputFilename != "":
-                filesToOpen.append(Excel_outputFilename)
+
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
 
             # line plot by sentence index
-            outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
+            outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
 															outputDir=outputDir,
 															select_col=['PRONOUNS'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Pronoun")
-            # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+                                                            chartPackage=chartPackage,
+                                                            chartTitle="Frequency Distribution of Pronoun")
+            # outputFiles=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
-            #                                                              openOutputFiles, createExcelCharts,
+            #                                                              openOutputFiles, createCharts, chartPackage,
             #                                                              [[1,4]],
             #                                                              ['PRONOUNS'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
@@ -116,7 +129,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
     # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running PRONOUN Analysis at', True, '', True, startTime, True)
     return filesToOpen
 
-def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createExcelCharts):
+def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createCharts, chartPackage):
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -155,30 +168,41 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "PREPOSITIONS"])
 
-        if createExcelCharts==True:
-            Excel_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
-                                          data_to_be_plotted=[prepositions_stats],
-                                          inputFilename=function_words_stats_file_name,
-                                          outputDir=outputDir,
-                                          scriptType='FuncWords_prep',
-                                          chartTitle="Preposition Analysis",
-                                          chart_type_list=["pie"])
+        if createCharts==True:
+            # chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
+            #                               data_to_be_plotted=[prepositions_stats],
+            #                               inputFilename=function_words_stats_file_name,
+            #                               outputDir=outputDir,
+            #                               scriptType='FuncWords_prep',
+            #                               chartTitle="Preposition Analysis",
+            #                               chart_type_list=["pie"])
+            columns_to_be_plotted=[[0,1]]
+            count_var=0
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+                                                            outputFileLabel='FuncWords_prep',
+                                                            chartPackage=chartPackage,
+                                                            chart_type_list=['bar'],
+                                                            chart_title="Frequency Distribution of Preposition",
+                                                            column_xAxis_label_var='Preposition',
+                                                            hover_info_column_list=[],
+                                                            count_var=count_var)
 
-            if Excel_outputFilename != "":
-                filesToOpen.append(Excel_outputFilename)
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
             
-            outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
+            outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
 															outputDir=outputDir,
 															select_col=['PREPOSITIONS'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Prepositions")
+                                                            chartPackage=chartPackage,
+                                                            chartTitle="Frequency Distribution of Prepositions")
             
             # line plot by sentence index
-            # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+            # outputFiles=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
-            #                                                              openOutputFiles,createExcelCharts,
+            #                                                              openOutputFiles,createCharts,chartPackage,
             #                                                              [[1,4]],
             #                                                              ['PREPOSITIONS'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
@@ -187,7 +211,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
 
     return filesToOpen
 
-def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createExcelCharts):
+def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createCharts, chartPackage):
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -228,33 +252,44 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "ARTICLES"])
 
-        if createExcelCharts==True:
-            Excel_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
-                                          data_to_be_plotted=[article_stats],
-                                          inputFilename=function_words_stats_file_name,
-                                          outputDir=outputDir,
-                                          scriptType='CoreNLP_FuncWords',
-                                          chartTitle="Article Analysis",
-                                          chart_type_list=["pie"])
+        if createCharts==True:
+            # chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
+            #                               data_to_be_plotted=[article_stats],
+            #                               inputFilename=function_words_stats_file_name,
+            #                               outputDir=outputDir,
+            #                               scriptType='CoreNLP_FuncWords',
+            #                               chartTitle="Article Analysis",
+            #                               chart_type_list=["pie"])
+            columns_to_be_plotted=[[0,1]]
+            count_var=0
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+                                                            outputFileLabel='FuncWords_article',
+                                                            chartPackage=chartPackage,
+                                                            chart_type_list=['bar'],
+                                                            chart_title="Frequency Distribution of Article",
+                                                            column_xAxis_label_var='Article',
+                                                            hover_info_column_list=[],
+                                                            count_var=count_var)
 
-            if Excel_outputFilename != "":
-                filesToOpen.append(Excel_outputFilename)
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
 
 
             # charts_Excel_util.create_excel_chart(GUI_util.window,[article_stats],function_words_stats_file_name,
             # "Article Analysis",["pie"])
 
             # line plot by sentence index
-            outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
+            outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
 															outputDir=outputDir,
 															select_col=['ARTICLES'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Articles")
-            # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+                                                            chartPackage=chartPackage,
+                                                            chartTitle="Frequency Distribution of Articles")
+            # outputFiles=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
-            #                                                              openOutputFiles, createExcelCharts,
+            #                                                              openOutputFiles, createCharts, chartPackage,
             #                                                              [[1,4]],['ARTICLES'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
             if len(outputFiles) > 0:
@@ -262,7 +297,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
 
     return filesToOpen
 
-def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutputFiles,createExcelCharts):
+def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutputFiles,createCharts, chartPackage):
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -300,33 +335,45 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "CONJUNCTIONS"])
 
-        if createExcelCharts==True:
-            Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
-                                                                 data_to_be_plotted=[conjunction_stats],
-                                                                 inputFilename=function_words_stats_file_name,
-                                                                 outputDir=outputDir,
-                                                                 scriptType='Conjunctions',
-                                                                 chartTitle="Frequency Distribution of Conjunctions",
-                                                                 chart_type_list=["pie"])
+        if createCharts==True:
+            # chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+            #                                                      data_to_be_plotted=[conjunction_stats],
+            #                                                      inputFilename=function_words_stats_file_name,
+            #                                                      outputDir=outputDir,
+            #                                                      scriptType='Conjunctions',
+            #                                                      chartTitle="Frequency Distribution of Conjunctions",
+            #                                                      chart_type_list=["pie"])
+            columns_to_be_plotted=[[0,1]]
+            count_var=0
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+                                                            outputFileLabel='FuncWords_conjunction',
+                                                            chartPackage=chartPackage,
+                                                            chart_type_list=['bar'],
+                                                            chart_title="Frequency Distribution of Conjunctions",
+                                                            column_xAxis_label_var='Conjunctions',
+                                                            hover_info_column_list=[],
+                                                            count_var=count_var)
 
-            if Excel_outputFilename != "":
-                filesToOpen.append(Excel_outputFilename)
+
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
 
             # function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, outputDir, '.xlsx', 'FW', 'Conjunctions', 'stats_pie_chart')
             # filesToOpen.append(function_words_stats_file_name)
-            # Excel_outputFilename =charts_Excel_util.create_excel_chart(GUI_util.window,[conjunction_stats],function_words_stats_file_name,"Conjunction Analysis",["pie"])
+            # chart_outputFilename =charts_Excel_util.create_excel_chart(GUI_util.window,[conjunction_stats],function_words_stats_file_name,"Conjunction Analysis",["pie"])
 
             # line plot by sentence index
-            outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
+            outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
 															outputDir=outputDir,
 															select_col=['CONJUNCTIONS'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Conjunctions")
-            # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+                                                            chartPackage=chartPackage,
+                                                            chartTitle="Frequency Distribution of Conjunctions")
+            # outputFiles=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
-            #                                                              openOutputFiles, createExcelCharts,
+            #                                                              openOutputFiles, createCharts, chartPackage,
             #                                                              [[1,4]],
             #                                                              ['CONJUNCTIONS'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
@@ -335,7 +382,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
 
     return filesToOpen
 
-def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createExcelCharts):
+def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createCharts, chartPackage):
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -373,31 +420,42 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "AUXILIARIES"])
 
-        if createExcelCharts==True:
-            Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
-                                                                 data_to_be_plotted=[auxiliary_stats],
-                                                                 inputFilename=function_words_stats_file_name,
-                                                                 outputDir=outputDir,
-                                                                 scriptType='Verb_Aux',
-                                                                 chartTitle="Frequency Distribution of Auxiliary Verbs",
-                                                                 chart_type_list=["pie"])
+        if createCharts==True:
+            # chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
+            #                                                      data_to_be_plotted=[auxiliary_stats],
+            #                                                      inputFilename=function_words_stats_file_name,
+            #                                                      outputDir=outputDir,
+            #                                                      scriptType='Verb_Aux',
+            #                                                      chartTitle="Frequency Distribution of Auxiliary Verbs",
+            #                                                      chart_type_list=["pie"])
+            columns_to_be_plotted=[[0,1]]
+            count_var=0
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+                                                            outputFileLabel='FuncWords_auxiliary',
+                                                            chartPackage=chartPackage,
+                                                            chart_type_list=['bar'],
+                                                            chart_title="Frequency Distribution of Auxiliary Verbs",
+                                                            column_xAxis_label_var='Auxiliary Verbs',
+                                                            hover_info_column_list=[],
+                                                            count_var=count_var)
 
-            if Excel_outputFilename != "":
-                filesToOpen.append(Excel_outputFilename)
+            if chart_outputFilename != "":
+                filesToOpen.append(chart_outputFilename)
 
             # return filesToOpen  # to avoid code breaking in plot by sentence index
 
             # line plots by sentence index
-            outputFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
+            outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
 															outputDir=outputDir,
 															select_col=['AUXILIARIES'],
 															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Auxiliary Verbs")
-            # outputFiles=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+                                                            chartPackage=chartPackage,
+                                                            chartTitle="Frequency Distribution of Auxiliary Verbs")
+            # outputFiles=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
             #                                                              '',
             #                                                              outputDir,
-            #                                                              openOutputFiles,createExcelCharts,
+            #                                                              openOutputFiles,createCharts,chartPackage,
             #                                                              [[1, 4]],
             #                                                              ['AUXILIARIES'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
@@ -507,7 +565,7 @@ def stats_auxiliaries_output(data,data_divided_sents):
 
     return list_auxiliaries_deprel, auxiliaries_deprel_stats, auxiliaries_data
 
-def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createExcelCharts):
+def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createCharts,chartPackage):
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -516,29 +574,29 @@ def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openO
 
 
     outputFiles = article_stats(inputFilename, outputDir, data, data_divided_sents,
-                                                                   openOutputFiles, createExcelCharts)
+                                                                   openOutputFiles, createCharts, chartPackage)
     if outputFiles != None:
         filesToOpen.extend(outputFiles)
 
     outputFiles = auxiliary_stats(inputFilename, outputDir, data, data_divided_sents,
-                                                                     openOutputFiles, createExcelCharts)
+                                                                     openOutputFiles, createCharts, chartPackage)
     if outputFiles != None:
         filesToOpen.extend(outputFiles)
 
     outputFiles = conjunction_stats(inputFilename, outputDir, data,
                                                                        data_divided_sents, openOutputFiles,
-                                                                       createExcelCharts)
+                                                                       createCharts, chartPackage)
     if outputFiles != None:
         filesToOpen.extend(outputFiles)
 
     outputFiles = preposition_stats(inputFilename, outputDir, data,
                                                                        data_divided_sents, openOutputFiles,
-                                                                       createExcelCharts)
+                                                                       createCharts, chartPackage)
     if outputFiles != None:
         filesToOpen.extend(outputFiles)
 
     outputFiles = pronoun_stats(inputFilename, outputDir, data, data_divided_sents,
-                                                                   openOutputFiles, createExcelCharts)
+                                                                   openOutputFiles, createCharts, chartPackage)
     if outputFiles != None:
         filesToOpen.extend(outputFiles)
 

@@ -49,7 +49,7 @@ def text_generate(inputFilename, inputDir):
     return articles, inputDir
 
 
-def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, memory_var, dictionary_file, personal_pronouns_var):
+def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, dictionary_file, personal_pronouns_var):
 
     document_length_var = 90000
     limit_sentence_length_var = 100
@@ -60,7 +60,7 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
     date_position_var = ''
 
     tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
-                                                        openOutputFiles, createExcelCharts,
+                                                        openOutputFiles, createCharts, chartPackage,
                                                         'NER',
                                                         NERs=['PERSON'],
                                                         DoCleanXML=False,

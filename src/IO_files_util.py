@@ -26,6 +26,8 @@ import reminders_util
 import CoNLL_util
 import IO_user_interface_util
 import GUI_IO_util
+import IO_csv_util
+import IO_files_util
 
 # There are 3 methods and a 2 constants present:
 # abspath returns absolute path of a path
@@ -40,25 +42,42 @@ os.chdir(dir_path)
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
 # check if a directory exists, remove if it does, and create
-def make_directory(newDirectory,ask=False):
+def make_directory(newDirectory,silent=True):
     createDir = True
+    # newDirectory=''
     # Got permission denied error if the folder is read-only.
     # Updates permission automatically
     if os.path.exists(newDirectory):
-        if ask:
+        if not silent:
             result = mb.askyesno('Directory already exists',
                                         'There already exists a directory\n\n' + newDirectory + '\n\nThis directory will be replaced.\n\nAre you sure you want to continue?')
             if not result:
-                createDir = False
-                return createDir
+                # createDir = False
+                # return createDir
+                return newDirectory
         shutil.rmtree(newDirectory)
     try:
         os.chmod(Path(newDirectory).parent.absolute(), 0o755)
         os.mkdir(newDirectory, 0o755)
     except Exception as e:
         print("error: ", e.__doc__)
-        createDir = False
-    return createDir
+        # createDir = False
+        newDirectory=''
+    # return createDir
+    return newDirectory
+
+def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=True):
+    outputSubDir=''
+    if inputFilename!='':
+        # process file
+        inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
+        outputSubDir = os.path.join(outputDir, label + "_" + inputFileBase)  # + "_CoRefed_files")
+    if inputDir!='':
+        # processing a directory
+        inputDirBase = os.path.basename(inputDir)
+        outputSubDir = os.path.join(outputDir, label + "_" + inputDirBase)
+    outputSubDir = make_directory(outputSubDir)
+    return outputSubDir
 
 
 # for folder, subs, files in os.walk(inputDir):
@@ -308,7 +327,7 @@ def openFile(window, inputFilename):
                 os.system('start "" "' + inputFilename + '"')
             except IOError:
                 mb.showwarning(title='Input file error',
-                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and try again!")
+                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
                 return True
         # macOS and other unix
         else:
@@ -316,7 +335,7 @@ def openFile(window, inputFilename):
                 call(['open', inputFilename])
             except IOError:
                 mb.showwarning(title='Input file error',
-                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and try again!")
+                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
                 return True
     else:
         tk.messagebox.showinfo("Error", "The file " + inputFilename + " could not be found.")
@@ -324,7 +343,7 @@ def openFile(window, inputFilename):
 
 
 # open a set of output files (csv, txt,...) stored as a list in filesToOpen []
-def OpenOutputFiles(window, openOutputFiles, filesToOpen):
+def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir):
     if filesToOpen == None:
         return
     if len(filesToOpen) == 0:
@@ -334,6 +353,11 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen):
             filesToOpen = list(set(filesToOpen))
         else:
             filesToOpen = list(filesToOpen)
+    if len(filesToOpen)>10:
+        mb.showwarning(title='Too many files to open',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files.\n\nFor your convenience, you will be placed next in the output directory\n\n'+outputDir+'\n\nYou can select there the files you want/need to open.')
+        # open outputDir
+        IO_files_util.openExplorer(window, outputDir)
+        return
     if len(filesToOpen) == 1:
         singularPlural = 'file'
     else:
@@ -366,11 +390,24 @@ def getFileExtension(inputFilename):
     inputfile, extension = os.path.splitext(inputfile)  # remove/take out the extension
     return extension
 
+def getFilename(passed_string):
 
-def getFilename(inputFilename):
-    path, inputfile = ntpath.split(inputFilename)  # remove/take out path
-    inputfile, extension = os.path.splitext(inputfile)  # remove/take out the extension
-    return inputfile
+    # when X-axis values contain a document dressed for hyperlink and with full path
+    #   undressed the hyperlink and only display the tail of the document
+    tail=passed_string
+    tail_noExtension=''
+    if '=hyperlink' in passed_string:
+        passed_string=IO_csv_util.undressFilenameForCSVHyperlink(passed_string)
+    if os.path.isfile(passed_string):
+        head, tail = os.path.split(passed_string)
+        tail_noExtension = tail.replace(getFileExtension(tail),'')
+    return tail, tail_noExtension
+
+
+# def getFilename(inputFilename):
+#     path, inputfile = ntpath.split(inputFilename)  # remove/take out path
+#     inputfile, extension = os.path.splitext(inputfile)  # remove/take out the extension
+#     return inputfile
 
 
 # inputFilename is the input filename with path
@@ -385,8 +422,11 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
     if inputDir!='':
         Dir = os.path.basename(os.path.normpath(inputDir))
         inputfile='Dir_' + Dir
+        inputfile_noExtension=''
     else:
-        inputfile = getFilename(inputFilename)
+        inputfile, inputfile_noExtension = getFilename(inputFilename)
+        # use inputfile_noExtension for json
+        inputfile = inputfile_noExtension
     default_outputFilename_str =''
     # do not add the NLP_ prefix if processing a file previously processed and with the prefix already added
     if inputfile[0:4]!='NLP_': #"NLP_" not in inputfile:
@@ -465,7 +505,7 @@ def openCSVFile(inputfile, open_type, encoding_type='utf-8'):
         return csvfile
     except IOError:
         mb.showwarning(title='File error',
-                       message="Could not open the file " + inputfile + "\n\nA file with the same name is already open.\n\nPlease, close the Excel file and try again!")
+                       message="Could not open the file " + inputfile + "\n\nA file with the same name is already open.\n\nPlease, close the Excel file and then click OK to resume.")
         return ""
 
 
@@ -533,7 +573,7 @@ def getScript(pydict,script):
 
     return script_to_run, IO_values
 
-def run_jar_script(scriptName, inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts):
+def run_jar_script(scriptName, inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage):
     filesToOpen = []
     if IO_libraries_util.check_inputPythonJavaProgramFile(scriptName) == False:
         return
@@ -544,10 +584,10 @@ def run_jar_script(scriptName, inputFilename, input_main_dir_path, output_dir_pa
     #     IO_util.timed_alert(GUI_util.window,2000,'Analysis start','Started running Sentence Complexity at',True,'\n\nYou can follow Sentence Complexity in command line.')
     #     subprocess.call(['java', '-jar', 'Sentence_Complexity.Jar', inputFilename, output_dir_path, temp_outputFilename])
     #     IO_util.timed_alert(GUI_util.window,2000,'Analysis end','Finished running Sentence Complexity at',True)
-    #     if createExcelCharts:
+    #     if createCharts:
     #         columns_to_be_plotted = [[1,3], [1,4], [1,6], [1,7]]
     #         hover_label=['Sentence','Sentence','Sentence','Sentence']
-    #         outputFilenameXLSM_1 = charts_Excel_util.run_all(columns_to_be_plotted,inputFilename,output_dir_path, outputFilename, chart_type_list = ["line"], chart_title= "Sentence complexity", column_xAxis_label_var = 'Sentence ID',column_yAxis_label_var = 'Complexity',outputExtension = '.xlsm',label1='Scomp',label2='line',label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=0, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
+    #         outputFilenameXLSM_1 = charts_util.run_all(columns_to_be_plotted,inputFilename,output_dir_path, outputFilename, chart_type_list = ["line"], chart_title= "Sentence complexity", column_xAxis_label_var = 'Sentence ID',column_yAxis_label_var = 'Complexity',outputExtension = '.xlsm',label1='Scomp',label2='line',label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=0, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
     #         if outputFilenameXLSM_1 != "":
     #             filesToOpen.append(outputFilenameXLSM_1)
 
@@ -577,53 +617,45 @@ def run_jar_script(scriptName, inputFilename, input_main_dir_path, output_dir_pa
 # The NLP script and sentence_analysis script use pydict dictionaries to run the script selected in a menu
 # the dict can contain a python file, a jar file or a combination of python file + function
 def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_main_dir_path, output_dir_path,
-                              openOutputFiles, createExcelCharts):
+                              openOutputFiles, createCharts, chartPackage, processType=''):
+    filesToOpen = []
     if len(script_to_run) == 0:
-        return
+        return filesToOpen
     if script_to_run == "Gender guesser":
         import IO_internet_util
         # check internet connection
         if not IO_internet_util.check_internet_availability_warning("Gender guesser"):
-            return
+            return filesToOpen
         webbrowser.open('http://www.hackerfactor.com/GenderGuesser.php#About')
     elif script_to_run.endswith('.py'):  # with GUI
         if IO_libraries_util.check_inputPythonJavaProgramFile(script_to_run) == False:
-            return
+            return filesToOpen
         call("python " + script_to_run, shell=True)
     elif script_to_run.endswith('.jar'):  # with GUI
         run_jar_script(script_to_run, inputFilename, input_main_dir_path, output_dir_path, openOutputFiles,
-                       createExcelCharts)
+                       createCharts, chartPackage)
     else:  # with NO GUI; does not end with py
-        if input_main_dir_path != '':
-            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                               'Started running ' + script_to_run + ' at', True,
-                                               'You can follow ' + script_to_run + ' in command line.')
-        else:
-            startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                               'Started running ' + script_to_run + ' at', True)
         script = script_to_run.split(".", 1)
         import importlib
         pythonFile = importlib.import_module(script[0])
         # script[0] contains the Python file name
-        # script[1] contains the function name insime a specific Python file
+        # script[1] contains the function name inside a specific Python file
         if IO_libraries_util.check_inputPythonJavaProgramFile(script[0] + '.py') == False:
-            return
+            return filesToOpen
         func = getattr(pythonFile, script[1])
-        # correct values are checked in NLP_GUI
-        if IO_values == 1:
-            func(GUI_util.window, inputFilename, output_dir_path, openOutputFiles, createExcelCharts)
-        elif IO_values == 2:
-            func(GUI_util.window, input_main_dir_path, output_dir_path, openOutputFiles, createExcelCharts)
-        else:
-            func(GUI_util.window, inputFilename, input_main_dir_path, output_dir_path,
-                 openOutputFiles,createExcelCharts)
+        # # correct values are checked in NLP_GUI
+        if IO_values == 1: # no inputDir
+            filesToOpen = func(GUI_util.window, inputFilename, output_dir_path, openOutputFiles, createCharts, chartPackage, processType)
+        elif IO_values == 2: # no inputFilename
+            filesToOpen = func(GUI_util.window, input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, processType)
+        else: # both inputFilename and inputDir
+            filesToOpen = func(GUI_util.window, inputFilename, input_main_dir_path, output_dir_path,
+                 openOutputFiles,createCharts,chartPackage, processType)
 
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                           'Finished running ' + script_to_run + ' at', True, '', True, startTime)
-
+        return filesToOpen
 
 """
-#does not work, despite StackOverFlow recommandation; always returns None
+#does not work, despite StackOverFlow recommendation; always returns None
 def detectCsvHeader (csvFile):
     with open(csvFile, 'r',encoding="utf8",errors='ignore') as csvf:
         has_header = csv.Sniffer().sniff(csvf.read(2048))

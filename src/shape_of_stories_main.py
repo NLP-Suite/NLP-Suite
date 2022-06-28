@@ -36,7 +36,7 @@ import file_checker_util as utf
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
         hierarchical_clustering, SVD, NMF, best_topic_estimation):
 
     global nSAscoreFiles
@@ -92,7 +92,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
     # check corpus statistics
     if corpus_analysis:
         statistics_txt_util.compute_corpus_statistics(GUI_util.window, inputDir, inputDir, outputDir, openOutputFiles,
-                                                      True)
+                                                      createCharts, chartPackage)
     # step 1: run sentiment analysis
     if sentimentAnalysis == 1:
         # run appropriate sentiment analysis method as indicated by sentimentAnalysisMethod
@@ -109,7 +109,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                 computeSAScores=mb.askyesno("Sentiment Analysis","You have selected to run sentiment analysis on your corpus. But there already exists a csv file of sentiment scores for this corpus saved in the default output directory:\n\n"+outputFilename+"\n\nAre you sure you want to recompute the scores?")
                 if not computeSAScores:
                     return
-            tempOutputfile=Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles, createExcelCharts,'sentiment',False, memory_var)
+            tempOutputfile=Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles, createCharts, chartPackage,'sentiment',False, memory_var)
             if tempOutputfile==None:
                 return
             sentiment_scores_input=tempOutputfile[0]
@@ -219,7 +219,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts, 
                         'Finished running Shape of Stories at', True, '', True, startTime)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
@@ -227,7 +227,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.create_chart_output_checkbox.get(),
+                                 GUI_util.charts_dropdown_field.get(),
                                  sentiment_analysis_var.get(),
                                  sentiment_analysis_menu_var.get(),
                                  memory_var.get(),
@@ -551,8 +552,11 @@ TIPS_lookup = {'Shape of stories':'TIPS_NLP_Shape of stories.pdf',
                'Data reduction algorithms: Non-negative Matrix Factorization (NMF)':'TIPS_NLP_Data reduction algorithms_Non-negative Matrix Factorization (NMF).pdf',
                'Shape of stories: Best topic estimation':'TIPS_NLP_Shape of stories_Best topic estimation.pdf',
                'Sentiment analysis':'TIPS_NLP_Sentiment analysis.pdf',
-               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf'}
-TIPS_options='Shape of stories','Sentiment analysis','Data reduction algorithms: Parameters formulae','Data reduction algorithms: Hierarchical clustering (HC)','Data reduction algorithms: Singular Value Decomposition (SVD)','Data reduction algorithms: Non-negative Matrix Factorization (NMF)','Shape of stories: Best topic estimation','Excel smoothing data series'
+               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
+               'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
+TIPS_options='Shape of stories','Sentiment analysis','Data reduction algorithms: Parameters formulae','Data reduction algorithms: Hierarchical clustering (HC)','Data reduction algorithms: Singular Value Decomposition (SVD)','Data reduction algorithms: Non-negative Matrix Factorization (NMF)','Shape of stories: Best topic estimation','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
+
 
 def display_reminder(*args):
     if best_topic_estimation_var.get():

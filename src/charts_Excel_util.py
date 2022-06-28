@@ -1,5 +1,6 @@
 # Written by Yuhang Feng November 2019-April 2020
-# Edited by Roberto Franzosi 
+# Written by Yuhang Feng November 2019-April 2020
+# Edited by Roberto Franzosi, Tony May 2022
 
 import sys
 import GUI_util
@@ -9,21 +10,19 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"charts_Excel_util",['
     sys.exit(0)
 
 import tkinter.messagebox as mb
-from collections import Counter
 import openpyxl
 from openpyxl import Workbook
 
 import reminders_util
 
 import pandas as pd
-from functools import reduce
 import os
-import csv
 
 import IO_csv_util
 import GUI_IO_util
 import IO_files_util
 import IO_user_interface_util
+import charts_util
 
 # ensure filename extension is correct for hover_over effects (xlxm) and no effects (xlsx)
 def checkExcel_extension(output_file_name,hover_info_column_list):
@@ -37,661 +36,6 @@ def checkExcel_extension(output_file_name,hover_info_column_list):
             if file_extension != 'xlsx':
                 output_file_name = filename + '.xlsx'
     return str(output_file_name)
-
-# Prepare the data (data_to_be_plotted) to be used in create_excel_chart with the format:
-#   the variable has this format:
-# (['little, pig', 22])
-#   one serie: [[['Name1','Frequency'], ['A', 7]]]
-#   two series: [[['Name1','Frequency'], ['A', 7]], [['Name2','Frequency'], ['B', 4]]]
-#   three series: [[['Name1','Frequency'], ['A', 7]], [['Name2','Frequency'], ['B', 4]], [['Name3','Frequency'], ['C', 9]]]
-#   more series: ..........
-# inputFilename has the full path
-# columns_to_be_plotted is a double list [[0, 1], [0, 2], [0, 3]]
-# TODO HOW DOES THIS DIFFER FROM def prepare_csv_data_for_chart?
-def prepare_data_to_be_plotted(inputFilename, columns_to_be_plotted, chart_type_list,
-                               count_var=0, column_yAxis_field_list = []):
-    withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
-    data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
-    if len(data)==0:
-        return None
-    headers=list(headers)
-    count_msg, withHeader_msg = build_timed_alert_message(chart_type_list[0],withHeader_var,count_var)
-    if count_var == 1:
-        dataRange = get_dataRange(columns_to_be_plotted, data)
-        # TODO hover_over_values not being passed, neither are any potential aggregate columns
-        #   get_data_to_be_plotted_with_counts is less general than
-        data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange)
-    else:
-        try:
-            data = pd.read_csv(inputFilename,encoding='utf-8')
-        except:
-            try:
-                data = pd.read_csv(inputFilename,encoding='ISO-8859-1')
-                IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
-                                                   'Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 in reading into pandas the csv file ' + inputFilename)
-                print("Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 encoding in reading into pandas the csv file " + inputFilename)
-            except ValueError as err:
-                if 'codec' in str(err):
-                    err=str(err) + '\n\nExcel-util encountered errors with both utf-8 and ISO-8859-1 encoding in the function \'prepare_data_to_be_plotted\' while reading into pandas the csv file\n\n' + inputFilename + '\n\nPlease, check carefully the data in the csv file; it may contain filenames with non-utf-8/ISO-8859-1 characters; less likely, the data in the txt files that generated the csv file may also contain non-compliant characters. Run the utf-8 compliance algorithm and, perhaps, run the cleaning algorithm that converts apostrophes.\n\nNO EXCEL CHART PRODUCED.'
-                mb.showwarning(title='Input file read error',
-                       message=str(err))
-                return
-        data_to_be_plotted = get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,data)
-    return data_to_be_plotted
-
-# best approach when all the columns to be plotted are already in the file
-#   otherwise, use charts_Excel_util.compute_csv_column_frequencies
-# only one hover-over column per series can be selected
-# each series plotted has its own hover-over column
-#   if the column is the same (e.g., sentence), this must be repeated as many times as there are series 
-
-# columns_to_be_plotted is a double list [[0, 1], [0, 2], [0, 3]] where the first number refers to the x-axis value and the second to the y-axis value
-# when count_var=1 the second number gets counted
-def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
-            chart_type_list,chart_title, column_xAxis_label_var,
-            hover_info_column_list=[],
-            count_var=0,
-            column_yAxis_label_var='Frequencies',
-            column_yAxis_field_list = [],
-            reverse_column_position_for_series_label=False,
-            series_label_list=[], second_y_var=0,second_yAxis_label=''):
-
-    data_to_be_plotted = prepare_data_to_be_plotted(inputFilename,
-                                columns_to_be_plotted,
-                                chart_type_list,count_var,
-                                column_yAxis_field_list)
-    if data_to_be_plotted==None:
-            return ''
-    transform_list = []
-    # the following is deciding which type of data is returned from prepare_data_to_be_plotted
-    # for the function prepare_data_to_be_plotted branch into two different data handling functions which retruns different data type
-    # and due to complexity reasons, we keep them in this way:
-    # check the data type for the return value and decide which step to take next
-    if not(isinstance(data_to_be_plotted[0], list)):
-        for df in data_to_be_plotted:
-            header = list(df.columns)
-            data = df.values.tolist()
-            data.insert(0,header)
-            transform_list.append(data)
-            data_to_be_plotted=transform_list
-    if data_to_be_plotted==None:
-            Excel_outputFilename = ""
-    else:
-        chart_title = chart_title
-        Excel_outputFilename = create_excel_chart(GUI_util.window, data_to_be_plotted, inputFilename, outputDir,
-                                                  outputFileLabel, chart_title, chart_type_list,
-                                                  column_xAxis_label_var, column_yAxis_label_var,
-                                                  hover_info_column_list,
-                                                  reverse_column_position_for_series_label,
-                                                  series_label_list, second_y_var, second_yAxis_label)
-    return Excel_outputFilename
-
-#sortOrder = True (descending 3, 2, 1)
-#sortOrder = False (ascending 1, 2, 3)
-def sort_data (ExcelChartData, sortColumn,sortOrder):
-    sorted_data = sorted(ExcelChartData, key=lambda tup:tup[sortColumn],reverse=sortOrder)
-    return sorted_data
-
-def build_timed_alert_message(chart_type,withHeader_var,count_var):
-    if withHeader_var==1:
-        withHeader_msg='WITH HEADERS'
-    else:
-        withHeader_msg='WITHOUT HEADERS'
-    if count_var==1:
-        count_msg='WITH COUNTS'
-    else:
-        count_msg='WITHOUT COUNTS'
-    return withHeader_msg, count_msg
-
-# convert the GUI string values for CSV files with or without headers to their column numbers
-# selected_series is columns_to_be_plotted (e.g., [1,2]) 
-# def get_column_numbers_to_be_plotted(withHeader_var,headers,selected_series):
-#     column_numbers_to_be_plotted = []
-#     # iterate n times (i.e., len(selected_series),
-#     #   where n is the number of series
-#
-#     for i in range(len(selected_series)):
-#         if withHeader_var==1:
-#             x=headers.index(selected_series[i][0])
-#             y=headers.index(selected_series[i][1])
-#         else: #NO headers
-#             x = int(selected_series[i][0])-1
-#             y = int(selected_series[i][1])-1
-#         column_numbers_to_be_plotted.append([x,y])
-#     return column_numbers_to_be_plotted
-
-def get_hover_column_numbers(withHeader_var,headers,hover_info_column_list):
-    hover_column_numbers = []
-    
-    for i in range(len(hover_info_column_list)): # iterate n times (i.e., len(selected_series), where n is the number of series
-        if withHeader_var==1:
-            if hover_info_column_list[i] in headers:
-                x=headers.index(hover_info_column_list[i])
-            else:
-                if len(hover_info_column_list[i]) > 0:
-                    mb.showwarning(title='Series No.'+ str(i+1) + ' ' + hover_info_column_list[i] + 'Hover Data Warning', message='The hover-over data column for series No.' + str(i+1) + ' will be empty.\n\nYou may have entered a column name which does not exist in the input CSV file.\n\nPlease, exit the program, check your input and try again.')
-                x=-1
-            # y=headers.index(selected_series[i][1])
-        else: #NO headers
-            try:
-                x=int(hover_info_column_list[i])
-            except:
-                mb.showwarning(title='Series No.'+ str(i+1) + ' ' + hover_info_column_list[i] +' Hover Data Header', message='The input csv file has no header so the expected hover-over column header should be numbers(o for A, 1 for B,...) but the ENTERED hover-over data column for series No.' + str(i+1) + ' is not a number.\n\nPlease, exit the program, check your input and try again.')
-                return
-        hover_column_numbers.append(x)
-    return hover_column_numbers
-
-
-# split the pairs of gui x y values into two separate lists of x axis values and y axis value
-def get_xaxis_yaxis_values(columns_to_be_plotted):
-    x = [a[0] for a in columns_to_be_plotted] # select all the x axis number and put them in a list
-    y = [a[1] for a in columns_to_be_plotted] # select all the y axis number and put them in a list
-    x1 = [ int(b) for b in x ]  # convert them into int type
-    y1 = [ int(b) for b in y]  # convert them into int type
-    return x1, y1
-
-def get_dataRange(columns_to_be_plotted, data):
-    dataRange = []
-    for i in range(len(columns_to_be_plotted)):
-        for row in data:
-            rowValues = list(row[w] for w in columns_to_be_plotted[i])
-            dataRange.append(rowValues)
-    dataRange = [ dataRange [i:i + len(data)] for i in range(0, len(dataRange), len(data)) ]
-    return dataRange
-
-# TODO if hover_over columns are passed, it should concatenate all values, instead of displaying the first one only
-#   (e.g. an example run the going UP function in WordNet)
-# this function seems to be less general than def compute_csv_column_frequencies; that function handl;es aggregation and hover over effects
-# we should consolidate the two and use the most general one under he heading get_data_to_be_plotted_with_counts
-
-# def get_data_to_be_plotted_with_counts(inputFileName,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange):
-#     CALL compute_column_frequencies(columns_to_be_plotted, dataRange, headers,column_yAxis_field_list)
-#
-#     CALLED compute_column_frequencies(columns_to_be_plotted, data_list, headers,specific_column_value_list=[]):
-
-
-# -----------------------------------------------------------------
-# MUST COMPUTE HOVER OVER VALUES!!! see below
-
-# create a list of unique words to be displayed in hover over
-# result = IO_files_util.openCSVFile(outputFilenameCSV1, 'r', 'utf-8')
-# DataCaptured = csv.reader(result)
-# words = set()
-# for row in DataCaptured:
-#     words.add(row[0])
-# also IO_csv_util.get_csv_field_values(inputfile_name, column_name)
-
-def get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,specific_column_value_list,data_list):
-    data_to_be_plotted=[]
-    # data_to_be_plotted = compute_column_frequencies_4Excel(columns_to_be_plotted, dataRange, headers, column_yAxis_field_list)
-
-    column_list=[]
-    column_frequencies=[]
-    column_stats=[]
-    specific_column_value=''
-    complete_column_frequencies=[]
-    if len(data_list) != 0:
-        for k in range(len(columns_to_be_plotted)):
-            res=[]
-            if len(specific_column_value_list)>0:
-                specific_column_value=specific_column_value_list[k]
-            #get all the values in the selected column
-            column_list = [i[1] for i in data_list[k]]
-            counts = Counter(column_list).most_common()
-            if len(headers) > 0:
-                id_name_num = columns_to_be_plotted[k][0]
-                id_name = headers[id_name_num]
-                column_name_num = columns_to_be_plotted[k][1]
-                column_name = headers[column_name_num]
-                if len(specific_column_value_list)==0:
-                    column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
-                else:
-                    for y in range(len(specific_column_value_list)):
-                        column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column " + str(column_name)]]
-            else:
-                id_name_num = columns_to_be_plotted[k][0]
-                id_name = "column_" + str(id_name_num+1)
-                column_name_num = columns_to_be_plotted[k][1]
-                column_name = "column_" + str(column_name_num+1)
-                if len(specific_column_value)==0:
-                    column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
-                else:
-                    for y in range(len(specific_column_value_list)):
-                        column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column_" + str(column_name_num+1)]]
-            if len(specific_column_value) == 0:
-                for value, count in counts:
-                    column_frequencies.append([value, count])
-            else:
-                for i in range(len(column_list)):
-                    if column_list[i] == specific_column_value:
-                        res.append(1)
-                    else:
-                        res.append(0)
-                for j in range(len(data_list[k])):
-                    column_frequencies.append([data_list[k][j][0], res[j]])
-            data_to_be_plotted.append(column_frequencies)
-
-    return data_to_be_plotted
-
-# [[0,2]], [0], [2]
-def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,data):
-    data_to_be_plotted=[]
-    for gp in columns_to_be_plotted:
-        data.iloc[:, gp[1]].replace('N/A', 0)
-        # data.iloc[:, gp[1]].astype('float')
-        tempData=data.iloc[:,gp]
-        data_to_be_plotted.append(data.iloc[:,gp])
-    return data_to_be_plotted
-
-# Tony Chen Gu at April 2022
-# select_col should be one colmun name eg: ['Verb Voice']
-# group_col should be a list of column names eg ['Sentence ID']
-# enable complete_sid to make sentence index continuous
-# enable graph to make a multiline graph
-# the input should be saved to a csv file first
-def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle, graph = True, complete_sid = True):
-    cols = group_col + select_col
-    try:
-        data,header = IO_csv_util.get_csv_data(inputFilename, True)
-        data = pd.DataFrame(data, columns=header)
-    except:
-        # an error message about unable to read the file
-        print("Error: cannot read the file")
-        return
-    #data = CoNLL_verb_analysis_util.verb_voice_data_preparation(data)
-    #data,stats,pas,aux,act = CoNLL_verb_analysis_util.voice_output(data, group_col)
-    #data = pd.DataFrame(data,columns=header+["Verb Voice"])
-    try:
-        print(data[select_col])
-        print(data[group_col])
-    except:
-        # an error message about wrong csv file without the necessary columns
-        print("Please select the correct csv file, with correct columns")
-        return
-    name = outputDir + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
-    data.to_csv(name)
-    # group by both group col and select cols and get a row named count to count the number of frequencies
-    data = data.groupby(cols).size().to_frame("count")
-    data.to_csv(name)
-    data = pd.read_csv(name)
-    # transform the data by the select colmuns
-    data = data.pivot(index = group_col, columns = select_col, values = "count")
-    print(data)
-    data.to_csv(name)
-    if(complete_sid):
-        print("Completeing sentence index...")
-        complete_sentence_index(name)
-    print(name)
-    if(graph):
-        #TODO: need filename generation and chartTitle generation
-        data = pd.read_csv(name,header=0)
-        cols_to_be_plotted = []
-        for i in range(1,len(data.columns)):
-            cols_to_be_plotted.append([0,i])
-        Excel_outputFilename = run_all(cols_to_be_plotted,name,outputDir,
-                                        "frequency_multi-line_chart", chart_type_list=["line"], 
-                                        chart_title=chartTitle, column_xAxis_label_var="Sentence ID")
-    return Excel_outputFilename
-
-# Tony Chen Gu written at April 2022 mortified at May 2022
-# remove comments before variable begin with d_id to enable complete document id function
-# need to have a document id column and sentence id column
-# would complete the file (make document id and sentence id continuous) and padding zero values for the added rows
-def complete_sentence_index(file_path):
-    data = pd.read_csv(file_path)
-    try:
-        print(data["Sentence ID"])
-    except:
-        print("Only enable complete sentence index when there is a Sentence ID column in the csv file")
-        return
-    if(len(data) == 1):
-        return data
-    max_sid = max(data["Sentence ID"])+1
-    sid_list = list(range(1, max_sid))
-    df_sid = pd.DataFrame (sid_list, columns = ['Sentence ID'])
-    # use merge to accelerate the process
-    data = data.merge(right = df_sid, how = "right", on = "Sentence ID")
-    data = data.fillna(0)
-    data.to_csv(file_path, index = False)
-    return
-
-#columns_to_be_plotted is the list of columns pairs (x-axis and y-axis) 
-#   where both x-axis is always the same and both correspond to the numeric values of the column position starting at 0
-#   it has the format [[0,2],[0,5],...]
-#data_list is the datarange we need to compute
-#   it has the format 
-#   [[['1','5.91'],['2','6.0'],...]]
-#headers is all the headers in the original input csv file
-#specific_column_value_list contains the list of specific y axis values to be counted, one for each series
-#   it has the format ['5.13','13.51','apple'] 
-#most_common([n])
-#   Return a list of the n most common elements and their counts. 
-#   If n is omitted or None, most_common() returns all elements in the counter.
-#complete_column_frequencies, the return variable, has the following format of PAIRS of headers & stats is always a frequency...
-#   [[['Sentence ID','Frequencies of series 1'],['5',302],...],[['Year','Series 2'],['1981',1000],...]]
-
-# def compute_column_frequencies_4Excel(window, inputFilename, inputDataFrame, output_dir, columns_to_be_plotted,
-#                                        select_col, hover_col, group_col, openOutputFiles, createExcelCharts=False,
-#                                        fileNameType='CSV', chartType='line', count_var=0):
-#     # # outputCsvfilename = IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
-#     # outputCsvfilename = inputFilename[:-4]+"_stats.csv" #IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
-#
-#     # filesToOpen.append(outputCsvfilename)
-#
-#     container = []
-#     if len(inputDataFrame) != 0:
-#         data = inputDataFrame
-#     else:
-#         with open(inputFilename, encoding='utf-8', errors='ignore') as infile:
-#             reader = csv.reader(x.replace('\0', '') for x in infile)
-#             headers = next(reader)
-#         header_indices = [i for i, item in enumerate(headers) if item]
-#         data = pd.read_csv(inputFilename, usecols=header_indices, encoding='utf-8')
-#
-#     for col in hover_col:
-#         temp = group_col.copy()
-#         temp.append(col)
-#         c = data.groupby(group_col)[col].apply(list).to_dict()
-#
-#         container.append(c)
-#
-#     temp = group_col.copy()
-#     temp.extend(select_col)
-#     data = data.groupby(temp).size().reset_index(name='Frequency')
-#     for index, row in data.iterrows():
-#         if row[select_col[0]] == '':
-#             data.at[index, 'Frequency'] = 0
-#
-#     hover_header = ', '.join(hover_col)
-#     Hover_over_header = ['Hover_over: ' + hover_header]
-#     if len(hover_col) != 0:
-#         for index, hover in enumerate(hover_col):
-#             df = pd.Series(container[index]).reset_index()
-#             temp = group_col.copy()
-#             temp.append(hover)
-#             df.columns = temp
-#             data = data.merge(df, how='left', left_on=group_col, right_on=group_col)
-#         temp_str = '%s' + '\n%s' * (len(hover_col) - 1)
-#         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col), axis=1)
-#         data.drop(hover_col, axis=1, inplace=True)
-#     return charts_Excel_util.prepare_csv_data_for_chart(window, inputFilename, data, output_dir, select_col,
-#                                                                 Hover_over_header, group_col, fileNameType, chartType,
-#                                                                 openOutputFiles, createExcelCharts, count_var)
-
-
-# def multi_group_multi_hover(input, output,group_col ,hover_col):
-#     outputFile = IO_util.generate_output_file_name(input,output,'.csv')
-#     data = pd.read_csv(input)
-#     group_col.extend(hover_col)
-#     group = data.groupby(group_col).size().reset_index(name='counts')
-#     group.to_csv(outputFile,index = False)
-#
-# multi_group_multi_hover(os.getcwd()+'/UnitTest/NLP_NVA_NLP_SCNLP_Murphy Miracles thicker than fog CORENLP_CoNLL_NOUN_DEPREL_list.csv',
-#                         os.getcwd()+'/UnitTest/output',['DOCUMENT_ID'],['NOUN DEPREL'])
-
-# group_col and hover_col are lists with multiple items, if so wished
-# select_col is also a list BUT with one item only
-# called from WordNet.py, CoNLL_*, Stanford_CoreNLP_date_annotator;
-#   these scripts all call compute_csv_column_frequencies but should go through this one?
-def compute_csv_column_frequencies_NEW(window, inputFileName, inputDataFrame, output_dir, columns_to_be_plotted,
-                                       select_col, hover_col, group_col, openOutputFiles, createExcelCharts=False,
-                                       fileNameType='CSV', chartType='line', count_var=0):
-    # # outputCsvfilename = IO_util.generate_output_file_name(inputFileName, output_dir, '.csv',fileNameType,'stats')
-    # outputCsvfilename = inputFileName[:-4]+"_stats.csv" #IO_util.generate_output_file_name(inputFileName, output_dir, '.csv',fileNameType,'stats')
-
-    # filesToOpen.append(outputCsvfilename)
-
-    container = []
-    if len(inputDataFrame) != 0:
-        data = inputDataFrame
-    else:
-        with open(inputFileName, encoding='utf-8', errors='ignore') as infile:
-            reader = csv.reader(x.replace('\0', '') for x in infile)
-            headers = next(reader)
-        header_indices = [i for i, item in enumerate(headers) if item]
-        data = pd.read_csv(inputFileName, usecols=header_indices, encoding='utf-8')
-
-    for col in hover_col:
-        temp = group_col.copy()
-        temp.append(col)
-        c = data.groupby(group_col)[col].apply(list).to_dict()
-
-        container.append(c)
-
-    temp = group_col.copy()
-    temp.extend(select_col)
-    data = data.groupby(temp).size().reset_index(name='Frequency')
-    for index, row in data.iterrows():
-        if row[select_col[0]] == '':
-            data.at[index, 'Frequency'] = 0
-
-    hover_header = ', '.join(hover_col)
-    Hover_over_header = ['Hover_over: ' + hover_header]
-    if len(hover_col) != 0:
-        for index, hover in enumerate(hover_col):
-            df = pd.Series(container[index]).reset_index()
-            temp = group_col.copy()
-            temp.append(hover)
-            df.columns = temp
-            data = data.merge(df, how='left', left_on=group_col, right_on=group_col)
-        temp_str = '%s' + '\n%s' * (len(hover_col) - 1)
-        data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col), axis=1)
-        data.drop(hover_col, axis=1, inplace=True)
-    return prepare_csv_data_for_chart(window, inputFileName, data, output_dir, select_col,
-                                                                Hover_over_header, group_col, fileNameType, chartType,
-                                                                openOutputFiles, createExcelCharts, count_var)
-# group col should be from smallest group to largest group
-#
-# def compute_csv_column_frquencies1(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createExcelCharts,
-#                                         columns_to_be_plotted,
-#                                         select_col, hover_col, group_col,
-#                                        fileNameType='CSV', chartType='line'):
-#     #data,header = IO_csv_util.get_csv_data(inputFilename, True)
-#     data = inputDataFrame[select_col+group_col]
-#     for group in group_col:
-#         data = data.groupby(group)[select_col].apply(list).to_dict()
-#     for i in data:
-#         i["Frequency"] = len(i[list])
-#     return
-# Siyan Pu November 2021
-# group_col and hover_col are lists with multiple items, if so wished
-# select_col is also a list BUT with one item only
-# called from WordNet.py, CoNLL_*, Stanford_CoreNLP_date_annotator
-# the function exits immediately because it no longer works
-# def compute_csv_column_frequencies(window, inputFilename, inputDataFrame, outputDir, openOutputFiles, createExcelCharts,
-#                                         columns_to_be_plotted,
-#                                         select_col, hover_col, group_col,
-#                                        fileNameType='CSV', chartType='line', count_var=0):
-
-
-#     # outputCsvfilename = IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
-#     # outputCsvfilename = inputFilename[:-4]+"_stats.csv" #IO_util.generate_output_file_name(inputFilename, output_dir, '.csv',fileNameType,'stats')
-
-#     tempFiles=[]
-#     container = []
-#     Excel_outputFilename = []
-
-#     if len(inputDataFrame) != 0:
-#         data = inputDataFrame
-#     else:
-#         with open(inputFilename, encoding='utf-8', errors='ignore') as infile:
-#             reader = csv.reader(x.replace('\0', '') for x in infile)
-#             headers = next(reader)
-#         header_indices = [i for i, item in enumerate(headers) if item]
-#         data = pd.read_csv(inputFilename, usecols=header_indices, encoding='utf-8')
-
-#     for col in hover_col:
-#         temp = group_col.copy()
-#         temp.append(col)
-#         c = data.groupby(group_col)[col].apply(list).to_dict()
-#     container.append(c)
-#     temp = group_col.copy()
-#     temp.append(select_col)
-#     data = data.groupby(temp).size().reset_index(name='Frequency')
-#     for index, row in data.iterrows():
-#         if row[select_col] == '':
-#             data.at[index, 'Frequency'] = 0
-#     hover_header = ', '.join(hover_col)
-#     Hover_over_header = ['Hover_over: ' + hover_header]
-#     if len(hover_col) != 0:
-#         for index, hover in enumerate(hover_col):
-#             df = pd.Series(container[index]).reset_index()
-#             temp = group_col.copy()
-#             temp.append(hover)
-#             df.columns = temp
-#             data = data.merge(df, how='left', left_on=group_col, right_on=group_col)
-#         temp_str = '%s' + '\n%s' * (len(hover_col) - 1)
-
-#         # data.to_csv('data.csv',index=False)
-#         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col), axis=1)
-#         data.drop(hover_col, axis=1, inplace=True)
-#     # data.to_csv('freq.csv',index=False)
-
-#     freq_output = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'freq!nmbnmb')
-#     data.to_csv(freq_output, index=False)
-#     print('freq_output: ', freq_output)
-#     Excel_outputFilename = run_all()
-    # if createExcelCharts:
-    #     # xAxis='Sentence index'
-    #     # chartTitle='Frequency distribution'
-    #     # columns_to_be_plotted=[[1,3]]
-
-    #     # Excel_outputFilename=prepare_csv_data_for_chart(window, inputFilename, data, outputDir, select_col, Hover_over_header, group_col,
-    #     #                            fileNameType, chartType, openOutputFiles, createExcelCharts, count_var)
-    #     data = data.pivot_table(index=group_col[0], columns=select_col, values='Frequency',
-    #                             fill_value=0).reset_index().rename_axis(None, axis=1)
-    #     data_to_be_plotted = data.iloc[:, 0:4].T.reset_index().values.T.tolist()
-
-    #     Excel_outputFilename = create_excel_chart(window,
-    #                                               data_to_be_plotted=[data_to_be_plotted],
-    #                                               inputFilename=freq_output,
-    #                                               outputDir=outputDir,
-    #                                               scriptType=fileNameType,
-    #                                               chartTitle='Frequency Distribution by Sentence',
-    #                                               chart_type_list=[chartType],
-    #                                               column_xAxis_label='Sentence index',
-    #                                               column_yAxis_label='Frequency')
-
-    return Excel_outputFilename  # 2 files
-
-
-# generate a new csv file:
-# with the set of different values in the select_col ('var') of the input csv file each become a column('var frequency')
-# each row of the column representing the frequency of 'var' under the group_by situation of each row.
-# the format of the new csv file:
-# [groupby_column_1,groupby_column_2, ... ,groupby_column_n, var_1_frequency, var_2_frequency, ... ,var_n_frequency, hover-over]
-
-# hover_col and group_col will be copied from the original file
-# called from statistics_csv_util.compute_csv_column_frequencies_NEW
-
-# TODO HOW DOES THIS DIFFER FROM def prepare_data_to_be_plotted?
-def prepare_csv_data_for_chart(window,inputfile, inputDataFrame, outputpath, select_col : list, hover_col : list, group_col : list, fileNameType, chartType, openOutputFiles, createExcelCharts,count_var=0):
-    filesToOpen=[]
-    outputCsvfilename = IO_files_util.generate_output_file_name(inputfile, '', outputpath, '.csv')
-    df = inputDataFrame
-    # df = pd.read_csv(inputfile)
-    # convert a list to a str
-    select_column = select_col[0]
-    # separate a complete csv file into multiple dataframes filter by select_col, which will produce unequal index numbers
-    df_list = sort_by_column(df, select_column)
-    # makes those separate dataframes align to the same maximum index
-    df_hover = slicing_dataframe(df,group_col + hover_col)
-    df_list = align_dataframes(df_list)
-    #append aligned dataframes as frequncy columns in the new dataframe
-    df_list = [slicing_dataframe(d, group_col + select_col + ['Frequency']) for d in df_list]
-    # rename those newly added columns
-    df_list = [rename_df(d,select_column) for d in df_list]
-    # append the hover-over data (Labels) in the original csv file
-    df_list.append(df_hover)
-    # horizontally concatenate all the frequency dataframes and the hover-over dataframe
-    df_merged = reduce(lambda left, right: pd.merge(left, right, how='outer',on=group_col), df_list)
-    # replace all the empty strings inside this new df_merged dataframe with 0
-    df_merged = df_merged.replace(r'^\s*$', 0, regex=True)
-    df_merged.to_csv(outputCsvfilename,index=False) # output
-    filesToOpen.append(outputCsvfilename)
-    if createExcelCharts:
-        columns_to_be_plotted = []
-        for i in range(len(df_merged.columns)-1-len(group_col)):
-            columns_to_be_plotted.append([1,len(group_col)+i])
-        hover_label=[]
-        for i in range(len(columns_to_be_plotted)):
-            hover_label.append(hover_col[0])
-        Excel_outputFilename = run_all(columns_to_be_plotted, inputfile, outputpath,
-                                                  'Co-Occ_viewer',
-                                                  chart_type_list=[chartType],
-                                                  chart_title='Frequency Distribution', column_xAxis_label_var='',
-                                                  hover_info_column_list=hover_label,
-                                                  count_var=count_var)
-
-        # excel_outputFileName_2 = charts_Excel_util.run_all(columns_to_be_plotted, inputfile, outputpath, outputCsvfilename,
-        #                                               chart_type_list=[chartType],
-        #                                               chart_title='Frequency Distribution of '+ ','.join(select_col),
-        #                                               column_xAxis_label_var='Sentence Index',
-        #                                               column_yAxis_label_var='Frequency',
-        #                                               outputExtension = '.xlsm', label1=fileNameType,label2=chartType,label3='chart',label4='',label5='', useTime=False,disable_suffix=True,
-        #                                               numeric_values_of_column_given = 1,
-        #                                             count_var=count_var,
-        #                                             column_yAxis_field_list = [],
-        #                                             reverse_column_position_for_series_label=False ,
-        #                                             series_label_list=[],
-        #                                             second_y_var=0,
-        #                                             second_yAxis_label='',
-        #                                             hover_var=1,
-        #                                             hover_info_column_list=hover_label)
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
-
-    return filesToOpen
-
-
-# TODO does it compute frequencies by some aggregate values (e.g., document ID)?
-# def compute_column_frequencies_4Excel(columns_to_be_plotted, data_list, headers,specific_column_value_list=[]):
-#     column_list=[]
-#     column_frequencies=[]
-#     column_stats=[]
-#     specific_column_value=''
-#     complete_column_frequencies=[]
-#     if len(data_list) != 0:
-#         for k in range(len(columns_to_be_plotted)):
-#             res=[]
-#             if len(specific_column_value_list)>0:
-#                 specific_column_value=specific_column_value_list[k]
-#             #get all the values in the selected column
-#             column_list = [i[1] for i in data_list[k]]
-#             counts = Counter(column_list).most_common()
-#             if len(headers) > 0:
-#                 id_name_num = columns_to_be_plotted[k][0]
-#                 id_name = headers[id_name_num]
-#                 column_name_num = columns_to_be_plotted[k][1]
-#                 column_name = headers[column_name_num]
-#                 if len(specific_column_value_list)==0:
-#                     column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
-#                 else:
-#                     for y in range(len(specific_column_value_list)):
-#                         column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column " + str(column_name)]]
-#             else:
-#                 id_name_num = columns_to_be_plotted[k][0]
-#                 id_name = "column_" + str(id_name_num+1)
-#                 column_name_num = columns_to_be_plotted[k][1]
-#                 column_name = "column_" + str(column_name_num+1)
-#                 if len(specific_column_value)==0:
-#                     column_frequencies = [[column_name + " values", "Frequencies of " + column_name]]
-#                 else:
-#                     for y in range(len(specific_column_value_list)):
-#                         column_frequencies = [[id_name, "Frequencies of " + str(specific_column_value) + " in Column_" + str(column_name_num+1)]]
-#             if len(specific_column_value) == 0:
-#                 for value, count in counts:
-#                     column_frequencies.append([value, count])
-#             else:
-#                 for i in range(len(column_list)):
-#                     if column_list[i] == specific_column_value:
-#                         res.append(1)
-#                     else:
-#                         res.append(0)
-#                 for j in range(len(data_list[k])):
-#                     column_frequencies.append([data_list[k][j][0], res[j]])
-#             complete_column_frequencies.append(column_frequencies)
-#     return complete_column_frequencies
 
 
 # when hover-over data (Labels) are displayed the Excel filename extension MUST be xlsm (for macro VBA enabling)
@@ -715,7 +59,34 @@ def prepare_hover_data(inputFilename, hover_info_column, index):
             hover_data.append([''])
         # print("hover_data",hover_data)
     return hover_data
-    
+
+def get_hover_column_numbers(withHeader_var, headers, hover_info_column_list):
+    hover_column_numbers = []
+
+    for i in range(len(
+            hover_info_column_list)):  # iterate n times (i.e., len(selected_series), where n is the number of series
+        if withHeader_var == 1:
+            if hover_info_column_list[i] in headers:
+                x = headers.index(hover_info_column_list[i])
+            else:
+                if len(hover_info_column_list[i]) > 0:
+                    mb.showwarning(
+                        title='Series No.' + str(i + 1) + ' ' + hover_info_column_list[i] + 'Hover Data Warning',
+                        message='The hover-over data column for series No.' + str(
+                            i + 1) + ' will be empty.\n\nYou may have entered a column name which does not exist in the input CSV file.\n\nPlease, exit the program, check your input and try again.')
+                x = -1
+            # y=headers.index(selected_series[i][1])
+        else:  # NO headers
+            try:
+                x = int(hover_info_column_list[i])
+            except:
+                mb.showwarning(title='Series No.' + str(i + 1) + ' ' + hover_info_column_list[i] + ' Hover Data Header',
+                               message='The input csv file has no header so the expected hover-over column header should be numbers(o for A, 1 for B,...) but the ENTERED hover-over data column for series No.' + str(
+                                   i + 1) + ' is not a number.\n\nPlease, exit the program, check your input and try again.')
+                return
+        hover_column_numbers.append(x)
+    return hover_column_numbers
+
 
 #data_to_be_plotted contains the values to be plotted
 #   the variable has this format:
@@ -725,6 +96,7 @@ def prepare_hover_data(inputFilename, hover_info_column, index):
 #   three series: [[['Name1','Frequency'], ['A', 7]], [['Name2','Frequency'], ['B', 4]], [['Name3','Frequency'], ['C', 9]]]
 #   more series: ..........
 #chartTitle is the name of the sheet
+# the title_series is displayed to the right of the chart as the title of the series
 #num_label number of bars, for instance, that will be displayed in a bar chart 
 #second_y_var is a boolean that tells the function whether a second y axis is needed 
 #   because it has a different scale and plotted values would otherwise be "masked"
@@ -746,7 +118,6 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                        series_label_list=[],
                        second_y_var=0,
                        second_yAxis_label=''):
-
     #TODO perhaps all these different imports can be consolidated into a single import?
     if 'pie' in chart_type_list:
         from openpyxl.chart import (
@@ -791,19 +162,23 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     See https://www.pythonexcel.com/openpyxl.php
     """
 
-    # head, tail = os.path.split(Excel_outputFilename)
+    # head, tail = os.path.split(chart_outputFilename)
     head, tail = os.path.split(inputFilename)
     num_label=len(data_to_be_plotted[0])-1
-
 
     # ValueError: Row numbers must be between 1 and 1048576
     # 1048576 is simply 2 to the 20th power, and thus this number is the largest that can be represented in twenty bits.
     # https://stackoverflow.com/questions/33775423/how-to-set-a-data-type-for-a-column-with-closedxml
-    if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1048575:
-        IO_user_interface_util.timed_alert(window, 4000, 'Warning',
-                                           "Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.'")
+    nRecords = IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename)
+    if nRecords > 1048575:
+        mb.showwarning(title='Excel chart error',message="Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.'")
         print("Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.")
         return
+    if 'bar' in chart_type_list or 'line' in chart_type_list:
+        if nRecords > 70:
+            IO_user_interface_util.timed_alert(window, 2000, 'Warning',
+                                               'The input file\n\n' + inputFilename + '\n\ncontains ' + str(nRecords) + ' records, way too many to be displayed clearly in an Excel line chart.\n\nYOU SHOULD USE PLOTLY WHICH GIVES YOU THE OPTION TO DYNAMICALLY FILTER THE DATA ZOOMING IN ON SPECIFIC DATA SEGMENTS.',
+                                               False, '', True, '', True)
 
     if len(hover_info_column_list) > 0:
         outputExtension='.xlsm'
@@ -812,7 +187,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
 
     if "_" + scriptType + "_" in inputFilename: # do not repeat the same name
         scriptType=''
-    Excel_outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, outputExtension, scriptType, chart_type_list[0],'chart')
+    chart_outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, outputExtension, scriptType, chart_type_list[0],'chart')
 
     n = len(data_to_be_plotted)
 
@@ -835,6 +210,9 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         insertLines = '\n\n\n'
     else:
         insertLines = '\n\n'
+
+    # https://stackoverflow.com/questions/51140466/openpyxl-set-color-of-bar-in-bar-chart
+    # for color in bar charts depending upon value
 
     # ensure filename extension is correct for hover_over effects (xlxm) and no effects (xlsx)
     # output_file_name = str(checkExcel_extension(output_file_name,hover_info_column_list))
@@ -907,7 +285,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             ws2.delete_rows(row_count2 - i)
 
         if reverse_column_position_for_series_label == True:
-            mb.showwarning(title='Reverse Series Label var Warning', message="The system indicates that you set reverse var for series labels to be true; however, in the hover-over feature, the series labels can only be the header of the Y-axis values (Column B, C, D,... in 'Data' sheet). Or you can specify series labels in series_label_list.\n\nPlease click 'OK' and continue.")
+            mb.showwarning(title='Reverse Series Label Variable Warning', message="The system indicates that you set reverse var for series labels to be true; however, in the hover-over feature, the series labels can only be the header of the Y-axis values (Column B, C, D,... in 'Data' sheet). Or you can specify series labels in series_label_list.\n\nPlease click 'OK' and continue.")
 
         for i in range(len(series_label_list)):
             if len(series_label_list[i]) > 0:
@@ -919,6 +297,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             index = 0
             for stats_list in data_to_be_plotted: # Iterate through all the lists
                 if i < len(stats_list): # if i is smaller than the length of the current series
+                    tail, tail_noExtension = IO_files_util.getFilename(str(stats_list[i][0]))
+                    stats_list[i][0] = tail
                     if index > 0:
                         row.append(stats_list[i][1]) # then we append the data
                     else:
@@ -959,18 +339,27 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                                        reminders_util.message_Excel_Charts,
                                        True)
 
-    # NO hover-over effects; the Excel filename extension MUST be xlsx
-    else:
+    else: # NO hover-over effects; the Excel filename extension MUST be xlsx
         wb = Workbook()
         ws = wb.active
         ws.title = "Data"
         ws_chart = wb.create_sheet()
-        ws_chart.title = "Chart" 
+        ws_chart.title = "Chart"
 
+        index = 0
         for i in range(max(lengths)): # find the largest length of all series
             row = []
+            index = 0
             for stats_list in data_to_be_plotted: # Iterate through all the lists
+                # when X-axis values contain a document dressed for hyperlink and with full path
+                #   undressed the hyperlink and only display the tail of the document
                 if i < len(stats_list): # if i is smaller than the length of the current series
+                    tail, tail_noExtension = IO_files_util.getFilename(str(stats_list[i][0]))
+                    stats_list[i][0] = tail
+                    # if index > 0:
+                    #     row.append(stats_list[i][1]) # then we append the data
+                    # else:
+                    #     row += stats_list[i] # then we append the data
                     row += stats_list[i] # then we append the data
                 else: # else means the length of current series is smaller than the largest length of all series
                     # lines below are for the situation: in an excel chart, we have multiple series, but they are not the same length.
@@ -978,6 +367,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                     # Since we always have two columns for each series (e.g., name, freuency), so there are two append("").
                     row += [""]
                     row += [""]
+                index = index + 1
+            # fill out data sheet
             ws.append(row)
 
         #openpyxl only allows a maximum of 2 y axes with different scales
@@ -1006,7 +397,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 #     chartName.x_axis.title = " X_AXIS"
                 
                 if len(column_yAxis_label)>0:
-                    chartName.y_axis.title = column_yAxis_label # displayed on the y-axis
+                    chartName.y_axis.title = str(column_yAxis_label) # displayed on the y-axis
                 # else:
                 #     chartName.y_axis.title = " Y_AXIS"
 
@@ -1144,13 +535,13 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             ws_chart.add_chart(chartName1, "A1")
     errorFound=False
     try:
-        wb.save(Excel_outputFilename)
+        wb.save(chart_outputFilename)
     except IOError:
-        mb.showwarning(title='Output file error', message="Could not write the Excel chart file " + Excel_outputFilename + "\n\nA file with the same name is already open. Please close the Excel file and try again!")
+        mb.showwarning(title='Output file error', message="Could not write the Excel chart file " + chart_outputFilename + "\n\nA file with the same name is already open. Please close the Excel file and try again!")
         errorFound=True
     if errorFound==True:
-        Excel_outputFilename=''
-    return Excel_outputFilename
+        chart_outputFilename=''
+    return chart_outputFilename
 
 def df_to_list_w_header(df):
     res = []
@@ -1202,93 +593,3 @@ def header_check(inputFile):
         pass
     return sentenceID_pos, docID_pos, docName_pos, header
 
-
-# input can be a csv filename or a dataFrame
-# output is a dataFrame
-# TODO any funtion that plots data by sentence index shoulld really check that the required sentence IDs are all there and insert them otherwise
-def add_missing_IDs(input):
-    if isinstance(input, pd.DataFrame):
-        df = input
-    else:
-        df = pd.read_csv(input)
-    sentenceID_pos, docID_pos, docName_pos, header = header_check(input)
-    Row_list = df_to_list(df)
-    for index,row in enumerate(Row_list):
-        if index == 0 and Row_list[index][sentenceID_pos] != 1:
-            for i in range(Row_list[index][sentenceID_pos]-1,0,-1):
-                temp= [''] * len(header)
-                for j in range(len(header)):
-                    if j == sentenceID_pos:
-                        temp[j] = i
-                    elif j == docID_pos:
-                        temp[j] = Row_list[index][docID_pos]
-                    elif j == docName_pos:
-                        temp[j] = Row_list[index][docName_pos]
-                Row_list.insert(0,temp)
-        else:
-            if index < len(Row_list)-1 and Row_list[index+1][sentenceID_pos] - Row_list[index][sentenceID_pos] > 1:
-                for i in range(Row_list[index+1][sentenceID_pos]-1,Row_list[index][sentenceID_pos],-1):
-                    temp = [''] * len(header)
-                    for j in range(len(header)):
-                        if j == sentenceID_pos:
-                            temp[j] = i
-                        elif j == docID_pos:
-                            temp[j] = Row_list[index][docID_pos]
-                        elif j == docName_pos:
-                            temp[j] = Row_list[index][docName_pos]
-                    Row_list.insert(index+1,temp)
-    df = pd.DataFrame(Row_list,columns=header)
-    return df
-
-
-def sort_by_column(input, column):
-    if isinstance(input, pd.DataFrame):
-        df = input
-    else:
-        df = pd.read_csv(input)
-    col_list = set(df[column].tolist())
-    df_list = [df[df[column] == value] for value in col_list]
-    return df_list
-
-
-def align_dataframes(df_list):
-    max = 0
-    for df in df_list:
-        header = list(df.columns)
-        if 'Sentence ID' in header:
-            sentenceID = 'Sentence ID'
-        if df[sentenceID].max() > max:
-            max = df[sentenceID].max()
-    new_list = []
-    for df in df_list:
-        if df.empty:
-            continue
-        temp = df.iloc[-1,:]
-        if temp[sentenceID] != max:
-            # TODO solve warning issue
-            # https://www.dataquest.io/blog/settingwithcopywarning/
-            # ​​​​SettingwithCopyWarning
-            temp[sentenceID] = max
-            temp['Frequency'] = 0
-            new_df = df.append(temp,ignore_index=True)
-        else:
-            new_df = df
-        new_list.append(new_df)
-
-    df_list = [add_missing_IDs(data) for data in new_list if not data.empty]
-    return df_list
-
-
-def slicing_dataframe(df,columns):
-    df = df[columns]
-    return df
-
-
-def rename_df(df,col):
-    for index, row in df.iterrows():
-        if row[col] != '':
-            name = row[col]
-            break
-    df.rename(columns={"Frequency": name + " Frequency"},inplace=True)
-    df = df.drop(columns=[col])
-    return df

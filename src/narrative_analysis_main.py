@@ -20,7 +20,7 @@ import GUI_IO_util
 
 def run(inputFilename,inputdirname, outdirname,
         open_csv_output_checkbox,
-        create_Excel_chart_output_checkbox,
+         create_chart_output_checkbox,
         characters_NER_var,
         characters_WordNet_var,
         characters_DBpedia_YAGO_var,
@@ -98,9 +98,9 @@ def run(inputFilename,inputdirname, outdirname,
         call("python GIS_main.py", shell=True)
 
     if SVO_var==True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('SVO_main.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_SVO_main.py')==False:
             return
-        call("python SVO_main.py", shell=True)
+        call("python Stanford_CoreNLP_SVO_main.py", shell=True)
 
     if shape_stories_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py')==False:
@@ -112,7 +112,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.create_chart_output_checkbox.get(),
+                            GUI_util.charts_dropdown_field.get(),
                             characters_NER_var.get(),
                             characters_WordNet_var.get(),
                             characters_DBpedia_YAGO_var.get(),

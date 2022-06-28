@@ -317,10 +317,10 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
                         font_path = font).generate(textToProcess)
     if doNotListIndividualFiles==True:
         plt.title(inputDir)
-        output_file_name=IO_files_util.generate_output_file_name('', inputDir, outputDir, '.png', 'WC', 'img')
+        output_file_name=IO_files_util.generate_output_file_name(doc, inputDir, outputDir, '.png', 'WC', 'img')
     else:
         plt.title(ntpath.basename(doc))
-        output_file_name=IO_files_util.generate_output_file_name(doc, '', outputDir, '.png', 'WC', 'img')
+        output_file_name=IO_files_util.generate_output_file_name(doc, inputDir, outputDir, '.png', 'WC', 'img')
     # plot the WordCloud image
     plt.figure(figsize = (8, 8), facecolor = None)
     if bg_image_flag and bg_image is not None:
@@ -376,7 +376,7 @@ def processCsvColumns(doc, inputDir, outputDir, openOutputFiles,csvField_color_l
             currenttext, color_to_words = processColorList(currenttext, color_to_words, csvField_color_list, myfile)
             tempOutputfile = display_wordCloud_sep_color(doc, outputDir, currenttext, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
             filesToOpen.append(tempOutputfile)
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            # IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_contour_only, prefer_horizontal, font, max_words, lemmatize, exclude_stopwords, exclude_punctuation, lowercase, differentPOS_differentColors, differentColumns_differentColors, csvField_color_list, doNotListIndividualFiles,openOutputFiles, collocation):
     # https://www.geeksforgeeks.org/generating-word-cloud-python/
@@ -637,11 +637,11 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
                      message=str(NumEmptyDocs) + ' file(s) empty in the input directory\n' + str(
                          inputDir) + '\n\nFile(s) listed in command line. Please, make sure to check the file(s) content.')
 
-    if openOutputFiles <= 6:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
-    else:
-        mb.showwarning(title='Too many wordclouds files to open',
-                       message='The Python 3 wordclouds algorithm has produced ' + str(openOutputFiles) + ' image files, too many to open automatically.\n\nPlease, check your output directory for ' + str(openOutputFiles) + ' wordclouds image files produced.')
+    if openOutputFiles:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        filesToOpen = None
+    return filesToOpen
+
     # plt.show()
 
     #=======================================================================================================================

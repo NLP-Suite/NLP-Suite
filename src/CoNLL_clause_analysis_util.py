@@ -19,7 +19,7 @@ import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
 import CoNLL_util
-import charts_Excel_util
+import charts_util
 import statistics_csv_util
 import Stanford_CoreNLP_tags_util
 
@@ -117,7 +117,7 @@ def clause_data_preparation(data):
     dat = sorted(dat, key=lambda x: int(x[recordID_position]))
     return clause_stats, dat
 
-def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,openOutputFiles,createExcelCharts):
+def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,openOutputFiles,createCharts,chartPackage):
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -158,40 +158,51 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
 						"Clause Tags"])
     
 
-    if createExcelCharts==True:
-        Excel_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
-                                        data_to_be_plotted=[clausal_stats],
-                                        inputFilename=clausal_analysis_stats_file_name,
-                                        outputDir=outputDir,
-                                        scriptType='CoNLL_Clause',
-                                        chartTitle="Frequency Distribution of Clause Type",
-                                        chart_type_list=["pie"],
-                                        column_xAxis_label="Clause Tags",
-                                        column_yAxis_label="Frequency")
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+    if createCharts==True:
+        # chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
+        #                                 data_to_be_plotted=[clausal_stats],
+        #                                 inputFilename=clausal_analysis_stats_file_name,
+        #                                 outputDir=outputDir,
+        #                                 scriptType='CoNLL_Clause',
+        #                                 chartTitle="Frequency Distribution of Clause Type",
+        #                                 chart_type_list=["pie"],
+        #                                 column_xAxis_label="Clause Tags",
+        #                                 column_yAxis_label="Frequency")
+        columns_to_be_plotted=[[0,1]]
+        count_var=0
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, clausal_analysis_stats_file_name, outputDir,
+                                                        outputFileLabel='clausal_stats',
+                                                        chartPackage=chartPackage,
+                                                        chart_type_list=['bar'],
+                                                        chart_title="Frequency Distribution of Clause Type",
+                                                        column_xAxis_label_var='Clause Type',
+                                                        hover_info_column_list=[],
+                                                        count_var=count_var)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
         # return filesToOpen # to avoid code breaking in plot by sentence index
 
         # line plot by sentence index
-        Excel_outputFilename = charts_Excel_util.compute_csv_column_frequencies(inputFilename=clause_file_name,
+        chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=clause_file_name,
                                         outputDir=outputDir,
                                         select_col=['Clause Tags'],
                                         group_col=['Sentence ID'],
+                                        chartPackage=chartPackage,
                                         chartTitle="Frequency Distribution of Clause")
-        # Excel_outputFilename=charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
+        # chart_outputFilename=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
         #                                                                 clausal_analysis_file_name,
         #                                                                 '',
         #                                                                 outputDir,
         #                                                                 openOutputFiles,
-        #                                                                 createExcelCharts,
+        #                                                                 createCharts,
         #                                                                 [[8,8]],
         #                                                                 ['CLAUSE TAGS'],
         #                                                                 ['FORM','Sentence'],
         #                                                                 ['Sentence ID','Document ID'],
         #                                                                 'CA','line')
-        if len(Excel_outputFilename)>0:
-            filesToOpen.extend(Excel_outputFilename)
+        if len(chart_outputFilename)>0:
+            filesToOpen.extend(chart_outputFilename)
 
         # output_df= charts_Excel_util.add_missing_IDs(clausal_analysis_file_name)
         # # overwrite original file having added any missing document ID and sentence ID
@@ -199,7 +210,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         # columns_to_be_plotted = [[1, 8]]
         # hover_label = ['CLAUSAL TAG-DESCRIPTION']
         # inputFilename = clausal_analysis_file_name
-        # Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted,
+        # chart_outputFilename = charts_util.run_all(columns_to_be_plotted,
         #                                             inputFilename, outputDir,
         #                                             outputFileLabel='CoNLL_Clause',
         #                                             chart_type_list=["line"],
@@ -207,8 +218,8 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         #                                             column_xAxis_label_var='Sentence index',
         #                                             hover_info_column_list=hover_label,
         #                                             count_var=1)
-        # if Excel_outputFilename!='':
-        #     filesToOpen.append(Excel_outputFilename)
+        # if chartPackage=='Excel' and chart_outputFilename!='':
+        #     filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime, True)
     return filesToOpen

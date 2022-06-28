@@ -37,7 +37,7 @@ import GIS_location_util
 import GIS_geocode_util
 import IO_files_util
 import IO_user_interface_util
-import charts_Excel_util
+import charts_util
 import IO_csv_util
 import IO_internet_util
 
@@ -51,8 +51,9 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
     else:
         chartTitle = 'Geodesic distance in miles from ' + baselineLocation
     columns_to_be_plotted = [[3,6]]
-    Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+    chart_outputFilename = charts_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                               '',
+                                              chartPackage=chartPackage,
                                               chart_type_list=["bar"],
                                               chart_title=chartTitle,
                                               column_xAxis_label_var=xAxis,
@@ -60,14 +61,14 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
                                               count_var = 0,
                                               column_yAxis_label_var=yAxis)
 
-    xlsxFilename = Excel_outputFilename.replace('.xlsx','_Geodesic.xlsx')
+    xlsxFilename = chart_outputFilename.replace('.xlsx','_Geodesic.xlsx')
     try:
-        os.rename(Excel_outputFilename,xlsxFilename)
+        os.rename(chart_outputFilename,xlsxFilename)
     except:
         # the file already exists and must be removed
         if os.path.isfile(xlsxFilename):
             os.remove(xlsxFilename)
-        os.rename(Excel_outputFilename,xlsxFilename)
+        os.rename(chart_outputFilename,xlsxFilename)
     filesToOpen.append(xlsxFilename)
 
     xlsxFilename=distanceoutputFilename
@@ -78,26 +79,27 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
     else:
         chartTitle = 'Great circle distance in miles from ' + baselineLocation
     columns_to_be_plotted = [[3,8]]
-    Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+    chart_outputFilename = charts_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                               '',
+                                              chartPackage=chartPackage,
                                               chart_type_list=["bar"],
                                               chart_title=chartTitle,
                                               column_xAxis_label_var=xAxis,
                                               hover_info_column_list=[],
                                               count_var = 0,
                                               column_yAxis_label_var=yAxis)
-    xlsxFilename = Excel_outputFilename.replace('.xlsx','_GreatCircle.xlsx')
+    xlsxFilename = chart_outputFilename.replace('.xlsx','_GreatCircle.xlsx')
     try:
-        os.rename(Excel_outputFilename,xlsxFilename)
+        os.rename(chart_outputFilename,xlsxFilename)
     except:
         # the file already exists and must be removed
         if os.path.isfile(xlsxFilename):
             os.remove(xlsxFilename)
-        os.rename(Excel_outputFilename,xlsxFilename)
+        os.rename(chart_outputFilename,xlsxFilename)
     filesToOpen.append(xlsxFilename)
     return filesToOpen
 
-def computePairwiseDistances(window,inputFilename,outputDir,createExcelCharts, headers,locationColumnNumber,locationColumnNumber2,locationColumnName,locationColumnName2,distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue):
+def computePairwiseDistances(window,inputFilename,outputDir,createCharts, headers,locationColumnNumber,locationColumnNumber2,locationColumnName,locationColumnName2,distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue):
     filesToOpen=[]
     currList=[]
     startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS distance at',
@@ -172,10 +174,10 @@ def computePairwiseDistances(window,inputFilename,outputDir,createExcelCharts, h
     outputFile.close()
     filesToOpen.append(distanceoutputFilename)
 
-    if createExcelCharts == True:
+    if createCharts == True:
         filesToOpen = createCharts(distanceoutputFilename,outputDir,filesToOpen)
-        # if len(Excel_outputFilename) > 0:
-        # 	filesToOpen.append(Excel_outputFilename)
+        # if len(chart_outputFilename) > 0:
+        # 	filesToOpen.append(chart_outputFilename)
 
 
     IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime, True)
@@ -187,7 +189,7 @@ def computePairwiseDistances(window,inputFilename,outputDir,createExcelCharts, h
 #   If the list contains previously geocoded values the function will NOT geocode the values
 #       otherwise it will geocode the location names
 
-def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createExcelCharts, geolocator,geocoder,InputIsGeocoded,baselineLocation,headers,locationColumnNumber,locationColumnName,distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue):
+def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createCharts, geolocator,geocoder,InputIsGeocoded,baselineLocation,headers,locationColumnNumber,locationColumnName,distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue):
     currList=[]
     filesToOpen=[]
     startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS distance from ' + baselineLocation + ' at',
@@ -303,10 +305,10 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createEx
     outputFile.close()
     filesToOpen.append(distanceoutputFilename)
 
-    if createExcelCharts == True:
+    if createCharts == True:
         filesToOpen = createCharts(distanceoutputFilename,outputDir,filesToOpen,baselineLocation)
-        # if len(Excel_outputFilename) > 0:
-        # 	filesToOpen.append(Excel_outputFilename)
+        # if len(chart_outputFilename) > 0:
+        # 	filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime,True)
     return filesToOpen

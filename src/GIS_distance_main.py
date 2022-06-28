@@ -36,7 +36,7 @@ import GIS_geocode_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,outputDir, openOutputFiles, createExcelCharts,
+def run(inputFilename,outputDir, openOutputFiles, createCharts, chartPackage,
         encoding, geocoder,
         # geocode,
         compute_pairwise_distances, compute_baseline_distances, baselineLocation,locationColumn,locationColumn2):
@@ -123,24 +123,25 @@ def run(inputFilename,outputDir, openOutputFiles, createExcelCharts,
     split_locations=''
 
     if compute_baseline_distances and baselineLocation!='':
-        filesToOpen=GIS_distance_util.computeDistancesFromSpecificLocation(GUI_util.window,inputFilename, outputDir, createExcelCharts, geolocator,geocoder,inputIsGeocoded,baselineLocation, headers,locationColumnNumber,locationColumn, distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue)
+        filesToOpen=GIS_distance_util.computeDistancesFromSpecificLocation(GUI_util.window,inputFilename, outputDir, createCharts, geolocator,geocoder,inputIsGeocoded,baselineLocation, headers,locationColumnNumber,locationColumn, distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue)
         if len(filesToOpen)==0:
             return
     if compute_pairwise_distances:
-        filesToOpen=GIS_distance_util.computePairwiseDistances(GUI_util.window,inputFilename,outputDir,createExcelCharts,headers,locationColumnNumber,locationColumnNumber2,locationColumn,locationColumn2, distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue)
+        filesToOpen=GIS_distance_util.computePairwiseDistances(GUI_util.window,inputFilename,outputDir,createCharts,headers,locationColumnNumber,locationColumnNumber2,locationColumn,locationColumn2, distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue)
         if len(filesToOpen)==0:
             return
         if len(filesToOpen) == 0:
             return
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.create_chart_output_checkbox.get(),
+                            GUI_util.charts_dropdown_field.get(),
                             encoding_var.get(),
                             geocoder_var.get(),
                             # geocode_var.get(),
@@ -316,8 +317,8 @@ changed_GIS_filename()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {"Geocoding":"TIPS_NLP_Geocoding.pdf","Geographic distances":"TIPS_NLP_GIS distances.pdf"}
-TIPS_options='Geocoding', 'Geographic distances'
+TIPS_lookup = {"Geocoding":"TIPS_NLP_Geocoding.pdf","Geographic distances":"TIPS_NLP_GIS distances.pdf",'Statistical measures':'TIPS_NLP_Statistical measures.pdf'}
+TIPS_options='Geocoding', 'Geographic distances', 'Statistical measures'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -339,7 +340,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the column containing the SECOND set of location names (e.g., Location2)."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
-    retrun y_multiplier_integer -1
+    return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
 
 # change the value of the readMe_message

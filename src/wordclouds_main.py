@@ -305,6 +305,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_ind
 openImage_button = tk.Button(window, width=3, text='', state='disabled',
                                  command=lambda: IO_files_util.openFile(window,
                                                                         selectedImage_var.get()))
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+150, y_multiplier_integer,
                                                openImage_button, True, False, True,False, 90, GUI_IO_util.get_labels_x_indented_coordinate()+150, "Open png image file")
 
@@ -513,8 +515,14 @@ input_main_dir_path.trace('w',turnOff_doNotCreateIntermediateFiles_checkbox)
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf", "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf","Wordle":"TIPS_NLP_Wordclouds Wordle.pdf","Tagxedo":"TIPS_NLP_Wordclouds Tagxedo.pdf","Tagcrowd":"TIPS_NLP_Wordclouds Tagcrowd.pdf"}
-TIPS_options='Lemmas & stopwords', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle'
+TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf",
+               "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf",
+               "Wordle":"TIPS_NLP_Wordclouds Wordle.pdf",
+               "Tagxedo":"TIPS_NLP_Wordclouds Tagxedo.pdf",
+               "Tagcrowd":"TIPS_NLP_Wordclouds Tagcrowd.pdf",
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
+TIPS_options='Lemmas & stopwords', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle','csv files - Problems & solutions', 'Statistical measures',
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

@@ -23,6 +23,18 @@ from csv import writer
 
 # below is a lit of most reminders called from various scripts with their title_options and message
 
+title_options_language_tool = ['Language & NLP tool']
+message_language_tool = 'The selected NLP tool is not available for the selected language.'
+
+title_options_English_language_WordNet = ['English language & WordNet']
+message_English_language_WordNet = 'WordNet is only available for texts in the English language.'
+
+title_options_English_language_Gensim = ['English language & Gensim topic modeling']
+message_English_language_Gensim = 'Gensim topic modeling is only available for texts in the English language.'
+
+title_options_English_language_MALLET = ['English language & MALLET topic modeling']
+message_English_language_MALLET = 'MALLET topic modeling is only available for texts in the English language.'
+
 title_options_NLP_Suite_welcome = ['NLP Suite welcome & system requirements']
 message_NLP_Suite_welcome = 'Welcome to the NLP Suite a package of Python 3 and Java tools designed for text processing and visualization. The Suite requires several FREWARE software components in order to run. You will need to download and install them or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro).\n\n   1. JAVA. Several scripts are based on the FREEWARE Java. You can download and install Java at https://www.java.com/en/download\n\n   2. STANFORD CORENLP. The core text analyses of the NLP Suite are based on the FREEWARE Stanford CoreNLP. You can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n   3. GEPHI. The visualization of network graphs requires the installation of the FREEWARE software Gephi. You can download and install Gephi at https://gephi.org/users/download/\n\n   4. GOOGLE EARTH PRO. The visualization of geographic maps requires the installation of the FREEWARE software Google Earth Pro. You can download and install Google Earth Pro at https://www.google.com/earth/versions/#download-pro.\n\n   5. MALLET. MALLET topic modelling requires the installation of the FREEWARE MALLET. You can download and install MALLET at http://mallet.cs.umass.edu/download.php.\n\n   7. SENNA. The FREEWARE SENNA will allow you to extract Subject-Verb-Object from a text. You can download SENNA at https://ronan.collobert.com/senna/download.html.'
 
@@ -74,6 +86,18 @@ message_WordNet_input_file_button = 'The Select INPUT file button is disabled (g
 title_options_WordNet_verb_aggregation = ['WordNet VERB aggregation']
 message_WordNet_verb_aggregation = "CAVEAT!\n\nFor VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.\n\nThe WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts."
 
+title_options_topic_modeling = ['What is in your corpus - Topic modeling']
+message_topic_modeling = 'The topic modeling option requires in input a set of txt documents, rather than a single txt file. The topic modeling option is disabled for single documents.'
+
+title_options_topic_modeling_gensim = ['What is in your corpus - Topic modeling Gensim']
+message_topic_modeling_gensim = 'The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.\n\nFor a more in-depth analysis of topics, use the topic modeling scripts for Gensim and MALLET.'
+
+title_options_GIS_redundancy = ['What is in your corpus - GIS redundant options']
+message_GIS_redundancy = 'You are running simultaneously two options that are redundant: "References to geographical locations (CoreNLP NER)" under "What else is in your document(s)?" and "GIS (Geographic Information System) pipeline".\n\nThe GIS option has the advantage that it extracts locations via CoreNLP NER annotator and maps them via Google Earth Pro and Google Maps. But... you need to install these freeware software options.'
+
+title_options_gensim_release = ['Gensim 4.0']
+message_gensim_release = 'Gensim release 4.0 removed the wrappers of other library algorithms. The algorithms running MALLET through Gensim cannot be run. Please, run MALLET using the MALLET topic modelling script to run MALLET. If your work depends on any of the Gensim modules based on wrappers (e.g., the computation of the coherence value for each topic or of the optimal number of topics), uninstall Gensim 4.0 and install Gensim 3.8.3, the last release when wrappers was supported.\n\nFor more information, please, visit the Gensim GitHub page https://github.com/RaRe-Technologies/gensim/wiki/Migrating-from-Gensim-3.x-to-4#15-removed-third-party-wrappers.'
+
 title_options_Mallet_installation = ['MALLET download and installation']
 message_Mallet_installation = 'The MALLET topic modelling tool requires a copy of the FREEWARE MALLET installed on your machine. You can download the FREEWARE MALLET at http://mallet.cs.umass.edu/download.php.\n\nMALLET in turn requires a copy of the JAVA development kit installed on your machine.\n\nRead carrefully the MALLET and Java installation TIPS.'
 
@@ -102,8 +126,14 @@ message_CoreNLP_shutting_down = "The Stanford CoreNLP, after firing up, will dis
 title_options_CoreNLP_NER_tags = ['CoreNLP NER tags']
 message_CoreNLP_NER_tags = "The CoNLL table produced by the CoreNLP parser has a record for each token in the document(s) processed.\n\nIf you are planning to produce frequency distributions of NER tags directly from the CoNLL table, you need to remember that tags such as 'Date' or 'City' may be grossly overestimated. For instance, in the expression 'the day before Christmas' each word 'the,' 'day,' 'before,' 'Christmas' will be tagged as NER date. The same is true for NER CITY tags such as 'New York City.'\n\nA better way to obtain frequency distributions of NER values is to run the NER annotators from the 'Stanford_CoreNLP_NER_main.py.'"
 
+title_options_CoreNLP_website = ['CoreNLP language/annotator options website']
+message_CoreNLP_website = "You will be asked next if you want to open the Stanford CoreNLP language website to get a list of available annotators for each supported language.\n\nIf you do not want to be asked again to open the website, just hit 'No' below."
+
+title_options_TIPS_file = ['Open TIPS file']
+message_TIPS_file = "You will be asked next if you want to open a TIPS file for help.\n\nIf you do not want to be asked again to open the TIPS file, just hit 'No' below."
+
 title_options_CoreNLP_POS_NER_maxlen = ['CoreNLP POS/NER max sentence length']
-message_CoreNLP_POS_NER_maxlen = "The CoreNLP POS/NER annotators set a maximum sentence length for processing.\n\nSentences longer that your selected max length will be cut and some POS/NER tags in those long sentences may be be lost."
+message_CoreNLP_POS_NER_maxlen = "The CoreNLP POS/NER annotators set a maximum sentence length for processing.\n\nSentences longer than your selected max length will be cut and some POS/NER tags in those long sentences may be lost."
 
 title_options_CoreNLP_nn_parser = ['CoreNLP neural network parser']
 message_CoreNLP_nn_parser = "The CoreNLP neural network parser does not produce clause tags. The column 'Clause Tag' in the output csv file will be blank."
@@ -135,6 +165,9 @@ message_CoreNLP_sentence_length = "The length of the current sentence exceeds 10
 title_options_Output_directory_of_split_files = ['Output directory of split files']
 message_Output_directory_of_split_files = 'This is a reminder that all file splitter scripts save the split files inside a subdirectory by the name of split_files of the directory where the input txt files are located, regardless of the choice of output directory.'
 
+title_options_line_length = ['Line length']
+message_line_length = 'Line length only makes sense for poetry or song lyrics (or perhaps for newspaper articles to gauge the importance of the article by the column width).\n\nFor your typical document line length depends on the vaguaries of typesetting and sentence length may provide a better measure of style.'
+
 title_options_non_utf8 = ['file not utf-8 compliant']
 message_non_utf8 = 'The file contains non-utf-8 compliant characters. The file cannot be processed. Please, run he utf-8 file check to get a csv sting of all non-utf-8 compliantt characters.'
 
@@ -157,7 +190,7 @@ title_options_shape_of_stories_best_topic = ['Best topic estimation']
 message_shape_of_stories_best_topic = 'The function that estimates the best topics is VERY slow and may take an hour or longer. You can follow its progress in command line.'
 
 title_options_language_detection = ['Language detection']
-message_language_detection = 'Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.\n\nPlease, arm yourself with patience, depennding upon the number and size of documents processed.'
+message_language_detection = 'Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.\n\nPlease, arm yourself with patience, depennding upon the number and size of documents processed.\n\nStanza, contrary to the other algorithms, does not compute the probability of language detection.'
 
 title_options_SSdata = ['Time to download new US SS data']
 message_SSdata = 'It has been more than two years since the US Social Security gender data have been downloaded to your machine.\n\nCheck on the US Social Security website whether more current data are available at US Social Security website\n\nhttps://www.ssa.gov/oact/babynames/limits.html'
@@ -207,12 +240,6 @@ message_Google_API = 'If the heatmap produced by Google Maps is displayed correc
 
 title_options_Excel_Charts = ['Excel Charts']
 message_Excel_Charts = 'The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).\n\nFirst, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).\n\nSecond, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.\n\nThird, if the chart is displayed but the bars of a bar chart, for instance, have the same height, contrary to expectations, click on Data then on Chart to display the chart properly.'
-
-title_options_gensim = ['What is in your corpus - Gensim']
-message_gensim = 'The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.\n\nFor a more in-depth analysis of topics, use the topic modeling scripts for Gensim and MALLET.'
-
-title_options_gensim_release = ['Gensim 4.0']
-message_gensim_release = 'Gensim release 4.0 removed the wrappers of other library algorithms. The algorithms running MALLET through Gensim cannot be run. Please, run MALLET using the MALLET topic modelling script to run MALLET. If your work depends on any of the Gensim modules based on wrappers (e.g., the computation of the coherence value for each topic or of the optimal number of topics), uninstall Gensim 4.0 and install Gensim 3.8.3, the last release when wrappers was supported.\n\nFor more information, please, visit the Gensim GitHub page https://github.com/RaRe-Technologies/gensim/wiki/Migrating-from-Gensim-3.x-to-4#15-removed-third-party-wrappers.'
 
 title_options_input_csv_file = ["Input csv file"]
 message_input_csv_file = "You have a csv file in the 'Select INPUT CSV file' widget. The RUN command would process this file in input rather than the file stored in the I/O configuration.\n\nPress ESC if you want to clear the 'Select INPUT CSV file' widget."
@@ -312,15 +339,15 @@ def displayReminder(df,row_num,title, message, event, currentStatus, question, s
     answer=answer.capitalize() # Yes/No
     if seeMsgAgain==True:
         if answer == 'No':
-            status='No'
+            status='OFF'
         else:
-            status = 'Yes'
+            status = 'ON'
     else:
         if answer=='Yes':
-            if currentStatus == 'No':
-                status = 'Yes'
+            if currentStatus == 'No' or currentStatus == 'OFF': # 'No' the old way of saving reminders
+                status = 'ON'
             else:
-                status = 'No'
+                status = 'OFF'
         else:
             status=currentStatus
     if currentStatus!=status:
@@ -332,6 +359,7 @@ def displayReminder(df,row_num,title, message, event, currentStatus, question, s
 
 def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_event=False):
     # * denotes messages that apply to ALL scripts
+    status=''
     if config_filename=='*':
         routine='*'
     else:
@@ -380,7 +408,7 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
                     silent = True
                 else:
                     silent = False
-                if status == "Yes":
+                if status == "Yes" or status == "ON": # 'Yes' the old way of saving reminders
                     if silent == False:
                         # must pass the entire dataframe and not the sub-dataframe dt1
                         displayReminder(df, row_num, title, message, event, status,
@@ -396,6 +424,7 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
                     # title_options is the value you originally came in with (i.e., [title]) and that was inserted
                     checkReminder(config_filename, title_options, message,
                                   triggered_by_GUI_event)
+    return status # Yes for ON or No for OFF
 
 # called from a GUI when a reminder is selected from the reminder dropdown menu
 # title is a string, the reminders option selected in the GUI dropdown menu
@@ -431,7 +460,7 @@ def resetReminder(config_filename,title):
 
         event = df.at[row_num, "Event"]
         status = df.at[row_num, "Status"]
-        if status == "No":  # currently off
+        if status == "No" or status == "OFF":  # 'No' the old way of saving reminders
             question = '\n\nNow this reminder is turned OFF. Do you want to turn it ON?'
         else:
             question = '\n\nNow this reminder is turned ON. Do you want to turn it OFF?'
@@ -439,7 +468,7 @@ def resetReminder(config_filename,title):
 
 
 # update do_not_show_message.csv so that we don't show the message box again
-# status: "Yes"/"No"
+# status: "Yes"/"No" old way of saving reminders; now ON/OFF
 def saveReminder(df,row_num, message, event, status):
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
     df.at[row_num, "Message"] = message # change it to yes or no

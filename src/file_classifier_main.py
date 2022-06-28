@@ -19,9 +19,9 @@ import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(input_main_dir_path, input_secondary_dir_path, output_dir_path,
+def run(input_main_dir_path, input_secondary_dir_path, outputDir,
         openOutputFiles,
-        createExcelCharts,
+        createCharts,
         by_date_var,
         date_format,
         date_separator,
@@ -49,17 +49,17 @@ def run(input_main_dir_path, input_secondary_dir_path, output_dir_path,
         if date_type=='':
             mb.showwarning("Warning", "The required 'Date type' value is missing.\n\nPlease, enter a 'Date type' value and try again.")
             return
-        outputFiles=file_classifier_date_util.classifier(input_main_dir_path, input_secondary_dir_path, output_dir_path,openOutputFiles,
+        outputFiles=file_classifier_date_util.classifier(input_main_dir_path, input_secondary_dir_path, outputDir,openOutputFiles,
                         date_format,date_separator,date_position, date_distance_value, date_type)
         if len(outputFiles) > 0:
             filesToOpen.append(outputFiles)
     if by_NER_var:
-        outputFiles=file_classifier_NER_util.main(GUI_util.window,input_main_dir_path, input_secondary_dir_path, output_dir_path, openOutputFiles, createExcelCharts, similarityIndex_var)
+        outputFiles=file_classifier_NER_util.main(GUI_util.window,input_main_dir_path, input_secondary_dir_path, outputDir, openOutputFiles, createCharts, chartPackage, similarityIndex_var)
         if len(outputFiles)>0:
             filesToOpen.append(outputFiles)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running the File Classifier at', True, '', True, startTime)
 
@@ -68,7 +68,8 @@ run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
                             GUI_util.input_secondary_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.create_chart_output_checkbox.get(),
+                            GUI_util.charts_dropdown_field.get(),
                             by_date_var.get(),
                             date_format.get(),
                             date_separator_var.get(),
@@ -85,8 +86,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=False
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=580, # height at brief display
-                                                 GUI_height_full=480, # height at full display
+                                                 GUI_height_brief=620, # height at brief display
+                                                 GUI_height_full=520, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=3, # to be added for full display
                                                  increment=3)  # to be added for full display

@@ -52,7 +52,7 @@ args = parser.parse_args()
 """
 
 
-def run(inputDir, outputDir, openOutputFiles,createExcelCharts, num_topics, remove_stopwords_var, lemmatize_var, nounsOnly_var, Mallet_var):
+def run(inputDir, outputDir, openOutputFiles,createCharts,chartPackage, num_topics, remove_stopwords_var, lemmatize_var, nounsOnly_var, Mallet_var):
     if not IO_internet_util.check_internet_availability_warning('Gensim Topic Modeling'):
         return
 
@@ -61,12 +61,13 @@ def run(inputDir, outputDir, openOutputFiles,createExcelCharts, num_topics, remo
                                      reminders_util.message_topic_modelling_number_of_topics, True)
 
     topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics,
-                                          remove_stopwords_var, lemmatize_var, nounsOnly_var, Mallet_var, openOutputFiles,createExcelCharts)
+                                          remove_stopwords_var, lemmatize_var, nounsOnly_var, Mallet_var, openOutputFiles,createCharts, chartPackage)
 
 run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.create_chart_output_checkbox.get(),
+                                 GUI_util.charts_dropdown_field.get(),
                                  num_topics_var.get(),
                                  remove_stopwords_var.get(),
                                  lemmatize_var.get(),
@@ -169,8 +170,10 @@ if current_process().name == 'MainProcess':
                    "Topic modeling in Gensim": "TIPS_NLP_Topic modeling Gensim.pdf",
                    "Topic modeling in Mallet": "TIPS_NLP_Topic modeling Mallet.pdf",
                    'Topic modeling and corpus size': 'TIPS_NLP_Topic modeling and corpus size.pdf',
-                   'Lemmas & stopwords':'TIPS_NLP_NLP Basic Language.pdf'}
-    TIPS_options = 'Topic modeling', 'Topic modeling in Gensim', 'Topic modeling in Mallet', 'Topic modeling and corpus size', 'Lemmas & stopwords'
+                   'Lemmas & stopwords':'TIPS_NLP_NLP Basic Language.pdf',
+                   'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf',
+                   'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
+    TIPS_options = 'Topic modeling', 'Topic modeling in Gensim', 'Topic modeling in Mallet', 'Topic modeling and corpus size', 'Lemmas & stopwords', 'csv files - Problems & solutions', 'Statistical measures'
 
 
     # add all the lines lines to the end to every special GUI
@@ -205,5 +208,11 @@ if current_process().name == 'MainProcess':
     readMe_message = "This Python 3 script analyzes a set of documents for topic modeling with Gensim.\n\nIn INPUT the script expects a set of text files stored in a directory.\n\nIn OUTPUT, the script creates an html file with graphical displays of topic information.\n\nGensim topc modelling requires internet connection to run."
     readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
     GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+    reminders_util.checkReminder(
+        config_filename,
+        reminders_util.title_options_English_language_Gensim,
+        reminders_util.message_English_language_Gensim,
+        True)
 
     GUI_util.window.mainloop()

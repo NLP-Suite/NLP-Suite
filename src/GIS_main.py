@@ -36,7 +36,8 @@ def run(inputFilename,
         inputDir,
         outputDir,
         openOutputFiles,
-        createExcelCharts,
+        createCharts,
+        chartPackage,
         csv_file,
         encoding_var,
         extract_date_from_text_var,
@@ -44,6 +45,7 @@ def run(inputFilename,
         date_format,
         date_separator_var,
         date_position_var,
+        language_var,
         memory_var,
         NER_extractor,
         location_menu,
@@ -126,7 +128,8 @@ def run(inputFilename,
         NERs = ['COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION']
 
         locations = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                outputDir, openOutputFiles, createExcelCharts, 'NER', False,
+                                                                outputDir, openOutputFiles, createCharts, chartPackage, 'NER', False,
+                                                                language_var,
                                                                 memory_var,
                                                                 NERs=NERs,
                                                                 extract_date_from_text_var=extract_date_from_text_var,
@@ -208,7 +211,7 @@ def run(inputFilename,
         if kmloutputFilename!='':
             filesToOpen.append(kmloutputFilename)
         if len(filesToOpen)>0:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
     else:
         if GIS_package_var!='':
             mb.showwarning("Option not available","The " + GIS_package_var + " option is not available yet.\n\nSorry! Please, check back soon...")
@@ -220,7 +223,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.create_chart_output_checkbox.get(),
+                            GUI_util.charts_dropdown_field.get(),
                             csv_file_var.get(),
                             encoding_var.get(),
                             extract_date_from_text_var.get(),
@@ -228,6 +232,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             date_format.get(),
                             date_separator_var.get(),
                             date_position_var.get(),
+                            language_var.get(),
                             memory_var.get(),
                             NER_extractor_var.get(),
                             location_menu_var.get(),
@@ -284,6 +289,7 @@ GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_di
 csv_file_var= tk.StringVar()
 
 encoding_var=tk.StringVar()
+language_var= tk.StringVar()
 memory_var = tk.IntVar()
 
 extract_date_from_text_var= tk.IntVar()
@@ -457,16 +463,14 @@ def get_csv_file(window,title,fileType,annotate):
     return filePath
 
 csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: get_csv_file(window,'Select INPUT csv file', [("dictionary files", "*.csv")],True))
-# csv_file_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,csv_file_button,True)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               csv_file_button, True)
 
 #setup a button to open Windows Explorer on the selected input directory
-# current_y_multiplier_integer=y_multiplier_integer-1
-# openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
-openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
-    openInputFile_button, True)
+openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,openInputFile_button,True, False, True,False, 90, GUI_IO_util.get_open_file_directory_coordinate(), "Open INPUT csv dictionary file")
 
 csv_file=tk.Entry(window, width=130,textvariable=csv_file_var)
 csv_file.config(state='disabled')
@@ -478,16 +482,25 @@ encoding_var.set('utf-8')
 encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le','latin-1','ISO-8859-1')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,encodingValue,True)
 
+# language options
+language_var_lb = tk.Label(window, text='Language ')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+450, y_multiplier_integer,
+                                               language_var_lb, True)
+
+language_var.set('English')
+language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese', 'English', 'German','Hungarian','Italian','Spanish')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+550,
+                                               y_multiplier_integer, language_menu, True)
 
 #memory options
 
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 190,y_multiplier_integer,memory_var_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 700,y_multiplier_integer,memory_var_lb,True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(4)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 270,y_multiplier_integer,memory_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 800,y_multiplier_integer,memory_var)
 
 extract_date_lb = tk.Label(window, text='Extract date (for dynamic GIS)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_date_lb,True)
@@ -668,6 +681,8 @@ else:
 open_API_config_button = tk.Button(window, width=3,
                                      text='',
                                      command=lambda:GIS_pipeline_util.getGoogleAPIkey(config_file,True))
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer, open_API_config_button, False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+300, "Open csv file for Google API key")
 
 
@@ -702,8 +717,8 @@ GIS_package2_var.trace('w', display_reminder)
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf','Geocoding: How to Improve Nominatim':'TIPS_NLP_Geocoding Nominatim.pdf', "Geocoding":"TIPS_NLP_Geocoding.pdf","Google Earth Pro":"TIPS_NLP_Google Earth Pro.pdf","Google API Key":"TIPS_NLP_Google API Key.pdf", "Google Earth Pro KML Options":"TIPS_NLP_Google Earth Pro KML options.pdf","HTML":"TIPS_NLP_Google Earth Pro HTML.pdf","Google Earth Pro Icon":"TIPS_NLP_Google Earth Pro Icon.pdf", "Google Earth Pro Description":"TIPS_NLP_Google Earth Pro Description.pdf"}
-TIPS_options='utf-8 encoding','Geocoding','Geocoding: How to Improve Nominatim', 'Google Earth Pro', 'Google API Key', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
+TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf','csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','GIS (Geographic Information System): Mapping Locations':'TIPS_NLP_GIS (Geographic Information System).pdf','Extracting locations: NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf','Geocoding: How to Improve Nominatim':'TIPS_NLP_GIS_Geocoding Nominatim.pdf', "Geocoding":"TIPS_NLP_GIS_Geocoding.pdf","Google Earth Pro":"TIPS_NLP_GIS_Google Earth Pro.pdf","Google API Key":"TIPS_NLP_GIS_Google API Key.pdf", "Google Earth Pro KML Options":"TIPS_NLP_GIS_Google Earth Pro KML options.pdf","HTML":"TIPS_NLP_GIS_Google Earth Pro HTML.pdf","Google Earth Pro Icon":"TIPS_NLP_GIS_Google Earth Pro Icon.pdf", "Google Earth Pro Description":"TIPS_NLP_GIS_Google Earth Pro Description.pdf"}
+TIPS_options='utf-8 encoding','csv files - Problems & solutions','Statistical measures','GIS (Geographic Information System): Mapping Locations','Extracting locations: NER (Named Entity Recognition)','Geocoding','Geocoding: How to Improve Nominatim', 'Google Earth Pro', 'Google API Key', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
 
 
 # add all the lines lines to the end to every special GUI

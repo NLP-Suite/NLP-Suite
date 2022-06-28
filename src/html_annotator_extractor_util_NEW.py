@@ -10,7 +10,7 @@ import sys
 
 import GUI_IO_util
 import IO_files_util
-import charts_Excel_util
+import charts_util
 import IO_libraries_util
 import IO_user_interface_util
 
@@ -84,11 +84,11 @@ def gatherAnnotations(inputFile, tags, mustInclude='<p>', cleanMultiples=True):
     return result
         
 
-def buildcsv(inputHTMLFile, inputHTMLFolder, output_dir_path,openOutputFiles,createExcelCharts):
+def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCharts, chartPackage):
     filesToOpen=[]
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running html annotator extractor at', True, "You can follow html annotation extractor in command line.")
 
-    outputFilename=IO_files_util.generate_output_file_name('DBpedia annotations', output_dir_path, '.csv', 'html extractor', '', '')
+    outputFilename=IO_files_util.generate_output_file_name('DBpedia annotations', outputDir, '.csv', 'html extractor', '', '')
     filesToOpen.append(outputFilename)
     annotatedHtmlFiles = []
 
@@ -99,7 +99,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, output_dir_path,openOutputFiles,cre
         return
     i=0
 
-    csvFile=os.path.join(output_dir_path, outputFilename)
+    csvFile=os.path.join(outputDir, outputFilename)
     writeCSV = IO_files_util.openCSVFile(csvFile, 'w')
     if writeCSV=='':
         return
@@ -144,20 +144,20 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, output_dir_path,openOutputFiles,cre
 
     writeCSV.close()
 
-    # if createExcelCharts==True:
+    # if createCharts==True:
     #     chartTitle='HTML extractor'
     #     columns_to_be_plotted = [2,2]
     #     hover_label=['']
     #     chartType='bar'
     #     fileNameType='html_extr'
-    #     excel_outputFilename_1 = charts_Excel_util.run_all(columns_to_be_plotted, csvFile, output_dir_path, csvFile, chart_type_list=[chartType], chart_title=chartTitle, column_xAxis_label_var='', column_yAxis_label_var='Frequencies', outputExtension = '.xlsm', label1=fileNameType,label2=chartType,label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
-    #     if excel_outputFilename_1 != "":
-    #         filesToOpen.append(excel_outputFilename_1)
+    #     chart_outputFilename_1 = charts_util.run_all(columns_to_be_plotted, csvFile, outputDir, csvFile, chart_type_list=[chartType], chart_title=chartTitle, column_xAxis_label_var='', column_yAxis_label_var='Frequencies', outputExtension = '.xlsm', label1=fileNameType,label2=chartType,label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
+    #     if chart_outputFilename_1 != "":
+    #         filesToOpen.append(chart_outputFilename_1)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running html annotator extractor at', True, '', True, startTime, True)
     
     if openOutputFiles==True :
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 # Testing program
 def main():

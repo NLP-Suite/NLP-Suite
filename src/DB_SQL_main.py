@@ -1,4 +1,5 @@
 # Written by Brett Landau, Fall 2020
+# edited Austin Cai, Fall 2021
 
 import sys
 import IO_libraries_util
@@ -58,7 +59,7 @@ def dbFromCSV(inpath, outpath):
     return dbOutput
 
 
-def run(inputDir,outputDir, openOutputFiles, createExcelCharts,SQL_query_var, createFromCSV):
+def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,SQL_query_var, createFromCSV):
 
     if createFromCSV==1:
         dbOutput = dbFromCSV(inputDir,outputDir)
@@ -97,7 +98,7 @@ def run(inputDir,outputDir, openOutputFiles, createExcelCharts,SQL_query_var, cr
         filesToOpen=[outputDir+os.sep+'sql_result.csv']
         IO_csv_util.list_to_csv(GUI_util.window, results, outputDir+os.sep+'sql_result.csv', colnum=0)
         if openOutputFiles:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
         cur.close()
@@ -111,7 +112,8 @@ run_script_command=lambda: run(
                                 GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.create_Excel_chart_output_checkbox.get(),
+                                GUI_util.create_chart_output_checkbox.get(),
+                                GUI_util.charts_dropdown_field.get(),
                                 SQL_query_entry.get("1.0", "end-1c"),
                                 construct_SQLite_DB_var.get())
 
@@ -187,13 +189,11 @@ construct_SQLite_DB_button=tk.Button(window, width=23, text='Construct SQLite da
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_button)
 
 select_SQLite_DB_button=tk.Button(window, width=23, text='Select SQLite database',command=lambda: get_SQLite_file(window,'Select INPUT SQLite file', [("SQLite files", "*.sqlite")]))
-# select_SQLite_DB_button.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,select_SQLite_DB_button,True)
 
-openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, select_SQLite_DB_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,
-    openInputFile_button, True)
+openInputFile_button = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, select_SQLite_DB_var.get()))
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,openInputFile_button,True, False, True,False, 90, GUI_IO_util.get_labels_x_coordinate()+190, "Open INPUT SQLite database")
 
 SQLite_DB_file=tk.Entry(window, width=100,textvariable=select_SQLite_DB_var)
 SQLite_DB_file.config(state='disabled')

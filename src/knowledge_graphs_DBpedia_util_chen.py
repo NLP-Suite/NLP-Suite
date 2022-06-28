@@ -331,7 +331,7 @@ def get_result(query):
         # this may occasionally give time out error depending upon server's traffic
         print(query)
         mb.showwarning(title='Warning',
-                       message='Take a look at your command line/prompt. An HTTP error of 500 means that the YAGO server failed. Please, check command line/prompt for "Operation timed out" error\n\nTry running the script later, when the server may be be less busy.')
+                       message='Take a look at your command line/prompt. An HTTP error of 500 means that the YAGO server failed. Please, check command line/prompt for "Operation timed out" error\n\nTry running the script later, when the server may be less busy.')
         return None
     except error.URLError:
         print(query)

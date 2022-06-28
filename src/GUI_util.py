@@ -93,7 +93,7 @@ release_version_var=tk.StringVar()
 GitHub_release_version_var=tk.StringVar()
 
 open_csv_output_checkbox = tk.IntVar()
-create_Excel_chart_output_checkbox = tk.IntVar()
+create_chart_output_checkbox = tk.IntVar()
 charts_dropdown_field = tk.StringVar()
 
 videos_dropdown_field = tk.StringVar()
@@ -118,7 +118,7 @@ run_button_state='disabled'
 # tracer when the checkbox has a separate label widget (label_local) attached to the checkbox widget (checkbox_local)
 #For the labels to change the text with the ON/OFF value of the checkbox the command=lambda must be included in the definition of the tk.button
 #	For example (see the example in this script):
-#	create_Excel_chart_output_label = tk.Checkbutton(window, variable=create_Excel_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label, create_Excel_chart_output_checkbox, "Automatically compute Excel charts", "NOT automatically compute Excel charts"))
+#	create_Excel_chart_output_label = tk.Checkbutton(window, variable= create_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label,  create_chart_output_checkbox, "Automatically compute Excel charts", "NOT automatically compute Excel charts"))
 #	The next line must always be included to dsplay te label the first time the GUI is opened
 #	create_Excel_chart_output_label.configure(text="Automatically open output Excel charts for inspection")
 
@@ -729,27 +729,27 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         open_csv_output_checkbox.set(1)
 
         #creat Excel chart files widget defined above since it is used earlier
-        create_Excel_chart_output_label = tk.Checkbutton(window, variable=create_Excel_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label, create_Excel_chart_output_checkbox, "Automatically compute charts", "Do NOT automatically compute charts"))
+        create_Excel_chart_output_label = tk.Checkbutton(window, variable= create_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label,  create_chart_output_checkbox, "Automatically compute charts", "Do NOT automatically compute charts"))
         create_Excel_chart_output_label.configure(text="Automatically compute chart(s)")
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+380,
                                                        y_multiplier_integer,
                                                        create_Excel_chart_output_label,True,False,False)
 
-        create_Excel_chart_output_checkbox.set(1)
+        create_chart_output_checkbox.set(1)
         # y_multiplier_integer=y_multiplier_integer+1
-        charts_options = ['Excel','Python Plotly']
+        charts_options = ['Excel','Python plotLy']
         charts_dropdown_field.set('Excel')
         charts_menu_lb = tk.OptionMenu(window,charts_dropdown_field,*charts_options)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+620,
                                                        y_multiplier_integer,
                                                        charts_menu_lb,False,False,False)
 
-    def warning_message(*args):
-        if charts_dropdown_field.get()!='Excel':
-            mb.showwarning(title='Warning',
-                           message="The 'Python Plotly' option to draw charts is not available yet; it is under development. Sorry!")
-            charts_dropdown_field.set('Excel')
-    charts_dropdown_field.trace('w',warning_message)
+    # def warning_message(*args):
+    #     if charts_dropdown_field.get()!='Excel':
+    #         mb.showwarning(title='Warning',
+    #                        message="The 'Python plotLy' option to draw charts is still under development. By and large working well, but... little improvements are under way.")
+    #         charts_dropdown_field.set('plotLy')
+    # charts_dropdown_field.trace('w',warning_message)
 
     # readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
     readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)

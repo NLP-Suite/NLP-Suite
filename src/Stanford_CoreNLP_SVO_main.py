@@ -14,7 +14,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "SVO extractor",
 
 # from collections import defaultdict
 import os
-import SVO_util
+import Stanford_CoreNLP_SVO_util
 import csv
 import tkinter as tk
 import tkinter.messagebox as mb
@@ -121,7 +121,7 @@ def extract_CoreNLP_SVO(svo_triplets, svo_CoreNLP_single_file, svo_CoreNLP_merge
             added.add((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
 
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         memory_var,
         document_length_var,
         limit_sentence_length_var,
@@ -217,24 +217,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         # field_names[10] = "Corefed Sentence"
         # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING IN SVO
         # THE SUBSCRIPT _coref_ IS CHECKED BELOW
-        if isFile:
-            inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
-            outputCorefedDir = os.path.join(outputDir, "coref_" + inputFileBase)  # + "_CoRefed_files")
-            # change input for all scripts - CoreNLP ++, SENNA, Gephi, wordclouds, Google Earth
-            inputDir = ''
-        else:
-            # processing a directory
-            inputFilename = ''
-            inputDirBase = os.path.basename(inputDir)
-            outputCorefedDir = os.path.join(outputDir, "coref_Dir_" + inputDirBase)
 
-        if not IO_files_util.make_directory(outputCorefedDir):
+        # create a subdirectory of the output directory
+        outputCorefedDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='coref',
+                                                            silent=True)
+        if outputCorefedDir == '':
             return
 
         # inputFilename and inputDir are the original txt files to be coreferenced
         # 2 items are returned: filename string and true/False for error
         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir, outputCorefedDir,
-                                       openOutputFiles, createExcelCharts,
+                                       openOutputFiles, createCharts, chartPackage,
+                                       language_var,
                                        memory_var,
                                        Manual_Coref_var)
         if error_indicator != 0:
@@ -254,23 +248,33 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
     if normalized_NER_date_extractor_var:
         files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
-                                                                 openOutputFiles, createExcelCharts,
-                                                                 'normalized-date', False, memory_var, document_length_var, limit_sentence_length_var)
+                                                                 openOutputFiles, createCharts, chartPackage,
+                                                                 'normalized-date', False, language_var,  memory_var, document_length_var, limit_sentence_length_var)
         filesToOpen.extend(files)
 
     if SENNA_SVO_extractor_var or CoreNLP_SVO_extractor_var or CoreNLP_OpenIE_var:
-        if isFile:
-            inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
-            # remove NLP_CoreNLP_ from filename (could have been added to filename in case of coref)
-            # the replace will be ignored when there is no NLP_CoreNLP_ in the filename
-            inputFileBase = inputFileBase.replace("NLP_CoreNLP_", "")
-            outputSVODir = os.path.join(outputDir, "SVO_" + inputFileBase)
-        else:
-            inputDirBase = os.path.basename(inputDir)
-            outputSVODir = os.path.join(outputDir, "SVO_Dir_" + inputDirBase)
+        # create a subdirectory of the output directory
+        #     # remove NLP_CoreNLP_ from filename (could have been added to filename in case of coref)
+        #     # the replace will be ignored when there is no NLP_CoreNLP_ in the filename
 
+        label = ''
+        if CoreNLP_SVO_extractor_var:
+            label='SVO'
+        if CoreNLP_OpenIE_var:
+            if label!='':
+                label=label+'_'+ 'OpenIE'
+            else:
+                label='OpenIE'
+        if SENNA_SVO_extractor_var:
+            if label!='':
+                label=label+'_'+ 'SENNA'
+            else:
+                label='SENNA'
+
+        outputSVODir = IO_files_util.make_output_subdirectory(inputFilename.replace("NLP_CoreNLP_", ""), inputDir, outputDir, label=label,
+                                                            silent=True)
         outputDir = outputSVODir
-        if not IO_files_util.make_directory(outputSVODir):
+        if outputDir == '':
             return
 
     if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
@@ -300,9 +304,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         outputLocations.append(location_filename)
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                        outputDir, openOutputFiles,
-                                                                       createExcelCharts,
+                                                                       createCharts,
+                                                                       chartPackage,
                                                                        'SVO', False,
-                                                                       memory_var, document_length_var, limit_sentence_length_var,
+                                                                       language_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                        extract_date_from_text_var=extract_date_from_text_var,
                                                                        extract_date_from_filename_var=extract_date_from_filename_var,
                                                                        date_format=date_format_var,
@@ -314,8 +319,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                        quote_var = quote_var, quote_filename = quote_filename)
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
+                output = Stanford_CoreNLP_SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -326,13 +331,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                     if IO_csv_util.GetNumberOfRecordInCSVFile(tempOutputFiles[0], encodingValue='utf-8') > 1:
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Verb (V)'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'VERB',
-                                                               openOutputFiles, createExcelCharts)
+                                                               openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
                             filesToOpen.extend(output)
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'NOUN',
-                                                               openOutputFiles, createExcelCharts)
+                                                               openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
                             filesToOpen.extend(output)
@@ -368,7 +373,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             # fName is the filename returned by Java SVO The Three Little Pigs SHORT-svoResult-woFilter.txt
             fName = os.path.join(outputDir, inputFileBase + "-svoResult-woFilter.txt")
             toProcess_list.append(fName)
-        else:
+        else: # directory
+            outputSVODir = inputDir
             for tmp in os.listdir(outputSVODir):
                 # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
                 # THE SUBSCRIPT _coref_ IS CHECKED BELOW
@@ -405,7 +411,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         #   both options run correctly for CoreNLP ++
         svo_SENNA_files = []
         svo_SENNA_file = SVO_SRL_SENNA_util.run_senna(inputFilename, inputDir, outputDir, openOutputFiles,
-                                                                createExcelCharts)
+                                                                createCharts, chartPackage)
         if len(svo_SENNA_file) > 0:
             svo_SENNA_file = svo_SENNA_file[0]
 
@@ -415,7 +421,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                                                                           outputDir=os.path.join(outputDir,
                                                                                                  outputSVODir),
                                                                           openOutputFiles=openOutputFiles,
-                                                                          createExcelCharts=createExcelCharts)
+                                                                          createCharts=createCharts,
+                                                                          chartPackage=chartPackage)
         else:
             svo_SENNA_files = [svo_SENNA_file]
 
@@ -425,8 +432,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
         if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_SENNA_files:
-                output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
+                output = Stanford_CoreNLP_SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -444,8 +451,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         if len(os.listdir(outputSVODir)) > 0:
             if svo_CoreNLP_merged_file and svo_SENNA_file:
                 CoreNLP_PlusPlus_file = svo_CoreNLP_merged_file
-                freq_csv, compare_outout_name = SVO_util.count_frequency_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
-                combined_csv = SVO_util.combine_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
+                freq_csv, compare_outout_name = Stanford_CoreNLP_SVO_util.count_frequency_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
+                combined_csv = Stanford_CoreNLP_SVO_util.combine_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
                 filesToOpen.extend(freq_csv)
                 filesToOpen.append(combined_csv)
 
@@ -463,10 +470,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
         outputLocations.append(location_filename)
         tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputDir, openOutputFiles,
-                                                                           createExcelCharts,
+                                                                           createCharts,
+                                                                           chartPackage,
                                                                            'OpenIE', 
                                                                            False,
-                                                                           memory_var, document_length_var, limit_sentence_length_var,
+                                                                           language_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                            extract_date_from_text_var=extract_date_from_text_var,
                                                                            extract_date_from_filename_var=extract_date_from_filename_var,
                                                                            date_format=date_format_var,
@@ -477,8 +485,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createExcelCharts)
+                output = Stanford_CoreNLP_SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
             
@@ -490,14 +498,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                     outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Verb (V)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
                                                                              config_filename, 'VERB',
-                                                                             openOutputFiles, createExcelCharts)
+                                                                             openOutputFiles, createCharts, chartPackage, language_var)
                     os.remove(outputFilename)
                     if output != None:
                         filesToOpen.extend(output)
                     outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
                                                                              config_filename, 'NOUN',
-                                                                             openOutputFiles, createExcelCharts)
+                                                                             openOutputFiles, createCharts, chartPackage, language_var)
                     os.remove(outputFilename)
                     if output != None:
                         filesToOpen.extend(output)
@@ -605,7 +613,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                         filesToOpen.append(kmloutputFilename)
 
     if openOutputFiles == True and len(filesToOpen) > 0:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         # if google_earth_var == True:
         #     if kmloutputFilename != '':
         #         IO_files_util.open_kmlFile(kmloutputFilename)
@@ -628,7 +636,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.create_chart_output_checkbox.get(),
+                                 GUI_util.charts_dropdown_field.get(),
                                  memory_var.get(),
                                  document_length_var.get(),
                                  limit_sentence_length_var.get(),
@@ -666,8 +675,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=710, # height at brief display
-                             GUI_height_full=750, # height at full display
+                             GUI_height_brief=640, # height at brief display
+                             GUI_height_full=680, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -759,35 +768,44 @@ def open_GUI():
 pre_processing_button = tk.Button(window, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                pre_processing_button)
+# language options
+language_var_lb = tk.Label(window, text='Language ')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               language_var_lb, True)
+
+language_var.set('English')
+language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese', 'English', 'German','Hungarian','Italian','Spanish')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+70,
+                                               y_multiplier_integer, language_menu, True)
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+210, y_multiplier_integer,
                                                memory_var_lb, True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(6)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 280, y_multiplier_integer,
                                                memory_var, True)
 
 document_length_var_lb = tk.Label(window, text='Document length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+210, y_multiplier_integer,
                                                document_length_var_lb, True)
 
 document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
 document_length_var.pack()
 document_length_var.set(90000)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+150, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+330, y_multiplier_integer,
                                                document_length_var,True)
 
 limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 530, y_multiplier_integer,
                                                limit_sentence_length_var_lb,True)
 
 limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
 limit_sentence_length_var.pack()
 limit_sentence_length_var.set(100)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 550, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 680, y_multiplier_integer,
                                                limit_sentence_length_var)
 
 extract_date_lb = tk.Label(window, text='Extract date (for dynamic GIS)')
@@ -850,16 +868,6 @@ def check_dateFields(*args):
 extract_date_from_text_var.trace('w',check_dateFields)
 extract_date_from_filename_var.trace('w',check_dateFields)
 
-language_lb = tk.Label(window,text='Language')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
-                                               y_multiplier_integer, language_lb, True)
-
-language_var.set('English')
-language_menu = tk.OptionMenu(window, language_var, 'English', 'Arabic','Chinese','German','Hungarian','Italian','Spanish')
-# language_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
-                                               y_multiplier_integer, language_menu)
-
 CoRef_var.set(0)
 CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP - Neural Network)',
                                 variable=CoRef_var, onvalue=1, offvalue=0)
@@ -880,6 +888,9 @@ def activateCoRefOptions(*args):
     if CoRef_var.get() == 1:
         # CoRef_menu.configure(state='normal')
         if input_main_dir_path.get()!='':
+            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
+                                         reminders_util.message_CoreNLP_coref, True)
+            manual_Coref_var.set(0)
             manual_Coref_checkbox.configure(state='disabled')
         else:
             manual_Coref_checkbox.configure(state='normal')
@@ -895,6 +906,10 @@ def activateCoRefOptions(*args):
 CoRef_var.trace('w', activateCoRefOptions)
 
 activateCoRefOptions()
+
+def changed_filename(tracedInputFile):
+    activateCoRefOptions()
+GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
 
 # extracted in SVO
 # date_extractor_checkbox = tk.Checkbutton(window, text='Extract normalized NER dates (via Stanford CoreNLP)',
@@ -1102,6 +1117,7 @@ videos_options='No videos available'
 
 TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
                'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                'SVO extraction and visualization': 'TIPS_NLP_SVO extraction and visualization.pdf',
@@ -1120,7 +1136,7 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                "Geocoding: How to Improve Nominatim":"TIPS_NLP_Geocoding Nominatim.pdf",
                "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf"}
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
-TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Stanford CoreNLP coreference resolution', 'SENNA', 'CoNLL table',  'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
+TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Stanford CoreNLP coreference resolution', 'SENNA', 'CoNLL table',  'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
 
 
 # add all the lines lines to the end to every special GUI
@@ -1141,10 +1157,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "The Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+GUI_IO_util.msg_Esc)
+                                  "Please, using the dropdown menu, select the language to be used: English, Arabic, Chinese, German, Hungarian, Italian, or Spanish.\n\nNot all annotators are available for all languages, in fact, most are not. Please, read the TIPS file TIPS_NLP_Stanford CoreNLP supported languages.pdf.\n\nThe Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE. \n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the follwing information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the language to be used: English, Arabic, Chinese, German, Hungarian, Italian, or Spanish.\n\nNot all annotators are available for all languages, in fact, most are not. Please, read the TIPS file TIPS_NLP_Stanford CoreNLP supported languages.pdf"+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to run the Stanford CoreNLP coreference resolution annotator using the Neural Network approach.\n\nOnly pronominal, and not nominal, coreference resolution is implemented for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nPlease, BE PATIENT. Depending upon size and number of documents to be coreferenced the algorithm may take a long a time.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm will produce txt-format copies of the same input txt files but co-referenced."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

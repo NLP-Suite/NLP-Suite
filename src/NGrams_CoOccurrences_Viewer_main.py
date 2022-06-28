@@ -17,7 +17,7 @@ from subprocess import call
 import IO_user_interface_util
 import GUI_IO_util
 import IO_files_util
-import charts_Excel_util
+import charts_util
 import statistics_txt_util
 import reminders_util
 import IO_csv_util
@@ -56,7 +56,7 @@ def validate(date_text):
         raise ValueError("Incorrect data format, should be YYYY-MM-DD")
 
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         n_grams_var,
         n_grams_menu_var,
         n_grams_list,
@@ -117,7 +117,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
                            total_file_number) + ' processed in the selected input directory with errors in either the date format or the date position. \n\nThe selected date format is '+ str(date_format)+' and the selected date position is ' + str(date_position_var) + '.\n\nClick OK to open a csv file with a list of files with erroneous dates. Check carefully, both date format and date position. Any erroneous file will need to be fixed or removed from the input directory before processing. You may also simply need to select a different date format and/or date position.')
         filesToOpen.append(error_output)
         if openOutputFiles == True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         return
 
 
@@ -154,11 +154,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
 
         if n_grams_word_var or bySentenceIndex_word_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, n_grams_size, normalize, excludePunctuation, 1, openOutputFiles, createExcelCharts,
+                                                              outputDir, n_grams_size, normalize,
+                                                              excludePunctuation, 1, openOutputFiles,
+                                                              createCharts, chartPackage,
                                                               bySentenceIndex_word_var)
         if n_grams_character_var or bySentenceIndex_character_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, n_grams_size, normalize, excludePunctuation, 0, openOutputFiles, createExcelCharts,
+                                                              outputDir, n_grams_size, normalize,
+                                                              excludePunctuation, 0, openOutputFiles,
+                                                              createCharts, chartPackage,
                                                               bySentenceIndex_character_var)
 
 # VIEWER ____________________________________________________________________________________________
@@ -166,7 +170,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
     if (n_grams_viewer_var == False and CoOcc_Viewer_var == False):
         return
 
-    if (n_grams_viewer_var ==True or CoOcc_Viewer_var==True) and (createExcelCharts==False):
+    if (n_grams_viewer_var ==True or CoOcc_Viewer_var==True) and (createCharts==False):
         mb.showwarning(title='Warning',
                        message='The checkbox to compute Excel charts is unticked. Since the VIEWER produces Excel charts as output, the script will abort.\n\nPlease, tick the checkbox to produce Excel charts and try again.')
         return
@@ -248,7 +252,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             viewer_options_list)
 
     # plot Ngrams
-    if createExcelCharts == True and n_grams_outputFile!='':
+    if createCharts == True and n_grams_outputFile!='':
         xlsxFilename = n_grams_outputFile
         filesToOpen.append(n_grams_outputFile)
         xAxis = temporal_aggregation_var
@@ -268,16 +272,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             i += 1
             j += 1
         hover_label = []
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
                                                   'n-grams_viewer',
+                                                  chartPackage=chartPackage,
                                                   chart_type_list=["line"],
                                                   chart_title=chartTitle, column_xAxis_label_var=xAxis,
                                                   hover_info_column_list=hover_label)
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
     # plot co-occurrences
-    if createExcelCharts and co_occurrences_outputFile!='':
+    if createCharts and co_occurrences_outputFile!='':
         xlsxFilename = co_occurrences_outputFile
         filesToOpen.append(co_occurrences_outputFile)
         chartTitle = 'Co-Occurrences Viewer: ' + search_words
@@ -287,41 +292,35 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createExcelCharts,
             xAxis = temporal_aggregation_var
         hover_label = []
         if xAxis == 'Document':
-            columns_to_be_plotted = [[1, 1]]
-            Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
-                                                      'Co-Occ_viewer',
-                                                      chart_type_list=["pie"],
-                                                      chart_title=chartTitle, column_xAxis_label_var=xAxis,
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1)
-        # else:
-        #     columns_to_be_plotted = [[0, 1]]
-        #     Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
-        #                                               'Co-Occ_viewer',
-        #                                               chart_type_list=["line"],
-        #                                               chart_title=chartTitle, column_xAxis_label_var=xAxis,
-        #                                               hover_info_column_list=hover_label)
-        # if Excel_outputFilename != "":
-        #     filesToOpen.append(Excel_outputFilename)
 
-
-    # # with both Ngrams and co-occurrences
-    # if n_grams_viewer_var == 1 and CoOcc_Viewer_var == 1 and CoOcc_Viewer_var == 1 and len(search_words) > 0:
-    #     n_grams_co_occurrences_outputFile = os.path.join(outputDir, 'N-Grams_CoOccurrences_Statistics.csv')
-    #     filesToOpen.append(n_grams_co_occurrences_outputFile)
-    #     chartTitle = ''
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, xlsxFilename, outputDir,
+                                                               columns_to_be_plotted_bar=[[1, 1]],
+                                                               columns_to_be_plotted_bySent=[[]],
+                                                               columns_to_be_plotted_byDoc=[[3, 1]],
+                                                               chartTitle='Frequency Distribution of Co-Occurring Words',
+                                                               count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                               hover_label=[],
+                                                               outputFileNameType='',
+                                                               column_xAxis_label='Co-occurring word',
+                                                               groupByList=[],
+                                                               plotList=[],
+                                                               chart_title_label='')
+            if chart_outputFilename != None:
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences end',
                         'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime,True)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get(), GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.create_chart_output_checkbox.get(),
+                                 GUI_util.charts_dropdown_field.get(),
                                  n_grams_var.get(),
                                  n_grams_menu_var.get(),
                                  n_grams_list,
@@ -667,9 +666,11 @@ TIPS_lookup = {'N-Grams (word & character)':"TIPS_NLP_Ngram (word & character).p
                'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
                'NLP Suite Ngram and Word Co-Occurrence Viewer':"TIPS_NLP_Ngram and Word Co-Occurrence Viewer.pdf",
                'Style analysis':'TIPS_NLP_Style analysis.pdf',
-               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf'}
+               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures':'TIPS_NLP_Statistical measures.pdf'}
     #,'Java download install run':'TIPS_NLP_Java download install run.pdf'}
-TIPS_options='N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis','Excel smoothing data series' #,'Java download install run'
+TIPS_options='N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis','Excel smoothing data series','csv files - Problems & solutions','Statistical measures'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

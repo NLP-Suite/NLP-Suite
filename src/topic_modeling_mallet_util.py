@@ -37,14 +37,14 @@ import subprocess
 from sys import platform
 
 import IO_files_util
-import charts_Excel_util
+import charts_util
 import file_type_converter_util
 import IO_user_interface_util
 
 
 # RUN section __________________________________________________________________________________________________________
 
-def run(inputDir, outputDir, openOutputFiles, createExcelCharts, OptimizeInterval, numTopics):
+def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, OptimizeInterval, numTopics):
     # to setup environment variable programmatically
     #   https://stackoverflow.com/questions/4906977/how-to-access-environment-variable-values
     # to get an environment variable
@@ -133,13 +133,13 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, OptimizeInterva
         return
     elif numFiles == 1:
         mb.showerror(title='Number of files error', message='The selected input directory contains only ' + str(
-            numFiles) + 'file of txt type.\n\nTopic modeling requires a large number of files to produce valid '
+            numFiles) + ' file(s) of txt type.\n\nTopic modeling requires a large number of files to produce valid '
                         'results. That is true even if the available file contains several different documents morged'
                         ' together.')
         return
     elif numFiles < 10:
         mb.showwarning(title='Number of files', message='The selected input directory contains only ' + str(
-            numFiles) + 'files of txt type.\n\nTopic modeling requires a large number of files to produce valid '
+            numFiles) + ' file(s) of txt type.\n\nTopic modeling requires a large number of files to produce valid '
                         'results.')
 
     """
@@ -255,15 +255,35 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, OptimizeInterva
     filesToOpen.append(Keys_FileName)
     filesToOpen.append(Composition_FileName)
 
-    if createExcelCharts:
-        columns_to_be_plotted = [[0, 1]]
-        hover_label = [2]
+    if createCharts:
+        # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, Keys_FileName,
+        #                                                    outputDir,
+        #                                                    columns_to_be_plotted_bar=[[0, 1]],
+        #                                                    # columns_to_be_plotted_bySent=[[4, 2]],
+        #                                                    # the fields must be numeric?
+        #                                                    columns_to_be_plotted_bySent=[[]],
+        #                                                    columns_to_be_plotted_byDoc=[[]],
+        #                                                    chartTitle='Mallet Topics',
+        #                                                    count_var=0, hover_label=[2],
+        #                                                    outputFileNameType='',  # 'POS_bar',
+        #                                                    column_xAxis_label='Topic #',
+        #                                                    column_yAxis_label='Topic weight',
+        #                                                    groupByList=[],
+        #                                                    plotList=[],
+        #                                                    chart_title_label='')
+        # if chart_outputFilename != None:
+        #     if len(chart_outputFilename) > 0:
+        #         filesToOpen.extend(chart_outputFilename)
+
+        columns_to_be_plotted=[[0, 1]]
+        hover_label=[2]
         chartTitle = 'Mallet Topics'
         xAxis = 'Topic #'
         yAxis = 'Topic weight'
-        fileName = Keys_FileName
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, fileName, outputDir,
+
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, Keys_FileName, outputDir,
                                                   'Mallet_TM',
+                                                  chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title=chartTitle,
                                                   column_xAxis_label_var=xAxis,
@@ -271,8 +291,8 @@ def run(inputDir, outputDir, openOutputFiles, createExcelCharts, OptimizeInterva
                                                   count_var=0,
                                                   column_yAxis_label_var=yAxis)
 
-        if Excel_outputFilename != "":
-            filesToOpen.append(Excel_outputFilename)
+        if chart_outputFilename != "":
+            filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

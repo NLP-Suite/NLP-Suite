@@ -18,10 +18,9 @@ import GUI_IO_util
 import IO_files_util
 import CoNLL_util
 import knowledge_graphs_WordNet_util
-import reminders_util
-import html_annotator_dictionary_util
 import sentence_analysis_util
 import Stanford_CoreNLP_annotator_util
+import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -30,7 +29,8 @@ pd.set_option('display.max_columns', 500)
 # written by Yi Wang April 2020
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles,
-        createExcelCharts,
+        createCharts,
+        chartPackage,
         csv_file,
         aggregate_POS_var,
         noun_verb,
@@ -45,6 +45,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         dict_WordNet_filename_var):
 
     filesToOpen = []  # Store all files that are to be opened once finished
+    language_var='English' # WordNet works only for English language
 
     WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet')
     if WordNetDir == None:
@@ -112,7 +113,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 if result==False:
                     return
         filesToOpen = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, config_filename, noun_verb, openOutputFiles,
-                                                     createExcelCharts)
+                                                     createCharts, chartPackage, language_var)
 
     if extract_nouns_verbs_from_CoNLL_var==True:
         # check that input file is a CoNLL table
@@ -137,9 +138,10 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         nouns_var = True
         verbs_var = True
         # uses a txt fie in input
+        language_var='English'
         files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                 outputDir, openOutputFiles, createExcelCharts,
-                                                                 annotator, False, memory_var)
+                                                                 outputDir, openOutputFiles, createCharts, chartPackage,
+                                                                 annotator, False, language_var, memory_var)
         if len(files) > 0:
             noun_verb = ''
             if verbs_var == True:
@@ -149,7 +151,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 else:
                     return
                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
-                                                        openOutputFiles, createExcelCharts)
+                                                        openOutputFiles, createCharts, chartPackage, language_var)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -160,7 +162,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 else:
                     return
                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
-                                                        openOutputFiles, createExcelCharts)
+                                                        openOutputFiles, createCharts, chartPackage, language_var)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -170,17 +172,20 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
             return
         outputFilename=IO_files_util.generate_output_file_name(csv_file, outputDir, '.csv', 'WordNet', 'conll')
         filesToOpen.append(outputFilename)
-        sentence_analysis_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,createExcelCharts)
+        temp_outputfiles = knowledge_graphs_WordNet_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,createCharts, chartPackage)
+        if temp_outputfiles!=None:
+            filesToOpen.extend(temp_outputfiles)
 
     if openOutputFiles==True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(), 
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_Excel_chart_output_checkbox.get(),
+                            GUI_util.create_chart_output_checkbox.get(),
+                            GUI_util.charts_dropdown_field.get(),
                             csv_file_var.get(),
                             aggregate_POS_var.get(),
                             noun_verb_menu_var.get(),
@@ -236,7 +241,7 @@ input_main_dir_path = GUI_util.input_main_dir_path
 outputDir = GUI_util.output_dir_path
 
 openOutputFiles = GUI_util.open_csv_output_checkbox.get()
-createExcelCharts = GUI_util.create_Excel_chart_output_checkbox.get()
+createCharts = GUI_util.create_chart_output_checkbox.get()
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief)
 
@@ -273,12 +278,13 @@ csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,csv_file_button,True)
 
 #setup a button to open Windows Explorer on the selected input directory
-# current_y_multiplier_integer=y_multiplier_integer-1
-# openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
-    openInputFile_button, True)
+    GUI_IO_util.get_open_file_directory_coordinate(),
+    y_multiplier_integer,
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.get_open_file_directory_coordinate(), "Open INPUT csv file")
 
 csv_file=tk.Entry(window, width=130,textvariable=csv_file_var)
 csv_file.config(state='disabled')
@@ -657,8 +663,7 @@ def setNounVerbMenu(*args):
     if noun_verb_menu_optionsSV != noun_verb_menu_options:
         clear_keyword_list()
 
-
-    print('hidden_noun_lemma_csv, hidden_verb_lemma_csv',hidden_noun_lemma_csv.get(), hidden_verb_lemma_csv.get())
+    #print('hidden_noun_lemma_csv, hidden_verb_lemma_csv',hidden_noun_lemma_csv.get(), hidden_verb_lemma_csv.get())
 
 noun_verb_menu_var.trace("w", setNounVerbMenu)
 
@@ -667,9 +672,9 @@ setNounVerbMenu()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'WordNet': 'TIPS_NLP_WordNet.pdf','The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf'}
+TIPS_lookup = {'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','WordNet': 'TIPS_NLP_WordNet.pdf','The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf'}
 #'Java download install run': 'TIPS_NLP_Java download install run.pdf'
-TIPS_options = 'WordNet','The world of emotions and sentiments' #, 'Java download install run'
+TIPS_options = 'csv files - Problems & solutions','Statistical measures','WordNet','The world of emotions and sentiments' #, 'Java download install run'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -718,5 +723,11 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordi
 readMe_message = "The Python 3 and Java scripts interface with the lexical database WordNet to find word semantically related words.\n\nThe GUI widgets allow you to zoom IN, zoom OUT (or zoom DOWN and UP) in the WordNet database and to display WordNet categories by sentence index. The two IN/DOWN, OUT/UP Java algorithms use the MIT JWI (Java Wordnet Interface) (https://projects.csail.mit.edu/jwi/) to interface with WordNet.\n\nYou will need to download WordNet from https://wordnet.princeton.edu/download/current-version.\n\nWhen zooming IN/DOWN, you basically take a closer look at a term, going down the hierarchy (e.g., 'person' would give a list of words such as 'police', 'woman', ... or anyone who is a member of the group \'person\').\n\nWhen zooming OUT/UP, you find terms'higher-level aggregates (e.g., 'walk', 'run', 'flee'as verbs of a higher-level verb aggregate 'motion')" + webSearch
 readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+reminders_util.checkReminder(
+        config_filename,
+        reminders_util.title_options_English_language_WordNet,
+        reminders_util.message_English_language_WordNet,
+        True)
 
 GUI_util.window.mainloop()

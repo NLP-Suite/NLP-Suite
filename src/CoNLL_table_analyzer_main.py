@@ -14,7 +14,7 @@ import GUI_IO_util
 import CoNLL_util
 import CoNLL_table_search_util
 import statistics_csv_util
-import charts_Excel_util
+import charts_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
@@ -30,7 +30,7 @@ import CoNLL_k_sentences_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
+def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         searchedCoNLLField, searchField_kw, postag, deprel, co_postag, co_deprel,
         k_sentences_var,
         clausal_analysis_var,
@@ -73,8 +73,9 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         df = pd.read_csv(inputFilename)
         data_files = [df]
         # print(csv_file_field_list)
-        outputFiles: list = extract_from_csv(path=[inputFilename], output_path=outputDir, data_files=data_files,
-                                                 csv_file_field_list=csv_file_field_list)
+        # outputFiles: list = IO_csv_util.extract_from_csv(path=[inputFilename], output_path=outputDir, data_files=data_files,
+        #                                          csv_file_field_list=csv_file_field_list)
+        outputFiles: list = IO_csv_util.extract_from_csv(inputFilename,outputDir, data_files,csv_file_field_list)
         if outputFiles != None:
             filesToOpen.extend(outputFiles)
 
@@ -92,20 +93,20 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         outputFiles = CoNLL_clause_analysis_util.clause_stats(inputFilename, '', outputDir,
                                                               data,
                                                               data_divided_sents,
-                                                              openOutputFiles, createExcelCharts)
-        if outputFiles != None:
-            # only open the chart files
-            if len(outputFiles) > 0:
-                filesToOpen.append(outputFiles[1])
-            if len(outputFiles) > 2:
-                filesToOpen.append(outputFiles[2])
+                                                              openOutputFiles, createCharts,chartPackage)
+        # if outputFiles != None:
+        #     # only open the chart files
+        #     if len(outputFiles) > 0:
+        #         filesToOpen.append(outputFiles[1])
+        #     if len(outputFiles) > 2:
+        #         filesToOpen.append(outputFiles[2])
 
         right_hand_side = True
 
     if noun_analysis_var:
         import CoNLL_noun_analysis_util
         outputFiles = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, data_divided_sents,
-                                                          openOutputFiles, createExcelCharts)
+                                                          openOutputFiles, createCharts, chartPackage)
         # if outputFiles != None:
         #     # only open the chart files
         #     filesToOpen.append(outputFiles[6])
@@ -118,7 +119,7 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
         import CoNLL_verb_analysis_util
 
         outputFiles = CoNLL_verb_analysis_util.verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents,
-                                                          openOutputFiles, createExcelCharts)
+                                                          openOutputFiles, createCharts, chartPackage)
 
         # # only open the chart files
         # if outputFiles != None:
@@ -133,14 +134,14 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
 
         outputFiles = CoNLL_function_words_analysis_util.function_words_stats(inputFilename, outputDir, data,
                                                                               data_divided_sents, openOutputFiles,
-                                                                              createExcelCharts)
+                                                                              createCharts, chartPackage)
         # only open the chart files
-        if outputFiles != None:
-            filesToOpen.append(outputFiles[2])
-            filesToOpen.append(outputFiles[5])
-            filesToOpen.append(outputFiles[8])
-            filesToOpen.append(outputFiles[11])
-            filesToOpen.append(outputFiles[14])
+        # if outputFiles != None:
+        #     filesToOpen.append(outputFiles[2])
+        #     filesToOpen.append(outputFiles[5])
+        #     filesToOpen.append(outputFiles[8])
+        #     filesToOpen.append(outputFiles[11])
+        #     filesToOpen.append(outputFiles[14])
 
         right_hand_side = True
 
@@ -150,9 +151,9 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                                                'Finished running CoNLL table analyses at',
                                                True, '', True, startTime, False)
         if openOutputFiles == True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
             mb.showwarning(title='Output files',
-                           message="The analysis of the CoNLL table for clauses, nouns, verbs, and function words opens only the Excel chart files. But the script produces in output many more csv files.\n\nPlease, check your output directory for more file output.")
+                           message="The analysis of the CoNLL table for clauses, nouns, verbs, and function words produces too many files to open them all automatically.\n\nPlease, check your output directory for file output. All chart files are listed with extension xlsx or xlxm (for hover-over effects).")
         filesToOpen = []  # Store all files that are to be opened once finished
         outputFiles = []
         return
@@ -241,93 +242,131 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
                 item[9] keyword[3]/SEARCHED TOKEN POSTAG, 
                 item[10] keyword[6]/'SEARCHED TOKEN DEPREL'))
             """
-            if createExcelCharts == True:
+            if createCharts == True:
 
                 # line plot by sentence index
                 if searchedCoNLLField == 'FORM':
-                    tempFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=output_file_name,
+                    tempFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=output_file_name,
 															outputDir=outputDir,
 															select_col=['SEARCHED TOKEN POSTAG-DESCRIPTION'],
 															group_col=['Document ID'],
-															chartTitle="Frequency Distribution of SEARCHED TOKEN (FORM)",
+                                                            chartPackage=chartPackage,
+                                                            chartTitle="Frequency Distribution of SEARCHED TOKEN (FORM)",
                                                             complete_sid=False)
-                    # tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
+                    # tempFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
                     #                                                       [[11, 5], [11, 7], [11, 9]],
                     #                                                       ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
                     #                                                       ['SEARCHED TOKEN (FORM)', 'Sentence ID','Sentence'],
                     #                                                       ['Document ID', 'Document'],
-                    #                                                       openOutputFiles, createExcelCharts, 'QC', 'line')
+                    #                                                       openOutputFiles, createCharts, chartPackage, 'QC', 'line')
                 else:
-                    tempFiles = charts_Excel_util.compute_csv_column_frequencies(inputFilename=output_file_name,
+                    tempFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=output_file_name,
 															outputDir=outputDir,
 															select_col=['SEARCHED TOKEN POSTAG-DESCRIPTION'],
 															group_col=['Document ID'],
-															chartTitle="Frequency Distribution of SEARCHED TOKEN (LEMMA)",
+                                                            chartPackage=chartPackage,
+                                                            chartTitle="Frequency Distribution of SEARCHED TOKEN (LEMMA)",
                                                             complete_sid=False)
-                    # tempFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
+                    # tempFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
                     #                                                       [[11, 5], [11, 7], [11, 9]],
                     #                                                       ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
                     #                                                       ['SEARCHED TOKEN (LEMMA)', 'Sentence ID','Sentence'],
                     #                                                       ['Document ID', 'Document'],
-                    #                                                       openOutputFiles, createExcelCharts, 'QC', 'line')
+                    #                                                       openOutputFiles, createCharts, chartPackage, 'QC', 'line')
                 filesToOpen.extend(tempFiles)
+
+                columns_to_be_plotted=[[0,1]]
+                count_var=0
 
                 output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
                                                                                 'kw_postag', 'stats_pie_chart')
-                column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 9,
+                column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 9,
                                                                              "Searched token Postag Values (" + searchField_kw + ")",
                                                                              "POSTAG")
                 errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
                 if errorFound == True:
                     return
-                output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename,
-                                                                      outputDir, "QueryCoNLL_POS",
-                                                                      "Searched token POStag Values (" + searchField_kw + ")",
-                                                                      ["pie"])
-                filesToOpen.append(output_file_name_xlsx)
+                # output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename,
+                #                                                       outputDir, "QueryCoNLL_POS",
+                #                                                       "Searched token POStag Values (" + searchField_kw + ")",
+                #                                                       ["pie"])
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
+                                                                outputFileLabel='QueryCoNLL_POS (' + searchField_kw + ')',
+                                                                chartPackage=chartPackage,
+                                                                chart_type_list=['bar'],
+                                                                chart_title="QueryCoNLL_POS",
+                                                                column_xAxis_label_var='Searched token POS Values',
+                                                                hover_info_column_list=[],
+                                                                count_var=count_var)
+                filesToOpen.append(chart_outputFilename)
 
                 output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
                                                                                 'kw_deprel', 'stats_pie_chart')
-                column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 10,
+                column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 10,
                                                                              "Searched token Deprel values (" + searchField_kw + ")",
                                                                              "DEPREL")
                 errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
                 if errorFound == True:
                     return
-                output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
-                                                                      "QueryCoNLL_DepRel",
-                                                                      "Searched token DEPrel Values (" + searchField_kw + ")",
-                                                                      ["pie"])
-                filesToOpen.append(output_file_name_xlsx)
+                # output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
+                #                                                       "QueryCoNLL_DepRel",
+                #                                                       "Searched token DEPrel Values (" + searchField_kw + ")",
+                #                                                       ["pie"])
+                
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
+                                                                outputFileLabel='QueryCoNLL_DepRel (' + searchField_kw + ')',
+                                                                chartPackage=chartPackage,
+                                                                chart_type_list=['bar'],
+                                                                chart_title="QueryCoNLL_DepRel",
+                                                                column_xAxis_label_var='Searched token DEPrel Values',
+                                                                hover_info_column_list=[],
+                                                                count_var=count_var)
+                filesToOpen.append(chart_outputFilename)
 
                 output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
                                                                                 'co_kw_postag', 'stats_pie_chart')
-                column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 1,
+                column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 1,
                                                                              "Co-token Postag values (" + searchField_kw + ")",
                                                                              "POSTAG")
                 errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
                 if errorFound == True:
                     return
-                output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
-                                                                      "QueryCoNLL_CoOcc_POS",
-                                                                      "Co-token POStag Values (" + searchField_kw + ")",
-                                                                      ["pie"])
-                filesToOpen.append(output_file_name_xlsx)
+                # output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
+                #                                                       "QueryCoNLL_CoOcc_POS",
+                #                                                       "Co-token POStag Values (" + searchField_kw + ")",
+                #                                                       ["pie"])
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
+                                                                outputFileLabel='QueryCoNLL_CoOcc_POS (' + searchField_kw + ')',
+                                                                chartPackage=chartPackage,
+                                                                chart_type_list=['bar'],
+                                                                chart_title="QueryCoNLL_CoOcc_POS",
+                                                                column_xAxis_label_var='Searched token CoOcc_POS Values',
+                                                                hover_info_column_list=[],
+                                                                count_var=count_var)
+                filesToOpen.append(chart_outputFilename)
 
                 output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
                                                                                 'co_kw_deprel', 'stats_pie_chart')
-                column_stats = statistics_csv_util.compute_stats_CoreNLP_tag(queried_list, 2,
+                column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 2,
                                                                              "Co-token Deprel values (" + searchField_kw + ")",
                                                                              "DEPREL")
                 errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
                 if errorFound:
                     return
 
-                output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
-                                                                      "QueryCoNLL_CoOcc_DEP",
-                                                                      "Co-token DEPrel Values (" + searchField_kw + ")",
-                                                                      ["pie"])
-                filesToOpen.append(output_file_name_xlsx)
+                # output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
+                #                                                       "QueryCoNLL_CoOcc_DEP",
+                #                                                       "Co-token DEPrel Values (" + searchField_kw + ")",
+                #                                                       ["pie"])
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
+                                                                outputFileLabel='QueryCoNLL_CoOcc_DEP (' + searchField_kw + ')',
+                                                                chartPackage=chartPackage,
+                                                                chart_type_list=['bar'],
+                                                                chart_title="QueryCoNLL_CoOcc_DEP",
+                                                                column_xAxis_label_var='Searched token CoOcc_DEP Values',
+                                                                hover_info_column_list=[],
+                                                                count_var=count_var)
+                filesToOpen.append(chart_outputFilename)
                 IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                                    'Finished running CoNLL search at', True, '', True, startTime)
 
@@ -349,12 +388,13 @@ def run(inputFilename, outputDir, openOutputFiles, createExcelCharts,
             mb.showwarning(title='Empty query results', message=noResults)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_Excel_chart_output_checkbox.get(),
+                                 GUI_util.create_chart_output_checkbox.get(),
+                                 GUI_util.charts_dropdown_field.get(),
                                  searchedCoNLLField.get(),
                                  searchField_kw.get(),
                                  postag_var.get(),
@@ -944,8 +984,9 @@ TIPS_lookup = {'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'Excel Charts': 'TIPS_NLP_Excel Charts.pdf',
                'Excel Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
+                'Statistical measures':'TIPS_NLP_Statistical measures.pdf',
                'Network Graphs (via Gephi)': 'TIPS_NLP_Gephi network graphs.pdf'}
-TIPS_options = 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'English Language Benchmarks', 'Style Analysis', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'Nominalization', 'NLP Searches', 'Excel Charts', 'Excel Enabling Macros', 'Excel smoothing data series', 'Network Graphs (via Gephi)'
+TIPS_options = 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'English Language Benchmarks', 'Style Analysis', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'Nominalization', 'NLP Searches', 'Excel Charts', 'Excel Enabling Macros', 'Excel smoothing data series', 'Statistical measures', 'Network Graphs (via Gephi)'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

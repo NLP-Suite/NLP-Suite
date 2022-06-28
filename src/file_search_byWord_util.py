@@ -13,7 +13,6 @@ extended by Mino Cha April 2022
 import sys
 import GUI_util
 import IO_libraries_util
-import collections
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "file_search_byWord_util.py",
                                           ['os', 'tkinter','stanza']) == False:
@@ -23,16 +22,19 @@ import os
 import csv
 import tkinter.messagebox as mb
 from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+import collections
 
 import IO_user_interface_util
 import IO_files_util
 import IO_csv_util
-
+import charts_util
 
 def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_search_keywords, search_keywords_list,
-        search_options_list):
+        search_options_list, createCharts, chartPackage):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        "Started running the file search script at", True)
+
+    filesToOpen=[]
 
     # loop through every txt file and annotate via request to YAGO
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
@@ -53,18 +55,18 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
             search_within_sentence = True
         elif search_option == "Lemmatize":  # not available yet
             lemmatize = True
-    outputFileName = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'search')
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'search')
     docIndex = 0
     first_occurrence_index = -1
-    csvExist = os.path.exists(outputFileName)
-    with open(outputFileName, "a", newline="", encoding='utf-8', errors='ignore') as csvFile:
+    csvExist = os.path.exists(outputFilename)
+    with open(outputFilename, "a", newline="", encoding='utf-8', errors='ignore') as csvFile:
         writer = csv.writer(csvFile)
         if csvExist:
             csvFile.truncate(0)
-            writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position",
+            writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position in document",
                              "Frequency of occurrence", "Sentence ID", "Sentence", "Document ID", "Document"])
         else:
-            writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position",
+            writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position in document",
                              "Frequency of occurrence", "Sentence ID", "Sentence", "Document ID", "Document"])
         csvFile.close()
     for file in files:
@@ -90,7 +92,7 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
         # if lemmatize:
         #     csvtitle = outputDir+'/'+os.path.split(os.path.split(outputDir)[0])[1]+"_"+search_keywords_list+'_lemma.csv'
 
-        with open(outputFileName, "a", newline="", encoding='utf-8', errors='ignore') as csvFile:
+        with open(outputFilename, "a", newline="", encoding='utf-8', errors='ignore') as csvFile:
             writer = csv.writer(csvFile)
             f = open(file, "r", encoding='utf-8', errors='ignore')
             docText = f.read()
@@ -141,27 +143,27 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                                         frequency += 1
 
                             if frequency == 0:
-                                percent_position = 0
+                                document_percent_position = 0
                                 continue
                             else:
                                 search_keywords_found = True
-                                percent_position = round((sentence_index / len(sentences_)), 2)
+                                document_percent_position = round((sentence_index / len(sentences_)), 2)
                                 if lemmatize:
                                     form = search_keywords_list
                                     writer.writerow(
-                                        [keyword, form, first_occurrence_index, len(sentences_), percent_position, frequency,
+                                        [keyword, form, first_occurrence_index, len(sentences_), document_percent_position, frequency,
                                          sentence_index, sent,
                                          docIndex,
                                          IO_csv_util.dressFilenameForCSVHyperlink(file)])
                                 else:
                                     writer.writerow(
-                                        [keyword, '', first_occurrence_index, len(sentences_), percent_position, frequency,
+                                        [keyword, '', first_occurrence_index, len(sentences_), document_percent_position, frequency,
                                         sentence_index, sent,
                                          docIndex,
                                          IO_csv_util.dressFilenameForCSVHyperlink(file)])
                         else:
                             continue
-            else:
+            else: # search in document, regardless of sentence
                 if not case_sensitive:
                     docText = docText.lower()
                 # words_ = word_tokenize(docText)  # the list of sentences in corpus
@@ -255,8 +257,58 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
     if search_keywords_found == False:
         mb.showwarning(title='Search string(s) not found',
                        message='The search keywords:\n\n   ' + search_keywords_list + '\n\nwere not found in your input document(s).')
-        outputFileName = ''
+        outputFilename = ''
+    filesToOpen.append(outputFilename)
+
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                       columns_to_be_plotted_bar=[[0, 0]],
+                                                       columns_to_be_plotted_bySent=[[]],
+                                                       columns_to_be_plotted_byDoc=[[9, 0]],
+                                                       chartTitle='Frequency Distribution of Search Words',
+                                                       count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                       hover_label=[],
+                                                       outputFileNameType='',
+                                                       column_xAxis_label='Search word',
+                                                       groupByList=[],
+                                                       plotList=[],
+                                                       chart_title_label='')
+    if chart_outputFilename != None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
+
+    # if createCharts == True:
+    #
+    #     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+    #                                                              'search')
+    #     columns_to_be_plotted=[[0,0]]
+    #     hover_label = []
+    #     inputFilename = outputFilename
+    #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+    #                                                      outputFileLabel='search',
+    #                                                      chartPackage=chartPackage,
+    #                                                      chart_type_list=["bar"],
+    #                                                      chart_title='Frequency of Search Words',
+    #                                                      column_xAxis_label_var='Search words',
+    #                                                      hover_info_column_list=hover_label,
+    #                                                      count_var=1)
+    #     if chart_outputFilename != "":
+    #         filesToOpen.append(chart_outputFilename)
+    #
+    #     columns_to_be_plotted=[[0,9]]
+    #     hover_label = []
+    #     inputFilename = outputFilename
+    #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+    #                                                      outputFileLabel='search_byDoc',
+    #                                                      chartPackage=chartPackage,
+    #                                                      chart_type_list=["bar"],
+    #                                                      chart_title='Frequency of search words By Document',
+    #                                                      column_xAxis_label_var='Document',
+    #                                                      hover_info_column_list=hover_label,
+    #                                                      count_var=1,
+    #                                                      remove_hyperlinks=True)
+    #     if chart_outputFilename != "":
+    #         filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end",
                                        "Finished running the file search script at", True)
-    return outputFileName
+    return filesToOpen

@@ -40,10 +40,79 @@ import file_splitter_ByLength_util
 import file_splitter_merged_txt_util
 import IO_files_util
 import IO_user_interface_util
-import charts_Excel_util
+import charts_util
 import html_annotator_dictionary_util
-import SVO_enhanced_dependencies_util # Enhanced++ dependencies
+import Stanford_CoreNLP_SVO_enhanced_dependencies_util # Enhanced++ dependencies
 import reminders_util
+import charts_util
+import statistics_csv_util
+
+def check_CoreNLP_language(config_filename,annotator,language):
+    not_available = False
+    url = 'https://stanfordnlp.github.io/CoreNLP/human-languages.html'
+    CoreNLP_web='\n\nLanguage and annotator options for Stanford CoreNLP are listed at the Stanford CoreNLP website ' + url
+    if "lemma" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP LEMMA annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "normalized" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP NORMALIZED NER annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "gender" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP GENDER annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "quote" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP QUOTE annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "OpenIE" in annotator.lower():
+        if language != 'English':
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP OPENIE annotator is only available for English.'+CoreNLP_web)
+            not_available = True
+    elif "sentiment" in annotator.lower():
+        if language != 'English' and language != 'Chinese':
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP SENTIMENTT ANALYSIS annotator is only available for Chinese and English.' + CoreNLP_web)
+            not_available = True
+    elif "coreference" in annotator.lower():
+        if language != 'English' and language != 'Chinese':
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP COREFERENCE RESOLUTION annotator is only available for Chinese and English.' + CoreNLP_web)
+            not_available = True
+    elif "PCFG" in annotator.lower():
+        if language == 'English' or language == 'German':
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP PCFG PARSER is not available for German and Hungarian.'+CoreNLP_web)
+            not_available = True
+    elif "neural network" in annotator.lower(): #parsee
+        if language == 'Arabic' or language == 'Hungarian':
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP NEURAL NETWORK PARSER is not available for Arabic and Hungarian.'+CoreNLP_web)
+            not_available = True
+    elif "SVO" in annotator.lower(): #parsee
+        if language == 'Arabic' or language == 'Hungarian':
+            mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
+                           message='The Stanford CoreNLP SVO annotator is not available for Arabic and Hungarian.'+CoreNLP_web)
+            not_available = True
+    if not_available:
+        reminder_status = reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_website,
+                                     reminders_util.message_CoreNLP_website,
+                                     True)
+        if reminder_status == 'Yes' or reminder_status == 'ON': # 'Yes' the old way of saving reminders
+            # open website
+            website_name = 'CoreNLP website'
+            message_title = 'CoreNLP website'
+            message="Would you like to open the Stanford CoreNLP website for annotator availability for the various languages supported by CoreNLP?"
+            IO_libraries_util.open_url(website_name, url, ask_to_open=True, message_title=message_title, message=message)
+    return not(not_available) # failed
 
 import GUI_IO_util
 # from operator import itemgetter, attrgetter
@@ -68,11 +137,11 @@ import GUI_IO_util
 
 def CoreNLP_annotate(config_filename,inputFilename,
                      inputDir, outputDir,
-                     openOutputFiles, createExcelCharts,
+                     openOutputFiles, createCharts, chartPackage,
                      annotator_params,
                      DoCleanXML,
+                     language,
                      memory_var,
-                     # print_json = False,
                      document_length=90000,
                      sentence_length=1000, # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
                      print_json = True,
@@ -113,7 +182,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     date_separator_var = ''
     date_position_var = 0
     date_str = ''
-    language = 'English'
+    # language initialized here and reset later in language = value
     NERs = []
     for key, value in kwargs.items():
         if key == 'extract_date_from_text_var' and value == True:
@@ -130,8 +199,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
             date_position_var = value
         if key == 'single_quote_var':
             single_quote_var = value
-        if key == 'language':
-            language = value
+
+    global language_encoding
+    if language == 'English':
+        language_encoding = 'utf-8'
+    else:
+        language_encoding = 'utf-8-sig'
 
     produce_split_files=False
     
@@ -192,7 +265,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'coref table': ["Pronoun", "Reference", "Reference Start ID in Sentence",
                         "First Reference Sentence ID", "First Reference Sentence", "Pronoun Start ID in Reference Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
         'gender':['Word', 'Gender', 'Sentence ID', 'Sentence','Document ID', 'Document'],
-        'normalized-date':["Word", "Normalized date", "tid","Information","Sentence ID", "Sentence", "Document ID", "Document"],
+        'normalized-date':["Word", "Normalized date", "tid","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
         'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Time','Time normalized NER','Sentence ID', 'Sentence','Document ID', 'Document'],
         'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Location", 'Person', 'Time',
                    'Time normalized NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
@@ -231,6 +304,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # param_list_NN = []
     corefed_pronouns = 0#pronouns that are corefed
     for annotator in annotator_params:
+        if not check_CoreNLP_language(config_filename, annotator, language):
+            continue
         if "gender" in annotator or "quote" in annotator or "coref" in annotator or "SVO" in annotator or "OpenIE" in annotator or ("parser" in annotator and "nn" in annotator):
             print("Using neural network model")
             neural_network = True
@@ -269,6 +344,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # the third item in routine_list is typ[ically a single lit [], but for POS it becomes a double list ['Verbs'],[Nouns]]
     # the case needs special handling
     POS_WordNet=False
+    if routine_list==[]: # when the language check fails for an annotator
+        return filesToOpen
     if isinstance(routine_list[0][2][0],list):
         run_output = [[], []]
         POS_WordNet=True
@@ -372,7 +449,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
             head, tail = os.path.split(doc)
             if docName != doc:
                 print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
-            text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
+            text = open(doc, 'r', encoding=language_encoding, errors='ignore').read().replace("\n", " ")
             if "%" in text:
                 reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_percent,
                                              reminders_util.message_CoreNLP_percent, True)
@@ -382,7 +459,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
             #if there's only one annotator and it uses neural nerwork model, skip annoatiting with PCFG to save time
             if param_string != '':
-                # text = open(doc, 'r', encoding='utf-8', errors='ignore').read().replace("\n", " ")
                 annotator_start_time = time.time()
                 CoreNLP_output = nlp.annotate(text, properties=params)
                 errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window,
@@ -405,8 +481,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 if print_json:
                     jsonFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
                                                                            'CoreNLP_' + str(
-                                                                               annotator_params) + '_json_output_NN')
-                    with open(jsonFilename, "a+", encoding='utf-8', errors='ignore') as json_out:
+                                                                               annotator_params[0]) + '_json')
+                    with open(jsonFilename, "a+", encoding=language_encoding, errors='ignore') as json_out:
                         json.dump(CoreNLP_output, json_out, indent=4,ensure_ascii=False)
                     # no need to open the Json file
                     # if jsonFilename not in filesToOpen:
@@ -445,8 +521,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     if print_json:
                         jsonFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
                                                                                'CoreNLP_' + str(
-                                                                                   annotator_params) + '_json_output_NN')
-                        with open(jsonFilename, "a+", encoding='utf-8', errors='ignore') as json_out_nn:
+                                                                                   annotator_params[0]) + '_json')
+                        with open(jsonFilename, "a+", encoding=language_encoding, errors='ignore') as json_out_nn:
                             json.dump(CoreNLP_output, json_out_nn, indent=4,ensure_ascii=False)
                         # no need to open the Json file
                         # if jsonFilename not in filesToOpen:
@@ -472,7 +548,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 if output_format == 'text':
                     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
                                                                              'CoreNLP_'+ str(annotator_chosen))
-                    with open(outputFilename, "a+", encoding='utf-8', errors='ignore') as output_text_file:
+                    with open(outputFilename, "a+", encoding=language_encoding, errors='ignore') as output_text_file:
                         # insert the separators <@# #@> in the the output file so that the file can then be split on the basis of these characters
                         if processing_doc != docTitle:
                             output_text_file.write("\n<@#" + docTitle + "#@>\n")
@@ -520,7 +596,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                               'CoreNLP_'+annotator_chosen+'_lemma'+output_format[index][0])
                 filesToOpen.append(outputFilename)
                 df = pd.DataFrame(run_output[index], columns=output_format[index])
-                df.to_csv(outputFilename, index=False, encoding = 'utf_8_sig')
+                df.to_csv(outputFilename, index=False, encoding = language_encoding)
         else: # single, merged output
             # generate output file name
             if annotator_chosen == 'NER':
@@ -565,7 +641,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 #count the number of corefed pronouns (COREF annotator)
                 if annotator_chosen == 'coref table':
                     corefed_pronouns = df.shape[0]
-                df.to_csv(outputFilename, index=False, encoding = 'utf_8_sig')
+                IO_csv_util.df_to_csv(GUI_util.window, df, outputFilename, headers=output_format, index=True)
     # print("Length of Files to Open after generating files: ", len(filesToOpen))
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
@@ -578,62 +654,272 @@ def CoreNLP_annotate(config_filename,inputFilename,
         if filesToVisualize[j][-4:] == ".csv":
             file_df = pd.read_csv(filesToVisualize[j])
             if not file_df.empty:
-                if "Lemma" in annotator_params:
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
-                                          'Frequency Distribution of Lemmas', 1, [], 'lemma_bar','Lemma')
-                elif 'All POS' in annotator_params:
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[2, 2]], 'bar',
-                                          'Frequency Distribution of POS Tag Values', 1, [], 'POS_bar','POS tag')
-                elif 'gender' in annotator_params and "gender" in filesToVisualize[j].split("_"):
-                    filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j], filesToOpen)
-                    if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "Gender":
-                        filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
-                                                            [[1, 1]], 'bar',
-                                                            'Frequency Distribution of Gender Types', 1, [],
-                                                            'gender_types','Gender')
 
-                        filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
-                                                          [[0, 0]], 'bar',
-                                              'Frequency Distribution of Words by Gender Type', 1, ['Gender'], 'gender_words','')
+# Lemma ________________________________________________________________
 
-                elif 'quote' in annotator_params and "quote" in filesToVisualize[j].split("_"):
-                    if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[5] == "Speakers":
-                        filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen,
-                                                        [[5, 5]], 'bar',
-                                                        'Frequency Distribution of Speakers', 1, [],
-                                                        'quote_bar', 'Speaker')
-                elif 'date' in annotator_params:
-                    # TODO put values hover-over values to pass to Excel chart as a list []
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
-                                          'Frequency Distribution of Normalized Dates', 1, [], 'NER_date_bar','Normalized date type')
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
-                                                      'Frequency Distribution of Information of Normalized Dates', 1, [], 'NER_info_bar','Date type')
-                elif 'NER' in annotator_params and "NER" in filesToVisualize[j].split("_"):
+                if "Lemma" in str(annotator_params):
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[2,2]],
+                                                                       columns_to_be_plotted_byDoc=[[2], [5, 6]],
+                                                                       columns_to_be_plotted_bySent=[[4,2]],
+                                                                       chartTitle='Frequency Distribution of Lemma Values',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='', #'POS_bar',
+                                                                       column_xAxis_label='Lemma values',
+                                                                       groupByList=['Document ID','Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Lemma Values')
+
+                    if chart_outputFilename!=None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+# All POS ________________________________________________________________
+
+                elif 'All POS' in str(annotator_params):
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[2,2]],
+                                                                       columns_to_be_plotted_byDoc=[[2], [5, 6]],
+                                                                       columns_to_be_plotted_bySent=[[4,2]],
+                                                                       chartTitle='Frequency Distribution of POS Tag Values',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='', #'POS_bar',
+                                                                       column_xAxis_label='POS tag values',
+                                                                       groupByList=['Document ID','Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='POS Tag Values')
+                    if chart_outputFilename!=None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+# date ________________________________________________________________
+
+                elif 'date' in str(annotator_params):
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[1, 1]],
+                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_byDoc=[[6, 7]],
+                                                                       chartTitle='Frequency Distribution of Normalized Dates',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='', #'NER_date_bar',
+                                                                       column_xAxis_label='Normalized date type',
+                                                                       groupByList=['Document ID','Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Normalized Dates')
+                    if chart_outputFilename!=None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[3, 3]],
+                                                                       # columns_to_be_plotted_bySent=[[3, 1]],
+                                                                       # the fields must be numeric?
+                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_byDoc=[[6, 7]],
+                                                                       chartTitle='Frequency Distribution of Date Types',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='', #'NER_info_bar',
+                                                                       column_xAxis_label='Date type',
+                                                                       groupByList=['Document ID','Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Date Types')
+                    if chart_outputFilename!=None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+# gender ________________________________________________________________
+
+                elif 'gender' in str(annotator_params): # and "gender" in filesToVisualize[j].split("_"):
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[1, 1]],
+                                                                       # columns_to_be_plotted_bySent=[[3,1]],
+                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_byDoc=[[4, 5]],
+                                                                       chartTitle='Frequency Distribution of Gender Values',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='', #'gender_bar',
+                                                                       column_xAxis_label='Gender values',
+                                                                       groupByList=['Document ID', 'Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Statistical Measures for Gender')
+                    if chart_outputFilename!=None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+                    chart_outputFilename = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j])
+                    if chart_outputFilename!=None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+# quote ________________________________________________________________
+
+                elif 'quote' in str(annotator_params): # and "quote" in filesToVisualize[j].split("_"):
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[1, 1]],
+                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_byDoc=[[4, 5]],
+                                                                       chartTitle='Frequency Distribution of Speakers',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='', #'quote_bar',
+                                                                       column_xAxis_label='Speakers',
+                                                                       groupByList=['Document ID', 'Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Statistical Measures for Quotes')
+                    if chart_outputFilename != None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+# sentiment ________________________________________________________________
+
+                elif 'sentiment' in str(annotator_params): # and "sentiment" in filesToVisualize[j].split("_"):
+                    if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[0] == "Sentiment score":
+                        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                           outputDir,
+                                                                           columns_to_be_plotted_bar=[[0, 0]], # sentiment score
+                                                                           columns_to_be_plotted_bySent=[[2,0]],
+                                                                           columns_to_be_plotted_byDoc=[[5,0]],
+                                                                           chartTitle='Frequency Distribution of Sentiment Scores',
+                                                                           # count_var = 1 for columns of alphabetic values
+                                                                           # counting sentiment alphabetic labels (negative, neutral, positive) rather than numeric values
+                                                                           count_var=0, hover_label=[],
+                                                                           outputFileNameType='', #'senti_bar',
+                                                                           column_xAxis_label='Sentiment score',
+                                                                           groupByList=['Document ID', 'Document'],
+                                                                           plotList=['Sentiment score'],
+                                                                           chart_title_label='Sentiment Statistics')
+                        if chart_outputFilename != None:
+                            if len(chart_outputFilename) > 0:
+                                filesToOpen.extend(chart_outputFilename)
+
+# NER ________________________________________________________________
+
+                elif 'NER' in str(annotator_params): # and "NER" in filesToVisualize[j].split("_"):
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "NER Value":
-                        filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[1, 1]], 'bar',
-                                              'Frequency Distribution of NER Tags', 1, [], 'NER_tag_bar','NER tag')
-                        # ner tags are _ separated; individual NER tags at most have 2 _ (e.g., STATE_OR_PROVINCE)
+                        # plot NER tag (e.g, LOCATION)
+                        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                           outputDir,
+                                                                           columns_to_be_plotted_bar=[[1, 1]],
+                                                                           # columns_to_be_plotted_bySent=[[3, 1]],
+                                                                           # the fields must be numeric?
+                                                                           columns_to_be_plotted_bySent=[[]],
+                                                                           columns_to_be_plotted_byDoc=[[6, 7]],
+                                                                           chartTitle='Frequency Distribution of NER Tags',
+                                                                           # count_var = 1 for columns of alphabetic values
+                                                                           count_var=1, hover_label=[],
+                                                                           outputFileNameType='', #'NER_tag_bar',
+                                                                           column_xAxis_label='NER tag',
+                                                                           groupByList=['Document ID','Document'],
+                                                                           plotList=['Frequency'],
+                                                                           chart_title_label='NER tag')
+                        if chart_outputFilename != None:
+                            if len(chart_outputFilename) > 0:
+                                filesToOpen.extend(chart_outputFilename)
+
                         if len(kwargs['NERs'])>1:
                             ner_tags = 'Multi-tags'
                         else:
                             ner_tags = str(kwargs['NERs'][0])
-                        filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[0, 0]], 'bar',
-                                              'Frequency Distribution of Words by NER ' +ner_tags, 1, ['NER Value'], 'NER_word_bar','') #NER ' +ner_tags+ ' Word
-                elif 'SVO' in annotator_params or 'OpenIE' in annotator_params:
-                    # pie chart of SVO
-                    # filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3],[4,4],[5,5]], 'pie',
-                    #                       'Frequency Distribution of SVOs', 1, [], 'SVO_pie','SVOs')
-                    filesToOpen=visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[3, 3]], 'bar',
-                                          'Frequency Distribution of Subjects (unfiltered)', 1, [], 'S_bar','Subjects (unfiltered)')
-                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[4, 4]], 'bar',
-                                                        'Frequency Distribution of Verbs (unfiltered)', 1, [], 'V_bar', 'Verbs (unfiltered)')
-                    filesToOpen = visualize_Excel_chart(createExcelCharts, filesToVisualize[j], outputDir, filesToOpen, [[5, 5]], 'bar',
-                                                        'Frequency Distribution of Objects (unfiltered)', 1, [], 'O_bar', 'Objects (unfiltered)')
-                    if 'SVO' in annotator_params:
+                        # plot the words contained in each NER tag (e.g, the word 'Rome' in NER tag LOCATION)
+                        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                           outputDir,
+                                                                           columns_to_be_plotted_bar=[[0, 0]],
+                                                                           columns_to_be_plotted_bySent=[[]],
+                                                                           columns_to_be_plotted_byDoc=[[6, 7]],
+                                                                           chartTitle='Frequency Distribution of Words by NER Tag' +ner_tags,
+                                                                           # count_var = 1 for columns of alphabetic values
+                                                                           count_var=1, hover_label=[],
+                                                                           outputFileNameType='', #'NER_word_bar',
+                                                                           column_xAxis_label='NER word',
+                                                                           groupByList=['Document ID','Document'],
+                                                                           plotList=['Frequency'],
+                                                                           chart_title_label='NER Words')
+                        if chart_outputFilename != None:
+                            if len(chart_outputFilename) > 0:
+                                filesToOpen.extend(chart_outputFilename)
+
+# SVO ________________________________________________________________
+
+                elif 'SVO' in str(annotator_params) or 'OpenIE' in str(annotator_params):
+                    # plot Subjects
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[0, 0]],
+                                                                       # columns_to_be_plotted_bySent=[[3, 1]],
+                                                                       # the fields must be numeric?
+                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_byDoc=[[]],
+                                                                       chartTitle='Frequency Distribution of Subjects (unfiltered)',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='', #'S_bar',
+                                                                       column_xAxis_label='Subjects (unfiltered)',
+                                                                       groupByList=[],
+                                                                       plotList=[],
+                                                                       chart_title_label='')
+                    if chart_outputFilename != None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+                    # plot Verbs
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[1, 1]],
+                                                                       # columns_to_be_plotted_bySent=[[3, 1]],
+                                                                       # the fields must be numeric?
+                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_byDoc=[[]],
+                                                                       chartTitle='Frequency Distribution of Verbs (unfiltered)',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='', #'V_bar',
+                                                                       column_xAxis_label='Verbs (unfiltered)',
+                                                                       groupByList=[],
+                                                                       plotList=[],
+                                                                       chart_title_label='')
+                    if chart_outputFilename != None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+                    # plot Objects
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[2, 2]],
+                                                                       # columns_to_be_plotted_bySent=[[3, 1]],
+                                                                       # the fields must be numeric?
+                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_byDoc=[[]],
+                                                                       chartTitle='Frequency Distribution of Objects (unfiltered)',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='', #'O_bar',
+                                                                       column_xAxis_label='Objects (unfiltered)',
+                                                                       groupByList=[],
+                                                                       plotList=[],
+                                                                       chart_title_label='')
+                    if chart_outputFilename != None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+                    if 'SVO' in str(annotator_params):
                         for key, value in kwargs.items():
                             if key == "gender_var" and value == True:
-                                filesToOpen = visualize_html_file(inputFilename, inputDir, outputDir, kwargs["gender_filename"],
-                                                                  filesToOpen, genderCol=["S Gender", "O Gender"], wordCol=["Subject (S)", "Object (O)"])
+                                chart_outputFilename = visualize_html_file(inputFilename, inputDir, outputDir, kwargs["gender_filename"],
+                                                                  genderCol=["S Gender", "O Gender"], wordCol=["Subject (S)", "Object (O)"])
+                                if chart_outputFilename!=None:
+                                    if len(chart_outputFilename) > 0:
+                                        filesToOpen.extend(chart_outputFilename)
+# coref ________________________________________________________________
+
                 if "coref table" in str(annotator_params) or "parser" in str(annotator_params) or "SVO" in str(annotator_params):
                     if "coref table" in str(annotator_params):
                         param = "coref table"
@@ -641,11 +927,14 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         param = "CoNLL"
                     if "SVO" in str(annotator_params):
                         param = "SVO"
-                    pronoun_files = check_pronouns(config_filename, filesToVisualize[j],
-                                             outputDir,
-                                             createExcelCharts, param, corefed_pronouns)
-                    if len(pronoun_files)>0:
-                        filesToOpen.extend(pronoun_files)
+                    # pronoun_files = check_pronouns(config_filename, filesToVisualize[j],
+                    #                          outputDir, filesToOpen,
+                    #                          createCharts,chartPackage, param, corefed_pronouns)
+                    check_pronouns(config_filename, filesToVisualize[j],
+                                             outputDir, filesToOpen,
+                                             createCharts,chartPackage, param, corefed_pronouns)
+                    # if len(pronoun_files)>0:
+                    #     filesToOpen.extend(pronoun_files)
 
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))
@@ -654,7 +943,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         errorFile = os.path.join(outputDir,
                                            IO_files_util.generate_output_file_name(IO_csv_util.dressFilenameForCSVHyperlink(inputFilename), inputDir, outputDir, '.csv',
                                                                                    'CoreNLP', 'file_ERRORS'))
-        IO_csv_util.list_to_csv(GUI_util.window, filesError, errorFile, encoding = 'utf_8_sig')
+        IO_csv_util.list_to_csv(GUI_util.window, filesError, errorFile, encoding = language_encoding)
         filesToOpen.append(errorFile)
     # record the time consumption of generating outputfiles and visualization
     # record the time consumption of running the whole analysis
@@ -664,7 +953,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     speed_csv = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                            'CoreNLP_speed_assessment')
     df = pd.DataFrame(speed_assessment, columns=speed_assessment_format)
-    df.to_csv(speed_csv, index=False, encoding = 'utf_8_sig')
+    df.to_csv(speed_csv, index=False, encoding = language_encoding)
     if len(inputDir) != 0:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Output warning', 'The output filename generated by Stanford CoreNLP is the name of the directory processed in input, rather than any individual file in the directory. The output file(s) include all ' + str(nDocs) + ' files in the input directory processed by CoreNLP.\n\nThe different files are listed in the output csv file under the headers \'Document ID\' and \'Document\'.')
 
@@ -705,6 +994,7 @@ def check_sentence_length(sentence_length, sentenceID, config_filename):
             order = "nd"
         elif sentenceID % 10 == 3:
             order = "rd"
+
         print("   Warning: The", str(sentenceID) + order, "sentence has " + str(sentence_length) + " words, more than the 100 max recommended by CoreNLP for best performance.")
         reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
                                      reminders_util.message_CoreNLP_sentence_length, True)
@@ -743,7 +1033,7 @@ def date_in_filename(document, **kwargs):
                                                            date_format)
     return date_str
 
-# ["Word", "Normalized date", "tid","tense","information","Sentence ID", "Sentence", "Document ID", "Document"],
+# ["Word", "Normalized date", "tid","tense","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
 def date_get_tense(norm_date):
     tense = ''
     # print(norm_date)
@@ -1259,7 +1549,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
     SVO_brief = []
     locations = [] # a list of [sentence, sentence id, [location_text, ner_value]]
     for sentence in json['sentences']:#traverse output of each sentence
-        sent_data = SVO_enhanced_dependencies_util.SVO_enhanced_dependencies_sent_data_reorg(sentence)#reorganize the output into a dictionary in which each content (also dictionary) contains information of a token
+        sent_data = Stanford_CoreNLP_SVO_enhanced_dependencies_util.SVO_enhanced_dependencies_sent_data_reorg(sentence)#reorganize the output into a dictionary in which each content (also dictionary) contains information of a token
         #including a dictionary (govern_dictionary) indicating the index of tokens whose syntactical head is the current token
 
         complete_sent = ''#build sentence string
@@ -1276,7 +1566,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
         # CYNTHIA: feed another information sentence['entitymentions'] to SVO_extraction to get locations
-        SVO, L, NER_value, T, T_S, P, N = SVO_enhanced_dependencies_util.SVO_extraction(sent_data, sentence['entitymentions'])# main function
+        SVO, L, NER_value, T, T_S, P, N = Stanford_CoreNLP_SVO_enhanced_dependencies_util.SVO_extraction(sent_data, sentence['entitymentions'])# main function
         nidx = 0
 
         #CYNTHIA: " ".join(L) => "; ".join(L)
@@ -1306,7 +1596,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         merge_df = pd.merge(merge_df, gender_df, on=["Object (O)", "Sentence ID", "Document ID"], how='left')
         merge_df = merge_df[['Subject (S)', 'S Gender', 'Verb (V)', 'Object (O)', 'O Gender', 'Sentence ID','Sentence', 'Document ID', 'Document']]
         merge_df = merge_df.drop_duplicates()
-        merge_df.to_csv(kwargs["gender_filename"], index=False, mode="a", encoding = 'utf_8_sig')
+        merge_df.to_csv(kwargs["gender_filename"], index=False, mode="a", encoding = language_encoding)
 
     if quote_var:
         SVO_df = pd.DataFrame(SVO_brief, columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
@@ -1314,7 +1604,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         merge_df = pd.merge(SVO_df, quote_df, on=["Sentence ID", "Document ID"], how='left')
         merge_df = merge_df[['Subject (S)', 'Verb (V)', 'Object (O)', "Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]]
         merge_df = merge_df.drop_duplicates()
-        merge_df.to_csv(kwargs["quote_filename"], index=False, mode="a", encoding = 'utf_8_sig')
+        merge_df.to_csv(kwargs["quote_filename"], index=False, mode="a", encoding = language_encoding)
 
     return SVO_enhanced_dependencies
 
@@ -1727,6 +2017,17 @@ def similar_string_floor_filter(str1, str2):
     else:
         return False
 
+# From Tony Chen Gu to Everyone 10:03 PM
+def get_csv_column_unique_val_list(inputFilename, col):
+    '''
+    inputFilename (str) : csv file path
+    col (int)           : the column number of the desired colum
+    returns (list)      : list of unique values in the csv file
+    '''
+    data = pd.read_csv(inputFilename, encoding='utf-8')
+    return list(set(data.iloc[:col]))
+
+
 def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
     # columns: Location, NER Value, Sentence ID, Sentence, Document ID, Document
     to_write = []
@@ -1748,62 +2049,89 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
 
     df = pd.DataFrame(to_write, columns=columns)
     if not os.path.exists(kwargs["location_filename"]):
-        df.to_csv(kwargs["location_filename"], header='column_names', index=False, encoding = 'utf_8_sig')
+        df.to_csv(kwargs["location_filename"], header='column_names', index=False, encoding = language_encoding)
     else:
-        df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False, encoding = 'utf_8_sig')
+        df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False, encoding = language_encoding)
 
 # the gender annotator displays results in an html file
-def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, filesToOpen, genderCol=["Gender"], wordCol=[]):
+def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, genderCol=["Gender"], wordCol=[]):
+    chart_outputFilename=[]
     for col in genderCol:
         if col not in IO_csv_util.get_csvfile_headers(dictFilename, False):
-         return
-
+            return chart_outputFilename
     # annotate the input file(s) for gender values
     csvValue_color_list = [genderCol, '|', 'FEMALE', 'red', '|', 'MALE', 'blue', '|']
     bold_var = True
     tagAnnotations = ['<span style="color: blue; font-weight: bold">', '</span>']
-    tempFilename = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
+    chart_outputFilename = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
                                                              dictFilename, wordCol,
                                                              csvValue_color_list, bold_var, tagAnnotations,
                                                              fileType='.txt')
     # the annotator returns a list rather than a string
-    if len(tempFilename) > 0:
-        filesToOpen.append(tempFilename[0])
+    return chart_outputFilename
 
-    return filesToOpen
+# # columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc
+# #   all double lists [[]]
+# # the variable groupByList,plotList, chart_title_label are used to compute column statistics
+# def charts_util.visualize_chart(createCharts,chartPackage,inputFilename,outputDir,filesToOpen, columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_title_label):
+#     if createCharts == True:
+#         # standard bar chart
+#         chart_outputFilename = charts_util.run_all(columns_to_be_plotted_bar, inputFilename, outputDir,
+#                                                   outputFileLabel=outputFileNameType,
+#                                                   chartPackage=chartPackage,
+#                                                   chart_type_list=['bar'],
+#                                                   chart_title=chartTitle,
+#                                                   column_xAxis_label_var=column_xAxis_label,
+#                                                   hover_info_column_list=hover_label,
+#                                                   count_var=count_var)
+#         if chart_outputFilename!=None:
+#             if len(chart_outputFilename) > 0:
+#                 filesToOpen.append(chart_outputFilename)
+#
+#         # bar charts by document
+#         # # document value comes second in [[]]
+#         chart_outputFilename = charts_util.run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
+#                                                   outputFileLabel='ByDoc',
+#                                                   chartPackage=chartPackage,
+#                                                   chart_type_list=['bar'],
+#                                                   chart_title=chartTitle + ' by Document',
+#                                                   column_xAxis_label_var='',
+#                                                   hover_info_column_list=hover_label,
+#                                                   count_var=1,
+#                                                   remove_hyperlinks=True)
+#
+#         if chart_outputFilename!=None:
+#             if len(chart_outputFilename) > 0:
+#                 filesToOpen.append(chart_outputFilename)
+#
+#         # line plots by sentence index
+#         chart_outputFilename = charts_util.run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
+#                                                   outputFileLabel='BySent',
+#                                                   chartPackage=chartPackage,
+#                                                   chart_type_list=['line'],
+#                                                   chart_title=chartTitle + ' by Sentence Index',
+#                                                   column_xAxis_label_var='Sentence index',
+#                                                   hover_info_column_list=hover_label,
+#                                                   count_var=0,
+#                                                   complete_sid=True)
+#
+#         if chart_outputFilename!=None:
+#             if len(chart_outputFilename) > 0:
+#                 filesToOpen.append(chart_outputFilename)
+#
+#         # compute field statistics
+#         if len(groupByList)>0:
+#             tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, inputFilename, outputDir,
+#                                                                                groupByList, plotList, chart_title_label,
+#                                                                                createCharts,
+#                                                                                chartPackage)
+#
+#             if tempOutputfile != None:
+#                 filesToOpen.extend(tempOutputfile)
+#
+#     return filesToOpen
 
-def visualize_Excel_chart(createExcelCharts,inputFilename,outputDir,filesToOpen, columns_to_be_plotted, chartType, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label):
-    if createExcelCharts == True:
-        Excel_outputFilename = charts_Excel_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                                                  outputFileLabel=outputFileNameType,
-                                                  chart_type_list=[chartType],
-                                                  chart_title=chartTitle,
-                                                  column_xAxis_label_var=column_xAxis_label,
-                                                  hover_info_column_list=hover_label,
-                                                  count_var=count_var)
-        if Excel_outputFilename!=None:
-            if len(Excel_outputFilename) > 0:
-                filesToOpen.append(Excel_outputFilename)
-
-        # by sentence index
-        #
-        #     # line plots by sentence index
-        #     outputFiles = charts_Excel_util.compute_csv_column_frequencies(GUI_util.window,
-        #                                                                    inputFilename,
-        #                                                                    '',
-        #                                                                    outputDir,
-        #                                                                    openOutputFiles,
-        #                                                                    createExcelCharts,
-        #                                                                    [[1, 2]],
-        #                                                                    ['Normalized date'],['Word', 'Sentence'],['Document ID', 'Sentence ID','Document'],
-        #                                                                    'date', 'line')
-        #
-        #     if len(outputFiles) > 0:
-        #         filesToOpen.extend(outputFiles)
-
-    return filesToOpen
-
-def check_pronouns(config_filename, inputFilename, outputDir, createExcelCharts, option, corefed_pronouns):
+def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, createCharts,chartPackage, option, corefed_pronouns):
     return_files = []
     df = pd.read_csv(inputFilename)
     if df.empty:
@@ -1853,14 +2181,21 @@ def check_pronouns(config_filename, inputFilename, outputDir, createExcelCharts,
             print("Number of pronouns: ", total_count)
             print("Number of coreferenced pronouns: ", corefed_pronouns)
             print("Pronouns coreference rate: ", str(round((corefed_pronouns / total_count) * 100, 2)) + "%")
-        if createExcelCharts:
-            data_to_be_plotted = [["Pronoun", "Pronoun Count"], ["Total Count", total_count]]
-            for w in sorted(pronouns_count, key=pronouns_count.get, reverse=True):
-                data_to_be_plotted.append([w, pronouns_count[w]])
-            data_to_be_plotted = [data_to_be_plotted]
-            Excel_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window, data_to_be_plotted, inputFilename, outputDir,
-                                                      "Pronouns_bar", "Frequency Distribution of Pronouns",
-                                                      ["bar"], "Pronouns", "Frequency")
-            return_files.append(Excel_outputFilename)
-    return return_files
-
+        # TODO CLAUDE the code will break
+        # if createCharts:
+        #     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
+        #                                                        outputDir,
+        #                                                        columns_to_be_plotted_bar=[[0, 0]],
+        #                                                        columns_to_be_plotted_bySent=[[]],
+        #                                                        columns_to_be_plotted_byDoc=[[10,11]],
+        #                                                        chartTitle='Frequency Distribution of Pronouns',
+        #                                                        # count_var = 1 for columns of alphabetic values
+        #                                                        count_var=1, hover_label=[],
+        #                                                        outputFileNameType='', #'pronouns_bar',
+        #                                                        column_xAxis_label='Pronouns',
+        #                                                        groupByList=[],
+        #                                                        plotList=[],
+        #                                                        chart_title_label='')
+        #     if chart_outputFilename != None:
+        #         if len(chart_outputFilename) > 0:
+        #             filesToOpen.extend(chart_outputFilename)

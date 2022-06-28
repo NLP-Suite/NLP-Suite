@@ -30,14 +30,14 @@ def check_system():
         return "mac"
 
 
-def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles=False, createExcelCharts=False,
-              filter_svo=('', '', '')) -> list:
+def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles=False, createCharts=False,
+              chartPackage='Excel', filter_svo=('', '', '')) -> list:
     """
     Run the senna-osx with input type either file or directory
     :param inputFilename: name of the input text file
     :param inputDir: name of the input directory
     :param outputDir: name of the output file
-    :param createExcelCharts: whether to create excel charts right after running
+    :param createCharts: whether to create excel charts right after running
     :param filter_svo: a tuple with three strings, each representing a dictionary file for filtering s, v or o
     :return: a list of the files to be opened
     """
@@ -327,7 +327,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
     Converts a csv file with SRL results to SVO results
     :param input_df: a df file with SRL results
     :param output_file_name: the path of the output file
-    :param createExcelCharts: whether to create excel charts right after running
+    :param createCharts: whether to create excel charts right after running
     :param filter_svo: a tuple with three strings, each representing a dictionary file for filtering s, v or o
     :return: the path of the output file
     """
@@ -414,5 +414,5 @@ if __name__ == '__main__':
     dir_name = ''
     file_name = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/test.txt'
     output_dir = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/'
-    run_senna(file_name, dir_name, output_dir, openOutputFiles=openOutputFiles, createExcelCharts=createExcelCharts)
+    run_senna(file_name, dir_name, output_dir, openOutputFiles=openOutputFiles, createCharts=createCharts, chartPackage=chartPackage)
     # get_verb_root('taking')
