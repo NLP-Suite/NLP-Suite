@@ -932,7 +932,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     #                          createCharts,chartPackage, param, corefed_pronouns)
                     check_pronouns(config_filename, filesToVisualize[j],
                                              outputDir, filesToOpen,
-                                             createCharts,chartPackage, param, corefed_pronouns)
+                                             createCharts,chartPackage, param, corefed_pronouns, CoreNLP_output)
                     # if len(pronoun_files)>0:
                     #     filesToOpen.extend(pronoun_files)
 
@@ -1353,14 +1353,14 @@ def process_json_coref(config_filename,documentID, document, sentenceID, json, *
     output_text = get_resolved(json, sentenceID)
     return output_text
 
-def count_pronoun(json):
-    nn = 0
-    for sentence in json['sentences']:
-        # sentenceID = sentenceID + 1
-        for token in sentence['tokens']:
-            if token["pos"] == "PRP$" or token["pos"] == "PRP":
-                nn += 1
-    return nn
+# def count_pronoun(json):
+#     nn = 0
+#     for sentence in json['sentences']:
+#         # sentenceID = sentenceID + 1
+#         for token in sentence['tokens']:
+#             if token["pos"] == "PRP$" or token["pos"] == "PRP":
+#                 nn += 1
+#     return nn
 
 
 def process_json_coref_table(config_filename, documentID, document, sentenceID, json, **kwargs):
@@ -2131,7 +2131,7 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, gender
 #
 #     return filesToOpen
 
-def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, createCharts,chartPackage, option, corefed_pronouns):
+def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, createCharts,chartPackage, option, corefed_pronouns, json):
     return_files = []
     df = pd.read_csv(inputFilename)
     if df.empty:
@@ -2144,30 +2144,39 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
     pronouns = ["i", "you", "he", "she", "it", "we", "they", "me", "her", "him", "us", "them", "my", "mine", "hers", "his", "its", "our", "ours", "their", "your", "yours", "myself", "yourself", "himself", "herself", "oneself", "itself", "ourselves", "yourselves", "themselves"]
     total_count = 0
     pronouns_count = {"i": 0, "you": 0, "he": 0, "she": 0, "it": 0, "we": 0, "they": 0, "me": 0, "her": 0, "him": 0, "us": 0, "them": 0, "my": 0, "mine": 0, "hers": 0, "his": 0, "its": 0, "our": 0, "ours": 0, "their": 0, "your": 0, "yours": 0, "myself": 0, "yourself": 0, "himself": 0, "herself": 0, "oneself": 0, "itself": 0, "ourselves": 0, "yourselves": 0, "themselves": 0}
-    for _, row in df.iterrows():
-        if option == "SVO":
-            if (not pd.isna(row["Subject (S)"])) and (str(row["Subject (S)"]).lower() in pronouns):
-                total_count+=1
-                pronouns_count[str(row["Subject (S)"]).lower()] += 1
-            if (not pd.isna(row["Object (O)"])) and (str(row["Object (O)"]).lower() in pronouns):
-                total_count+=1
-                pronouns_count[str(row["Object (O)"]).lower()] += 1
-        elif option == "CoNLL":
-            if (not pd.isna(row["Form"])) and (row["Form"].lower() in pronouns):
-                total_count+=1
-                pronouns_count[row["Form"].lower()] += 1
-        elif option == "coref table":
-            if (not pd.isna(row["Pronoun"])):
-                total_count += 1
-                try:
-                    # some pronouns extracted by CoreNLP coref as such may not be in the list
-                    #   e.g., "we both" leading to error
-                    pronouns_count[row["Pronoun"].lower()] += 1
-                except:
-                    continue
-        else:
-            print ("Wrong Option value!")
-            return []
+    if option == "coref table":
+        for sentence in json['sentences']:
+            # sentenceID = sentenceID + 1
+            for token in sentence['tokens']:
+                if token["pos"] == "PRP$" or token["pos"] == "PRP":
+                    total_count += 1
+                    pronouns_count[token["originalText"].lower()] += 1
+    else:
+        
+        for _, row in df.iterrows():
+            if option == "SVO":
+                if (not pd.isna(row["Subject (S)"])) and (str(row["Subject (S)"]).lower() in pronouns):
+                    total_count+=1
+                    pronouns_count[str(row["Subject (S)"]).lower()] += 1
+                if (not pd.isna(row["Object (O)"])) and (str(row["Object (O)"]).lower() in pronouns):
+                    total_count+=1
+                    pronouns_count[str(row["Object (O)"]).lower()] += 1
+            elif option == "CoNLL":
+                if (not pd.isna(row["Form"])) and (row["Form"].lower() in pronouns):
+                    total_count+=1
+                    pronouns_count[row["Form"].lower()] += 1
+            # elif option == "coref table":
+            #     if (not pd.isna(row["Pronoun"])):
+            #         total_count += 1
+            #         try:
+            #             # some pronouns extracted by CoreNLP coref as such may not be in the list
+            #             #   e.g., "we both" leading to error
+            #             pronouns_count[row["Pronoun"].lower()] += 1
+            #         except:
+            #             continue
+            else:
+                print ("Wrong Option value!")
+                return []
     pronouns_count["I"] = pronouns_count.pop("i")
     if total_count > 0:
         if option != "coref table":

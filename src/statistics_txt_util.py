@@ -407,6 +407,7 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
 
     return filesToOpen
 
+# inputString is the list of search words
 # wordList is a string
 def extract_sentences(window, inputFilename, inputDir, outputDir, inputString):
     filesToOpen=[]
@@ -482,7 +483,12 @@ def extract_sentences(window, inputFilename, inputDir, outputDir, inputString):
             sentences = sent_tokenize_stanza(stanzaPipeLine(text))
             n_sentences_extract = 0
             n_sentences_extract_minus = 0
+            sentence_index = 0
             for sentence in sentences:
+                if len(sentence) == 0:
+                    sentence_index += 1
+                    continue
+                sentence_index += 1
                 wordFound = False
                 sentenceSV = sentence
                 nextSentence = False
@@ -494,13 +500,23 @@ def extract_sentences(window, inputFilename, inputDir, outputDir, inputString):
                     if caseSensitive==False:
                         sentence = sentence.lower()
                         word = word.lower()
-                    if word in sentence:
-                        wordFound = True
-                        nextSentence = True
-                        n_sentences_extract += 1
-                        outputFile_extract.write(sentenceSV + " ")  # write out original sentence
-                        file_extract_written = True
-                        # if none of the words in wordList are found in a sentence write the sentence to the extract_minus file
+                        # must tokenize or substrings will be found instead of exact strings
+                        # TODO Mino there is a similar approach in file_search_byWord_util
+                        #   lines 106-119 we need to adopt a similar approach so that substring are not picked up
+                        #   unless we want to with the use of * eventually
+                        tokens_ = [token.text.lower() for token in sentences[sentence_index-1].tokens]
+                    else:
+                        tokens_ = [token.text for token in sentences[sentence_index-1].tokens]
+
+                    for token in tokens_:
+                        if word == token:
+                            wordFound = True
+                            nextSentence = True
+                            n_sentences_extract += 1
+                            outputFile_extract.write(sentenceSV + " ")  # write out original sentence
+                            file_extract_written = True
+                            # if none of the words in wordList are found in a sentence write the sentence to the extract_minus file
+
                 if wordFound == False:
                     n_sentences_extract_minus += 1
                     outputFile_extract_minus.write(sentenceSV + " ")  # write out original sentence

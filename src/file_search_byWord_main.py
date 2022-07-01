@@ -16,6 +16,7 @@ import GUI_IO_util
 import IO_files_util
 import file_search_byWord_util
 import IO_user_interface_util
+import statistics_txt_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -42,6 +43,14 @@ def run(inputFilename,inputDir, outputDir,
                         'SEARCH options: ' + str(search_options_list)+'\nSEARCH words: '+search_keyword_values,
                                        True, '', True)
 
+    if not 'Search within document' in search_options_list:
+        search_options_list.append('Search within sentence (default)')
+
+    if search_by_keyword:
+        filesToOpen = file_search_byWord_util.run(inputFilename, inputDir, outputDir, search_by_dictionary,
+                                                  search_by_keyword, search_keyword_values, search_options_list,
+                                                  createCharts, chartPackage)
+
     if extract_sentences_var:
         import sentence_analysis_util
 
@@ -50,9 +59,6 @@ def run(inputFilename,inputDir, outputDir,
         extract_sentences_search_words_var = ''
         search_words_entry.configure(state='disabled')
 
-    if not 'Search within document' in search_options_list:
-        search_options_list.append('Search within sentence (default)')
-    filesToOpen = file_search_byWord_util.run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_keyword, search_keyword_values, search_options_list, createCharts, chartPackage)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

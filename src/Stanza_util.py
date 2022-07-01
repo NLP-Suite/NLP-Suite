@@ -63,16 +63,22 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     # record the time consumption before annotating text in each file
     processing_doc = ''
 
+    # test if the selected language model is already downloaded, if not, download
+    try:
+        nlp = stanza.Pipeline(lang=lang, processors='tokenize', verbose=False)
+    except:
+        stanza.download(lang)
+
     if "Lemma"  in annotator_params:
-        nlp = stanza.Pipeline(lang='en', processors='tokenize,lemma', verbose=False)
+        nlp = stanza.Pipeline(lang=lang, processors='tokenize,lemma', verbose=False)
     elif "NER" in annotator_params:
-        nlp = stanza.Pipeline(lang='en', processors='tokenize,ner',  verbose=False)
+        nlp = stanza.Pipeline(lang=lang, processors='tokenize,ner',  verbose=False)
     elif "All POS" in annotator_params:
-        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos', verbose=False)
+        nlp = stanza.Pipeline(lang=lang, processors='tokenize,pos', verbose=False)
     # elif "sentiment" in annotator_params:
     #     nlp = stanza.Pipeline(lang='en', processors='tokenize,sentiment')
     elif "depparse" in annotator_params:
-        nlp = stanza.Pipeline('en', processors='tokenize,ner,mwt,pos,lemma,depparse', verbose=False)
+        nlp = stanza.Pipeline(lang=lang, processors='tokenize,mwt,pos,lemma,depparse', verbose=False)
 
     df = pd.DataFrame()
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
@@ -143,7 +149,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         out_df.columns = [ 
             "ID",
             "Form",
-            "Lemma",
+            # "Lemma",
             "POStag",
             "Head",
             "DepRel",

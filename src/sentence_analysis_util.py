@@ -3,44 +3,16 @@ import GUI_util
 import IO_libraries_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "sentence_analysis_util",
-										  ['nltk', 'csv', 'tkinter', 'os', 'collections', 'subprocess', 'textstat',
-										   'itertools', 'ast']) == False:
+										  ['tkinter', 'os', 'collections','stanza']) == False:
 	sys.exit(0)
 
 import tkinter as tk
-import tkinter.messagebox as mb
 import collections
-from collections import Counter
 import os
-import csv
-import nltk
-# from nltk import tokenize
-# from nltk import word_tokenize
 from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
-# from gensim.utils import lemmatize
-from itertools import groupby
 import pandas as pd
-import ast
-import textstat
-import subprocess
-import spacy
-from nltk.tree import Tree
-from nltk.draw import TreeView
-from PIL import Image
-
-# Sentence Complexity
-import tree
-import node_sentence_complexity as Node
-import stanza
-
-import charts_util
 import IO_csv_util
 import IO_files_util
-import IO_user_interface_util
-import charts_util
-import statistics_csv_util
-import TIPS_util
-import GUI_IO_util
 
 
 def Extract(lst):
@@ -86,7 +58,6 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 			for each_sentence in sentences:
 				In = []
 				Sentence_ID += 1
-				# token=nltk.word_tokenize(each_sentence)
 				token = word_tokenize_stanza(stanzaPipeLine(each_sentence))
 				for word in token:
 					for dict_word in dic:
@@ -126,7 +97,6 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 			for each_sentence in sentences:
 				In = []
 				Sentence_ID += 1
-				# token = nltk.word_tokenize(each_sentence)
 				token = word_tokenize_stanza(stanzaPipeLine(each_sentence))
 				for word in token:
 					for dict_word in dic_value:
