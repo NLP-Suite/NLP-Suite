@@ -29,7 +29,7 @@ import IO_files_util
 import IO_csv_util
 import charts_util
 
-def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_search_keywords, search_keywords_list,
+def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_search_keywords, search_keywords_list,
         search_options_list, createCharts, chartPackage):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        "Started running the file search script at", True)
@@ -292,3 +292,171 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end",
                                        "Finished running the file search script at", True)
     return filesToOpen
+
+# inputString is the list of search words
+# wordList is a string
+def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputString, search_options_list,
+                                                  createCharts, chartPackage):
+    filesToOpen=[]
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    Ndocs = len(inputDocs)
+    if Ndocs == 0:
+        return
+
+    case_sensitive = False
+    lemmatize = False
+    search_keywords_found = False
+    search_within_sentence = False
+    for search_option in search_options_list:
+        if search_option == 'Case sensitive (default)':
+            case_sensitive = True
+        if search_option == 'Case insensitive':
+                case_sensitive = False
+        elif search_option == "Search within sentence (default)":
+            search_within_sentence = True
+        elif search_option == "Lemmatize":  # not available yet
+            lemmatize = True
+
+    # Win/Mac may use different quotation, we replace any directional quotes to straight ones
+    right_double = u"\u201C"  # “
+    left_double = u"\u201D"  # ”
+    straight_double = u"\u0022"  # "
+    if (right_double in inputString) or (left_double in inputString):
+        inputString = inputString.replace(right_double, straight_double)
+        inputString = inputString.replace(left_double, straight_double)
+    if inputString.count(straight_double) == 2:
+        # Append ', ' to the end of search_words_var so that literal_eval creates a list
+        inputString += ', '
+    # convert the string inputString to a list []
+    def Convert(inputString):
+        wordList = list(inputString.split(","))
+        return wordList
+
+    wordList = Convert(inputString)
+
+    # wordList = ast.literal_eval(inputString)
+    # print('wordList',wordList)
+    # try:
+    # 	wordList = ast.literal_eval(inputString)
+    # except:
+    # 	mb.showwarning(title='Search error',message='The search function encountered an error. If you have entered multi-word expressions (e.g. beautiful girl make sure to enclose them in double quotes "beautiful girl"). Also, make sure to separate single-word expressions, with a comma (e.g., go, come).')
+    # 	return
+    # case_sensitive = mb.askyesno("Python", "Do you want to process your search word(s) as case sensitive?")
+
+    if inputFilename!='':
+        inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
+        outputDir_sentences = os.path.join(outputDir, "sentences_" + inputFileBase)
+    else:
+        # processing a directory
+        inputDirBase = os.path.basename(inputDir)
+        outputDir_sentences = os.path.join(outputDir, "sentences_Dir_" + inputDirBase)
+
+    # create a subdirectory in the output directory
+    outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract', silent=True)
+    if outputDir_sentences_extract == '':
+        return
+    outputDir_sentences_extract_minus = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_minus', silent=True)
+    if outputDir_sentences_extract_minus == '':
+        return
+
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                   'Started running the Word search function at',
+                                                   True, '', True)
+
+    fileID = 0
+    file_extract_written = False
+    file_extract_minus_written = False
+    nDocsExtractOutput = 0
+    nDocsExtractMinusOutput = 0
+
+    for doc in inputDocs:
+        wordFound = False
+        fileID = fileID + 1
+        head, tail = os.path.split(doc)
+        print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
+        with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
+            text = inputFile.read().replace("\n", " ")
+        outputFilename_extract = os.path.join(outputDir_sentences_extract,tail[:-4]) + "_extract.txt"
+        outputFilename_extract_minus = os.path.join(outputDir_sentences_extract_minus,tail[:-4]) + "_extract_minus.txt"
+        with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
+                outputFilename_extract_minus, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_minus:
+            # sentences = tokenize.sent_tokenize(text)
+            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+            n_sentences_extract = 0
+            n_sentences_extract_minus = 0
+            sentence_index = 0
+            for sentence in sentences:
+                if len(sentence) == 0:
+                    sentence_index += 1
+                    continue
+                sentence_index += 1
+                wordFound = False
+                sentenceSV = sentence
+                nextSentence = False
+                for word in wordList:
+                    if nextSentence == True:
+                        # go to next sentence; do not write the same sentence several times if it contains several words in wordList
+                        break
+                    #
+                    if case_sensitive==False:
+                        sentence = sentence.lower()
+                        word = word.lower()
+                        # must tokenize or substrings will be found instead of exact strings
+                        # TODO Mino there is a similar approach in file_search_byWord_util
+                        #   lines 106-119 we need to adopt a similar approach so that substring are not picked up
+                        #   unless we want to with the use of * eventually
+                        tokens_ = [token.text.lower() for token in sentences[sentence_index-1].tokens]
+                    else:
+                        tokens_ = [token.text for token in sentences[sentence_index-1].tokens]
+
+                    for token in tokens_:
+                        if word == token:
+                            wordFound = True
+                            nextSentence = True
+                            n_sentences_extract += 1
+                            outputFile_extract.write(sentenceSV + " ")  # write out original sentence
+                            file_extract_written = True
+                            # if none of the words in wordList are found in a sentence write the sentence to the extract_minus file
+
+                if wordFound == False:
+                    n_sentences_extract_minus += 1
+                    outputFile_extract_minus.write(sentenceSV + " ")  # write out original sentence
+                    file_extract_minus_written = True
+        if file_extract_written == True:
+            # filesToOpen.append(outputFilename_extract)
+            nDocsExtractOutput += 1
+            file_extract_written = False
+        outputFile_extract.close()
+        if n_sentences_extract == 0: # remove empty file
+            os.remove(outputFilename_extract)
+        if file_extract_minus_written:
+            # filesToOpen.append(outputFilename_extract_minus)
+            nDocsExtractMinusOutput += 1
+            file_extract_minus_written = False
+        outputFile_extract_minus.close()
+        if n_sentences_extract_minus == 0: # remove empty file
+            os.remove(outputFilename_extract_minus)
+    if Ndocs == 1:
+        msg1 = str(Ndocs) + " file was"
+    else:
+        msg1 = str(Ndocs) + " files were"
+    if nDocsExtractOutput == 1:
+        msg2 = str(nDocsExtractOutput) + " file was"
+    else:
+        msg2 = str(nDocsExtractOutput) + " files were"
+    if nDocsExtractMinusOutput == 1:
+        msg3 = str(nDocsExtractMinusOutput) + " file was"
+    else:
+        msg3 = str(nDocsExtractMinusOutput) + " files were"
+    mb.showwarning("Warning", msg1 + " processed in input.\n\n" +
+                   msg2 + " written with _extract in the filename.\n\n" +
+                   msg3 + " written with _extract_minus in the filename.\n\n" +
+                   "Files were written to the subdirectories " + outputDir_sentences_extract + " and " + outputDir_sentences_extract_minus + " of the output directory." +
+                   "\n\nPlease, check the output subdirectories for filenames ending with _extract.txt and _extract_minus.txt.")
+
+    IO_files_util.openExplorer(window, outputDir_sentences)
+
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                   'Finished running the Word search unction at', True)
+
