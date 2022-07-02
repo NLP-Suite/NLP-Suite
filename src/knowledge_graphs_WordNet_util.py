@@ -118,7 +118,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
                                            "WordNet " + noun_verb + " aggregation.\n\nSome words in the list to be aggregated do not exist in Wordnet for " + noun_verb + ".\n\nPlease, check in command line the list of words not found in WordNet.")
         # mb.showwarning(title = "Warning", message = "WordNet " + noun_verb + " aggregation.\n\nSome words in the list to be aggregated do not exist in Wordnet for " + noun_verb + ".\n\nPlease, check in command line the list of words not found in WordNet.")
     fileName = os.path.basename(inputFile).split(".")[0]
-    outputFilenameCSV1=os.path.join(outputDir, "NLP_WordNet_UP_" + fileName+"_output.csv")
+    outputFilenameCSV1=os.path.join(outputDir, "NLP_WordNet_UP_" + noun_verb + '_' + fileName+"_output.csv")
     outputFilenameCSV1_new = outputFilenameCSV1.replace("_output", "")
     if (not 'VERB' in outputFilenameCSV1_new) and (not 'NOUN' in outputFilenameCSV1_new):
         outputFilenameCSV1_new = outputFilenameCSV1_new.replace("NLP_WordNet_UP_","NLP_WordNet_UP_"+noun_verb+"_")
@@ -132,7 +132,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     filesToOpen.append(outputFilenameCSV1_new)
     complete_csv_header(outputFilenameCSV1_new,"Intermediate synset")
     # outputFilenameCSV2 - with frequency in the filename - is the file with the handful of WordNett aggregated synsets and their frequency
-    outputFilenameCSV2 = os.path.join(outputDir, "NLP_WordNet_UP_" + fileName + "_frequency.csv")
+    outputFilenameCSV2 = os.path.join(outputDir, "NLP_WordNet_UP_" + noun_verb + '_' + fileName + "_frequency.csv")
     # Since the original output file returned by the JAVA script WordNet_Search_UP.jar contains
     #   the header Intermediate Synsets, this must be renamed to Intermediate synset 1
     IO_csv_util.rename_header(outputFilenameCSV1_new, "Intermediate Synsets","Intermediate synset 1")
