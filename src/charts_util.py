@@ -102,7 +102,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         # columns_to_be_plotted_byDoc is a double list [[][]] with
         #   select-columns in the first list
         #   group by columns in the second list
-        #   e.g., [[2],[5,6]] or [[2, 3],[5,6, 8]]
+        #   e.g., [[2],[5,6]] or [[2, 3],[5,6,8]]
         # document value are the first item in the list [[3,2]] i.e. 3
         #   plot values are the second item in the list [[3,2]] i.e. 2
         #  count_var should be
@@ -119,11 +119,11 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 
                 # TODO ROBY select_col any changes in the inputfile layout of columns
               #     will change the [0][0] items for selected_col
-                selected_col=[[columns_to_be_plotted_bar[0][0]]]
+                #selected_col=[[columns_to_be_plotted_bar[0][0]]]
                 temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window, inputFilename, None, outputDir,
                                                                 False, createCharts, chartPackage,
-                                                                selected_col=selected_col, hover_col=[],
-                                                                group_col=columns_to_be_plotted_byDoc,
+                                                                selected_col=[columns_to_be_plotted_byDoc[0]], hover_col=[],
+                                                                group_col=[columns_to_be_plotted_byDoc[1]],
                                                                 fileNameType='CSV', chartType='',pivot = pivot)
                 inputFilename=temp_outputFilename[0]
                 # count_var=0
