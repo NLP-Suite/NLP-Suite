@@ -759,6 +759,84 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
+# parser ________________________________________________________________
+
+                elif 'parse' in str(annotator_params): # and "parse" in filesToVisualize[j].split("_"):
+                    # Form & Lemma values
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[1, 1],[2, 2]],
+                                                                       # columns_to_be_plotted_bySent=[[3,1]],
+                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_byDoc=[[]],
+                                                                       chartTitle='Frequency Distribution of FORM & LEMMA Values',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='Form',
+                                                                       column_xAxis_label='FORM & LEMMA values',
+                                                                       groupByList=['Document ID', 'Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Statistical Measures for Form & Lemma Values')
+                    if chart_outputFilename!=None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+                    # POStag values
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[3, 3]],
+                                                                       # columns_to_be_plotted_bySent=[[3,1]],
+                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_byDoc=[[]],
+                                                                       chartTitle='Frequency Distribution of POS (Part of Speech) Tags',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='POS',
+                                                                       column_xAxis_label='POS tags',
+                                                                       groupByList=['Document ID', 'Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Statistical Measures for POS Tags')
+                    if chart_outputFilename!=None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+                    # NER values
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[4, 4]],
+                                                                       # columns_to_be_plotted_bySent=[[3,1]],
+                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_byDoc=[[]],
+                                                                       chartTitle='Frequency Distribution of NER (Named Entity Recognition) Values',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='NER',
+                                                                       column_xAxis_label='NER values',
+                                                                       groupByList=['Document ID', 'Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Statistical Measures for Form & Lemma Values')
+                    if chart_outputFilename!=None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+                    # DEPrel values
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted_bar=[[6, 6]],
+                                                                       # columns_to_be_plotted_bySent=[[3,1]],
+                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_byDoc=[[]],
+                                                                       chartTitle='Frequency Distribution of DEP Rel (Dependency Relations) Values',
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='DEPRel',
+                                                                       column_xAxis_label='DEP Rel values',
+                                                                       groupByList=['Document ID', 'Document'],
+                                                                       plotList=['Frequency'],
+                                                                       chart_title_label='Statistical Measures for DEPRel Values')
+                    if chart_outputFilename!=None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
 
 # quote ________________________________________________________________
 

@@ -381,7 +381,8 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputSt
         with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
                 outputFilename_extract_minus, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_minus:
             # sentences = tokenize.sent_tokenize(text)
-            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+            sentences_tokens = sent_tokenize_stanza(stanzaPipeLine(text), False)
+            sentences = [s.text for s in sentences_tokens]
             n_sentences_extract = 0
             n_sentences_extract_minus = 0
             sentence_index = 0
@@ -405,9 +406,9 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputSt
                         # TODO Mino there is a similar approach in file_search_byWord_util
                         #   lines 106-119 we need to adopt a similar approach so that substring are not picked up
                         #   unless we want to with the use of * eventually
-                        tokens_ = [token.text.lower() for token in sentences[sentence_index-1].tokens]
+                        tokens_ = [token.text.lower() for token in sentences_tokens[sentence_index-1].tokens]
                     else:
-                        tokens_ = [token.text for token in sentences[sentence_index-1].tokens]
+                        tokens_ = [token.text for token in sentences_tokens[sentence_index-1].tokens]
 
                     for token in tokens_:
                         if word == token:

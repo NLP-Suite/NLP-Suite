@@ -156,7 +156,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                         # 2 is the column plotted (e.g., Gender) in temp_outputFilename
                         # [[1, 3, 2]] will give different bars for each value
                         # [[1, 3]] will give one bar for each doc, the sum of all values in selected_column to be plotted
-                        # TODO TONY we should ask the same type of question for columns that are already in quantitative form if we want to compute a single mean value
+                        # TODO TONY we should ask the same type of question for columns that are already in quantitative form if we want to compute a single MEAN value
                         if chartPackage=="Excel":
                             column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,1)
                             number_column_entries = len(IO_csv_util.get_csv_field_values(inputFilename, column_name))

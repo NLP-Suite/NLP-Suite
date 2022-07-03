@@ -159,6 +159,7 @@ pydict["Predict encoding (via chardet)"] = ["file_checker_util.predict_encoding"
 pydict["Spelling checker/Unusual words (via nltk)"] = ["file_spell_checker_util.nltk_unusual_words"]
 pydict["Spelling checker (via SpellChecker)"] = ["file_spell_checker_util.check_for_typo"]
 pydict["Change to ASCII non-ASCII apostrophes & quotes and % to percent"] = ["file_cleaner_util.convert_quotes"]
+pydict["Remove all characters between a set of characters (e.g., []) from text file(s)"] = ["file_cleaner_util.remove_characters_between_characters"]
 pydict["Remove blank lines from text file(s)"] = ["file_cleaner_util.remove_blank_lines"]
 pydict["Find & Replace string"] = ["file_cleaner_util.find_replace_string"]
 pydict["Find & Replace string (via csv file)"] = ["file_spell_checker_util.spelling_checker_cleaner"]
@@ -228,6 +229,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Change to ASCII non-ASCII apostrophes & quotes and % to percent',
                     'Find & Replace string',
+                    'Remove all characters between a set of characters (e.g., []) from text file(s)',
                     'Find & Replace string (via csv file)',
                     'Remove blank lines from text file(s)',
                     'Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation',

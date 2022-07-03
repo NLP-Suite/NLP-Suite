@@ -30,8 +30,11 @@ def word_tokenize_stanza(doc):
 
 # returns list of sentence tokens
 # same as nltk.tokenize.sent_tokenize()
-def sent_tokenize_stanza(doc):
-    return [sentence.text for sentence in doc.sentences]
+def sent_tokenize_stanza(doc, return_text=True):
+    if return_text is False:
+        return [sentence for sentence in doc.sentences]
+    else:
+        return [sentence.text for sentence in doc.sentences]
 
 # returns a single lemmatized word. input should be a single word.
 # same as nltk.stem.wordnet.WordNetLemmatizer().lemmatize(text)

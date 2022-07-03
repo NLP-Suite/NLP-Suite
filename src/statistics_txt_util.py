@@ -271,8 +271,8 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                                                            columns_to_be_plotted_bySent=[[]],  # sentence not available
                                                            columns_to_be_plotted_byDoc=[[3, 2]],
                                                            chartTitle='Frequency of Sentences',
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='',  # 'line_bar',
+                                                           count_var=0, hover_label=[],
+                                                           outputFileNameType='sent',  # 'line_bar',
                                                            column_xAxis_label='Sentence',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Number of Sentences in Document'],
@@ -287,8 +287,8 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                                                            columns_to_be_plotted_bySent=[[]],  # sentence not available
                                                            columns_to_be_plotted_byDoc=[[4, 2]],
                                                            chartTitle='Frequency of Words',
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='',  # 'line_bar',
+                                                           count_var=0, hover_label=[],
+                                                           outputFileNameType='word',  # 'line_bar',
                                                            column_xAxis_label='Word',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Number of Words in Document'],
@@ -303,9 +303,9 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                                                            columns_to_be_plotted_bySent=[[]],  # sentence not available
                                                            columns_to_be_plotted_byDoc=[[5, 2]],
                                                            chartTitle='Frequency of Syllables',
-                                                           count_var=1,
+                                                           count_var=0,
                                                            hover_label=[],
-                                                           outputFileNameType='',  # 'syll_bar',
+                                                           outputFileNameType='syll',  # 'syll_bar',
                                                            column_xAxis_label='Syllable length',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Number of Syllables in Document'],
@@ -397,7 +397,7 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
                                                        columns_to_be_plotted_byDoc=[[0, 4]],
                                                        chartTitle='Frequency of Sentence Lengths',
                                                        count_var=1, hover_label=[],
-                                                       outputFileNameType='', #'line_bar',
+                                                       outputFileNameType='Sent', #'line_bar',
                                                        column_xAxis_label='Sentence length',
                                                        groupByList=['Document ID', 'Document'],
                                                        plotList=['Sentence length (in words)'], chart_title_label='Statistical Measures for Sentence Lenghts')
@@ -524,50 +524,6 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
 
     filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber, wordgram, excludePunctuation, frequency, bySentenceID)
 
-    # for file in filesToOpen:
-    #     if bySentenceID == True:
-    #         columns_to_be_plotted=[[2,1]] # sentence ID field comes first [2
-    #         hover_label=[str(index+1)+'-grams']
-    #         chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=inputFilename,
-    #                                                                                 outputDir=outputDir,
-    #                                                                                 select_col=[],
-    #                                                                                 group_col=['Sentence ID'],
-    #                                                                                 chartTitle=chartTitle + str(index + 1) + '-grams Frequencies by Sentence Index',
-    #                                                                                 series_label = ["Frequencies"])
-    #         if chart_outputFilename != "":
-    #             filesToOpen.append(chart_outputFilename)
-    #         else:
-    #             columns_to_be_plotted=[[2,1]] # sentence ID field comes first [2
-    #             hover_label=[str(index+1)+'-grams'] # change to sentence
-    #
-    #             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
-    #                                                                outputDir,
-    #                                                                columns_to_be_plotted_bar=columns_to_be_plotted,
-    #                                                                # columns_to_be_plotted_bySent=[[4, 2]],
-    #                                                                # the fields must be numeric?
-    #                                                                columns_to_be_plotted_bySent=[[]],
-    #                                                                columns_to_be_plotted_byDoc=[[]],
-    #                                                                chartTitle='Frequency of ' + chartTitle + str(DocumentID) + '-grams',
-    #                                                                count_var=1, hover_label=[], #hover_label,
-    #                                                                outputFileNameType='n-grams_'+str(DocumentID)+'_'+fn,
-    #                                                                column_xAxis_label='',
-    #                                                                groupByList=[],
-    #                                                                plotList=[],
-    #                                                                chart_title_label='')
-    #             if chart_outputFilename != None:
-    #                 if len(chart_outputFilename) > 0:
-    #                     filesToOpen.extend(chart_outputFilename)
-
-                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                #                                           outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
-                #                                           chartPackage=chartPackage,
-                #                                           chart_type_list=["bar"],
-                #                                           chart_title=chartTitle + str(index+1) + '-grams',
-                #                                           column_xAxis_label_var='',
-                #                                           hover_info_column_list=hover_label)
-                # if chart_outputFilename != "":
-                #     filesToOpen.append(chart_outputFilename)
-
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                        'Finished running Word/Characters N-Grams at', True, '', True, startTime, False )
 
@@ -576,26 +532,38 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        filesToOpen=[] # to void opening again
 
     return filesToOpen
 
 
 def process_punctuation(inputFilename, excludePunctuation, In, ctr, documentID):
-    if not excludePunctuation:
-        for ngrams in In:
+    if excludePunctuation:
+        # 5 & 6 prima
+        sent_freq_pos = 1  # insert sentence frequency
+        docID_pos = 5  # insert document ID, after Sentence
+        doc_pos = 6  # document after document ID
+    else:
+        punct_pos = 1 # insert punctuation
+        sent_freq_pos = 2 # insert sentence frequency
+        docID_pos = 7 # insert document ID, after Sentence
+        doc_pos = 8 # document after document ID
+
+    for ngrams in In:
+        if not excludePunctuation:
             char_flag = False
             for char in ngrams[0]:
                 if char in string.punctuation:
-                    ngrams.insert(1, 'yes')  # insert punctuation
+                    ngrams.insert(punct_pos, 'yes')  # insert punctuation
                     char_flag = True
                     break
                 else:
                     continue
             if not char_flag:
-                ngrams.insert(1, 'no')  # insert punctuation
-    In.insert(2, ctr.get(ngrams[0]))  # insert sentence frequency
-    In.insert(5, documentID)  # insert document ID, after Sentence
-    In.insert(6, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))  # insert document
+                ngrams.insert(punct_pos, 'no')  # insert punctuation
+        ngrams.insert(sent_freq_pos, ctr.get(ngrams[0]))  # insert sentence frequency
+        ngrams.insert(docID_pos, documentID)  # insert document ID, after Sentence
+        ngrams.insert(doc_pos, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))  # insert document
     return In
 
 # process the sentence ngramsList for frequency = 1 only
@@ -646,21 +614,13 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
     gram = 1
     while gram <= ngramsNumber:
         container = []
-        Sentence_ID = 0
         documentID = 0
         ngramsList = []
         print("Processing " + gram_type_label_full + " n-gram " + str(gram) + "/" + str(ngramsNumber))
-        # insert headers
-        if excludePunctuation:
-            container.insert(0, [str(gram) + '-grams', 'Frequency in Sentence', 'Frequency in Document', 'Frequency in Corpus', 'Sentence ID',
-                                 'Sentence', 'Document'])
-        else:
-            container.insert(0, [str(gram) + '-grams', 'Punctuation', 'Frequency in Sentence', 'Frequency in Document', 'Frequency in Corpus',
-                                 'Sentence ID', 'Sentence',
-                                 'Document ID', 'Document'])
         for file in files:
             head, tail = os.path.split(file)
             documentID += 1
+            Sentence_ID = 0
             print("   Processing file " + str(documentID) + "/" + str(nFile) + ' ' + tail)
             text = (open(file, "r", encoding="utf-8", errors='ignore').read())
             # split into sentences
@@ -669,7 +629,9 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                 if excludePunctuation:
                     each_sentence = each_sentence.translate(str.maketrans('', '', string.punctuation))
                 Sentence_ID += 1
-                # word ngrams
+
+# word ngrams ---------------------------------------------------------
+
                 if wordgram==1: # word ngrams
                     tokens=[]
                     for tk in word_tokenize_stanza(stanzaPipeLine(each_sentence)):
@@ -677,11 +639,18 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                     # loop through n-gram lengths in each sentence
                     for j in range(1,gram+1):
                         In = [tokens[i:i+j] for i in range(len(tokens)-(j-1))] # all ngrams
+                        # In contains a list of list, each list consisting of three items: token, frequency, sentence
                         In = transform([tk for tk in In if same_sentence_check(tk)])
+                        # the counter contains the frequency of each token in the sentence
                         ctr_sentence = collections.Counter(Extract(In))
+                        # if not excludePunctuation:
                         sentence_ngramsList=process_punctuation(file, excludePunctuation, In, ctr_sentence, documentID)
+                        # if frequency == 1:  # hapax
                         sentence_ngramsList = process_hapax(sentence_ngramsList, frequency)
                         ngramsList.extend(sentence_ngramsList)
+
+# character ngrams ---------------------------------------------------------
+
                 else: # character ngrams
                     char_tokens = []
                     char_tokens.append([''.join(word_tokenize_stanza(stanzaPipeLine(each_sentence))), Sentence_ID])
@@ -713,43 +682,63 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                         #     if not char_flag:
                         #         ng.insert(1, 'no')
 
-        # compute n-grams frequencies must be separated by document and by entire corpus
-        # TODO TONY
+            # n-grams frequencies must be computed by document
+            ctr_document = collections.Counter(Extract(ngramsList))
+            print("ctr_document",ctr_document)
+        # n-grams frequencies must be computed by entire corpus
+        ctr_corpus = collections.Counter(Extract(ngramsList))
+        print("ctr_corpus",ctr_corpus)
+        for ngrams in ngramsList:
+            if excludePunctuation:
+                # 3 & 4 prima
+                doc_freq_pos = 2  # insert document frequency
+                corpus_freq_pos = 3  # insert corpus frequency
+            else:
+                doc_freq_pos = 3  # insert document frequency
+                corpus_freq_pos = 4  # insert corpus frequency
 
-        # ctr = collections.Counter(Extract(ngramsList))
-        # for ngrams in ngramsList:
-        #     ngrams.insert(3, ctr.get(ngrams[0])) # compute n-grams document frequencies
-        #     ngrams.insert(4, ctr.get(ngrams[0])) # compute n-grams corpus frequencies
+            ngrams.insert(doc_freq_pos, ctr_document.get(ngramsList[0][0])) # compute n-grams document frequencies
+            ngrams.insert(corpus_freq_pos, ctr_document.get(ngramsList[1][0])) # compute n-grams corpus frequencies
 
-        # ngramsList = sorted(ngramsList, key=lambda x: x[1])
-        # container.extend(ngramsList)
+        ngramsList = sorted(ngramsList, key=lambda x: x[1])
+        # insert headers
+        if excludePunctuation:
+            container.insert(0, [str(gram) + '-grams', 'Frequency in Sentence', 'Frequency in Document', 'Frequency in Corpus',
+                                 'Sentence ID', 'Sentence',
+                                 'Document ID', 'Document'])
+        else:
+            container.insert(0, [str(gram) + '-grams', 'Punctuation', 'Frequency in Sentence', 'Frequency in Document', 'Frequency in Corpus',
+                                 'Sentence ID', 'Sentence',
+                                 'Document ID', 'Document'])
+        container.extend(ngramsList)
         # save output file after each n-gram value in the range
+        # code in next line breaks
         # container = sorted(container, key=lambda x: x[1])
         csv_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'n-grams' + str(gram) + '_' + gram_type_label_short,
                                                                      hapax_label + 'stats', '', '',
                                                                      '', False, True)
-        # TODO TONY all of sudden this command breaks in IO_csv_util.list_to_csv
-        IO_csv_util.list_to_csv(GUI_util.window, ngramsList, csv_outputFilename)
-        filesToOpen.append(csv_outputFilename)
+        errorFound = IO_csv_util.list_to_csv(GUI_util.window, container, csv_outputFilename)
+        if not errorFound:
+            filesToOpen.append(csv_outputFilename)
 
-            #         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
-            #                                                            outputDir,
-            #                                                            columns_to_be_plotted_bar=columns_to_be_plotted,
-            #                                                            # columns_to_be_plotted_bySent=[[4, 2]],
-            #                                                            # the fields must be numeric?
-            #                                                            columns_to_be_plotted_bySent=[[]],
-            #                                                            columns_to_be_plotted_byDoc=[[]],
-            #                                                            chartTitle='Frequency of ' + chartTitle + str(documentID) + '-grams',
-            #                                                            count_var=1, hover_label=[], #hover_label,
-            #                                                            outputFileNameType='n-grams_'+str(documentID)+'_'+ tail,
-            #                                                            column_xAxis_label='',
-            #                                                            groupByList=[],
-            #                                                            plotList=[],
-            #                                                            chart_title_label='')
-            #         if chart_outputFilename != None:
-            #             if len(chart_outputFilename) > 0:
-            #                 filesToOpen.extend(chart_outputFilename)
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, csv_outputFilename,
+                                                               outputDir,
+                                                               columns_to_be_plotted_bar=[[2, 0],[3, 0]],
+                                                               # columns_to_be_plotted_bySent=[[4, 2]],
+                                                               # the fields must be numeric?
+                                                               columns_to_be_plotted_bySent=[[]],
+                                                               columns_to_be_plotted_byDoc=[[]],
+                                                               chartTitle='Frequency of ' + str(gram) + '-gram',
+                                                               count_var=0, hover_label=[], #hover_label,
+                                                               outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
+                                                               column_xAxis_label='',
+                                                               groupByList=[],
+                                                               plotList=[],
+                                                               chart_title_label='')
+            if chart_outputFilename != None:
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
 
         gram += 1
     return filesToOpen
@@ -886,8 +875,10 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     else:
         hideMessage = True
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                           'Started running ' + processType + ' at', True)
+    # ngrams already display the started running... No need to duplicate
+    if not 'unigrams' in processType:
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                               'Started running ' + processType + ' at', True)
 
     for doc in inputDocs:
         head, tail = os.path.split(doc)
@@ -996,11 +987,13 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                         question_punctuation=question_punctuation+1
 
 # N-GRAMS & HAPAX --------------------------------------------------------------------------
-                # not used in style
-                if processType == '' or "N-grams" in processType or "hapax" in processType.lower():
+                if processType == '' or "N-grams" in processType or "hapax" in processType.lower() or "unigrams" in processType.lower():
                     if "hapax" in processType.lower():
                         ngramsNumber = 1
                         frequency = 1  # hapax
+                    elif "unigrams" in processType.lower():
+                        ngramsNumber = 1
+                        frequency = 0
                     else:
                         ngramsNumber = 3 # TODO ROBY
                         frequency = 0  # N-grams
@@ -1014,7 +1007,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                                                                     openOutputFiles, createCharts, chartPackage,
                                                                     bySentenceID)
                     # Excel charts are generated in compute_character_word_ngrams; return to exit here
-                    return
+                    return tempOutputFiles
 
     word_list.insert(0, header)
 

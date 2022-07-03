@@ -92,6 +92,56 @@ def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, openO
 
     mb.showwarning(title='End of paragraph punctuation', message=msgString)
 
+def remove_characters_between_characters(window,inputFilename,inputDir, outputDir='',openOutputFiles=False, startCharacter='', endCharacter=''):
+
+    if not IO_user_interface_util.input_output_save('Remove all characters between characters'):
+        return
+
+    if startCharacter=='':
+        startCharacter, useless = GUI_IO_util.enter_value_widget("Enter the start character (e.g., [)", '',
+                                                               1, '', '', '')
+        if startCharacter == '':
+            mb.showwarning(title='Blank start character',
+                           message='No start character entered. Routine aborted.')
+            return
+        endCharacter, useless = GUI_IO_util.enter_value_widget("Enter the end character (e.g., ])", '',
+                                                               1, '', '', '')
+        if endCharacter == '':
+            mb.showwarning(title='Blank end character',
+                           message='No end character entered. Routine aborted.')
+            return
+
+    docID = 0
+    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt')
+    nDocs = len(files)
+    if nDocs==0:
+        return
+    for file in files:
+        docID = docID + 1
+        head, tail = os.path.split(file)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        with open(file,encoding='utf_8',errors='ignore') as infile:
+            fullText = infile.read()
+            number_of_characters = fullText.count(startCharacter)
+            if number_of_characters == 0:
+                mb.showwarning(title='Start character not found',
+                               message='No Start character ' + startCharacter + ' was found in the input file ' + tail + '.\n\nRoutine aborted.')
+                return
+            i = 0
+            while i < number_of_characters:
+                split_string_A = fullText.split(startCharacter, 1) # Split into "ab" and "cd"
+                split_string_A = split_string_A[0]
+                # print("split_string_A",split_string_A)
+                split_string_B = fullText.split(endCharacter, 1) # Split into "ab" and "cd"
+                split_string_B = split_string_B[1]
+                # print("split_string_B",split_string_B)
+                fullText = split_string_A + split_string_B
+                # print("cleaned_text",fullText)
+                i +=1
+        with open(file, 'w+',encoding='utf_8',errors='ignore') as outfile:
+            outfile.write(fullText)
+            mb.showwarning(title='Edits saved', message=str(i) + ' substrings contained between ' + startCharacter + ' ' + endCharacter + ' were removed and saved directly in the input file ' + tail)
+
 # inputFilename contains path
 def remove_blank_lines(window,inputFilename,inputDir, outputDir='',openOutputFiles=False):
     result=file_filename_util.backup_files(inputFilename, inputDir)
