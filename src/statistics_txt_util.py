@@ -683,9 +683,11 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                         #         ng.insert(1, 'no')
 
             # n-grams frequencies must be computed by document
+            # TODO Mino
             ctr_document = collections.Counter(Extract(ngramsList))
             print("ctr_document",ctr_document)
         # n-grams frequencies must be computed by entire corpus
+        # TODO Mino
         ctr_corpus = collections.Counter(Extract(ngramsList))
         print("ctr_corpus",ctr_corpus)
         for ngrams in ngramsList:
