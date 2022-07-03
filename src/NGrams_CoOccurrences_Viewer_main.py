@@ -304,7 +304,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                column_xAxis_label='Co-occurring word',
                                                                groupByList=[],
                                                                plotList=[],
-                                                               chart_label='')
+                                                               chart_title_label='')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
                     filesToOpen.extend(chart_outputFilename)
@@ -666,9 +666,11 @@ TIPS_lookup = {'N-Grams (word & character)':"TIPS_NLP_Ngram (word & character).p
                'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
                'NLP Suite Ngram and Word Co-Occurrence Viewer':"TIPS_NLP_Ngram and Word Co-Occurrence Viewer.pdf",
                'Style analysis':'TIPS_NLP_Style analysis.pdf',
-               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf'}
+               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures':'TIPS_NLP_Statistical measures.pdf'}
     #,'Java download install run':'TIPS_NLP_Java download install run.pdf'}
-TIPS_options='N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis','Excel smoothing data series' #,'Java download install run'
+TIPS_options='N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis','Excel smoothing data series','csv files - Problems & solutions','Statistical measures'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

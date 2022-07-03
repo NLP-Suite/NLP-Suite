@@ -278,9 +278,11 @@ TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf",
                "Tagcrowd":"TIPS_NLP_Wordclouds Tagcrowd.pdf",
                'Excel charts': 'TIPS_NLP_Excel Charts.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
-                'Network Graphs (via Gephi)': 'TIPS_NLP_Gephi network graphs.pdf'
-               }
-TIPS_options='Lemmas & stopwords', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle', 'Excel smoothing data series', 'Network Graphs (via Gephi)'
+                'Network Graphs (via Gephi)': 'TIPS_NLP_Gephi network graphs.pdf',
+               'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
+
+TIPS_options='Lemmas & stopwords', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle', 'Excel smoothing data series', 'Network Graphs (via Gephi)', 'csv files - Problems & solutions', 'Statistical measures'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

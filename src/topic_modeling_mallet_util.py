@@ -270,7 +270,7 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
         #                                                    column_yAxis_label='Topic weight',
         #                                                    groupByList=[],
         #                                                    plotList=[],
-        #                                                    chart_label='')
+        #                                                    chart_title_label='')
         # if chart_outputFilename != None:
         #     if len(chart_outputFilename) > 0:
         #         filesToOpen.extend(chart_outputFilename)

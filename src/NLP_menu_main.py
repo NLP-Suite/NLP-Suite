@@ -455,8 +455,9 @@ TIPS_lookup = {'NLP Suite: Package description': 'TIPS_NLP_NLP Suite Package des
                'Style analysis': 'TIPS_NLP_Style analysis.pdf',
                'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf',
                'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
-               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf'}
-TIPS_options = 'NLP Suite: Package description', 'pip install & Anaconda environments', 'Text encoding (utf-8)','Excel - Enabling Macros','csv files - Problems & solutions', 'Setup Input/Output configuration for your corpus', 'Setup external software (e.g., MALLET)', 'Things to do with words: NLP approach', 'English Language Benchmarks',  'NLP Suite: General tools', 'NLP Suite: Tools of linguistic analysis', 'NLP basic language', 'Things to do with words: Overall view', 'Things to do with words: Content analysis', 'Things to do with words: Frame analysis', 'Things to do with words: Narrative analysis', 'Things to do with words: Rhetoric (Arguments)', 'Things to do with words: Rhetoric (Tropes & Figures)', 'Style analysis'
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures':'TIPS_NLP_Statistical measures.pdf',}
+TIPS_options = 'NLP Suite: Package description', 'pip install & Anaconda environments', 'Text encoding (utf-8)','Excel - Enabling Macros','csv files - Problems & solutions', 'Statistical measures', 'Setup Input/Output configuration for your corpus', 'Setup external software (e.g., MALLET)', 'Things to do with words: NLP approach', 'English Language Benchmarks',  'NLP Suite: General tools', 'NLP Suite: Tools of linguistic analysis', 'NLP basic language', 'Things to do with words: Overall view', 'Things to do with words: Content analysis', 'Things to do with words: Frame analysis', 'Things to do with words: Narrative analysis', 'Things to do with words: Rhetoric (Arguments)', 'Things to do with words: Rhetoric (Tropes & Figures)', 'Style analysis'
 
 
 # reminders content for specific GUIs are set in the csv file reminders

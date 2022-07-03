@@ -672,9 +672,9 @@ setNounVerbMenu()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'WordNet': 'TIPS_NLP_WordNet.pdf','The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf'}
+TIPS_lookup = {'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','WordNet': 'TIPS_NLP_WordNet.pdf','The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf'}
 #'Java download install run': 'TIPS_NLP_Java download install run.pdf'
-TIPS_options = 'WordNet','The world of emotions and sentiments' #, 'Java download install run'
+TIPS_options = 'csv files - Problems & solutions','Statistical measures','WordNet','The world of emotions and sentiments' #, 'Java download install run'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

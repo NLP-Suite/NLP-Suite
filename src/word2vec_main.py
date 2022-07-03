@@ -163,8 +163,12 @@ vis_menu_var.trace('w', activate_keywords_var)
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf","Word2Vec with Gensim":"TIPS_NLP_Word2Vec.pdf"}
-TIPS_options = 'Lemmas & stopwords', 'Word2Vec with Gensim'
+TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf",
+               "Word2Vec with Gensim":"TIPS_NLP_Word2Vec.pdf",
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
+
+TIPS_options = 'Lemmas & stopwords', 'Word2Vec with Gensim', 'csv files - Problems & solutions', 'Statistical measures'
 
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if not IO_setup_display_brief:

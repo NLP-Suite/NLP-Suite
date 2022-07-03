@@ -151,8 +151,8 @@ def percentile(n):
 # lists are the columns to be used for grouping (e.g., Document ID, Document) ['Document ID', 'Document']
 # plotField are the columns to be used for plotting (e.g., Mean, Mode)) ['Mean', 'Mode'] or ['Mean']
 #   columns MUST contain NUMERIC values
-# chart_label is used as part of the the chart_title
-def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, groupByField: list, plotField: list, chart_label, createCharts, chartPackage):
+# chart_title_label is used as part of the the chart_title
+def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, groupByField: list, plotField: list, chart_title_label, createCharts, chartPackage):
     filesToOpen=[]
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'group_stats')
     # filesToOpen.append(output_name)
@@ -186,6 +186,8 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, group
             return
     if len(plotField) > 0:
         column_name=plotField[0]
+        # TODO Mino the code breaks with "['Initial vowel'] not in index" under column_name
+        # testing with style_main and vocabulary analysis Vowel words
         df_group = df_group[[column_name]]
         df_list = [pd.concat([df_group[column_name]],keys=[column_name],names=['Column header'])]
     else:
@@ -211,8 +213,8 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, group
                                                   outputFileLabel='',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
-                                                  #chart_title=column_name_to_be_plotted + '\n' + chart_label + ' by Document',
-                                                  chart_title=column_name_to_be_plotted + '_' + chart_label + ' by Document',
+                                                  #chart_title=column_name_to_be_plotted + '\n' + chart_title_label + ' by Document',
+                                                  chart_title=column_name_to_be_plotted + '\n' + chart_title_label + ' by Document',
                                                   column_xAxis_label_var='', #Document
                                                   column_yAxis_label_var=column_name_to_be_plotted,
                                                   hover_info_column_list=hover_label,
@@ -227,17 +229,18 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, group
 #   csv field values MUST be NUMERIC!
 #   'Skewness', 'Kurtosis', '25% quantile', '50% quantile', '75% quantile'
 #   it will provide statistics both ungrouped and grouped by Document ID
-def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, plotList, chart_label='', createCharts=False, chartPackage='Excel'):
+def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, plotList, chart_title_label='', createCharts=False, chartPackage='Excel'):
     filesToOpen=[]
     if len(groupByList)==0:
         command = tk.messagebox.askyesno("Groupby fields", "Do you want to compute statistics grouping results by the values of one or more fields (e.g., the DocumentID of a CoNLL table)?")
         if command ==True:
             groupByList=GUI_IO_util.slider_widget(GUI_util.window,"Enter comma-separated csv headers for GroupBy option",1,10,'')
-    temp_outputfile = compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,createCharts,chartPackage)
-    if temp_outputfile!='':
-        filesToOpen.append(temp_outputfile)
+    # TODO TONY temporarily disconnected while waiting to fix problems in the compute_csv_column_statistics_NoGroupBy function
+    # temp_outputfile = compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,createCharts,chartPackage)
+    # if temp_outputfile!='':
+    #     filesToOpen.append(temp_outputfile)
     if len(groupByList)>0:
-        temp_outputfile=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,groupByList,plotList,chart_label,createCharts,chartPackage)
+        temp_outputfile=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,groupByList,plotList,chart_title_label,createCharts,chartPackage)
         if not (temp_outputfile is None):
             # extend because temp_outputfile is a list
             filesToOpen.extend(temp_outputfile)
@@ -574,25 +577,33 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             #   alphabetic values (from statistics_NLP_main)
             group_column_names=[]
             # create a single list
-            temp_group_column_names = selected_col + group_col
+            temp_group_column_names = group_col + selected_col
             # test for list of lists [[],[]]
             if any(isinstance(el, list) for el in temp_group_column_names):
                 # flatten the list of lists to a single list
                 temp_group_column_names = [x for xs in temp_group_column_names for x in xs]
-            for t in temp_group_column_names:
+            i = 0
+            while i<len(temp_group_column_names):
+                t = temp_group_column_names[i]
+                # check that t is not already in the list group_column_names
                 if isinstance(t, (int, float)):
-                    group_column_names.append(IO_csv_util.get_headerValue_from_columnNumber(headers, t))
+                    header = IO_csv_util.get_headerValue_from_columnNumber(headers, t)
+                    if group_column_names.count(header) == 0:
+                        group_column_names.append(header)
                 else:
-                    group_column_names.append(t)
+                    if group_column_names.count(header) == 0:
+                        group_column_names.append(header)
+                i = i+1
             if len(group_column_names)==0:
                 group_column_names=temp_group_column_names
             data = data.groupby(group_column_names).size().reset_index(name='Frequency')
+            # data.sort_values(group_column_names, ascending=True)
             # added TONY1
             if pivot:
                 data = data.pivot(index = group_column_names[1:], columns = group_column_names[0], values = "Frequency")
                 data.fillna(0, inplace=True)
                 #data.reset_index("Document")
-                data.to_csv(outputFilename)
+                data.to_csv(outputFilename,index=False)
             # end add
             else:
                 data.to_csv(outputFilename,index=False)
@@ -638,8 +649,9 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     #     if chart_outputFilename != None:
     #         filesToOpen.filesToOpen(chart_outputFilename)
 
-    # if removed_hyperlinks:
-    #     os.remove(inputFilename)
+    # we can now remove the no_hyperlinks file (i.e., inputFilename), since the frequency file has been computed
+    if removed_hyperlinks:
+        os.remove(inputFilename)
     return filesToOpen # several files with the charts
 
 def get_csv_column_unique_val_list(inputFilename, col):

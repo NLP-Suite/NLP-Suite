@@ -650,9 +650,11 @@ videos_options='No videos available'
 
 TIPS_lookup = {'The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf',
                'Sentiment Analysis':"TIPS_NLP_Sentiment Analysis.pdf",
-               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf'}
+               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
 # 'Java download install run':'TIPS_NLP_Java download install run.pdf'
-TIPS_options='The world of emotions and sentiments','Sentiment Analysis','Excel smoothing data series' #,'Java download install run'
+TIPS_options='The world of emotions and sentiments','Sentiment Analysis','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

@@ -9,6 +9,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "Stanza_main.py", ['t
 
 import os
 import tkinter as tk
+from tkinter import ttk
 import tkinter.messagebox as mb
 from subprocess import call
 
@@ -18,12 +19,14 @@ import IO_user_interface_util
 import config_util
 import reminders_util
 import IO_internet_util
-import Stanford_CoreNLP_annotator_util
+import Stanza_util
+import constants_util
+# import Stanford_CoreNLP_annotator_util
 import Stanford_CoreNLP_coreference_util
-import CoNLL_util
-import file_checker_util
-import file_cleaner_util
-import sentence_analysis_util
+# import CoNLL_util
+# import file_checker_util
+# import file_cleaner_util
+# import sentence_analysis_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -31,25 +34,24 @@ import sentence_analysis_util
 # for the Error [Thread-0] INFO CoreNLP - CoreNLP Server is shutting down
 # sometimes the error appears but processing actually continues; but rebooting should do the trick if processing does not continue
 
-# dateInclude indicates whether there is date embedded in the file name. 
+# dateInclude indicates whether there is date embedded in the file name.
 # 1: included 0: not included
 # def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, date_extractor, split_files, quote_extractor, Stanza_gender_annotator, CoReference, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
-        memory_var,
-        manual_Coref, open_GUI, language_var, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat,
-        CoNLL_table_analyzer_var, Stanza_annotators_var, Stanza_annotators_menu_var):
+        memory_var, manual_Coref, open_GUI, language_var,
+        parser, parser_menu_var,
+        dateInclude, sep, date_field_position, dateFormat,
+        CoNLL_table_analyzer_var,
+        Stanza_annotators_var, Stanza_annotators_menu_var):
 
     filesToOpen = []
     outputCoNLLfilePath = ''
 
-    if open_GUI:
-        call("python Stanford_CoreNLP_coreference_main.py", shell=True)
-        return
-
-    # check internet connection
-    if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
-        return
+    # # check internet connection
+    # if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
+    #     return
+    #
 
     if parser == 0 and CoNLL_table_analyzer_var == 0 and Stanza_annotators_var == 0:
         mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
@@ -59,87 +61,65 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         mb.showinfo("Warning", "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the CoreNLP parser checkbox and try again.")
         return
 
-    if Stanza_annotators_var == True and 'Coreference PRONOMINAL resolution' in Stanza_annotators_menu_var:
-        if IO_libraries_util.check_inputPythonJavaProgramFile("Stanford_CoreNLP_coReference_util.py") == False:
+    if parser:
+        if parser_menu_var == 'Constituency parser':
+            # TODO MINO
+            #   connect to Stanza annotator
+            mb.showwarning('Warning',
+                           'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
             return
-        if language_var!='English' and language_var!='Chinese':
-            mb.showwarning(title='Language',message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
+        annotator='depparse'
+    if Stanza_annotators_var and Stanza_annotators_menu_var != '':
+        if 'Sentence splitter (with sentence length)' in Stanza_annotators_menu_var:
+            annotator = 'Sentence'
+        elif 'Lemma annotator' in Stanza_annotators_menu_var:
+            annotator = 'Lemma'
+        elif 'POS annotator' in Stanza_annotators_menu_var:
+            annotator = 'All POS'
+        elif 'NER annotator' in Stanza_annotators_menu_var:  # NER annotator
+            annotator = 'NER'
+        elif 'Coreference' in Stanza_annotators_menu_var:
+            # TODO MINO
+            #   connect to Stanza annotator
+            annotator = 'coref'
+            mb.showwarning('Warning',
+                           'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
             return
-
-        # if "Neural" in Stanza_annotators_menu_var:
-        #     CoRef_Option = 'Neural Network'
-        file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
-                                                                           outputDir, openOutputFiles, createCharts, chartPackage, memory_var,
-                                                                           manual_Coref)
-
-        if error_indicator == 0:
-            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Stanford CoreNLP Co-Reference Resolution',
-                                               "Finished running Stanford CoreNLP Co-Reference Resolution using the 'Neural Network' approach at",
-                                               True)
+        elif 'Sentiment analysis' in Stanza_annotators_menu_var:
+            # TODO MINO
+            #   connect to Stanza annotator
+            annotator = 'sentiment'
+            mb.showwarning('Warning',
+                           'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
+            return
         else:
-            mb.showinfo("Coreference Resolution Error",
-                        "Since Stanford CoreNLP Co-Reference Resolution throws error, " +
-                        "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.")
-        # filesToOpen = filesToOpen + file_open
-        # print("Number of files to Open: ", len(file_open))
-        filesToOpen.extend(file_open)
-
-
-    if parser or (Stanza_annotators_var and Stanza_annotators_menu_var != ''):
-
-        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py') == False:
             return
 
-        if parser and parser_menu_var == 'Dependency parser':
-            if language_var == 'German' or language_var == 'Hungarian':
-                mb.showwarning(title='Language',
-                               message='The Stanford CoreNLP Probabilistic Context Free Grammar (PCFG) is not available for German and Hungarian.')
-                return
-            annotator='parser (nn)'
-        else:
-            if Stanza_annotators_var and Stanza_annotators_menu_var != '':
-                if 'NER annotator' in Stanza_annotators_menu_var: # NER annotator
-                    if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_NER_main.py') == False:
-                        return
-                    call("python Stanford_CoreNLP_NER_main.py", shell=True)
-                elif 'Sentence splitter (with sentence length)' in Stanza_annotators_menu_var:
-                    annotator = 'Sentence'
-                elif 'Lemma annotator' in Stanza_annotators_menu_var:
-                    if language_var != 'English':
-                        mb.showwarning(title='Language',
-                                       message='The Stanford CoreNLP lemmatizer is only available for English.')
-                        return
-                    annotator = 'Lemma'
-                elif 'POS annotator' in Stanza_annotators_menu_var:
-                    annotator = 'All POS'
-                elif 'Sentiment analysis' in Stanza_annotators_menu_var:
-                    if language_var != 'English':
-                        mb.showwarning(title='Language',
-                                       message='The Stanford CoreNLP sentiment analysis annotator is only available for English.')
-                        return
-                    annotator = ['sentiment']
-                else:
-                    return
+    document_length_var = 1
+    limit_sentence_length_var = 1000
+    tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+                                                                   outputDir,
+                                                                   openOutputFiles,
+                                                                   createCharts, chartPackage,
+                                                                   annotator, False,
+                                                                   language_var,
+                                                                   memory_var, document_length_var, limit_sentence_length_var,
+                                                                   extract_date_from_filename_var=dateInclude,
+                                                                   date_format=dateFormat,
+                                                                   date_separator_var=sep,
+                                                                   date_position_var=date_field_position)
+        # ,
+        #                                                            language=language_var)
+        #                                                         #    language = language_var)
 
-        tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                       outputDir,
-                                                                       openOutputFiles, createCharts, chartPackage,
-                                                                       annotator, False, #'All POS',
-                                                                       memory_var, document_length_var, limit_sentence_length_var,
-                                                                       extract_date_from_filename_var=dateInclude,
-                                                                       date_format=dateFormat,
-                                                                       date_separator_var=sep,
-                                                                       date_position_var=date_field_position,
-                                                                       language = language_var)
-
-        if len(tempOutputFiles)>0:
-            filesToOpen.extend(tempOutputFiles)
-            if 'parser' in annotator:
-                reminders_util.checkReminder(config_filename,
-                                             reminders_util.title_options_CoreNLP_NER_tags,
-                                             reminders_util.message_CoreNLP_NER_tags,
-                                             True)
-                if CoNLL_table_analyzer_var:
+    if len(tempOutputFiles)>0:
+        filesToOpen.extend(tempOutputFiles)
+        if 'parser' in annotator:
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_CoreNLP_NER_tags,
+                                         reminders_util.message_CoreNLP_NER_tags,
+                                         True)
+            if CoNLL_table_analyzer_var:
                     if IO_libraries_util.check_inputPythonJavaProgramFile('CoNLL_table_analyzer_main.py') == False:
                         return
                     # open the analyzer having saved the new parser output in config so that it opens the right input file
@@ -159,7 +139,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
@@ -336,9 +315,35 @@ language_lb = tk.Label(window,text='Language')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                y_multiplier_integer, language_lb, True)
 
+# TODO MINO we need to get the list of Stanza supported languages from this script
+#   https://github.com/stanfordnlp/stanza/issues/511
+# def list_all_languages(model_dir=DEFAULT_MODEL_DIR):
+#     with open(os.path.join(model_dir, 'resources.json')) as fin:
+#         resources = json.load(fin)
+#     languages = [lang for lang in resources if 'alias' not in resources[lang]]
+#     languages = sorted(languages)
+#     return languages
+import json
+import stanza.resources.common
+DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
+from tkinter import *
+lang_dict  = dict(constants_util.languages)
+
+def print_it(event):
+    print(language_var.get())
+
 language_var.set('English')
-language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese', 'English', 'German','Hungarian','Italian','Spanish')
-# language_menu.configure(state="disabled")
+def list_all_languages(model_dir=DEFAULT_MODEL_DIR):
+    with open(os.path.join(model_dir, 'resources.json')) as fin:
+        resources = json.load(fin)
+    languages = [lang for lang in resources if 'alias' not in resources[lang]]
+    languages = sorted(languages)
+    return languages
+
+langs = list_all_languages()
+langs_full = sorted([lang_dict[x] for x in langs])
+language_menu = ttk.Combobox(window, width = 70, textvariable = language_var)
+language_menu['values'] = langs_full
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
                                                y_multiplier_integer, language_menu)
 
@@ -348,7 +353,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                parser_checkbox, True)
 
 parser_menu_var.set("Dependency parser")
-parser_menu = tk.OptionMenu(window, parser_menu_var, 'Dependency parser')
+parser_menu = tk.OptionMenu(window, parser_menu_var, 'Constituency parser','Dependency parser')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                parser_menu)
 
@@ -464,6 +469,7 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
                'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
                'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
                'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
@@ -477,7 +483,7 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                'Clause Analysis': 'TIPS_NLP_Clause analysis.pdf'}
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf',
 # TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy', 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'Stanford CoreNLP OpenIE', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'NER (Named Entity Recognition)', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'English Language Benchmarks' #, 'Java download install run'
-TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy', 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'NER (Named Entity Recognition)','Gender annotator','Sentiment analysis','Things to do with words: Overall view' #, 'Java download install run'
+TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy', 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'NER (Named Entity Recognition)','Gender annotator','Sentiment analysis','Things to do with words: Overall view' #, 'Java download install run'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -520,6 +526,6 @@ readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readM
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
-mb.showwarning(title='Option not available yet!',message='The Stanza GUI and algorithms are currently under development. None of the options will work. Sorry!')
+mb.showwarning(title='Option not available yet!',message='The Stanza GUI and algorithms are currently under development. Some of the options are not available yet. Sorry!')
 
 GUI_util.window.mainloop()

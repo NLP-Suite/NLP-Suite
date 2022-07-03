@@ -327,7 +327,7 @@ def openFile(window, inputFilename):
                 os.system('start "" "' + inputFilename + '"')
             except IOError:
                 mb.showwarning(title='Input file error',
-                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and try again!")
+                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
                 return True
         # macOS and other unix
         else:
@@ -335,7 +335,7 @@ def openFile(window, inputFilename):
                 call(['open', inputFilename])
             except IOError:
                 mb.showwarning(title='Input file error',
-                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and try again!")
+                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
                 return True
     else:
         tk.messagebox.showinfo("Error", "The file " + inputFilename + " could not be found.")
@@ -505,7 +505,7 @@ def openCSVFile(inputfile, open_type, encoding_type='utf-8'):
         return csvfile
     except IOError:
         mb.showwarning(title='File error',
-                       message="Could not open the file " + inputfile + "\n\nA file with the same name is already open.\n\nPlease, close the Excel file and try again!")
+                       message="Could not open the file " + inputfile + "\n\nA file with the same name is already open.\n\nPlease, close the Excel file and then click OK to resume.")
         return ""
 
 

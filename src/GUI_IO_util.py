@@ -305,7 +305,7 @@ def release_history():
 
 # The function displays the contributors to the development of the NLP Suite
 def list_team():
-    url = "https://github.com/NLP-Suite/NLP-Suite/wiki/About#How-to-Cite-the-NLP-Suite"
+    url = 'https://github.com/NLP-Suite/NLP-Suite/wiki/The-NLP-Suite-Team'
     IO_libraries_util.open_url(NLP_Suite_website_name, url)
     # check internet connection
     # if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite team"):

@@ -1,4 +1,5 @@
 import sys
+from tabnanny import verbose
 import GUI_util
 import IO_libraries_util
 
@@ -39,6 +40,8 @@ import subprocess
 import time
 import fuzzywuzzy
 from fuzzywuzzy import fuzz
+import stanza
+from stanza.pipeline.multilingual import MultilingualPipeline
 
 import file_cleaner_util
 import charts_util
@@ -47,6 +50,7 @@ import IO_files_util
 import IO_user_interface_util
 from IO_files_util import make_directory
 import reminders_util
+import constants_util
 
 def lemmatizing(word):#edited by Claude Hu 08/2020
     #https://stackoverflow.com/questions/15586721/wordnet-lemmatization-and-pos-tagging-in-python
@@ -127,7 +131,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                                                    column_xAxis_label='Word',
                                                    groupByList=['Document ID', 'Document'],
                                                    plotList=['Misspelled/Unusual Words Statistics'],
-                                                   chart_label='')
+                                                   chart_title_label='')
 
         if chart_outputFilename != None:
             filesToOpen.extend(chart_outputFilename)
@@ -183,7 +187,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
                                                            column_xAxis_label='Typo',
                                                            groupByList=[],
                                                            plotList=[],
-                                                           chart_label='')
+                                                           chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
@@ -488,7 +492,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                                column_xAxis_label='Typo',
                                                                groupByList=[],
                                                                plotList=[],
-                                                               chart_label='')
+                                                               chart_title_label='')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
                     filesToOpen.extend(chart_outputFilename)
@@ -797,6 +801,9 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                   'LANGID',
                   'Language',
                   'Probability',
+                  'Stanza',
+                  'Language',
+                  'Probability',
                   'Document ID',
                   'Document']
 
@@ -809,6 +816,15 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        'Started running language detection algorithms at',
                                                  True, '', True, '', True)
+
+    # Stanza's multilingual pipeline needs to load only once, therefore called outside the for-loop
+    try:
+        nlp_stanza = MultilingualPipeline()
+    except:
+        stanza.download(lang="multilingual", verbose=False)
+        nlp_stanza = MultilingualPipeline()
+
+    lang_dict  = dict(constants_util.languages)
 
     with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -835,9 +851,14 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 docErrors_unknown=docErrors_unknown+1
                 print("  Unknown file read error.")
                 continue
+
+# LANGDETECT ----------------------------------------------------------
+
             value=str(value[0]).split(':')
+            # TODO MINO get the value from the list in constants_util 
             language=value[0]
-            probability=value[1]
+            language = lang_dict.get(language)
+            probability=round(float(value[1]),2)
             # https://pypi.org/project/langdetect/
             # langdetect supports 55 languages out of the box (ISO 639-1 codes)
             # af, ar, bg, bn, ca, cs, cy, da, de, el, en, es, et, fa, fi, fr, gu, he,
@@ -848,6 +869,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             # print('   LANGDETECT',value[0],value[1])  # [cs:0.7142840957132709, pl:0.14285810606233737, sk:0.14285779665739756]
             currentLine = ['LANGDETECT', language, probability]
 
+# spaCY ----------------------------------------------------------
             nlp_spacy = spacy.load('en_core_web_sm')
             Language.factory("language_detector", func=get_lang_detector)
             nlp_spacy.add_pipe('language_detector', last=True)
@@ -861,7 +883,10 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 continue
             value = doc._.language
             language=value['language']
-            probability=value['score']
+            # TODO MINO get the value from the list in constants_util
+            language = lang_dict.get(language)
+            probability=round(float(value['score']),2)
+            # probability=round(value['score'],2)
             #
             print('   SPACY', language, probability)  # {'language': 'en', 'score': 0.9999978351575265}
             currentLine.extend(['SPACY', language, probability])
@@ -875,8 +900,13 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                     filenameSV=filename
                 print("  Unknown file read error.")
                 continue
+            # TODO MINO get the value from the list in constants_util
+
+# LANGID ----------------------------------------------------------
+
             language=value[0]
-            probability=value[1]
+            language = lang_dict.get(language)
+            probability=round(float(value[1]),2)
             # LANGID ``langid.py`` comes pre-trained on 97 languages (ISO 639-1 codes given)
             # https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes for ISO codes
             # https://pypi.org/project/langid/1.1.5/
@@ -891,8 +921,17 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             # sr, sv, sw, ta, te, th, tl, tr, ug, uk,
             # ur, vi, vo, wa, xh, zh, zu
             print('   LANGID', language, probability)  # ('en', 0.999999999999998)
-            print()
             currentLine.extend(['LANGID',  language, probability])
+
+# Stanza  ----------------------------------------------------------
+
+            doc = nlp_stanza(text)
+            language = doc.lang
+            language = lang_dict.get(language)
+            probability = ''
+            print('   Stanza', language, probability)
+            currentLine.extend(['Stanza',  language, probability])
+
             currentLine.extend([fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
 
             writer = csv.writer(csvfile)
@@ -933,8 +972,9 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
         if chartPackage=='Excel' and chart_outputFilename!='':
             filesToOpen.append(chart_outputFilename)
 
-    if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+    # if openOutputFiles:
+    #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+    return filesToOpen
 
 def get_lang_detector(nlp, name):
     return LanguageDetector()

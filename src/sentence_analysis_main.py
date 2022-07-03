@@ -52,7 +52,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     if sentence_complexity_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
-        filesToOpen=statistics_txt_util.sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage)
+        filesToOpen=statistics_txt_util.compute_sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage)
         if filesToOpen==None:
             return
 
@@ -195,7 +195,7 @@ pydict["NER tags (e.g., Location, Time) (GUI)"] = ["Stanford_CoreNLP_NER_main.py
 pydict["Words/collocations (GUI)"] = ["file_search_byWord_main.py", 1]
 pydict["WordNet categories (GUI)"] = ["knowledge_graphs_WordNet_main.py", 1]
 
-pydict["Abstract/Concrete vocabulary analysis"] = ["concreteness_analysis_util.main", 0, 3, 'txt']
+pydict["Abstract/Concrete vocabulary analysis"] = ["abstract_concreteness_analysis_util.main", 0, 3, 'txt']
 pydict["Dictionary items"] = ["statistics_txt_util.compute_sentence_length", 0, 3, 'txt']
 pydict["Hapax legomena (once-occurring words)"] = ["statistics_txt_util.process_words", 0, 3, 'txt']
 # pydict["Hapax legomena (once-occurring words)"] = ["statistics_txt_util.compute_character_word_ngrams", 0, 3, 'txt']
@@ -283,8 +283,11 @@ TIPS_lookup = {'Clause analysis':'TIPS_NLP_Clause Analysis.pdf',
                'N-Grams (word & character)':"TIPS_NLP_Ngrams (word & character).pdf",
                'NLP Ngram and Word Co-Occurrence VIEWER':"TIPS_NLP_Ngram and Word Co-Occurrence VIEWER.pdf",
                'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
-               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf'}
-TIPS_options='Clause analysis', 'Sentence complexity', 'Text readability','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Excel smoothing data series'
+               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
+               'Statistical measures':'TIPS_NLP_Statistical measures.pdf',
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf'}
+TIPS_options='Clause analysis', 'Sentence complexity', 'Text readability','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
+
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.

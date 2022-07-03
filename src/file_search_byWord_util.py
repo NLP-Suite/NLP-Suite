@@ -271,7 +271,7 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                                                        column_xAxis_label='Search word',
                                                        groupByList=[],
                                                        plotList=[],
-                                                       chart_label='')
+                                                       chart_title_label='')
     if chart_outputFilename != None:
         if len(chart_outputFilename) > 0:
             filesToOpen.extend(chart_outputFilename)

@@ -155,7 +155,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 
 	if lib_util.checklibFile(
 			GUI_IO_util.concreteness_libPath + os.sep + 'Concreteness_ratings_Brysbaert_et_al_BRM.csv',
-			'concreteness_analysis_util.py') == False:
+			'abstract_concreteness_analysis_util.py') == False:
 		return
 
 	if len(outputDir) < 0 or not os.path.exists(outputDir):  # empty output
@@ -211,12 +211,12 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 				sys.exit(0)
 
 		# should sort by Document ID and Sentence ID
-		IO_csv_util.sort_csvFile_by_columns(outputFilename, outputFilename, ['Document ID', 'Sentence ID'])
+		# IO_csv_util.sort_csvFile_by_columns(outputFilename, outputFilename, ['Document ID', 'Sentence ID'])
 
 	chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
 													   columns_to_be_plotted_bar=[[0,0]],
-													   columns_to_be_plotted_bySent= [[7, 0]],
 													   columns_to_be_plotted_byDoc=[[10, 0]],
+													   columns_to_be_plotted_bySent= [[10, 7, 0]],
 													   chartTitle='Frequency Distribution of Abstract/Concrete Scores',
 													   count_var=0, # to be used for byDoc, 0 for numeric field
 													   hover_label=[],
@@ -224,7 +224,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 													   column_xAxis_label='Concreteness scores',
 													   groupByList=['Document ID', 'Document'],
 													   plotList=['Concreteness (Mean score)'],
-													   chart_label='Concreteness Statistics')
+													   chart_title_label='Concreteness Statistics')
 	if chart_outputFilename != None:
 		if len(chart_outputFilename) > 0:
 			filesToOpen.extend(chart_outputFilename)

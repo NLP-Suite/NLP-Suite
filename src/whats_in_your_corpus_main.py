@@ -26,7 +26,7 @@ import reminders_util
 import file_checker_util
 import file_cleaner_util
 import file_spell_checker_util
-import concreteness_analysis_util
+import abstract_concreteness_analysis_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -217,7 +217,7 @@ def run(inputFilename,inputDir, outputDir,
                 filesToOpen.extend(output)
         if '*' == corpus_statistics_options_menu_var or 'Abstract' in corpus_statistics_options_menu_var:
             # ABSTRACT/CONCRETENESS _______________________________________________________
-            output = concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, processType='')
+            output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, processType='')
             if output != None:
                 filesToOpen.extend(output)
 
@@ -842,7 +842,7 @@ def activate_allOptions(*args):
 open_tm_GUI_var.trace('w',activate_allOptions)
 
 # language options
-language_var_lb = tk.Label(window, text='Language ')
+language_var_lb = tk.Label(window, text='Language')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                language_var_lb, True)
 
@@ -851,7 +851,7 @@ language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese', 'English
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+70,
                                                y_multiplier_integer, language_menu, True)
 # memory options
-memory_var_lb = tk.Label(window, text='Memory ')
+memory_var_lb = tk.Label(window, text='Memory')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+210, y_multiplier_integer,
                                                memory_var_lb, True)
 
@@ -963,9 +963,8 @@ activate_SVO_GUI()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf', 'Lemmas & stopwords':'TIPS_NLP_NLP Basic Language.pdf', 'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf', 'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf', 'N-Grams (word & character)':'TIPS_NLP_Ngram (word & character).pdf','Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf','NLP Suite Ngram and Word Co-Occurrence Viewer':'TIPS_NLP_Ngram and Word Co-Occurrence Viewer.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','Topic modeling':'TIPS_NLP_Topic modeling.pdf','Topic modeling and corpus size':'TIPS_NLP_Topic modeling and corpus size.pdf','Topic modeling (Gensim)':'TIPS_NLP_Topic modeling Gensim.pdf','Topic modeling (Mallet)':'TIPS_NLP_Topic modeling Mallet.pdf','Mallet installation':'TIPS_NLP_Topic modeling Mallet installation.pdf','NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf','WordNet':'TIPS_NLP_WordNet.pdf','Stanford CoreNLP date extractor (NER normalized date)':'TIPS_NLP_Stanford CoreNLP date extractor.pdf',"Gender annotator":"TIPS_NLP_Gender annotator.pdf"}
-TIPS_options='Text encoding (utf-8)','Excel - Enabling Macros', 'csv files - Problems & solutions', 'Lemmas & stopwords', 'N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Statistical measures','Topic modeling','Topic modeling and corpus size','Topic modeling (Gensim)','Topic modeling (Mallet)','Mallet installation','NER (Named Entity Recognition)','Stanford CoreNLP date extractor (NER normalized date)','WordNet','Gender annotator'
-
+TIPS_lookup = {'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf', 'Lemmas & stopwords':'TIPS_NLP_NLP Basic Language.pdf', 'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf', 'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf', 'N-Grams (word & character)':'TIPS_NLP_Ngram (word & character).pdf','Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf','NLP Suite Ngram and Word Co-Occurrence Viewer':'TIPS_NLP_Ngram and Word Co-Occurrence Viewer.pdf','Style analysis':'TIPS_NLP_Style analysis.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','Style analysis':'TIPS_NLP_Style analysis.pdf','Wordclouds':'TIPS_NLP_Wordclouds Visualizing word clouds.pdf','Topic modeling':'TIPS_NLP_Topic modeling.pdf','Topic modeling and corpus size':'TIPS_NLP_Topic modeling and corpus size.pdf','Topic modeling (Gensim)':'TIPS_NLP_Topic modeling Gensim.pdf','Topic modeling (Mallet)':'TIPS_NLP_Topic modeling Mallet.pdf','Mallet installation':'TIPS_NLP_Topic modeling Mallet installation.pdf','NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf','The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf','Sentiment analysis':'TIPS_NLP_Sentiment analysis.pdf','Stanford CoreNLP date extractor (NER normalized date)':'TIPS_NLP_Stanford CoreNLP date extractor.pdf',"Stanford CoreNLP Gender annotator":"TIPS_NLP_Gender annotator.pdf",'GIS (Geographic Information System): Mapping Locations':'TIPS_NLP_GIS (Geographic Information System).pdf','SVO extraction and visualization':'TIPS_NLP_SVO extraction and visualization.pdf','Stanford CoreNLP enhanced dependencies parser (SVO)':'TIPS_NLP_Stanford CoreNLP enhanced dependencies parser (SVO).pdf','WordNet':'TIPS_NLP_WordNet.pdf'}
+TIPS_options='Text encoding (utf-8)','Excel - Enabling Macros', 'csv files - Problems & solutions', 'Statistical measures', 'Lemmas & stopwords', 'N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis','Wordclouds','Topic modeling','Topic modeling and corpus size','Topic modeling (Gensim)','Topic modeling (Mallet)','Mallet installation','NER (Named Entity Recognition)','The world of emotions and sentiments','Sentiment analysis','Stanford CoreNLP date extractor (NER normalized date)','Stanford CoreNLP Gender annotator','GIS (Geographic Information System): Mapping Locations','SVO extraction and visualization','Stanford CoreNLP enhanced dependencies parser (SVO)','WordNet'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
