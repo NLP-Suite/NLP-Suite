@@ -673,24 +673,27 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                         ngramsList=process_punctuation(file, excludePunctuation, In, ctr, documentID)
                         ngramsList = sorted(ngramsList, key=lambda x: x[1])
             # n-grams frequencies must be computed by document
-            # TODO Mino
             ctr_document = collections.Counter(Extract(doc_ngramsList))
             print("ctr_document",ctr_document)
             for ngrams in ngramsList:
                 if excludePunctuation:
-                    # 3 & 4 prima
                     doc_freq_pos = 2  # insert document frequency
                     corpus_freq_pos = 3  # insert corpus frequency
                 else:
                     doc_freq_pos = 3  # insert document frequency
                     corpus_freq_pos = 4  # insert corpus frequency
-                print("ctr_document.get(doc_ngramsList[0][0])",ctr_document.get(doc_ngramsList[0][0]))
-                ngrams.insert(doc_freq_pos, ctr_document.get(doc_ngramsList[0][0])) # compute n-grams document frequencies
+                # TODO Mino
+                #   ctr_document now contains the right token counts for each document
+                #   I do not know how to extract the frequency to insert in ngrams
+                print("ctr_document.get(doc_ngramsList[0][0])",ctr_document[1])
+                ngrams.insert(doc_freq_pos, ctr_document.get(doc_ngramsList[0])) # compute n-grams document frequencies
 
         # n-grams frequencies must be computed by entire corpus
-        # TODO Mino
         ctr_corpus = collections.Counter(Extract(ngramsList))
         print("ctr_corpus",ctr_corpus)
+        # TODO Mino
+        #   ctr_corpus now contains the right token counts for the entire corpus
+        #   again... I do not know how to extract the frequency to insert in ngrams
         ngrams.insert(corpus_freq_pos, ctr_corpus.get(ngramsList[1][0])) # compute n-grams corpus frequencies
 
         ngramsList = sorted(ngramsList, key=lambda x: x[1])

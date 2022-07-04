@@ -147,10 +147,11 @@ function_to_run=''
 menu_option=''
 
 pydict = {}
-pydict["Document converter (csv --> txt)"] = ["file_type_converter_util.csv_converter"]
-pydict["Document converter (docx --> txt)"] = ["file_type_converter_util.docx_converter"]
-pydict["Document converter (pdf --> txt)"] = ["file_type_converter_util.pdf_converter"]
-pydict["Document converter (rtf --> txt)"] = ["file_type_converter_util.rtf_converter"]
+pydict["Document converter (csv --> txt)"] = ["file_converter_util.csv_converter"]
+pydict["Document converter (docx --> txt)"] = ["file_converter_util.docx_converter"]
+pydict["Document converter (pdf --> txt) (via pdfminer)"] = ["file_converter_util.pdf_converter"]
+pydict["Document converter (pdf --> txt) (via pytesseract)"] = ["file_converter_util.pdf_converter"]
+pydict["Document converter (rtf --> txt)"] = ["file_converter_util.rtf_converter"]
 pydict["Check utf-8 encoding compliance"] = ["file_checker_util.check_utf8_compliance"]
 pydict["Check empty file"] = ["file_checker_util.check_empty_file"]
 pydict["Check sentence length (extracting sentences)"] = ["sentence_analysis_util.extract_sentence_length"]
@@ -217,7 +218,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 convert_menu = tk.OptionMenu(window,convert_tools_var,
                     'Document converter (csv --> txt)',
                     'Document converter (docx --> txt)',
-                    'Document converter (pdf --> txt)',
+                    'Document converter (pdf --> txt) (via pdfminer)',
+                    'Document converter (pdf --> txt) (via pytesseract)',
                     'Document converter (rtf --> txt)')
 
 convert_menu.configure(width=70)
