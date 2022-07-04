@@ -647,17 +647,17 @@ def CoreNLP_annotate(config_filename,inputFilename,
     filesToVisualize=filesToOpen
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, '', True, startTime)
 
-    # generate visualization output ----------------------------------------------------------------
+# generate visualization output ----------------------------------------------------------------
 
     for j in range(len(filesToVisualize)):
         #02/27/2021; eliminate the value error when there's no information from certain annotators
         if filesToVisualize[j][-4:] == ".csv":
             file_df = pd.read_csv(filesToVisualize[j])
             if not file_df.empty:
-
+                outputFilename = filesToVisualize[j]
 # Lemma ________________________________________________________________
 
-                if "Lemma" in str(annotator_params):
+                if "Lemma" in str(annotator_params) and 'Lemma' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
                                                                        columns_to_be_plotted_bar=[[2,2]],
@@ -677,7 +677,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                             filesToOpen.extend(chart_outputFilename)
 # All POS ________________________________________________________________
 
-                elif 'All POS' in str(annotator_params):
+                elif 'All POS' in str(annotator_params) and 'All POS' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
                                                                        columns_to_be_plotted_bar=[[2,2]],
@@ -697,7 +697,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
 # date ________________________________________________________________
 
-                elif 'date' in str(annotator_params):
+                elif 'date' in str(annotator_params) and 'date' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
                                                                        columns_to_be_plotted_bar=[[1, 1]],
@@ -736,7 +736,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
 # gender ________________________________________________________________
 
-                elif 'gender' in str(annotator_params): # and "gender" in filesToVisualize[j].split("_"):
+                elif 'gender' in str(annotator_params) and 'gender' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
                                                                        columns_to_be_plotted_bar=[[1, 1]],
@@ -761,7 +761,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                             filesToOpen.extend(chart_outputFilename)
 # parser ________________________________________________________________
 
-                elif 'parse' in str(annotator_params): # and "parse" in filesToVisualize[j].split("_"):
+                elif 'parse' in str(annotator_params) and 'parse' in outputFilename:
                     # Form & Lemma values
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
@@ -840,7 +840,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
 # quote ________________________________________________________________
 
-                elif 'quote' in str(annotator_params): # and "quote" in filesToVisualize[j].split("_"):
+                elif 'quote' in str(annotator_params) and 'quote' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
                                                                        columns_to_be_plotted_bar=[[1, 1]],
@@ -859,7 +859,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                             filesToOpen.extend(chart_outputFilename)
 # sentiment ________________________________________________________________
 
-                elif 'sentiment' in str(annotator_params): # and "sentiment" in filesToVisualize[j].split("_"):
+                elif 'sentiment' in str(annotator_params) and 'sentiment' in outputFilename:
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[0] == "Sentiment score":
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                            outputDir,
@@ -881,7 +881,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
 # NER ________________________________________________________________
 
-                elif 'NER' in str(annotator_params): # and "NER" in filesToVisualize[j].split("_"):
+                elif 'NER' in str(annotator_params) and 'NER' in outputFilename:
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "NER Value":
                         # plot NER tag (e.g, LOCATION)
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
@@ -927,7 +927,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
 # SVO ________________________________________________________________
 
-                elif 'SVO' in str(annotator_params) or 'OpenIE' in str(annotator_params):
+                elif ('SVO' in str(annotator_params) and 'SVO' in outputFilename) or ('OpenIE' in str(annotator_params) and 'OpenIE' in outputFilename):
                     # plot Subjects
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,

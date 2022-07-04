@@ -702,10 +702,13 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
             container.insert(0, [str(gram) + '-grams', 'Frequency in Sentence', 'Frequency in Document', 'Frequency in Corpus',
                                  'Sentence ID', 'Sentence',
                                  'Document ID', 'Document'])
+            columns_to_be_plotted_byDoc = [[6,7]]
         else:
-            container.insert(0, [str(gram) + '-grams', 'Punctuation', 'Frequency in Sentence', 'Frequency in Document', 'Frequency in Corpus',
+            container.insert(0, [str(gram) + '-grams', 'Punctuation',
+                                 'Frequency in Sentence', 'Frequency in Document', 'Frequency in Corpus',
                                  'Sentence ID', 'Sentence',
                                  'Document ID', 'Document'])
+            columns_to_be_plotted_byDoc=[[7,8]]
         container.extend(ngramsList)
         # save output file after each n-gram value in the range
         # code in next line breaks
@@ -724,7 +727,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                                                                # columns_to_be_plotted_bySent=[[4, 2]],
                                                                # the fields must be numeric?
                                                                columns_to_be_plotted_bySent=[[]],
-                                                               columns_to_be_plotted_byDoc=[[]],
+                                                               columns_to_be_plotted_byDoc=columns_to_be_plotted_byDoc,
                                                                chartTitle='Frequency of ' + str(gram) + '-gram',
                                                                count_var=0, hover_label=[], #hover_label,
                                                                outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
