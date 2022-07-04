@@ -621,6 +621,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
             head, tail = os.path.split(file)
             documentID += 1
             Sentence_ID = 0
+            doc_ngramsList = []
             print("   Processing file " + str(documentID) + "/" + str(nFile) + ' ' + tail)
             text = (open(file, "r", encoding="utf-8", errors='ignore').read())
             # split into sentences
@@ -648,6 +649,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                         # if frequency == 1:  # hapax
                         sentence_ngramsList = process_hapax(sentence_ngramsList, frequency)
                         ngramsList.extend(sentence_ngramsList)
+                        doc_ngramsList.extend(sentence_ngramsList)
 
 # character ngrams ---------------------------------------------------------
 
@@ -670,37 +672,26 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                                 ngramsList.append(i)
                         ngramsList=process_punctuation(file, excludePunctuation, In, ctr, documentID)
                         ngramsList = sorted(ngramsList, key=lambda x: x[1])
-                        # for ng in ngramsList:
-                        #     char_flag = False
-                        #     for char in ng[0]:
-                        #         if char in string.punctuation:
-                        #             ng.insert(1, 'yes')
-                        #             char_flag = True
-                        #             break
-                        #         else:
-                        #             continue
-                        #     if not char_flag:
-                        #         ng.insert(1, 'no')
-
             # n-grams frequencies must be computed by document
             # TODO Mino
-            ctr_document = collections.Counter(Extract(ngramsList))
+            ctr_document = collections.Counter(Extract(doc_ngramsList))
             print("ctr_document",ctr_document)
+            for ngrams in ngramsList:
+                if excludePunctuation:
+                    # 3 & 4 prima
+                    doc_freq_pos = 2  # insert document frequency
+                    corpus_freq_pos = 3  # insert corpus frequency
+                else:
+                    doc_freq_pos = 3  # insert document frequency
+                    corpus_freq_pos = 4  # insert corpus frequency
+                print("ctr_document.get(doc_ngramsList[0][0])",ctr_document.get(doc_ngramsList[0][0]))
+                ngrams.insert(doc_freq_pos, ctr_document.get(doc_ngramsList[0][0])) # compute n-grams document frequencies
+
         # n-grams frequencies must be computed by entire corpus
         # TODO Mino
         ctr_corpus = collections.Counter(Extract(ngramsList))
         print("ctr_corpus",ctr_corpus)
-        for ngrams in ngramsList:
-            if excludePunctuation:
-                # 3 & 4 prima
-                doc_freq_pos = 2  # insert document frequency
-                corpus_freq_pos = 3  # insert corpus frequency
-            else:
-                doc_freq_pos = 3  # insert document frequency
-                corpus_freq_pos = 4  # insert corpus frequency
-
-            ngrams.insert(doc_freq_pos, ctr_document.get(ngramsList[0][0])) # compute n-grams document frequencies
-            ngrams.insert(corpus_freq_pos, ctr_document.get(ngramsList[1][0])) # compute n-grams corpus frequencies
+        ngrams.insert(corpus_freq_pos, ctr_corpus.get(ngramsList[1][0])) # compute n-grams corpus frequencies
 
         ngramsList = sorted(ngramsList, key=lambda x: x[1])
         # insert headers

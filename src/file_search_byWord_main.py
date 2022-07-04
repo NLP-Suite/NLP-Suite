@@ -43,7 +43,8 @@ def run(inputFilename,inputDir, outputDir,
                                        True, '', True)
 
     if not 'Search within document' in search_options_list:
-        search_options_list.append('Search within sentence (default)')
+        if not 'Search within sentence (default)' in search_options_list:
+            search_options_list.append('Search within sentence (default)')
 
     if search_by_keyword:
         filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dictionary,
@@ -143,7 +144,7 @@ window.bind("<Escape>", clear)
 search_options_menu_var.set('Case sensitive (default)')
 search_options_menu_lb = tk.Label(window, text='Search options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,search_options_menu_lb,True)
-search_options_menu = tk.OptionMenu(window, search_options_menu_var, 'Case sensitive (default)','Case insensitive','Lemmatize', 'Search within sentence (default)', 'Search within document')
+search_options_menu = tk.OptionMenu(window, search_options_menu_var, 'Case sensitive (default)','Case insensitive','Exact match (default)','Partial match','Search within sentence (default)', 'Search within document','Lemmatize')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,search_options_menu, True)
 
 add_search_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_search_var())
@@ -164,7 +165,7 @@ def show_search_options_list():
     if len(search_options_list)==0:
         mb.showwarning(title='Warning', message='There are no currently selected SEARCH options.')
     else:
-        mb.showwarning(title='Warning', message='The currently selected SEARCH options are:\n\n' + ','.join(search_options_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+        mb.showwarning(title='Warning', message='The currently selected SEARCH options are:\n\n  ' + '\n  '.join(search_options_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
 def activate_search_var():
     # Disable the + after clicking on it and enable the menu
@@ -181,7 +182,7 @@ def activate_search_options(*args):
             search_options_list.remove('Case sensitive (default)')
         if 'sensitive' in search_options_menu_var.get() and 'insensitive' in str(search_options_list):
             search_options_list.remove('Case insensitive')
-        if search_options_menu_var.get()=='Lemmatize':
+        if search_options_menu_var.get()=='Lemmatize' or search_options_menu_var.get()=='Partial match':
             mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
             # search_options_menu_var.set('')
             if len(search_options_list) > 0:
@@ -189,7 +190,8 @@ def activate_search_options(*args):
                 reset_search_button.configure(state='normal')
                 show_search_button.configure(state='normal')
                 return
-        search_options_list.append(search_options_menu_var.get())
+        if not search_options_menu_var.get() in search_options_list:
+            search_options_list.append(search_options_menu_var.get())
         # search_options_menu.configure(state="disabled")
         add_search_button.configure(state='normal')
         reset_search_button.configure(state='normal')

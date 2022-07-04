@@ -98,13 +98,13 @@ def remove_characters_between_characters(window,inputFilename,inputDir, outputDi
         return
 
     if startCharacter=='':
-        startCharacter, useless = GUI_IO_util.enter_value_widget("Enter the start character (e.g., [)", '',
+        startCharacter, useless = GUI_IO_util.enter_value_widget("Enter the single start character (e.g., [)", '',
                                                                1, '', '', '')
         if startCharacter == '':
             mb.showwarning(title='Blank start character',
                            message='No start character entered. Routine aborted.')
             return
-        endCharacter, useless = GUI_IO_util.enter_value_widget("Enter the end character (e.g., ])", '',
+        endCharacter, useless = GUI_IO_util.enter_value_widget("Enter the single end character (e.g., ])", '',
                                                                1, '', '', '')
         if endCharacter == '':
             mb.showwarning(title='Blank end character',
@@ -122,13 +122,22 @@ def remove_characters_between_characters(window,inputFilename,inputDir, outputDi
         print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
         with open(file,encoding='utf_8',errors='ignore') as infile:
             fullText = infile.read()
-            number_of_characters = fullText.count(startCharacter)
-            if number_of_characters == 0:
+            number_of_characters_start = fullText.count(startCharacter)
+            if number_of_characters_start == 0:
                 mb.showwarning(title='Start character not found',
                                message='No Start character ' + startCharacter + ' was found in the input file ' + tail + '.\n\nRoutine aborted.')
                 return
+            number_of_characters_end = fullText.count(endCharacter)
+            if number_of_characters_end == 0:
+                mb.showwarning(title='End character not found',
+                               message='No End character ' + endCharacter + ' was found in the input file ' + tail + '.\n\nRoutine aborted.')
+                return
+            if number_of_characters_start != number_of_characters_end:
+                mb.showwarning(title='Unmatched start and end characters',
+                               message='The number of start and end characters are not matched (start =' + str(number_of_characters_start) + '; end = ' + str(number_of_characters_end) + ') in the input file ' + tail)
+                continue
             i = 0
-            while i < number_of_characters:
+            while i < number_of_characters_start:
                 split_string_A = fullText.split(startCharacter, 1) # Split into "ab" and "cd"
                 split_string_A = split_string_A[0]
                 # print("split_string_A",split_string_A)

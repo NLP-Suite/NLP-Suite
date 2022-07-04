@@ -402,10 +402,6 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputSt
                     if case_sensitive==False:
                         sentence = sentence.lower()
                         word = word.lower()
-                        # must tokenize or substrings will be found instead of exact strings
-                        # TODO Mino there is a similar approach in file_search_byWord_util
-                        #   lines 106-119 we need to adopt a similar approach so that substring are not picked up
-                        #   unless we want to with the use of * eventually
                         tokens_ = [token.text.lower() for token in sentences_tokens[sentence_index-1].tokens]
                     else:
                         tokens_ = [token.text for token in sentences_tokens[sentence_index-1].tokens]
