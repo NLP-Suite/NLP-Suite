@@ -117,14 +117,15 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         if len(columns_to_be_plotted_byDoc[0])>0: # compute only if the double list is not empty
             remove_hyperlinks=True
             if IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename) > 1:
+                # TODO select_col any changes in the inputfile layout of columns
+                #     will change the [0][0] items for selected_col
+                # selected_col is the column to be plotted
+                selected_col = columns_to_be_plotted_bar[0][0]
                 if count_var==1: # for alphabetic fields that need to be counted for display in a chart
                     # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted tyo be used
                     # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, graph=False,
                     #                              complete_sid=False,  chartPackage='Excel')
 
-                    # TODO select_col any changes in the inputfile layout of columns
-                    #     will change the [0][0] items for selected_col
-                    selected_col=[[columns_to_be_plotted_bar[0][0]]]
                     # TODO TONY the compute_csv_column_frequencies_with_aggregation should export the distinct values of a column
                     #   in separate columns so that they will be plotted with different colors as separate series
 
@@ -132,7 +133,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                                     inputFilename, None, outputDir,
                                                                     False, createCharts, chartPackage,
                                                                     # selected_col=columns_to_be_plotted_byDoc[0],
-                                                                    selected_col=selected_col,
+                                                                    selected_col=[[selected_col]],
                                                                     hover_col=[],
                                                                     # group_col=columns_to_be_plotted_byDoc[1],
                                                                     group_col=columns_to_be_plotted_byDoc,
@@ -168,8 +169,10 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                     columns_to_be_plotted_byDoc = [[1, 3, 2]]
                         else:
                             columns_to_be_plotted_byDoc = [[1, 3, 2]]
+                else:
+                    columns_to_be_plotted_byDoc = [[columns_to_be_plotted_byDoc[0][1], selected_col]]
                 chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
-                                                          outputFileLabel='ByDoc',
+                                                          outputFileLabel='ByDoc_' + outputFileNameType,
                                                           chartPackage=chartPackage,
                                                           chart_type_list=['bar'],
                                                           chart_title=chartTitle + ' by Document',
@@ -215,7 +218,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
             #     columns_to_be_plotted_bySent = [[1, 2]]
 
             chart_outputFilename = run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
-                                                      outputFileLabel='BySent',
+                                                      outputFileLabel='BySent_' + outputFileNameType,
                                                       chartPackage=chartPackage,
                                                       chart_type_list=['line'],
                                                       chart_title=chartTitle + ' by Sentence Index',
@@ -239,7 +242,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
             if plotList == []:
                 plotList = ['Frequency']
             tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, inputFilename, outputDir,
-                                                                               groupByList, plotList, chart_title_label,
+                                                                               outputFileNameType, groupByList, plotList, chart_title_label,
                                                                                createCharts,
                                                                                chartPackage)
 

@@ -148,9 +148,9 @@ def percentile(n):
 # plotField are the columns to be used for plotting (e.g., Mean, Mode)) ['Mean', 'Mode'] or ['Mean']
 #   columns MUST contain NUMERIC values
 # chart_title_label is used as part of the the chart_title
-def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, groupByField: list, plotField: list, chart_title_label, createCharts, chartPackage):
+def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outputFileNameLabel, groupByField: list, plotField: list, chart_title_label, createCharts, chartPackage):
     filesToOpen=[]
-    outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'group_stats')
+    outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', outputFileNameLabel + '_group_stats')
     # filesToOpen.append(output_name)
 
     if not set(groupByField).issubset(set(IO_csv_util.get_csvfile_headers(inputFilename))):
@@ -226,7 +226,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, group
 #   csv field values MUST be NUMERIC!
 #   'Skewness', 'Kurtosis', '25% quantile', '50% quantile', '75% quantile'
 #   it will provide statistics both ungrouped and grouped by Document ID
-def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, plotList, chart_title_label='', createCharts=False, chartPackage='Excel'):
+def compute_csv_column_statistics(window,inputFilename,outputDir, outputFileNameLabel, groupByList, plotList, chart_title_label='', createCharts=False, chartPackage='Excel'):
     filesToOpen=[]
     if len(groupByList)==0:
         command = tk.messagebox.askyesno("Groupby fields", "Do you want to compute statistics grouping results by the values of one or more fields (e.g., the DocumentID of a CoNLL table)?")
@@ -237,7 +237,7 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, groupByList, p
     # if temp_outputfile!='':
     #     filesToOpen.append(temp_outputfile)
     if len(groupByList)>0:
-        temp_outputfile=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,groupByList,plotList,chart_title_label,createCharts,chartPackage)
+        temp_outputfile=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,outputFileNameLabel,groupByList,plotList,chart_title_label,createCharts,chartPackage)
         if not (temp_outputfile is None):
             # extend because temp_outputfile is a list
             filesToOpen.extend(temp_outputfile)

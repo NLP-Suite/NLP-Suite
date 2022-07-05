@@ -319,7 +319,8 @@ vocabulary_analysis_menu_var.set('*')
 vocabulary_analysis_lb = tk.Label(window, text='Select the vocabulary analysis you wish to perform')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,vocabulary_analysis_lb,True)
 vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*',
-                                         'Vocabulary (unigrams) - List of all words/tokens in input document(s)',
+                                         'Vocabulary (via unigrams) - List of all words/tokens in input document(s)',
+                                         'Vocabulary (via Stanza multilanguage lemmatizer) - List of all words/tokens in input document(s)',
                                          'Vocabulary richness (word type/token ratio or Yule’s K)',
                                          'Abstract/concrete vocabulary',
                                          'Punctuation as figures of pathos (? !)',
