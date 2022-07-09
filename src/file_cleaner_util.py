@@ -13,6 +13,7 @@ import glob
 import os
 from stanza_functions import stanzaPipeLine, sent_tokenize_stanza
 import string
+import tkinter as tk
 import tkinter.messagebox as mb
 import re
 
@@ -91,6 +92,77 @@ def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, openO
             msgString=msgString+"\n\nAll edits were saved directly in all affected input files."
 
     mb.showwarning(title='End of paragraph punctuation', message=msgString)
+
+def check_typesetting_hyphenation(window,inputFilename,inputDir, outputDir='',openOutputFiles=False,createCharts=False,chartPackage='Excel'):
+    filesToOpen=[]
+    docID = 0
+    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt')
+    nDocs = len(files)
+    if nDocs==0:
+        return
+    for infile in files:
+        docID = docID + 1
+        head, tail = os.path.split(infile)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        hyphenated_lines=0
+        lines=[]
+    with open(infile, encoding='utf-8', errors='ignore') as source:
+        for line in source.readlines():
+            line = line.rstrip("\n")
+            if line.endswith("-"):
+                hyphenated_lines += 1
+                lin, _, e = line.rpartition(" ")
+                lines.append(line)
+    if hyphenated_lines > 0:
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'lines with end hyphen')
+        lines.insert(0,'Line ending with -')
+        IO_error = IO_csv_util.list_to_csv(window, lines, outputFilename)
+        mb.showwarning('Warning','There are ' + str(hyphenated_lines) + ' typesetting hyphenated lines in the input file(s).\n\nPlease, check carefully the output csv file to make sure that there are no legitimate end-of-line hyphens (e.g., pretty-smart) that should not be joined together. In such legitimate cases, please, manually move the line end to the next line.')
+        if not IO_error:
+            filesToOpen.append(outputFilename)
+        if openOutputFiles:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+
+
+def remove_typeseting_hyphenation(window,inputFilename,inputDir, outputDir='',openOutputFiles=False,createCharts=False,chartPackage='Excel'):
+
+    # if not IO_user_interface_util.input_output_save('Remove end-of-line typesetting hyphenation and join split parts'):
+    #     return
+
+    message='The input file(s) may contain legitimate end-of-line hyphens (e.g., pretty-smart with pretty- at the end of a line and smart at the beginning of the next line). In such legitimate cases, the two-parts of the hyphenated compound should not be joined together (rather, the line end, pretty- should be manually moved to the next line.\n\nDo you want to check, first, that there are no legitimate uses of end-of-line hyphens, before removing them all automatically, whether legitimate or not?'
+    answer = tk.messagebox.askyesno("Warning", message)
+    if answer:
+        check_typesetting_hyphenation(window, inputFilename, inputDir, outputDir, openOutputFiles,
+                                      createCharts=False, chartPackage='Excel')
+        return
+
+    docID = 0
+    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt')
+    nDocs = len(files)
+    if nDocs==0:
+        return
+    for infile in files:
+        docID = docID + 1
+        head, tail = os.path.split(infile)
+        print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
+        removed_hyphens=0
+        outfile = infile.replace('.txt','_1.txt')
+        with open(infile, encoding='utf-8', errors='ignore') as source, open(outfile, "w", encoding='utf-8', errors='ignore') as dest:
+            holdover = ""
+            for line in source.readlines():
+                line = line.rstrip("\n")
+                if line.endswith("-"):
+                    removed_hyphens +=1
+                    lin, _, e = line.rpartition(" ")
+                else:
+                    lin, e = line, ""
+                dest.write(f"{holdover}{lin}\n")
+                holdover = e[:-1]
+    if removed_hyphens > 0:
+        save_msg = '\n\nOutput file(s) saved in the same directory of input file(s) with _1.txt ending.'
+    else:
+        save_msg = ''
+    mb.showwarning('Warning',str(removed_hyphens) + ' end-line typesetting hyphens removed from the input file(s).'+ save_msg)
 
 def remove_characters_between_characters(window,inputFilename,inputDir, outputDir='',openOutputFiles=False, startCharacter='', endCharacter=''):
 

@@ -342,11 +342,11 @@ activate_all_options()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Word similarity (Levenshtein distance)': 'TIPS_NLP_Word similarity (Levenshtein distance).pdf',
+TIPS_lookup = {'Word similarity (Levenshtein edit distance)': 'TIPS_NLP_Word similarity (Levenshtein edit distance).pdf',
                'NER (Named Entity Recognition)': 'TIPS_NLP_NER (Named Entity Recognition) Stanford CoreNLP.pdf',
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
                'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf"}
-TIPS_options = 'Word similarity (Levenshtein distance)', 'NER (Named Entity Recognition)', 'CoNLL Table', 'POSTAG (Part of Speech Tags)'
+TIPS_options = 'Word similarity (Levenshtein edit distance)', 'NER (Named Entity Recognition)', 'CoNLL Table', 'POSTAG (Part of Speech Tags)'
 
 
 # add all the lines lines to the end to every special GUI
