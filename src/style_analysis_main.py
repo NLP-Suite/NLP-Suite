@@ -143,7 +143,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                 return
             ngramsNumber=4
             normalize = False
-            excludePunctuation = False
+            excludePunctuation = True
             frequency=0
 
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
@@ -156,7 +156,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             ngramsNumber=1
             ngramType = 1
             normalize = False
-            excludePunctuation = False
+            excludePunctuation = True
             if 'Hapax' in ngrams_analysis_menu_var:
                 frequency = 1
             else:

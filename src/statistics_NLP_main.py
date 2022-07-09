@@ -107,7 +107,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
         n_grams_word_var = False
         n_grams_character_var = False
         normalize = False
-        n_grams_size = 4  # default number of n_grams
+        n_grams_size = 3  # default number of n_grams
         excludePunctuation = False
         bySentenceIndex_word_var = False
         bySentenceIndex_character_var = False
