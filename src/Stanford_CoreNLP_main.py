@@ -14,16 +14,11 @@ from subprocess import call
 
 import GUI_IO_util
 import IO_files_util
-import IO_user_interface_util
 import config_util
 import reminders_util
 import IO_internet_util
 import Stanford_CoreNLP_annotator_util
 import Stanford_CoreNLP_coreference_util
-import CoNLL_util
-import file_checker_util
-import file_cleaner_util
-import sentence_analysis_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

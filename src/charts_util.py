@@ -84,7 +84,12 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 #       = False will sum all the individual values
 # count_var should always be TRUE to get frequency distributions
 
-# standard bar chart ------------------------------------------------------------------------------
+    # in the bar charts columns_to_be_plotted_bar, when numeric data are passed,
+    #   the first item is the column of numeric values
+    #   the second item is the X-axis
+    #   see the example of call in get_ngramlist
+
+    # standard bar chart ------------------------------------------------------------------------------
     if len(columns_to_be_plotted_bar[0])>0: # compute only if the double list is not empty
         chart_outputFilename = run_all(columns_to_be_plotted_bar, inputFilename, outputDir,
                                                   outputFileLabel=outputFileNameType,
@@ -113,18 +118,19 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 
 # by DOCUMENT
         byDoc=False
-
         if len(columns_to_be_plotted_byDoc[0])>0: # compute only if the double list is not empty
             remove_hyperlinks=True
             if IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename) > 1:
+                # TODO select_col any changes in the inputfile layout of columns
+                #     will change the [0][0] items for selected_col
+                # selected_col is the column to be plotted
+                selected_col = columns_to_be_plotted_bar[0][0]
+# by DOCUMENT counting the qualitative values ---------------------------------------------------------------------------
                 if count_var==1: # for alphabetic fields that need to be counted for display in a chart
                     # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted tyo be used
                     # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, graph=False,
                     #                              complete_sid=False,  chartPackage='Excel')
 
-                    # TODO select_col any changes in the inputfile layout of columns
-                    #     will change the [0][0] items for selected_col
-                    selected_col=[[columns_to_be_plotted_bar[0][0]]]
                     # TODO TONY the compute_csv_column_frequencies_with_aggregation should export the distinct values of a column
                     #   in separate columns so that they will be plotted with different colors as separate series
 
@@ -132,7 +138,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                                     inputFilename, None, outputDir,
                                                                     False, createCharts, chartPackage,
                                                                     # selected_col=columns_to_be_plotted_byDoc[0],
-                                                                    selected_col=selected_col,
+                                                                    selected_col=[[selected_col]],
                                                                     hover_col=[],
                                                                     # group_col=columns_to_be_plotted_byDoc[1],
                                                                     group_col=columns_to_be_plotted_byDoc,
@@ -156,20 +162,38 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                         # 2 is the column plotted (e.g., Gender) in temp_outputFilename
                         # [[1, 3, 2]] will give different bars for each value
                         # [[1, 3]] will give one bar for each doc, the sum of all values in selected_column to be plotted
-                        # TODO TONY we should ask the same type of question for columns that are already in quantitative form if we want to compute a single mean value
+                        # TODO TONY we should ask the same type of question for columns that are already in quantitative form if we want to compute a single MEAN value
+                        sel_column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,2)
                         if chartPackage=="Excel":
                             column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,1)
                             number_column_entries = len(IO_csv_util.get_csv_field_values(inputFilename, column_name))
                             if number_column_entries > 1:
-                                answer = tk.messagebox.askyesno("Warning", "For the chart, do you want to:\n  (Y) sum all " + str(number_column_entries) + " column values;\n  (N) use all " + str(number_column_entries) + " distinct column values.")
+                                answer = tk.messagebox.askyesno("Warning", "For the chart of '" + sel_column_name + "', do you want to:\n\n  (Y) sum the values across all " + str(number_column_entries) + " '" + column_name + "';\n  (N) use all " + str(number_column_entries) + " distinct column values.")
                                 if answer:
                                     columns_to_be_plotted_byDoc = [[1, 3]]
                                 else:
                                     columns_to_be_plotted_byDoc = [[1, 3, 2]]
                         else:
                             columns_to_be_plotted_byDoc = [[1, 3, 2]]
+# by DOCUMENT NOT counting quantitative values ---------------------------------------------------------------------------
+                else:
+                    # when plotting numeric values (count_var=0) compute the columns to be plotted
+                    #   from the values passed for bar and using the Document column number
+                    columns_to_be_plotted=[]
+                    columns_to_be_plotted_bar_len = len(columns_to_be_plotted_bar[0])
+                    for i in range(columns_to_be_plotted_bar_len):
+                        try:
+                            item = [columns_to_be_plotted_byDoc[0][1], columns_to_be_plotted_bar[i][0]]
+                        except:
+                            break
+                        columns_to_be_plotted.append(item)
+                    columns_to_be_plotted_byDoc=columns_to_be_plotted
+                if outputFileNameType != '':
+                    outputFileLabel = 'ByDoc_' + outputFileNameType
+                else:
+                    outputFileLabel = 'ByDoc'
                 chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
-                                                          outputFileLabel='ByDoc',
+                                                          outputFileLabel=outputFileLabel,
                                                           chartPackage=chartPackage,
                                                           chart_type_list=['bar'],
                                                           chart_title=chartTitle + ' by Document',
@@ -215,7 +239,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
             #     columns_to_be_plotted_bySent = [[1, 2]]
 
             chart_outputFilename = run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
-                                                      outputFileLabel='BySent',
+                                                      outputFileLabel='BySent_' + outputFileNameType,
                                                       chartPackage=chartPackage,
                                                       chart_type_list=['line'],
                                                       chart_title=chartTitle + ' by Sentence Index',
@@ -239,7 +263,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
             if plotList == []:
                 plotList = ['Frequency']
             tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, inputFilename, outputDir,
-                                                                               groupByList, plotList, chart_title_label,
+                                                                               outputFileNameType, groupByList, plotList, chart_title_label,
                                                                                createCharts,
                                                                                chartPackage)
 

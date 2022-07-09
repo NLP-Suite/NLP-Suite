@@ -547,7 +547,7 @@ NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: Geocoding
 NLP_Suite_data_file_handling_tools_menu = 'Data manager (csv files via Pandas)', \
 'File checker (file name)', \
 'File classifier (dumb classifier via embedded date) (file name)', \
-'File-type converter (csv, docx, pdf, rtf -- txt)', \
+'File-type converter (csv, docx, pdf, rtf --> txt)', \
 'File matcher (file name)',\
 'File manager (List, Rename, Copy, Move, Delete, Count, Split)', 'SQL database (via SQLite)', \
 'Sample data (ALL options GUI)', \
@@ -561,7 +561,7 @@ NLP_Suite_pre_processing_tools_menu = 'File checker (file content)', \
 'File cleaner (Pronominal resolution via CoreNLP)', 'File finder (file name)', \
 'File merger (file content)', 'File splitter (file content)', 'File splitter (file name)', \
 'Search (ALL options GUI)', 'File search (file content for n-grams & co-occurrences; N-grams viewer)', \
-'File search (file content for words/collocations)', 'File-type converter (csv, docx, pdf, rtf -- txt)', \
+'File search (file content for words/collocations)', 'File-type converter (csv, docx, pdf, rtf --> txt)', \
 'Find non-related documents', 'Language detection', 'Newspaper article/Document titles', \
 'Similarities between documents (via Java Lucene)', 'Similarities between documents (via Python difflib)', \
 'Similarities between words (Levenshtein distance)', 'Spelling checkers', 'Spelling checker cleaner (Find & Replace string)'
@@ -575,12 +575,12 @@ NLP_Suite_pre_processing_tools_menu = 'File checker (file content)', \
 # 'Spelling checker (via pyspellchecker)',
 # 'Spelling checker (via textblob)')
 
-NLP_Suite_corpus_tools_menu = 'Corpus statistics (Sentences, words, lines)', 'Co-Occurrences viewer', 'N-grams viewer', \
+NLP_Suite_corpus_tools_menu = 'Co-Occurrences viewer', 'N-grams viewer', \
 'Shape of stories', 'Similarities between documents (via Python difflib)', \
 'Similarities between documents (via Java Lucene)', 'Topic modeling (via Gensim)', \
 'Topic modeling (via MALLET)'
 
-NLP_Suite_corpus_document_tools_menu = 'WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW', 'Stanford CoreNLP', 'Stanza', 'spaCy', 'CoNLL table analyzer - Search the CoNLL table', \
+NLP_Suite_corpus_document_tools_menu = 'WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW', 'Corpus/document(s) statistics (Sentences, words, lines)', 'Stanford CoreNLP', 'Stanza', 'spaCy', 'CoNLL table analyzer - Search the CoNLL table', \
 'CoNLL table analyzer - Clause, noun, verb, function words frequencies', 'CoreNLP annotator - date (NER normalized date)', \
 'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)', 'CoreNLP annotator - quote', \
 'CoreNLP annotator - coreference (pronominal)', 'CoreNLP annotator - SVO (Subject-Verb-Object) extractor & visualization', 'Knowledge graphs: DBpedia & YAGO', \

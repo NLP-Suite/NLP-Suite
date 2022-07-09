@@ -269,11 +269,12 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_bar=[[3, 3]],
                                                            columns_to_be_plotted_bySent=[[]],  # sentence not available
-                                                           columns_to_be_plotted_byDoc=[[3, 2]],
-                                                           chartTitle='Frequency of Sentences',
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='',  # 'line_bar',
-                                                           column_xAxis_label='Sentence',
+                                                           # columns_to_be_plotted_byDoc=[[2, 3]],
+                                                           columns_to_be_plotted_byDoc=[[1, 2]],
+                                                           chartTitle='Frequency of Number of Sentences',
+                                                           count_var=0, hover_label=[],
+                                                           outputFileNameType='sent',
+                                                           column_xAxis_label='Number of Sentences',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Number of Sentences in Document'],
                                                            chart_title_label='Statistical Measures for Number of Sentences')
@@ -285,11 +286,12 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_bar=[[4, 4]],
                                                            columns_to_be_plotted_bySent=[[]],  # sentence not available
-                                                           columns_to_be_plotted_byDoc=[[4, 2]],
-                                                           chartTitle='Frequency of Words',
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='',  # 'line_bar',
-                                                           column_xAxis_label='Word',
+                                                           # columns_to_be_plotted_byDoc=[[2,1]],
+                                                           columns_to_be_plotted_byDoc=[[1, 2]],
+                                                           chartTitle='Frequency of Number of Words',
+                                                           count_var=0, hover_label=[],
+                                                           outputFileNameType='word',
+                                                           column_xAxis_label='Number of words',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Number of Words in Document'],
                                                            chart_title_label='Statistical Measures for Number of Words')
@@ -301,12 +303,12 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_bar=[[5, 5]],
                                                            columns_to_be_plotted_bySent=[[]],  # sentence not available
-                                                           columns_to_be_plotted_byDoc=[[5, 2]],
-                                                           chartTitle='Frequency of Syllables',
-                                                           count_var=1,
+                                                           columns_to_be_plotted_byDoc=[[1, 2]],
+                                                           chartTitle='Frequency of Number of Syllables',
+                                                           count_var=0,
                                                            hover_label=[],
-                                                           outputFileNameType='',  # 'syll_bar',
-                                                           column_xAxis_label='Syllable length',
+                                                           outputFileNameType='syll',
+                                                           column_xAxis_label='Number of syllables',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Number of Syllables in Document'],
                                                            chart_title_label='Statistical Measures for Number of Syllables')
@@ -329,10 +331,19 @@ def Extract(lst):
     return [item[0] for item in lst]
 
 
-def same_sentence_check(jgram):
-    sentenceID = jgram[0][1]
+# def same_sentence_check(jgram):
+#     sentenceID = jgram[0][1]
+#     for token in jgram:
+#         if token[1] != sentenceID:
+#             return False
+#         else:
+#             continue
+#     return True
+
+def same_document_check(jgram):
+    documentID = jgram[0][1]
     for token in jgram:
-        if token[1] != sentenceID:
+        if token[1] != documentID:
             return False
         else:
             continue
@@ -394,10 +405,10 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                        columns_to_be_plotted_bar=[[0, 0]],
                                                        columns_to_be_plotted_bySent=[[1,0]],
-                                                       columns_to_be_plotted_byDoc=[[0, 4]],
+                                                       columns_to_be_plotted_byDoc=[[3, 4]],
                                                        chartTitle='Frequency of Sentence Lengths',
                                                        count_var=1, hover_label=[],
-                                                       outputFileNameType='', #'line_bar',
+                                                       outputFileNameType='Sent', #'line_bar',
                                                        column_xAxis_label='Sentence length',
                                                        groupByList=['Document ID', 'Document'],
                                                        plotList=['Sentence length (in words)'], chart_title_label='Statistical Measures for Sentence Lenghts')
@@ -406,143 +417,6 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
         filesToOpen.extend(chart_outputFilename)
 
     return filesToOpen
-
-# wordList is a string
-def extract_sentences(window, inputFilename, inputDir, outputDir, inputString):
-    filesToOpen=[]
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
-    Ndocs = len(inputDocs)
-    if Ndocs == 0:
-        return
-
-    # Win/Mac may use different quotation, we replace any directional quotes to straight ones
-    right_double = u"\u201C"  # “
-    left_double = u"\u201D"  # ”
-    straight_double = u"\u0022"  # "
-    if (right_double in inputString) or (left_double in inputString):
-        inputString = inputString.replace(right_double, straight_double)
-        inputString = inputString.replace(left_double, straight_double)
-    if inputString.count(straight_double) == 2:
-        # Append ', ' to the end of search_words_var so that literal_eval creates a list
-        inputString += ', '
-    # convert the string inputString to a list []
-    def Convert(inputString):
-        wordList = list(inputString.split(","))
-        return wordList
-
-    wordList = Convert(inputString)
-
-    # wordList = ast.literal_eval(inputString)
-    # print('wordList',wordList)
-    # try:
-    # 	wordList = ast.literal_eval(inputString)
-    # except:
-    # 	mb.showwarning(title='Search error',message='The search function encountered an error. If you have entered multi-word expressions (e.g. beautiful girl make sure to enclose them in double quotes "beautiful girl"). Also, make sure to separate single-word expressions, with a comma (e.g., go, come).')
-    # 	return
-    caseSensitive = mb.askyesno("Python", "Do you want to process your search word(s) as case sensitive?")
-
-    if inputFilename!='':
-        inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
-        outputDir_sentences = os.path.join(outputDir, "sentences_" + inputFileBase)
-    else:
-        # processing a directory
-        inputDirBase = os.path.basename(inputDir)
-        outputDir_sentences = os.path.join(outputDir, "sentences_Dir_" + inputDirBase)
-
-    # create a subdirectory in the output directory
-    outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract', silent=True)
-    if outputDir_sentences_extract == '':
-        return
-    outputDir_sentences_extract_minus = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_minus', silent=True)
-    if outputDir_sentences_extract_minus == '':
-        return
-
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                   'Started running the Word search function at',
-                                                   True, '', True)
-
-    fileID = 0
-    file_extract_written = False
-    file_extract_minus_written = False
-    nDocsExtractOutput = 0
-    nDocsExtractMinusOutput = 0
-
-    for doc in inputDocs:
-        wordFound = False
-        fileID = fileID + 1
-        head, tail = os.path.split(doc)
-        print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
-        with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
-            text = inputFile.read().replace("\n", " ")
-        outputFilename_extract = os.path.join(outputDir_sentences_extract,tail[:-4]) + "_extract.txt"
-        outputFilename_extract_minus = os.path.join(outputDir_sentences_extract_minus,tail[:-4]) + "_extract_minus.txt"
-        with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
-                outputFilename_extract_minus, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_minus:
-            # sentences = tokenize.sent_tokenize(text)
-            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
-            n_sentences_extract = 0
-            n_sentences_extract_minus = 0
-            for sentence in sentences:
-                wordFound = False
-                sentenceSV = sentence
-                nextSentence = False
-                for word in wordList:
-                    if nextSentence == True:
-                        # go to next sentence; do not write the same sentence several times if it contains several words in wordList
-                        break
-                    #
-                    if caseSensitive==False:
-                        sentence = sentence.lower()
-                        word = word.lower()
-                    if word in sentence:
-                        wordFound = True
-                        nextSentence = True
-                        n_sentences_extract += 1
-                        outputFile_extract.write(sentenceSV + " ")  # write out original sentence
-                        file_extract_written = True
-                        # if none of the words in wordList are found in a sentence write the sentence to the extract_minus file
-                if wordFound == False:
-                    n_sentences_extract_minus += 1
-                    outputFile_extract_minus.write(sentenceSV + " ")  # write out original sentence
-                    file_extract_minus_written = True
-        if file_extract_written == True:
-            # filesToOpen.append(outputFilename_extract)
-            nDocsExtractOutput += 1
-            file_extract_written = False
-        outputFile_extract.close()
-        if n_sentences_extract == 0: # remove empty file
-            os.remove(outputFilename_extract)
-        if file_extract_minus_written:
-            # filesToOpen.append(outputFilename_extract_minus)
-            nDocsExtractMinusOutput += 1
-            file_extract_minus_written = False
-        outputFile_extract_minus.close()
-        if n_sentences_extract_minus == 0: # remove empty file
-            os.remove(outputFilename_extract_minus)
-    if Ndocs == 1:
-        msg1 = str(Ndocs) + " file was"
-    else:
-        msg1 = str(Ndocs) + " files were"
-    if nDocsExtractOutput == 1:
-        msg2 = str(nDocsExtractOutput) + " file was"
-    else:
-        msg2 = str(nDocsExtractOutput) + " files were"
-    if nDocsExtractMinusOutput == 1:
-        msg3 = str(nDocsExtractMinusOutput) + " file was"
-    else:
-        msg3 = str(nDocsExtractMinusOutput) + " files were"
-    mb.showwarning("Warning", msg1 + " processed in input.\n\n" +
-                   msg2 + " written with _extract in the filename.\n\n" +
-                   msg3 + " written with _extract_minus in the filename.\n\n" +
-                   "Files were written to the subdirectories " + outputDir_sentences_extract + " and " + outputDir_sentences_extract_minus + " of the output directory." +
-                   "\n\nPlease, check the output subdirectories for filenames ending with _extract.txt and _extract_minus.txt.")
-
-    IO_files_util.openExplorer(window, outputDir_sentences)
-
-
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                   'Finished running the Word search unction at', True)
-
 
 def compute_line_length(window, config_filename, inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage):
     filesToOpen=[]
@@ -605,7 +479,7 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                               columns_to_be_plotted_bar=[[1, 1]],
                                               columns_to_be_plotted_bySent=[[2, 1]],
-                                              columns_to_be_plotted_byDoc=[[1, 5]],
+                                              columns_to_be_plotted_byDoc=[[4, 5]],
                                               chartTitle='Frequency Distribution of Line Length',
                                               count_var=1, hover_label=[],
                                               outputFileNameType='', #'line_bar', column_xAxis_label='Line length',
@@ -627,7 +501,7 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
 # frequency = 1 hapax
 
 def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngramsNumber=3,
-                                  normalize=False, excludePunctuation=False, wordgram=None,
+                                  normalize=False, excludePunctuation=True, wordgram=None,
                                   frequency = 0, openOutputFiles=False,
                                   createCharts=True, chartPackage='Excel', bySentenceID=None):
     filesToOpen = []
@@ -661,50 +535,6 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
 
     filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber, wordgram, excludePunctuation, frequency, bySentenceID)
 
-    # for file in filesToOpen:
-    #     if bySentenceID == True:
-    #         columns_to_be_plotted=[[2,1]] # sentence ID field comes first [2
-    #         hover_label=[str(index+1)+'-grams']
-    #         chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=inputFilename,
-    #                                                                                 outputDir=outputDir,
-    #                                                                                 select_col=[],
-    #                                                                                 group_col=['Sentence ID'],
-    #                                                                                 chartTitle=chartTitle + str(index + 1) + '-grams Frequencies by Sentence Index',
-    #                                                                                 series_label = ["Frequencies"])
-    #         if chart_outputFilename != "":
-    #             filesToOpen.append(chart_outputFilename)
-    #         else:
-    #             columns_to_be_plotted=[[2,1]] # sentence ID field comes first [2
-    #             hover_label=[str(index+1)+'-grams'] # change to sentence
-    #
-    #             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
-    #                                                                outputDir,
-    #                                                                columns_to_be_plotted_bar=columns_to_be_plotted,
-    #                                                                # columns_to_be_plotted_bySent=[[4, 2]],
-    #                                                                # the fields must be numeric?
-    #                                                                columns_to_be_plotted_bySent=[[]],
-    #                                                                columns_to_be_plotted_byDoc=[[]],
-    #                                                                chartTitle='Frequency of ' + chartTitle + str(DocumentID) + '-grams',
-    #                                                                count_var=1, hover_label=[], #hover_label,
-    #                                                                outputFileNameType='n-grams_'+str(DocumentID)+'_'+fn,
-    #                                                                column_xAxis_label='',
-    #                                                                groupByList=[],
-    #                                                                plotList=[],
-    #                                                                chart_title_label='')
-    #             if chart_outputFilename != None:
-    #                 if len(chart_outputFilename) > 0:
-    #                     filesToOpen.extend(chart_outputFilename)
-
-                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                #                                           outputFileLabel='n-grams_'+str(index+1)+'_'+fn,
-                #                                           chartPackage=chartPackage,
-                #                                           chart_type_list=["bar"],
-                #                                           chart_title=chartTitle + str(index+1) + '-grams',
-                #                                           column_xAxis_label_var='',
-                #                                           hover_info_column_list=hover_label)
-                # if chart_outputFilename != "":
-                #     filesToOpen.append(chart_outputFilename)
-
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                        'Finished running Word/Characters N-Grams at', True, '', True, startTime, False )
 
@@ -713,53 +543,76 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        filesToOpen=[] # to void opening again
 
     return filesToOpen
 
 
-def process_punctuation(inputFilename, excludePunctuation, In, ctr, documentID):
-    if not excludePunctuation:
-        for ngrams in In:
+# def process_punctuation(inputFilename, excludePunctuation, ngrams_list, ctr_sentence, documentID):
+def process_punctuation(inputFilename, inputDir, excludePunctuation, ngrams_list, ctr_document, documentID):
+    ngrams_list = []
+
+    for item in ctr_document:
+        if not excludePunctuation:
             char_flag = False
-            for char in ngrams[0]:
+            for char in item[0]:
                 if char in string.punctuation:
-                    ngrams.insert(1, 'yes')  # insert punctuation
+                    punct = 'yes'
                     char_flag = True
                     break
                 else:
                     continue
             if not char_flag:
-                ngrams.insert(1, 'no')  # insert punctuation
-    In.insert(2, ctr.get(ngrams[0]))  # insert sentence frequency
-    In.insert(5, documentID)  # insert document ID, after Sentence
-    In.insert(6, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename))  # insert document
-    return In
+                punct='no'
+        if inputDir == '':
+            if not excludePunctuation:
+                ngrams_list.append([item, punct, ctr_document[item], documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
+            else:
+                ngrams_list.append([item, ctr_document[item], documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
+        else:
+            if not excludePunctuation:
+                # insert 0 for corpus frequency to be updated at a later point
+                ngrams_list.append([item, punct, ctr_document[item], 0, documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
+            else:
+                # insert 0 for corpus frequency to be updated at a later point
+                ngrams_list.append([item, ctr_document[item], 0, documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
+    return ngrams_list
 
 # process the sentence ngramsList for frequency = 1 only
-def process_hapax(ngramsList, frequency):
+def process_hapax(ngramsList, frequency, excludePunctuation):
     # for hapax legomana only keep frequencies of 1
     for ngram in ngramsList:
         if frequency == 1:  # ngrams
             # hapax legomena with frequency=1; exclude items with frequency>1, i.e. i[1] > 1
             try:
-                if ngram[2] != 1: # frequencies are stored in the third field
+                if excludePunctuation:
+                    freq_col = 1
+                else:
+                    freq_col = 2
+                if ngram[freq_col] != 1: # frequencies are stored in the third field
                     ngramsList.remove(ngram)
             except:
                 ngramsList.remove(ngram)
     return ngramsList
 
-# return a list for each sentence of each document
-def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1, excludePunctuation=False, frequency = None, bySentenceID=False, isdir=False, createCharts=True,chartPackage='Excel'):
+# return a list for each document
+def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1, excludePunctuation=True, frequency = None, bySentenceID=False, isdir=False, createCharts=True,chartPackage='Excel'):
 
-    def transform(arr):
+    # the function combines each token with the next token in the list
+    def combine_tokens_in_ngrams(ngrams_list):
         t = []
-        for jgramlist in arr:
-            str = ''
+        str = ''
+        for jgramlist in ngrams_list:
             for word in jgramlist:
                 str += (word[0] + ' ')
+            str = str.strip()
             t.append([str, jgramlist[0][1],jgramlist[0][2]])
+            str = ''
         return t
 
+    if wordgram==0:
+        mb.showinfo(title='Warning', message='The computation of character n-grams is currently not available. Sorry!')
+        return
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
     nFile=len(files)
     if nFile==0:
@@ -783,112 +636,114 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
     gram = 1
     while gram <= ngramsNumber:
         container = []
-        Sentence_ID = 0
         documentID = 0
         ngramsList = []
+        corpus_ngramsList = []
+        corpus_tokens = []
         print("Processing " + gram_type_label_full + " n-gram " + str(gram) + "/" + str(ngramsNumber))
-        # insert headers
-        if excludePunctuation:
-            container.insert(0, [str(gram) + '-grams', 'Frequency in Sentence', 'Frequency in Document', 'Frequency in Corpus', 'Sentence ID',
-                                 'Sentence', 'Document'])
-        else:
-            container.insert(0, [str(gram) + '-grams', 'Punctuation', 'Frequency in Sentence', 'Frequency in Document', 'Frequency in Corpus',
-                                 'Sentence ID', 'Sentence',
-                                 'Document ID', 'Document'])
         for file in files:
             head, tail = os.path.split(file)
             documentID += 1
+            Sentence_ID = 0
+            doc_ngramsList = []
             print("   Processing file " + str(documentID) + "/" + str(nFile) + ' ' + tail)
             text = (open(file, "r", encoding="utf-8", errors='ignore').read())
-            # split into sentences
-            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
-            for each_sentence in sentences:
-                if excludePunctuation:
-                    each_sentence = each_sentence.translate(str.maketrans('', '', string.punctuation))
-                Sentence_ID += 1
-                # word ngrams
-                if wordgram==1: # word ngrams
-                    tokens=[]
-                    for tk in word_tokenize_stanza(stanzaPipeLine(each_sentence)):
-                        tokens.append([tk, Sentence_ID, each_sentence])
-                    # loop through n-gram lengths in each sentence
-                    for j in range(1,gram+1):
-                        In = [tokens[i:i+j] for i in range(len(tokens)-(j-1))] # all ngrams
-                        In = transform([tk for tk in In if same_sentence_check(tk)])
-                        ctr_sentence = collections.Counter(Extract(In))
-                        sentence_ngramsList=process_punctuation(file, excludePunctuation, In, ctr_sentence, documentID)
-                        sentence_ngramsList = process_hapax(sentence_ngramsList, frequency)
-                        ngramsList.extend(sentence_ngramsList)
-                else: # character ngrams
-                    char_tokens = []
-                    char_tokens.append([''.join(word_tokenize_stanza(stanzaPipeLine(each_sentence))), Sentence_ID])
-                    for j in range(1, ngramsNumber + 1):
-                        ngramsList = []
-                        In = []
-                        for sent in char_tokens:
-                            for i in range(len(sent[0]) - (j - 1)):
-                                In.append([sent[0][i:i + j], sent[1],Sentence_ID, each_sentence])
-                        # all ngrams
-                        ctr = collections.Counter(Extract(In))
-                        for jgrams in In:
-                            jgrams.insert(1, ctr.get(jgrams[0]))
-                        # ngram     freq     sentenceID
-                        for i in In:
-                            if i[0] not in Extract(ngramsList):
-                                ngramsList.append(i)
-                        ngramsList=process_punctuation(file, excludePunctuation, In, ctr, documentID)
-                        ngramsList = sorted(ngramsList, key=lambda x: x[1])
-                        # for ng in ngramsList:
-                        #     char_flag = False
-                        #     for char in ng[0]:
-                        #         if char in string.punctuation:
-                        #             ng.insert(1, 'yes')
-                        #             char_flag = True
-                        #             break
-                        #         else:
-                        #             continue
-                        #     if not char_flag:
-                        #         ng.insert(1, 'no')
 
-        # compute n-grams frequencies must be separated by document and by entire corpus
-        # TODO TONY
+# word ngrams ---------------------------------------------------------
 
-        # ctr = collections.Counter(Extract(ngramsList))
-        # for ngrams in ngramsList:
-        #     ngrams.insert(3, ctr.get(ngrams[0])) # compute n-grams document frequencies
-        #     ngrams.insert(4, ctr.get(ngrams[0])) # compute n-grams corpus frequencies
+            if wordgram==1: # word ngrams
+                document_tokens=[]
+                for tk in word_tokenize_stanza(stanzaPipeLine(text)):
+                    document_tokens.append([tk, documentID, file])
+                corpus_tokens.extend(document_tokens)
 
+                ngrams=[]
+                ngrams = [document_tokens[i:i+gram] for i in range(len(document_tokens)-(gram-1))]
+                # compute all ngrams, combining each token with the next token(s) and convert triple list to double list [[
+                ngrams = combine_tokens_in_ngrams([tk for tk in ngrams if same_document_check(tk)])
+                # the counter contains the frequency of each token in the document
+                ctr_document = collections.Counter(Extract(ngrams))
+                # process punctuation
+                document_ngramsList=process_punctuation(file, inputDir, excludePunctuation, ngrams, ctr_document, documentID)
+                # process hapax
+                document_ngramsList = process_hapax(document_ngramsList, frequency, excludePunctuation)
+
+                ngramsList.extend(ngrams)
+                corpus_ngramsList.extend(document_ngramsList)
+
+        if excludePunctuation:
+            corpus_freq_pos = 2  # corpus frequency position
+        else:
+            corpus_freq_pos = 3  # corpus frequency position
+
+        if inputDir != '':
+            # n-grams frequencies must be computed by entire corpus
+            ctr_corpus = collections.Counter(Extract(ngramsList))
+            # loop through the distinct values of every token in the corpus to get their frequencies
+            for item in ctr_corpus:
+                # loop through all values of the ngramsList organized by documents
+                #   so as to update the specific token for its corpus frequency
+                for ngrams in corpus_ngramsList:
+                    if ngrams[0]==item:
+                        corpus_freq = ctr_corpus[item]
+                        ngrams[corpus_freq_pos]=corpus_freq # compute n-grams corpus frequencies
+
+        # code breaks
         # ngramsList = sorted(ngramsList, key=lambda x: x[1])
-        # container.extend(ngramsList)
+
+        # insert headers
+        if excludePunctuation:
+            if inputDir == '':
+                corpus_ngramsList.insert(0, [str(gram) + '-grams', 'Frequency in Document',
+                                     'Document ID', 'Document'])
+                columns_to_be_plotted_byDoc = [[2, 3]]
+            else:
+                corpus_ngramsList.insert(0, [str(gram) + '-grams', 'Frequency in Document', 'Frequency in Corpus',
+                                             'Document ID', 'Document'])
+                columns_to_be_plotted_byDoc = [[3, 4]]
+            columns_to_be_plotted_bar = [[1, 0]]
+        else:
+            if inputDir == '':
+                corpus_ngramsList.insert(0, [str(gram) + '-grams', 'Punctuation',
+                                     'Frequency in Document',
+                                     'Document ID', 'Document'])
+                columns_to_be_plotted_byDoc = [[3, 4]]
+            else:
+                corpus_ngramsList.insert(0, [str(gram) + '-grams', 'Punctuation',
+                                             'Frequency in Document', 'Frequency in Corpus',
+                                             'Document ID', 'Document'])
+                columns_to_be_plotted_byDoc=[[4,5]]
+            columns_to_be_plotted_bar = [[2, 0]]
+
+
         # save output file after each n-gram value in the range
-        # container = sorted(container, key=lambda x: x[1])
+        # code in next line breaks
+        # corpus_ngramsList = sorted(corpus_ngramsList, key=lambda x: x[1])
         csv_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'n-grams' + str(gram) + '_' + gram_type_label_short,
                                                                      hapax_label + 'stats', '', '',
                                                                      '', False, True)
-        # TODO TONY all of sudden this command breaks in IO_csv_util.list_to_csv
-        IO_csv_util.list_to_csv(GUI_util.window, ngramsList, csv_outputFilename)
-        filesToOpen.append(csv_outputFilename)
+        errorFound = IO_csv_util.list_to_csv(GUI_util.window, corpus_ngramsList, csv_outputFilename)
+        if not errorFound:
+            filesToOpen.append(csv_outputFilename)
 
-            #         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
-            #                                                            outputDir,
-            #                                                            columns_to_be_plotted_bar=columns_to_be_plotted,
-            #                                                            # columns_to_be_plotted_bySent=[[4, 2]],
-            #                                                            # the fields must be numeric?
-            #                                                            columns_to_be_plotted_bySent=[[]],
-            #                                                            columns_to_be_plotted_byDoc=[[]],
-            #                                                            chartTitle='Frequency of ' + chartTitle + str(documentID) + '-grams',
-            #                                                            count_var=1, hover_label=[], #hover_label,
-            #                                                            outputFileNameType='n-grams_'+str(documentID)+'_'+ tail,
-            #                                                            column_xAxis_label='',
-            #                                                            groupByList=[],
-            #                                                            plotList=[],
-            #                                                            chart_title_label='')
-            #         if chart_outputFilename != None:
-            #             if len(chart_outputFilename) > 0:
-            #                 filesToOpen.extend(chart_outputFilename)
-
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, csv_outputFilename,
+                                                               outputDir,
+                                                               columns_to_be_plotted_bar=columns_to_be_plotted_bar,
+                                                               columns_to_be_plotted_bySent=[[]],
+                                                               columns_to_be_plotted_byDoc=columns_to_be_plotted_byDoc,
+                                                               chartTitle='Frequency of ' + str(gram) + '-gram',
+                                                               count_var=0, hover_label=[], #hover_label,
+                                                               outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
+                                                               column_xAxis_label='',
+                                                               groupByList=['Document ID','Document'],
+                                                               plotList=['Frequency in Document'],
+                                                               chart_title_label='Statistical Measures for ' + str(gram) + '-gram')
+            if chart_outputFilename != None:
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
         gram += 1
+
     return filesToOpen
 
 def tokenize(s):
@@ -1023,8 +878,10 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     else:
         hideMessage = True
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                           'Started running ' + processType + ' at', True)
+    # ngrams already display the started running... No need to duplicate
+    if not 'unigrams' in processType:
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                               'Started running ' + processType + ' at', True)
 
     for doc in inputDocs:
         head, tail = os.path.split(doc)
@@ -1064,7 +921,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     fileLabel='short_words'
                     fileLabel_byDocID = 'vowel_words_byDoc'
                     columns_to_be_plotted = [[0, 0]] # bar chart
-                    columns_to_be_plotted_byDocID = [[6, 6]] # bar chart
+                    columns_to_be_plotted_byDocID = [[5, 6]] # bar chart
                     chart_title_label = 'Frequency of Short Words (<4 Characters)'
                     chart_title_byDocID='Frequency of Short Words by Document'
                     chart_title_bySentID ='Frequency of Short Words by Sentence Index'
@@ -1082,7 +939,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     fileLabel='init_cap_words'
                     fileLabel_byDocID = '' # 'capital_words_byDoc'
                     columns_to_be_plotted = [[0, 0]] # bar chart
-                    columns_to_be_plotted_byDocID = [[6, 6]] # bar chart
+                    columns_to_be_plotted_byDocID = [[5, 6]] # bar chart
                     chart_title_label = 'Frequency of Initial-Capital Words'
                     chart_title_byDocID ='Frequency of Initial-Capital Words by Document'
                     chart_title_bySentID ='Frequency of Initial-Capital Words by Sentence Index'
@@ -1100,7 +957,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     fileLabel='vowel_words'
                     fileLabel_byDocID = 'vowel_words_byDoc'
                     columns_to_be_plotted = [[0, 0]] # bar chart
-                    columns_to_be_plotted_byDocID = [[6, 5]] # bar chart
+                    columns_to_be_plotted_byDocID = [[5, 6]] # bar chart
                     chart_title_label = 'Frequency of Initial-Vowel Words'
                     chart_title_byDocID='Frequency of Initial-Vowel Words by Document'
                     chart_title_bySentID = 'Frequency of Initial-Vowel Words by Sentence Index'
@@ -1115,7 +972,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     fileLabel = 'punctuation'
                     fileLabel_byDocID = 'punctuation_byDoc'
                     columns_to_be_plotted = [[0, 0]] # bar chart
-                    columns_to_be_plotted_byDocID = [[6, 6]] # bar chart
+                    columns_to_be_plotted_byDocID = [[5, 6]] # bar chart
                     chart_title_label = 'Frequency of Punctuation Symbols of Pathos (?!)'
                     chart_title_byDocID='Frequency of Punctuation Symbols of Pathos (?!) by Document'
                     chart_title_bySentID='Frequency of Punctuation Symbols of Pathos (?!) by Sentence Index'
@@ -1133,11 +990,13 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                         question_punctuation=question_punctuation+1
 
 # N-GRAMS & HAPAX --------------------------------------------------------------------------
-                # not used in style
-                if processType == '' or "N-grams" in processType or "hapax" in processType.lower():
+                if processType == '' or "N-grams" in processType or "hapax" in processType.lower() or "unigrams" in processType.lower():
                     if "hapax" in processType.lower():
                         ngramsNumber = 1
                         frequency = 1  # hapax
+                    elif "unigrams" in processType.lower():
+                        ngramsNumber = 1
+                        frequency = 0
                     else:
                         ngramsNumber = 3 # TODO ROBY
                         frequency = 0  # N-grams
@@ -1151,7 +1010,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                                                                     openOutputFiles, createCharts, chartPackage,
                                                                     bySentenceID)
                     # Excel charts are generated in compute_character_word_ngrams; return to exit here
-                    return
+                    return tempOutputFiles
 
     word_list.insert(0, header)
 
@@ -1487,10 +1346,32 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
             # if nFile>10:
             #     result = mb.askyesno("Excel charts","You have " + str(nFile) + " files for which to compute Excel charts for each file.\n\nTHIS WILL TAKE A LONG TIME TO PRODUCE.\n\nAre you sure you want to do that?")
             if result == True:
+
+                # overall qualitative grade level (e.g., 4th)
+                hover_label = []
+                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                   outputDir,
+                                                                   columns_to_be_plotted_bar=[[8,8]],
+                                                                   # columns_to_be_plotted_bySent=[[4, 2]],
+                                                                   # the fields must be numeric?
+                                                                   columns_to_be_plotted_bySent=[[10,9]],
+                                                                   # columns_to_be_plotted_byDoc=[[13,9]],
+                                                                   columns_to_be_plotted_byDoc=[[12, 13]],
+                                                                   chartTitle='Text Readability\nFrequencies of Overall Readability Consensus',
+                                                                   count_var=1, hover_label=[],
+                                                                   outputFileNameType='cons',  # 'READ_bar',
+                                                                   column_xAxis_label='Consensus readability level',
+                                                                   groupByList=[],
+                                                                   plotList=[],
+                                                                   chart_title_label='')
+                if chart_outputFilename != None:
+                    if len(chart_outputFilename) > 0:
+                        filesToOpen.extend(chart_outputFilename)
+
                 # 0 (Flesch Reading Ease) has a different scale and 3 (SMOG) is often 0
                 #	do NOT plot on the same chart these two measures
                 #	plot all other 6 measures
-                columns_to_be_plotted = [[10, 1], [10, 2], [10, 4], [10, 5], [10, 6],[10, 7]]
+                columns_to_be_plotted = [[1, 1], [2, 2], [4, 4], [5, 5], [6, 6],[7, 7]]
                 # multiple lines with hover-over effects the sample line chart produces wrong results
                 # hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
                 hover_label = []
@@ -1501,9 +1382,9 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                                                                    # columns_to_be_plotted_bySent=[[4, 2]],
                                                                    # the fields must be numeric?
                                                                    columns_to_be_plotted_bySent=[[]],
-                                                                   columns_to_be_plotted_byDoc=[[]],
-                                                                   chartTitle='Text Readability (6 Readability Measures)',
-                                                                   count_var=1, hover_label=[],
+                                                                   columns_to_be_plotted_byDoc=[[12,13]],
+                                                                   chartTitle='Text Readability\n6 Readability Measures',
+                                                                   count_var=0, hover_label=[],
                                                                    outputFileNameType='',  # 'READ_bar',
                                                                    column_xAxis_label='6 Readability measures',
                                                                    groupByList=[],
@@ -1513,7 +1394,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                     if len(chart_outputFilename) > 0:
                         filesToOpen.extend(chart_outputFilename)
 
-                # overall grade level
+                # overall numeric grade level
                 hover_label = []
                 chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                    outputDir,
@@ -1521,115 +1402,17 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                                                                    # columns_to_be_plotted_bySent=[[4, 2]],
                                                                    # the fields must be numeric?
                                                                    columns_to_be_plotted_bySent=[[10,9]],
-                                                                   columns_to_be_plotted_byDoc=[[13,9]],
-                                                                   chartTitle='Text Readability (Overall Grade Level)',
+                                                                   columns_to_be_plotted_byDoc=[[12, 13]],
+                                                                   chartTitle='Text Readability\nFrequencies of Overall Grade Level',
                                                                    count_var=0, hover_label=[],
-                                                                   outputFileNameType='',  # 'READ_bar',
+                                                                   outputFileNameType='grade',  # 'READ_bar',
                                                                    column_xAxis_label='Grade level',
-                                                                   groupByList=[],
-                                                                   plotList=[],
-                                                                   chart_title_label='')
+                                                                   groupByList=['Document ID','Document'],
+                                                                   plotList=['Grade level'],
+                                                                   chart_title_label='Statistical Measures for Readability Grade Level')
                 if chart_outputFilename != None:
                     if len(chart_outputFilename) > 0:
                         filesToOpen.extend(chart_outputFilename)
-
-                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                #                                                  outputFileLabel='READ',
-                #                                                  chartPackage=chartPackage,
-                #                                                  chart_type_list=["line"],
-                #                                                  chart_title='Text Readability (6 Readability Measures) by Sentence Index',
-                #                                                  column_xAxis_label_var='Sentence index',
-                #                                                  hover_info_column_list=hover_label,
-                #                                                  count_var=0,
-                #                                                  column_yAxis_label_var='6 Readability measures')
-                #
-                # if chart_outputFilename != "":
-                #     # rename filename not be overwritten by next line plot
-                #     try:
-                #         chart_outputFilename_new = chart_outputFilename.replace("line_chart", "ALL_line_chart")
-                #         os.rename(chart_outputFilename, chart_outputFilename_new)
-                #     except:
-                #         # the file already exists and must be removed
-                #         if os.path.isfile(chart_outputFilename_new):
-                #             os.remove(chart_outputFilename_new)
-                #         os.rename(chart_outputFilename, chart_outputFilename_new)
-                #
-                #     filesToOpen.append(chart_outputFilename_new)
-
-                # outputFilenameXLSM_1 = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                #                                           outputFilename, chart_type_list=["line"],
-                #                                           chart_title="Text Readability",
-                #                                           column_xAxis_label_var='Sentence Index',
-                #                                           column_yAxis_label_var='Readability grade level',
-                #                                           outputExtension='.xlsm', label1='READ', label2='line',
-                #                                           label3='charts', label4='', label5='', useTime=False,
-                #                                           disable_suffix=True,
-                #                                           count_var=0, column_yAxis_field_list=[],
-                #                                           reverse_column_position_for_series_label=False,
-                #                                           series_label_list=[''], second_y_var=0, second_yAxis_label='',
-                #                                           hover_var=1, hover_info_column_list=hover_label)
-                # if outputFilenameXLSM_1 != "":
-                #     filesToOpen.append(outputFilenameXLSM_1)
-
-                # plot overall grade level
-                # columns_to_be_plotted = [[10, 9]] # Sentence ID, grade level
-                # hover_label = ['Sentence']
-                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                #                                                  outputFileLabel='READ',
-                #                                                  chartPackage=chartPackage,
-                #                                                  chart_type_list=["line"],
-                #                                                  chart_title='Text Readability (Readability Grade Level)',
-                #                                                  column_xAxis_label_var='Sentence index',
-                #                                                  hover_info_column_list=hover_label,
-                #                                                  count_var=0,
-                #                                                  column_yAxis_label_var='Readability grade level')
-                #
-                # if chart_outputFilename != "":
-                #     filesToOpen.append(chart_outputFilename)
-                #
-                # outputFilenameXLSM_2 = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-                #                                           outputFilename, chart_type_list=["line"],
-                #                                           chart_title="Text Readability",
-                #                                           column_xAxis_label_var='Sentence Index',
-                #                                           column_yAxis_label_var='Readability grade level',
-                #                                           outputExtension='.xlsm', label1='READ', label2='line',
-                #                                           label3='chart', label4='', label5='', useTime=False,
-                #                                           disable_suffix=True,
-                #                                           count_var=0, column_yAxis_field_list=[],
-                #                                           reverse_column_position_for_series_label=False,
-                #                                           series_label_list=[''], second_y_var=0, second_yAxis_label='',
-                #                                           hover_var=1, hover_info_column_list=hover_label)
-                # if outputFilenameXLSM_2 != "":
-                #     filesToOpen.append(outputFilenameXLSM_2)
-
-            # bar chart of the frequency of sentences by grade levels
-            columns_to_be_plotted = [[10, 8]]
-            hover_label = []
-
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                             outputFileLabel='READ',
-                                                             chartPackage=chartPackage,
-                                                             chart_type_list=["bar"],
-                                                             chart_title='Frequency of Sentences by Readability Consensus of Grade Level',
-                                                             column_xAxis_label_var='',
-                                                             hover_info_column_list=hover_label,
-                                                             count_var=1)
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-
-            # outputFilenameXLSM_3 = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-            #                                           outputFilename, chart_type_list=["bar"],
-            #                                           chart_title="Frequency of Sentences by Readability Consensus of Grade Level",
-            #                                           column_xAxis_label_var='', column_yAxis_label_var='Frequency',
-            #                                           outputExtension='.xlsm', label1='READ', label2='bar',
-            #                                           label3='chart', label4='', label5='', useTime=False,
-            #                                           disable_suffix=True,
-            #                                           count_var=1, column_yAxis_field_list=[],
-            #                                           reverse_column_position_for_series_label=False,
-            #                                           series_label_list=[''], second_y_var=0, second_yAxis_label='',
-            #                                           hover_var=1, hover_info_column_list=hover_label)
-            # if outputFilenameXLSM_3 != "":
-            #     filesToOpen.append(outputFilenameXLSM_3)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Text Readability at',
                                        True, '', True, startTime)
@@ -1806,7 +1589,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                        columns_to_be_plotted_bar=[[1, 1], [3, 3]],
                                                        columns_to_be_plotted_bySent=[[8, 5, 1], [8, 5, 3]],
-                                                       columns_to_be_plotted_byDoc= [[8,1], [8,3]],
+                                                       columns_to_be_plotted_byDoc=[[7, 8]],
                                                        chartTitle='Frequency Distribution of Complexity Scores',
                                                        count_var=0, # to be used for byDoc, 0 for numeric field
                                                        hover_label=[],

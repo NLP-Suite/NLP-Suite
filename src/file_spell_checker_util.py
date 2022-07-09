@@ -122,9 +122,9 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                  pass
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                   columns_to_be_plotted_bar=[[2, 2]],
+                                                   columns_to_be_plotted_bar=[[0, 0]],
                                                    columns_to_be_plotted_bySent=[[]], # no sent in NLTK unusual
-                                                   columns_to_be_plotted_byDoc=[[0,2]],
+                                                   columns_to_be_plotted_byDoc=[[1,2]],
                                                    chartTitle='Frequency of Misspelled/Unusual Words',
                                                    count_var=1, hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',

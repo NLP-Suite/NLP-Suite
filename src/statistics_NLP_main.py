@@ -69,7 +69,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
             lemmatize_var=True
         if 'stopwords' in corpus_text_options_menu_var:
             stopwords_var=True
-        if "*" in corpus_statistics_options_menu_var or 'Compute statistics' in corpus_statistics_options_menu_var:
+        if "*" in corpus_statistics_options_menu_var or 'frequencies' in corpus_statistics_options_menu_var:
             tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,False,createCharts, chartPackage, stopwords_var, lemmatize_var)
             if tempOutputFiles!=None:
                 filesToOpen.extend(tempOutputFiles)
@@ -107,7 +107,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
         n_grams_word_var = False
         n_grams_character_var = False
         normalize = False
-        n_grams_size = 4  # default number of n_grams
+        n_grams_size = 3  # default number of n_grams
         excludePunctuation = False
         bySentenceIndex_word_var = False
         bySentenceIndex_character_var = False
@@ -257,21 +257,21 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 corpus_statistics_options_menu_var.set('*')
 corpus_statistics_options_menu_lb = tk.Label(window, text='Statistics options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,corpus_statistics_options_menu_lb,True)
 
 corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_menu_var,
                                                 '*',
-                                               'Compute statistics (sentences, words, syllables)',
+                                               'Compute frequencies of sentences, words, syllables, and top-20 words',
                                                'Compute sentence length',
                                                'Compute line length',
                                                )
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,corpus_statistics_options_menu, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+370,y_multiplier_integer,corpus_statistics_options_menu, True)
 
 corpus_text_options_menu_var.set('')
 corpus_options_menu_lb = tk.Label(window, text='Text options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 680,y_multiplier_integer,corpus_options_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 600,y_multiplier_integer,corpus_options_menu_lb,True)
 corpus_text_options_menu = tk.OptionMenu(window, corpus_text_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 780,y_multiplier_integer,corpus_text_options_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 700,y_multiplier_integer,corpus_text_options_menu)
 
 def activate_corpus_options(*args):
     if corpus_statistics_var.get()==True:
@@ -286,9 +286,9 @@ n_grams_var.set(0)
 n_grams_checkbox = tk.Checkbutton(window, text='Compute N-grams', variable=n_grams_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,n_grams_checkbox,True)
 
-n_grams_menu_var.set('Word')
 n_grams_menu_lb = tk.Label(window, text='N-grams type')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,n_grams_menu_lb,True)
+n_grams_menu_var.set('Word')
 n_grams_menu = tk.OptionMenu(window, n_grams_menu_var, 'Character', 'Word','DEPREL','POSTAG')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,n_grams_menu)
 
