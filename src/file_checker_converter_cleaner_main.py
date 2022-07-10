@@ -147,11 +147,13 @@ function_to_run=''
 menu_option=''
 
 pydict = {}
-pydict["Document converter (csv --> txt)"] = ["file_type_converter_util.csv_converter"]
-pydict["Document converter (docx --> txt)"] = ["file_type_converter_util.docx_converter"]
-pydict["Document converter (pdf --> txt)"] = ["file_type_converter_util.pdf_converter"]
-pydict["Document converter (rtf --> txt)"] = ["file_type_converter_util.rtf_converter"]
+pydict["Document converter (csv --> txt)"] = ["file_converter_util.csv_converter"]
+pydict["Document converter (docx --> txt)"] = ["file_converter_util.docx_converter"]
+pydict["Document converter (pdf --> txt) (via pdfminer)"] = ["file_converter_util.pdf_converter"]
+pydict["Document converter (pdf --> txt) (via pytesseract)"] = ["file_converter_util.pdf_converter"]
+pydict["Document converter (rtf --> txt)"] = ["file_converter_util.rtf_converter"]
 pydict["Check utf-8 encoding compliance"] = ["file_checker_util.check_utf8_compliance"]
+pydict["Check end-of-line typesetting hyphenation"] = ["file_cleaner_util.check_typesetting_hyphenation"]
 pydict["Check empty file"] = ["file_checker_util.check_empty_file"]
 pydict["Check sentence length (extracting sentences)"] = ["sentence_analysis_util.extract_sentence_length"]
 pydict["Language detector"] = ["file_spell_checker_util.language_detection"]
@@ -160,6 +162,8 @@ pydict["Spelling checker/Unusual words (via nltk)"] = ["file_spell_checker_util.
 pydict["Spelling checker (via SpellChecker)"] = ["file_spell_checker_util.check_for_typo"]
 pydict["Change to ASCII non-ASCII apostrophes & quotes and % to percent"] = ["file_cleaner_util.convert_quotes"]
 pydict["Remove blank lines from text file(s)"] = ["file_cleaner_util.remove_blank_lines"]
+pydict["Remove all characters between a set of characters (e.g., []) from text file(s)"] = ["file_cleaner_util.remove_characters_between_characters"]
+pydict["Remove end-of-line typesetting hyphenation and join split parts"] = ["file_cleaner_util.remove_typeseting_hyphenation"]
 pydict["Find & Replace string"] = ["file_cleaner_util.find_replace_string"]
 pydict["Find & Replace string (via csv file)"] = ["file_spell_checker_util.spelling_checker_cleaner"]
 pydict["Separate titles from documents (newspaper articles)"] = ["file_cleaner_util.newspaper_titles"]
@@ -191,6 +195,7 @@ check_lb = tk.Label(window, text='Check Files')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,check_lb,True)
 check_menu = tk.OptionMenu(window,check_tools_var,
                     'Check utf-8 encoding compliance',
+                    'Check end-of-line typesetting hyphenation',
                     'Check empty file',
                     'Check sentence length (extracting sentences)',
                     'Language detector',
@@ -216,7 +221,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 convert_menu = tk.OptionMenu(window,convert_tools_var,
                     'Document converter (csv --> txt)',
                     'Document converter (docx --> txt)',
-                    'Document converter (pdf --> txt)',
+                    'Document converter (pdf --> txt) (via pdfminer)',
+                    'Document converter (pdf --> txt) (via pytesseract)',
                     'Document converter (rtf --> txt)')
 
 convert_menu.configure(width=70)
@@ -230,6 +236,8 @@ clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Find & Replace string',
                     'Find & Replace string (via csv file)',
                     'Remove blank lines from text file(s)',
+                    'Remove end-of-line typesetting hyphenation and join split parts',
+                    'Remove all characters between a set of characters (e.g., []) from text file(s)',
                     'Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation',
                     'Separate titles from documents (newspaper articles)')
 

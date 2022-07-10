@@ -14,12 +14,13 @@ import GUI_IO_util
 
 def run(window, inputFilename, inputDir, outputDir, extract_sentences_search_words_var):
 
-    if extract_sentences_var:
-        import sentence_analysis_util
-        statistics_txt_util.extract_sentences(window, inputFilename, inputDir, outputDir, extract_sentences_search_words_var)
-        extract_sentences_search_words_var=''
-        search_words_entry.configure(state='disabled')
-        return
+    # if extract_sentences_var:
+        # it is better to open the GUI that will allow search options (e.g., case sensitive)
+        # import sentence_analysis_util
+        # statistics_txt_util.extract_sentences(window, inputFilename, inputDir, outputDir, extract_sentences_search_words_var)
+        # extract_sentences_search_words_var=''
+        # search_words_entry.configure(state='disabled')
+        # return
 
     import sample_corpus_util
     sample_corpus_util.sample_corpus_by_document_id(selectedFile, inputDir, outputDir)
@@ -117,17 +118,17 @@ def activate_options():
     search_words_entry.configure(state='normal')
 
 extract_sentences_var.set(0)
-sample_sentences_button = tk.Button(window, text='Sample files by search word(s) (extract sentences)',width=70,command=lambda: activate_options())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_sentences_button,True)
+sample_sentences_button = tk.Button(window, text='Sample files by search word(s) (extract sentences) (Open GUI)',width=70,command=lambda: call("python file_search_byWord_main.py", shell=True))
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_sentences_button)
 
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               sample_sentences_button, True)
-
-extract_sentences_search_words_var.set('')
-search_words_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
-search_words_entry.configure(width=100, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+500, y_multiplier_integer,
-                                               search_words_entry)
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+#                                                sample_sentences_button, True)
+#
+# extract_sentences_search_words_var.set('')
+# search_words_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
+# search_words_entry.configure(width=100, state='disabled')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+500, y_multiplier_integer,
+#                                                search_words_entry)
 
 sample_sentences_by_documentID_button = tk.Button(window, text='Sample sentences by Document ID and other fields values in csv file (Open GUI)',width=70,command=lambda: call("python data_manager_main.py", shell=True))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_sentences_by_documentID_button)

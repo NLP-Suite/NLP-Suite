@@ -29,7 +29,7 @@ import IO_files_util
 import IO_csv_util
 import charts_util
 
-def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_search_keywords, search_keywords_list,
+def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_search_keywords, search_keywords_list,
         search_options_list, createCharts, chartPackage):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        "Started running the file search script at", True)
@@ -97,7 +97,11 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
             f = open(file, "r", encoding='utf-8', errors='ignore')
             docText = f.read()
             f.close()
+
+# search in sentence  -----------------------------------------------
+
             if search_within_sentence:
+                chartTitle = 'Frequency Distribution of Search Words'
                 # sentences_ = sent_tokenize(docText)  # the list of sentences in corpus
                 sentences_ = stanzaPipeLine(docText).sentences
                 sentences = [sentence.text for sentence in sentences_]
@@ -109,8 +113,9 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                     sentence_index += 1
                     if not case_sensitive:
                         sent = sent.lower()
-                    # tokens_ = word_tokenize(sent)
-                    tokens_ = [token.text for token in sentences_[sentence_index-1].tokens]
+                        tokens_ = [token.text.lower() for token in sentences_[sentence_index-1].tokens]
+                    else:
+                        tokens_ = [token.text for token in sentences_[sentence_index-1].tokens]
                     for keyword in search_keyword:
                         if keyword in sent:
                             if isFirstOcc:
@@ -137,9 +142,11 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                                                 else:
                                                     checker = False
                                     if checker:
+                                        # count the number of searched word occurrences, NOT of documents
                                         frequency += 1
                                 else:
                                     if keyword == token:
+                                        # count the number of searched word occurrences, NOT of documents
                                         frequency += 1
 
                             if frequency == 0:
@@ -163,7 +170,11 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                                          IO_csv_util.dressFilenameForCSVHyperlink(file)])
                         else:
                             continue
+
+# search in document, regardless of sentence -----------------------------------------------
+
             else: # search in document, regardless of sentence
+                chartTitle = 'Frequency Distribution of Documents with Search Words'
                 if not case_sensitive:
                     docText = docText.lower()
                 # words_ = word_tokenize(docText)  # the list of sentences in corpus
@@ -195,6 +206,7 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
                                             checker = False
                             if checker:
                                 search_keywords_found = True
+                                # count the number of documents, not of searched word occurrences
                                 frequency += 1
                         if frequency > 0:
                             if lemmatize:
@@ -256,59 +268,192 @@ def run(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_sear
 
     if search_keywords_found == False:
         mb.showwarning(title='Search string(s) not found',
-                       message='The search keywords:\n\n   ' + search_keywords_list + '\n\nwere not found in your input document(s).')
+                       message='The search keywords:\n\n   ' + search_keywords_list + '\n\nwere not found in your input document(s) with the following set of search options:\n\n  '+ str('\n  '.join(search_options_list)))
         outputFilename = ''
-    filesToOpen.append(outputFilename)
+    else:
+        filesToOpen.append(outputFilename)
 
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                       columns_to_be_plotted_bar=[[0, 0]],
-                                                       columns_to_be_plotted_bySent=[[]],
-                                                       columns_to_be_plotted_byDoc=[[9, 0]],
-                                                       chartTitle='Frequency Distribution of Search Words',
-                                                       count_var=1,  # to be used for byDoc, 0 for numeric field
-                                                       hover_label=[],
-                                                       outputFileNameType='',
-                                                       column_xAxis_label='Search word',
-                                                       groupByList=[],
-                                                       plotList=[],
-                                                       chart_title_label='')
-    if chart_outputFilename != None:
-        if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
-
-    # if createCharts == True:
-    #
-    #     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-    #                                                              'search')
-    #     columns_to_be_plotted=[[0,0]]
-    #     hover_label = []
-    #     inputFilename = outputFilename
-    #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-    #                                                      outputFileLabel='search',
-    #                                                      chartPackage=chartPackage,
-    #                                                      chart_type_list=["bar"],
-    #                                                      chart_title='Frequency of Search Words',
-    #                                                      column_xAxis_label_var='Search words',
-    #                                                      hover_info_column_list=hover_label,
-    #                                                      count_var=1)
-    #     if chart_outputFilename != "":
-    #         filesToOpen.append(chart_outputFilename)
-    #
-    #     columns_to_be_plotted=[[0,9]]
-    #     hover_label = []
-    #     inputFilename = outputFilename
-    #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-    #                                                      outputFileLabel='search_byDoc',
-    #                                                      chartPackage=chartPackage,
-    #                                                      chart_type_list=["bar"],
-    #                                                      chart_title='Frequency of search words By Document',
-    #                                                      column_xAxis_label_var='Document',
-    #                                                      hover_info_column_list=hover_label,
-    #                                                      count_var=1,
-    #                                                      remove_hyperlinks=True)
-    #     if chart_outputFilename != "":
-    #         filesToOpen.append(chart_outputFilename)
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                           columns_to_be_plotted_bar=[[0, 0]],
+                                                           columns_to_be_plotted_bySent=[[]],
+                                                           columns_to_be_plotted_byDoc=[[9, 0]],
+                                                           chartTitle=chartTitle,
+                                                           count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                           hover_label=[],
+                                                           outputFileNameType='',
+                                                           column_xAxis_label='Search word',
+                                                           groupByList=[],
+                                                           plotList=[],
+                                                           chart_title_label='')
+        if chart_outputFilename != None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end",
                                        "Finished running the file search script at", True)
     return filesToOpen
+
+# inputString is the list of search words
+# wordList is a string
+def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputString, search_options_list,
+                                                  createCharts, chartPackage):
+    filesToOpen=[]
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    Ndocs = len(inputDocs)
+    if Ndocs == 0:
+        return
+
+    case_sensitive = False
+    lemmatize = False
+    search_keywords_found = False
+    search_within_sentence = False
+    for search_option in search_options_list:
+        if search_option == 'Case sensitive (default)':
+            case_sensitive = True
+        if search_option == 'Case insensitive':
+                case_sensitive = False
+        elif search_option == "Search within sentence (default)":
+            search_within_sentence = True
+        elif search_option == "Lemmatize":  # not available yet
+            lemmatize = True
+
+    # Win/Mac may use different quotation, we replace any directional quotes to straight ones
+    right_double = u"\u201C"  # “
+    left_double = u"\u201D"  # ”
+    straight_double = u"\u0022"  # "
+    if (right_double in inputString) or (left_double in inputString):
+        inputString = inputString.replace(right_double, straight_double)
+        inputString = inputString.replace(left_double, straight_double)
+    if inputString.count(straight_double) == 2:
+        # Append ', ' to the end of search_words_var so that literal_eval creates a list
+        inputString += ', '
+    # convert the string inputString to a list []
+    def Convert(inputString):
+        wordList = list(inputString.split(","))
+        return wordList
+
+    wordList = Convert(inputString)
+
+    # wordList = ast.literal_eval(inputString)
+    # print('wordList',wordList)
+    # try:
+    # 	wordList = ast.literal_eval(inputString)
+    # except:
+    # 	mb.showwarning(title='Search error',message='The search function encountered an error. If you have entered multi-word expressions (e.g. beautiful girl make sure to enclose them in double quotes "beautiful girl"). Also, make sure to separate single-word expressions, with a comma (e.g., go, come).')
+    # 	return
+    # case_sensitive = mb.askyesno("Python", "Do you want to process your search word(s) as case sensitive?")
+
+    if inputFilename!='':
+        inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
+        outputDir_sentences = os.path.join(outputDir, "sentences_" + inputFileBase)
+    else:
+        # processing a directory
+        inputDirBase = os.path.basename(inputDir)
+        outputDir_sentences = os.path.join(outputDir, "sentences_Dir_" + inputDirBase)
+
+    # create a subdirectory in the output directory
+    outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract', silent=True)
+    if outputDir_sentences_extract == '':
+        return
+    outputDir_sentences_extract_minus = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_minus', silent=True)
+    if outputDir_sentences_extract_minus == '':
+        return
+
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                   'Started running the Word search function at',
+                                                   True, '', True)
+
+    fileID = 0
+    file_extract_written = False
+    file_extract_minus_written = False
+    nDocsExtractOutput = 0
+    nDocsExtractMinusOutput = 0
+
+    for doc in inputDocs:
+        wordFound = False
+        fileID = fileID + 1
+        head, tail = os.path.split(doc)
+        print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
+        with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
+            text = inputFile.read().replace("\n", " ")
+        outputFilename_extract = os.path.join(outputDir_sentences_extract,tail[:-4]) + "_extract.txt"
+        outputFilename_extract_minus = os.path.join(outputDir_sentences_extract_minus,tail[:-4]) + "_extract_minus.txt"
+        with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
+                outputFilename_extract_minus, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_minus:
+            # sentences = tokenize.sent_tokenize(text)
+            sentences_tokens = sent_tokenize_stanza(stanzaPipeLine(text), False)
+            sentences = [s.text for s in sentences_tokens]
+            n_sentences_extract = 0
+            n_sentences_extract_minus = 0
+            sentence_index = 0
+            for sentence in sentences:
+                if len(sentence) == 0:
+                    sentence_index += 1
+                    continue
+                sentence_index += 1
+                wordFound = False
+                sentenceSV = sentence
+                nextSentence = False
+                for word in wordList:
+                    if nextSentence == True:
+                        # go to next sentence; do not write the same sentence several times if it contains several words in wordList
+                        break
+                    #
+                    if case_sensitive==False:
+                        sentence = sentence.lower()
+                        word = word.lower()
+                        tokens_ = [token.text.lower() for token in sentences_tokens[sentence_index-1].tokens]
+                    else:
+                        tokens_ = [token.text for token in sentences_tokens[sentence_index-1].tokens]
+
+                    for token in tokens_:
+                        if word == token:
+                            wordFound = True
+                            nextSentence = True
+                            n_sentences_extract += 1
+                            outputFile_extract.write(sentenceSV + " ")  # write out original sentence
+                            file_extract_written = True
+                            # if none of the words in wordList are found in a sentence write the sentence to the extract_minus file
+
+                if wordFound == False:
+                    n_sentences_extract_minus += 1
+                    outputFile_extract_minus.write(sentenceSV + " ")  # write out original sentence
+                    file_extract_minus_written = True
+        if file_extract_written == True:
+            # filesToOpen.append(outputFilename_extract)
+            nDocsExtractOutput += 1
+            file_extract_written = False
+        outputFile_extract.close()
+        if n_sentences_extract == 0: # remove empty file
+            os.remove(outputFilename_extract)
+        if file_extract_minus_written:
+            # filesToOpen.append(outputFilename_extract_minus)
+            nDocsExtractMinusOutput += 1
+            file_extract_minus_written = False
+        outputFile_extract_minus.close()
+        if n_sentences_extract_minus == 0: # remove empty file
+            os.remove(outputFilename_extract_minus)
+    if Ndocs == 1:
+        msg1 = str(Ndocs) + " file was"
+    else:
+        msg1 = str(Ndocs) + " files were"
+    if nDocsExtractOutput == 1:
+        msg2 = str(nDocsExtractOutput) + " file was"
+    else:
+        msg2 = str(nDocsExtractOutput) + " files were"
+    if nDocsExtractMinusOutput == 1:
+        msg3 = str(nDocsExtractMinusOutput) + " file was"
+    else:
+        msg3 = str(nDocsExtractMinusOutput) + " files were"
+    mb.showwarning("Warning", msg1 + " processed in input.\n\n" +
+                   msg2 + " written with _extract in the filename.\n\n" +
+                   msg3 + " written with _extract_minus in the filename.\n\n" +
+                   "Files were written to the subdirectories " + outputDir_sentences_extract + " and " + outputDir_sentences_extract_minus + " of the output directory." +
+                   "\n\nPlease, check the output subdirectories for filenames ending with _extract.txt and _extract_minus.txt.")
+
+    IO_files_util.openExplorer(window, outputDir_sentences)
+
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                   'Finished running the Word search unction at', True)
+

@@ -553,9 +553,9 @@ show_viewer_button = tk.Button(window, text='Show', width=5,height=1,state='disa
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400,y_multiplier_integer,show_viewer_button,True)
 
 viewer_menu_lb = tk.Label(window, text='VIEWER options')
-viewer_options_menu_var.set('Case sensitive')
+viewer_options_menu_var.set('Case sensitive (default)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,viewer_menu_lb,True)
-viewer_options_menu = tk.OptionMenu(window, viewer_options_menu_var, 'Case sensitive', 'Case insensitive', 'Normalize results','Scale results', 'Lemmatize words')
+viewer_options_menu = tk.OptionMenu(window, viewer_options_menu_var, 'Case sensitive (default)', 'Case insensitive', 'Exact match (default)','Partial match','Normalize results','Scale results', 'Lemmatize words')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,viewer_options_menu)
 
 open_GUI_button = tk.Button(window, text='Open GUI for word/collocation searches',command=lambda: call("python file_search_byWord_main.py", shell=True))
@@ -570,7 +570,7 @@ def show_viewer_options_list():
     if len(viewer_options_list)==0:
         mb.showwarning(title='Warning', message='There are no currently selected VIEWER options.')
     else:
-        mb.showwarning(title='Warning', message='The currently selected VIEWER options are:\n\n' + ','.join(viewer_options_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+        mb.showwarning(title='Warning', message='The currently selected VIEWER options are:\n\n  ' + '\n  '.join(viewer_options_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
 def activate_viewer_var():
     # Disable the + after clicking on it and enable the menu
@@ -582,7 +582,10 @@ def activate_viewer_options(*args):
         if viewer_options_menu_var.get() in viewer_options_list:
             mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
             return
-        if 'Lemmatize' in viewer_options_menu_var.get() or 'Normalize' in viewer_options_menu_var.get() or 'Scale' in viewer_options_menu_var.get():
+        if 'match' in viewer_options_menu_var.get() or \
+                'Lemmatize' in viewer_options_menu_var.get() or \
+                'Normalize' in viewer_options_menu_var.get() or \
+                'Scale' in viewer_options_menu_var.get():
                 mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
                 return
         # remove the case option, when a different one is selected

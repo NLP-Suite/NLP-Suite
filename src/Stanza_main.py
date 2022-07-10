@@ -202,6 +202,7 @@ inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
 def clear(e):
+    reset_language_list()
     parser_var.set(1)
     parser_menu_var.set("Dependency parser")
     Stanza_annotators_var.set(0)
@@ -212,6 +213,7 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 language_var = tk.StringVar()
+language_list = []
 memory_var = tk.IntVar()
 date_extractor_var = tk.IntVar()
 split_files_var = tk.IntVar()
@@ -308,7 +310,6 @@ def check_CoreNLP_dateFields(*args):
         date_separator.config(state='disabled')
         date_position_menu.config(state="disabled")
 
-
 fileName_embeds_date.trace('w', check_CoreNLP_dateFields)
 
 language_lb = tk.Label(window,text='Language')
@@ -333,6 +334,7 @@ def print_it(event):
     print(language_var.get())
 
 language_var.set('English')
+language_list.append('English')
 def list_all_languages(model_dir=DEFAULT_MODEL_DIR):
     with open(os.path.join(model_dir, 'resources.json')) as fin:
         resources = json.load(fin)
@@ -345,7 +347,46 @@ langs_full = sorted([lang_dict[x] for x in langs])
 language_menu = ttk.Combobox(window, width = 70, textvariable = language_var)
 language_menu['values'] = langs_full
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
-                                               y_multiplier_integer, language_menu)
+                                               y_multiplier_integer, language_menu,True)
+def check_language(*args):
+    if language_var.get() in language_list:
+        mb.showwarning(title='Warning',
+                       message='The selected language "' + language_var.get() + '" is already in your selection list: ' + str(
+                           language_list) + '.\n\nPlease, select another language.')
+        window.focus_force()
+        return
+    else:
+        language_list.append(language_var.get())
+        language_menu.configure(state='disabled')
+        add_language_button.configure(state='normal')
+        reset_language_button.configure(state='normal')
+        show_language_button.configure(state='normal')
+language_var.trace('w', check_language)
+
+add_language_button = tk.Button(window, text='+', width=2,height=1,state='normal',command=lambda: activate_language_var())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+600,y_multiplier_integer,add_language_button, True)
+
+reset_language_button = tk.Button(window, text='Reset', width=5,height=1,state='normal',command=lambda: reset_language_list())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+640,y_multiplier_integer,reset_language_button,True)
+
+show_language_button = tk.Button(window, text='Show', width=5,height=1,state='normal',command=lambda: show_language_list())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,show_language_button)
+
+def reset_language_list():
+    language_list.clear()
+    language_menu.configure(state='normal')
+    language_var.set('English')
+
+def show_language_list():
+    if len(language_list)==0:
+        mb.showwarning(title='Warning', message='There are no currently selected language options.')
+    else:
+        mb.showwarning(title='Warning', message='The currently selected language options are:\n\n  ' + '\n  '.join(language_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+
+def activate_language_var():
+    # Disable the + after clicking on it and enable the class menu
+    add_language_button.configure(state='disabled')
+    language_menu.configure(state='normal')
 
 parser_var.set(1)
 parser_checkbox = tk.Checkbutton(window, text='Stanza parser', variable=parser_var, onvalue=1, offvalue=0)
@@ -508,7 +549,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if your filenames embed a date (e.g., The New York Times_12-23-1992).\n\nWhen the date option is ticked, the script will add a date field to the CoNLL table. The date field will be used by other NLP scripts (e.g., Ngrams).\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the follwing information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Stanza provides pretrained NLP models for a total 66 human languages. Please, using the dropdown menu, select the language to be used."+GUI_IO_util.msg_Esc)
+                                  "Stanza provides pretrained NLP models for a total 66 human languages. Please, using the dropdown menu, select the language to be used.\n\nIf your documents contain different languages, you have two options to ensure that the selected annotator will process your documents with the correct language model:\n\n   1. use the multilingual option at the end of the list of languages and let Stanza pick the right language model for the various parts of your document;\n   2. if you know the languages used in your documents, a better alternative is for you to select the languages using the + widget."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to use the Stanza dependency parser to obtain a CoNLL table (CoNLL U format).\n\nThe CoNLL table is the basis of many of the NLP analyses: noun & verb analysis, function words, clause analysis, query CoNLL.\n\nIn output the scripts produce a CoNLL table with the following 9 fields: ID, FORM, LEMMA, POSTAG, NER (23 classes), HEAD, DEPREL, DEPS, CLAUSAL TAGS (the neural-network parser does not produce clausal tags).\n\nThe following fields will be automatically added to the standard 9 fields of a CoNLL table (CoNLL U format): RECORD NUMBER, DOCUMENT ID, SENTENCE ID, DOCUMENT (INPUT filename), DATE (if the filename embeds a date).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

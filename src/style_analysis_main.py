@@ -91,6 +91,11 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         else:
             outputDir_style=outputDir
 
+        if '*' in vocabulary_analysis_menu_var or 'unigrams' in vocabulary_analysis_menu_var:
+            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+                                                                   openOutputFiles, createCharts, chartPackage,'unigrams')
+            if output != None:
+                filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'capital' in vocabulary_analysis_menu_var:
             output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'capital')
@@ -138,7 +143,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                 return
             ngramsNumber=4
             normalize = False
-            excludePunctuation = False
+            excludePunctuation = True
             frequency=0
 
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
@@ -151,7 +156,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             ngramsNumber=1
             ngramType = 1
             normalize = False
-            excludePunctuation = False
+            excludePunctuation = True
             if 'Hapax' in ngrams_analysis_menu_var:
                 frequency = 1
             else:
@@ -314,8 +319,10 @@ vocabulary_analysis_menu_var.set('*')
 vocabulary_analysis_lb = tk.Label(window, text='Select the vocabulary analysis you wish to perform')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,vocabulary_analysis_lb,True)
 vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*',
-                                         'Abstract/concrete vocabulary',
+                                         'Vocabulary (via unigrams) - List of all words/tokens in input document(s)',
+                                         'Vocabulary (via Stanza multilanguage lemmatizer) - List of all words/tokens in input document(s)',
                                          'Vocabulary richness (word type/token ratio or Yule’s K)',
+                                         'Abstract/concrete vocabulary',
                                          'Punctuation as figures of pathos (? !)',
                                          'Short words (<4 characters)',
                                          'Vowel words',

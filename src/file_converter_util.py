@@ -35,7 +35,7 @@ from striprtf.striprtf import rtf_to_text
 # https://pypi.org/project/pdfminer/#description
 # https://towardsdatascience.com/pdf-preprocessing-with-python-19829752af9f
 # fileName contains full path
-def pdf_converter(window,fileName, inputDir, outputDir,openOutputFiles):
+def pdf_converter(window,fileName, inputDir, outputDir,openOutputFiles,createCharts,chartPackage):
 
     if len(inputDir)>0:
         msgbox_subDir = tk.messagebox.askyesnocancel("Process sub-directories", "Do you want to process for files in subdirectories?")
@@ -56,7 +56,7 @@ def pdf_converter(window,fileName, inputDir, outputDir,openOutputFiles):
         tk.messagebox.showinfo("pdf converter","No input filename or directory specified.\n\nPlease, select a pdf type file or directory for input and try again.")
         return
     if len(inputDocs) == 0:
-        tk.messagebox.showinfo("Warning","There are no pdf files in the input directory.\n\nPlease, select a diffearent directory (or pdf type file) for input and try again.")
+        tk.messagebox.showinfo("Warning","There are no pdf files in the input directory.\n\nPlease, select a different directory (or pdf type file) for input and try again.")
         return
 
     mb.showwarning(title='Warning', message='The Python pdf to text converter used here (pdfminer) is UNLIKELY to covert successfully multiple-column, full-page newspaper articles, with multiple headings and pictures. pdfminer CAN convert multiple-column documents with a simpler layout (e.g., journal articles) and does very well with full-page books/documents.\n\nFor more information on what pdfminer can do, see https://pdfminer-docs.readthedocs.io/programming.html.\n\nPLEASE, MAKE SURE TO CHECK THE CONVERTED OUTPUT FILE. IF YOU PLAN TO PARSE THE TXT OUTPUT VIA STANFORD CORENLP, YOU SHOULD CONSIDER CLEANING YOUR OUTPUT FROM COPYRIGHT MATERIAL AND BIBLIOGRAPHICAL REFERENCES, SINCE SUCH TEXTUAL ELEMENTS DO NOT HAVE COMPLETE SENTENCES.')
@@ -105,7 +105,7 @@ if __name__ == '__main__':
 # Document Converter (docx ---> txt)'
 # ONLY WORKS WITH DOCX; THERE ARE NO LIBRARIES TO CONVERT DOC DOCUMENTS
 
-def docx_converter(window,fileName,inputdirectory,outputdirectory,openOutputFiles):
+def docx_converter(window,fileName,inputdirectory,outputdirectory,openOutputFiles,createCharts,chartPackage):
     textFilename=''
     if len(inputdirectory)>0:
         msgbox_subDir = tk.messagebox.askyesnocancel("Process sub-directories",
@@ -155,7 +155,7 @@ def docx_converter(window,fileName,inputdirectory,outputdirectory,openOutputFile
     if openOutputFiles and len(fileName)>0:
         IO_files_util.openFile(window, textFilename)
 
-def csv_converter(window,fileName,inputDir,outputDir,openOutputFiles):
+def csv_converter(window,fileName,inputDir,outputDir,openOutputFiles,createCharts,chartPackage):
     if fileName!='':
         if fileName[:2] != '~$' and fileName[-4:]=='.csv':
             inputDocs=[fileName]
@@ -183,7 +183,7 @@ def csv_converter(window,fileName,inputDir,outputDir,openOutputFiles):
         #   Could further ask if they want to embed the filename in special symbols (e.g., <@ @>, as in <@filename@>
         #       so that the files can also be easily split
 
-def rtf_converter(window,fileName,inputdirectory,outputdirectory,openOutputFiles):
+def rtf_converter(window,fileName,inputdirectory,outputdirectory,openOutputFiles,createCharts,chartPackage):
     textFilename=''
     if len(inputdirectory)>0:
         msgbox_subDir = tk.messagebox.askyesnocancel("Process sub-directories",
