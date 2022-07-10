@@ -89,9 +89,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             # TODO MINO
             #   connect to Stanza annotator
             annotator = 'sentiment'
-            mb.showwarning('Warning',
-                           'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
-            return
         else:
             return
 
@@ -566,7 +563,5 @@ readMe_message = "These Python 3 scripts will perform different types of textual
 readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
-
-mb.showwarning(title='Option not available yet!',message='The Stanza GUI and algorithms are currently under development. Some of the options are not available yet. Sorry!')
 
 GUI_util.window.mainloop()

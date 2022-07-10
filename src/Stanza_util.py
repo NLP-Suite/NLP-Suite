@@ -28,7 +28,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     filesToOpen = []
 
     output_format_option = {
-        'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"]
+        'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
     }
     for k,v in lang_dict.items():
         if v == language:
@@ -36,7 +36,9 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             break
     for annotator in annotator_params:
         # TODO MINO must expand the check for the allowed combinations of annotator and language
-        if lang not in available_NER and annotator=='NER': # Latin language is not available in NER models
+        if (lang not in available_NER and annotator=='NER') \
+            or (lang not in available_ud and annotator=='depparse')\
+                or (lang not in available_sentiment and annotator=='sentiment'):
             mb.showinfo("Warning",
                         "Stanza does not currently support the " + annotator + " annotator for " + language + ".\n\nPlease, select a different annotator or a different language.")
             return filesToOpen
@@ -79,10 +81,13 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     #     nlp = stanza.Pipeline(lang='en', processors='tokenize,sentiment')
     elif "depparse" in annotator_params:
         nlp = stanza.Pipeline(lang=lang, processors='tokenize,mwt,pos,lemma,depparse', verbose=False)
+    elif "sentiment" in annotator_params:
+        # print("$$\__**^_^**__/$$ testing sentiment analysis $$\__**^_^**__/$$")
+        nlp = stanza.Pipeline(lang=lang, processors='tokenize,sentiment')
 
     df = pd.DataFrame()
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                             'Stanza_' + 'DepRel' + '_' + annotator_params)
+                                                             'Stanza_' + 'DepRel' + '_' + annotator_params)                                                
     for docName in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(docName)
@@ -119,6 +124,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, inputDir, tail, docID, annotator_params)
             df = pd.concat([df, temp_df], ignore_index=True, axis=0)
             # df = df.reset_index(drop=True)
+    
     df.to_csv(outputFilename, index=False, encoding = language_encoding)
     filesToOpen.append(outputFilename)
 
@@ -128,14 +134,24 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
 # Convert Stanza doc to pandas Dataframe
 def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annotator_params):
+    out_df = pd.DataFrame()
+
+    # check if the input is a single file or directory
     if inputDir != '':
         inputFilename = inputDir + tail
     
+    # check if the annotator is sentiment
+    if annotator_params=='sentiment':
+        sentiment_dictionary = {}
+        for i, sentence in enumerate(stanza_doc.sentences):
+            sentiment_dictionary[i] = sentence.sentiment
+    
     dicts = stanza_doc.to_dict()
-    out_df = pd.DataFrame()
     
     for i in range(len(dicts)):
         temp_df = pd.DataFrame.from_dict(dicts[i])
+        if annotator_params=='sentiment':
+            temp_df['sentiment_score'] = sentiment_dictionary[i]
         out_df = out_df.append(temp_df)
 
     out_df = out_df.drop(
@@ -173,6 +189,12 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
             "Form",
             "POStag",
                         ]
+    elif annotator_params == 'sentiment':
+        out_df.columns = [ 
+            "ID",
+            "Form",
+            "sentiment_score",
+                        ]                                    
     out_df['Record ID'] = None
     out_df['Sentence ID'] = None
     out_df['Document ID'] = docID
@@ -194,7 +216,78 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
 # Python dictionary of language (values) and their acronyms (keys)
 lang_dict  = dict(constants_util.languages)
 
-# Available Stanza NER models for languages
+# Available Stanza models for languages
+available_ud = [
+    "af",
+    "grc",
+    "ar",
+    "hy",
+    "eu",
+    "be",
+    "bg",
+    "ca",
+    "zh",
+    "zh-hant",
+    "lzh",
+    "cop",
+    "hr",
+    "cs",
+    "da",
+    "nl",
+    "en",
+    "et",
+    "fi",
+    "fr",
+    "gl",
+    "de",
+    "got",
+    "el",
+    "he",
+    "hi",
+    "hu",
+    "id",
+    "ga",
+    "it",
+    "ja",
+    "ko",
+    "la",
+    "lv",
+    "lt",
+    "mt",
+    "mr",
+    "sme",
+    "no",
+    "nb",
+    "nn",
+    "cu",
+    "fro",
+    "orv",
+    "fa",
+    "pl",
+    "pt",
+    "ro",
+    "ru",
+    "gd",
+    "sr",
+    "sk",
+    "sl",
+    "es",
+    "sv",
+    "ta",
+    "te",
+    "tr",
+    "uk",
+    "ur",
+    "ug",
+    "vi",
+    "wo",
+]
+
+available_sentiment = [
+    "en",
+    "zh",
+    "de"
+]
 available_NER = [
     "af",
     "ar",

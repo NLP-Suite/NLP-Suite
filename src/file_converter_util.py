@@ -4,6 +4,7 @@
 #   pdf --> txt
 #   docx --> txt
 #   tsv --> csv
+#   csv --> txt
 
 import sys
 
@@ -13,7 +14,7 @@ import GUI_util
 import IO_libraries_util
 import IO_user_interface_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"file_type_converter_util",['os','__main__','tkinter','docx','pdfminer','striprtf'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"file_converter_util",['os','__main__','tkinter','docx','pdfminer','striprtf'])==False:
     sys.exit(0)
 
 import os
@@ -252,3 +253,61 @@ def tsv_converter(window,fileName,outputdirectory):
         for item in filecontents:
             cw.writerow(item)
     return fileName+'.csv'
+
+
+# with given string of directory, this script will use pytesseract to convert all the pdfs
+# inside the directory into .txt files
+
+# import pytesseract
+# from pdf2image import convert_from_path
+# from pytesseract import image_to_string
+import time
+import os
+
+# this tesseract path will differ for every machine..
+# for Windows:
+# for Mac:
+# pytesseract.pytesseract.tesseract_cmd = '/opt/homebrew/Cellar/tesseract/5.1.0/bin/tesseract'
+
+
+################################################
+# necessary functions to convert pdf to img to txt
+################################################
+def convert_pdf_to_img(pdf_file):
+    return convert_from_path(pdf_file)
+
+
+def convert_image_to_text(file):
+    text = image_to_string(file)
+    return text
+
+
+def get_text_from_any_pdf(pdf_file):
+    images = convert_pdf_to_img(pdf_file)
+    final_text = ""
+    for pg, img in enumerate(images):
+        final_text += convert_image_to_text(img)
+
+    return final_text
+
+
+#################################################
+# actual execution of the functions
+#################################################
+
+# the directory of pdf files
+# pdf_dir = '/Users/minocha/Downloads/OneDrive_1_6-30-2022/Historical-bibliographic vocabulary/'
+#
+# for filename in os.listdir(pdf_dir):
+#     path_to_pdf = os.path.join(pdf_dir, filename)
+#     if os.path.isfile(path_to_pdf) and path_to_pdf.endswith('pdf'):
+#         print(path_to_pdf)
+#         title = filename[:-4]  # assumes the fileName ends in '.pdf' and takes the previous string as title
+#
+#         start = time.time()
+#         extracted_text = get_text_from_any_pdf(path_to_pdf)
+#         end = time.time()
+#         print(f'{end - start} seconds')
+#
+#         with open(f'{title}.txt', 'w') as f:
+#             # f.write(extracted_text)

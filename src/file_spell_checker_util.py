@@ -137,7 +137,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
             filesToOpen.extend(chart_outputFilename)
 
     if openOutputFiles==True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen=[] # do not open twice, hee and calling function
     # already shown in NLP.py
     # IO_util.timed_alert(GUI_util.window,3000,'Analysis end','Finished running NLTK unusual words at',True)
@@ -879,8 +879,8 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 if filename!=filenameSV: # do not count the same document twice in this and the other algorithm that follows
                     docErrors_unknown = docErrors_unknown + 1
                     filenameSV=filename
-                print("  Unknown file read error.")
-                continue
+                print("  spaCy Unknown file read error.")
+                break # continue
             value = doc._.language
             language=value['language']
             # TODO MINO get the value from the list in constants_util
@@ -898,8 +898,8 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 if filename!=filenameSV:
                     docErrors_unknown = docErrors_unknown + 1
                     filenameSV=filename
-                print("  Unknown file read error.")
-                continue
+                print("  spaCy Unknown file read error.")
+                break # continue
             # TODO MINO get the value from the list in constants_util
 
 # LANGID ----------------------------------------------------------

@@ -63,11 +63,19 @@ def run(inputFilename,inputDir, outputDir,
             return
         outputFile=[]
 
-        if 'predict_encoding' in function_to_run or 'empty_file' in function_to_run:
-            # use default first 20 lines
-            func(inputFilename,inputDir)
+        # different functions take a different number of arguments; check above in pydict and
+        #   go to the function to see which arguments it takes or...
+        #   standardize the number of arguments in all functions even if not used
+
+        # predict_encoding uses default first 20 lines
+        if 'predict_encoding' in function_to_run or \
+                'check_utf8' in function_to_run or \
+                'convert_quotes' in function_to_run or \
+                'empty_file' in function_to_run or \
+                'find_replace' in function_to_run:
+            func(GUI_util.window,inputFilename,inputDir,outputDir)
         elif 'sentence_length' in function_to_run:
-            outputFile=func(inputFilename,inputDir,outputDir)
+            outputFile=func(config_filename,inputFilename,inputDir,outputDir,createCharts,chartPackage)
         else:
             func(GUI_util.window,inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPackage)
 
@@ -155,7 +163,7 @@ pydict["Document converter (rtf --> txt)"] = ["file_converter_util.rtf_converter
 pydict["Check utf-8 encoding compliance"] = ["file_checker_util.check_utf8_compliance"]
 pydict["Check end-of-line typesetting hyphenation"] = ["file_cleaner_util.check_typesetting_hyphenation"]
 pydict["Check empty file"] = ["file_checker_util.check_empty_file"]
-pydict["Check sentence length (extracting sentences)"] = ["sentence_analysis_util.extract_sentence_length"]
+pydict["Check sentence length (extracting sentences)"] = ["statistics_txt_util.compute_sentence_length"]
 pydict["Language detector"] = ["file_spell_checker_util.language_detection"]
 pydict["Predict encoding (via chardet)"] = ["file_checker_util.predict_encoding"]
 pydict["Spelling checker/Unusual words (via nltk)"] = ["file_spell_checker_util.nltk_unusual_words"]

@@ -124,6 +124,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 # TODO select_col any changes in the inputfile layout of columns
                 #     will change the [0][0] items for selected_col
                 # selected_col is the column to be plotted
+
+
                 selected_col = columns_to_be_plotted_bar[0][0]
 # by DOCUMENT counting the qualitative values ---------------------------------------------------------------------------
                 if count_var==1: # for alphabetic fields that need to be counted for display in a chart
@@ -192,8 +194,9 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     outputFileLabel = 'ByDoc_' + outputFileNameType
                 else:
                     outputFileLabel = 'ByDoc'
+
                 chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
-                                                          outputFileLabel=outputFileLabel,
+                                                          outputFileLabel= outputFileNameType + '_ByDoc', #outputFileLabel,
                                                           chartPackage=chartPackage,
                                                           chart_type_list=['bar'],
                                                           chart_title=chartTitle + ' by Document',

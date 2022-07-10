@@ -38,7 +38,7 @@ from sys import platform
 
 import IO_files_util
 import charts_util
-import file_type_converter_util
+import file_converter_util
 import IO_user_interface_util
 
 
@@ -250,8 +250,8 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
                                'variables by reading the TIPS file for Mallet installation and setting Mallet '
                                'environment variables.')
         return
-    Keys_FileName = file_type_converter_util.tsv_converter(GUI_util.window, Keys_FileName, outputDir)
-    Composition_FileName = file_type_converter_util.tsv_converter(GUI_util.window, Composition_FileName, outputDir)
+    Keys_FileName = file_converter_util.tsv_converter(GUI_util.window, Keys_FileName, outputDir)
+    Composition_FileName = file_converter_util.tsv_converter(GUI_util.window, Composition_FileName, outputDir)
     filesToOpen.append(Keys_FileName)
     filesToOpen.append(Composition_FileName)
 

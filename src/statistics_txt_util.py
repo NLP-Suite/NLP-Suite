@@ -77,7 +77,7 @@ import reminders_util
 import TIPS_util
 
 #https://github.com/nltk/nltk/wiki/Frequently-Asked-Questions-(Stackoverflow-Edition)
-#to extract bigrams, 3-grams, ...
+#to compute bigrams, 3-grams, ...
 #   from nltk import bigrams, trigrams
 #   from nltk import ngrams
 #   from nltk import everygrams
@@ -331,15 +331,6 @@ def Extract(lst):
     return [item[0] for item in lst]
 
 
-# def same_sentence_check(jgram):
-#     sentenceID = jgram[0][1]
-#     for token in jgram:
-#         if token[1] != sentenceID:
-#             return False
-#         else:
-#             continue
-#     return True
-
 def same_document_check(jgram):
     documentID = jgram[0][1]
     for token in jgram:
@@ -378,6 +369,9 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
                 text = inputFile.read().replace("\n", " ")
                 # sentences = tokenize.sent_tokenize(text)
                 sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+                if len(sentences)==0:
+                    mb.showwarning('Warning','The input file\n\n' + doc + '\n\nappears to be empty. Please, check the file and try again.')
+                    return filesToOpen
                 for sentence in sentences:
                     # tokens = nltk.word_tokenize(sentence)
                     tokens = word_tokenize_stanza(stanzaPipeLine(sentence))
@@ -594,6 +588,8 @@ def process_hapax(ngramsList, frequency, excludePunctuation):
             except:
                 ngramsList.remove(ngram)
     return ngramsList
+
+# re-written by Roberto June 2022
 
 # return a list for each document
 def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1, excludePunctuation=True, frequency = None, bySentenceID=False, isdir=False, createCharts=True,chartPackage='Excel'):
@@ -895,7 +891,8 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
         sentenceID = 0  # to store sentence index
         # check each word in sentence for concreteness and write to outputFilename
 
-        # analyze each sentence for concreteness
+
+        # analyze each sentence
         for s in sentences:
             sentenceID = sentenceID + 1
             # print("S" + str(i) +": " + s)

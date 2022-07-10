@@ -33,17 +33,17 @@ import IO_user_interface_util
 #   TIS-620 (Thai)
 
 # Predict a file's encoding using chardet
-def predict_encoding(file_path, input_dir_path, n_lines=20):
-    if file_path=='' and input_dir_path!='':
+def predict_encoding(window, inputFilename, inputDir, outputDir, n_lines=20):
+    if inputFilename=='' and inputDir!='':
         mb.showwarning(title='Input inputFilename',
                        message="The predict encoding script only works with single files in input, rather than a directory. The input inputFilename is blank.\n\nPlease, select a file and try again.")
         return
     # Open the file as binary data
-    with open(file_path, 'rb') as f:
+    with open(inputFilename, 'rb') as f:
         # Join binary lines for specified number of lines
         rawdata = b''.join([f.readline() for _ in range(n_lines)])
     encoding=chardet.detect(rawdata)['encoding']
-    mb.showwarning(title='Predicted encoding', message=encoding + '\n\nis the predicted encoding, using first ' + str(n_lines) + ' lines, of the file\n\n' + file_path )
+    mb.showwarning(title='Predicted encoding', message=encoding + '\n\nis the predicted encoding, using first ' + str(n_lines) + ' lines, of the file\n\n' + inputFilename )
     return encoding
 
 
@@ -82,7 +82,7 @@ def detect_decoding_errors_line(l, _s=_surrogates.finditer):
 #https://stackoverflow.com/questions/19771751/how-to-use-unidecode-in-python-3-3
 #convert a non utf-8 to the closest ASCII value 
 #   https://pypi.python.org/pypi/Unidecode
-def check_utf8_compliance(window,inputFilename,inputDir,outputDir,openOutputFiles,silent=False):
+def check_utf8_compliance(window,inputFilename,inputDir,outputDir,openOutputFiles=False,silent=False):
     if len(inputDir)>0:
         silent=True
         inputDocs = [os.path.join(inputDir,f) for f in os.listdir(inputDir) if f[:2]!='~$' and f[-4:]=='.txt']

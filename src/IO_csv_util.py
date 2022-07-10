@@ -135,6 +135,7 @@ def GetNumberOfRecordInCSVFile(inputFilename,encodingValue='utf-8'):
 # inputFile has path
 def GetNumberOfDocumentsInCSVfile(inputFilename,algorithm='',columnHeader='Document ID',encodingValue='utf-8'):
     msg = ""
+    maxnum = 0
     with open(inputFilename,encoding=encodingValue,errors='ignore') as f:
         reader = csv.reader(f)
         next(reader) # skip header row
@@ -153,9 +154,10 @@ def GetNumberOfDocumentsInCSVfile(inputFilename,algorithm='',columnHeader='Docum
                 val_list.append(int(float(column[columnNumber].replace(',', ''))))
             except:
                 pass
-        maxnum = max(val_list)
-        # the following line would break in the presence of a blank field in column
-        # maxnum = max(int(column[columnNumber].replace(',', '')) for column in reader)
+        if len(val_list)>0:
+            maxnum = max(val_list)
+            # the following line would break in the presence of a blank field in column
+            # maxnum = max(int(column[columnNumber].replace(',', '')) for column in reader)
         f.close()
     return maxnum
 
