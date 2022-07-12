@@ -353,26 +353,29 @@ def check_language(*args):
         window.focus_force()
         return
     else:
-        language_list.append(language_var.get())
-        language_menu.configure(state='disabled')
+        if language_var.get() == '':
+            language_menu.configure(state='normal')
+        else:
+            language_list.append(language_var.get())
+            language_menu.configure(state='disabled')
         add_language_button.configure(state='normal')
         reset_language_button.configure(state='normal')
         show_language_button.configure(state='normal')
 language_var.trace('w', check_language)
 
 add_language_button = tk.Button(window, text='+', width=2,height=1,state='normal',command=lambda: activate_language_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+600,y_multiplier_integer,add_language_button, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 410,y_multiplier_integer,add_language_button, True)
 
 reset_language_button = tk.Button(window, text='Reset', width=5,height=1,state='normal',command=lambda: reset_language_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+640,y_multiplier_integer,reset_language_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 450,y_multiplier_integer,reset_language_button,True)
 
 show_language_button = tk.Button(window, text='Show', width=5,height=1,state='normal',command=lambda: show_language_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,show_language_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 510,y_multiplier_integer,show_language_button)
 
 def reset_language_list():
     language_list.clear()
     language_menu.configure(state='normal')
-    language_var.set('English')
+    language_var.set('')
 
 def show_language_list():
     if len(language_list)==0:

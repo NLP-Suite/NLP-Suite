@@ -1380,10 +1380,10 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                                                                    # the fields must be numeric?
                                                                    columns_to_be_plotted_bySent=[[]],
                                                                    columns_to_be_plotted_byDoc=[[12,13]],
-                                                                   chartTitle='Text Readability\n6 Readability Measures',
+                                                                   chartTitle='Text Readability\nFrequencies of 6 Readability Measures',
                                                                    count_var=0, hover_label=[],
                                                                    outputFileNameType='',  # 'READ_bar',
-                                                                   column_xAxis_label='6 Readability measures',
+                                                                   column_xAxis_label='Readability scores',
                                                                    groupByList=[],
                                                                    plotList=[],
                                                                    chart_title_label='')
