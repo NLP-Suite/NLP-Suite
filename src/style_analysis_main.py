@@ -61,6 +61,31 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     if nominalization_var == True:
         call("python nominalization_main.py", shell=True)
         return
+    if corpus_statistics_var:
+        stopwords_var = False
+        lemmatize_var = False
+        if corpus_text_options_menu_var=='*':
+            stopwords_var=True
+            lemmatize_var=True
+        if 'Lemmatize' in corpus_text_options_menu_var:
+            lemmatize_var=True
+        if 'stopwords' in corpus_text_options_menu_var:
+            stopwords_var=True
+        if "*" in corpus_statistics_options_menu_var or 'frequencies' in corpus_statistics_options_menu_var:
+            tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,False,createCharts, chartPackage, stopwords_var, lemmatize_var)
+            if tempOutputFiles!=None:
+                filesToOpen.extend(tempOutputFiles)
+
+        if "Compute sentence length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
+            tempOutputFiles = statistics_txt_util.compute_sentence_length(config_filename, inputFilename, inputDir, outputDir, createCharts, chartPackage)
+            if tempOutputFiles!=None:
+                filesToOpen.extend(tempOutputFiles)
+
+        if "Compute line length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
+            tempOutputFiles=statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir,
+                                                          False, createCharts, chartPackage)
+            if tempOutputFiles!=None:
+                filesToOpen.extend(tempOutputFiles)
 
     if complexity_readability_analysis_var == True:
         if '*' in complexity_readability_analysis_menu_var or 'Sentence' in complexity_readability_analysis_menu_var:

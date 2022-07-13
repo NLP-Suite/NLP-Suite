@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"what\'s in your corpus",['os','tkinter'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"what\'s in your corpus",['os','tkinter','subprocess'])==False:
     sys.exit(1)
 
 import os
@@ -212,7 +212,7 @@ def run(inputFilename,inputDir, outputDir,
                 filesToOpen.extend(output)
 
         if '*' == corpus_statistics_options_menu_var or 'Unusual' in corpus_statistics_options_menu_var:
-            tempFiles=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, False, createCharts, chartPackage)
+            output=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, False, createCharts, chartPackage)
             if output != None:
                 filesToOpen.extend(output)
         if '*' == corpus_statistics_options_menu_var or 'Abstract' in corpus_statistics_options_menu_var:

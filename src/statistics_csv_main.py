@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Statistics_NLP",['tkinter'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"Statistics_csv",['tkinter'])==False:
     sys.exit(0)
 
 import os
@@ -13,6 +13,7 @@ import GUI_IO_util
 import IO_csv_util
 import IO_user_interface_util
 import IO_files_util
+import statistics_csv_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -33,56 +34,12 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
             mb.showwarning(title='Input error', message='The selected option - ' + script_to_run + ' - requires an input file of type csv.\n\nPlease, select a csv input file and try again.')
             return
 
-    if inputFilename!='' and (n_grams):
-        if inputFilename[-4:]!='.txt':
-            mb.showwarning(title='Input error', message='The selected option - ' + script_to_run + ' - requires an input file of type txt (or an input directory).\n\nPlease, select a txt input file (or an input directory) and try again.')
-            return
-
-    if corpus_stats == False and n_grams == False and all_csv_stats == False and  csv_field_stats == False:
-        mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options and try again.')
-        return
-
-    if corpus_stats or n_grams:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
-            return
-        else:
-            import statistics_txt_util
-
     if all_csv_stats or csv_field_stats:
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_csv_util.py')==False:
             return
-        else:
-            import statistics_csv_util
         if csv_field_stats and len(csv_list) == 0:
             mb.showwarning(title='Warning', message='You have selected to compute the frequency of a csv file field but no field has been selected.\n\nPlease, select a csv file field and try again.')
             return
-
-    if corpus_stats:
-        stopwords_var = False
-        lemmatize_var = False
-        if corpus_text_options_menu_var=='*':
-            stopwords_var=True
-            lemmatize_var=True
-        if 'Lemmatize' in corpus_text_options_menu_var:
-            lemmatize_var=True
-        if 'stopwords' in corpus_text_options_menu_var:
-            stopwords_var=True
-        if "*" in corpus_statistics_options_menu_var or 'frequencies' in corpus_statistics_options_menu_var:
-            tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,False,createCharts, chartPackage, stopwords_var, lemmatize_var)
-            if tempOutputFiles!=None:
-                filesToOpen.extend(tempOutputFiles)
-
-        if "Compute sentence length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
-            tempOutputFiles = statistics_txt_util.compute_sentence_length(config_filename, inputFilename, inputDir, outputDir, createCharts, chartPackage)
-            if tempOutputFiles!=None:
-                filesToOpen.extend(tempOutputFiles)
-
-        if "Compute line length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
-            tempOutputFiles=statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir,
-                                                          False, createCharts, chartPackage)
-            if tempOutputFiles!=None:
-                filesToOpen.extend(tempOutputFiles)
-
     elif all_csv_stats:
         tempOutputFiles=statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,createCharts, chartPackage)
         if tempOutputFiles != None:
@@ -100,46 +57,6 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
                                                            'CSV')
         if tempOutputFiles != None:
             filesToOpen.extend(tempOutputFiles)
-    elif n_grams:
-        frequency = 0 # default compute n-grams and not hapax; default value changed below for hapax
-        n_grams_word_var = False
-        n_grams_character_var = False
-        normalize = False
-        n_grams_size = 3  # default number of n_grams
-        excludePunctuation = False
-        bySentenceIndex_word_var = False
-        bySentenceIndex_character_var = False
-        if n_grams_menu_var == "Word":
-            n_grams_word_var = True
-        else:
-            n_grams_character_var = True
-        bySentenceIndex_character_var = False
-        if 'Hapax' in str(n_grams_list):
-            n_grams_size = 1
-            frequency=1
-        if 'punctuation' in str(n_grams_list):
-            excludePunctuation = True
-        if 'sentence index' in str(n_grams_list):
-            if n_grams_menu_var == "Word":
-                bySentenceIndex_word_var = True
-            else:
-                bySentenceIndex_character_var = True
-
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
-                                           'Started running ' + n_grams_menu_var + ' n-grams at',
-                                           True, '', True, '', True)
-
-        if n_grams_word_var or n_grams_character_var or bySentenceIndex_word_var or bySentenceIndex_character_var:
-            # inputFilename = ''  # for now we only process a whole directory
-            if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
-                return
-
-            tempOutputFiles=statistics_txt_util.compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,n_grams_size,
-                                                            normalize, excludePunctuation, n_grams_word_var, frequency,
-                                                            openOutputFiles, createCharts, chartPackage,
-                                                            bySentenceIndex_word_var)
-            if tempOutputFiles != None:
-                filesToOpen.extend(tempOutputFiles)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
