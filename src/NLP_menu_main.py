@@ -198,6 +198,7 @@ pydict["Annotator - hedge/uncertainty"] = ["", 0]
 pydict["CoNLL table analyzer - Search the CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["CoNLL table analyzer - Clause, noun, verb, function words frequencies"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Statistics (csv files)"] = ["statistics_csv_main.py", 1]
+pydict["Statistics (txt files)"] = ["statistics_txt_main.py", 1]
 pydict["Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)"] = ["Stanford_CoreNLP_main.py", 1]
 pydict["Co-Occurrences viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Data manager (csv files via Pandas)"] = ["data_manager_main.py", 1]
@@ -374,7 +375,7 @@ statistical_tools_lb = tk.Label(window, text='Statistical Tools')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
                                                statistical_tools_lb, True)
 statistical_tools_menu = ttk.Combobox(window, width = 90, textvariable = statistical_tools_var)
-statistical_tools_menu['values'] = ['Statistics (csv files)']
+statistical_tools_menu['values'] = ['Statistics (csv files)','Statistics (txt files)']
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, statistical_tools_menu)
 
 visualization_lb = tk.Label(window, text='Visualization Tools')
