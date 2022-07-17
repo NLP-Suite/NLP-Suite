@@ -27,7 +27,6 @@ import CoNLL_util
 import IO_user_interface_util
 import GUI_IO_util
 import IO_csv_util
-import IO_files_util
 
 # There are 3 methods and a 2 constants present:
 # abspath returns absolute path of a path
@@ -159,8 +158,8 @@ def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outp
         if extension == '.txt':
             initialFolder = GUI_IO_util.sampleData_libPath
         else:
-            if GUI_util.outputDir.get()!='' and extension == '.csv':
-                initialFolder = GUI_util.outputDir.get()
+            if GUI_util.output_dir_path.get()!='' and extension == '.csv':
+                initialFolder = GUI_util.input_main_dir_path.get()
     if IsInputFile == True:  # as opposed to output file
         # when the file string is blank, the directory option should always also be available
         inputFilename = tk.filedialog.askopenfilename(initialdir=initialFolder, title=title, filetypes=fileType)
@@ -611,7 +610,7 @@ def run_jar_script(scriptName, inputFilename, inputDir, outputDir, openOutputFil
         """
         return
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 # The NLP script and sentence_analysis script use pydict dictionaries to run the script selected in a menu

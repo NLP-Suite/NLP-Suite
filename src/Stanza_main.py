@@ -38,8 +38,9 @@ import Stanford_CoreNLP_coreference_util
 # 1: included 0: not included
 # def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, date_extractor, split_files, quote_extractor, Stanza_gender_annotator, CoReference, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
 
+
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
-        memory_var, manual_Coref, open_GUI, language_var,
+        memory_var, language_var,
         parser, parser_menu_var,
         dateInclude, sep, date_field_position, dateFormat,
         CoNLL_table_analyzer_var,
@@ -57,9 +58,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
         return
 
-    if parser == 0 and CoNLL_table_analyzer_var == 1:
-        mb.showinfo("Warning", "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the CoreNLP parser checkbox and try again.")
+    if CoNLL_table_analyzer_var == 1:
+        mb.showwarning('Warning',
+                       'The option of opening the CoNLL table analyser GUI for Stanza is not available yet. Sorry!\n\nPlease, select a different option and try again.')
         return
+        # mb.showinfo("Warning", "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the CoreNLP parser checkbox and try again.")
+        # return
 
     if parser:
         if parser_menu_var == 'Constituency parser':
@@ -69,7 +73,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                            'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
             return
         annotator='depparse'
-    if Stanza_annotators_var and Stanza_annotators_menu_var != '':
+
+    if Stanza_annotators_var:
+        if Stanza_annotators_menu_var == '':
+            mb.showwarning('Warning',
+                           'The option of running a Stanza annotator has been selected but no annotaor has been selected.\n\nPlease, select an annotator option and try again.')
+            return
         if 'Sentence splitter (with sentence length)' in Stanza_annotators_menu_var:
             annotator = 'Sentence'
         elif 'Lemma annotator' in Stanza_annotators_menu_var:
@@ -78,16 +87,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             annotator = 'All POS'
         elif 'NER annotator' in Stanza_annotators_menu_var:  # NER annotator
             annotator = 'NER'
-        elif 'Coreference' in Stanza_annotators_menu_var:
-            # TODO MINO
-            #   connect to Stanza annotator
-            annotator = 'coref'
-            mb.showwarning('Warning',
-                           'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
-            return
         elif 'Sentiment analysis' in Stanza_annotators_menu_var:
-            # TODO MINO
-            #   connect to Stanza annotator
             annotator = 'sentiment'
         else:
             return
@@ -99,7 +99,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                    openOutputFiles,
                                                                    createCharts, chartPackage,
                                                                    annotator, False,
-                                                                   language_var,
+                                                                   language_list,
                                                                    memory_var, document_length_var, limit_sentence_length_var,
                                                                    extract_date_from_filename_var=dateInclude,
                                                                    date_format=dateFormat,
@@ -108,6 +108,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # ,
         #                                                            language=language_var)
         #                                                         #    language = language_var)
+
+    if tempOutputFiles == None:
+        return
 
     if len(tempOutputFiles)>0:
         filesToOpen.extend(tempOutputFiles)
@@ -145,8 +148,6 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_dropdown_field.get(),
                                  memory_var.get(),
-                                 manual_Coref_var.get(),
-                                 open_GUI_var.get(),
                                  language_var.get(),
                                  parser_var.get(),
                                  parser_menu_var.get(),
@@ -200,12 +201,12 @@ input_main_dir_path = GUI_util.input_main_dir_path
 
 def clear(e):
     reset_language_list()
+    language_var.set("English")
+    language_menu.configure(state='normal')
     parser_var.set(1)
     parser_menu_var.set("Dependency parser")
     Stanza_annotators_var.set(0)
     Stanza_annotators_menu_var.set('')
-    manual_Coref_checkbox.place_forget()  # invisible
-    open_GUI_checkbox.place_forget()  # invisible
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -214,8 +215,6 @@ language_list = []
 memory_var = tk.IntVar()
 date_extractor_var = tk.IntVar()
 split_files_var = tk.IntVar()
-manual_Coref_var = tk.IntVar()
-open_GUI_var = tk.IntVar()
 parser_var = tk.IntVar()
 parser_menu_var = tk.StringVar()
 fileName_embeds_date = tk.IntVar()
@@ -440,19 +439,11 @@ Stanza_annotators_menu = tk.OptionMenu(window, Stanza_annotators_menu_var,
         'Lemma annotator',
         'POS annotator',
         'NER annotator',
-        'Coreference PRONOMINAL resolution',
         'Sentiment analysis')
 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                Stanza_annotators_menu)
 
-manual_Coref_checkbox = tk.Checkbutton(window, text='Manual edit',
-                                       variable=manual_Coref_var,
-                                       onvalue=1, offvalue=0)
-
-open_GUI_checkbox = tk.Checkbutton(window, text='Open coreference GUI',
-                                       variable=open_GUI_var,
-                                       onvalue=1, offvalue=0)
 
 def activate_Stanza_annotators_menu(*args):
     if Stanza_annotators_var.get() == True:
@@ -463,31 +454,10 @@ def activate_Stanza_annotators_menu(*args):
                 Stanza_annotators_menu_var.set('')
                 return
         Stanza_annotators_menu.configure(state='normal')
-        if '*' in Stanza_annotators_menu_var.get() or 'dialogue' in Stanza_annotators_menu_var.get():
+        if '*' in Stanza_annotators_menu_var.get():
             y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 400,
                                                            y_multiplier_integer,True)
-        if 'Coreference' in Stanza_annotators_menu_var.get():
-            y_multiplier_integer=y_multiplier_integer-1
-            manual_Coref_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 400,
-                                                           y_multiplier_integer,
-                                                           manual_Coref_checkbox,True)
-
-            open_GUI_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 550,
-                                                           y_multiplier_integer,
-                                                           open_GUI_checkbox)
-            open_GUI_checkbox.configure(state='normal')
-            if input_main_dir_path.get()!='':
-                manual_Coref_checkbox.configure(state='disabled')
-            else:
-                manual_Coref_checkbox.configure(state='normal')
-        else:
-            manual_Coref_checkbox.place_forget()  # invisible
-            open_GUI_checkbox.place_forget()  # invisible
     else:
-        manual_Coref_checkbox.place_forget()  # invisible
-        open_GUI_checkbox.place_forget()  # invisible
         Stanza_annotators_menu_var.set('')
         Stanza_annotators_menu.configure(state='disabled')
 
@@ -555,7 +525,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the CoreNLP parser results contained in the CoNLL table.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select one of the many other annotators available through Stanza: Coreference pronominal resolution, DepRel, POS, NER (Named Entity Recognition), and sentiment analysis.\n\nALL Stanza ANNOTATORS ARE BASED ON NEURAL NETWORK.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files  and Excel charts. The Gender annotator will also produce an html file with male tags displayed in blue and female tags displayed in red. The Coreference annotator will produce txt-format copies of the same input txt files but co-referenced.")
+                                  "Please, using the dropdown menu, select one of the many other annotators available through Stanza: sentencce splitter, lemmatizer, POS, NER (Named Entity Recognition), and sentiment analysis.\n\nALL Stanza ANNOTATORS ARE BASED ON NEURAL NETWORK.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files and charts.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

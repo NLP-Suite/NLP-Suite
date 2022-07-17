@@ -8,18 +8,10 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"statistics_txt_main.p
     sys.exit(0)
 
 import os
-import tkinter.messagebox as mb
 import tkinter as tk
-import subprocess
 from subprocess import call
 
-import IO_user_interface_util
 import GUI_IO_util
-import IO_files_util
-import file_spell_checker_util
-import statistics_txt_util
-import abstract_concreteness_analysis_util
-import lib_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 

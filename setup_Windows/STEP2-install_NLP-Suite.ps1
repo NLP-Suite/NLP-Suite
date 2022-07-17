@@ -9,7 +9,7 @@ if ( $AREYOUSURE -ne "y") {
 
 cd "${PSScriptRoot}\..\"
 
-conda create -n NLP python=3.7 -y
+conda create -n NLP python=3.8 -y
 conda activate NLP
 
 conda install pytorch torchvision cudatoolkit -c pytorch

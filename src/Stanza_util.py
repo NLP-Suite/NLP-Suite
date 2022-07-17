@@ -6,11 +6,14 @@ import os
 import re
 import warnings
 
+from tenacity import retry_unless_exception_type
+
 import IO_files_util
 import IO_csv_util
-import file_splitter_merged_txt_util
+import charts_util
 import file_splitter_ByLength_util
 import GUI_util
+import GUI_IO_util
 import IO_user_interface_util
 import constants_util
 
@@ -57,9 +60,11 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     # check if selected language is one.
     if len(language) == 1 and language[0] != 'multilingual':
         lang = ''
+        lang_list = []
         for k,v in lang_dict.items():
             if v == language[0]:
                 lang = k
+                lang_list.append(lang)
                 break
         # check if allowed combinations of annotator and language is available in Stanza
         for annotator in annotator_params:
@@ -91,14 +96,14 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             processors='tokenize,sentiment'
 
         nlp = stanza.Pipeline(lang=lang, processors=processors, verbose=False)
-    
+
     # if only 'multilingual' is selected
     elif len(language) == 1 and language[0] == 'multilingual':
         lang_list = []
         lang_list.append('multilingual')
-        nlp = MultilingualPipeline()        
-        
-    # if more than one language is selected (with manual selection). 
+        nlp = MultilingualPipeline()
+
+    # if more than one language is selected (with manual selection).
     elif len(language) > 1:
         lang_list = []
         for k,v in lang_dict.items():
@@ -106,11 +111,11 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                 lang_list.append(k)
                 # stanza.download(k) # no need to manually download language package after Stanza v1.4.0
         nlp = MultilingualPipeline(lang_id_config={"langid_lang_subset":lang_list})
-        
+
 
     df = pd.DataFrame()
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                             'Stanza_' + 'DepRel' + '_' + annotator_params)                                                
+                                                             'Stanza_' + 'DepRel' + '_' + annotator_params)
     for docName in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(docName)
@@ -129,26 +134,31 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
         nSplitDocs = len(split_file)
         split_docID = 0
-        
+
         for doc in split_file:
             split_docID = split_docID + 1
             head, tail = os.path.split(doc)
-            
+
             if docName != doc:
                 print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
 
             if len(language) > 1 or 'multilingual' in language: # if language detection + annotation, need to open a txt file into a list
                 with open(doc, encoding=language_encoding) as f:
                     text = f.read()
+                    if text == '':
+                        mb.showinfo("Warning",
+                                    "The input file\n" + tail + "\nis empty. The file will be skipped from processing.\n\nPlease, check the file and try again.")
+                        break
                     text = text.split('\n\n')
                     text = [t for t in text if not re.match(r'^\s*$', t)]
             else: # if regular annotation, open file with as string
                 text = open(doc, 'r', encoding=language_encoding, errors='ignore').read().replace("\n", " ")
-                        
+
             if "%" in text:
                 text = text.replace("%","percent")
 
             # process given text with customed Stanza pipeline
+            Stanza_output = []
             try:
                 Stanza_output = nlp(text)
             except:
@@ -158,16 +168,67 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                         Stanza_output = nlp(text)
                     except:
                         mb.showinfo("Warning",
-                                    "Stanza just faced error trying to download some language package. Try manually selecting language predictions.")
+                                    "Stanza encountered an error trying to download the language pack " + str(language) + "\n\nTry manually selecting the appropriate language rather than multilingual.")
                         return
-            else:
-                return
+                else:
+                    mb.showinfo("Warning",
+                                "Stanza encountered an error trying to download the selected language pack " + str(language))
+                    return
 
             temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, inputDir, tail, docID, annotator_params, lang_list)
             df = pd.concat([df, temp_df], ignore_index=True, axis=0)
-    
+
     df.to_csv(outputFilename, index=False, encoding = language_encoding)
     filesToOpen.append(outputFilename)
+
+    language_list=IO_csv_util.get_csv_field_values(outputFilename, 'Language')
+    if len(language_list)>1:
+        # TODO Mino you can find an example of callback in NLP_menu_main
+        # for sure... it cannot be a string
+        callback=''
+        selected_language = GUI_IO_util.dropdown_menu_widget(GUI_util.window,
+                                                    "Please, select the language you wish to use for your charts. Press ESCape to process all languages.",
+                                                    language_list, 'Stanza languages', callback)
+        # TODO MINO must filter the outputFilename Language column by selected_language,
+        #   creating a new outputFilename with _selected_language in the filename
+        #   could use an edited version of def export_csv_to_csv_txt(outputDir,operation_results_text_list,export_type='.csv', cols=None)
+    if "Lemma" in str(annotator_params) and 'Lemma' in outputFilename:
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                           outputDir,
+                                                           columns_to_be_plotted_bar=[[1, 1]],
+                                                           columns_to_be_plotted_byDoc=[[9, 10]],
+                                                           columns_to_be_plotted_bySent=[[4, 2]],
+                                                           chartTitle='Frequency Distribution of Form Values',
+                                                           # count_var = 1 for columns of alphabetic values
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='',  # 'POS_bar',
+                                                           column_xAxis_label='Form values',
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
+                                                           chart_title_label='Form Values')
+
+        if chart_outputFilename != None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
+
+    if "Lemma" in str(annotator_params) and 'Lemma' in outputFilename:
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                           outputDir,
+                                                           columns_to_be_plotted_bar=[[2, 2]],
+                                                           columns_to_be_plotted_byDoc=[[5, 6]],
+                                                           columns_to_be_plotted_bySent=[[4, 2]],
+                                                           chartTitle='Frequency Distribution of Lemma Values',
+                                                           # count_var = 1 for columns of alphabetic values
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='',  # 'POS_bar',
+                                                           column_xAxis_label='Lemma values',
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
+                                                           chart_title_label='Lemma Values')
+
+        if chart_outputFilename != None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, False)
 
@@ -175,17 +236,17 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
 # Convert Stanza doc to pandas Dataframe
 def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annotator_params, language):
-    
+
     # output dataframe
     out_df = pd.DataFrame()
-    
+
     # check if the input is a single file or directory
     if inputDir != '':
         inputFilename = inputDir + tail
 
     # check if more than one language has been annotated
     # Stanza doc to Pandas DataFrame conversion logic for multilingual annotation
-    if len(language) > 1 or language[0]=='multilingual':        
+    if len(language) > 1 or language[0]=='multilingual':
         try:
             dicts = []
             for doc in stanza_doc:
@@ -212,8 +273,8 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
             sentiment_dictionary = {}
             for i, sentence in enumerate(stanza_doc.sentences):
                 sentiment_dictionary[i] = sentence.sentiment
-        
-        dicts = stanza_doc.to_dict()        
+
+        dicts = stanza_doc.to_dict()
         for i in range(len(dicts)):
             temp_df = pd.DataFrame.from_dict(dicts[i])
             if annotator_params=='sentiment':
@@ -239,12 +300,12 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
             'deprel':'DepRel',
             'ner':'NER',
             'lang':'Language',
-            'sentiment_score':'sentiment'
+            'sentiment_score':'Sentiment score'
         }
-    )                                 
+    )
     out_df['Record ID'] = None
     out_df['Sentence ID'] = None
-    out_df['Document ID'] = docID 
+    out_df['Document ID'] = docID
     out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
 
     i = 0
@@ -252,10 +313,10 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
     for row in out_df.iterrows():
         if i != 0 and row[1]['ID'] == 1 :
             sidx+=1
-        
+
         out_df.at[i, 'Record ID'] = row[1]['ID']
         out_df.at[i, 'Sentence ID'] = sidx
-        
+
         i+=1
 
     if 'Language' in out_df.columns:

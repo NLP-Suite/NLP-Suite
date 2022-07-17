@@ -10,7 +10,6 @@ import csv
 import tkinter.messagebox as mb
 import pandas as pd
 import os
-import stat
 import IO_files_util
 
 #if any column header contains just numbers the function will return FALSE
@@ -251,14 +250,14 @@ def openCSVOutputFile(outputCSVFilename, IO='w', encoding='utf-8',errors='ignore
         return True
 
 
-def extract_from_csv(inputFilename, outputDir, data_files, columns_to_exported=None):
+def extract_from_csv(inputFilename, outputDir, data_files, columns_to_export=None):
     import IO_files_util
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
                                                              'extract',
                                                              '', '', '', '', False, True)
 
     df = pd.DataFrame(pd.read_csv(inputFilename))
-    df.to_csv(outputFilename, columns=columns_to_exported, index=False)
+    df.to_csv(outputFilename, columns=columns_to_export, index=False)
     return outputFilename
 
 
