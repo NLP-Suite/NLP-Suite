@@ -25,9 +25,9 @@ import IO_user_interface_util
 
 #column_to_be_counted is the column number (starting 0 in data_list for which a count is required)
 #column_name is the name that will appear as the chart name
-#value is the value in a column that needs to be added up; for either POSTAG (e.g., NN) or DEPREL tags, the tag value is displayed with its description to make reading easier 
+#value is the value in a column that needs to be added up; for either POSTAG (e.g., NN) or DEPREL tags, the tag value is displayed with its description to make reading easier
 #most_common([n])
-#Return a list of n elements and their counts. 
+#Return a list of n elements and their counts.
 #When n is omitted or None, most_common() returns all elements in the counter.
 def compute_statistics_CoreNLP_CoNLL_tag(data_list,column_to_be_counted,column_name,CoreNLP_tag):
     import Stanford_CoreNLP_tags_util
@@ -40,11 +40,11 @@ def compute_statistics_CoreNLP_CoNLL_tag(data_list,column_to_be_counted,column_n
         counts = column_stats.most_common()
         column_stats = [[column_name, "Frequencies"]]
         for value, count in counts:
-            if CoreNLP_tag=="POSTAG": 
+            if CoreNLP_tag=="POSTAG":
                 if value in Stanford_CoreNLP_tags_util.dict_POSTAG:
                     description= Stanford_CoreNLP_tags_util.dict_POSTAG[value]
                     column_stats.append([value + " - " + description, count])
-            elif CoreNLP_tag=="DEPREL": 
+            elif CoreNLP_tag=="DEPREL":
                 if value in Stanford_CoreNLP_tags_util.dict_DEPREL:
                     description= Stanford_CoreNLP_tags_util.dict_DEPREL[value]
                     column_stats.append([value + " - " + description, count])
@@ -74,17 +74,17 @@ def compute_statistics_CoreNLP_CoNLL_tag(data_list,column_to_be_counted,column_n
 # fullText.mode()                    Returns mode of the series
 # fullText.value_counts()            Returns series with frequency of each value
 # stats=[fullText[fieldName].describe()]
-# groupByField 
+# groupByField
 # You can  group by more than one variable, allowing more complex queries.
 #   For instance, how many calls, sms, and data entries are in each month?
 #   data.groupby(['month', 'item'])['date'].count()
-# .sum(), .mean(), .mode(), .median() and other such mathematical operations 
+# .sum(), .mean(), .mode(), .median() and other such mathematical operations
 #    are not applicable on string or any other data type than numeric value.
-# .sum() on a string series would give an unexpected output and return a string 
+# .sum() on a string series would give an unexpected output and return a string
 #   by concatenating every string.
 
-# Using the pandas 'describe' function returns a series 
-#   with information like mean, mode etc depending on 
+# Using the pandas 'describe' function returns a series
+#   with information like mean, mode etc depending on
 #       every NUMERIC field in the input file
 #       or on a specific field passed
 
@@ -155,7 +155,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
 
     if not set(groupByField).issubset(set(IO_csv_util.get_csvfile_headers(inputFilename))):
         mb.showwarning(title='Groupby field error',
-                       message="Not all of the selected groupby fields are contained in "+ inputFilename)
+                       message="The selected groupby fields (" + ", ".join(groupByField) + ") are not in the headers (" + ", ".join(IO_csv_util.get_csvfile_headers(inputFilename)) + ") of the file " + inputFilename)
 
     if inputFilename[-4:] != '.csv':
         mb.showwarning(title='File type error',
@@ -508,6 +508,20 @@ def get_columns_to_be_plotted(outputFilename,col):
     columns_to_be_plotted = [[col1_nunmber, col2_nunmber]]
     return columns_to_be_plotted
 
+# TODO Tony, can you pass more than one value? Yngve and Frazier
+# index is the string value for the column, e.g., 'Sentence ID'
+def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
+    if no_hyperlinks:
+        temp, no_hyperlinks_filename = IO_csv_util.remove_hyperlinks(inputFilename)
+    else:
+        no_hyperlinks_filename = inputFilename
+    data = pd.read_csv(no_hyperlinks_filename)
+    # data = data.pivot(index = 'Sentence ID', columns = 'Document', values = "Yngve score")
+    data = data.pivot(index = index, columns = 'Document', values = values)
+    data.to_csv(no_hyperlinks_filename)
+    # end of function and pass the document forward
+    return no_hyperlinks_filename
+
 # written by Yi Wang
 # edited by Roberto June 2022
 
@@ -596,7 +610,8 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             data = data.groupby(group_column_names).size().reset_index(name='Frequency')
             # data.sort_values(group_column_names, ascending=True)
             # added TONY1
-            if pivot:
+            # pivot=True
+            if pivot==True:
                 data = data.pivot(index = group_column_names[1:], columns = group_column_names[0], values = "Frequency")
                 data.fillna(0, inplace=True)
                 #data.reset_index("Document")

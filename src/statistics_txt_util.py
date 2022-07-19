@@ -1,4 +1,4 @@
-# Written by Roberto Franzosi November 2019 
+# Written by Roberto Franzosi November 2019
 # Edited by Josh Karol
 import sys
 import GUI_util
@@ -95,12 +95,12 @@ import TIPS_util
 #         print(grams)
 #     grams3 = [ngrams(text.split(), 3)]
 #     for grams in grams3 :
-#         print(grams)    
+#         print(grams)
 #     grams4 = [ngrams(text.split(), 4)]
 #     for grams in grams4 :
-#         print(grams)    
+#         print(grams)
 
-# returns a frequency distribution of words in text, 
+# returns a frequency distribution of words in text,
 #    in the format {"chapman's": 1, 'carried': 1, 'hinesville': 1, 'broke': 1, 'an': 3,...
 
 def get_wordnet_pos(word):#from https://www.machinelearningplus.com/nlp/lemmatization-examples-python/
@@ -151,7 +151,7 @@ def word_count(text):
 def excludeStopWords_list(words):
     # stop_words = stopwords.words('english')
     fin = open('../lib/wordLists/stopwords.txt', 'r')
-    stop_words = set(fin.read().splitlines())   
+    stop_words = set(fin.read().splitlines())
     # since stop_words are lowercase exclude initial-capital words (He, I)
     words_excludeStopwords = [word for word in words if not word.lower() in stop_words]
     words = words_excludeStopwords
@@ -750,7 +750,7 @@ def tokenize(s):
 # see code in cophi https://github.com/cophi-wue/cophi-toolbox
 # code from https://gist.github.com/magnusnissel/d9521cb78b9ae0b2c7d6#file-lexical_diversity_yule-py
 def get_yules_k_i(s):
-    """ 
+    """
     Returns a tuple with Yule's K and Yule's I.
     (cf. Oakes, M.P. 1998. Statistics for Corpus Linguistics.
     International Journal of Applied Linguistics, Vol 10 Issue 2)
@@ -762,7 +762,7 @@ def get_yules_k_i(s):
     m1 = sum(token_counter.values())
     m2 = sum([freq ** 2 for freq in token_counter.values()])
     i = (m1*m1) / (m2-m1)
-    # k = 10000/i 
+    # k = 10000/i
     k = 1/i * 10000
     return (k, i)
 
@@ -1042,7 +1042,7 @@ def n_most_common_words(n,text):
     cleaned_words, common_words = [], []
     for word in text.split():
         fin = open('../lib/wordLists/stopwords.txt', 'r')
-        stop_words = set(fin.read().splitlines())   
+        stop_words = set(fin.read().splitlines())
         if word not in stop_words and '\'' not in word and '\"' not in word:
             cleaned_words.append(word)
     # print(cleaned_words)
@@ -1585,7 +1585,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
 
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                        columns_to_be_plotted_bar=[[1, 1], [3, 3]],
-                                                       columns_to_be_plotted_bySent=[[8, 5, 1], [8, 5, 3]],
+                                                       columns_to_be_plotted_bySent=[[5, 1], [5, 3]],
                                                        columns_to_be_plotted_byDoc=[[7, 8]],
                                                        chartTitle='Frequency Distribution of Complexity Scores',
                                                        count_var=0, # to be used for byDoc, 0 for numeric field

@@ -22,23 +22,30 @@ def csvFile_has_header(file_path):
     is_header = not any(cell.isdigit() for cell in i)
     return is_header
 
+def get_csv_heaaders_pandas(inputFilename):
+    data = pd.read_csv(inputFilename)
+    headers = data.head()
+    # to get the data only w/o headers use
+    #   data = pd.read_csv(inputFilename, header=None)
+    return headers
+
 # Take in file name, output is a list of rows each with columns 1->11 in the conll table
 # Used to divide sentences etc.
-def get_csv_data(file_name,withHeader):
+def get_csv_data(inputFilename,withHeader):
     data=[]
     headers=''
     delimiter=','
-    filename, file_extension = os.path.splitext(file_name)
+    filename, file_extension = os.path.splitext(inputFilename)
     # file_extension will return any extension .xlsx, .csv, …
-    if file_name=='' or file_extension!='.csv':
-        mb.showwarning(title='File type error', message='The file\n\n' + file_name + '\n\nis not an expected csv file. Please, check the file and try again.')
+    if filename=='' or file_extension!='.csv':
+        mb.showwarning(title='File type error', message='The file\n\n' + inputFilename + '\n\nis not an expected csv file. Please, check the file and try again.')
         return data, headers
     #numColumns=get_csvfile_numberofColumns(file_name)
-    withHeader=csvFile_has_header(file_name)
+    withHeader=csvFile_has_header(inputFilename)
     #print("io IO delimiter ",get_csvfile_numberofColumns(file_name))
     #TODO does not work; gives an error
     #print ("\n\n\n\ndetectCsvHeader(file_name) ",detectCsvHeader(file_name))
-    with open(file_name,encoding='utf-8',errors='ignore') as f:
+    with open(inputFilename,encoding='utf-8',errors='ignore') as f:
         reader = csv.reader(f,delimiter=delimiter)
         if withHeader == True:
             headers = next(reader, None) #ADDED to skip header in new .csv CoNLL
@@ -46,7 +53,7 @@ def get_csv_data(file_name,withHeader):
         data = [r for r in reader]
         #f.close()
     if len(data)==0:
-        mb.showwarning(title='Empty csv file', message='The csv file\n\n' + file_name + '\n\nis empty. Please, check the file and try again.')
+        mb.showwarning(title='Empty csv file', message='The csv file\n\n' + inputFilename + '\n\nis empty. Please, check the file and try again.')
     return data, headers
 
 # csv file contains headers,

@@ -44,7 +44,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         parser, parser_menu_var,
         dateInclude, sep, date_field_position, dateFormat,
         CoNLL_table_analyzer_var,
-        Stanza_annotators_var, Stanza_annotators_menu_var):
+        Stanza_annotators_var, Stanza_annotators_menu_var,
+        CoreNLP_var):
 
     filesToOpen = []
     outputCoNLLfilePath = ''
@@ -54,7 +55,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     #     return
     #
 
-    if parser == 0 and CoNLL_table_analyzer_var == 0 and Stanza_annotators_var == 0:
+    if parser == 0 and CoNLL_table_analyzer_var == 0 and Stanza_annotators_var == 0 and CoreNLP_var == 0:
         mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
         return
 
@@ -92,53 +93,56 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         else:
             return
 
-    document_length_var = 1
-    limit_sentence_length_var = 1000
-    tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
-                                                                   outputDir,
-                                                                   openOutputFiles,
-                                                                   createCharts, chartPackage,
-                                                                   annotator, False,
-                                                                   language_list,
-                                                                   memory_var, document_length_var, limit_sentence_length_var,
-                                                                   extract_date_from_filename_var=dateInclude,
-                                                                   date_format=dateFormat,
-                                                                   date_separator_var=sep,
-                                                                   date_position_var=date_field_position)
-        # ,
-        #                                                            language=language_var)
-        #                                                         #    language = language_var)
+        document_length_var = 1
+        limit_sentence_length_var = 1000
+        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+                                                                       outputDir,
+                                                                       openOutputFiles,
+                                                                       createCharts, chartPackage,
+                                                                       annotator, False,
+                                                                       language_list,
+                                                                       memory_var, document_length_var, limit_sentence_length_var,
+                                                                       extract_date_from_filename_var=dateInclude,
+                                                                       date_format=dateFormat,
+                                                                       date_separator_var=sep,
+                                                                       date_position_var=date_field_position)
+            # ,
+            #                                                            language=language_var)
+            #                                                         #    language = language_var)
 
-    if tempOutputFiles == None:
-        return
+        if tempOutputFiles == None:
+            return
 
-    if len(tempOutputFiles)>0:
-        filesToOpen.extend(tempOutputFiles)
-        if 'parser' in annotator:
-            reminders_util.checkReminder(config_filename,
-                                         reminders_util.title_options_CoreNLP_NER_tags,
-                                         reminders_util.message_CoreNLP_NER_tags,
-                                         True)
-            if CoNLL_table_analyzer_var:
-                    if IO_libraries_util.check_inputPythonJavaProgramFile('CoNLL_table_analyzer_main.py') == False:
-                        return
-                    # open the analyzer having saved the new parser output in config so that it opens the right input file
-                    config_filename_temp = 'conll_table_analyzer_config.csv'
-                    config_input_output_numeric_options = [1, 0, 0, 1]
-                    config_input_output_alphabetic_options = [str(tempOutputFiles[0]), '', '', outputDir]
-                    config_util.write_config_file(GUI_util.window, config_filename_temp,
-                                                  config_input_output_numeric_options,
-                                                  config_input_output_alphabetic_options, True)
+        if len(tempOutputFiles)>0:
+            filesToOpen.extend(tempOutputFiles)
+            if 'parser' in annotator:
+                reminders_util.checkReminder(config_filename,
+                                             reminders_util.title_options_CoreNLP_NER_tags,
+                                             reminders_util.message_CoreNLP_NER_tags,
+                                             True)
+                if CoNLL_table_analyzer_var:
+                        if IO_libraries_util.check_inputPythonJavaProgramFile('CoNLL_table_analyzer_main.py') == False:
+                            return
+                        # open the analyzer having saved the new parser output in config so that it opens the right input file
+                        config_filename_temp = 'conll_table_analyzer_config.csv'
+                        config_input_output_numeric_options = [1, 0, 0, 1]
+                        config_input_output_alphabetic_options = [str(tempOutputFiles[0]), '', '', outputDir]
+                        config_util.write_config_file(GUI_util.window, config_filename_temp,
+                                                      config_input_output_numeric_options,
+                                                      config_input_output_alphabetic_options, True)
 
-                    reminders_util.checkReminder(config_filename,
-                                                 reminders_util.title_options_CoNLL_analyzer,
-                                                 reminders_util.message_CoNLL_analyzer,
-                                                 True)
+                        reminders_util.checkReminder(config_filename,
+                                                     reminders_util.title_options_CoNLL_analyzer,
+                                                     reminders_util.message_CoNLL_analyzer,
+                                                     True)
 
-                    call("python CoNLL_table_analyzer_main.py", shell=True)
+                        call("python CoNLL_table_analyzer_main.py", shell=True)
 
-    if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        if openOutputFiles:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+
+    if CoreNLP_var:
+        call("python Stanford_CoreNLP_main.py", shell=True)
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
@@ -157,7 +161,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  date_format.get(),
                                  CoNLL_table_analyzer_var.get(),
                                  Stanza_annotators_var.get(),
-                                 Stanza_annotators_menu_var.get())
+                                 Stanza_annotators_menu_var.get(),
+                                 CoreNLP_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -168,8 +173,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=520, # height at brief display
-                             GUI_height_full=600, # height at full display
+                             GUI_height_brief=560, # height at brief display
+                             GUI_height_full=640, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -227,6 +232,8 @@ CoNLL_table_analyzer_var = tk.IntVar()
 
 Stanza_annotators_var = tk.IntVar()
 Stanza_annotators_menu_var = tk.StringVar()
+
+CoreNLP_var = tk.IntVar()
 
 def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
@@ -466,6 +473,10 @@ Stanza_annotators_menu_var.trace('w', activate_Stanza_annotators_menu)
 
 activate_Stanza_annotators_menu()
 
+CoreNLP_var.set(0)
+CoreNLP_checkbox = tk.Checkbutton(window, text='Stanford CoreNLP - parsers and annotators (Open GUI)', variable=CoreNLP_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoreNLP_checkbox)
+
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
@@ -526,6 +537,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the CoreNLP parser results contained in the CoNLL table.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select one of the many other annotators available through Stanza: sentencce splitter, lemmatizer, POS, NER (Named Entity Recognition), and sentiment analysis.\n\nALL Stanza ANNOTATORS ARE BASED ON NEURAL NETWORK.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files and charts.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Please, tick the checkbox if you want to open the GUI to run Stanford CoreNLP Java-based parsers and annotators.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

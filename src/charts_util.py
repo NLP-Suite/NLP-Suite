@@ -66,15 +66,16 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
         data_to_be_plotted = get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,data)
     return data_to_be_plotted
 
+
 # columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc
 #   all double lists [[]]
 # the variable groupByList,plotList, chart_title_label are used to compute column statistics
 #   groupByList is typically the list ['Document ID', 'Document']
 #   plotList is the list of fields that want to be plotted
-#   chart_title_label is used as part of the the chart_title when plotting the fields statistics
+#   chart_title_label is used as part of the chart_title when plotting the fields statistics
 def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc,
-                    chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_title_label,pivot = False):
+                    chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_title_label, pivot = False):
     if createCharts == True:
         chart_outputFilenameSV=''
 
@@ -118,18 +119,18 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 
 # by DOCUMENT
         byDoc=False
+        n_documents=IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename)
         if len(columns_to_be_plotted_byDoc[0])>0: # compute only if the double list is not empty
             remove_hyperlinks=True
-            if IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename) > 1:
+            if n_documents > 1:
                 # TODO select_col any changes in the inputfile layout of columns
                 #     will change the [0][0] items for selected_col
                 # selected_col is the column to be plotted
 
-
                 selected_col = columns_to_be_plotted_bar[0][0]
 # by DOCUMENT counting the qualitative values ---------------------------------------------------------------------------
                 if count_var==1: # for alphabetic fields that need to be counted for display in a chart
-                    # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted tyo be used
+                    # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted to be used
                     # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, graph=False,
                     #                              complete_sid=False,  chartPackage='Excel')
 
@@ -145,15 +146,16 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                                     # group_col=columns_to_be_plotted_byDoc[1],
                                                                     group_col=columns_to_be_plotted_byDoc,
                                                                     fileNameType='CSV', chartType='',pivot = pivot)
-                    inputFilename=temp_outputFilename[0]
+                    new_inputFilename=temp_outputFilename[0]
+                    # temp_outputFilename[0] is the frequency filename (with no hyperlinks)
                     count_var=0
                     remove_hyperlinks = False # already removed in compute frequencies
                     # 2,3 are the Document and Frequency columns in temp_outputFilename
-                    #columns_to_be_plotted_byDoc = [[2,3]] # document 2, first; frequencies 2
+                    #columns_to_be_plotted_byDoc = [[2,3]] # document 2, first item; frequencies 3 second item
                     #columns_to_be_plotted_byDoc = [[1,2],[1,3]]
                     # pivot = True
-                    headers = IO_csv_util.get_csvfile_headers(temp_outputFilename[0])
-                    if pivot:
+                    headers = IO_csv_util.get_csvfile_headers(new_inputFilename)
+                    if pivot==True:
                         columns_to_be_plotted_byDoc_len = len(columns_to_be_plotted_byDoc[0])
                         columns_to_be_plotted_byDoc = []
                         for i in range(columns_to_be_plotted_byDoc_len,len(headers)):
@@ -168,7 +170,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                         sel_column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,2)
                         if chartPackage=="Excel":
                             column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,1)
-                            number_column_entries = len(IO_csv_util.get_csv_field_values(inputFilename, column_name))
+                            number_column_entries = len(IO_csv_util.get_csv_field_values(new_inputFilename, column_name))
                             if number_column_entries > 1:
                                 answer = tk.messagebox.askyesno("Warning", "For the chart of '" + sel_column_name + "', do you want to:\n\n  (Y) sum the values across all " + str(number_column_entries) + " '" + column_name + "';\n  (N) use all " + str(number_column_entries) + " distinct column values.")
                                 if answer:
@@ -179,6 +181,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                             columns_to_be_plotted_byDoc = [[1, 3, 2]]
 # by DOCUMENT NOT counting quantitative values ---------------------------------------------------------------------------
                 else:
+                    new_inputFilename=inputFilename
                     # when plotting numeric values (count_var=0) compute the columns to be plotted
                     #   from the values passed for bar and using the Document column number
                     columns_to_be_plotted=[]
@@ -190,12 +193,13 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                             break
                         columns_to_be_plotted.append(item)
                     columns_to_be_plotted_byDoc=columns_to_be_plotted
+
                 if outputFileNameType != '':
                     outputFileLabel = 'ByDoc_' + outputFileNameType
                 else:
                     outputFileLabel = 'ByDoc'
 
-                chart_outputFilename = run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
+                chart_outputFilename = run_all(columns_to_be_plotted_byDoc, new_inputFilename, outputDir,
                                                           outputFileLabel= outputFileNameType + '_ByDoc', #outputFileLabel,
                                                           chartPackage=chartPackage,
                                                           chart_type_list=['bar'],
@@ -217,29 +221,35 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         # TODO TONY temporarily disconnected
         bySent=False
         if bySent and len(columns_to_be_plotted_bySent[0])>0: # compute only if the double list is not empty
-            # selected_col = [[columns_to_be_plotted_bySent[0][1]]]
+            # inputFilename = data_pivot(inputFilename, 'Sentence ID', 'Yngve score')
+            # TODO depends on how many documents we have
+            columns_to_be_plotted_bySent = []
+            for i in range(n_documents):
+                columns_to_be_plotted_bySent.append([0, i+1])
+
+            selected_col = [[columns_to_be_plotted_bySent[0][1]]]
             # columns_to_be_plotted_bySent = [[columns_to_be_plotted_bySent[0][0]]]
-            # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
-            # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
-            #                                               inputFilename,
-            #                                               None, outputDir,
-            #                                               False,
-            #                                               createCharts,
-            #                                               chartPackage,
-            #                                               selected_col=selected_col,
-            #                                               hover_col=[],
-            #                                               group_col=columns_to_be_plotted_bySent,
-            #                                               fileNameType='CSV',
-            #                                               chartType='',
-            #                                               pivot=pivot)
-            # if pivot:
+            temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
+                                                          inputFilename,
+                                                          None, outputDir,
+                                                          False,
+                                                          createCharts,
+                                                          chartPackage,
+                                                          selected_col=selected_col,
+                                                          hover_col=[],
+                                                          group_col=columns_to_be_plotted_bySent,
+                                                          fileNameType='CSV',
+                                                          chartType='',
+                                                          pivot=pivot)
+            if pivot:
+                inputFilename = statistics_csv_util.csv_data_pivot(temp_outputFilename[0], 'Sentence ID', 'Gender', no_hyperlinks=True)
             #     columns_to_be_plotted_bySent_len = len(columns_to_be_plotted_bySent[0])
             #     columns_to_be_plotted_bySent = []
             #     headers = IO_csv_util.get_csvfile_headers(temp_outputFilename[0])
             #     for i in range(columns_to_be_plotted_bySent_len, len(headers)):
             #         columns_to_be_plotted_bySent.append([columns_to_be_plotted_bySent_len - 1, i])
-            # else:
-            #     columns_to_be_plotted_bySent = [[1, 2]]
+            else:
+                columns_to_be_plotted_bySent = [[1, 2]]
 
             chart_outputFilename = run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
                                                       outputFileLabel='BySent_' + outputFileNameType,
@@ -279,7 +289,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 #   otherwise, use statistics_csv_util.compute_csv_column_frequencies
 # only one hover-over column per series can be selected
 # each series plotted has its own hover-over column
-#   if the column is the same (e.g., sentence), this must be repeated as many times as there are series 
+#   if the column is the same (e.g., sentence), this must be repeated as many times as there are series
 
 # columns_to_be_plotted is a double list of 2 items for each list [[0, 1], [0, 2], [0, 3]] where
 #   the first number refers to the x-axis value and the second to the y-axis value
@@ -493,8 +503,8 @@ def complete_sentence_index(file_path):
 #   three series: [[['Name1','Frequency'], ['A', 7]], [['Name2','Frequency'], ['B', 4]], [['Name3','Frequency'], ['C', 9]]]
 #   more series: ..........
 #chartTitle is the name of the sheet
-#num_label number of bars, for instance, that will be displayed in a bar chart 
-#second_y_var is a boolean that tells the function whether a second y axis is needed 
+#num_label number of bars, for instance, that will be displayed in a bar chart
+#second_y_var is a boolean that tells the function whether a second y axis is needed
 #   because it has a different scale and plotted values would otherwise be "masked"
 #   ONLY 2 y-axes in a single chart are allowed by openpyxl
 #chart_type_list is in form ['line', 'line','bar']... one for each of n series plotted

@@ -207,8 +207,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
         language_encoding = 'utf-8-sig'
 
     produce_split_files=False
-    
-    
+
+
 
     params_option = {
         'Sentence': {'annotators':['ssplit']},
@@ -275,7 +275,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         # neural network parser does not contain clause tags
         'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
     }
-    
+
     lang_models = language_models(CoreNLPdir, language)
     if lang_models == None:
         return ''
@@ -379,7 +379,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer','-props', language.lower(),
                  '-parse.maxlen' + str(sentence_length), '-timeout', '999999'])
-        
+
     else:
         # CoreNLP_nlp = subprocess.Popen(
         #     ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp',  os.path.join(CoreNLPdir, '*'),
@@ -388,7 +388,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
-        else: 
+        else:
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-props', language.lower(),
@@ -415,7 +415,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
             reminders_util.title_options_CoreNLP_quote_annotator,
             reminders_util.message_CoreNLP_quote_annotator,
             True)
-        
+
     # record the number of pronouns
     all_pronouns = 0
     # annotating each input file
@@ -748,7 +748,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        outputDir,
                                                                        columns_to_be_plotted_bar=[[1, 1]],
                                                                        # columns_to_be_plotted_bySent=[[3,1]],
-                                                                       columns_to_be_plotted_bySent=[[]],
+                                                                       columns_to_be_plotted_bySent=[[3,1]],
                                                                        columns_to_be_plotted_byDoc=[[4, 5]],
                                                                        chartTitle='Frequency Distribution of Gender Values',
                                                                        # count_var = 1 for columns of alphabetic values
@@ -1064,7 +1064,7 @@ def language_models(CoreNLPdir, language: str):
     result['pcfg'] = pcfg_model
     result['nn'] = nn_model
     return result
-    
+
 
 def check_sentence_length(sentence_length, sentenceID, config_filename):
     # WARNING for sentences with > 100 tokens
@@ -1515,9 +1515,9 @@ def process_json_gender(config_filename,documentID, document, start_sentenceID, 
                 # get complete sentence
                 complete = sent_dict[elmt['sentNum']]
                 if extract_date_from_filename_var:
-                    result.append([elmt['text'], elmt['gender'], complete, elmt['sentNum'] + start_sentenceID, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str])
+                    result.append([elmt['text'], elmt['gender'], elmt['sentNum'] + start_sentenceID, complete, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str])
                 else:
-                    result.append([elmt['text'], elmt['gender'], complete, elmt['sentNum'] + start_sentenceID, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                    result.append([elmt['text'], elmt['gender'], elmt['sentNum'] + start_sentenceID, complete, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
 
     # return result
     return sorted(result, key=lambda x:x[3]) # this function did not add each row in order of sentence, so the output needs sorting by sentenceID
@@ -1696,7 +1696,7 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
         if key == 'extract_date_from_filename_var' and value == True:
             extract_date_from_filename_var = True
     date_str = date_in_filename(document, **kwargs)
-    
+
     openIE = []
     locations = [] # a list of [sentence, sentence id, [location_text, ner_value]]
     for sentence in json['sentences']:
@@ -2221,7 +2221,7 @@ def count_pronouns(json):
             if token["pos"] == "PRP$" or token["pos"] == "PRP":
                 result += 1
     return result
-    
+
 
 def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, createCharts,chartPackage, option, corefed_pronouns, all_pronouns: int):
     return_files = []
@@ -2244,7 +2244,7 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
     #                 total_count += 1
     #                 pronouns_count[token["originalText"].lower()] += 1
     # else:
-        
+
     for _, row in df.iterrows():
         if option == "SVO":
             if (not pd.isna(row["Subject (S)"])) and (str(row["Subject (S)"]).lower() in pronouns):
@@ -2272,7 +2272,7 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
     pronouns_count["I"] = pronouns_count.pop("i")
     if total_count > 0:
         if option != "coref table":
-            
+
             reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_pronouns,
                                          reminders_util.message_CoreNLP_pronouns, True)
         else:

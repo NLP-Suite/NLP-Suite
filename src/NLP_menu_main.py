@@ -1,4 +1,4 @@
-# written by Roberto Franzosi October 2019, 
+# written by Roberto Franzosi October 2019,
 # edited Spring 2020, July 2020
 
 #input: 1. file name
@@ -334,6 +334,7 @@ def callback(software: str):
     setup_external_programs_checkbox(software)
 
 def setup_software_warning():
+    global software
     global software
     mb.showwarning('External software option', 'Please, select next the external software that you would like to download/install using the dropdown menu.')
     software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'Gephi', 'Google Earth Pro', 'MALLET', 'SENNA', 'WordNet'],'Stanford CoreNLP',callback)

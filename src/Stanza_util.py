@@ -5,6 +5,7 @@ import tkinter.messagebox as mb
 import os
 import re
 import warnings
+import tkinter as tk
 
 from tenacity import retry_unless_exception_type
 
@@ -181,17 +182,22 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     df.to_csv(outputFilename, index=False, encoding = language_encoding)
     filesToOpen.append(outputFilename)
 
+    # Filter + Visualization.
     language_list=IO_csv_util.get_csv_field_values(outputFilename, 'Language')
     if len(language_list)>1:
-        # TODO Mino you can find an example of callback in NLP_menu_main
-        # for sure... it cannot be a string
-        callback=''
-        selected_language = GUI_IO_util.dropdown_menu_widget(GUI_util.window,
+        # callback function for dropdown_menu_widget2()
+        def callback(selected_language: str):
+            return
+        # open the drop down menu to filter the original output with selected language
+        selected_language = GUI_IO_util.dropdown_menu_widget2(GUI_util.window,
                                                     "Please, select the language you wish to use for your charts. Press ESCape to process all languages.",
                                                     language_list, 'Stanza languages', callback)
-        # TODO MINO must filter the outputFilename Language column by selected_language,
-        #   creating a new outputFilename with _selected_language in the filename
-        #   could use an edited version of def export_csv_to_csv_txt(outputDir,operation_results_text_list,export_type='.csv', cols=None)
+        # filter with selected language (using Pandas dataframe)
+        selected_lang_df = df.loc[df['Language']==selected_language]
+        selected_lang_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                            'Stanza_' + f'{selected_language}' + '_' + annotator_params)
+        selected_lang_df.to_csv(selected_lang_outputFilename, index=False, encoding = language_encoding)
+        filesToOpen.extend(selected_lang_outputFilename)
     if "Lemma" in str(annotator_params) and 'Lemma' in outputFilename:
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
@@ -201,7 +207,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                                                            chartTitle='Frequency Distribution of Form Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
-                                                           outputFileNameType='',  # 'POS_bar',
+                                                           outputFileNameType='Form',  # 'POS_bar',
                                                            column_xAxis_label='Form values',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
@@ -220,7 +226,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                                                            chartTitle='Frequency Distribution of Lemma Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
-                                                           outputFileNameType='',  # 'POS_bar',
+                                                           outputFileNameType='Lemma',  # 'POS_bar',
                                                            column_xAxis_label='Lemma values',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
