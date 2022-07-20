@@ -355,7 +355,7 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir):
     if len(filesToOpen)>10:
         mb.showwarning(title='Too many files to open',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files.\n\nFor your convenience, you will be placed next in the output directory\n\n'+outputDir+'\n\nYou can select there the files you want/need to open.')
         # open outputDir
-        IO_files_util.openExplorer(window, outputDir)
+        openExplorer(window, outputDir)
         return
     if len(filesToOpen) == 1:
         singularPlural = 'file'

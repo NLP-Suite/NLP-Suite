@@ -138,8 +138,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
                         call("python CoNLL_table_analyzer_main.py", shell=True)
 
-        if openOutputFiles:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+    if openOutputFiles:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
     if CoreNLP_var:
         call("python Stanford_CoreNLP_main.py", shell=True)
@@ -391,6 +391,11 @@ def show_language_list():
 
 def activate_language_var():
     # Disable the + after clicking on it and enable the class menu
+    if language_menu.get()=='English':
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_Stanza_languages,
+                                     reminders_util.message_Stanza_languages,
+                                     True)
     add_language_button.configure(state='disabled')
     language_menu.configure(state='normal')
 

@@ -401,6 +401,7 @@ def dropdown_menu_widget(window,textCaption, menu_values, default_value, callbac
         def __init__(self,master):
             top = self.top = Toplevel()
             top.wm_title(textCaption)
+            top.focus_force()
             self.menuButton = ttk.Combobox(top, width=len(textCaption)+30)
             self.menuButton['values'] = menu_values
             self.menuButton.pack()
@@ -417,6 +418,32 @@ def dropdown_menu_widget(window,textCaption, menu_values, default_value, callbac
             callback(val)
 
     App(window)
+
+# modified dropdown_menu_widget that will stay open without command=lambda:
+def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callback):
+    def get_value():
+        global val
+        val = menuButton.get()
+        top.destroy()
+        callback(val)
+        # top.update()
+
+    top = Toplevel()
+    top.wm_title(textCaption)
+    top.focus_force()
+    menuButton = ttk.Combobox(top, width=len(textCaption)+30)
+    menuButton['values'] = menu_values
+    menuButton.pack()
+
+    menuButton.grid(row=0, column=1) # , sticky=W)
+    callback = callback
+
+    ok_button = tk.Button(top, text='OK', command=get_value)
+    ok_button.grid(row=0, column=1)
+
+    window.wait_window(top)
+
+    return val
 
 def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
     top = tk.Toplevel(window)
@@ -499,29 +526,4 @@ def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue=''
     #     value1=list(value1.split(" "))
     return value1, value2
 
-# modified dropdown_menu_widget that will stay open without command=lambda:
-def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callback):
-    def get_value():
-        global val
-        val = menuButton.get()
-        top.destroy()
-        callback(val)
-        # top.update()
 
-    top = Toplevel()
-    top.wm_title(textCaption)
-    menuButton = ttk.Combobox(top, width=len(textCaption)+30)
-    menuButton['values'] = menu_values
-    menuButton.pack()
-
-    menuButton.grid(row=0, column=1) # , sticky=W)
-    callback = callback
-
-    ok_button = tk.Button(top, text='OK', command=get_value)
-    ok_button.grid(row=0, column=1)
-
-    window.wait_window(top)
-
-    return val
-
-    

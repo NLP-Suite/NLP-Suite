@@ -111,6 +111,8 @@ def get_csv_field_values(inputFilename, column_name):
         fields = next(csvreader)
         # from the column header get the column number that we want to extract
         col_num = get_columnNumber_from_headerValue(fields, column_name)
+        if col_num==None:
+            return ['']
         for row in csvreader:
             unique_values.add(row[col_num])
         sorted_unique_values=sorted(unique_values)

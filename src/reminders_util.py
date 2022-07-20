@@ -68,6 +68,9 @@ message_SVO_someone = 'The SVO algorithms convert passive sentences into active 
 title_options_CoreNLP_pronouns = ['CoreNLP pronouns']
 message_CoreNLP_pronouns = 'The CoreNLP algorithms have detected the presence of pronouns (e.g., he, she). You should run the coreference annotator to resolve the coreferences.'
 
+title_options_Stanza_languages = ['Stanza languages']
+message_Stanza_languages = 'Pressing + with the default language option "English" displayed in the dropdown menu, will add "English" to the list of languages processed by Stanza. If you do not wish to include "English," please, click the Reset button first then add the languages to be processed one at a time.'
+
 title_options_GIS_Nominatim = ['GIS Nominatim geocoder']
 message_GIS_Nominatim = "If the Nominatim geocoder service exits with the error 'too many requests', you can break up the csv location file and process each subfile for geocoding as normal csv files."
 

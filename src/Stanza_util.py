@@ -116,7 +116,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
     df = pd.DataFrame()
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                             'Stanza_' + 'DepRel' + '_' + annotator_params)
+                                                             'Stanza_' + annotator_params)
     for docName in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(docName)
@@ -190,7 +190,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             return
         # open the drop down menu to filter the original output with selected language
         selected_language = GUI_IO_util.dropdown_menu_widget2(GUI_util.window,
-                                                    "Please, select the language you wish to use for your charts. Press ESCape to process all languages.",
+                                                    "Please, select the language you wish to use for your charts (dropdown menu on the right; press OK to accept selection; press ESCape to process all languages).",
                                                     language_list, 'Stanza languages', callback)
         # filter with selected language (using Pandas dataframe)
         selected_lang_df = df.loc[df['Language']==selected_language]
@@ -217,7 +217,6 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
 
-    if "Lemma" in str(annotator_params) and 'Lemma' in outputFilename:
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_bar=[[2, 2]],
