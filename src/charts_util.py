@@ -74,7 +74,7 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
 #   plotList is the list of fields that want to be plotted
 #   chart_title_label is used as part of the chart_title when plotting the fields statistics
 def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
-                    columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc,
+                    columns_to_be_plotted_bar,
                     chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_title_label, pivot = False):
     if createCharts == True:
         chart_outputFilenameSV=''
@@ -89,6 +89,14 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     #   the first item is the column of numeric values
     #   the second item is the X-axis
     #   see the example of call in get_ngramlist
+
+    # selected_col is the column to be plotted
+    selected_col = columns_to_be_plotted_bar[0][0]
+    headers = IO_csv_util.get_csvfile_headers_pandas(inputFilename)
+    docID = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID')
+    columns_to_be_plotted_byDoc = [[docID, docID + 1]]
+    sentID = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Sentence ID')
+    columns_to_be_plotted_bySent = [[sentID, sentID]]
 
     # standard bar chart ------------------------------------------------------------------------------
     if len(columns_to_be_plotted_bar[0])>0: # compute only if the double list is not empty
@@ -105,6 +113,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
             chart_outputFilenameSV=chart_outputFilename
             if len(chart_outputFilename) > 0:
                 filesToOpen.append(chart_outputFilename)
+
 
 # bar charts by DOCUMENT ------------------------------------------------------------------------
         # columns_to_be_plotted_byDoc is a double list [[][]] with
@@ -125,9 +134,6 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
             if n_documents > 1:
                 # TODO select_col any changes in the inputfile layout of columns
                 #     will change the [0][0] items for selected_col
-                # selected_col is the column to be plotted
-
-                selected_col = columns_to_be_plotted_bar[0][0]
 # by DOCUMENT counting the qualitative values ---------------------------------------------------------------------------
                 if count_var==1: # for alphabetic fields that need to be counted for display in a chart
                     # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted to be used
@@ -140,10 +146,9 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
                                                                     inputFilename, None, outputDir,
                                                                     False, createCharts, chartPackage,
-                                                                    # selected_col=columns_to_be_plotted_byDoc[0],
                                                                     selected_col=[[selected_col]],
                                                                     hover_col=[],
-                                                                    # group_col=columns_to_be_plotted_byDoc[1],
+                                                                    # group_col=[[columns_to_be_plotted_byDoc[0][1]]],
                                                                     group_col=columns_to_be_plotted_byDoc,
                                                                     fileNameType='CSV', chartType='',pivot = pivot)
                     new_inputFilename=temp_outputFilename[0]
@@ -154,7 +159,14 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     #columns_to_be_plotted_byDoc = [[2,3]] # document 2, first item; frequencies 3 second item
                     #columns_to_be_plotted_byDoc = [[1,2],[1,3]]
                     # pivot = True
-                    headers = IO_csv_util.get_csvfile_headers(new_inputFilename)
+
+                    headers = IO_csv_util.get_csvfile_headers_pandas(new_inputFilename)
+                    # docID = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID')
+                    # columns_to_be_plotted_byDoc = [[docID, docID + 1]]
+                    # sentID = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Sentence ID')
+                    # columns_to_be_plotted_bySent = [[sentID, sentID]]
+
+                    # headers = IO_csv_util.get_csvfile_headers(new_inputFilename)
                     if pivot==True:
                         columns_to_be_plotted_byDoc_len = len(columns_to_be_plotted_byDoc[0])
                         columns_to_be_plotted_byDoc = []

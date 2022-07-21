@@ -11,6 +11,7 @@ import tkinter.messagebox as mb
 import pandas as pd
 import os
 import IO_files_util
+import IO_user_interface_util
 
 #if any column header contains just numbers the function will return FALSE
 def csvFile_has_header(file_path):
@@ -21,13 +22,6 @@ def csvFile_has_header(file_path):
     i = next(reader)
     is_header = not any(cell.isdigit() for cell in i)
     return is_header
-
-def get_csv_heaaders_pandas(inputFilename):
-    data = pd.read_csv(inputFilename)
-    headers = data.head()
-    # to get the data only w/o headers use
-    #   data = pd.read_csv(inputFilename, header=None)
-    return headers
 
 # Take in file name, output is a list of rows each with columns 1->11 in the conll table
 # Used to divide sentences etc.
@@ -65,14 +59,20 @@ def get_csvfile_headers (csvFile,ask_Question=False):
         answer=mb.askyesno("File headers","Does the selected input file\n\n"+csvFile+"\n\nhave headers?")
     if csvFile!='' and answer ==True:
         with open(csvFile,'r',encoding="utf-8",errors='ignore') as f:
-            reader = csv.reader(f)
+            reader = csv.DictReader(f)
             try:
-                headers=next(reader)
+                headers=reader.fieldnames
             except: # empty files will break the next
                 # mb.showwarning("Warning","The selected csv file has no records.\n\nPlease, check the file content and select a different file.")
                 # headers=''
                 return headers
-            f.seek(0)
+            # f.seek(0)
+    return headers
+
+def get_csvfile_headers_pandas(inputFilename):
+    # index_col = 0 excludes the first column, an ID column; but... we need that column
+    # headers = pd.read_csv(inputFilename, index_col=0, nrows=0).columns.tolist()
+    headers = pd.read_csv(inputFilename, nrows=0).columns.tolist()
     return headers
 
 # convert header alphabetic value for CSV files with or without headers to its numeric column value
@@ -84,7 +84,8 @@ def get_columnNumber_from_headerValue(headers,header_value):
             column_number = i
             break
     if column_number==None:
-        mb.showwarning(title='Wrong header value',message='The header value "' + str(header_value) + '" was not found among the csv file headers ' + str(headers))
+        IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Wrong header value',
+                                           'The header value "' + str(header_value) + '" was not found among the csv file headers ' + str(headers))
     return column_number
 
 # convert header alphabetic value for CSV files with or without headers to its numeric column value

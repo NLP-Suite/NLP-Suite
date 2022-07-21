@@ -275,8 +275,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_bar=[[0, 0]],
-                                                           columns_to_be_plotted_bySent=[[]],
-                                                           columns_to_be_plotted_byDoc=[[9, 0]],
                                                            chartTitle=chartTitle,
                                                            count_var=1,  # to be used for byDoc, 0 for numeric field
                                                            hover_label=[],

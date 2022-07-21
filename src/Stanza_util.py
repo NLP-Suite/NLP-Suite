@@ -202,8 +202,6 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_bar=[[1, 1]],
-                                                           columns_to_be_plotted_byDoc=[[9, 10]],
-                                                           columns_to_be_plotted_bySent=[[4, 2]],
                                                            chartTitle='Frequency Distribution of Form Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
@@ -220,8 +218,6 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_bar=[[2, 2]],
-                                                           columns_to_be_plotted_byDoc=[[5, 6]],
-                                                           columns_to_be_plotted_bySent=[[4, 2]],
                                                            chartTitle='Frequency Distribution of Lemma Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
@@ -247,7 +243,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
 
     # check if the input is a single file or directory
     if inputDir != '':
-        inputFilename = inputDir + tail
+        inputFilename = inputDir + os.sep + tail
 
     # check if more than one language has been annotated
     # Stanza doc to Pandas DataFrame conversion logic for multilingual annotation

@@ -242,10 +242,6 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
                                                            outputDir,
                                                            columns_to_be_plotted_bar=[[0, 0]],
-                                                           # columns_to_be_plotted_bySent=[[4, 2]],
-                                                           # the fields must be numeric?
-                                                           columns_to_be_plotted_bySent=[[]],
-                                                           columns_to_be_plotted_byDoc=[[]],
                                                            chartTitle='Frequency Distribution of Subjects (filtered)',
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='',  # 'POS_bar',
@@ -260,10 +256,6 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
                                                            outputDir,
                                                            columns_to_be_plotted_bar=[[1, 1]],
-                                                           # columns_to_be_plotted_bySent=[[4, 2]],
-                                                           # the fields must be numeric?
-                                                           columns_to_be_plotted_bySent=[[]],
-                                                           columns_to_be_plotted_byDoc=[[]],
                                                            chartTitle='Frequency Distribution of Verbs (filtered)',
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='',  # 'POS_bar',
@@ -278,10 +270,6 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
                                                            outputDir,
                                                            columns_to_be_plotted_bar=[[2, 2]],
-                                                           # columns_to_be_plotted_bySent=[[4, 2]],
-                                                           # the fields must be numeric?
-                                                           columns_to_be_plotted_bySent=[[]],
-                                                           columns_to_be_plotted_byDoc=[[]],
                                                            chartTitle='Frequency Distribution of Objects (filtered)',
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='',  # 'POS_bar',

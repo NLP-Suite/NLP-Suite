@@ -10,16 +10,14 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"style_analysis_main.p
 import os
 import tkinter.messagebox as mb
 import tkinter as tk
-import subprocess
 from subprocess import call
 
-import IO_user_interface_util
 import GUI_IO_util
 import IO_files_util
 import file_spell_checker_util
 import statistics_txt_util
 import abstract_concreteness_analysis_util
-import lib_util
+import Stanza_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -127,6 +125,23 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                                                                    openOutputFiles, createCharts, chartPackage,'unigrams')
             if output != None:
                 filesToOpen.extend(output)
+
+        if '*' in vocabulary_analysis_menu_var or 'Stanza' in vocabulary_analysis_menu_var:
+            annotator = 'Lemma'
+            language_list = ['English']
+            memory_var = 8
+            document_length_var = 1
+            limit_sentence_length_var = 1000
+            output = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+                                                          outputDir,
+                                                          openOutputFiles,
+                                                          createCharts, chartPackage,
+                                                          annotator, False,
+                                                          language_list,
+                                                          memory_var, document_length_var, limit_sentence_length_var)
+            if output != None:
+                filesToOpen.extend(output)
+
         if '*' in vocabulary_analysis_menu_var or 'capital' in vocabulary_analysis_menu_var:
             output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'capital')

@@ -295,8 +295,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, xlsxFilename, outputDir,
                                                                columns_to_be_plotted_bar=[[1, 1]],
-                                                               columns_to_be_plotted_bySent=[[]],
-                                                               columns_to_be_plotted_byDoc=[[3, 1]],
                                                                chartTitle='Frequency Distribution of Co-Occurring Words',
                                                                count_var=1,  # to be used for byDoc, 0 for numeric field
                                                                hover_label=[],

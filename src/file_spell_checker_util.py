@@ -123,8 +123,6 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                    columns_to_be_plotted_bar=[[0, 0]],
-                                                   columns_to_be_plotted_bySent=[[]], # no sent in NLTK unusual
-                                                   columns_to_be_plotted_byDoc=[[1,2]],
                                                    chartTitle='Frequency of Misspelled/Unusual Words',
                                                    count_var=1, hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',
@@ -178,8 +176,6 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename, outputDir,
                                                            columns_to_be_plotted_bar=[[10, 10]],
-                                                           columns_to_be_plotted_bySent=[[]],
-                                                           columns_to_be_plotted_byDoc=[[]],
                                                            chartTitle='Frequency of Potential Typos',
                                                            count_var=1,  # to be used for byDoc, 0 for numeric field
                                                            hover_label=[],
@@ -483,8 +479,6 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
 
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFileName_simple, outputDir,
                                                                columns_to_be_plotted_bar=[[10, 10]],
-                                                               columns_to_be_plotted_bySent=[[]],
-                                                               columns_to_be_plotted_byDoc=[[]],
                                                                chartTitle='Frequency of Potential Typos',
                                                                count_var=1,  # to be used for byDoc, 0 for numeric field
                                                                hover_label=[],
@@ -855,7 +849,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
 # LANGDETECT ----------------------------------------------------------
 
             value=str(value[0]).split(':')
-            # TODO MINO get the value from the list in constants_util 
+            # TODO MINO get the value from the list in constants_util
             language=value[0]
             language = lang_dict.get(language)
             probability=round(float(value[1]),2)

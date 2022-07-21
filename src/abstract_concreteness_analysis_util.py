@@ -15,8 +15,8 @@ Parameters:
     --out [path of directory]
         specifies directory to create output files
 Uses concreteness measures by Brysbaert, Marc, Amy Beth Warriner, and Victor Kuperman. 2014.
-	“Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas.” 
-	Behavioral Research Methods, Vol. 46, No. 3, pp. 904–911.  
+	“Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas.”
+	Behavioral Research Methods, Vol. 46, No. 3, pp. 904–911.
 
 #a 5-point rating scale going from abstract to concrete
 
@@ -215,8 +215,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 
 	chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
 													   columns_to_be_plotted_bar=[[0,0]],
-													   columns_to_be_plotted_byDoc=[[9, 10]],
-													   columns_to_be_plotted_bySent= [[10, 7, 0]],
+													   # columns_to_be_plotted_bySent= [[10, 7, 0]],
 													   chartTitle='Frequency Distribution of Abstract/Concrete Scores',
 													   count_var=0, # to be used for byDoc, 0 for numeric field
 													   hover_label=[],
