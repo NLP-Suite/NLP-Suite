@@ -2128,7 +2128,7 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, gender
 #         # bar charts by document
 #         # # document value comes second in [[]]
 #         chart_outputFilename = charts_util.run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
-#                                                   outputFileLabel='ByDoc',
+#                                                   outputFileLabel='byDoc',
 #                                                   chartPackage=chartPackage,
 #                                                   chart_type_list=['bar'],
 #                                                   chart_title=chartTitle + ' by Document',

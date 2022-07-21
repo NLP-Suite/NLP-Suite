@@ -608,7 +608,9 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             if len(group_column_names)==0:
                 group_column_names=temp_group_column_names
             data = data.groupby(group_column_names).size().reset_index(name='Frequency')
-            # data.sort_values(group_column_names, ascending=True)
+            # it is already sorted
+            # data = data.sort_values(by=group_column_names, ascending=True)
+            # data.sort_values(by=group_column_names, ascending=True, inplace=True)
             # added TONY1
             # pivot=True
             if pivot==True:

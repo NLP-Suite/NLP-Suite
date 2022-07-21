@@ -91,12 +91,20 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     #   see the example of call in get_ngramlist
 
     # selected_col is the column to be plotted
+    # TODO select_col any changes in the inputfile layout of columns
+    #     will change the [0][0] items for selected_col
     selected_col = columns_to_be_plotted_bar[0][0]
     headers = IO_csv_util.get_csvfile_headers_pandas(inputFilename)
     docID = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID')
     columns_to_be_plotted_byDoc = [[docID, docID + 1]]
     sentID = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Sentence ID')
-    columns_to_be_plotted_bySent = [[sentID, sentID]]
+    # TODO depends on how many documents we have
+    n_documents = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename)
+    # when pivoting data
+    columns_to_be_plotted_bySent = []
+    for i in range(n_documents):
+        columns_to_be_plotted_bySent.append([0, i + 1])
+    count_var_SV = count_var
 
     # standard bar chart ------------------------------------------------------------------------------
     if len(columns_to_be_plotted_bar[0])>0: # compute only if the double list is not empty
@@ -128,12 +136,9 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 
 # by DOCUMENT
         byDoc=False
-        n_documents=IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename)
         if len(columns_to_be_plotted_byDoc[0])>0: # compute only if the double list is not empty
             remove_hyperlinks=True
             if n_documents > 1:
-                # TODO select_col any changes in the inputfile layout of columns
-                #     will change the [0][0] items for selected_col
 # by DOCUMENT counting the qualitative values ---------------------------------------------------------------------------
                 if count_var==1: # for alphabetic fields that need to be counted for display in a chart
                     # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted to be used
@@ -161,12 +166,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     # pivot = True
 
                     headers = IO_csv_util.get_csvfile_headers_pandas(new_inputFilename)
-                    # docID = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID')
-                    # columns_to_be_plotted_byDoc = [[docID, docID + 1]]
-                    # sentID = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Sentence ID')
-                    # columns_to_be_plotted_bySent = [[sentID, sentID]]
 
-                    # headers = IO_csv_util.get_csvfile_headers(new_inputFilename)
                     if pivot==True:
                         columns_to_be_plotted_byDoc_len = len(columns_to_be_plotted_byDoc[0])
                         columns_to_be_plotted_byDoc = []
@@ -176,21 +176,23 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                         # 1 is the Document with no-hyperlinks,
                         # 3 is Frequency,
                         # 2 is the column plotted (e.g., Gender) in temp_outputFilename
-                        # [[1, 3, 2]] will give different bars for each value
-                        # [[1, 3]] will give one bar for each doc, the sum of all values in selected_column to be plotted
                         # TODO TONY we should ask the same type of question for columns that are already in quantitative form if we want to compute a single MEAN value
                         sel_column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,2)
                         if chartPackage=="Excel":
                             column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,1)
                             number_column_entries = len(IO_csv_util.get_csv_field_values(new_inputFilename, column_name))
                             if number_column_entries > 1:
-                                answer = tk.messagebox.askyesno("Warning", "For the chart of '" + sel_column_name + "', do you want to:\n\n  (Y) sum the values across all " + str(number_column_entries) + " '" + column_name + "';\n  (N) use all " + str(number_column_entries) + " distinct column values.")
+                                answer = tk.messagebox.askyesno("Warning", "For the chart of '" + sel_column_name + "' by document, do you want to:\n\n  (Y) sum the values across all " + str(number_column_entries) + " '" + column_name + "';\n  (N) use all " + str(number_column_entries) + " distinct column values.")
                                 if answer:
+                                    # [[1, 3]] will give one bar for each doc, the sum of all values in selected_column to be plotted
                                     columns_to_be_plotted_byDoc = [[1, 3]]
                                 else:
+                                    # [[1, 3, 2]] will give different bars for each value
                                     columns_to_be_plotted_byDoc = [[1, 3, 2]]
                         else:
+                            # [[1, 3, 2]] will give different bars for each value
                             columns_to_be_plotted_byDoc = [[1, 3, 2]]
+                    # reset the original value to be used in charts by sentence index
 # by DOCUMENT NOT counting quantitative values ---------------------------------------------------------------------------
                 else:
                     new_inputFilename=inputFilename
@@ -207,12 +209,12 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     columns_to_be_plotted_byDoc=columns_to_be_plotted
 
                 if outputFileNameType != '':
-                    outputFileLabel = 'ByDoc_' + outputFileNameType
+                    outputFileLabel = 'byDoc_' + outputFileNameType
                 else:
-                    outputFileLabel = 'ByDoc'
+                    outputFileLabel = 'byDoc'
 
                 chart_outputFilename = run_all(columns_to_be_plotted_byDoc, new_inputFilename, outputDir,
-                                                          outputFileLabel= outputFileNameType + '_ByDoc', #outputFileLabel,
+                                                          outputFileLabel=outputFileLabel, # outputFileNameType + 'byDoc', #outputFileLabel,
                                                           chartPackage=chartPackage,
                                                           chart_type_list=['bar'],
                                                           chart_title=chartTitle + ' by Document',
@@ -230,45 +232,49 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 # line plots by SENTENCE index -----------------------------------------------------------------------
         # sentence index value are the first item in the list [[7,2]] i.e. 7
         #   plot values are the second item in the list [[7,2]] i.e. 2
-        # TODO TONY temporarily disconnected
-        bySent=False
+        count_var = count_var_SV
+        bySent=True
         if bySent and len(columns_to_be_plotted_bySent[0])>0: # compute only if the double list is not empty
             # inputFilename = data_pivot(inputFilename, 'Sentence ID', 'Yngve score')
-            # TODO depends on how many documents we have
-            columns_to_be_plotted_bySent = []
-            for i in range(n_documents):
-                columns_to_be_plotted_bySent.append([0, i+1])
-
-            selected_col = [[columns_to_be_plotted_bySent[0][1]]]
             # columns_to_be_plotted_bySent = [[columns_to_be_plotted_bySent[0][0]]]
-            temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
+            if count_var == 1:  # for alphabetic fields that need to be counted for display in a chart
+                temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
                                                           inputFilename,
                                                           None, outputDir,
                                                           False,
                                                           createCharts,
                                                           chartPackage,
-                                                          selected_col=selected_col,
+                                                          selected_col=[[selected_col]],
                                                           hover_col=[],
-                                                          group_col=columns_to_be_plotted_bySent,
+                                                          group_col=[[docID, docID+1, sentID]],
                                                           fileNameType='CSV',
                                                           chartType='',
                                                           pivot=pivot)
-            if pivot:
-                inputFilename = statistics_csv_util.csv_data_pivot(temp_outputFilename[0], 'Sentence ID', 'Gender', no_hyperlinks=True)
-            #     columns_to_be_plotted_bySent_len = len(columns_to_be_plotted_bySent[0])
-            #     columns_to_be_plotted_bySent = []
-            #     headers = IO_csv_util.get_csvfile_headers(temp_outputFilename[0])
-            #     for i in range(columns_to_be_plotted_bySent_len, len(headers)):
-            #         columns_to_be_plotted_bySent.append([columns_to_be_plotted_bySent_len - 1, i])
+                inputFilename=temp_outputFilename[0]
+                if pivot:
+                    inputFilename = statistics_csv_util.csv_data_pivot(temp_outputFilename[0], 'Sentence ID', 'Gender', no_hyperlinks=True)
+                else:
+                    columns_to_be_plotted_bySent = [[1, 4, 3]]
+                    # columns_to_be_plotted_bySent = [[1, 4, 2, 3]]
+
+            if n_documents > 1:
+                chartTitle = chartTitle + ' by Document & Sentence Index'
+                xAxis_label = ''
             else:
-                columns_to_be_plotted_bySent = [[1, 2]]
+                chartTitle = chartTitle + ' by Sentence Index'
+                xAxis_label='Sentence index'
+
+            if outputFileNameType != '':
+                outputFileLabel = 'bySent_' + outputFileNameType
+            else:
+                outputFileLabel = 'bySent'
 
             chart_outputFilename = run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
-                                                      outputFileLabel='BySent_' + outputFileNameType,
+                                                      outputFileLabel=outputFileLabel,
                                                       chartPackage=chartPackage,
                                                       chart_type_list=['line'],
-                                                      chart_title=chartTitle + ' by Sentence Index',
-                                                      column_xAxis_label_var='Sentence index',
+                                                      chart_title=chartTitle,
+                                                      column_xAxis_label_var=xAxis_label,
                                                       hover_info_column_list=hover_label,
                                                       count_var=0, # always 0 when plotting by sentence index
                                                       complete_sid=True)
@@ -504,6 +510,8 @@ def complete_sentence_index(file_path):
     # use merge to accelerate the process
     data = data.merge(right = df_sid, how = "right", on = "Sentence ID")
     data = data.fillna(0)
+    headers=IO_csv_util.get_csvfile_headers_pandas(file_path)
+    data = data.sort_values(by=headers, ascending=True)
     data.to_csv(file_path, index = False)
     return
 

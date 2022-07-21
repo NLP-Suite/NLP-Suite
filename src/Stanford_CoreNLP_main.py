@@ -26,7 +26,7 @@ import Stanford_CoreNLP_coreference_util
 # for the Error [Thread-0] INFO CoreNLP - CoreNLP Server is shutting down
 # sometimes the error appears but processing actually continues; but rebooting should do the trick if processing does not continue
 
-# dateInclude indicates whether there is date embedded in the file name. 
+# dateInclude indicates whether there is date embedded in the file name.
 # 1: included 0: not included
 # def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, date_extractor, split_files, quote_extractor, CoreNLP_gender_annotator, CoReference, manual_Coref, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, compute_sentence, CoNLL_table_analyzer_var):
 
@@ -54,6 +54,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     if parser == 0 and CoNLL_table_analyzer_var == 1:
         mb.showinfo("Warning", "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the CoreNLP parser checkbox and try again.")
+        return
+
+    if CoreNLP_annotators_var and CoreNLP_annotators_menu_var == '':
+        mb.showinfo("Warning", "You have selected to run a CoreNLP annotator but no annotator has been selected.\n\nPlease, select an annotator and try try again.")
         return
 
     if parser or (CoreNLP_annotators_var and CoreNLP_annotators_menu_var != ''):
@@ -148,7 +152,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),

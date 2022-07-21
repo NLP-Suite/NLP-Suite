@@ -176,7 +176,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         return
     if 'bar' in chart_type_list or 'line' in chart_type_list:
         if nRecords > 70:
-            IO_user_interface_util.timed_alert(window, 2000, 'Warning',
+            IO_user_interface_util.timed_alert(window, 3000, 'Warning',
                                                'The input file\n\n' + inputFilename + '\n\ncontains ' + str(nRecords) + ' records, way too many to be displayed clearly in an Excel line chart.\n\nYOU SHOULD USE PLOTLY WHICH GIVES YOU THE OPTION TO DYNAMICALLY FILTER THE DATA ZOOMING IN ON SPECIFIC DATA SEGMENTS.',
                                                False, '', True, '', True)
 

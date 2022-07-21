@@ -1493,7 +1493,15 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
 
     columns = ['Sentence length (No. of words)', 'Yngve score', 'Yngve sum', 'Frazier score', 'Frazier sum',
                'Sentence ID', 'Sentence', 'Document ID', 'Document']
-    nlp = stanza.Pipeline(lang='en', processors='tokenize,pos, constituency',use_gpu=False)
+    try:
+        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,constituency',use_gpu=False)
+    except:
+        import subprocess
+        import sys
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "git+https://github.com/stanfordnlp/stanza.git@dev"])
+        
+        import stanza
+        nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,constituency',use_gpu=False)
     op = pd.DataFrame(columns=columns)
     for idx, txt in enumerate(all_input_docs.items()):
         doc = nlp(txt[1])
