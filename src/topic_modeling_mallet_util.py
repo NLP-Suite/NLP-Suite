@@ -258,7 +258,7 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
     if createCharts:
         # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, Keys_FileName,
         #                                                    outputDir,
-        #                                                    columns_to_be_plotted_bar=[[0, 1]],
+        #                                                    columns_to_be_plotted=[[0, 1]],
         #                                                    # columns_to_be_plotted_bySent=[[4, 2]],
         #                                                    # the fields must be numeric?
         #                                                    columns_to_be_plotted_bySent=[[]],

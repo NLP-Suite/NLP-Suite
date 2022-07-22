@@ -201,7 +201,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     if "Lemma" in str(annotator_params) and 'Lemma' in outputFilename:
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
-                                                           columns_to_be_plotted_bar=[[1, 1]],
+                                                           columns_to_be_plotted=[[1, 1]],
                                                            chartTitle='Frequency Distribution of Form Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
@@ -217,7 +217,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
-                                                           columns_to_be_plotted_bar=[[2, 2]],
+                                                           columns_to_be_plotted=[[2, 2]],
                                                            chartTitle='Frequency Distribution of Lemma Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],

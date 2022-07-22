@@ -120,9 +120,15 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         else:
             outputDir_style=outputDir
 
-        if '*' in vocabulary_analysis_menu_var or 'unigrams' in vocabulary_analysis_menu_var:
+        if '*' in vocabulary_analysis_menu_var or 'Vocabulary (via unigrams)' in vocabulary_analysis_menu_var:
             output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'unigrams')
+            if output != None:
+                filesToOpen.extend(output)
+
+        if '*' in vocabulary_analysis_menu_var or 'Hapax legomena' in vocabulary_analysis_menu_var:
+            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+                                                                   openOutputFiles, createCharts, chartPackage,'Hapax legomena')
             if output != None:
                 filesToOpen.extend(output)
 
@@ -415,6 +421,7 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Vowel words',
                                          'Words with capital initial (proper nouns)',
                                          'Unusual words (via NLTK)',
+                                         'Hapax legomena (once-occurring words/unigrams)',
                                          'Language detection',
                                          'Repetition: Last N words of a sentence/First N words of next sentence',
                                          'Repetition across sentences (special ngrams)')
@@ -516,6 +523,7 @@ def activate_options(*args):
         corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='normal')
         vocabulary_analysis_checkbox.configure(state='normal')
+        vocabulary_analysis_menu_var.set('')
         gender_guesser_checkbox.configure(state='normal')
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
