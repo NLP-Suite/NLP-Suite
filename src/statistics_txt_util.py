@@ -559,33 +559,16 @@ def process_punctuation(inputFilename, inputDir, excludePunctuation, ngrams_list
                 ngrams_list.append([item, ctr_document[item], 0, documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
     return ngrams_list
 
-# process the sentence ngramsList for frequency = 1 only
+# process the sentence ngramsList for frequency = 1 only (hapax legomena)
 def process_hapax(ngramsList, frequency, excludePunctuation):
-    # for hapax legomana only keep frequencies of 1
-    index = 0
     if excludePunctuation:
         freq_col = 1
     else:
         freq_col = 2
-    ngramsList_SV=ngramsList
-    for ngram in ngramsList:
-        if frequency == 1:  # hapax
-            # hapax legomena with frequency=1; exclude items with frequency>1, i.e. i[1] > 1
-            try:
-                if ngram[0] == "the": # frequencies are stored in the third field
-                    print(ngram[0],' ',ngram[freq_col])
-                if ngram[freq_col] > 1: # frequencies are stored in the third field
-                    print(ngram[0],' ',ngram[freq_col])
-                    if ngram[freq_col] == 4:
-                        print(ngram[0])
-                    ngramsList_SV.pop(index)
-                    # ngramsList.remove(ngram) remove does not work
-                else:
-                    index = index + 1
-            except:
-                ngramsList.pop(index)
-                # ngramsList.remove(ngram) remove does not work
-    print(ngramsList_SV)
+    if frequency == 1:  # hapax
+        # for hapax legomena keep rows with frequency=1 only; exclude items with frequency>1, i.e. i[1] > 1
+        ngramsList_new=list(filter(lambda a: a[freq_col] == 1, ngramsList))
+        ngramsList=ngramsList_new
     return ngramsList
 
 # re-written by Roberto June 2022
@@ -624,9 +607,11 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
 
     if frequency==1: # hapax
         hapax_label="_hapax_"
+        hapax_header=" (hapax)"
         ngramsNumber=1 # if hapax, there is no point computing higher-level n-grams
     else:
         hapax_label=""
+        hapax_header=""
 
     gram = 1
     while gram <= ngramsNumber:
@@ -689,19 +674,19 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
         # insert headers
         if excludePunctuation:
             if inputDir == '':
-                corpus_ngramsList.insert(0, [str(gram) + '-grams', 'Frequency in Document',
+                corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Frequency in Document',
                                      'Document ID', 'Document'])
             else:
-                corpus_ngramsList.insert(0, [str(gram) + '-grams', 'Frequency in Document', 'Frequency in Corpus',
+                corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Frequency in Document', 'Frequency in Corpus',
                                              'Document ID', 'Document'])
-            columns_to_be_plotted = [str(gram) + '-grams']
+            columns_to_be_plotted = [str(gram) + '-grams' + hapax_header]
         else:
             if inputDir == '':
-                corpus_ngramsList.insert(0, [str(gram) + '-grams', 'Punctuation',
+                corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Punctuation',
                                      'Frequency in Document',
                                      'Document ID', 'Document'])
             else:
-                corpus_ngramsList.insert(0, [str(gram) + '-grams', 'Punctuation',
+                corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Punctuation',
                                              'Frequency in Document', 'Frequency in Corpus',
                                              'Document ID', 'Document'])
             # columns_to_be_plotted = ['Punctuation']
@@ -720,7 +705,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, csv_outputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted=columns_to_be_plotted,
-                                                               chartTitle='Frequency of ' + str(gram) + '-gram',
+                                                               chartTitle='Frequency of ' + str(gram) + '-gram' + hapax_header,
                                                                count_var=0, hover_label=[], #hover_label,
                                                                outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
                                                                column_xAxis_label='',

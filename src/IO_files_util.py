@@ -400,7 +400,7 @@ def getFilename(passed_string):
     if os.path.isfile(passed_string):
         head, tail = os.path.split(passed_string)
         tail_noExtension = tail.replace(getFileExtension(tail),'')
-    return tail, tail_noExtension
+    return tail, tail_noExtension, passed_string
 
 
 # def getFilename(inputFilename):
@@ -423,7 +423,7 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
         inputfile='Dir_' + Dir
         inputfile_noExtension=''
     else:
-        inputfile, inputfile_noExtension = getFilename(inputFilename)
+        inputfile, inputfile_noExtension, filename_no_hyperlink = getFilename(inputFilename)
         # use inputfile_noExtension for json
         inputfile = inputfile_noExtension
     default_outputFilename_str =''

@@ -206,17 +206,17 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     # reset the original value to be used in charts by sentence index
 # by DOCUMENT NOT counting quantitative values ---------------------------------------------------------------------------
                 else:
+                    columns_to_be_plotted_byDoc_expanded=[]
                     new_inputFilename=inputFilename
-                    # when plotting numeric values (count_var=0) compute the columns to be plotted
-                    #   from the values passed for bar and using the Document column number
-                    # columns_to_be_plotted=[]
+                    # when plotting numeric values (count_var=0) get the columns to be plotted
+                    #   from the values passed for standard bar and using the Document column number
                     for i in range(len(columns_to_be_plotted_numeric)):
                         try:
                             item = [columns_to_be_plotted_byDoc[0][1], columns_to_be_plotted_numeric[i][0]]
                         except:
                             break
-                        columns_to_be_plotted_numeric.append(item)
-                    columns_to_be_plotted_byDoc=columns_to_be_plotted_numeric
+                        columns_to_be_plotted_byDoc_expanded.append(item)
+                    columns_to_be_plotted_byDoc=columns_to_be_plotted_byDoc_expanded
 
                 if outputFileNameType != '':
                     outputFileLabel = 'byDoc_' + outputFileNameType
@@ -346,7 +346,8 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
     # the file should have a column named Sentence ID
     # the extra parameter "complete_sid" is set to True by default to avoid extra code mortification elsewhere
     if complete_sid:
-        complete_sentence_index(inputFilename)
+        inputFilename = add_missing_IDs(inputFilename, inputFilename)
+        # complete_sentence_index(inputFilename)
     if use_plotly:
         Plotly_outputFilename = charts_plotly_util.create_plotly_chart(inputFilename = inputFilename,
                                                                         outputDir = outputDir,
@@ -504,15 +505,120 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
         data_to_be_plotted.append(data.iloc[:,gp])
     return data_to_be_plotted
 
+
+def process_sentenceID_record(Row_list, Row_list_new, index,
+                              start_sentence, end_sentence,
+                              header, sentenceID_pos, docID_pos, docName_pos,
+                              save_current):
+    # range(start, stop, step)
+    # end_sentence is always skipped; the range of integers end at end_sentence – 1
+    for i in range(start_sentence, end_sentence, 1):
+        temp = [''] * len(header)
+        # loop through headers for Sentence ID, Document ID, and Document to insert missing values
+        for j in range(len(header)):
+            if j == sentenceID_pos:
+                # insert Sentence ID
+                temp[j] = i
+            elif j == docID_pos:
+                # insert Document ID
+                temp[j] = Row_list[index][docID_pos]
+            elif j == docName_pos:
+                # insert Document
+                temp[j] = Row_list[index][docName_pos]
+        Row_list_new.append(temp)
+
+    if save_current:
+        Row_list_new.append(Row_list[index])
+    return Row_list_new
+
+# written by Yi Wang
+# rewritten by Roberto July 2022
+
+# input can be a csv filename or a dataFrame
+# output is a csv file
+def add_missing_IDs(input, outputFilename):
+    from stanza_functions import stanzaPipeLine, sent_tokenize_stanza
+    if isinstance(input, pd.DataFrame):
+        df = input
+    else:
+        df = pd.read_csv(input)
+    start_sentence = 1 # first sentence in loop
+    end_sentence = 1 # last sentence in loop
+    number_sentences = []
+    Row_list_new = []
+    sentenceID_pos, docID_pos, docName_pos, header = charts_Excel_util.header_check(input)
+    Row_list = IO_csv_util.df_to_list(df)
+    len_Row_list = len(Row_list)
+    for index, row in enumerate(Row_list):
+        newDoc = False
+        if index == 0: # first record
+            newDoc = True
+        else: # index > 0; all successive records
+            if Row_list[index][docID_pos] - Row_list[index - 1][docID_pos] > 0:
+                newDoc = True
+
+        if newDoc:
+            start_sentence = 1
+            end_sentence = Row_list[index][sentenceID_pos]
+            inputFilename=Row_list[index][docName_pos]
+            text = (open(inputFilename, "r", encoding="utf-8", errors='ignore').read())
+            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+            number_sentences.append([inputFilename,len(sentences)])
+
+            # check whether the last sentence for the previous doc was less than number of sentences
+            if index==0: # first record in df
+                Row_list_new = process_sentenceID_record(Row_list, Row_list_new, index,
+                                                         start_sentence,
+                                                         end_sentence,
+                                                         header, sentenceID_pos, docID_pos, docName_pos,
+                                                         save_current=True)
+            else: # index>0 all other records
+                # select the number of sentences for the right document
+                for i in range(len(number_sentences)):
+                    if Row_list[index-1][docName_pos]==number_sentences[i][0]:
+                        n_sentences=number_sentences[i][1]
+                if Row_list[index-1][sentenceID_pos]<n_sentences:
+                    start_sentence=Row_list[index-1][sentenceID_pos]+1
+                    end_sentence = n_sentences+1
+                    # pass index-1 as argument since we are adding sentence IDs to the previous document
+                    Row_list_new=process_sentenceID_record(Row_list,Row_list_new,index-1,
+                                              start_sentence, end_sentence,
+                                              header,sentenceID_pos, docID_pos, docName_pos,
+                                              save_current=False)
+                    # do NOT save current; already saved when first processing the record
+                # now process the current record
+                start_sentence = 1
+                end_sentence = Row_list[index][sentenceID_pos]
+                Row_list_new = process_sentenceID_record(Row_list, Row_list_new, index,
+                                                         start_sentence,
+                                                         end_sentence,
+                                                         header, sentenceID_pos, docID_pos, docName_pos,
+                                                         save_current=True)
+        else: # same document
+            # check that current sentence is not just one sentence greater than previous one
+            #   in which case start and end are the same
+            if Row_list[index][sentenceID_pos] == Row_list[index - 1][sentenceID_pos] +1:
+                start_sentence = Row_list[index][sentenceID_pos]
+                end_sentence = Row_list[index][sentenceID_pos]
+            else:
+                start_sentence = Row_list[index-1][sentenceID_pos]
+                end_sentence = Row_list[index][sentenceID_pos]
+            Row_list_new = process_sentenceID_record(Row_list, Row_list_new, index,
+                                                     start_sentence, end_sentence,
+                                                     header, sentenceID_pos, docID_pos, docName_pos,
+                                                     save_current=True)
+
+    df = pd.DataFrame(Row_list_new,columns=header)
+    df.sort_values(by=['Document ID', 'Sentence ID'], ascending=True, inplace=True)
+    df.to_csv(outputFilename, index = False)
+    return outputFilename
+
+
 # Tony Chen Gu written at April 2022 mortified at May 2022
-# remove comments before variable begin with d_id to enable complete document id function
-# need to have a document id column and sentence id column
-# would complete the file (make document id and sentence id continuous) and padding zero values for the added rows
-# TODO TONY1 how does this differ from add_missing_IDs in statistics_csv_util;
-#   can be more general by adding another parameter for select the column to be completed (the adding missing id seems to only works with standard conll table)
-#   that one seems to be more general, accounting for both Sentence ID and Document ID
-#   it is used by def Wordnet_bySentenceID
-# # edited by Roberto June 2022
+# edited by Roberto June 2022 for sorting df
+# function no longer used since it does not insert sentences in the right document
+# use instead add_missing_IDs
+
 def complete_sentence_index(file_path):
     data = pd.read_csv(file_path)
     if not 'Sentence ID' in data:

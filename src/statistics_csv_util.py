@@ -389,46 +389,6 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, outputFileName
 #             complete_column_frequencies.append(column_frequencies)
 #     return complete_column_frequencies
 
-# input can be a csv filename or a dataFrame
-# output is a dataFrame
-# TODO TONY1  how does this differ from complete_sentence_index(file_path)
-# TODO TONY1 any function that plots data by sentence index should really check that the required sentence IDs are all there and insert them otherwise
-#   if using complete sentence index, that would be unnecessary (very little performance loss calling complete_sentence_index)
-def add_missing_IDs(input):
-    if isinstance(input, pd.DataFrame):
-        df = input
-    else:
-        df = pd.read_csv(input)
-    sentenceID_pos, docID_pos, docName_pos, header = charts_Excel_util.header_check(input)
-    Row_list = IO_csv_util.df_to_list(df)
-    for index,row in enumerate(Row_list):
-        if index == 0 and Row_list[index][sentenceID_pos] != 1:
-            for i in range(Row_list[index][sentenceID_pos]-1,0,-1):
-                temp= [''] * len(header)
-                for j in range(len(header)):
-                    if j == sentenceID_pos:
-                        temp[j] = i
-                    elif j == docID_pos:
-                        temp[j] = Row_list[index][docID_pos]
-                    elif j == docName_pos:
-                        temp[j] = Row_list[index][docName_pos]
-                Row_list.insert(0,temp)
-        else:
-            if index < len(Row_list)-1 and Row_list[index+1][sentenceID_pos] - Row_list[index][sentenceID_pos] > 1:
-                for i in range(Row_list[index+1][sentenceID_pos]-1,Row_list[index][sentenceID_pos],-1):
-                    temp = [''] * len(header)
-                    for j in range(len(header)):
-                        if j == sentenceID_pos:
-                            temp[j] = i
-                        elif j == docID_pos:
-                            temp[j] = Row_list[index][docID_pos]
-                        elif j == docName_pos:
-                            temp[j] = Row_list[index][docName_pos]
-                    Row_list.insert(index+1,temp)
-    df = pd.DataFrame(Row_list,columns=header)
-    return df
-
-
 
 # written by Tony Chen Gu, April 2022
 # TODO TONY How does this differ from the several compute frequency options that I have extensively commented for clarity
@@ -481,7 +441,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
     # complete sentence id if needed
     if(complete_sid):
         print("Completing sentence index...")
-        charts_util.complete_sentence_index(name)
+        charts_util.add_missing_IDs(name, name)
     print(name)
     if(graph):
         #TODO: need filename generation and chartTitle generation
@@ -550,6 +510,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             headers = next(reader)
         header_indices = [i for i, item in enumerate(headers) if item]
         data = pd.read_csv(inputFilename, usecols=header_indices,encoding='utf-8')
+
 
     # remove hyperlink before processing
     data.to_csv(inputFilename,index=False)

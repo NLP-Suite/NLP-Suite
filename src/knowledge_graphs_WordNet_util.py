@@ -267,8 +267,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
                     Row_list.insert(index + 1, ['', '', '', '', i, Row_list[index][5], Row_list[index][6]])
     df = pd.DataFrame(Row_list,
                       index=['Form', 'Lemma', 'POStag', 'WordNet Category', 'Sentence ID', 'Document ID', 'Document'])
-    df = statistics_csv_util.add_missing_IDs(df)
-    df.to_csv(outputFilename, index=False)
+    outputFilename = charts_util.add_missing_IDs(df,outputFilename)
 
     if createCharts:
         outputFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,

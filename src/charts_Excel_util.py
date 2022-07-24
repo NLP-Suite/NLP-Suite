@@ -297,7 +297,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             index = 0
             for stats_list in data_to_be_plotted: # Iterate through all the lists
                 if i < len(stats_list): # if i is smaller than the length of the current series
-                    tail, tail_noExtension = IO_files_util.getFilename(str(stats_list[i][0]))
+                    tail, tail_noExtension, filename_no_hyperlink = IO_files_util.getFilename(str(stats_list[i][0]))
                     stats_list[i][0] = tail
                     if index > 0:
                         row.append(stats_list[i][1]) # then we append the data
@@ -354,7 +354,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 # when X-axis values contain a document dressed for hyperlink and with full path
                 #   undressed the hyperlink and only display the tail of the document
                 if i < len(stats_list): # if i is smaller than the length of the current series
-                    tail, tail_noExtension = IO_files_util.getFilename(str(stats_list[i][0]))
+                    tail, tail_noExtension, filename_no_hyperlink = IO_files_util.getFilename(str(stats_list[i][0]))
                     stats_list[i][0] = tail
                     # if index > 0:
                     #     row.append(stats_list[i][1]) # then we append the data

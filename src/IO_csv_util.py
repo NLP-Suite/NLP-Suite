@@ -320,7 +320,8 @@ def undressFilenameForCSVHyperlink(fileName):
     fileName=fileName.replace('")','')
     return fileName
 
-# given a csv file containing a document field with filenames with hyperlinks, the function will remove the hyperlinks from every col & row
+# given a csv file containing a document field with filenames with hyperlinks,
+#   the function will remove the hyperlinks from every col & row
 def remove_hyperlinks(inputFilename):
     try:
         data = pd.read_csv(inputFilename, encoding='utf-8')
@@ -329,11 +330,11 @@ def remove_hyperlinks(inputFilename):
     except:
         print("Error: failed to read the csv file named: "+inputFilename)
         return False
-    data = pd.read_csv(inputFilename)
+    # data = pd.read_csv(inputFilename)
     document = data['Document']
     new_document = []
     for i in document:
-        new_document.append(IO_files_util.getFilename(i)[0])
+        new_document.append(IO_files_util.getFilename(i)[2]) #0 for tail; 2 for full path
     data['Document'] = new_document
     no_hyperlink_filename = os.path.join(os.path.split(inputFilename)[0],os.path.split(inputFilename)[1])[:-4] +"_no_hyperlinks.csv"
     data.to_csv(no_hyperlink_filename, encoding='utf-8',index=0)
