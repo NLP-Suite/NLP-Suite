@@ -930,7 +930,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # plot Objects
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=[[2, 2]],
+                                                                       columns_to_be_plotted=['Object (O'],
                                                                        chartTitle='Frequency Distribution of Objects (unfiltered)',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],

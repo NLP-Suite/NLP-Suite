@@ -122,7 +122,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                  pass
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                   columns_to_be_plotted=[[0, 0]],
+                                                   columns_to_be_plotted=['Misspelled/unusual word'],
                                                    chartTitle='Frequency of Misspelled/Unusual Words',
                                                    count_var=1, hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',
@@ -148,9 +148,14 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
 def generate_simple_csv(Dataframe):
     pass
 
-
 # check within subdirectory
 def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, NERs, similarity_value, by_all_tokens_var,spelling_checker_var=False):
+    outputFileName_complete = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
+                                                                      str(similarity_value), 'Edit_dist_algo',
+                                                                      'NERs', 'Full-table')
+    outputFileName_simple = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
+                                                                    str(similarity_value), 'Edit_dist_algo', 'NERs',
+                                                                    'Concise-table')
     filesToOpen=[]
     if inputDir=='':
         return
@@ -175,7 +180,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
 
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename, outputDir,
-                                                           columns_to_be_plotted=[[10, 10]],
+                                                           columns_to_be_plotted=['Typo?'],
                                                            chartTitle='Frequency of Potential Typos',
                                                            count_var=1,  # to be used for byDoc, 0 for numeric field
                                                            hover_label=[],
@@ -478,7 +483,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                'Finished running Word similarity at', True, '', True, startTime, True)
 
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFileName_simple, outputDir,
-                                                               columns_to_be_plotted=[[10, 10]],
+                                                               columns_to_be_plotted=['Typo?'],
                                                                chartTitle='Frequency of Potential Typos',
                                                                count_var=1,  # to be used for byDoc, 0 for numeric field
                                                                hover_label=[],

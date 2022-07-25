@@ -1002,8 +1002,10 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     if chart_outputFilename != None:
         filesToOpen.extend(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                           'Finished running ' + processType + ' at', True, '', True, startTime)
+    # ngrams already display the started running... No need to duplicate
+    if not 'unigrams' in processType:
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                               'Finished running ' + processType + ' at', True, '', True, startTime)
 
     return filesToOpen
 

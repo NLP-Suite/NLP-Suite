@@ -91,7 +91,6 @@ def run(inputFilename, inputDir, outputDir,
             return
 
         if check_withinSubDir and (not spelling_checker_var):
-            # TODO files need t be added to filesToOpen
             outputFiles = file_spell_checker_util.check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles,
 																		 createCharts, NER_list, similarity_value,
 																		 by_all_tokens_var,
@@ -104,7 +103,6 @@ def run(inputFilename, inputDir, outputDir,
 
         if outputFiles!=None:
             filesToOpen.extend(outputFiles)
-
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

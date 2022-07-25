@@ -92,6 +92,9 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     #   see the example of call in get_ngramlist
 
     headers = IO_csv_util.get_csvfile_headers_pandas(inputFilename)
+    if len(headers)==0:
+        mb.showwarning(title='Empty file', message='The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced.\n\nPlease, check the file and try again.')
+        return filesToOpen
     for i in range(0,len(columns_to_be_plotted)):
         # get numeric value of header, necessary for run_all
         field_number = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted[i])
@@ -109,7 +112,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         bySent = False
 
     # TODO depends on how many documents we have
-    n_documents = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename)
+    if byDoc:
+        n_documents = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename)
     # when pivoting data
     # columns_to_be_plotted_bySent = []
     # for i in range(1, n_documents):
@@ -509,6 +513,7 @@ def header_check(inputFile):
     sentenceID_pos=''
     docID_pos=''
     docName_pos=''
+    frequency_pos=''
 
     if isinstance(inputFile, pd.DataFrame):
         header = list(inputFile.columns)
@@ -529,7 +534,8 @@ def header_check(inputFile):
     else:
         pass
 
-    if 'Frequency' in header or 'Number of' in header:
+    # Frequenc to capture Frequency and Frequencies
+    if 'Frequenc' in header or 'Number of' in header:
         frequency_pos = header.index('Frequency')
     else:
         pass
@@ -550,8 +556,9 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
             if j == sentenceID_pos:
                 # insert Sentence ID
                 temp[j] = i
-                # when adding a new Sentence ID, insert a frequency value of 0
-                temp[frequency_pos] = 0
+                # when adding a new Sentence ID, insert a frequency value of 0, if there is a frequency column
+                if frequency_pos!='':
+                    temp[frequency_pos] = 0
             elif j == docID_pos:
                 # insert Document ID
                 temp[j] = Row_list[index][docID_pos]
@@ -595,6 +602,7 @@ def add_missing_IDs(input, outputFilename):
             start_sentence = 1
             end_sentence = Row_list[index][sentenceID_pos]
             inputFilename=Row_list[index][docName_pos]
+            inputFilename=IO_csv_util.undressFilenameForCSVHyperlink(inputFilename)
             text = (open(inputFilename, "r", encoding="utf-8", errors='ignore').read())
             sentences = sent_tokenize_stanza(stanzaPipeLine(text))
             number_sentences.append([inputFilename,len(sentences)])
@@ -609,7 +617,8 @@ def add_missing_IDs(input, outputFilename):
             else: # index>0 all other records
                 # select the number of sentences for the right document
                 for i in range(len(number_sentences)):
-                    if Row_list[index-1][docName_pos]==number_sentences[i][0]:
+                    # TODO hyperlynks should be removed in file before passing it to add_missing_IDs
+                    if IO_csv_util.undressFilenameForCSVHyperlink(Row_list[index-1][docName_pos])==number_sentences[i][0]:
                         n_sentences=number_sentences[i][1]
                 if Row_list[index-1][sentenceID_pos]<n_sentences:
                     start_sentence=Row_list[index-1][sentenceID_pos]+1

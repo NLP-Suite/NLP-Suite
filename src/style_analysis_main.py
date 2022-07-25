@@ -523,7 +523,7 @@ def activate_options(*args):
         corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='normal')
         vocabulary_analysis_checkbox.configure(state='normal')
-        vocabulary_analysis_menu_var.set('')
+        vocabulary_analysis_menu_var.set('*')
         gender_guesser_checkbox.configure(state='normal')
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')

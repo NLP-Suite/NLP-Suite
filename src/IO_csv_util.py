@@ -72,7 +72,10 @@ def get_csvfile_headers (csvFile,ask_Question=False):
 def get_csvfile_headers_pandas(inputFilename):
     # index_col = 0 excludes the first column, an ID column; but... we need that column
     # headers = pd.read_csv(inputFilename, index_col=0, nrows=0).columns.tolist()
-    headers = pd.read_csv(inputFilename, nrows=0).columns.tolist()
+    try:
+        headers = pd.read_csv(inputFilename, nrows=0).columns.tolist()
+    except:
+        headers=[]
     return headers
 
 # convert header alphabetic value for CSV files with or without headers to its numeric column value
@@ -329,7 +332,7 @@ def remove_hyperlinks(inputFilename):
         data = pd.read_csv(inputFilename, encoding='utf-8', sep='delimiter')
     except:
         print("Error: failed to read the csv file named: "+inputFilename)
-        return False
+        return False, ''
     # data = pd.read_csv(inputFilename)
     document = data['Document']
     new_document = []
