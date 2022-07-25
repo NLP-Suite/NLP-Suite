@@ -505,10 +505,41 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
         data_to_be_plotted.append(data.iloc[:,gp])
     return data_to_be_plotted
 
+def header_check(inputFile):
+    sentenceID_pos=''
+    docID_pos=''
+    docName_pos=''
+
+    if isinstance(inputFile, pd.DataFrame):
+        header = list(inputFile.columns)
+    else:
+        header = IO_csv_util.get_csvfile_headers(inputFile)
+    if 'Sentence ID' in header:
+        sentenceID_pos = header.index('Sentence ID')
+    else:
+        pass
+
+    if 'Document ID' in header:
+        docID_pos = header.index('Document ID')
+    else:
+        pass
+
+    if 'Document' in header:
+        docName_pos = header.index('Document')
+    else:
+        pass
+
+    if 'Frequency' in header or 'Number of' in header:
+        frequency_pos = header.index('Frequency')
+    else:
+        pass
+    return sentenceID_pos, docID_pos, docName_pos, frequency_pos, header
+
+
 
 def process_sentenceID_record(Row_list, Row_list_new, index,
                               start_sentence, end_sentence,
-                              header, sentenceID_pos, docID_pos, docName_pos,
+                              header, sentenceID_pos, docID_pos, docName_pos, frequency_pos,
                               save_current):
     # range(start, stop, step)
     # end_sentence is always skipped; the range of integers end at end_sentence – 1
@@ -519,6 +550,8 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
             if j == sentenceID_pos:
                 # insert Sentence ID
                 temp[j] = i
+                # when adding a new Sentence ID, insert a frequency value of 0
+                temp[frequency_pos] = 0
             elif j == docID_pos:
                 # insert Document ID
                 temp[j] = Row_list[index][docID_pos]
@@ -542,11 +575,12 @@ def add_missing_IDs(input, outputFilename):
         df = input
     else:
         df = pd.read_csv(input)
+    # define variables
     start_sentence = 1 # first sentence in loop
     end_sentence = 1 # last sentence in loop
     number_sentences = []
     Row_list_new = []
-    sentenceID_pos, docID_pos, docName_pos, header = charts_Excel_util.header_check(input)
+    sentenceID_pos, docID_pos, docName_pos, frequency_pos, header = header_check(input)
     Row_list = IO_csv_util.df_to_list(df)
     len_Row_list = len(Row_list)
     for index, row in enumerate(Row_list):
@@ -570,7 +604,7 @@ def add_missing_IDs(input, outputFilename):
                 Row_list_new = process_sentenceID_record(Row_list, Row_list_new, index,
                                                          start_sentence,
                                                          end_sentence,
-                                                         header, sentenceID_pos, docID_pos, docName_pos,
+                                                         header, sentenceID_pos, docID_pos, docName_pos, frequency_pos,
                                                          save_current=True)
             else: # index>0 all other records
                 # select the number of sentences for the right document
@@ -583,7 +617,7 @@ def add_missing_IDs(input, outputFilename):
                     # pass index-1 as argument since we are adding sentence IDs to the previous document
                     Row_list_new=process_sentenceID_record(Row_list,Row_list_new,index-1,
                                               start_sentence, end_sentence,
-                                              header,sentenceID_pos, docID_pos, docName_pos,
+                                              header,sentenceID_pos, docID_pos, docName_pos, frequency_pos,
                                               save_current=False)
                     # do NOT save current; already saved when first processing the record
                 # now process the current record
@@ -592,7 +626,7 @@ def add_missing_IDs(input, outputFilename):
                 Row_list_new = process_sentenceID_record(Row_list, Row_list_new, index,
                                                          start_sentence,
                                                          end_sentence,
-                                                         header, sentenceID_pos, docID_pos, docName_pos,
+                                                         header, sentenceID_pos, docID_pos, docName_pos, frequency_pos,
                                                          save_current=True)
         else: # same document
             # check that current sentence is not just one sentence greater than previous one
@@ -605,7 +639,7 @@ def add_missing_IDs(input, outputFilename):
                 end_sentence = Row_list[index][sentenceID_pos]
             Row_list_new = process_sentenceID_record(Row_list, Row_list_new, index,
                                                      start_sentence, end_sentence,
-                                                     header, sentenceID_pos, docID_pos, docName_pos,
+                                                     header, sentenceID_pos, docID_pos, docName_pos, frequency_pos,
                                                      save_current=True)
 
     df = pd.DataFrame(Row_list_new,columns=header)

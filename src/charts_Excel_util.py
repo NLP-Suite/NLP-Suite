@@ -566,30 +566,3 @@ def list_to_df(tag_list):
     header = tag_list[0]
     df = pd.DataFrame(tag_list[1:], columns=header)
     return df
-
-
-def header_check(inputFile):
-    sentenceID_pos=''
-    docID_pos=''
-    docName_pos=''
-
-    if isinstance(inputFile, pd.DataFrame):
-        header = list(inputFile.columns)
-    else:
-        header = IO_csv_util.get_csvfile_headers(inputFile)
-    if 'Sentence ID' in header:
-        sentenceID_pos = header.index('Sentence ID')
-    else:
-        pass
-
-    if 'Document ID' in header:
-        docID_pos = header.index('Document ID')
-    else:
-        pass
-
-    if 'Document' in header:
-        docName_pos = header.index('Document')
-    else:
-        pass
-    return sentenceID_pos, docID_pos, docName_pos, header
-
