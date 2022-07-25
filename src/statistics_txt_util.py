@@ -830,7 +830,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     punctuation_docs=[]
     header=[]
     fileLabel = ''
-    columns_to_be_plotted = [[]]
+    columns_to_be_plotted=[[]]
     chart_title_label=''
     column_xAxis_label=''
     hover_label=''

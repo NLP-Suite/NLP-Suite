@@ -220,7 +220,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
     f.close()
 
     if createCharts == True:
-        columns_to_be_plotted = [[3, 3]]
+        columns_to_be_plotted=[[3, 3]]
         hover_label=''
         inputFilename = outputFilename
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,

@@ -125,7 +125,7 @@ def run(inputFilename,inputDir,outputDir,
         # if not usedir:
             # if createCharts==True:
                 # # CoreNLP only computes mean values
-                # columns_to_be_plotted = [[2,0]]
+                # columns_to_be_plotted=[[2,0]]
                 # hover_label=['Sentence']
                 # # inputFilename = outputFilename
                 # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
@@ -140,7 +140,7 @@ def run(inputFilename,inputDir,outputDir,
                 # if chart_outputFilename != "":
                 #     filesToOpen.append(chart_outputFilename)
                 #
-                # columns_to_be_plotted = [[0,0]]
+                # columns_to_be_plotted=[[0,0]]
                 # hover_label=[]
                 # # inputFilename = inputFilename
                 # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
@@ -210,10 +210,10 @@ def run(inputFilename,inputDir,outputDir,
 
         if createCharts==True:
             if mode == "both":
-                columns_to_be_plotted = [[6,0],[6,2]]
+                columns_to_be_plotted=[[6,0],[6,2]]
                 hover_label=['Sentence','Sentence']
             else:
-                columns_to_be_plotted = [[6,0]]
+                columns_to_be_plotted=[[6,0]]
                 hover_label=['Sentence']
             # inputFilename = outputFilename
             chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
@@ -228,7 +228,7 @@ def run(inputFilename,inputDir,outputDir,
             if chart_outputFilename != "":
                 filesToOpen.append(chart_outputFilename)
 
-            columns_to_be_plotted = [[0,0]]
+            columns_to_be_plotted=[[0,0]]
             hover_label=[]
             # inputFilename = outputFilename
             chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
@@ -263,7 +263,7 @@ def run(inputFilename,inputDir,outputDir,
         filesToOpen.append(outputFilename)
         if createCharts==True:
             # sentiWordNet compute a single sentiment score
-            columns_to_be_plotted = [[2,0]]
+            columns_to_be_plotted=[[2,0]]
             hover_label=['Sentence']
 
             # inputFilename = outputFilename
@@ -279,7 +279,7 @@ def run(inputFilename,inputDir,outputDir,
             if chart_outputFilename != "":
                 filesToOpen.append(chart_outputFilename)
 
-            columns_to_be_plotted = [[0,0]]
+            columns_to_be_plotted=[[0,0]]
             hover_label=[]
             chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                                       outputFileLabel='SentiWordNet_sent',
@@ -315,7 +315,7 @@ def run(inputFilename,inputDir,outputDir,
         filesToOpen.append(outputFilename)
         if createCharts==True:
             # VADER does not compute separate mean and median values
-            columns_to_be_plotted = [[2,0]]
+            columns_to_be_plotted=[[2,0]]
             hover_label=['Sentence']
             # inputFilename = outputFilename
 
@@ -331,7 +331,7 @@ def run(inputFilename,inputDir,outputDir,
             if chart_outputFilename != "":
                 filesToOpen.append(chart_outputFilename)
 
-            columns_to_be_plotted = [[0,0]]
+            columns_to_be_plotted=[[0,0]]
             hover_label=[]
             # inputFilename = outputFilename
             chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
@@ -363,10 +363,10 @@ def run(inputFilename,inputDir,outputDir,
         if createCharts==True:
             # # sentiment by sentence index
             if mode == "both":
-                columns_to_be_plotted = [[13,0],[13,6],[13,8],[13,10],[13,12],[13,14]]
+                columns_to_be_plotted=[[13,0],[13,6],[13,8],[13,10],[13,12],[13,14]]
                 hover_label=['Sentence','Sentence','Sentence','Sentence','Sentence','Sentence']
             else:
-                columns_to_be_plotted = [[13,4],[13,6],[13,8]]
+                columns_to_be_plotted=[[13,4],[13,6],[13,8]]
                 hover_label=['Sentence','Sentence','Sentence']
 
             # inputFilename = outputFilename
@@ -384,9 +384,9 @@ def run(inputFilename,inputDir,outputDir,
 
             # sentiment bar chart
             if mode == "both":
-                columns_to_be_plotted = [[5,5],[7,7]]
+                columns_to_be_plotted=[[5,5],[7,7]]
             else:
-                columns_to_be_plotted = [[5,5]]
+                columns_to_be_plotted=[[5,5]]
             hover_label=[]
             # inputFilename = outputFilename
             chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
@@ -404,9 +404,9 @@ def run(inputFilename,inputDir,outputDir,
 
             # arousal
             if mode == "both":
-                columns_to_be_plotted = [[9,9],[11,11]]
+                columns_to_be_plotted=[[9,9],[11,11]]
             else:
-                columns_to_be_plotted = [[7,7]]
+                columns_to_be_plotted=[[7,7]]
             hover_label=[]
             # inputFilename = outputFilename
             chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
@@ -424,9 +424,9 @@ def run(inputFilename,inputDir,outputDir,
 
             # dominance
             if mode == "both":
-                columns_to_be_plotted = [[13,13],[15,15]]
+                columns_to_be_plotted=[[13,13],[15,15]]
             else:
-                columns_to_be_plotted = [[9,9]]
+                columns_to_be_plotted=[[9,9]]
             hover_label=[]
             # inputFilename = outputFilename
             chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,

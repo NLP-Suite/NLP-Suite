@@ -339,7 +339,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 # bar chart of nominalized verbs
 
                 inputFilename = output_filename_dir_nominalized_frequencies
-                columns_to_be_plotted = [[0, 1]]
+                columns_to_be_plotted=[[0, 1]]
 
                 chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                                  outputFileLabel='NOM_verb',
@@ -362,7 +362,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 # bar chart of nouns
 
                 inputFilename = output_filename_dir_noun_frequencies
-                columns_to_be_plotted = [[0, 1]]
+                columns_to_be_plotted=[[0, 1]]
 
                 chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                                  outputFileLabel='NOM_noun',

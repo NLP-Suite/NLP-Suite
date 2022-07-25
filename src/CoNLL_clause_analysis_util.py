@@ -207,7 +207,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         # output_df= charts_Excel_util.add_missing_IDs(clausal_analysis_file_name)
         # # overwrite original file having added any missing document ID and sentence ID
         # output_df.to_csv(clausal_analysis_file_name,index=False)
-        # columns_to_be_plotted = [[1, 8]]
+        # columns_to_be_plotted=[[1, 8]]
         # hover_label = ['CLAUSAL TAG-DESCRIPTION']
         # inputFilename = clausal_analysis_file_name
         # chart_outputFilename = charts_util.run_all(columns_to_be_plotted,

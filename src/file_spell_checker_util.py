@@ -956,7 +956,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                                        'Finished running Language Detection at', True,'Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.', True, startTime, True)
     print('Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.')
     if createCharts:
-        columns_to_be_plotted = [[1, 1],[4,4],[7,7]]
+        columns_to_be_plotted=[[1, 1],[4,4],[7,7]]
         chart_title='Frequency of Languages Detected by 3 Algorithms'
         hover_label=['LANGDETECT', 'SPACY', 'LANGID']
         inputFilename = outputFilenameCSV

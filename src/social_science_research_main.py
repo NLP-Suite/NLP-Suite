@@ -188,7 +188,7 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
         # Lucene_classes_freq.csv; outputFilenameCSV_1
         outputDir=outputDir
         inputFilename = outputFilenameCSV_1
-        columns_to_be_plotted = [[0, 1]]
+        columns_to_be_plotted=[[0, 1]]
         hover_label = ['List of Documents in Category']
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='SSR_plagiar',
@@ -202,10 +202,10 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
 
         # Plot Lucene_classes_time_freq.csv line plot (temporal plot); outputFilenameCSV_2
         if fileName_embeds_date:
-            # columns_to_be_plotted = [[0,1], [0,2], [0,3], [0,4], [0,5], [0,6],[0,7], [0,8], [0,9],[0,10]]
+            # columns_to_be_plotted=[[0,1], [0,2], [0,3], [0,4], [0,5], [0,6],[0,7], [0,8], [0,9],[0,10]]
             # hover_label=['','','','','','','','','','']
             inputFilename = outputFilenameCSV_2
-            columns_to_be_plotted = [[0, 1], [0, 2], [0, 3]]
+            columns_to_be_plotted=[[0, 1], [0, 2], [0, 3]]
             hover_label = ['', '', '']
             chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                       outputFileLabel='SSR_plagiar',
@@ -223,7 +223,7 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
 
 
         # Lucene_Document_classes_freq.csv; outputFilenameCSV_4
-        columns_to_be_plotted = [[0, 1],[0, 2],[0, 3]]
+        columns_to_be_plotted=[[0, 1],[0, 2],[0, 3]]
         hover_label = ['']
         inputFilename = outputFilenameCSV_4
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,

@@ -203,7 +203,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     df_dominant_topic.to_csv(fileName, index=False)
     filesToOpen.append(fileName)
 
-    # columns_to_be_plotted = [[1, 3]]
+    # columns_to_be_plotted=[[1, 3]]
     # hover_label = 'Topic_Keywords'
     # inputFilename = fileName
     # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
@@ -238,7 +238,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     sent_topics_sorteddf_mallet.to_csv(fileName,index=False)
     filesToOpen.append(fileName)
 
-    # columns_to_be_plotted = [[1, 2]]
+    # columns_to_be_plotted=[[1, 2]]
     # hover_label = 'Topic keywords'
     # inputFilename = fileName
     # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
@@ -304,7 +304,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     df_dominant_topics.to_csv(fileName, index=False)
     filesToOpen.append(fileName)
 
-    # columns_to_be_plotted = [[1, 2]]
+    # columns_to_be_plotted=[[1, 2]]
     # hover_label = 'Topic keywords'
     # inputFilename = fileName
     # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,

@@ -393,7 +393,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
         else:
             fileType='SSR_summary'
 
-        columns_to_be_plotted = [[0, 1], [0, 2], [0, 3]]
+        columns_to_be_plotted=[[0, 1], [0, 2], [0, 3]]
         hover_label = ['List of Summary Filenames for Type of Error',
                        'List of Summary Filenames for Type of Error',
                        'List of Summary Filenames for Type of Error']

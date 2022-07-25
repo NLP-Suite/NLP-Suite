@@ -468,7 +468,7 @@ def get_columns_to_be_plotted(outputFilename,col):
     headers = IO_csv_util.get_csvfile_headers(outputFilename)
     col1_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, col)
     col2_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Frequency')
-    columns_to_be_plotted = [[col1_nunmber, col2_nunmber]]
+    columns_to_be_plotted=[[col1_nunmber, col2_nunmber]]
     return columns_to_be_plotted
 
 # TODO Tony, can you pass more than one value? Yngve and Frazier
