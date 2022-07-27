@@ -258,10 +258,10 @@ def compute_sentence_table(CoNLL_table, output_path):
     return output_fileName
 
 # the function extracts DISTINCT nouns and verbs from the CoNLL table in both form and lemma
-# input_file contains path
-def get_nouns_verbs_CoNLL(input_file,output_dir):
+# inputFilename contains path
+def get_nouns_verbs_CoNLL(inputFilename,output_dir):
 
-    conll_table = pd.read_csv(input_file)
+    conll_table = pd.read_csv(inputFilename)
 
     verb_form_set = set()
     verb_lemma_set = set()
@@ -286,10 +286,10 @@ def get_nouns_verbs_CoNLL(input_file,output_dir):
     nouns_form_df = pd.DataFrame(noun_form_set, columns = ['Nouns'])
     nouns_lemma_df = pd.DataFrame(noun_lemma_set, columns = ['Nouns'])
 
-    nouns_form_csv=os.path.join(output_dir,os.path.basename(input_file[:-4])+"_nouns_form.csv")
-    nouns_lemma_csv=os.path.join(output_dir,os.path.basename(input_file[:-4])+"_nouns_lemma.csv")
-    verbs_form_csv=os.path.join(output_dir,os.path.basename(input_file[:-4])+"_verbs_form.csv")
-    verbs_lemma_csv=os.path.join(output_dir,os.path.basename(input_file[:-4])+"_verbs_lemma.csv")
+    nouns_form_csv=os.path.join(output_dir,os.path.basename(inputFilename[:-4])+"_nouns_form.csv")
+    nouns_lemma_csv=os.path.join(output_dir,os.path.basename(inputFilename[:-4])+"_nouns_lemma.csv")
+    verbs_form_csv=os.path.join(output_dir,os.path.basename(inputFilename[:-4])+"_verbs_form.csv")
+    verbs_lemma_csv=os.path.join(output_dir,os.path.basename(inputFilename[:-4])+"_verbs_lemma.csv")
 
     nouns_form_df.to_csv(nouns_form_csv, index=False)
     nouns_lemma_df.to_csv(nouns_lemma_csv, index=False)

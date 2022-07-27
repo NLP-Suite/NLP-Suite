@@ -73,7 +73,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     nFile = len(files)
     if nFile == 0:
         return
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running YAGO Knowledge Graph at', True,
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running YAGO Knowledge Graph at', True,
                         '\nAnnotating types: ' + str(categories) + " with associated colors: " + str(colorls),
                                                  True, '', False)
     i=0
@@ -145,7 +145,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     csvname = os.path.join(outputDir,csvname)
     df.to_csv((csvname),index=False)
     filesToOpen.append(csvname)
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running YAGO Knowledge Graph at',
                                        True, '', True, startTime, False)
     dict.clear()

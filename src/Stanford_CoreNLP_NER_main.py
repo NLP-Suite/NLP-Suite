@@ -314,7 +314,7 @@ def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
-def changed_input_filename(*args):
+def changed_inputFilenamename(*args):
     # display the date widgets
     if inputFilename.get().endswith('.txt') or len(input_main_dir_path.get()) > 0:
         extract_date_from_text_checkbox.config(state='normal')
@@ -322,8 +322,8 @@ def changed_input_filename(*args):
     else:
         extract_date_from_text_checkbox.config(state='disabled')
         extract_date_from_filename_checkbox.config(state='disabled')
-inputFilename.trace('w', changed_input_filename)
-input_main_dir_path.trace('w', changed_input_filename)
+inputFilename.trace('w', changed_inputFilenamename)
+input_main_dir_path.trace('w', changed_inputFilenamename)
 
 def add_NER_tag(*args):
     global NER_list

@@ -205,7 +205,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
     if IO_csv_util.openCSVOutputFile(outputFilename):
         return
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running document(s) statistics at',
                                                    True, '', True, '', False)
 
@@ -339,7 +339,7 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
     Ndocs = len(inputDocs)
     if Ndocs == 0:
         return
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running sentence length algorithm at',
                                                    True, '', True, '', False)
 
@@ -421,7 +421,7 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
     ]
     if IO_csv_util.openCSVOutputFile(outputFilename):
         return
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running line length analysis at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running line length analysis at',
                                                  True, '', True, '', True)
 
     with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
@@ -456,7 +456,7 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
                     line = file.readline()
     csvfile.close()
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running line length analysis at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running line length analysis at', True, '', True, startTime, True)
 
     # produce all charts
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
@@ -516,7 +516,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
 
     filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber, wordgram, excludePunctuation, frequency, bySentenceID)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Word/Characters N-Grams at', True, '', True, startTime, False )
 
     # if len(inputDir) != 0:
@@ -853,7 +853,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
 
     # ngrams already display the started running... No need to duplicate
     if not 'unigrams' in processType:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                'Started running ' + processType + ' at', True)
 
     for doc in inputDocs:
@@ -1004,7 +1004,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
 
     # ngrams already display the started running... No need to duplicate
     if not 'unigrams' in processType:
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                                'Finished running ' + processType + ' at', True, '', True, startTime)
 
     return filesToOpen
@@ -1036,7 +1036,7 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
 
     Ndocs=str(len(inputDocs))
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running txt conversion (lemmatization & stopwords) at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running txt conversion (lemmatization & stopwords) at',
                                                  True, '', True, '', True)
 
     with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as outfile:
@@ -1084,7 +1084,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
     if nFile == 0:
         return
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running Text Readability at',
                                                    True, '\nYou can follow Text Readability in command line.')
 
@@ -1119,7 +1119,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
         writer.writeheader()
 
         # already shown in NLP.py
-        # IO_util.timed_alert(GUI_util.window,3000,'Analysis start','Started running NLTK unusual words at',True,'You can follow NLTK unusual words in command line.')
+        # IO_util.timed_alert(GUI_util.window,2000,'Analysis start','Started running NLTK unusual words at',True,'You can follow NLTK unusual words in command line.')
 
         # open txt output file
         outputTxtFile = open(outputFilenameTxt, "w")
@@ -1371,7 +1371,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                     if len(chart_outputFilename) > 0:
                         filesToOpen.extend(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Text Readability at',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Text Readability at',
                                        True, '', True, startTime)
 
     if len(inputDir) != 0:
@@ -1454,7 +1454,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
 
     filesToOpen = []
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running Sentence Complexity at', True)
     if len(inputFilename) > 0:
         numFiles = 1
@@ -1559,6 +1559,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
                                                        hover_label=[],
                                                        outputFileNameType='', #'' #'complexity_bar',
                                                        column_xAxis_label='Complexity scores',
+                                                       column_yAxis_label='Scores',
                                                        groupByList=['Document ID','Document'],
                                                        plotList=['Yngve score','Frazier score'],
                                                        chart_title_label='Statistical Measures for Complexity Scores')
@@ -1566,7 +1567,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
         if len(chart_outputFilename) > 0:
             filesToOpen.extend(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Sentence Complexity at', True, '', True, startTime)
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir)

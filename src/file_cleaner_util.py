@@ -474,7 +474,7 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
         return False
 
     docError = 0
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                        'Started running characters conversion at',
                                                  True, '', True, '', True)
     for doc in inputDocs:

@@ -85,11 +85,11 @@ def run(inputFilename,inputDir, outputDir,
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
-    # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
     #                                        'Started running ' + menu_option + ' at', True,
     #                                        'You can follow ' + menu_option + ' in command line.')
     #
-    # IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running ' + menu_option + ' at', True)
+    # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running ' + menu_option + ' at', True)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),

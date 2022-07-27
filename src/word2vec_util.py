@@ -76,7 +76,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     filesToOpen = []
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running Word2Vec at', True)
 
     if len(inputFilename)>0:
@@ -306,7 +306,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     result_df.to_csv(outputFilename, index=False)
     filesToOpen.append(outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Word2Vec at', True, '', True, startTime)
 
     return filesToOpen

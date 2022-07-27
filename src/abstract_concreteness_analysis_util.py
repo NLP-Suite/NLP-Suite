@@ -164,7 +164,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 	elif len(inputFilename) == 0 and len(inputDir) == 0:  # empty input
 		print('No input specified. Please give either a single file or a directory of files to analyze.')
 		sys.exit(1)
-	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+	startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
 	                                               'Started running CONCRETENESS Analysis at', True,silent=True)
 	outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
 																			   '.csv', 'abstr-concret-vocab', 'stats')
@@ -229,7 +229,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 			filesToOpen.extend(chart_outputFilename)
 
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+	IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
 	                                       'Finished running CONCRETENESS Analysis at', True, '', True, startTime, True)
 
 	return filesToOpen

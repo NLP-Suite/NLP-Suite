@@ -40,13 +40,13 @@ def run(search_filters):
     noResults = "No results found matching your search criteria for your input CoNLL file. Please, try different search criteria.\n\nTypical reasons for this warning are:\n   1.  You are searching for a token/word not found in the FORM or LEMMA fields (e.g., 'child' in FORM when in fact FORM contains 'children', or 'children' in LEMMA when in fact LEMMA contains 'child'; the same would be true for the verbs 'running' in LEMMA instead of 'run');\n   2. you are searching for a token that is a noun (e.g., 'children'), but you select the POS value 'VB', i.e., verb, for the POSTAG of searched token."
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    input_file_name = GUI_util.inputFilename.get()
+    inputFilename_name = GUI_util.inputFilename.get()
     output_dir = GUI_util.output_dir_path.get()
 
     withHeader = True
     recordID_position = 8
     documentId_position = 10
-    data, header = IO_csv_util.get_csv_data(input_file_name, withHeader)
+    data, header = IO_csv_util.get_csv_data(inputFilename_name, withHeader)
     if len(data) == 0:
         return
     data_divided_sents = CoNLL_util.sentence_division(data)
@@ -56,7 +56,7 @@ def run(search_filters):
         return
 
     documentId_position = 10
-    data, header = IO_csv_util.get_csv_data(input_file_name, withHeader=True)
+    data, header = IO_csv_util.get_csv_data(inputFilename_name, withHeader=True)
 
     if len(data) <= 1000000:
         try:
@@ -74,7 +74,7 @@ def run(search_filters):
     queried_list = CoNLL_table_search_util.search_conll_table2(all_sents, filters)
 
     if len(queried_list) != 0:
-        output_file_name = IO_files_util.generate_output_file_name(input_file_name, output_dir, '.csv', 'QC',
+        output_file_name = IO_files_util.generate_output_file_name(inputFilename_name, output_dir, '.csv', 'QC',
                                                                    'CoNLL_Search', searchedCoNLLField)
         headers = ['ID', 'Form', 'Lemma', 'POStag', 'NER', 'Head', 'DEPrel', 'Clause Tag', 'Record ID',
                    'Sentence ID', 'Document ID', 'Document']

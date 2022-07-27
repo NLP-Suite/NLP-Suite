@@ -81,7 +81,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                                        '',True,'',True)
 
     # already shown in NLP.py
-    # IO_util.timed_alert(GUI_util.window,3000,'Analysis start','Started running NLTK unusual words at',True,'You can follow NLTK unusual words in command line.')
+    # IO_util.timed_alert(GUI_util.window,2000,'Analysis start','Started running NLTK unusual words at',True,'You can follow NLTK unusual words in command line.')
     for file in files:
         documentID=documentID+1
         head, tail = os.path.split(file)
@@ -675,8 +675,8 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
         # else:
         #     print("  Processing file:", filename)
         fileID = fileID + 1
-        # input_files_path = os.path.join(folder, filename)
-        # with open(input_files_path, 'r', encoding='utf-8', errors='ignore') as opened_file:
+        # inputFilenames_path = os.path.join(folder, filename)
+        # with open(inputFilenames_path, 'r', encoding='utf-8', errors='ignore') as opened_file:
         with open(filename, 'r', encoding='utf-8', errors='ignore') as opened_file:
             print("  Processing file:", filename)
             originalText = opened_file.read()
@@ -756,7 +756,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                                  'Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.\n\nPlease, arm yourself with patience, depennding upon the number and size of documents processed.',
                                  True)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                        'Started running language detection algorithms at', True,
                                        'You can follow the algorithms in command line.')
 

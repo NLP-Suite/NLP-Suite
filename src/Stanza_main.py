@@ -45,7 +45,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         dateInclude, sep, date_field_position, dateFormat,
         CoNLL_table_analyzer_var,
         Stanza_annotators_var, Stanza_annotators_menu_var,
-        CoreNLP_var):
+        other_parsers_annotators_var,
+        other_parsers_annotators_menu_var):
 
     filesToOpen = []
     outputCoNLLfilePath = ''
@@ -55,7 +56,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     #     return
     #
 
-    if parser == 0 and CoNLL_table_analyzer_var == 0 and Stanza_annotators_var == 0 and CoreNLP_var == 0:
+    if parser == 0 and CoNLL_table_analyzer_var == 0 and Stanza_annotators_var == 0 and other_parsers_annotators_var == 0:
         mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
         return
 
@@ -90,6 +91,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             annotator = 'NER'
         elif 'Sentiment analysis' in Stanza_annotators_menu_var:
             annotator = 'sentiment'
+        elif 'SVO extraction' in Stanza_annotators_menu_var:
+            annotator = 'SVO'
         else:
             return
 
@@ -141,8 +144,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
-    if CoreNLP_var:
-        call("python Stanford_CoreNLP_main.py", shell=True)
+    if other_parsers_annotators_var:
+        if other_parsers_annotators_menu_var=="Stanford CoreNLP":
+            call("python Stanford_CoreNLP_main.py", shell=True)
+        elif other_parsers_annotators_menu_var=="spaCy":
+                call("python spaCy_main.py", shell=True)
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
@@ -162,7 +168,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  CoNLL_table_analyzer_var.get(),
                                  Stanza_annotators_var.get(),
                                  Stanza_annotators_menu_var.get(),
-                                 CoreNLP_var.get())
+                                 other_parsers_annotators_var.get(),
+                                 other_parsers_annotators_menu_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -233,7 +240,8 @@ CoNLL_table_analyzer_var = tk.IntVar()
 Stanza_annotators_var = tk.IntVar()
 Stanza_annotators_menu_var = tk.StringVar()
 
-CoreNLP_var = tk.IntVar()
+other_parsers_annotators_var = tk.IntVar()
+other_parsers_annotators_menu_var = tk.StringVar()
 
 def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
@@ -451,7 +459,8 @@ Stanza_annotators_menu = tk.OptionMenu(window, Stanza_annotators_menu_var,
         'Lemma annotator',
         'POS annotator',
         'NER annotator',
-        'Sentiment analysis')
+        'Sentiment analysis',
+        'SVO extraction (Subject-Verb-Object')
 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                Stanza_annotators_menu)
@@ -478,9 +487,14 @@ Stanza_annotators_menu_var.trace('w', activate_Stanza_annotators_menu)
 
 activate_Stanza_annotators_menu()
 
-CoreNLP_var.set(0)
-CoreNLP_checkbox = tk.Checkbutton(window, text='Stanford CoreNLP - parsers and annotators (Open GUI)', variable=CoreNLP_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoreNLP_checkbox)
+other_parsers_annotators_var.set(0)
+other_parsers_annotators_checkbox = tk.Checkbutton(window, text='Other parsers and annotators (Open GUI)', variable=other_parsers_annotators_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,other_parsers_annotators_checkbox,True)
+
+other_parsers_annotators_menu_var.set("Stanford CoreNLP")
+other_parsers_annotators_menu = tk.OptionMenu(window, other_parsers_annotators_menu_var, 'Stanford CoreNLP', 'spaCy')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+50, y_multiplier_integer,
+                                               other_parsers_annotators_menu)
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -543,7 +557,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select one of the many other annotators available through Stanza: sentencce splitter, lemmatizer, POS, NER (Named Entity Recognition), and sentiment analysis.\n\nALL Stanza ANNOTATORS ARE BASED ON NEURAL NETWORK.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files and charts.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you want to open the GUI to run Stanford CoreNLP Java-based parsers and annotators.")
+                                  "Please, tick the checkbox if you want to open the GUI to run other parsers and annotatators available in the NLP Suite: Stanford CoreNLP Java-based parsers and annotators & spaCy. Use the dropdown menu to select the GUI you wish to open.\n\nCoreNLP does not use neural networks for all its parsers and annotators, contrary to Stanza and spaCy. spcaCy is also lighting fast.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

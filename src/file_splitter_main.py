@@ -48,12 +48,12 @@ def run(inputFilename,inputDir, outputDir,
     menu_option):
 
     if utf8_var==True:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                             'Started running utf8 compliance test at', True)
         file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
 
     if ASCII_var==True:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                             'Started running characters conversion at', True)
         file_cleaner_util.convert_quotes(GUI_util.window,inputFilename, inputDir)
 
@@ -62,7 +62,7 @@ def run(inputFilename,inputDir, outputDir,
         sentence_analysis_util.extract_sentences(window, inputFilename, inputDir, outputDir, extract_sentences_search_words_var)
         return
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                       "Started running " + menu_option + " at", True)
 
     if inputDir=='' and inputFilename!='':

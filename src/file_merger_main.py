@@ -30,7 +30,7 @@ def run(input_main_dir_path, output_dir_path,
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_merger_util.py')==False:
         return
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', "Started running 'File Merger' at",
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', "Started running 'File Merger' at",
 												 True, '', True,'',True)
   
     file_merger_util.file_merger(GUI_util.window,

@@ -29,7 +29,7 @@ def create_timedelta(date_distance_value, date_type):
 # input_first_dir is the source dir containing a list of files
 # input_sec_dir is the target directory containing a set of subdirs
 def classifier(input_first_dir, input_sec_dir,outputDir,openOutputFiles, date_format,date_separator,date_position,date_distance_value, date_type):
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                        'Started running the File Classifier by embedded date at',
                                                  True, '', True, '', True)
     result = mb.askyesno("Output option","Would you like to copy the SOURCE files to the TARGET subdirectories?",default='no')

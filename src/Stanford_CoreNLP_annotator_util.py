@@ -165,7 +165,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # check available memory
     IO_libraries_util.check_avaialable_memory('Stanford CoreNLP')
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True)
 
     # decide on directory or single file
     if inputDir != '':
@@ -650,7 +650,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # print("Length of Files to Open after generating files: ", len(filesToOpen))
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, '', True, startTime)
 
 # generate visualization output ----------------------------------------------------------------
 

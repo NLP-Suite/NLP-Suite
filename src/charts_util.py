@@ -75,7 +75,8 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
 #   chart_title_label is used as part of the chart_title when plotting the fields statistics
 def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     columns_to_be_plotted,
-                    chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_title_label, pivot = False):
+                    chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,
+                    groupByList,plotList, chart_title_label, column_yAxis_label='Frequencies', pivot = False):
     if createCharts == True:
         chart_outputFilenameSV=''
 
@@ -100,13 +101,13 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         field_number = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted[i])
         columns_to_be_plotted_numeric.append([field_number, field_number])
     if "Document ID" in headers:
-        docID = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID')
-        columns_to_be_plotted_byDoc = [[docID, docID + 1]]
+        docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID')
+        columns_to_be_plotted_byDoc = [[docCol, docCol + 1]]
         byDoc = True
     else:
         byDoc = False
     if "Sentence ID" in headers:
-        sentID = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Sentence ID')
+        sentCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Sentence ID')
         bySent = True
     else:
         bySent = False
@@ -128,6 +129,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                   chart_type_list=['bar'],
                                                   chart_title=chartTitle,
                                                   column_xAxis_label_var=column_xAxis_label,
+                                                  column_yAxis_label_var=column_yAxis_label,
                                                   hover_info_column_list=hover_label,
                                                   count_var=1) #always 1 to get frequencies of values
 
@@ -233,6 +235,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                           chart_type_list=['bar'],
                                                           chart_title=chartTitle + ' by Document',
                                                           column_xAxis_label_var='',
+                                                          column_yAxis_label_var=column_yAxis_label,
                                                           hover_info_column_list=hover_label,
                                                           # count_var is set in the calling function
                                                           #     0 for numeric fields;
@@ -260,7 +263,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                           chartPackage,
                                                           selected_col=columns_to_be_plotted_numeric,
                                                           hover_col=[],
-                                                          group_col=[[docID, docID+1, sentID]],
+                                                          group_col=[[docCol, docCol+1, sentCol]],
                                                           fileNameType='CSV',
                                                           chartType='',
                                                           pivot=pivot)
@@ -272,12 +275,23 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     #   Document, Frequency, Sentence ID, Field to be plotted (e.g., POStag)
                     columns_to_be_plotted_bySent = [[1, 4, 2, 3]]
             else: # numeric values of field(s) to be plotted
+                columns_to_be_plotted_bySent = []
                 if n_documents > 1:
-                    # Document, Numeric field to be plotted (e.g., Yngve score)
-                    # any other combination of field headers would lead to wrong charts
-                    columns_to_be_plotted_bySent = [[8, 1], [8, 3]]
+                    for i in range(0, len(columns_to_be_plotted_numeric)):
+                        # For multiple series, by document & sentence IDs any combinations of Document, Frequency, Sentence ID, Field to be plotted
+                        #       does not work
+                        # Only the following works:
+                        #   YES [[Document, Column 1 to be plotted], [Document, Column 2 to be plotted], ...]
+                        # NO [[Document, Column 1 to be plotted, Sentence ID], [Document, Column 2 to be plotted, Sentence ID], ...]
+                        #   sentence IDs are repeated on X-axis rather than Docs
+                        # NO [[Document, Sentence ID, Column 1 to be plotted], [Document, Sentence ID, Column 2 to be plotted], ...]
+                        #   frequencies or scores on X-axis
+                        # NO [[Document, Column 1 to be plotted, Column 2 to be plotted, Sentence ID]]
+                        #   only one series plotted with Docs on X-axis
+                        columns_to_be_plotted_bySent.append([docCol + 1, columns_to_be_plotted_numeric[i][0]])
                 else:
-                    columns_to_be_plotted_bySent = [[5, 1], [5, 3]]
+                    # Sentence ID, Frequency
+                    columns_to_be_plotted_bySent.append([sentCol, columns_to_be_plotted_numeric[i][0]])
 
             if n_documents > 1:
                 chartTitle = chartTitle + ' by Document & Sentence Index'
@@ -297,6 +311,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                       chart_type_list=['line'],
                                                       chart_title=chartTitle,
                                                       column_xAxis_label_var=xAxis_label,
+                                                      column_yAxis_label_var=column_yAxis_label,
                                                       hover_info_column_list=hover_label,
                                                       count_var=0, # always 0 when plotting by sentence index
                                                       complete_sid=True,
@@ -305,6 +320,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
             if chart_outputFilename!=None:
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
+
 
 # compute field STATISTICS ---------------------------------------------------------------------------
         # TODO THE FIELD MUST CONTAIN NUMERIC VALUES
@@ -511,7 +527,7 @@ def get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,column
 
 def header_check(inputFile):
     sentenceID_pos=''
-    docID_pos=''
+    docCol_pos=''
     docName_pos=''
     frequency_pos=''
 
@@ -525,7 +541,7 @@ def header_check(inputFile):
         pass
 
     if 'Document ID' in header:
-        docID_pos = header.index('Document ID')
+        docCol_pos = header.index('Document ID')
     else:
         pass
 
@@ -535,17 +551,15 @@ def header_check(inputFile):
         pass
 
     # Frequenc to capture Frequency and Frequencies
-    if 'Frequenc' in header or 'Number of' in header:
+    if 'Frequenc' in header or 'Number of' in header or 'score' in header or 'Score' in header:
         frequency_pos = header.index('Frequency')
     else:
         pass
-    return sentenceID_pos, docID_pos, docName_pos, frequency_pos, header
-
-
+    return sentenceID_pos, docCol_pos, docName_pos, frequency_pos, header
 
 def process_sentenceID_record(Row_list, Row_list_new, index,
                               start_sentence, end_sentence,
-                              header, sentenceID_pos, docID_pos, docName_pos, frequency_pos,
+                              header, sentenceID_pos, docCol_pos, docName_pos, frequency_pos,
                               save_current):
     # range(start, stop, step)
     # end_sentence is always skipped; the range of integers end at end_sentence – 1
@@ -559,9 +573,9 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
                 # when adding a new Sentence ID, insert a frequency value of 0, if there is a frequency column
                 if frequency_pos!='':
                     temp[frequency_pos] = 0
-            elif j == docID_pos:
+            elif j == docCol_pos:
                 # insert Document ID
-                temp[j] = Row_list[index][docID_pos]
+                temp[j] = Row_list[index][docCol_pos]
             elif j == docName_pos:
                 # insert Document
                 temp[j] = Row_list[index][docName_pos]
@@ -587,7 +601,7 @@ def add_missing_IDs(input, outputFilename):
     end_sentence = 1 # last sentence in loop
     number_sentences = []
     Row_list_new = []
-    sentenceID_pos, docID_pos, docName_pos, frequency_pos, header = header_check(input)
+    sentenceID_pos, docCol_pos, docName_pos, frequency_pos, header = header_check(input)
     Row_list = IO_csv_util.df_to_list(df)
     len_Row_list = len(Row_list)
     for index, row in enumerate(Row_list):
@@ -595,7 +609,7 @@ def add_missing_IDs(input, outputFilename):
         if index == 0: # first record
             newDoc = True
         else: # index > 0; all successive records
-            if Row_list[index][docID_pos] - Row_list[index - 1][docID_pos] > 0:
+            if Row_list[index][docCol_pos] - Row_list[index - 1][docCol_pos] > 0:
                 newDoc = True
 
         if newDoc:
@@ -612,12 +626,12 @@ def add_missing_IDs(input, outputFilename):
                 Row_list_new = process_sentenceID_record(Row_list, Row_list_new, index,
                                                          start_sentence,
                                                          end_sentence,
-                                                         header, sentenceID_pos, docID_pos, docName_pos, frequency_pos,
+                                                         header, sentenceID_pos, docCol_pos, docName_pos, frequency_pos,
                                                          save_current=True)
             else: # index>0 all other records
                 # select the number of sentences for the right document
                 for i in range(len(number_sentences)):
-                    # TODO hyperlynks should be removed in file before passing it to add_missing_IDs
+                    # TODO hyperlinks should be removed in file before passing it to add_missing_IDs
                     if IO_csv_util.undressFilenameForCSVHyperlink(Row_list[index-1][docName_pos])==number_sentences[i][0]:
                         n_sentences=number_sentences[i][1]
                 if Row_list[index-1][sentenceID_pos]<n_sentences:
@@ -626,7 +640,7 @@ def add_missing_IDs(input, outputFilename):
                     # pass index-1 as argument since we are adding sentence IDs to the previous document
                     Row_list_new=process_sentenceID_record(Row_list,Row_list_new,index-1,
                                               start_sentence, end_sentence,
-                                              header,sentenceID_pos, docID_pos, docName_pos, frequency_pos,
+                                              header,sentenceID_pos, docCol_pos, docName_pos, frequency_pos,
                                               save_current=False)
                     # do NOT save current; already saved when first processing the record
                 # now process the current record
@@ -635,7 +649,7 @@ def add_missing_IDs(input, outputFilename):
                 Row_list_new = process_sentenceID_record(Row_list, Row_list_new, index,
                                                          start_sentence,
                                                          end_sentence,
-                                                         header, sentenceID_pos, docID_pos, docName_pos, frequency_pos,
+                                                         header, sentenceID_pos, docCol_pos, docName_pos, frequency_pos,
                                                          save_current=True)
         else: # same document
             # check that current sentence is not just one sentence greater than previous one
@@ -648,7 +662,7 @@ def add_missing_IDs(input, outputFilename):
                 end_sentence = Row_list[index][sentenceID_pos]
             Row_list_new = process_sentenceID_record(Row_list, Row_list_new, index,
                                                      start_sentence, end_sentence,
-                                                     header, sentenceID_pos, docID_pos, docName_pos, frequency_pos,
+                                                     header, sentenceID_pos, docCol_pos, docName_pos, frequency_pos,
                                                      save_current=True)
 
     df = pd.DataFrame(Row_list_new,columns=header)
@@ -729,7 +743,7 @@ def complete_sentence_index(file_path):
 #
 # def header_check(inputFile):
 #     sentenceID_pos=''
-#     docID_pos=''
+#     docCol_pos=''
 #     docName_pos=''
 #
 #     if isinstance(inputFile, pd.DataFrame):
@@ -742,7 +756,7 @@ def complete_sentence_index(file_path):
 #         pass
 #
 #     if 'Document ID' in header:
-#         docID_pos = header.index('Document ID')
+#         docCol_pos = header.index('Document ID')
 #     else:
 #         pass
 #
@@ -750,6 +764,6 @@ def complete_sentence_index(file_path):
 #         docName_pos = header.index('Document')
 #     else:
 #         pass
-#     return sentenceID_pos, docID_pos, docName_pos, header
+#     return sentenceID_pos, docCol_pos, docName_pos, header
 #
 

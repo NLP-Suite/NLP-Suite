@@ -35,7 +35,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         document_length_var,
         limit_sentence_length_var,
         manual_Coref, open_GUI, language_var, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, single_quote,
-        CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var):
+        CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var,
+        other_parsers_annotators_var,
+        other_parsers_annotators_menu_var):
 
     filesToOpen = []
     outputCoNLLfilePath = ''
@@ -48,7 +50,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
         return
 
-    if parser == 0 and CoNLL_table_analyzer_var == 0 and CoreNLP_annotators_var == 0:
+    if parser == 0 and CoNLL_table_analyzer_var == 0 and CoreNLP_annotators_var == 0 and other_parsers_annotators_var == 0:
         mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
         return
 
@@ -150,6 +152,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
                         call("python CoNLL_table_analyzer_main.py", shell=True)
 
+    if other_parsers_annotators_var:
+        if other_parsers_annotators_menu_var=="Stanza":
+            call("python Stanza_main.py", shell=True)
+        elif other_parsers_annotators_menu_var=="spaCy":
+                call("python spaCy_main.py", shell=True)
+
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
@@ -175,7 +183,9 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  quote_var.get(),
                                  CoNLL_table_analyzer_var.get(),
                                  CoreNLP_annotators_var.get(),
-                                 CoreNLP_annotators_menu_var.get())
+                                 CoreNLP_annotators_menu_var.get(),
+                                 other_parsers_annotators_var.get(),
+                                 other_parsers_annotators_menu_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -186,8 +196,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=520, # height at brief display
-                             GUI_height_full=600, # height at full display
+                             GUI_height_brief=560, # height at brief display
+                             GUI_height_full=640, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -251,6 +261,9 @@ CoreNLP_annotators_menu_var = tk.StringVar()
 
 quote_var = tk.IntVar()
 y_multiplier_integer_SV=0 # used to set the quote_var widget on the proper GUI line
+
+other_parsers_annotators_var = tk.IntVar()
+other_parsers_annotators_menu_var = tk.StringVar()
 
 def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
@@ -499,6 +512,15 @@ CoreNLP_annotators_menu_var.trace('w', activate_CoreNLP_annotators_menu)
 
 activate_CoreNLP_annotators_menu()
 
+other_parsers_annotators_var.set(0)
+other_parsers_annotators_checkbox = tk.Checkbutton(window, text='Other parsers and annotators (Open GUI)', variable=other_parsers_annotators_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,other_parsers_annotators_checkbox,True)
+
+other_parsers_annotators_menu_var.set("Stanza")
+other_parsers_annotators_menu = tk.OptionMenu(window, other_parsers_annotators_menu_var, 'Stanza', 'spaCy')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+50, y_multiplier_integer,
+                                               other_parsers_annotators_menu)
+
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
@@ -561,6 +583,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the CoreNLP parser results contained in the CoNLL table.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select one of the many other annotators available through Stanford CoreNLP: Coreference pronominal resolution, DepRel, POS, NER (Named Entity Recognition), NER normalized date. gender, quote, and sentiment analysis.\n\nANNOTATORS MARKED AS NEURAL NETWORK ARE MORE ACCURATE, BUT SLOW AND REQUIRE A GREAT DEAL OF MEMORY.\n\n1.  PRONOMINAL co-reference resolution refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'. CoreNLP can resolve other cases but the algorithm here is restricted to pronominal resolution.\n\nThe co-reference resolution checkbox is disabled when selected an entire directory in input. The co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nTick the checkbox Manually edit coreferenced document if you wish to resolve manually cases of unresolved or wrongly resolved coreferences. MANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\nTick the Open GUI checkbox to open the specialized GUI for pronominal coreference resolution.\n\n2.  The CoreNLP NER annotator recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\n3.  The NER NORMALIZED DATE annotator extracts standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\n4.  The CoreNLP coref GENDER annotator extracts the gender of both first names and personal pronouns (he, him, his, she, her, hers) using a neural network approach. This annotator requires a great deal of memory. So, please, adjust the memory allowing as much memory as you can afford.\n\n5.  The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker. The default CoreNLP parameter is DOUBLE quotes. If you want to process both DOUBLE and SINGLE quotes, plase tick the checkbox 'Include single quotes.'\n\n6.  The SENTIMENT ANALYSIS annotator computes the sentiment values (negative, neutral, positive) of each sentence in a text.\n\n6.  The OpenIE (Open Information Extraction) annotator extracts  open-domain relation triples, representing a subject, a relation, and the object of the relation.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files  and Excel charts. The Gender annotator will also produce an html file with male tags displayed in blue and female tags displayed in red. The Coreference annotator will produce txt-format copies of the same input txt files but co-referenced.\n\Select * to run Gender annotator (Neural Network), Normalized NER date, and Quote/dialogue annotator (Neural Network).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Please, tick the checkbox if you want to open the GUI to run other parsers and annotatators available in the NLP Suite: spaCy & Stanza. Use the dropdown menu to select the GUI you wish to open.\n\nBoth spaCy and Stanza use neural networks for all their parsers and annotators. spcaCy is also lighting fast.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

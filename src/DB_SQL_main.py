@@ -72,7 +72,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,SQL_quer
             mb.showwarning(title='Alert',
                            message='Your DB has been created and is selected for use. You may now input and run queries.')
     elif select_SQLite_DB_var.get() != "":
-        # IO_util.timed_alert(GUI_util.window,3000,'Analysis start','Started running Nominalization at',True)
+        # IO_util.timed_alert(GUI_util.window,2000,'Analysis start','Started running Nominalization at',True)
         print("SQL_query_var", SQL_query_var)
         dbVar = select_SQLite_DB_var.get()
         conn = sqlite3.connect(dbVar)

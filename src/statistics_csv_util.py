@@ -205,8 +205,9 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
         # Plot Mean, Mode, Skewness, Kurtosis
         # headers_stats = ['Count', 'Mean', 'Mode', 'Median', 'Standard deviation', 'Minimum', 'Maximum',
         #                  'Skewness', 'Kurtosis', '25% quantile', '50% quantile', '75% quantile']
-        # columns_to_be_plotted=[[2,4], [2,5], [2,10], [2,11]] # document field comes first [2
-        columns_to_be_plotted=['Men', 'Mode', 'Skewness','Kurtosis'] # document field comes first [2
+
+        columns_to_be_plotted=[[2,4], [2,5], [2,10], [2,11]] # document field comes first [2
+        # columns_to_be_plotted=['Mean', 'Mode', 'Skewness', 'Kurtosis'] # document field comes first [2
         # hover_label=['Document']
         hover_label=[]
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,

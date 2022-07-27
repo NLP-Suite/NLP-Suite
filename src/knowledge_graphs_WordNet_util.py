@@ -74,7 +74,7 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
                        # message="Some keyword(s) in your search list do not exist in Wordnet for " + noun_verb + ".\n\nPlease, edit your keyword list and try again.\n\nPlease, check the terminal/command line prompt to see the details.")
     filesToOpen.append(os.path.join(outputDir, "NLP_WordNet_DOWN_" + fileName + ".csv"))
     filesToOpen.append(os.path.join(outputDir, "NLP_WordNet_DOWN_" + fileName + "-verbose.csv"))
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet (Zoom IN/DOWN) at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running WordNet (Zoom IN/DOWN) at', True, '', True, startTime)
     return filesToOpen
 
 # the header does not matter, it can be NUN or VERB or anything else
@@ -202,7 +202,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         if outputFilenameCSV3_new != "":
             os.remove(outputFilenameCSV3_new)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet (Zoom OUT/UP) at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running WordNet (Zoom OUT/UP) at', True, '', True, startTime, True)
 
     return filesToOpen
 
@@ -212,7 +212,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
 def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, noun_verb, openOutputFiles,
                          createCharts, chartPackage):
     filesToOpen = []
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running WordNet charts by sentence index at',
                                                    True, '', True, '', False)
 
@@ -283,7 +283,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
                                                                        )
         if len(outputFiles) > 0:
             filesToOpen.extend(outputFiles)
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running WordNet charts by sentence index at', True, '', True,
                                        startTime)
 

@@ -264,7 +264,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
     compilations_path = input_secondary_dir_path # summaries folder
     filesToOpen=[]
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running MISSING CHARACTER at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running MISSING CHARACTER at',
                                        True, '', True, '', True)
 
     if len(articles_path)==0:
@@ -413,7 +413,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen=[] # avoid opening twice in the calling function
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running MISSING CHARACTER at',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running MISSING CHARACTER at',
                                        True,'',True,startTime,True)
 
     return filesToOpen

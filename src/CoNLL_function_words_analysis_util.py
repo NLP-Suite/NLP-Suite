@@ -126,7 +126,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
             if len(outputFiles) > 0:
                 filesToOpen.extend(outputFiles)
 
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running PRONOUN Analysis at', True, '', True, startTime, True)
+    # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running PRONOUN Analysis at', True, '', True, startTime, True)
     return filesToOpen
 
 def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createCharts, chartPackage):
@@ -569,7 +569,7 @@ def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openO
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running FUNCTION WORDS ANALYSES at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running FUNCTION WORDS ANALYSES at',
                                                  True, '', True, '', True)
 
 
@@ -600,7 +600,7 @@ def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openO
     if outputFiles != None:
         filesToOpen.extend(outputFiles)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running FUNCTION WORDS ANALYSES at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running FUNCTION WORDS ANALYSES at', True, '', True, startTime, True)
 
     return filesToOpen
 

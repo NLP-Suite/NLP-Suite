@@ -86,7 +86,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     filesToOpen = []
 
     # utf.check_utf8_compliance(GUI_util.window, "", inputDir, outputDir, openOutputFiles)
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                         'Started running Shape of Stories at', True)
 
     # check corpus statistics
@@ -209,13 +209,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     # best topic estimate
     if best_topic_estimation:
-        startTime1=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+        startTime1=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                            'Started running estimate_best_k at', True,'You can follow the progress bar in command line.')
         filesToOpen = cl.estimate_best_k(sentiment_vectors, outputDir, filesToOpen)
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                             'Finished running estimate_best_k at', True, '', True, startTime1)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                         'Finished running Shape of Stories at', True, '', True, startTime)
 
     if openOutputFiles == True:

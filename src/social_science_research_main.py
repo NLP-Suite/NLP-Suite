@@ -72,7 +72,7 @@ def missing_character(CoreNLPdir, inputDir, input_secondary_dir_path, outputDir,
 def intruder(CoreNLPdir,inputDir, outputDir, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var):
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_find_non_related_documents_util.py') == False:
         return
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running INTRUDER at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running INTRUDER at',
                                                  True, '', True, '', True)
     # Windows...
     outputFiles=file_find_non_related_documents_util.main(CoreNLPdir, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var)
@@ -80,7 +80,7 @@ def intruder(CoreNLPdir,inputDir, outputDir, openOutputFiles, createCharts, char
     if outputFiles!='':
         filesToOpen.extend(outputFiles)
     # Nothing to plot; only one line in the output csv file
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running INTRUDER at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running INTRUDER at', True, '', True, startTime, True)
 
 
 def ancestor(inputDir, outputDir):
@@ -157,7 +157,7 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
     lib_stopwords = lib_util.check_lib_stopwords()
 
     if len(lib_stopwords) != 0:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running PLAGIARIST at',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running PLAGIARIST at',
                                            True)
         errorFound, error_code, system_output = IO_libraries_util.check_java_installation('Lucene')
         if errorFound:
@@ -236,7 +236,7 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
         if chart_outputFilename != "":
             filesToOpen.append(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running PLAGIARIST at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running PLAGIARIST at', True, '', True, startTime)
 
 def Levenshtein():
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_spell_checker_main.py') == False:

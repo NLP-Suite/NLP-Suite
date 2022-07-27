@@ -75,7 +75,7 @@ IO_setup_menu_var = tk.StringVar()
 IO_setup_menu = tk.OptionMenu(window, IO_setup_menu_var, 'Default I/O configuration', 'GUI-specific I/O configuration')
 IO_setup_var = tk.StringVar()
 
-select_input_file_button=tk.Button()
+select_inputFilename_button=tk.Button()
 select_input_main_dir_button=tk.Button()
 select_input_secondary_dir_button=tk.Button()
 select_output_dir_button=tk.Button()
@@ -499,31 +499,31 @@ def IO_config_setup_full (window, y_multiplier_integer):
         config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file(config_filename, config_input_output_numeric_options)
 
     # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
-    global select_input_file_button, select_input_main_dir_button, \
+    global select_inputFilename_button, select_input_main_dir_button, \
         select_input_secondary_dir_button, select_output_dir_button
     if config_input_output_numeric_options[0]>0:
         # buttons are set to normal or disabled in selectFile_set_options
         if config_input_output_numeric_options[0]==1: #single CoNLL file
             # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CoNLL table', command=lambda: selectFile_set_options(window,True,True,inputFilename,input_main_dir_path,'Select INPUT CoNLL table (csv file)',[('CoNLL csv file','.csv')],".csv"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CoNLL table', command=lambda: selectFile_set_options(window,True,True,inputFilename,input_main_dir_path,'Select INPUT CoNLL table (csv file)',[('CoNLL csv file','.csv')],".csv"))
         elif config_input_output_numeric_options[0]==2: #single txt file:
             # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT TXT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT TXT file',[('text file','.txt')],".txt"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT TXT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT TXT file',[('text file','.txt')],".txt"))
         elif config_input_output_numeric_options[0]==3: #single csv file:
             # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT csv file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT csv file',[('csv file','.csv')],".csv"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT csv file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT csv file',[('csv file','.csv')],".csv"))
         if config_input_output_numeric_options[0]==4: #any type file (used in NLP.py)
             # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("html file","*.html"),("CoNLL table","*.conll")], "*.*"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("html file","*.html"),("CoNLL table","*.conll")], "*.*"))
         if config_input_output_numeric_options[0]==5: #txt/html
             # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*"))
         if config_input_output_numeric_options[0]==6: #txt/csv
             # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
 
         # place the INPUT file widget
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_file_button,True)
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_inputFilename_button,True)
 
         #setup a button to open Windows Explorer on the selected input file
         openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, inputFilename.get()))
@@ -642,7 +642,7 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     from PIL import Image, ImageTk
 
     # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
-    global select_input_file_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_dir_button
+    global select_inputFilename_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_dir_button
     global config_input_output_alphabetic_options
 
     # No top help lines displayed when opening the license agreement GUI

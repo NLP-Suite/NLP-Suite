@@ -39,7 +39,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     output_format_option = {
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
     }
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Stanza at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Stanza at',
                                             True, '', True, '', False)
 
     #collecting input txt files
@@ -231,7 +231,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, False)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, False)
 
     return filesToOpen
 

@@ -31,7 +31,7 @@ import charts_util
 
 def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_search_keywords, search_keywords_list,
         search_options_list, createCharts, chartPackage):
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                        "Started running the file search script at", True)
 
     filesToOpen=[]
@@ -357,7 +357,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputSt
     if outputDir_sentences_extract_minus == '':
         return
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running the Word search function at',
                                                    True, '', True)
 
@@ -452,6 +452,6 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputSt
     IO_files_util.openExplorer(window, outputDir_sentences)
 
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                    'Finished running the Word search unction at', True)
 

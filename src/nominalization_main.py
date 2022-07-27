@@ -213,7 +213,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
 
         nDocs=len(inputDocs)
 
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Nominalization at',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Nominalization at',
                                            True, '', True, '', False)
 
         #add all into a sum
@@ -379,7 +379,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Nominalization at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Nominalization at', True, '', True, startTime)
 
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

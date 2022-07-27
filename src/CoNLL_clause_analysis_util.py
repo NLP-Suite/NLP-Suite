@@ -32,7 +32,7 @@ documentID_position = 11 # NEW CoNLL_U
 
 # Following are used if running all analyses to prevent redundancy
 # filesToOpen = []  # Store all files that are to be opened once finished
-input_file_name = ''
+inputFilename_name = ''
 output_dir = ''
 
 # def compute_stats(CoNLL_table):
@@ -121,7 +121,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CLAUSE ANALYSES at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running CLAUSE ANALYSES at',
                                                  True, '', True, '', True)
 
     #output file names
@@ -221,6 +221,6 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         # if chartPackage=='Excel' and chart_outputFilename!='':
         #     filesToOpen.append(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime, True)
     return filesToOpen
 

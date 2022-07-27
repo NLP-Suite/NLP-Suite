@@ -91,7 +91,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
     if nFile == 0:
         return
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running DBpedia Knowledge Graph at', True,
                                                    'Annotating types: ' + str(
                                                        annotationTypes) + '\nConfidence level: ' + str(
@@ -280,7 +280,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
 
     # add charts
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running DBpedia Knowledge Graph at',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running DBpedia Knowledge Graph at',
                                        True, '', True, startTime)
 
     return filesToOpen

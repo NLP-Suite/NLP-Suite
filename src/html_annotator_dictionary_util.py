@@ -70,7 +70,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
     nFile=len(files)
     if nFile==0:
         return
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Dictionary annotator at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Dictionary annotator at',
                                                  True, '', True, '', True)
     i=0
     wordColNum = [0]
@@ -200,6 +200,6 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
         f.write('\n</div>\n</body>\n</html>')
     f.close()
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Dictionary annotator at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Dictionary annotator at', True, '', True, startTime)
     return filesToOpen
 

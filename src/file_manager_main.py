@@ -177,7 +177,7 @@ def run(inputDir, outputDir,
 
     # ------------------------------------------------------------------------------------------------------------------------------------------------
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Manager at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running File Manager at',
                                                  True, '', True, '', True)
 
     if list_var==1:
@@ -355,7 +355,7 @@ def run(inputDir, outputDir,
                         if fileFound:
                             i=i+1
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File manager at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running File manager at', True, '', True, startTime)
 
     if i > 0:
         if rename_var==1:

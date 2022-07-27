@@ -85,7 +85,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
             filesToOpen.append(outputFiles)
 
     if clausal_analysis_var or noun_analysis_var or verb_analysis_var or function_words_analysis_var:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CoNLL table analyses at',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running CoNLL table analyses at',
                                                      True, '', True, '', False)
 
     if clausal_analysis_var:
@@ -147,7 +147,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
 
     if right_hand_side == True:
         if clausal_analysis_var or noun_analysis_var or verb_analysis_var or function_words_analysis_var:
-            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+            IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                                'Finished running CoNLL table analyses at',
                                                True, '', True, startTime, False)
         if openOutputFiles == True:
@@ -196,7 +196,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
             mb.showwarning(title='Searched Token Input Error', message=msg)
             return  # breaks loop
 
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CoNLL search at',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running CoNLL search at',
                                                      True, '', True, '', True)
 
         withHeader = True
@@ -367,7 +367,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                                                                 hover_info_column_list=[],
                                                                 count_var=count_var)
                 filesToOpen.append(chart_outputFilename)
-                IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+                IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                                    'Finished running CoNLL search at', True, '', True, startTime)
 
             # if openOutputFiles:

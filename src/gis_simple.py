@@ -13,12 +13,12 @@ import googlemaps
 
 #set up working dir and set up input and output filenames
 os.chdir('C:\\Program Files (x86)\\PC-ACE\\NLP')
-input_filename = 'city_freq_2019nov5.csv'
+inputFilenamename = 'city_freq_2019nov5.csv'
 output_filename = 'OUT_city_freq_2019nov5.csv'
 
 #import data
-#df = pd.read_csv(input_filename, encoding='utf-8')
-df = pd.read_csv(input_filename, encoding='latin-1')
+#df = pd.read_csv(inputFilenamename, encoding='utf-8')
+df = pd.read_csv(inputFilenamename, encoding='latin-1')
 
 #set Google API 
 api_key = "AIzaSyCJXUlilIGptXe2-YQrieW-orAdOXkuW2E"
