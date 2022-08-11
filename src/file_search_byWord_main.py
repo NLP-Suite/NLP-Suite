@@ -9,6 +9,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"file_search_byWord_ma
 
 import os
 import tkinter as tk
+from tkinter import ttk
 import tkinter.messagebox as mb
 from subprocess import call
 
@@ -16,6 +17,8 @@ import GUI_IO_util
 import IO_files_util
 import file_search_byWord_util
 import IO_user_interface_util
+import reminders_util
+import constants_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -26,6 +29,7 @@ def run(inputFilename,inputDir, outputDir,
     search_options,
     search_by_dictionary,
     selectedCsvFile,
+    language_var,
     search_by_keyword,
     search_keyword_values,
     extract_sentences_var,
@@ -48,7 +52,7 @@ def run(inputFilename,inputDir, outputDir,
 
     if search_by_keyword:
         filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dictionary,
-                                                  search_by_keyword, search_keyword_values, search_options_list,
+                                                  search_by_keyword, search_keyword_values, search_options_list, language_var,
                                                   createCharts, chartPackage)
 
     if extract_sentences_var:
@@ -72,6 +76,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             search_options_menu_var.get(),
                             search_by_dictionary_var.get(),
                             selectedCsvFile_var.get(),
+                            language_var.get(),
                             search_by_keyword_var.get(),
                             keyword_value_var.get(),
                             extract_sentences_var.get(),
@@ -87,8 +92,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=480, # height at brief display
-                             GUI_height_full=560, # height at full display
+                             GUI_height_brief=520, # height at brief display
+                             GUI_height_full=600, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -120,6 +125,9 @@ outputDir =GUI_util.output_dir_path
 
 GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 
+language_var = tk.StringVar()
+language_list = []
+
 search_options_menu_var=tk.StringVar()
 search_by_dictionary_var=tk.IntVar()
 selectedCsvFile_var=tk.StringVar()
@@ -148,13 +156,13 @@ search_options_menu = tk.OptionMenu(window, search_options_menu_var, 'Case sensi
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,search_options_menu, True)
 
 add_search_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_search_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+300,y_multiplier_integer,add_search_button, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 410,y_multiplier_integer,add_search_button, True)
 
 reset_search_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_search_options_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+340,y_multiplier_integer,reset_search_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+450,y_multiplier_integer,reset_search_button,True)
 
 show_search_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_search_options_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400,y_multiplier_integer,show_search_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+510,y_multiplier_integer,show_search_button)
 
 def reset_search_options_list():
     search_options_list.clear()
@@ -206,6 +214,83 @@ def activate_search_options(*args):
 search_options_menu_var.trace('w',activate_search_options)
 
 activate_search_options()
+
+language_lb = tk.Label(window,text='Language')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+                                               y_multiplier_integer, language_lb, True)
+
+import json
+import stanza.resources.common
+DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
+from tkinter import *
+lang_dict = dict(constants_util.languages)
+
+def print_it(event):
+    print(language_var.get())
+
+language_var.set('English')
+language_list.append('English')
+def list_all_languages(model_dir=DEFAULT_MODEL_DIR):
+    with open(os.path.join(model_dir, 'resources.json')) as fin:
+        resources = json.load(fin)
+    languages = [lang for lang in resources if 'alias' not in resources[lang]]
+    languages = sorted(languages)
+    return languages
+
+langs = list_all_languages()
+langs_full = sorted([lang_dict[x] for x in langs])
+language_menu = ttk.Combobox(window, width = 50, textvariable = language_var)
+language_menu['values'] = langs_full
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
+                                               y_multiplier_integer, language_menu,True)
+
+def check_language(*args):
+    if language_var.get() in language_list:
+        mb.showwarning(title='Warning',
+                       message='The selected language "' + language_var.get() + '" is already in your selection list: ' + str(
+                           language_list) + '.\n\nPlease, select another language.')
+        window.focus_force()
+        return
+    else:
+        if language_var.get() == '':
+            language_menu.configure(state='normal')
+        else:
+            language_list.append(language_var.get())
+            language_menu.configure(state='disabled')
+        add_language_button.configure(state='normal')
+        reset_language_button.configure(state='normal')
+        show_language_button.configure(state='normal')
+language_var.trace('w', check_language)
+
+add_language_button = tk.Button(window, text='+', width=2,height=1,state='normal',command=lambda: activate_language_var())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 410,y_multiplier_integer,add_language_button, True)
+
+reset_language_button = tk.Button(window, text='Reset', width=5,height=1,state='normal',command=lambda: reset_language_list())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 450,y_multiplier_integer,reset_language_button,True)
+
+show_language_button = tk.Button(window, text='Show', width=5,height=1,state='normal',command=lambda: show_language_list())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 510,y_multiplier_integer,show_language_button)
+
+def reset_language_list():
+    language_list.clear()
+    language_menu.configure(state='normal')
+    language_var.set('')
+
+def show_language_list():
+    if len(language_list)==0:
+        mb.showwarning(title='Warning', message='There are no currently selected language options.')
+    else:
+        mb.showwarning(title='Warning', message='The currently selected language options are:\n\n  ' + '\n  '.join(language_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+
+def activate_language_var():
+    # Disable the + after clicking on it and enable the class menu
+    if language_menu.get()=='English':
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_Stanza_languages,
+                                     reminders_util.message_Stanza_languages,
+                                     True)
+    add_language_button.configure(state='disabled')
+    language_menu.configure(state='normal')
 
 # lemmatize_var.set(0)
 # lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
@@ -330,6 +415,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, use the dropdown menu to set up the search criteria. Multiple criteria can be selected by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nWhen lemmatizing, the scripts would search 'coming out' in all its lemmatized forms: 'coming out', 'come out', 'comes out', 'came out'.\n\nWhen searching 'Within sentence' combinations of words or collocations will be searched and displayed within SENTENCE otherwise within DOCUMENT.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Stanza provides pretrained NLP models for a total 66 human languages. Please, using the dropdown menu, select the language to be used.\n\nIf your documents contain different languages, you have two options to ensure that the selected annotator will process your documents with the correct language model:\n\n   1. use the multilingual option at the end of the list of languages and let Stanza pick the right language model for the various parts of your document;\n   2. if you know the languages used in your documents, a better alternative that produces better results is for you to select the languages using the + widget."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to search input txt file(s) using the values contained in a csv dictionary file.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click to select a csv file containing a list of values to be used as a dictionary for searching the input file(s).\n\nEntries in the file, one per line, can be single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe little square button to the right will allow you to open the selected csv file.\n\nThe csv filename will be displayed in the entry widget to the right.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nSeveral words/collocations can also be entered, comma separated (e.g, coming out, standing in line, boyfriend).\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document.")
@@ -347,7 +434,7 @@ readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readM
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 # a reminder is in file_manager_merger_splitter_main
-#	reminders_util.checkReminder("Split output files")
+#   reminders_util.checkReminder("Split output files")
 
 GUI_util.window.mainloop()
 

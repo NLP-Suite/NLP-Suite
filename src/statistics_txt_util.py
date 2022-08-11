@@ -25,7 +25,7 @@ import GUI_IO_util
 
 # from nltk import tokenize
 # from nltk import word_tokenize
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
 import ast
 import textstat
@@ -65,7 +65,7 @@ from nltk.corpus import stopwords
 # from nltk.stem import WordNetLemmatizer
 # from nltk.util import ngrams
 from nltk.corpus import wordnet
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 from itertools import groupby
 import textstat
 

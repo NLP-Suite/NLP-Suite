@@ -39,7 +39,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     output_format_option = {
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
     }
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Stanza at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Stanza at',
                                             True, '', True, '', False)
 
     #collecting input txt files
@@ -86,13 +86,15 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
 
         if "Lemma"  in annotator_params:
-            processors='tokenize,lemma'
+            processors='tokenize,lemma,pos'
         elif "NER" in annotator_params:
             processors='tokenize,ner'
         elif "All POS" in annotator_params:
             processors='tokenize,pos'
-        elif "depparse" in annotator_params:
+        elif "depparse" in annotator_params or "SVO" in annotator_params:
             processors='tokenize,mwt,pos,lemma,depparse'
+            if "SVO" in annotator_params:
+                annotator_params = "DepRel_SVO"
         elif "sentiment" in annotator_params:
             processors='tokenize,sentiment'
 
@@ -182,6 +184,15 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     df.to_csv(outputFilename, index=False, encoding = language_encoding)
     filesToOpen.append(outputFilename)
 
+    # SVO extraction
+    if "SVO" in annotator_params:
+        # extract SVO 
+        svo_df = extractSVO(Stanza_output, docID, inputFilename) if len(language)==1 and 'multilingual' not in language else extractSVOMultilingual(Stanza_output, docID, inputFilename)
+        svo_df_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                    'Stanza_' + 'SVO')
+        svo_df.to_csv(svo_df_outputFilename, index=False, encoding = language_encoding)
+        filesToOpen.extend(svo_df_outputFilename)
+
     # Filter + Visualization.
     language_list=IO_csv_util.get_csv_field_values(outputFilename, 'Language')
     if len(language_list)>1:
@@ -198,7 +209,15 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                                                             'Stanza_' + f'{selected_language}' + '_' + annotator_params)
         selected_lang_df.to_csv(selected_lang_outputFilename, index=False, encoding = language_encoding)
         filesToOpen.extend(selected_lang_outputFilename)
+
     if "Lemma" in str(annotator_params) and 'Lemma' in outputFilename:
+        vocab_df = excludePOS(df)
+        vocab_df_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                    'Stanza_' + 'Lemma_Vocab')
+        vocab_df.to_csv(vocab_df_outputFilename, index=False, encoding = language_encoding)
+        filesToOpen.extend(vocab_df_outputFilename)
+
+
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted=['Form'],
@@ -231,7 +250,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, False)
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, False)
 
     return filesToOpen
 
@@ -325,9 +344,62 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         for idx in range(len(out_df)):
             temp_lang = out_df.at[idx, 'Language']
             out_df.at[idx, 'Language'] = lang_dict[temp_lang]
-    print('')
 
     return out_df
+
+# extract SVO from Stanza doc (depparse)
+# input: Stanza Document
+def extractSVO(doc, docID, inputFilename):
+    # output: svo_df
+    svo_df = pd.DataFrame(columns={'Subject (S)','VERB (V)','Object (O)'})
+    
+    # object and subject constants
+    OBJECT_DEPS = {"obj", "iobj", "dobj", "dative", "attr", "oprd"}
+    SUBJECT_DEPS = {"nsubj", "nsubj:pass", "csubj", "agent", "expl"}
+
+    # extraction of SVOs
+    c = 0
+    for sentence in doc.sentences:
+        for word in sentence.words:
+            tmp_head = sentence.words[word.head-1].deprel if word.head > 0 else "root"
+            if word.deprel in SUBJECT_DEPS or tmp_head in SUBJECT_DEPS:
+                svo_df.at[c, 'Subject (S)'] = word.text
+            if word.pos=='VERB':
+                svo_df.at[c, 'VERB (V)'] = word.text
+            if word.deprel in OBJECT_DEPS or tmp_head in OBJECT_DEPS:
+                svo_df.at[c, 'Object (O)'] = word.text
+            svo_df.at[c, 'Sentence ID'] =  c
+        c+=1
+    
+    # csv output columns    
+    svo_df['Document ID'] = docID
+    svo_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
+    
+    # replace NaN values accordingly
+    for index, row in svo_df.iterrows():
+        svo_df.at[index, 'Subject (S)'] = '?' if pd.isna(row['Subject (S)']) else row['Subject (S)']
+        svo_df.at[index, 'VERB (V)'] = '' if pd.isna(row['VERB (V)']) else row['VERB (V)']
+        svo_df.at[index, 'Object (O)'] = '' if pd.isna(row['Object (O)']) else row['Object (O)']
+            
+    return svo_df
+
+# extract SVO from multilingual doc
+def extractSVOMultilingual(stanza_doc, docID, inputFilename):
+    # output dataframe
+    out_df = pd.DataFrame()
+
+    # stanza doc to dict
+    for doc in stanza_doc:
+        temp_svo = extractSVO(doc, docID, inputFilename)
+        out_df = out_df.append(temp_svo)
+    
+    return out_df
+
+# input: Stanza DF
+def excludePOS(df, postag={'NUM', 'PUNCT'}):
+    for p in postag:
+        df = df[df["POStag"].str.contains(p)==False]
+    return df
 
 # Python dictionary of language (values) and their acronyms (keys)
 lang_dict  = dict(constants_util.languages)

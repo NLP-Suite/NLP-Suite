@@ -9,7 +9,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "sentence_analysis_ut
 import tkinter as tk
 import collections
 import os
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import pandas as pd
 import IO_csv_util
 import IO_files_util

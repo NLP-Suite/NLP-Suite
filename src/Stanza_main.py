@@ -93,6 +93,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             annotator = 'sentiment'
         elif 'SVO extraction' in Stanza_annotators_menu_var:
             annotator = 'SVO'
+        elif 'Gender' in Stanza_annotators_menu_var or 'Normalized NER' in Stanza_annotators_menu_var or 'Gender' in Stanza_annotators_menu_var:
+            mb.showwarning(title='Option not available n Stanza',message='The ' + Stanza_annotators_menu_var + ' is not available in Stanza.\n\nTh annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, open the Stanford CoreNLP GUI and run the annotator.')
         else:
             return
 
@@ -339,7 +341,7 @@ import json
 import stanza.resources.common
 DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
 from tkinter import *
-lang_dict  = dict(constants_util.languages)
+lang_dict = dict(constants_util.languages)
 
 def print_it(event):
     print(language_var.get())
@@ -460,7 +462,11 @@ Stanza_annotators_menu = tk.OptionMenu(window, Stanza_annotators_menu_var,
         'POS annotator',
         'NER annotator',
         'Sentiment analysis',
-        'SVO extraction (Subject-Verb-Object')
+        'SVO extraction (Subject-Verb-Object',
+        '',
+        'Gender annotator',
+        'Normalized NER date annotator',
+        'Quote/dialogue annotator')
 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                Stanza_annotators_menu)

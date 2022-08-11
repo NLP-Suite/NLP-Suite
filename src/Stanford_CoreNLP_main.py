@@ -34,23 +34,21 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         memory_var,
         document_length_var,
         limit_sentence_length_var,
-        manual_Coref, open_GUI, language_var, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, single_quote,
-        CoNLL_table_analyzer_var, CoreNLP_annotators_var, CoreNLP_annotators_menu_var,
-        other_parsers_annotators_var,
-        other_parsers_annotators_menu_var):
+        manual_Coref, open_GUI, package_var, language_var, parser, parser_menu_var, dateInclude, sep, date_field_position, dateFormat, single_quote,
+        CoNLL_table_analyzer_var, Annotators_var, Annotators_menu_var):
 
     filesToOpen = []
     outputCoNLLfilePath = ''
 
-    if open_GUI:
-        call("python Stanford_CoreNLP_coreference_main.py", shell=True)
-        return
+    # if open_GUI:
+    #     call("python Stanford_CoreNLP_coreference_main.py", shell=True)
+    #     return
 
     # check internet connection
     if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
         return
 
-    if parser == 0 and CoNLL_table_analyzer_var == 0 and CoreNLP_annotators_var == 0 and other_parsers_annotators_var == 0:
+    if parser == 0 and CoNLL_table_analyzer_var == 0 and Annotators_var == 0:
         mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
         return
 
@@ -58,105 +56,102 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         mb.showinfo("Warning", "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the CoreNLP parser checkbox and try again.")
         return
 
-    if CoreNLP_annotators_var and CoreNLP_annotators_menu_var == '':
+    if Annotators_var and Annotators_menu_var == '':
         mb.showinfo("Warning", "You have selected to run a CoreNLP annotator but no annotator has been selected.\n\nPlease, select an annotator and try try again.")
         return
+    print("package_var",package_var)
 
-    if parser or (CoreNLP_annotators_var and CoreNLP_annotators_menu_var != ''):
+    if package_var=='Stanford CoreNLP':
+        if parser or (Annotators_var and Annotators_menu_var != ''):
 
-        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py') == False:
-            return
+            if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py') == False:
+                return
 
-        if parser and parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
-            annotator='parser (pcfg)'
-        elif parser_menu_var == 'Neural Network':
-            annotator='parser (nn)'
-        else:
-            if CoreNLP_annotators_var and CoreNLP_annotators_menu_var != '':
-                if 'NER (GUI)' in CoreNLP_annotators_menu_var: # NER annotator
-                    if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_NER_main.py') == False:
-                        return
-                    call("python Stanford_CoreNLP_NER_main.py", shell=True)
-                elif 'Sentence splitter (with sentence length)' in CoreNLP_annotators_menu_var:
-                    annotator = 'Sentence'
-                elif 'Lemma annotator' in CoreNLP_annotators_menu_var:
-                    annotator = 'Lemma'
-                elif 'POS annotator' in CoreNLP_annotators_menu_var:
-                    annotator = 'All POS'
-                elif 'Gender' in CoreNLP_annotators_menu_var:
-                    annotator = 'gender'
-                elif 'Quote' in CoreNLP_annotators_menu_var:
-                    annotator = 'quote'
-                elif 'Normalized' in CoreNLP_annotators_menu_var:
-                    annotator = 'normalized-date'
-                elif '*' in CoreNLP_annotators_menu_var:
-                    annotator = ['gender','normalized-date','quote']
-                elif 'Sentiment analysis' in CoreNLP_annotators_menu_var:
-                    annotator = ['sentiment']
-                elif 'SVO' in CoreNLP_annotators_menu_var:
-                    annotator = ['SVO']
-                elif 'OpenIE' in CoreNLP_annotators_menu_var:
-                    annotator = ['OpenIE']
-                elif 'Coreference PRONOMINAL resolution' in CoreNLP_annotators_menu_var:
-                    annotator = []
-                    if IO_libraries_util.check_inputPythonJavaProgramFile(
-                            "Stanford_CoreNLP_coReference_util.py") == False:
-                        return
-                    file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename,
-                                                                                       inputDir,
-                                                                                       outputDir, openOutputFiles,
-                                                                                       createCharts, chartPackage,
-                                                                                       language_var, memory_var,
-                                                                                       manual_Coref)
-
-                    if error_indicator != 0:
-                        mb.showinfo("Coreference Resolution Error",
-                                    "Since Stanford CoreNLP Co-Reference Resolution throws error, " +
-                                    "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.")
-                    filesToOpen.extend(file_open)
-                else:
-                    return
-
-        if len(annotator)>0:
-            tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                           outputDir,
-                                                                           openOutputFiles, createCharts, chartPackage,
-                                                                           annotator, False, #'All POS',
-                                                                           language_var, memory_var, document_length_var, limit_sentence_length_var,
-                                                                           extract_date_from_filename_var=dateInclude,
-                                                                           date_format=dateFormat,
-                                                                           date_separator_var=sep,
-                                                                           date_position_var=date_field_position,
-                                                                           single_quote_var = single_quote)
-
-            if len(tempOutputFiles)>0:
-                filesToOpen.extend(tempOutputFiles)
-                if 'parser' in annotator:
-                    reminders_util.checkReminder(config_filename,
-                                                 reminders_util.title_options_CoreNLP_NER_tags,
-                                                 reminders_util.message_CoreNLP_NER_tags,
-                                                 True)
-                    if CoNLL_table_analyzer_var:
-                        if IO_libraries_util.check_inputPythonJavaProgramFile('CoNLL_table_analyzer_main.py') == False:
+            if parser and parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
+                annotator='parser (pcfg)'
+            elif parser_menu_var == 'Neural Network':
+                annotator='parser (nn)'
+            else:
+                if Annotators_var and Annotators_menu_var != '':
+                    if 'NER (GUI)' in Annotators_menu_var: # NER annotator
+                        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_NER_main.py') == False:
                             return
-                        # open the analyzer having saved the new parser output in config so that it opens the right input file
-                        config_filename_temp = 'conll_table_analyzer_config.csv'
-                        config_input_output_numeric_options = [1, 0, 0, 1]
-                        config_input_output_alphabetic_options = [str(tempOutputFiles[0]), '','',outputDir]
-                        config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
+                        call("python Stanford_CoreNLP_NER_main.py", shell=True)
+                    elif 'Sentence splitter (with sentence length)' in Annotators_menu_var:
+                        annotator = 'Sentence'
+                    elif 'Lemma annotator' in Annotators_menu_var:
+                        annotator = 'Lemma'
+                    elif 'POS annotator' in Annotators_menu_var:
+                        annotator = 'All POS'
+                    elif 'Gender' in Annotators_menu_var:
+                        annotator = 'gender'
+                    elif 'Quote' in Annotators_menu_var:
+                        annotator = 'quote'
+                    elif 'Normalized' in Annotators_menu_var:
+                        annotator = 'normalized-date'
+                    elif '*' in Annotators_menu_var:
+                        annotator = ['gender','normalized-date','quote']
+                    elif 'Sentiment analysis' in Annotators_menu_var:
+                        annotator = ['sentiment']
+                    elif 'SVO' in Annotators_menu_var:
+                        annotator = ['SVO']
+                    elif 'OpenIE' in Annotators_menu_var:
+                        annotator = ['OpenIE']
+                    elif 'Coreference PRONOMINAL resolution' in Annotators_menu_var:
+                        annotator = []
+                        if IO_libraries_util.check_inputPythonJavaProgramFile(
+                                "Stanford_CoreNLP_coReference_util.py") == False:
+                            return
+                        file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename,
+                                                                                           inputDir,
+                                                                                           outputDir, openOutputFiles,
+                                                                                           createCharts, chartPackage,
+                                                                                           language_var, memory_var,
+                                                                                           manual_Coref)
 
+                        if error_indicator != 0:
+                            mb.showinfo("Coreference Resolution Error",
+                                        "Since Stanford CoreNLP Co-Reference Resolution throws error, " +
+                                        "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.")
+                        filesToOpen.extend(file_open)
+                    else:
+                        return
+
+            if len(annotator)>0:
+                print("language_var",language_var)
+                tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+                                                                               outputDir,
+                                                                               openOutputFiles, createCharts, chartPackage,
+                                                                               annotator, False, #'All POS',
+                                                                               language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                               extract_date_from_filename_var=dateInclude,
+                                                                               date_format=dateFormat,
+                                                                               date_separator_var=sep,
+                                                                               date_position_var=date_field_position,
+                                                                               single_quote_var = single_quote)
+
+                if len(tempOutputFiles)>0:
+                    filesToOpen.extend(tempOutputFiles)
+                    if 'parser' in annotator:
                         reminders_util.checkReminder(config_filename,
-                                                     reminders_util.title_options_CoNLL_analyzer,
-                                                     reminders_util.message_CoNLL_analyzer,
+                                                     reminders_util.title_options_CoreNLP_NER_tags,
+                                                     reminders_util.message_CoreNLP_NER_tags,
                                                      True)
+            if CoNLL_table_analyzer_var:
+                if IO_libraries_util.check_inputPythonJavaProgramFile('CoNLL_table_analyzer_main.py') == False:
+                    return
+                # open the analyzer having saved the new parser output in config so that it opens the right input file
+                config_filename_temp = 'conll_table_analyzer_config.csv'
+                config_input_output_numeric_options = [1, 0, 0, 1]
+                config_input_output_alphabetic_options = [str(tempOutputFiles[0]), '','',outputDir]
+                config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
 
-                        call("python CoNLL_table_analyzer_main.py", shell=True)
+                reminders_util.checkReminder(config_filename,
+                                             reminders_util.title_options_CoNLL_analyzer,
+                                             reminders_util.message_CoNLL_analyzer,
+                                             True)
 
-    if other_parsers_annotators_var:
-        if other_parsers_annotators_menu_var=="Stanza":
-            call("python Stanza_main.py", shell=True)
-        elif other_parsers_annotators_menu_var=="spaCy":
-                call("python spaCy_main.py", shell=True)
+                call("python CoNLL_table_analyzer_main.py", shell=True)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -173,6 +168,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  limit_sentence_length_var.get(),
                                  manual_Coref_var.get(),
                                  open_GUI_var.get(),
+                                 package_var.get(),
                                  language_var.get(),
                                  parser_var.get(),
                                  parser_menu_var.get(),
@@ -182,10 +178,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  date_format.get(),
                                  quote_var.get(),
                                  CoNLL_table_analyzer_var.get(),
-                                 CoreNLP_annotators_var.get(),
-                                 CoreNLP_annotators_menu_var.get(),
-                                 other_parsers_annotators_var.get(),
-                                 other_parsers_annotators_menu_var.get())
+                                 Annotators_var.get(),
+                                 Annotators_menu_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -203,7 +197,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              increment=2)  # to be added for full display
 
 
-GUI_label = 'Graphical User Interface (GUI) for Stanford CoreNLP'
+GUI_label = 'Graphical User Interface (GUI) for parsers & annotators'
 # The 4 values of config_option refer to:
 #   input file
         # 1 for CoNLL file
@@ -230,14 +224,15 @@ input_main_dir_path = GUI_util.input_main_dir_path
 def clear(e):
     parser_var.set(1)
     parser_menu_var.set("Probabilistic Context Free Grammar (PCFG)")
-    CoreNLP_annotators_var.set(0)
-    CoreNLP_annotators_menu_var.set('')
+    Annotators_var.set(0)
+    Annotators_menu_var.set('')
     manual_Coref_checkbox.place_forget()  # invisible
     open_GUI_checkbox.place_forget()  # invisible
     quote_checkbox.place_forget()  # invisible
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
+package_var = tk.StringVar()
 language_var = tk.StringVar()
 memory_var = tk.IntVar()
 date_extractor_var = tk.IntVar()
@@ -256,14 +251,11 @@ date_position_var = tk.IntVar()
 
 CoNLL_table_analyzer_var = tk.IntVar()
 
-CoreNLP_annotators_var = tk.IntVar()
-CoreNLP_annotators_menu_var = tk.StringVar()
+Annotators_var = tk.IntVar()
+Annotators_menu_var = tk.StringVar()
 
 quote_var = tk.IntVar()
 y_multiplier_integer_SV=0 # used to set the quote_var widget on the proper GUI line
-
-other_parsers_annotators_var = tk.IntVar()
-other_parsers_annotators_menu_var = tk.StringVar()
 
 def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
@@ -364,6 +356,16 @@ def check_CoreNLP_dateFields(*args):
         date_position_menu.config(state="disabled")
 fileName_embeds_date.trace('w', check_CoreNLP_dateFields)
 
+package_lb = tk.Label(window,text='NLP package')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+                                               y_multiplier_integer, package_lb, True)
+package_var.set('Stanford CoreNLP')
+package_menu = tk.OptionMenu(window, package_var, 'Stanford CoreNLP','spaCy','Stanza')
+# language_menu.configure(state="disabled")
+
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
+                                               y_multiplier_integer, package_menu)
+
 language_lb = tk.Label(window,text='Language')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                y_multiplier_integer, language_lb, True)
@@ -375,7 +377,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                y_multiplier_integer, language_menu)
 
 parser_var.set(1)
-parser_checkbox = tk.Checkbutton(window, text='CoreNLP parser', variable=parser_var, onvalue=1, offvalue=0)
+parser_checkbox = tk.Checkbutton(window, text='Parsers', variable=parser_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                parser_checkbox, True)
 
@@ -425,13 +427,13 @@ CoNLL_table_analyzer_var.trace('w', check_CoNLL_table)
 
 check_CoNLL_table()
 
-CoreNLP_annotators_checkbox = tk.Checkbutton(window, text='CoreNLP annotators', variable=CoreNLP_annotators_var,
+Annotators_checkbox = tk.Checkbutton(window, text='Annotators', variable=Annotators_var,
                                              onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               CoreNLP_annotators_checkbox, True)
+                                               Annotators_checkbox, True)
 
-CoreNLP_annotators_menu_var.set("")
-CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var,
+Annotators_menu_var.set("")
+Annotators_menu = tk.OptionMenu(window, Annotators_menu_var,
         'Sentence splitter (with sentence length)',
         'Lemma annotator',
         'POS annotator',
@@ -442,11 +444,11 @@ CoreNLP_annotators_menu = tk.OptionMenu(window, CoreNLP_annotators_menu_var,
         'SVO extraction (Enhanced++ Dependencies; Neural Network)',
         '*',
         'Gender annotator (Neural Network)',
-        'Normalized NER date',
+        'Normalized NER date annotator',
         'Quote/dialogue annotator (Neural Network)')
 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
-                                               CoreNLP_annotators_menu)
+                                               Annotators_menu)
 
 manual_Coref_checkbox = tk.Checkbutton(window, text='Manual edit',
                                        variable=manual_Coref_var,
@@ -460,19 +462,19 @@ quote_checkbox = tk.Checkbutton(window, text='Include single quotes',
                                        variable=quote_var,
                                        onvalue=1, offvalue=0)
 
-def activate_CoreNLP_annotators_menu(*args):
+def activate_Annotators_menu(*args):
     global y_multiplier_integer, y_multiplier_integer_SV
-    if CoreNLP_annotators_var.get() == True:
+    if Annotators_var.get() == True:
         if parser_var.get():
-            if 'POS' in CoreNLP_annotators_menu_var.get():
+            if 'POS' in Annotators_menu_var.get():
                 mb.showinfo("Warning", "You have selected to run the CoreNLP parser AND the lemma/POS annotator. The parser already computes lemmas and POS tags.\n\nPlease, tick either the parser or the annotator checkbox.")
-                CoreNLP_annotators_var.set(0)
-                CoreNLP_annotators_menu_var.set('')
+                Annotators_var.set(0)
+                Annotators_menu_var.set('')
                 return
-        CoreNLP_annotators_menu.configure(state='normal')
+        Annotators_menu.configure(state='normal')
         if y_multiplier_integer_SV == 0:
             y_multiplier_integer_SV = y_multiplier_integer
-        if '*' in CoreNLP_annotators_menu_var.get() or 'dialogue' in CoreNLP_annotators_menu_var.get():
+        if '*' in Annotators_menu_var.get() or 'dialogue' in Annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer_SV-1
             quote_var.set(0)
             y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 400,
@@ -482,7 +484,7 @@ def activate_CoreNLP_annotators_menu(*args):
         else:
             quote_checkbox.place_forget()  # invisible
 
-        if 'Coreference' in CoreNLP_annotators_menu_var.get():
+        if 'Coreference' in Annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer-1
             manual_Coref_var.set(0)
             y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 400,
@@ -504,22 +506,13 @@ def activate_CoreNLP_annotators_menu(*args):
     else:
         manual_Coref_checkbox.place_forget()  # invisible
         open_GUI_checkbox.place_forget()  # invisible
-        CoreNLP_annotators_menu_var.set('')
-        CoreNLP_annotators_menu.configure(state='disabled')
+        Annotators_menu_var.set('')
+        Annotators_menu.configure(state='disabled')
 
-CoreNLP_annotators_var.trace('w', activate_CoreNLP_annotators_menu)
-CoreNLP_annotators_menu_var.trace('w', activate_CoreNLP_annotators_menu)
+Annotators_var.trace('w', activate_Annotators_menu)
+Annotators_menu_var.trace('w', activate_Annotators_menu)
 
-activate_CoreNLP_annotators_menu()
-
-other_parsers_annotators_var.set(0)
-other_parsers_annotators_checkbox = tk.Checkbutton(window, text='Other parsers and annotators (Open GUI)', variable=other_parsers_annotators_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,other_parsers_annotators_checkbox,True)
-
-other_parsers_annotators_menu_var.set("Stanza")
-other_parsers_annotators_menu = tk.OptionMenu(window, other_parsers_annotators_menu_var, 'Stanza', 'spaCy')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+50, y_multiplier_integer,
-                                               other_parsers_annotators_menu)
+activate_Annotators_menu()
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

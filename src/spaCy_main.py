@@ -88,6 +88,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             mb.showwarning('Warning',
                            'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
             return
+        elif 'Gender' in spaCy_annotators_menu_var or 'Normalized NER' in spaCy_annotators_menu_var or 'Gender' in spaCy_annotators_menu_var:
+            mb.showwarning(title='Option not available n Stanza',
+                           message='The ' + spaCy_annotators_menu_var + ' is not available in spaCy.\n\nTh annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, open the Stanford CoreNLP GUI and run the annotator.')
         else:
             return
 
@@ -378,7 +381,12 @@ spaCy_annotators_menu = tk.OptionMenu(window, spaCy_annotators_menu_var,
         'NER',
         'Coreference PRONOMINAL resolution',
         'Sentiment analysis',
-        'Word2Vec')
+        'Word2Vec',
+       'SVO extraction (Subject-Verb-Object',
+       '',
+       'Gender annotator',
+       'Normalized NER date annotator',
+       'Quote/dialogue annotator')
 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                spaCy_annotators_menu)

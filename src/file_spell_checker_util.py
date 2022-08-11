@@ -17,7 +17,7 @@ if not IO_libraries_util.install_all_packages(GUI_util.window,"spell_checker_uti
 
 import os
 from tkinter import filedialog
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import nltk
 import pandas
 import pandas as pd

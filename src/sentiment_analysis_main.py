@@ -106,10 +106,6 @@ def run(inputFilename,inputDir,outputDir,
 
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running ANEW Sentiment Analysis at', True, '', True, startTime)
 
-    if SA_algorithm_var!='*' and openOutputFiles==True:
-        # IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Warning', 'All csv output files have been saved to ' + outputDir)
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-
 #CORENLP  _______________________________________________________
 
     if SA_algorithm_var=='*' or CoreNLP_var==1 and (mean_var or median_var):

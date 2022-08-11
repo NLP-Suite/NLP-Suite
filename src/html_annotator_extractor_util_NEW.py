@@ -21,7 +21,7 @@ import re
 import os
 import csv
 import ntpath
-from stanza_functions import stanzaPipeLine, sent_tokenize_stanza
+from Stanza_functions import stanzaPipeLine, sent_tokenize_stanza
 
 import GUI_util
 

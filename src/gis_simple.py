@@ -20,12 +20,12 @@ output_filename = 'OUT_city_freq_2019nov5.csv'
 #df = pd.read_csv(inputFilenamename, encoding='utf-8')
 df = pd.read_csv(inputFilenamename, encoding='latin-1')
 
-#set Google API 
-api_key = "AIzaSyCJXUlilIGptXe2-YQrieW-orAdOXkuW2E"
+#set Google API
+api_key = ""
 #see: console.developers.google.com/apis
 
 #request lat,long and other data from google map API
-gmaps_key = googlemaps.Client(key = "AIzaSyCJXUlilIGptXe2-YQrieW-orAdOXkuW2E")
+gmaps_key = googlemaps.Client(key = "")
 
 #create empty columns to store results in my panda df
 df['Lat'] = None
@@ -47,8 +47,8 @@ for i in range(len(df)):
         lat = None
         lng = None
         add = None
-    print(i) 
-    
+    print(i)
+
 #print first 20 results to check
 print(df[:10])
 
@@ -58,5 +58,5 @@ df.isnull().sum() #135 null results
 #extract all 'None' resutls
 none = df[df['Add'].isnull()]
 
-#export results 
+#export results
 pd.DataFrame(df).to_csv(output_filename, encoding='utf-8')

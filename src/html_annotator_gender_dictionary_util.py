@@ -8,7 +8,7 @@ if not IO_libraries_util.install_all_packages(GUI_util.window,"Stanford_CoreNLP_
 import os
 import pandas as pd
 from tkinter import messagebox as mb
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import csv
 
 import GUI_IO_util

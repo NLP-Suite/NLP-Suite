@@ -39,7 +39,7 @@ import numpy as np #np
 import time
 import argparse
 
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import pandas as pd
 import tkinter.messagebox as mb
 
@@ -320,10 +320,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
         print('No input specified. Please, provide either a single file -- file or a directory of files to be analyzed --dir.')
         sys.exit(1)
 
-    if len(inputFilename)>0:
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,  outputDir, '.csv', 'SC', 'ANEW', '', '', '', False, True)
-    else:
-        outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir, outputDir, '.csv', 'SC_dir', 'ANEW', '', '', '', False, True)
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,  outputDir, '.csv', 'ANEW', '', '', '', '', False, True)
 
     filesToOpen.append(outputFilename)
     with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
@@ -397,6 +394,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                                                    count_var=0, hover_label=[],
                                                    outputFileNameType='',
                                                    column_xAxis_label='Sentiment score',
+                                                   column_yAxis_label='Scores',
                                                    groupByList=['Document ID', 'Document'],
                                                    plotList=columns_to_be_plotted,
                                                    chart_title_label='Measures of ANEW Sentiment Scores')

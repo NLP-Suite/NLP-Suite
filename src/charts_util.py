@@ -359,7 +359,8 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             column_yAxis_label_var='Frequencies',
             column_yAxis_field_list = [],
             reverse_column_position_for_series_label=False,
-            series_label_list=[], second_y_var=0,second_yAxis_label='', complete_sid = False, remove_hyperlinks=False):
+            series_label_list=[], second_y_var=0,second_yAxis_label='',
+            complete_sid = False, remove_hyperlinks=False):
 
     use_plotly = 'plotly' in chartPackage.lower()
     # added by Tony, May 2022 for complete sentence index
@@ -369,6 +370,10 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
         inputFilename = add_missing_IDs(inputFilename, inputFilename)
         # complete_sentence_index(inputFilename)
     if use_plotly:
+        if 'static' in chartPackage.lower():
+            static_flag=True
+        else:
+            static_flag = False
         Plotly_outputFilename = charts_plotly_util.create_plotly_chart(inputFilename = inputFilename,
                                                                         outputDir = outputDir,
                                                                         chartTitle = chart_title,
@@ -376,7 +381,8 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
                                                                         cols_to_plot = columns_to_be_plotted,
                                                                         column_xAxis_label = column_xAxis_label_var,
                                                                         column_yAxis_label = column_yAxis_label_var,
-                                                                        remove_hyperlinks = remove_hyperlinks)
+                                                                        remove_hyperlinks = remove_hyperlinks,
+                                                                        static_flag = static_flag)
         return Plotly_outputFilename
     # TODO
     data_to_be_plotted = prepare_data_to_be_plotted_inExcel(inputFilename,
@@ -529,7 +535,7 @@ def header_check(inputFile):
     sentenceID_pos=''
     docCol_pos=''
     docName_pos=''
-    frequency_pos=''
+    frequency_pos = []
 
     if isinstance(inputFile, pd.DataFrame):
         header = list(inputFile.columns)
@@ -551,8 +557,22 @@ def header_check(inputFile):
         pass
 
     # Frequenc to capture Frequency and Frequencies
-    if 'Frequenc' in header or 'Number of' in header or 'score' in header or 'Score' in header:
-        frequency_pos = header.index('Frequency')
+    # str added since the header may contain several instances of the searched item (e.g., Mean score, Median score)
+    #   in which case it would not be found
+    if 'Frequenc' in str(header) or 'Number of' in str(header) or 'score' in str(header) or 'Score' in str(header):
+        # the code would break with the wrong header item (e.g., no Frequency in header to get the index
+        # TODO 2 things:
+        #   1. get the right header value (e.g., Number of words, or Score, instead of Frequency)
+        #   2. Loop through the header containing a specific value (e.g., score) and get all its positions (e.g., Mean score, Median score)
+        #   frequency_pos needs to be a list [] rather than a string to accommodate for multiple instances
+        # https://stackoverflow.com/questions/64127075/how-to-retrieve-partial-matches-from-a-list-of-strings
+        if 'score' in str(header) or 'Score' in str(header):
+            result = list(filter(lambda x: 'Score' in x or 'score' in x, header))
+        try:
+            for i in range(0,len(result)):
+                frequency_pos.append(header.index(result[i]))
+        except:
+            pass
     else:
         pass
     return sentenceID_pos, docCol_pos, docName_pos, frequency_pos, header
@@ -570,9 +590,11 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
             if j == sentenceID_pos:
                 # insert Sentence ID
                 temp[j] = i
-                # when adding a new Sentence ID, insert a frequency value of 0, if there is a frequency column
-                if frequency_pos!='':
-                    temp[frequency_pos] = 0
+                # when adding a new Sentence ID, insert a frequency value of 0,
+                #   in every occurrence of a frequency column, whatever the name may be (Frequency, Frequencies, Number of, Score)
+                for i in range (0,len(frequency_pos)):
+                    if frequency_pos[i]!='':
+                        temp[frequency_pos[i]] = 0
             elif j == docCol_pos:
                 # insert Document ID
                 temp[j] = Row_list[index][docCol_pos]
@@ -591,7 +613,7 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
 # input can be a csv filename or a dataFrame
 # output is a csv file
 def add_missing_IDs(input, outputFilename):
-    from stanza_functions import stanzaPipeLine, sent_tokenize_stanza
+    from Stanza_functions import stanzaPipeLine, sent_tokenize_stanza
     if isinstance(input, pd.DataFrame):
         df = input
     else:

@@ -738,7 +738,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         create_chart_output_checkbox.set(1)
         # y_multiplier_integer=y_multiplier_integer+1
         # y_multiplier_integer=y_multiplier_integer+1
-        charts_options = ['Excel','Python plotLy']
+        charts_options = ['Excel','Python plotLy (dynamic)','Python plotLy (static)']
         charts_dropdown_field.set('Excel')
         charts_menu_lb = tk.OptionMenu(window,charts_dropdown_field,*charts_options)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+620,

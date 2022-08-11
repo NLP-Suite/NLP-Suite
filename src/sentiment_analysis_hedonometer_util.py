@@ -36,7 +36,7 @@ import statistics
 import time
 import argparse
 import tkinter.messagebox as mb
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 import IO_csv_util
 import GUI_IO_util
@@ -213,12 +213,8 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
 
     filesToOpen = []
 
-    if len(inputFilename) > 0:
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SC',
-                                                                 'Hedonometer', '', '', '', False, True)
-    else:
-        outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir, outputDir, '.csv', 'SC_dir',
-                                                                 'Hedonometer', '', '', '', False, True)
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Hedo',
+                                                                 '', '', '', '', False, True)
 
     if len(outputDir) < 0 or not os.path.exists(outputDir):  # empty output
         print('No output directory specified, or path does not exist')
@@ -281,6 +277,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                                                    count_var=0, hover_label=[],
                                                    outputFileNameType='Hedo',  # 'line_bar',
                                                    column_xAxis_label='Sentiment score',
+                                                   column_yAxis_label='Scores',
                                                    groupByList=['Document ID', 'Document'],
                                                    plotList=['Sentiment Score'],
                                                    chart_title_label='Measures of Hedonometer Sentiment Scores')

@@ -39,7 +39,7 @@ from nltk.corpus import wordnet as wn
 from nltk.corpus import sentiwordnet as swn
 # from nltk import tokenize
 from nltk import word_tokenize, pos_tag
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 # if SentiWordNet fails, run: "python -m nltk.downloader all"
 
@@ -85,7 +85,7 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
     #the output filename is reset in the specific script; must be passed as a parameter
     #cannot use time in the filename or when re-generated n the main sentimen_concreteness_analysis.py it will have a different time stamp and the file will not be found
     if output_file == '':
-        output_file = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'SC', 'SentiWordNet', '', '', '', False, True)
+        output_file = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'SentiWordNet', '', '', '', '', False, True)
 
     # read file into string
     with open(inputFilename, 'r',encoding='utf-8',errors='ignore') as myfile:
@@ -165,12 +165,8 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
 
     filesToOpen = []
 
-    if len(inputFilename) > 0:
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SC',
-                                                                 'SentiWordNet', '', '', '', False, True)
-    else:
-        outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir, outputDir, '.csv', 'SC_dir',
-                                                                 'SentiWordNet', '', '', '', False, True)
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SentiWordNet',
+                                                                 '', '', '', '', False, True)
 
     if len(outputDir) < 0 or not os.path.exists(outputDir):
         print('No output directory specified, or path does not exist.')
@@ -221,6 +217,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                                                    count_var=0, hover_label=[],
                                                    outputFileNameType='SentiWordNet',  # 'line_bar',
                                                    column_xAxis_label='Sentiment score',
+                                                   column_yAxis_label='Scores',
                                                    groupByList=['Document ID', 'Document'],
                                                    plotList=['Sentiment score'],
                                                    chart_title_label='Measures of SentiWordNet Sentiment Scores')

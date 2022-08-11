@@ -21,7 +21,7 @@ import IO_csv_util
 import IO_user_interface_util
 import charts_util
 
-from stanza_functions import stanzaPipeLine, lemmatize_stanza
+from Stanza_functions import stanzaPipeLine, lemmatize_stanza
 
 #This fuction reads the social actor list from the same directory
 #and save that into a set called "my_soc_actors"

@@ -49,7 +49,7 @@ import tkinter.messagebox as mb
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 # from nltk import tokenize
 # from nltk import word_tokenize
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 import GUI_IO_util
 import IO_csv_util
@@ -232,11 +232,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
         print('No input specified. Please, provide either a single file -- file or a directory of files to be analyzed --dir.')
         sys.exit(1)
 
-    if len(inputFilename)>0:
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,  outputDir, '.csv', 'SC', 'VADER', '', '', '', False, True)
-    else:
-        outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir, outputDir, '.csv', 'SC_dir', 'VADER', '', '', '', False, True)
-
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,  outputDir, '.csv', 'VADER', '', '', '', '', False, True)
 
     with open(outputFilename, 'w', encoding='utf-8',errors='ignore', newline='') as csvfile:
 
@@ -295,6 +291,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                                                    count_var=0, hover_label=[],
                                                    outputFileNameType='VADER',  # 'line_bar',
                                                    column_xAxis_label='Sentiment label',
+                                                   column_yAxis_label='Scores',
                                                    groupByList=['Document ID', 'Document'],
                                                    plotList=['Sentiment Score'],
                                                    chart_title_label='Measures of VADER Sentiment Scores')
