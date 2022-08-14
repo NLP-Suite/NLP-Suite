@@ -15,11 +15,10 @@ from subprocess import call
 
 import IO_files_util
 import IO_user_interface_util
-import charts_util
 import lib_util
 import GUI_IO_util
 import reminders_util
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
 import sentiment_analysis_hedonometer_util
 import sentiment_analysis_SentiWordNet_util
 import sentiment_analysis_VADER_util
@@ -69,25 +68,33 @@ def run(inputFilename,inputDir,outputDir,
 
     SentiWordNet_var=0
     CoreNLP_var=0
+    Stanza_var=0
+    spaCy_var=0
     hedonometer_var=0
     vader_var=0
     anew_var=0
 
     if SA_algorithm_var=='*':
-        SentiWordNet_var=1
         CoreNLP_var=1
+        spaCy_var=1
+        Stanza_var=1
+        anew_var=1
         hedonometer_var=1
+        SentiWordNet_var=1
         vader_var=1
-        anew_var=1
-    elif SA_algorithm_var=='Stanford CoreNLP (Neural Network)':
-        CoreNLP_var=1
-    elif SA_algorithm_var=='SentiWordNet':
+    elif 'spaCy' in SA_algorithm_var:
+        spaCy_var = 1
+    elif 'Stanford CoreNLP' in SA_algorithm_var:
+        CoreNLP_var = 1
+    elif 'Stanza' in SA_algorithm_var:
+        Stanza_var=1
+    elif 'SentiWordNet' in SA_algorithm_var:
         SentiWordNet_var=1
-    elif SA_algorithm_var=='ANEW':
+    elif 'ANEW' in SA_algorithm_var:
         anew_var=1
-    elif SA_algorithm_var=='hedonometer':
+    elif 'hedonometer' in SA_algorithm_var:
         hedonometer_var=1
-    elif SA_algorithm_var=='VADER':
+    elif 'VADER' in SA_algorithm_var:
         vader_var=1
 
     #ANEW _______________________________________________________
@@ -106,7 +113,19 @@ def run(inputFilename,inputDir,outputDir,
 
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running ANEW Sentiment Analysis at', True, '', True, startTime)
 
-#CORENLP  _______________________________________________________
+# spaCy  _______________________________________________________
+
+    if SA_algorithm_var == '*' or spaCy_var == 1 and (mean_var or median_var):
+        # check internet connection
+        import IO_internet_util
+        if not IO_internet_util.check_internet_availability_warning('spaCy Sentiment Analysis'):
+            return
+        #     flag="true" do NOT produce individual output files when processing a directory; only merged file produced
+        #     flag="false" or flag="" ONLY produce individual output files when processing a directory; NO  merged file produced
+
+        flag = "false"  # the true option does not seem to work
+
+# Stanford CORENLP  _______________________________________________________
 
     if SA_algorithm_var=='*' or CoreNLP_var==1 and (mean_var or median_var):
         #check internet connection
@@ -118,7 +137,7 @@ def run(inputFilename,inputDir,outputDir,
 
         flag = "false" # the true option does not seem to work
 
-        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
             return
         # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Stanford CoreNLP Sentiment Analysis',
         #                                    'Started running Stanford CoreNLP Sentiment Analysis at', True,
@@ -128,7 +147,7 @@ def run(inputFilename,inputDir,outputDir,
         # set memory_var if not there
         if memory_var==0:
             memory_var=4
-        outputFilename = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+        outputFilename = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                           outputDir, openOutputFiles, createCharts, chartPackage,'sentiment', False,
                                                                           language_var,
                                                                           memory_var)
@@ -136,21 +155,29 @@ def run(inputFilename,inputDir,outputDir,
         if SA_algorithm_var!='*' and len(outputFilename)>0:
             filesToOpen.extend(outputFilename)
 
-        if shape_of_stories_var:
-            if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py') == False:
-                return
+# Stanza  _______________________________________________________
 
-            # open the shape of stories GUI  having saved the new SA output in config so that it opens the right input file
-            config_filename_temp = 'shape_of_stories_config.csv'
-            config_input_output_numeric_options = [3, 1, 0, 1]
-            config_input_output_alphabetic_options = [outputFilename, '','',outputDir]
-            config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
+    if SA_algorithm_var == '*' or Stanza_var == 1 and (mean_var or median_var):
+        # check internet connection
+        import IO_internet_util
+        if not IO_internet_util.check_internet_availability_warning('Stanza Sentiment Analysis'):
+            return
 
-            reminders_util.checkReminder(config_filename,
-                                         reminders_util.title_options_shape_of_stories,
-                                         reminders_util.message_shape_of_stories,
-                                         True)
-            call("python shape_of_stories_main.py", shell=True)
+    if (spaCy_var or CoreNLP_var or Stanza_var) and shape_of_stories_var:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py') == False:
+            return
+
+        # open the shape of stories GUI  having saved the new SA output in config so that it opens the right input file
+        config_filename_temp = 'shape_of_stories_config.csv'
+        config_input_output_numeric_options = [3, 1, 0, 1]
+        config_input_output_alphabetic_options = [outputFilename, '','',outputDir]
+        config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
+
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_shape_of_stories,
+                                     reminders_util.message_shape_of_stories,
+                                     True)
+        call("python shape_of_stories_main.py", shell=True)
 
 #HEDONOMETER _______________________________________________________
 
@@ -292,12 +319,18 @@ median_checkbox = tk.Checkbutton(window, text='Calculate sentence median', varia
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200,y_multiplier_integer,median_checkbox)
 
 def display_reminder(*args):
-    if SA_algorithm_var.get()=='Stanford CoreNLP (Neural Network)':
+    if 'Neural network' in SA_algorithm_var.get() or 'Dictionar' in SA_algorithm_var.get():
+        mb.showwarning('Warning', SA_algorithm_var.get() + " is only a label. Please, select one of the indented sentiment analysis options and try again.")
+        return
+    if SA_algorithm_var.get()=='':
+        mb.showwarning('Warning',"The selected option is only a spacer. Please, select one of the indented sentiment analysis options and try again.")
+        return
+    if 'Stanford CoreNLP' in SA_algorithm_var.get():
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_SA_CoreNLP_system_requirements,
                                      reminders_util.message_SA_CoreNLP_system_requirements,
                                      True)
-    elif SA_algorithm_var.get()=='VADER':
+    elif 'VADER' in SA_algorithm_var.get():
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_SA_VADER,
                                      reminders_util.message_SA_VADER,
@@ -307,7 +340,7 @@ def display_reminder(*args):
                                          reminders_util.title_options_VADER_MeanMedian,
                                          reminders_util.message_VADER_MeanMedian,
                                          True)
-    elif SA_algorithm_var.get() == 'SentiWordNet':
+    elif 'SentiWordNet' in SA_algorithm_var.get():
         reminders_util.checkReminder(config_filename,
                                     reminders_util.title_options_SA_SentiWordNet,
                                     reminders_util.message_SA_SentiWordNet,
@@ -316,7 +349,7 @@ def display_reminder(*args):
         return
 SA_algorithm_var.trace('w',display_reminder)
 
-SA_algorithms=['*','Stanford CoreNLP (Neural Network)','ANEW','hedonometer','SentiWordNet','VADER']
+SA_algorithms=['*','Neural networks:','   spaCy','   Stanford CoreNLP','   Stanza','','Dictionaries:','   ANEW','   hedonometer','   SentiWordNet','   VADER']
 
 SA_algorithm_var.set('*')
 SA_algorithm_lb = tk.Label(window, text='Select sentiment analysis algorithm')
@@ -329,7 +362,7 @@ y_multiplier_integerSV=y_multiplier_integer-1
 def activate_memory_var(*args):
 
     global language_var, memory_var, y_multiplier_integer, language_menu
-    if SA_algorithm_var.get()=='Stanford CoreNLP (Neural Network)' or SA_algorithm_var.get()=='*':
+    if 'spaCy' in SA_algorithm_var.get() or 'Stanford CoreNLP' in SA_algorithm_var.get() or 'Stanza' in SA_algorithm_var.get() or SA_algorithm_var.get()=='*':
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+590, y_multiplier_integerSV,
                                                        language_var_lb, True)
         language_var.set('English')
@@ -371,7 +404,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 def activate_SOS(*args):
     # the Shape of Stories is only available when processing a directory and using oreNLP
-    if input_main_dir_path.get()=='' or (SA_algorithm_var.get()!='Stanford CoreNLP (Neural Network)' and SA_algorithm_var.get()!='*'):
+    if input_main_dir_path.get()=='' or (SA_algorithm_var.get()!='Stanford CoreNLP' and SA_algorithm_var.get()!='*'):
         shape_of_stories_checkbox.config(state='disabled')
     else:
         shape_of_stories_checkbox.config(state='normal')

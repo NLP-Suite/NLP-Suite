@@ -31,6 +31,7 @@ def run(inputFilename,input_main_dir_path, output_dir_path,
     chartPackage,
     script_to_run,
     IO_values):
+
     if script_to_run=='':
         mb.showwarning('No option selection','No option has been selected.\n\nPlease, using the dropdown menus, select one of the many General tools and/or Linguistic analysis tools, then click on RUN again.')
         return
@@ -91,6 +92,7 @@ window = GUI_util.window
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 setup_IO_OK_checkbox_var = tk.IntVar()
+setup_NLP_package_language_OK_checkbox_var = tk.IntVar()
 setup_software_OK_checkbox_var = tk.IntVar()
 
 script_to_run=''
@@ -183,14 +185,12 @@ def checkIO_Filename_InputDir(script, IO_values_local=0, fileExtension=''):
 pydict = {}
 pydict[""] = ["", 0]  # not available
 # https://stanfordnlp.github.io/CoreNLP/quote.html
-pydict["Stanford CoreNLP"] = ["Stanford_CoreNLP_main", 1]
-pydict["Stanza"] = ["Stanza_main.py", 1]
-pydict["spaCy"] = ["spaCy_main.py", 1]
-pydict["CoreNLP annotator - date (NER normalized date)"] = ["Stanford_CoreNLP_main.py", 1]
+pydict["NLP parsers & annotators (CoreNLP, spaCy, Stanza)"] = ["NLP_parsers_annotators_main.py", 1]
+pydict["CoreNLP annotator - date (NER normalized date)"] = ["NLP_parsers_annotators_main.py", 1]
 pydict["CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)"] = ["html_annotator_gender_main.py", 1]
-pydict["CoreNLP annotator - quote"] = ["Stanford_CoreNLP_main.py", 1]
+pydict["CoreNLP annotator - quote"] = ["NLP_parsers_annotators_main.py", 1]
 pydict["CoreNLP annotator - coreference (pronominal)"] = ["Stanford_CoreNLP_coreference_main.py", 1]
-pydict["CoreNLP annotator - SVO (Subject-Verb-Object) extractor & visualization"] = ["Stanford_CoreNLP_SVO_main.py", 1]
+pydict["SVO (Subject-Verb-Object) extractor & visualization"] = ["SVO_main.py", 1]
 pydict["Knowledge graphs: DBpedia & YAGO"] = ["knowledge_graphs_DBpedia_YAGO_main.py", 1]
 pydict["HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)"] = ["html_annotator_main.py", 1]
 pydict["HTML annotator extractor"] = ["html_annotator_main.py", 1]
@@ -198,8 +198,8 @@ pydict["Annotator - hedge/uncertainty"] = ["", 0]
 pydict["CoNLL table analyzer - Search the CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["CoNLL table analyzer - Clause, noun, verb, function words frequencies"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Statistics (csv files)"] = ["statistics_csv_main.py", 1]
-pydict["Statistics (txt files)"] = ["statistics_txt_main.py", 1]
-pydict["Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)"] = ["Stanford_CoreNLP_main.py", 1]
+pydict["Statistics (txt files)"] = ["style_analysis_main.py", 1]
+pydict["Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)"] = ["NLP_parsers_annotators_main.py", 1]
 pydict["Co-Occurrences viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Data manager (csv files via Pandas)"] = ["data_manager_main.py", 1]
 pydict["File checker (file content)"] = ["file_checker_converter_cleaner_main.py", 1]
@@ -258,7 +258,7 @@ pydict["Spelling checker cleaner (Find & Replace string)"] = ["file_checker_conv
 # pydict["Spelling checker (via pyspellchecker)"] = ["file_spell_checker_main.py", 1]
 # pydict["Spelling checker (via textblob)"] = ["file_spell_checker_main.py", 1]
 pydict["SQL database (via SQLite)"] = ["DB_SQL_main.py", 1]
-pydict["Stanford CoreNLP"] = ["Stanford_CoreNLP_main.py", 1]
+pydict["Stanford CoreNLP"] = ["NLP_parsers_annotators_main.py", 1]
 pydict["Semantic analysis (via TensorFlow)"] = ["", 0]
 pydict["SRL Semantic Role Labeling"] = ["", 0]
 pydict["Dictionary items by sentence index"] = ["sentence_analysis_util.dictionary_items_bySentenceID", 0, 3, 'txt']
@@ -268,7 +268,7 @@ pydict["utf-8 compliance"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["Style analysis (ALL options GUI)"] = ["style_analysis_main.py", 1]
 pydict["Narrative analysis (ALL options GUI)"] = ["narrative_analysis_main.py", 1]
 pydict["WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW"] = ["whats_in_your_corpus_main.py", 1]
-pydict["Corpus/document(s) statistics (Sentences, words, lines)"] = ["statistics_NLP_main.py", 1]
+pydict["Corpus/document(s) statistics (Sentences, words, lines)"] = ["style_analysis_main.py", 1]
 pydict["Word clouds (ALL options GUI)"] = ["wordclouds_main.py", 1]
 pydict["WordNet"] = ["knowledge_graphs_WordNet_main.py", 1]
 pydict["Word2Vec (via Gensim)"] = ["word2vec_main.py", 1]
@@ -308,6 +308,49 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 open_default_IO_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'default_config.csv'))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button, y_multiplier_integer,
                                                open_default_IO_config_button, False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button-300, "Open the default_config.csv file containing the default Input/Output options")
+
+setup_NLP_package_language_OK_checkbox = tk.Checkbutton(window, state='disabled',
+                                      variable=setup_NLP_package_language_OK_checkbox_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               setup_NLP_package_language_OK_checkbox, True)
+
+def setup_NLP_package_language_checkbox(package):
+    state = str(GUI_util.run_button['state'])
+    if state != 'disabled':
+        setup_NLP_package_language_OK_checkbox_var.set(1)
+    else:
+        setup_NLP_package_language_OK_checkbox_var.set(0)
+setup_NLP_package_language_OK_checkbox_var.trace('w', lambda x, y, z: setup_NLP_package_language_checkbox(''))
+
+def callback(package: str):
+    setup_NLP_package_language_OK_checkbox_var.set(package)
+    setup_NLP_package_language_checkbox(package)
+
+def setup_NLP_package_language_warning():
+    global package
+    mb.showwarning('External software option', 'Please, select next the NLP package you wish to use as your default package for parser and annotators using the dropdown menu.')
+    package = GUI_IO_util.dropdown_menu_widget(window, "Please, select the NLP package you wish to use as your default package for parser and annotators using the dropdown menu on the left, then click OK to accept your selection", ['spaCy', 'Stanford CoreNLP', 'Stanza'],'Stanford CoreNLP',callback)
+    if package != None:
+        setup_NLP_package_language_checkbox(package)
+
+def setup_NLP_package_language():
+    GUI_util.setup_IO_configuration_options(False,scriptName,True)
+    setup_NLP_package_language_checkbox()
+
+def setup_NLP_package_language_checkbox():
+    state = str(GUI_util.run_button['state'])
+    if state != 'disabled':
+        setup_NLP_package_language_OK_checkbox.set(1)
+    else:
+        setup_NLP_package_language_OK_checkbox.set(0)
+
+NLP_package_language_setup_button = tk.Button(window, text='Setup default NLP parser & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=lambda: setup_NLP_package_language_warning())
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+30, y_multiplier_integer,
+                                               NLP_package_language_setup_button,True)
+
+open_default_NLP_package_language_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'default_NLP_package_language_config.csv'))
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_NLP_package_language_config_button, y_multiplier_integer,
+                                               open_default_NLP_package_language_config_button, False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button-300, "Open the default_NLP_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
 
 setup_software_checkbox = tk.Checkbutton(window, state='disabled',
                                          variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0)
@@ -477,6 +520,8 @@ def help_buttons(window, help_button_x_coordinate,y_multiplier_integer):
     # leave a blank line to separate general tools
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer+1,"NLP Suite Help",
                                   "Please, click on the button to the right to open the GUI that will allow you to setup default I/O options:\n   INPUT file and or directory of files (your corpus) and\n   OUTPUT directory where all files (csv, txt, html, kml, jpg) produced by the NLP-Suite tools will be saved.\n\nThese default I/O options will be used for all GUIs.\n\nThe checkbox at the beginning of the line is set to OK if all INPUT/OUTPUT options have been successfully selected and saved in the default_config.csv file under the subdirecory config.\n\nYou can open the default_config.csv file by clicking on the button at the end of the line." + GUI_IO_util.msg_IO_config)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                  "Please, click on the button to the right to open the GUI that will allow you to setup default NLP package to be used for parsers and annotators (spaCy, Stanford CoreNLP, Stanza) and the language of your corpus.\n\nThe checkbox at the beginning of the line is set to OK if all INPUT/OUTPUT options have been successfully selected and saved in the default_config.csv file under the subdirecory config.\n\nYou can open the default_config.csv file by clicking on the button at the end of the line." + GUI_IO_util.msg_IO_config)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                   "The NLP-Suite relies for some of its operations on external software that needs to be downloaded and installed (Stanford CoreNLP, WordNet, MALLET, SENNA, Gephi, Google Earth Pro). When using any of these software, the NLP-Suite needs to know where they have been installed on your computer (e.g., C:\Program Files (x86)\WordNet).\n\nPlease, click on the 'Select external software' button to select the software option that you want to link to its installation directory. YOUR SELECTION WILL BE SAVED IN THE software_config.csv FILE UNDER THE SUBDIRECTORY config.\n\nThe checkbox at the beginning of the line is set to OK if all external software packages have been successfully installed.\n\nYou can open the software_config.csv file by clicking on the button at the end of the line.\n\n"
                                   "The software_config.csv file has three columns (with headers Software, Path, Download_link) and 6 rows, one for each of the external software and with the followining expected labels: Stanford CoreNLP, MALLET, SENNA, WordNet, Gephi, Google Earth Pro and where "

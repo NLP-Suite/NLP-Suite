@@ -63,9 +63,9 @@ def run(inputFilename,inputdirname, outdirname,
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
 
-    # if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_main.py')==False:
+    # if IO_libraries_util.check_inputPythonJavaProgramFile('NLP_parsers_annotators_main.py')==False:
     #     return
-    #     call("python Stanford_CoreNLP_main.py", shell=True)
+    #     call("python NLP_parsers_annotators_main.py", shell=True)
 
     if characters_NER_var==True or time_NER_var==True or space_NER_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_NER_main.py')==False:
@@ -88,9 +88,9 @@ def run(inputFilename,inputdirname, outdirname,
         call("python annotator_gender_main.py", shell=True)
 
     if story_plot_var==True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_main.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('NLP_parsers_annotators_main.py') == False:
             return
-        call("Stanford_CoreNLP_main.py", shell=True)
+        call("NLP_parsers_annotators_main.py", shell=True)
 
     if space_GIS_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('GIS_main.py')==False:
@@ -98,9 +98,9 @@ def run(inputFilename,inputdirname, outdirname,
         call("python GIS_main.py", shell=True)
 
     if SVO_var==True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_SVO_main.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('SVO_main.py')==False:
             return
-        call("python Stanford_CoreNLP_SVO_main.py", shell=True)
+        call("python SVO_main.py", shell=True)
 
     if shape_stories_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py')==False:

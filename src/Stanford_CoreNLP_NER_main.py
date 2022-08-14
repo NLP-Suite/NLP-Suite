@@ -13,7 +13,7 @@ import tkinter.messagebox as mb
 from subprocess import call
 
 import GUI_IO_util
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
 import IO_files_util
 import IO_user_interface_util
 
@@ -37,7 +37,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                        message='The Stanford CoreNLP NER annotator is not available for Arabic.')
         return
 
-    tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
+    tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                         openOutputFiles, createCharts, chartPackage,
                                                         'NER',
                                                         language=language_var,

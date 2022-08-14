@@ -580,10 +580,10 @@ NLP_Suite_corpus_tools_menu = 'Co-Occurrences viewer', 'N-grams viewer', \
 'Similarities between documents (via Java Lucene)', 'Topic modeling (via Gensim)', \
 'Topic modeling (via MALLET)'
 
-NLP_Suite_corpus_document_tools_menu = 'WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW', 'Corpus/document(s) statistics (Sentences, words, lines)', 'Stanford CoreNLP', 'Stanza', 'spaCy', 'CoNLL table analyzer - Search the CoNLL table', \
+NLP_Suite_corpus_document_tools_menu = 'WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW', 'Corpus/document(s) statistics (Sentences, words, lines)', 'NLP parsers & annotators (CoreNLP, spaCy, Stanza)', 'CoNLL table analyzer - Search the CoNLL table', \
 'CoNLL table analyzer - Clause, noun, verb, function words frequencies', 'CoreNLP annotator - date (NER normalized date)', \
 'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)', 'CoreNLP annotator - quote', \
-'CoreNLP annotator - coreference (pronominal)', 'CoreNLP annotator - SVO (Subject-Verb-Object) extractor & visualization', 'Knowledge graphs: DBpedia & YAGO', \
+'CoreNLP annotator - coreference (pronominal)', 'SVO (Subject-Verb-Object) extractor & visualization', 'Knowledge graphs: DBpedia & YAGO', \
 'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', 'Annotator - hedge/uncertainty', 'Narrative analysis (ALL options GUI)', 'Style analysis (ALL options GUI)', \
 'Sentiment analysis', 'Sentiments/emotions (ALL options GUI)', 'Gender guesser', 'Geographic maps: From texts to maps', 'Geographic maps: Google Earth Pro', \
 'NER (Named Entity Recognition) extractor', 'N-grams (word & character)', 'Nominalization', 'Search (ALL options GUI)', 'Search CoNLL table', \

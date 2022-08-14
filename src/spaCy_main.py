@@ -18,7 +18,7 @@ import IO_user_interface_util
 import config_util
 import reminders_util
 import IO_internet_util
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
 import Stanford_CoreNLP_coreference_util
 import CoNLL_util
 import file_checker_util
@@ -133,7 +133,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     if other_parsers_annotators_var:
         if other_parsers_annotators_menu_var=="Stanford CoreNLP":
-            call("python Stanford_CoreNLP_main.py", shell=True)
+            call("python NLP_parsers_annotators_main.py", shell=True)
         elif other_parsers_annotators_menu_var=="Stanza":
                 call("python Stanza_main.py", shell=True)
 

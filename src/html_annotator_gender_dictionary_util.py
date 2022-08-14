@@ -14,7 +14,7 @@ import csv
 import GUI_IO_util
 import IO_files_util
 import IO_csv_util
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
 
 # put the script of generate two big csvs into this file
 
@@ -59,7 +59,7 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
     date_separator_var = ''
     date_position_var = ''
 
-    tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
+    tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                         openOutputFiles, createCharts, chartPackage,
                                                         'NER',
                                                         NERs=['PERSON'],

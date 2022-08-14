@@ -26,7 +26,7 @@ import IO_files_util
 import IO_csv_util
 import reminders_util
 
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
 
 import sentiment_analysis_ANEW_util as ANEW
 import sentiment_analysis_VADER_util as VADER
@@ -109,7 +109,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 computeSAScores=mb.askyesno("Sentiment Analysis","You have selected to run sentiment analysis on your corpus. But there already exists a csv file of sentiment scores for this corpus saved in the default output directory:\n\n"+outputFilename+"\n\nAre you sure you want to recompute the scores?")
                 if not computeSAScores:
                     return
-            tempOutputfile=Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles, createCharts, chartPackage,'sentiment',False, memory_var)
+            tempOutputfile=Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles, createCharts, chartPackage,'sentiment',False, memory_var)
             if tempOutputfile==None:
                 return
             sentiment_scores_input=tempOutputfile[0]

@@ -22,9 +22,6 @@ import Stanza_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPackage,
-    CoNLL_table_analysis_var,
-    n_grams_var,
-    nominalization_var,
     corpus_statistics_var,
     corpus_statistics_options_menu_var,
     corpus_text_options_menu_var,
@@ -38,27 +35,56 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     openOutputFilesSV=openOutputFiles
     outputDir_style=outputDir
 
-    if (CoNLL_table_analysis_var==False and
-        n_grams_var==False and
-        nominalization_var==False and
-        corpus_statistics_var==False and
+    if (corpus_statistics_var==False and
         complexity_readability_analysis_var == False and
         vocabulary_analysis_var == False and
         gender_guesser_var==False):
         mb.showwarning('Warning','No options have been selected.\n\nPlease, select an option and try again.')
         return
 
-    if CoNLL_table_analysis_var == True:
-        call("python CoNLL_table_analyzer_main.py", shell=True)
-        return
+    # COMPUTE Ngrams ______________________________________________________________________________
 
-    if n_grams_var == True:
-        call("python NGrams_CoOccurrences_Viewer_main.py", shell=True)
-        return
+    if n_grams_var:
+        n_grams_word_var = False
+        n_grams_character_var = False
+        normalize = False
+        case_sensitive = False
+        n_grams_size = 3  # default number of n_grams
+        excludePunctuation = False
+        bySentenceIndex_word_var = False
+        bySentenceIndex_character_var = False
+        if n_grams_menu_var == "Word":
+            n_grams_word_var = True
+        else:
+            n_grams_character_var = True
+        bySentenceIndex_character_var = False
+        if 'Hapax' in str(n_grams_list):
+            n_grams_size = 1
+        if 'punctuation' in str(n_grams_list):
+            excludePunctuation = True
+        if 'sentence index' in str(n_grams_list):
+            if n_grams_menu_var == "Word":
+                bySentenceIndex_word_var = True
+            else:
+                bySentenceIndex_character_var = True
 
-    if nominalization_var == True:
-        call("python nominalization_main.py", shell=True)
-        return
+        if n_grams_word_var or n_grams_character_var or bySentenceIndex_word_var or bySentenceIndex_character_var:
+            if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
+                return
+
+        if n_grams_word_var or bySentenceIndex_word_var:
+            statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
+                                                              outputDir, n_grams_size, normalize,
+                                                              excludePunctuation, 1, openOutputFiles,
+                                                              createCharts, chartPackage,
+                                                              bySentenceIndex_word_var)
+        if n_grams_character_var or bySentenceIndex_character_var:
+            statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
+                                                              outputDir, n_grams_size, normalize,
+                                                              excludePunctuation, 0, openOutputFiles,
+                                                              createCharts, chartPackage,
+                                                              bySentenceIndex_character_var)
+
     if corpus_statistics_var:
         stopwords_var = False
         lemmatize_var = False
@@ -185,48 +211,48 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                 if output != None:
                     filesToOpen.extend(output)
 
-    # if ngrams_analysis_var == True:
-    #     if '*' in ngrams_analysis_menu_var or 'Character' in ngrams_analysis_menu_var or 'Word' in ngrams_analysis_menu_var:
-    #         if 'Character' in ngrams_analysis_menu_var:
-    #             ngramType=0
-    #         else:
-    #             ngramType = 1
-    #         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
-    #             return
-    #         ngramsNumber=4
-    #         normalize = False
-    #         excludePunctuation = True
-    #         frequency=0
-    #
-    #         statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-    #                                                           outputDir, ngramsNumber, normalize,
-    #                                                           excludePunctuation, ngramType, frequency,
-    #                                                           openOutputFiles, createCharts, chartPackage,
-    #                                                           bySentenceIndex_var)
-    #
-    #     if '*' in ngrams_analysis_menu_var or 'Hapax' in ngrams_analysis_menu_var:
-    #         ngramsNumber=1
-    #         ngramType = 1
-    #         normalize = False
-    #         excludePunctuation = True
-    #         if 'Hapax' in ngrams_analysis_menu_var:
-    #             frequency = 1
-    #         else:
-    #             frequency = None
-    #
-    #         statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-    #                                                           outputDir, ngramsNumber, normalize,
-    #                                                           excludePunctuation, ngramType, frequency,
-    #                                                           openOutputFiles, createCharts, chartPackage,
-    #                                                           bySentenceIndex_var)
-    #     if '*' in ngrams_analysis_menu_var or 'Repetition' in ngrams_analysis_menu_var or 'POSTAG' in ngrams_analysis_menu_var or 'DEPREL' in ngrams_analysis_menu_var or 'NER' in ngrams_analysis_menu_var:
-    #         mb.showwarning('Warning','The selected option is not available yet.\n\nSorry!')
-    #         if 'Repetition' in ngrams_analysis_menu_var:
-    #             mb.showwarning('Warning','Do check out the repetition finder algorithm in the CoNLL Table Analyzer GUI.')
-    #         return
-    #     if ngrams_analysis_menu_var=='':
-    #         mb.showwarning('Warning', 'No option has been selected for N-grams analysis.\n\nPlease, select an option and try again.')
-    #         return
+    if ngrams_analysis_var == True:
+        if '*' in ngrams_analysis_menu_var or 'Character' in ngrams_analysis_menu_var or 'Word' in ngrams_analysis_menu_var:
+            if 'Character' in ngrams_analysis_menu_var:
+                ngramType=0
+            else:
+                ngramType = 1
+            if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
+                return
+            ngramsNumber=4
+            normalize = False
+            excludePunctuation = True
+            frequency=0
+
+            statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
+                                                              outputDir, ngramsNumber, normalize,
+                                                              excludePunctuation, ngramType, frequency,
+                                                              openOutputFiles, createCharts, chartPackage,
+                                                              bySentenceIndex_var)
+
+        if '*' in ngrams_analysis_menu_var or 'Hapax' in ngrams_analysis_menu_var:
+            ngramsNumber=1
+            ngramType = 1
+            normalize = False
+            excludePunctuation = True
+            if 'Hapax' in ngrams_analysis_menu_var:
+                frequency = 1
+            else:
+                frequency = None
+
+            statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
+                                                              outputDir, ngramsNumber, normalize,
+                                                              excludePunctuation, ngramType, frequency,
+                                                              openOutputFiles, createCharts, chartPackage,
+                                                              bySentenceIndex_var)
+        if '*' in ngrams_analysis_menu_var or 'Repetition' in ngrams_analysis_menu_var or 'POSTAG' in ngrams_analysis_menu_var or 'DEPREL' in ngrams_analysis_menu_var or 'NER' in ngrams_analysis_menu_var:
+            mb.showwarning('Warning','The selected option is not available yet.\n\nSorry!')
+            if 'Repetition' in ngrams_analysis_menu_var:
+                mb.showwarning('Warning','Do check out the repetition finder algorithm in the CoNLL Table Analyzer GUI.')
+            return
+        if ngrams_analysis_menu_var=='':
+            mb.showwarning('Warning', 'No option has been selected for N-grams analysis.\n\nPlease, select an option and try again.')
+            return
 
     if gender_guesser_var==True:
         mb.showwarning('Warning',
@@ -246,9 +272,6 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_dropdown_field.get(),
-                                CoNLL_table_analysis_var.get(),
-                                n_grams_var.get(),
-                                nominalization_var.get(),
                                 corpus_statistics_var.get(),
                                 corpus_statistics_options_menu_var.get(),
                                 corpus_text_options_menu_var.get(),
@@ -267,8 +290,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=520, # height at brief display
-                             GUI_height_full=560, # height at full display
+                             GUI_height_brief=600, # height at brief display
+                             GUI_height_full=640, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -300,16 +323,10 @@ inputFilename=GUI_util.inputFilename
 GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 
 def clear(e):
-    CoNLL_table_analysis_checkbox.configure(state='normal')
-    nominalization_checkbox.configure(state='normal')
-    n_grams_checkbox.configure(state='normal')
     corpus_statistics_checkbox.configure(state='normal')
     complexity_readability_analysis_checkbox.configure(state='normal')
     vocabulary_analysis_checkbox.configure(state='normal')
 
-    CoNLL_table_analysis_var.set(0)
-    nominalization_var.set(0)
-    n_grams_var.set(0)
     corpus_statistics_var.set(0)
     complexity_readability_analysis_var.set(0)
     vocabulary_analysis_var.set(0)
@@ -325,11 +342,12 @@ window.bind("<Escape>", clear)
 # GUI CHANGES cut/paste special GUI widgets from GUI_util
 
 n_grams_list=[]
+n_grams_var= tk.IntVar()
+n_grams_menu_var= tk.StringVar()
+n_grams_options_menu_var= tk.StringVar()
 
 bySentenceIndex_var=tk.IntVar()
 
-CoNLL_table_analysis_var=tk.IntVar()
-nominalization_var=tk.IntVar()
 complexity_readability_analysis_var=tk.IntVar()
 vocabulary_analysis_var=tk.IntVar()
 gender_guesser_var=tk.IntVar()
@@ -343,25 +361,74 @@ corpus_statistics_var = tk.IntVar()
 corpus_statistics_options_menu_var = tk.StringVar()
 corpus_text_options_menu_var = tk.StringVar()
 
-# n-grams
-n_grams_var = tk.IntVar()
+CoNLL_table_analysis_button = tk.Button(window, width=50, text='CoNLL table analysis (Open GUI)',command=lambda: call('python CoNLL_table_analyzer_main.py'))
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               CoNLL_table_analysis_button)
 
-CoNLL_table_analysis_var.set(0)
-CoNLL_table_analysis_checkbox = tk.Checkbutton(window, text='CoNLL table analysis (Open GUI)', variable=CoNLL_table_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoNLL_table_analysis_checkbox)
+n_grams_button = tk.Button(window, width=50, text='N-Grams/Co-occurrences VIEWER (Open GUI)',command=lambda: call('NGrams_CoOccurrences_Viewer_main.py'))
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               n_grams_button)
+
+nominalization_button = tk.Button(window, width=50, text='Nominalization (Open GUI)',command=lambda: call('nominalization_main.py'))
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               nominalization_button)
 
 n_grams_var.set(0)
-n_grams_checkbox = tk.Checkbutton(window, text='N-Grams (Open GUI)', variable=n_grams_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,n_grams_checkbox)
+n_grams_checkbox = tk.Checkbutton(window, text='Compute n-grams', variable=n_grams_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,n_grams_checkbox,True)
 
-nominalization_var.set(0)
-nominalization_checkbox = tk.Checkbutton(window, text='Nominalization (Open GUI)', variable=nominalization_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,nominalization_checkbox)
+n_grams_menu_var.set('Word')
+n_grams_menu_lb = tk.Label(window, text='N-grams type')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,n_grams_menu_lb,True)
+n_grams_menu = tk.OptionMenu(window, n_grams_menu_var, 'Character', 'Word') #,'DEPREL','POSTAG')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,n_grams_menu)
 
-# CoNLL_table_analysis_lb = tk.Label(window, text='Select the CoNLL table analysis you wish to perform')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,CoNLL_table_analysis_lb,True)
-# CoNLL_table_analysis_menu = tk.OptionMenu(window,CoNLL_table_analysis_menu_var,'*','Clauses','Nouns','Verbs','Function words','DEPREL','POSTAG','NER')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400, y_multiplier_integer,CoNLL_table_analysis_menu)
+n_grams_options_menu_lb = tk.Label(window, text='N-grams options')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,n_grams_options_menu_lb,True)
+n_grams_options_menu = tk.OptionMenu(window, n_grams_options_menu_var, 'Hapax legomena (once-occurring words/unigrams)','Normalize n-grams', 'Exclude punctuation (word n-grams only)','By sentence index','Repetition of words (last N words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,n_grams_options_menu,True)
+
+add_n_grams_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_n_grams_var())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+300,y_multiplier_integer,add_n_grams_button, True)
+
+reset_n_grams_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_n_grams_list())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+340,y_multiplier_integer,reset_n_grams_button,True)
+
+show_n_grams_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_n_grams_list())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400,y_multiplier_integer,show_n_grams_button)
+
+def reset_n_grams_list():
+    n_grams_list.clear()
+    n_grams_options_menu_var.set('')
+    n_grams_options_menu.configure(state='normal')
+
+def show_n_grams_list():
+    if len(n_grams_list)==0:
+        mb.showwarning(title='Warning', message='There are no currently selected n-grams options.')
+    else:
+        mb.showwarning(title='Warning', message='The currently selected n-grams options are:\n\n' + ','.join(n_grams_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+
+def activate_n_grams_var():
+    # Disable the + after clicking on it and enable the class menu
+    add_n_grams_button.configure(state='disabled')
+    n_grams_options_menu.configure(state='normal')
+
+def activate_n_grams_options(*args):
+    if n_grams_options_menu_var.get()!='':
+        if n_grams_options_menu_var.get() in n_grams_list:
+            mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
+            return
+        n_grams_list.append(n_grams_options_menu_var.get())
+        n_grams_options_menu.configure(state="disabled")
+        add_n_grams_button.configure(state='normal')
+        reset_n_grams_button.configure(state='normal')
+        show_n_grams_button.configure(state='normal')
+    else:
+        add_n_grams_button.configure(state='disabled')
+        reset_n_grams_button.configure(state='disabled')
+        show_n_grams_button.configure(state='disabled')
+        n_grams_options_menu.configure(state="normal")
+n_grams_options_menu_var.trace('w',activate_n_grams_options)
 
 corpus_statistics_var.set(0)
 corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute document(s) statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0)
@@ -427,61 +494,24 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Repetition across sentences (special ngrams)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400, y_multiplier_integer,vocabulary_analysis_menu)
 
-
-
-
-# ngrams_analysis_var.set(0)
-# ngrams_analysis_checkbox = tk.Checkbutton(window, text='N-grams analysis', variable=ngrams_analysis_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,ngrams_analysis_checkbox,True)
-#
-# ngrams_analysis_menu_var.set('*')
-# ngrams_lb = tk.Label(window, text='Select the n-grams analysis you wish to perform')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,ngrams_lb,True)
-# ngrams_analysis_menu = tk.OptionMenu(window,ngrams_analysis_menu_var,'*','Characters','Words','Hapax legomena (once-occurring words)','DEPREL','POSTAG','NER','Repetition of words (last N words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400, y_multiplier_integer,ngrams_analysis_menu)
-
 gender_guesser_var.set(0)
 gender_guesser_checkbox = tk.Checkbutton(window, text='Who wrote the text - Gender guesser', variable=gender_guesser_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,gender_guesser_checkbox)
 gender_guesser_checkbox.configure(state='normal')
 
 def activate_options(*args):
-    if CoNLL_table_analysis_var.get()==True:
-        n_grams_checkbox.configure(state='disabled')
-        nominalization_checkbox.configure(state='disabled')
+    if n_grams_var.get() == True:
         corpus_statistics_checkbox.configure(state='disabled')
         corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='disabled')
         vocabulary_analysis_checkbox.configure(state='disabled')
         complexity_readability_analysis_menu.configure(state='disabled')
-        vocabulary_analysis_menu.configure(state='disabled')
-        gender_guesser_checkbox.configure(state='disabled')
-    elif n_grams_var.get() == True:
-        CoNLL_table_analysis_checkbox.configure(state='disabled')
-        nominalization_checkbox.configure(state='disabled')
-        corpus_statistics_checkbox.configure(state='disabled')
-        corpus_statistics_options_menu.configure(state='disabled')
-        complexity_readability_analysis_checkbox.configure(state='disabled')
-        vocabulary_analysis_checkbox.configure(state='disabled')
-        complexity_readability_analysis_menu.configure(state='disabled')
-        vocabulary_analysis_menu.configure(state='disabled')
-        gender_guesser_checkbox.configure(state='disabled')
-    elif nominalization_var.get()==True:
-        CoNLL_table_analysis_checkbox.configure(state='disabled')
-        n_grams_checkbox.configure(state='disabled')
-        corpus_statistics_checkbox.configure(state='disabled')
-        corpus_statistics_options_menu.configure(state='disabled')
-        complexity_readability_analysis_checkbox.configure(state='disabled')
-        complexity_readability_analysis_menu.configure(state='disabled')
-        vocabulary_analysis_checkbox.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
         gender_guesser_checkbox.configure(state='disabled')
     elif corpus_statistics_var.get() == True:
         n_grams_checkbox.configure(state='disabled')
         corpus_statistics_options_menu.configure(state='normal')
         complexity_readability_analysis_checkbox.configure(state='disabled')
-        CoNLL_table_analysis_checkbox.configure(state='disabled')
-        nominalization_checkbox.configure(state='disabled')
         vocabulary_analysis_checkbox.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
         gender_guesser_checkbox.configure(state='disabled')
@@ -490,25 +520,19 @@ def activate_options(*args):
         corpus_statistics_checkbox.configure(state='disabled')
         corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_menu.configure(state='normal')
-        CoNLL_table_analysis_checkbox.configure(state='disabled')
-        nominalization_checkbox.configure(state='disabled')
         vocabulary_analysis_checkbox.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
         gender_guesser_checkbox.configure(state='disabled')
     elif vocabulary_analysis_var.get()==True:
         n_grams_checkbox.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='normal')
-        CoNLL_table_analysis_checkbox.configure(state='disabled')
-        nominalization_checkbox.configure(state='disabled')
         corpus_statistics_checkbox.configure(state='disabled')
         corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='disabled')
         complexity_readability_analysis_menu.configure(state='disabled')
         gender_guesser_checkbox.configure(state='disabled')
     elif gender_guesser_var.get() == True:
-        CoNLL_table_analysis_checkbox.configure(state='disabled')
         n_grams_checkbox.configure(state='disabled')
-        nominalization_checkbox.configure(state='disabled')
         corpus_statistics_checkbox.configure(state='disabled')
         corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='disabled')
@@ -516,9 +540,7 @@ def activate_options(*args):
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
     else:
-        CoNLL_table_analysis_checkbox.configure(state='normal')
         n_grams_checkbox.configure(state='normal')
-        nominalization_checkbox.configure(state='normal')
         corpus_statistics_checkbox.configure(state='normal')
         corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='normal')
@@ -528,9 +550,7 @@ def activate_options(*args):
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
 
-CoNLL_table_analysis_var.trace('w',activate_options)
 n_grams_var.trace('w',activate_options)
-nominalization_var.trace('w',activate_options)
 corpus_statistics_var.trace('w',activate_options)
 complexity_readability_analysis_var.trace('w',activate_options)
 vocabulary_analysis_var.trace('w',activate_options)
@@ -575,16 +595,22 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'CoNLL table analysis\' checkbox if you wish to open the CoNLL table analyzer GUI to analyze various items in the CoNLL table, such as\n\n   1. Clause\n   2. Noun\n   3. Verb\n   4. Function words\n   5. DEPREL\n   6. POSTAG\n   7. NER\n\nYou will also be able to run specialized functions such as\n\n   1. CoNLL table searches\n   2. K sentences analyszer')
-
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'N-Grams\' checkbox if you wish to open the N-Grams GUI to analyze n-grams (1, 2, 3) present in your corpus.')
-
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'Nominalization\' checkbox if you wish to open the Nominalization GUI to analyze instances of nominalization (i.e., turning verbs into nouns - Latin nomen=noun).')
-
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, click the button \'CoNLL table analysis\' if you wish to open the CoNLL table analyzer GUI to analyze various items in the CoNLL table, such as\n\n   1. Clause\n   2. Noun\n   3. Verb\n   4. Function words\n   5. DEPREL\n   6. POSTAG\n   7. NER\n\nYou will also be able to run specialized functions such as\n\n   1. CoNLL table searches\n   2. K sentences analyzer')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, click the button \'N-Grams\' if you wish to open the N-Grams GUI to analyze n-grams (1, 2, 3) present in your corpus.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, click the button \'Nominalization\' if you wish to open the Nominalization GUI to analyze instances of nominalization (i.e., turning verbs into nouns - Latin nomen=noun).')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, tick the checkbox if you wish to compute basic statistics on your corpus. Users have the option to lemmatize words and exclude stopwords from word counts.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates the following three files:\n  1. csv file of frequencies of the twenty most frequent words;\n  2. csv file of the following statistics for each column in the previous csv file and for each document in the corpus: Count, Mean, Mode, Median, Standard deviation, Minimum, Maximum, Skewness, Kurtosis, 25% quantile, 50% quantile; 75% quantile;\n  3. Excel line chart of the number of sentences and words for each document.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'Complex\\readability analysis\' checkbox if you wish to analyze the complexity or readability of sentences and documents.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Sentence complexity to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure. The Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\n   2. Text readability to compute various measures of text readability.\n 12 readability score requires HIGHSCHOOL education;\n 16 readability score requires COLLEGE education;\n 18 readability score requires MASTER education;\n 24 readability score requires DOCTORAL education;\n >24 readability score requires POSTDOC education.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'Vocabulary analysis\' checkbox if you wish to analyze the vocabulary used in your corpus.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Abstract/concrete vocabulary, The script uses the concreteness ratings by Brysbaert, Warriner, Kuperman, Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas, Behavioral Research (2014) 46:904–911.\nMean/median Concreteness values are calculated for each sentence on a 5-point scale going from abstract (0) to concrete (5).\n\n   2. Vocabulary richness (word type/token ratio or Yule’s K). C.U. Yule. 1944. The statistical study of literary vocabulary. Cambridge: Cambridge University Press.\n\n   3. Short words to compute the number of short words (<4 characters) and list them.\n\n   4. Vowel words to compute the number of words that start with a vowel (vowel words) and list them.\n\n   5. Unusual, or misspelled, words (via NLTK).\n\n   6. Language detection. Language detection is carried out via LANGDETECT, LANGID, SPACY. Languages are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages (check here for the list https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).\nAll language detection algorithms, except for Stanza, export the probability of detection of a specific detected language.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                '\n\nN-grams can be computed for character and word values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word n-grams between 1 and 3.\n\nWhen n-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                '\n\nN-grams can be computed for character and word values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word n-grams between 1 and 3.\n\nWhen n-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, tick the \'Complex\\readability analysis\' checkbox if you wish to analyze the complexity or readability of sentences and documents.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Sentence complexity to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure. The Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\n   2. Text readability to compute various measures of text readability.\n 12 readability score requires HIGHSCHOOL education;\n 16 readability score requires COLLEGE education;\n 18 readability score requires MASTER education;\n 24 readability score requires DOCTORAL education;\n >24 readability score requires POSTDOC education.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, tick the \'Vocabulary analysis\' checkbox if you wish to analyze the vocabulary used in your corpus.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Abstract/concrete vocabulary, The script uses the concreteness ratings by Brysbaert, Warriner, Kuperman, Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas, Behavioral Research (2014) 46:904–911.\nMean/median Concreteness values are calculated for each sentence on a 5-point scale going from abstract (0) to concrete (5).\n\n   2. Vocabulary richness (word type/token ratio or Yule’s K). C.U. Yule. 1944. The statistical study of literary vocabulary. Cambridge: Cambridge University Press.\n\n   3. Short words to compute the number of short words (<4 characters) and list them.\n\n   4. Vowel words to compute the number of words that start with a vowel (vowel words) and list them.\n\n   5. Unusual, or misspelled, words (via NLTK).\n\n   6. Language detection. Language detection is carried out via LANGDETECT, LANGID, SPACY. Languages are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages (check here for the list https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).\nAll language detection algorithms, except for Stanza, export the probability of detection of a specific detected language.')
     # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'N-grams analysis\' checkbox if you wish to compute various types of n-grams.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Characters\n   2. Words\n   3. Hapax legomena (once-occurring words)\n   4. DEPREL\n   5. POSTAG\n   6. NER.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'Who wrote the text\' checkbox if you wish to run the Gender Guesser algorithm to determine an author\'s gender based on the words used.\n\nYou will need to copy and paste a document content to the website http://www.hackerfactor.com/GenderGuesser.php#About\n\nYou need to be connected to the internet.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)

@@ -20,6 +20,33 @@ import constants_util
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+# import json
+# import stanza.resources.common
+# DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
+from tkinter import *
+# lang_dict = dict(constants_util.languages)
+
+# language_var.set('English')
+# language_list.append('English')
+def list_all_languages():
+    import json
+    import stanza.resources.common
+    DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
+    with open(os.path.join(DEFAULT_MODEL_DIR, 'resources.json')) as fin:
+        resources = json.load(fin)
+    languages = [lang for lang in resources if 'alias' not in resources[lang]]
+    languages = sorted(languages)
+    langs_full = sorted([dict(constants_util.languages)[x] for x in languages])
+    return langs_full
+
+# langs = list_all_languages()
+# langs_full = sorted([lang_dict[x] for x in langs])
+
+# language_menu = ttk.Combobox(window, width = 70, textvariable = language_var)
+# language_menu['values'] = langs_full
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
+#                                                y_multiplier_integer, language_menu,True)
+
 # Stanza annotate functions
 def Stanza_annotate(config_filename, inputFilename, inputDir,
                     outputDir,
@@ -35,6 +62,11 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
     language_encoding = 'utf-8'
     filesToOpen = []
+
+    if len(language)==0:
+        mb.showerror("Warning",
+                     "The language list is empty.\n\nPlease, select a language and try again.")
+        return filesToOpen
 
     output_format_option = {
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
@@ -186,7 +218,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
     # SVO extraction
     if "SVO" in annotator_params:
-        # extract SVO 
+        # extract SVO
         svo_df = extractSVO(Stanza_output, docID, inputFilename) if len(language)==1 and 'multilingual' not in language else extractSVOMultilingual(Stanza_output, docID, inputFilename)
         svo_df_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                     'Stanza_' + 'SVO')
@@ -352,7 +384,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
 def extractSVO(doc, docID, inputFilename):
     # output: svo_df
     svo_df = pd.DataFrame(columns={'Subject (S)','VERB (V)','Object (O)'})
-    
+
     # object and subject constants
     OBJECT_DEPS = {"obj", "iobj", "dobj", "dative", "attr", "oprd"}
     SUBJECT_DEPS = {"nsubj", "nsubj:pass", "csubj", "agent", "expl"}
@@ -370,17 +402,17 @@ def extractSVO(doc, docID, inputFilename):
                 svo_df.at[c, 'Object (O)'] = word.text
             svo_df.at[c, 'Sentence ID'] =  c
         c+=1
-    
-    # csv output columns    
+
+    # csv output columns
     svo_df['Document ID'] = docID
     svo_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
-    
+
     # replace NaN values accordingly
     for index, row in svo_df.iterrows():
         svo_df.at[index, 'Subject (S)'] = '?' if pd.isna(row['Subject (S)']) else row['Subject (S)']
         svo_df.at[index, 'VERB (V)'] = '' if pd.isna(row['VERB (V)']) else row['VERB (V)']
         svo_df.at[index, 'Object (O)'] = '' if pd.isna(row['Object (O)']) else row['Object (O)']
-            
+
     return svo_df
 
 # extract SVO from multilingual doc
@@ -392,7 +424,7 @@ def extractSVOMultilingual(stanza_doc, docID, inputFilename):
     for doc in stanza_doc:
         temp_svo = extractSVO(doc, docID, inputFilename)
         out_df = out_df.append(temp_svo)
-    
+
     return out_df
 
 # input: Stanza DF

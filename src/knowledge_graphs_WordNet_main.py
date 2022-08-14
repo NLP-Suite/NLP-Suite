@@ -19,7 +19,7 @@ import IO_files_util
 import CoNLL_util
 import knowledge_graphs_WordNet_util
 import sentence_analysis_util
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
 import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -139,7 +139,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         verbs_var = True
         # uses a txt fie in input
         language_var='English'
-        files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+        files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                  outputDir, openOutputFiles, createCharts, chartPackage,
                                                                  annotator, False, language_var, memory_var)
         if len(files) > 0:

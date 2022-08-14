@@ -112,7 +112,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # GUI_size = '1000x750'
 # GUI_label = 'GUI for CoNLL Table Search'
-# config_filename = 'conll-table-search_config.csv'  # filename used in Stanford_CoreNLP_main
+# config_filename = 'conll-table-search_config.csv'  # filename used in NLP_parsers_annotators_main
 # The 4 values of config_option refer to:
 #   input file 1 for CoNLL file 2 for TXT file 3 for csv file 4 for any type of file
 #   input dir

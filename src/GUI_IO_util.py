@@ -189,6 +189,7 @@ if sys.platform == 'darwin': #Mac OS
     close_button_x_coordinate = 980
 
     open_IO_config_button = 650
+    open_NLP_package_language_config_button = 650
     open_setup_software_button = 650
 
     open_file_button_brief = 700
@@ -228,6 +229,7 @@ else: #windows and anything else
     close_button_x_coordinate = 960
 
     open_IO_config_button = 820
+    open_NLP_package_language_config_button = 820
     open_setup_software_button = 820
 
     open_file_button_brief = 760
