@@ -7,7 +7,6 @@ import sys
 # pip install requests[security]
 import requests
 
-# import GUI_util
 import IO_libraries_util
 
 # Creates a circular dependent imports
@@ -594,15 +593,15 @@ def setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent):
         temp_config_filename = 'default_config.csv'
     else:
         temp_config_filename=config_filename
-    # 2 arguments are passed to python IO_setup_main.py:
+    # 2 arguments are passed to python NLP_setup_IO_main.py:
     #   1. config_input_output_numeric_options (i.e., the list of GUI specific IO options setup in every _main [1,0,0,1])
     #       when passing a default config, this list will be checked in IO_setup_main against the GUI specific IO list
     #       if you have a specific GUI requiring only input Dir, rather than filename, and the default option specifies an inputfile
     #       a warning will be raised
     #   2. temp_config_filename, either as default or GUI-specific config
-    # same call to IO_setup_main.py in NLP_menu_main
-    if not 'IO_setup_main' in scriptName:
-        call("python IO_setup_main.py --config_option " + str(config_input_output_numeric_options).replace('[', '"').replace(']', '"') + " --config_filename " + temp_config_filename, shell=True)
+    # same call to NLP_setup_IO_main.py in NLP_menu_main
+    if not 'NLP_setup_IO_main' in scriptName:
+        call("python NLP_setup_IO_main.py --config_option " + str(config_input_output_numeric_options).replace('[', '"').replace(']', '"') + " --config_filename " + temp_config_filename, shell=True)
         # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
         display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_numeric_options, scriptName,silent)
 
@@ -824,8 +823,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             reminders_util.resetReminder(config_filename,reminders_dropdown_field.get())
     reminders_dropdown_field.trace('w', trace_reminders_dropdown)
 
-    # there is no RUN button when setting up IO information in IO_setup_main.py
-    if not "IO_setup_main" in scriptName:
+    # there is no RUN button when setting up IO information in NLP_setup_IO_main.py
+    if not "IO_setup_main" in scriptName and not "package_language" in scriptName:
         GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer, run_button, False, False,
                                 True)
 

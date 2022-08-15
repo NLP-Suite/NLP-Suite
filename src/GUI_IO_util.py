@@ -8,9 +8,11 @@ import os
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
+import pandas as pd
 
 import config_util
 import IO_libraries_util
+import GUI_IO_util
 
 # import IO_internet_util
 # import webbrowser
@@ -342,6 +344,44 @@ def GUI_settings(IO_setup_display_brief,GUI_width,GUI_height_brief,GUI_height_fu
     GUI_size = str(GUI_width) + 'x' + str(GUI_height)
     return GUI_size, y_multiplier_integer, increment
 
+def read_NLP_package_language_config(window, config_filename):
+    config_filename = GUI_IO_util.configPath + os.sep + 'default_NLP_package_language_config.csv'
+    # dataset = pd.read_csv(config_filename, sep='\t')
+    dataset = pd.read_csv(config_filename)
+    package = dataset.iat[0, 0]
+    parsers = dataset.iat[0, 1].split(',')
+    basics_package = dataset.iat[0, 2]
+    language = dataset.iat[0, 3]
+    return package, parsers, basics_package, language
+
+def save_IO_config(window, config_filename, config_input_output_numeric_options, current_config_input_output_alphabetic_options):
+    saved_config_input_output_alphabetic_options, config_input_output_full_options, missingIO = config_util.read_config_file(
+        config_filename, config_input_output_numeric_options)
+    if saved_config_input_output_alphabetic_options != current_config_input_output_alphabetic_options:
+        if current_config_input_output_alphabetic_options == ['', '', '',
+                                                              ''] or current_config_input_output_alphabetic_options == [
+            '', '', '', '']:
+            saveGUIconfig = False
+        else:
+            if saved_config_input_output_alphabetic_options == ['', '', '',
+                                                                ''] or saved_config_input_output_alphabetic_options == [
+                '', '', '', '']:
+                saveGUIconfig = True
+            else:
+                if 'default' in config_filename:
+                    saveGUIconfig = mb.askyesno("Save I/O values to 'Default I/O configuration': " + config_filename,
+                                                'The selected Input/Output options are different from the I/O values previously saved in "' + config_filename + '"' + ' listed below in succinct form for readability:\n\n' + str(
+                                                    config_input_output_full_options) + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
+                else:
+                    saveGUIconfig = mb.askyesno(
+                        "Save I/O values to 'GUI-specific I/O configuration': " + config_filename,
+                        'The selected Input/Output options are different from the I/O values previously saved in "' + config_filename + '"' + ' listed below in succinct form for readability:\n\n' + str(
+                            config_input_output_full_options) + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
+        if saveGUIconfig == True:
+            config_util.write_config_file(window, config_filename, config_input_output_numeric_options,
+                                          current_config_input_output_alphabetic_options)
+
+
 #config_filename has no path;
 # config_input_output_numeric_options is set to [0 0,0,0] for GUIs that are placeholders for more specialized GUIs
 #   in these cases (e.g., narrative_analysis_main, there are no I/O options to save
@@ -362,7 +402,7 @@ def exit_window(window,config_filename, scriptName, config_input_output_numeric_
                 # import inspect
                 # inspect.stack() will return the stack information
                 # ScriptName = inspect.stack()
-                # if not "IO_setup_main.py" in ScriptName:
+                # if not "NLP_setup_IO_main.py" in ScriptName:
                 #     print("ScriptName", ScriptName)
                 print(
                     '\nYour NLP Suite is up-to-date with the latest release available on GitHub (' + GitHub_release_version + ').')
@@ -372,22 +412,13 @@ def exit_window(window,config_filename, scriptName, config_input_output_numeric_
     atexit.register(exit_handler)
 
     if not 'NLP_menu_main' in scriptName and 'NLP_welcome_main' not in scriptName:
-        saved_config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file(config_filename, config_input_output_numeric_options)
-        if saved_config_input_output_alphabetic_options!=current_config_input_output_alphabetic_options:
-            if current_config_input_output_alphabetic_options==['','','',''] or current_config_input_output_alphabetic_options==['', '', '', '']:
-                saveGUIconfig = False
-            else:
-                if saved_config_input_output_alphabetic_options==['','','',''] or saved_config_input_output_alphabetic_options==['', '', '', '']:
-                    saveGUIconfig = True
-                else:
-                    if 'default' in config_filename:
-                        saveGUIconfig = mb.askyesno("Save I/O values to 'Default I/O configuration': " + config_filename,
-                                                    'The selected Input/Output options are different from the I/O values previously saved in "' + config_filename + '"' + ' listed below in succinct form for readability:\n\n' + str(config_input_output_full_options) + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
-                    else:
-                        saveGUIconfig = mb.askyesno("Save I/O values to 'GUI-specific I/O configuration': " + config_filename,
-                                                        'The selected Input/Output options are different from the I/O values previously saved in "' + config_filename + '"' + ' listed below in succinct form for readability:\n\n' + str(config_input_output_full_options) + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
-            if saveGUIconfig == True:
-                config_util.write_config_file(window,config_filename, config_input_output_numeric_options, current_config_input_output_alphabetic_options)
+        # check and save IO config on CLOSE
+        save_IO_config(window, config_filename, config_input_output_numeric_options,
+                           current_config_input_output_alphabetic_options)
+        print("config_filename",config_filename)
+        if 'package_language' in config_filename:  # NLP_setup_package_language_main_config.csv
+            read_NLP_package_language_config(window, config_filename)
+
     window.destroy()
     sys.exit(0)
 

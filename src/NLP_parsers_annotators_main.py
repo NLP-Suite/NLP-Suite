@@ -340,99 +340,22 @@ annotators_menu_var = tk.StringVar()
 quote_var = tk.IntVar()
 y_multiplier_integer_SV=0 # used to set the quote_var widget on the proper GUI line
 
-pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI)',command=lambda: call('python file_checker_converter_cleaner_main.py'))
+pre_processing_button = tk.Button(window, width=50, text='Pre-processing tools (Open file checking & cleaning GUI)',command=lambda: call('python file_checker_converter_cleaner_main.py'))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                pre_processing_button)
 
 # NLP packages & languages ------------------------------------------------------------------------------------------------------
 
-package_lb = tk.Label(window,text='NLP package')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
-                                               y_multiplier_integer, package_lb, True)
-package_var.set('Stanford CoreNLP')
-package_menu = tk.OptionMenu(window, package_var, 'Stanford CoreNLP','spaCy','Stanza')
+package_button = tk.Button(window, text='Setup NLP package and corpus language', width=50, state='normal',command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,package_button, True)
 
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
-                                               y_multiplier_integer, package_menu, True)
+package, parsers, package_basics, language = GUI_IO_util.read_NLP_package_language_config(window, '')
 
-language_lb = tk.Label(window,text='Language')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300,
-                                               y_multiplier_integer, language_lb, True)
+package_display_area_value = f"NLP PACKAGE: {package}, NLP BASIC PACKAGE: {package_basics}, LANGUAGE(S): {language}"
 
-menu_values = []
-global language_menu
-global parser_menu
-def get_available_languages():
-    if package_var.get() == 'Stanford CoreNLP':
-        languages_available=['Arabic','Chinese','English', 'German','Hungarian','Italian','Spanish']
-    if package_var.get() == 'spaCy':
-        languages_available = ['English']
-    if package_var.get() == 'Stanza':
-        languages_available = Stanza_util.list_all_languages()
-    return languages_available
-
-language_var.set('English')
-language_menu = ttk.Combobox(window, width=70, textvariable=language_var)
-language_menu['values'] = get_available_languages()
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,
-                                               y_multiplier_integer, language_menu,True)
-
-add_language_button = tk.Button(window, text='+', width=2,height=1,state='normal',command=lambda: activate_language_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 710,y_multiplier_integer,add_language_button, True)
-
-reset_language_button = tk.Button(window, text='Reset', width=5,height=1,state='normal',command=lambda: reset_language_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 750,y_multiplier_integer,reset_language_button,True)
-
-show_language_button = tk.Button(window, text='Show', width=5,height=1,state='normal',command=lambda: show_language_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 810,y_multiplier_integer,show_language_button)
-
-def activate_language_var():
-    # Disable the + after clicking on it and enable the class menu
-    if language_menu.get()=='English' and package_var.get()=='Stanza':
-        reminders_util.checkReminder(config_filename,
-                                     reminders_util.title_options_Stanza_languages,
-                                     reminders_util.message_Stanza_languages,
-                                     True)
-    add_language_button.configure(state='disabled')
-    language_menu.configure(state='normal')
-
-def check_language(*args):
-    if language_var.get() in language_list:
-        mb.showwarning(title='Warning',
-                       message='The selected language "' + language_var.get() + '" is already in your selection list: ' + str(
-                           language_list) + '.\n\nPlease, select another language.')
-        window.focus_force()
-        return
-    else:
-        if language_var.get() == '':
-            language_menu.configure(state='normal')
-        else:
-            language_list.append(language_var.get())
-            language_menu.configure(state='disabled')
-        if package_var.get()=='Stanza':
-            add_language_button.configure(state='normal')
-            reset_language_button.configure(state='normal')
-            show_language_button.configure(state='normal')
-        else:
-            add_language_button.configure(state='disabled')
-            # reset_language_button.configure(state='disabled')
-            show_language_button.configure(state='disabled')
-language_var.trace('w', check_language)
-
-check_language()
-
-def reset_language_list():
-    language_list.clear()
-    language_menu.configure(state='normal')
-    language_var.set('')
-
-def show_language_list():
-    if len(language_list)==0:
-        mb.showwarning(title='Warning', message='There are no currently selected language options.')
-    else:
-        mb.showwarning(title='Warning', message='The currently selected language options are:\n\n  ' + '\n  '.join(language_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
-
-# NLP packages & languages ------------------------------------------------------------------------------------------------------
+package_display_area = tk.Label(width=80, height=1, text=str(package_display_area_value), state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+250,
+                                               y_multiplier_integer, package_display_area)
 
 # memory options
 
@@ -532,47 +455,19 @@ parser_checkbox = tk.Checkbutton(window, text='Parsers', variable=parser_var, on
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                parser_checkbox, True)
 
-def get_available_parsers():
-    if package_var.get() == 'Stanford CoreNLP':
-        available_parsers = ['Neural Network', 'Probabilistic Context Free Grammar (PCFG)']
-        parser_menu_var.set("Probabilistic Context Free Grammar (PCFG)")
-    if package_var.get() == 'Stanza':
-        available_parsers = ['Constituency parser', 'Dependency parser']
-        parser_menu_var.set("Dependency parser")
-    return available_parsers
-
-available_parsers=get_available_parsers()
-
-if len(available_parsers) == 0:
-    parser_menu = tk.OptionMenu(window, parser_menu_var, available_parsers)
+if len(parsers) == 0:
+    parser_menu = tk.OptionMenu(window, parser_menu_var, parsers)
 else:
-    parser_menu = tk.OptionMenu(window, parser_menu_var, *available_parsers)
+    parser_menu = tk.OptionMenu(window, parser_menu_var, *parsers)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate(),
                                                y_multiplier_integer,
                                                parser_menu)
 
-# global available_parsers
-def changed_NLP_package(*args):
-    language_list.clear()
-    language_menu['values'] = get_available_languages()
-    check_language()
-    available_parsers = get_available_parsers()
-
-    m = parser_menu["menu"]
-    m.delete(0,"end")
-    for s in available_parsers:
-        m.add_command(label=s,command=lambda value=s:parser_menu_var.set(value))
-
-    # set default value of parser_menu_var to
-    #	first item of available_parsers
-    if len(menu_values)>0:
-        parser_menu_var.set(available_parsers[0])
-
-package_var.trace('w',changed_NLP_package)
-
-changed_NLP_package()
-
-parser_menu_var.trace('w',changed_NLP_package)
+# package_var.trace('w',changed_NLP_package)
+#
+# changed_NLP_package()
+#
+# parser_menu_var.trace('w',changed_NLP_package)
 
 def activate_SentenceTable(*args):
     if parser_var.get() == 0:
@@ -734,7 +629,7 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf',
 TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy', 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'Stanford CoreNLP OpenIE', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'NER (Named Entity Recognition)','Gender annotator','Quote annotator','Normalized NER date annotator','Sentiment analysis','Things to do with words: Overall view' #, 'Java download install run'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 
@@ -753,7 +648,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the NLP package to be used for SVO extraction.\n\nDifferent NLP packages support a different range of languages. Please, also select the language of your input txt file(s)."+GUI_IO_util.msg_Esc)
+                                  "Please, click on the 'Setup' button to open the GUI that will allow you to select the NLP package to be used (e.g., spaCy, Stanford CoreNLP, Stanza).\n\nDifferent NLP packages support a different range of languages. The Setup GUI will also allow you to select the language of your input txt file(s).\n\nTHE CURRENT NLP PACKAGE AND LANGUAGE SELECTION IS DISPLAYED IN THE TEXT WIDGET."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "The Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -772,7 +667,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
 y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
 
 # change the value of the readMe_message
-readMe_message = "This Python 3 script will perform different types of textual operations using the Stanford CoreNLP. The main operation is text parsing to produce the CoNLL table (CoNLL U format).\n\nYOU MUST BE CONNETED TO THE INTERNET TO RUN THE SCRIPTS.\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce different file types: txt-format copies of the same input txt files for co-reference, csv for annotators (HTML for gender annotator)."
+readMe_message = "This Python 3 script will perform different types of textual operations using a selected NLP package (e.g., spaCy, Stanford CoreNLP, Stanza). The main operation is text parsing to produce the CoNLL table (CoNLL U format).\n\nYOU MUST BE CONNETED TO THE INTERNET TO RUN THE SCRIPTS.\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce different file types: txt-format copies of the same input txt files for co-reference, csv for annotators (HTML for gender annotator)."
 readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)

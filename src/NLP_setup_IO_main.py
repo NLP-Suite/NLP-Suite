@@ -128,7 +128,7 @@ if config_filename == 'default_config.csv':
         if msg!="":
             msg=msg + \
                 "If you change the Default I/O configuration, the new I/O configuration will be used by all scripts in the NLP Suite.\n\n" \
-                "If this is not what you wish to do, you should CLOSE the I/O Setup GUI w/o saving any changes and use theGUI-specific I/O configuration for this specific script."
+                "If this is not what you wish to do, you should CLOSE the I/O Setup GUI w/o saving any changes and use the GUI-specific I/O configuration for this specific script."
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
