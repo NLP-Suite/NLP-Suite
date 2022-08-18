@@ -17,7 +17,6 @@ import GUI_IO_util
 import IO_files_util
 import config_util
 import reminders_util
-import IO_internet_util
 import Stanford_CoreNLP_util
 import Stanford_CoreNLP_coreference_util
 import Stanza_util
@@ -35,7 +34,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         memory_var,
         document_length_var,
         limit_sentence_length_var,
-        manual_Coref, open_GUI, package_var, language_var, parser_var, parser_menu_var,
+        manual_Coref, open_GUI,
         dateInclude, sep, date_field_position, dateFormat, single_quote,
         CoNLL_table_analyzer_var, annotators_var, annotators_menu_var):
 
@@ -47,11 +46,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     #     return
 
     # check internet connection
-    if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
-        return
+    # if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
+    #     return
 
-    if parser_var == 0 and CoNLL_table_analyzer_var == 0 and annotators_var == 0:
-        mb.showinfo("Warning", "No options have been selected.\n\nPlease, select an option and try again.")
+    if package_display_area == '':
+        mb.showwarning(title='No setup for NLP package and language',
+                       message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
         return
 
     if parser_var == 0 and CoNLL_table_analyzer_var == 1:
@@ -63,13 +63,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         return
 
 # Stanford CoreNLP ---------------------------------------------------------------------------
-    if package_var=='Stanford CoreNLP':
+    if package=='Stanford CoreNLP':
         if parser_var or (annotators_var and annotators_menu_var != ''):
-
+            annotator = []
             if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
                 return
 
-            if parser_var and parser_menu_var == 'Probabilistic Context Free Grammar (PCFG)':
+            if parser_var and 'PCFG' in parser_menu_var.get():
                 annotator='parser (pcfg)'
             elif parser_menu_var == 'Neural Network':
                 annotator='parser (nn)'
@@ -108,7 +108,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                                            inputDir,
                                                                                            outputDir, openOutputFiles,
                                                                                            createCharts, chartPackage,
-                                                                                           language_var, memory_var,
+                                                                                           language, memory_var,
                                                                                            manual_Coref)
 
                         if error_indicator != 0:
@@ -124,7 +124,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                                outputDir,
                                                                                openOutputFiles, createCharts, chartPackage,
                                                                                annotator, False, #'All POS',
-                                                                               language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                               language, memory_var, document_length_var, limit_sentence_length_var,
                                                                                extract_date_from_filename_var=dateInclude,
                                                                                date_format=dateFormat,
                                                                                date_separator_var=sep,
@@ -140,7 +140,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                      True)
 
 # spaCy ---------------------------------------------------------------------------
-    if package_var == 'spaCy':
+    if package == 'spaCy':
         mb.showwarning('Warning',
                        'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
         return
@@ -152,7 +152,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 return
 
 # Stanza ---------------------------------------------------------------------------
-    if package_var == 'Stanza':
+    if package == 'Stanza':
         if parser_var or (annotators_var and annotators_menu_var != ''):
 
             if IO_libraries_util.check_inputPythonJavaProgramFile(
@@ -246,10 +246,6 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  limit_sentence_length_var.get(),
                                  manual_Coref_var.get(),
                                  open_GUI_var.get(),
-                                 package_var.get(),
-                                 language_var.get(),
-                                 parser_var.get(),
-                                 parser_menu_var.get(),
                                  fileName_embeds_date.get(),
                                  date_separator_var.get(),
                                  date_position_var.get(),
@@ -300,10 +296,8 @@ inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
 def clear(e):
-    reset_language_list()
-    package_var.set('Stanford CoreNLP')
-    language_var.set("English")
-    language_menu.configure(state='normal')
+    package.set('Stanford CoreNLP')
+    language.set("English")
     parser_var.set(1)
     parser_menu_var.set("Probabilistic Context Free Grammar (PCFG)")
     annotators_var.set(0)
@@ -314,8 +308,8 @@ def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
-package_var = tk.StringVar()
-language_var = tk.StringVar()
+package = tk.StringVar()
+language = tk.StringVar()
 language_list = []
 memory_var = tk.IntVar()
 date_extractor_var = tk.IntVar()
@@ -349,12 +343,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 package_button = tk.Button(window, text='Setup NLP package and corpus language', width=50, state='normal',command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,package_button, True)
 
-package, parsers, package_basics, language = GUI_IO_util.read_NLP_package_language_config(window, '')
+error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
 
-package_display_area_value = f"NLP PACKAGE: {package}, NLP BASIC PACKAGE: {package_basics}, LANGUAGE(S): {language}"
+if len(parsers)>0:
+    parser_menu_var.set(parsers[0])
 
 package_display_area = tk.Label(width=80, height=1, text=str(package_display_area_value), state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+250,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+200,
                                                y_multiplier_integer, package_display_area)
 
 # memory options
@@ -463,7 +458,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file
                                                y_multiplier_integer,
                                                parser_menu)
 
-# package_var.trace('w',changed_NLP_package)
+# package.trace('w',changed_NLP_package)
 #
 # changed_NLP_package()
 #
@@ -490,16 +485,6 @@ CoNLL_table_analyzer_checkbox_msg = tk.Label()
 CoNLL_table_analyzer_checkbox_msg.config(text="Open the CoNLL table analyzer GUI")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                CoNLL_table_analyzer_checkbox_msg)
-
-# def activate_CoNLL_table_analyzer(*args):
-#     if parser_var.get():
-#         #CoNLL_table_analyzer_var.set(0)
-#         CoNLL_table_analyzer_checkbox.config(state='normal')
-#     else:
-#         CoNLL_table_analyzer_checkbox.config(state='disabled')
-# parser_var.trace('w',activate_CoNLL_table_analyzer)
-#
-# activate_CoNLL_table_analyzer()
 
 def check_CoNLL_table(*args):
     if CoNLL_table_analyzer_var.get() == 1:
@@ -671,5 +656,9 @@ readMe_message = "This Python 3 script will perform different types of textual o
 readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+if error:
+    mb.showwarning(title='Warning',
+               message="The config file 'NLP_setup_package_language_main_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup NLP package button.")
 
 GUI_util.window.mainloop()

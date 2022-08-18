@@ -7,6 +7,7 @@
 import sys
 import GUI_util
 import IO_libraries_util
+import config_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "SVO extractor",
                                           ['subprocess', 'os', 'tkinter', 'csv']) == False:
@@ -160,10 +161,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     filesToOpen = []
 
+    if package_display_area == '':
+        mb.showwarning(title='No setup for NLP package and language',
+                       message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
+        return
+
     # the merge option refers to merging the txt files into one
     merge_txt_file_option = False
 
-    if Coref == False and normalized_NER_date_extractor_var == False and package_var == '':
+    if Coref == False and package_display_area == '':
         mb.showwarning(title='No option selected',
                        message="No option has been selected.\n\nPlease, select an option and try again.")
         return
@@ -792,118 +798,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 package_button = tk.Button(window, text='Setup NLP package and corpus language', width=50, state='normal',command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,package_button, True)
 
-package, parsers, package_basics, language = GUI_IO_util.read_NLP_package_language_config(window, '')
-
-package_display_area_value = f"NLP PACKAGE: {package}, NLP BASIC PACKAGE: {package_basics}, LANGUAGE(S): {language}"
+error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
 
 package_display_area = tk.Label(width=80, height=1, text=str(package_display_area_value), state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+250,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+200,
                                                y_multiplier_integer, package_display_area)
-
-# print("package_var, package_basics_var, language_var", package, package_basics, language)
-
-# package_lb = tk.Label(window,text='NLP package')
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
-#                                                y_multiplier_integer, package_lb, True)
-# package_var.set('Stanford CoreNLP')
-# package_menu = tk.OptionMenu(window, package_var, 'Stanford CoreNLP','spaCy','SENNA','Stanza','OpenIE')
-#
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
-#                                                y_multiplier_integer, package_menu, True)
-#
-# language_lb = tk.Label(window,text='Language')
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300,
-#                                                y_multiplier_integer, language_lb, True)
-#
-# menu_values = []
-# global language_menu
-# def get_available_languages():
-#     if package_var.get() == 'Stanford CoreNLP':
-#         languages_available=['Arabic','Chinese','English', 'German','Hungarian','Italian','Spanish']
-#     elif package_var.get() == 'OpenIE':
-#         languages_available = ['English']
-#     elif package_var.get() == 'spaCy':
-#         # TODO this list will change
-#         languages_available = ['English']
-#     elif package_var.get() == 'SENNA':
-#         languages_available = ['English']
-#     elif package_var.get() == 'Stanza':
-#         languages_available = Stanza_util.list_all_languages()
-#     return languages_available
-#
-# language_var.set('English')
-# language_menu = ttk.Combobox(window, width=70, textvariable=language_var)
-# language_menu['values'] = get_available_languages()
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,
-#                                                y_multiplier_integer, language_menu,True)
-#
-# add_language_button = tk.Button(window, text='+', width=2,height=1,state='normal',command=lambda: activate_language_var())
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 710,y_multiplier_integer,add_language_button, True)
-#
-# reset_language_button = tk.Button(window, text='Reset', width=5,height=1,state='normal',command=lambda: reset_language_list())
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 750,y_multiplier_integer,reset_language_button,True)
-#
-# show_language_button = tk.Button(window, text='Show', width=5,height=1,state='normal',command=lambda: show_language_list())
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 810,y_multiplier_integer,show_language_button)
-#
-# def activate_language_var():
-#     # Disable the + after clicking on it and enable the class menu
-#     if language_menu.get()=='English' and package_var.get()=='Stanza':
-#         reminders_util.checkReminder(config_filename,
-#                                      reminders_util.title_options_Stanza_languages,
-#                                      reminders_util.message_Stanza_languages,
-#                                      True)
-#     add_language_button.configure(state='disabled')
-#     language_menu.configure(state='normal')
-#
-# def check_language(*args):
-#     if len(language_list)>1 and language_var.get()!='English' and language_var.get() in language_list:
-#         mb.showwarning(title='Warning',
-#                        message='The selected language "' + language_var.get() + '" is already in your selection list: ' + str(
-#                            language_list) + '.\n\nPlease, select another language.')
-#         window.focus_force()
-#         return
-#     else:
-#         if language_var.get() == '':
-#             language_menu.configure(state='normal')
-#         else:
-#             language_list.append(language_var.get())
-#             language_menu.configure(state='disabled')
-#         if package_var.get()=='Stanza':
-#             add_language_button.configure(state='normal')
-#             reset_language_button.configure(state='normal')
-#             show_language_button.configure(state='normal')
-#         else:
-#             add_language_button.configure(state='disabled')
-#             # reset_language_button.configure(state='disabled')
-#             show_language_button.configure(state='disabled')
-# language_var.trace('w', check_language)
-#
-# check_language()
-#
-# def changed_NLP_package(*args):
-#     language_list.clear()
-#     language_menu['values'] = get_available_languages()
-#     check_language()
-#     if package_var.get()=='Stanford CoreNLP':
-#         available_SVO_tools = 'Neural Network', 'Probabilistic Context Free Grammar (PCFG)'
-#     if package_var.get() == 'Stanza':
-#         available_SVO_tools = 'Constituency parser', 'Dependency parser'
-#     check_language()
-# package_var.trace('w',changed_NLP_package)
-#
-# changed_NLP_package()
-#
-# def reset_language_list():
-#     language_list.clear()
-#     language_menu.configure(state='normal')
-#     language_var.set('')
-#
-# def show_language_list():
-#     if len(language_list)==0:
-#         mb.showwarning(title='Warning', message='There are no currently selected language options.')
-#     else:
-#         mb.showwarning(title='Warning', message='The currently selected language options are:\n\n  ' + '\n  '.join(language_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
@@ -1081,6 +980,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 # setup a button to open Windows Explorer on the subjects file
 openInputFile_subjects_button = tk.Button(window, width=3, text='',
                                           command=lambda: IO_files_util.openFile(window, subjects_dict_var.get()))
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 140, y_multiplier_integer,
                                                openInputFile_subjects_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 140, "Open csv file containing SUBJECT filters")
 
@@ -1258,6 +1158,7 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
 TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Stanford CoreNLP coreference resolution', 'SENNA', 'CoNLL table',  'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
 
 
+
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
@@ -1319,5 +1220,9 @@ def warnUser(*args):
 GUI_util.input_main_dir_path.trace('w', warnUser)
 
 warnUser()
+
+if error:
+    mb.showwarning(title='Warning',
+               message="The config file 'default_NLP_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup NLP package button.")
 
 GUI_util.window.mainloop()

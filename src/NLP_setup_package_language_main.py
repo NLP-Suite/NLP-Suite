@@ -6,7 +6,7 @@ import GUI_IO_util
 import GUI_util
 import Stanza_util
 import reminders_util
-
+import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -17,8 +17,8 @@ import reminders_util
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(1),
-                                                 GUI_height_brief=310, # height at brief display
-                                                 GUI_height_full=350, # height at full display
+                                                 GUI_height_brief=390, # height at brief display
+                                                 GUI_height_full=430, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -42,12 +42,10 @@ current_package_lb = tk.Label(window,text='Currently available default NLP packa
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                y_multiplier_integer, current_package_lb, True)
 
-package, parsers, package_basics, language = GUI_IO_util.read_NLP_package_language_config(window, '')
-
-package_display_area_value = f"NLP PACKAGE: {package}, NLP BASIC PACKAGE: {package_basics}, LANGUAGE(S): {language}"
+error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
 
 package_display_area = tk.Label(width=80, height=1, text=str(package_display_area_value), state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+250,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+100,
                                                y_multiplier_integer, package_display_area)
 
 package_lb = tk.Label(window,text='NLP package (parser & annotators)')
@@ -89,13 +87,21 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_
                                                y_multiplier_integer, language_menu,True)
 
 add_language_button = tk.Button(window, text='+', width=2,height=1,state='normal',command=lambda: activate_language_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 510,y_multiplier_integer,add_language_button, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 560,y_multiplier_integer,add_language_button, True)
 
 reset_language_button = tk.Button(window, text='Reset', width=5,height=1,state='normal',command=lambda: reset_language_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 550,y_multiplier_integer,reset_language_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 600,y_multiplier_integer,reset_language_button,True)
 
 show_language_button = tk.Button(window, text='Show', width=5,height=1,state='normal',command=lambda: show_language_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 610,y_multiplier_integer,show_language_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 660,y_multiplier_integer,show_language_button)
+
+def save_NLP_config():
+    currently_selected_package_language= {"NLP PACKAGE": package_var.get(), "NLP BASIC PACKAGE": package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
+    config_util.save_NLP_package_language_config(window, currently_selected_package_language)
+
+save_button = tk.Button(window, text='SAVE', width=10, height=2, command=lambda: save_NLP_config())
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate,
+                                               y_multiplier_integer, save_button)
 
 def activate_language_var():
     # Disable the + after clicking on it and enable the class menu
@@ -156,7 +162,6 @@ def show_language_list():
     else:
         mb.showwarning(title='Warning', message='The currently selected language options are:\n\n  ' + '\n  '.join(language_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
-
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
@@ -175,13 +180,20 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, using the dropdown menu, select the NLP package to be used as the default package for basic functions, namely, sentence splitter, tokenizer, lemmatizer."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the language(s) your input txt file(s) are written in. Different NLP packages support a different range of languages.\n\nFor those NLP packages that suport multiple languages (e.g., texts written in both English and Chinese), such as Stanza, hit the + button multiple times to add multiple languages. Since English is the default value, if you hit + English will be added as part of a multi-language selection. If you do not want English to be part of the multi-language selection, hit Reset before hitting + and select and add your languages.\n\nHit the Reset buttons to start fresh.\n\nHit the Show button to display the current language selection.")
-    y_multiplier_integer = 5
-    return y_multiplier_integer -1
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Please, hit the SAVE button to save any changes made.")
+    y_multiplier_integer = 6.5
+    return y_multiplier_integer-1
 
 y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the default NLP package (e.g., spaCy, Stanford CoreNLP, Stanza) and language (e.g., English, Chinese) to be used for parsing and annotating your corpus in a specific language. Different packages support different sets of languages."
 readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, 'NLP_setup_package_language_main')
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, 'NLP_setup_package_language_main',False)
+
+if error:
+    mb.showwarning(title='Warning',
+               message="The config file 'NLP_setup_package_language_main_config.csv' could not be found in the sub-directory 'config' of yoour main NLP Suite folder.\n\nPlease, setup the default NLP package and language options then click on the SAVE button to save your options.")
 
 GUI_util.window.mainloop()

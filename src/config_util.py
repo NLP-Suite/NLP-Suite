@@ -17,6 +17,7 @@
 
 import os
 import tkinter.messagebox as mb
+import pandas as pd
 
 import IO_user_interface_util
 import GUI_IO_util
@@ -82,6 +83,97 @@ def getFiletype(config_input_output_numeric_options):
     else:
         fileType = 'Input filename with path'
     return fileType
+
+def save_IO_config(window, config_filename, config_input_output_numeric_options, current_config_input_output_alphabetic_options):
+    saved_config_input_output_alphabetic_options, config_input_output_full_options, missingIO = read_config_file(
+        config_filename, config_input_output_numeric_options)
+    if saved_config_input_output_alphabetic_options != current_config_input_output_alphabetic_options:
+        if current_config_input_output_alphabetic_options == ['', '', '',
+                                                              ''] or current_config_input_output_alphabetic_options == [
+            '', '', '', '']:
+            saveGUIconfig = False
+        else:
+            if saved_config_input_output_alphabetic_options == ['', '', '',
+                                                                ''] or saved_config_input_output_alphabetic_options == [
+                '', '', '', '']:
+                saveGUIconfig = True
+            else:
+                if 'default' in config_filename:
+                    saveGUIconfig = mb.askyesno("Save I/O values to 'Default I/O configuration': " + config_filename,
+                                                'The selected Input/Output options are different from the I/O values previously saved in "' + config_filename + '"' + ' listed below in succinct form for readability:\n\n' + str(
+                                                    config_input_output_full_options) + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
+                else:
+                    saveGUIconfig = mb.askyesno(
+                        "Save I/O values to 'GUI-specific I/O configuration': " + config_filename,
+                        'The selected Input/Output options are different from the I/O values previously saved in "' + config_filename + '"' + ' listed below in succinct form for readability:\n\n' + str(
+                            config_input_output_full_options) + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
+        if saveGUIconfig == True:
+            write_config_file(window, config_filename, config_input_output_numeric_options,
+                                          current_config_input_output_alphabetic_options)
+
+def read_NLP_package_language_config():
+    package = ''
+    parsers = []
+    basics_package = ''
+    language = ''
+    config_filename = GUI_IO_util.configPath + os.sep + 'NLP_setup_package_language_main_config.csv'
+    # dataset = pd.read_csv(config_filename, sep='\t')
+    error = False
+    try:
+        dataset = pd.read_csv(config_filename)
+        package = dataset.iat[0, 0]
+        parsers = dataset.iat[0, 1].split(',')
+        basics_package = dataset.iat[0, 2]
+        language = dataset.iat[0, 3]
+        package_display_area_value = f"NLP PACKAGE: {package}, NLP BASIC PACKAGE: {basics_package}, LANGUAGE(S): {language}"
+    except:
+        error = True
+        # error must be set to true to display the next message after the entire GUI has been displayed
+        # mb.showwarning(title='Warning',
+        #                message="The config file 'NLP_setup_package_language_main_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup button.")
+        package_display_area_value = ''
+    return error, package, parsers, basics_package, language, package_display_area_value
+
+def write_NLP_package_language_config_file(window, config_filename, currently_selected_options):
+    # check that the config directory exists inside the NLP main directory
+    if os.path.isdir(GUI_IO_util.configPath) is False:
+        try:
+            os.mkdir(GUI_IO_util.configPath)
+        except:
+            mb.showwarning(title='Permission error?',
+                           message="The command failed to create the Config directory.\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
+            return
+
+    config_filename_path=os.path.join(GUI_IO_util.configPath, config_filename)
+    try:
+        csv_file = pd.read_csv(config_filename_path)
+        csv_file.iat[0, 0] = currently_selected_options['NLP PACKAGE']
+        csv_file.iat[0, 2] = currently_selected_options['NLP BASIC PACKAGE']
+        csv_file.iat[0, 3] = currently_selected_options['LANGUAGE(S)']
+        csv_file.to_csv(config_filename_path, index=False)
+
+        IO_user_interface_util.timed_alert(window, 2000, 'Warning',
+                                            'NLP package and language options have been saved to\n\n' + config_filename_path,
+                                            False)
+    except:
+        mb.showwarning(title='Permission error?',
+                       message="The command failed to save the config file\n\n" + config_filename + "\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
+
+def save_NLP_package_language_config(window, currently_selected_options):
+    config_filename = GUI_IO_util.configPath + os.sep + 'NLP_setup_package_language_main_config.csv'
+    # package, parsers, package_basics, language = read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value = read_NLP_package_language_config()
+    if error or parsers=='':
+        saved_NLP_package_language_options = ''
+        save_config = True
+    else:
+        saved_NLP_package_language_options = f"NLP PACKAGE: {package}, NLP BASIC PACKAGE: {package_basics}, LANGUAGE(S): {language}"
+        save_config=False
+    if saved_NLP_package_language_options!='' and currently_selected_options!=saved_NLP_package_language_options:
+        save_config = mb.askyesno("Save NLP package and language options",
+                                  'The selected NLP package and language options are different from the values previously saved in "' + config_filename + '\n\nDo you want to replace the previously saved values with the current ones?')
+    if save_config:
+        write_NLP_package_language_config_file(window, config_filename, currently_selected_options)
 
 def get_standard_config_csv(config_input_output_numeric_options, config_input_output_alphabetic_options):
 

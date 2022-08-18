@@ -315,7 +315,7 @@ setup_NLP_package_language_OK_checkbox = tk.Checkbutton(window, state='disabled'
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                setup_NLP_package_language_OK_checkbox, True)
 
-NLP_package_language_config = GUI_IO_util.configPath+os.sep+'default_NLP_package_language_config.csv'
+NLP_package_language_config = GUI_IO_util.configPath+os.sep+'NLP_setup_package_language_main_config.csv'
 def setup_NLP_package_language_checkbox(NLP_package_language_config):
     if os.path.isfile(NLP_package_language_config):
         setup_NLP_package_language_OK_checkbox_var.set(1)
@@ -325,13 +325,13 @@ setup_NLP_package_language_OK_checkbox_var.trace('w', lambda x, y, z: setup_NLP_
 
 setup_NLP_package_language_checkbox(NLP_package_language_config)
 
-NLP_package_language_setup_button = tk.Button(window, text='Setup default NLP parser & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
+NLP_package_language_setup_button = tk.Button(window, text='Setup default NLP parser & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=lambda: call("python setup_NLP_package_language_main.py", shell=True))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+30, y_multiplier_integer,
                                                NLP_package_language_setup_button,True)
 
 open_default_NLP_package_language_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, NLP_package_language_config))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_NLP_package_language_config_button, y_multiplier_integer,
-                                               open_default_NLP_package_language_config_button, False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button-300, "Open the default_NLP_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
+                                               open_default_NLP_package_language_config_button, False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button-300, "Open the NLP_setup_package_language_main_config.csv file containing the default NLP parser and annotators and corpus language options")
 
 setup_software_checkbox = tk.Checkbutton(window, state='disabled',
                                          variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0)

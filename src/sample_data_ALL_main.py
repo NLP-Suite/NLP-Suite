@@ -106,6 +106,7 @@ openFile_button = tk.Button(window, width=3, text='',
 
 x_coordinate_hover_over = GUI_IO_util.get_labels_x_indented_coordinate()+500
 
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+500, y_multiplier_integer,
                                                openFile_button, True, False, True, False, 90, x_coordinate_hover_over, "Open selected csv file")
 

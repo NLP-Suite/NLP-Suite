@@ -65,6 +65,7 @@ def clear(e):
     videos_dropdown_field.set('Watch videos')
     tips_dropdown_field.set('Open TIPS files')
     reminders_dropdown_field.set('Open reminders')
+    setup_dropdown_field.set('Setup')
 window.bind("<Escape>", clear)
 
 
@@ -98,6 +99,7 @@ charts_dropdown_field = tk.StringVar()
 videos_dropdown_field = tk.StringVar()
 tips_dropdown_field = tk.StringVar()
 reminders_dropdown_field = tk.StringVar()
+setup_dropdown_field = tk.StringVar()
 
 run_button = tk.Button(window, text='RUN', width=10,height=2)
 
@@ -400,6 +402,7 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
 
         IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(outputDirName)
         IO_setup_brief_display_area = tk.Text(width=60, height=2)
+        # place the display area for brief
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+250,
                                                        0, IO_setup_brief_display_area)
         IO_setup_brief_display_area.delete(0.1, tk.END)
@@ -451,6 +454,7 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
     # setup a button to open an input file
     openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.openFile(window, inputFilename.get()))
+    # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_file_button_brief, y_multiplier_integer,
                                                    openInputFile_button, True, False, True, False, 90, x_coordinate_hover_over, "Open INPUT file")
 
@@ -466,12 +470,14 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
     # setup a button to open Windows Explorer on the selected INPUT directory
     openInputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: open_directory())
+    # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_inputDir_button_brief, y_multiplier_integer,
                                                    openInputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open INPUT files directory")
 
     # setup a button to open Windows Explorer on the selected OUTPUT directory
     openOutputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
+    # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_outputDir_button_brief, y_multiplier_integer,
                                                    openOutputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open OUTPUT files directory")
 
@@ -488,6 +494,7 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
 
     openInputConfigFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: openConfigFile(scriptName))
+    # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_config_file_button_brief, y_multiplier_integer,
                                                    openInputConfigFile_button, True, False, True,False, 90, x_coordinate_hover_over, "Open csv config file")
 
@@ -823,10 +830,23 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             reminders_util.resetReminder(config_filename,reminders_dropdown_field.get())
     reminders_dropdown_field.trace('w', trace_reminders_dropdown)
 
+    if not 'package_language' in config_filename:
+        setup_dropdown_field.set('Setup')
+        setup_menu_lb = tk.OptionMenu(window, setup_dropdown_field,"NLP setup")
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+                                                       setup_menu_lb, True, False, False, False, 90, GUI_IO_util.get_help_button_x_coordinate(),
+                                                       "Using the dropdown menu, select the 'NLP setup' option to open the GUI 'NLP package and language setup' where you can enter default values for preferred NLP package (spaCy, CoreNLP, Stanza) and corpus language")
+
+        def setup_NLP_package_language(*args):
+            if setup_dropdown_field.get()=='NLP setup':
+                call("python NLP_setup_package_language_main.py", shell=True)
+        setup_dropdown_field.trace('w',setup_NLP_package_language)
+
     # there is no RUN button when setting up IO information in NLP_setup_IO_main.py
     if not "IO_setup_main" in scriptName and not "package_language" in scriptName:
-        GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer, run_button, False, False,
-                                True)
+        GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
+                                run_button, False, False, True)
 
     def _close_window():
         if 'Default' in IO_setup_menu_var.get(): #GUI_util.IO_setup_menu_var.get()
