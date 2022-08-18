@@ -134,12 +134,13 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
             #     else:
             #         widget_name.bind('<Enter>', lambda e: e.widget.config(activeforeground='red',text=label))
 
-        if 'scale' in str(widget_name) or ('button' in str(widget_name) and text_info ==''):
+        if 'scale' in str(widget_name) or ('button' in str(widget_name) and not 'checkbutton' in str(widget_name) and text_info ==''):
             # background sets the whole widget in red
             widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
-        elif 'label' in str(widget_name) or 'text' in str(widget_name):
-            # for text widgets do not set the whole widget to red, foreground='red' sets a widget wording to red
-            #  #f0f0f0 is a very light shade of gray
+        elif 'label' in str(widget_name) or 'text' in str(widget_name) or 'checkbutton' in str(widget_name):
+            # for text widgets do not set the whole widget to red
+            # foreground='red' sets a widget wording to red
+            # #f0f0f0 is a very light shade of gray
             widget_name.bind('<Enter>', lambda e: e.widget.config(background='#F0F0F0',foreground='red'))
         else:
             if text_info != '':
