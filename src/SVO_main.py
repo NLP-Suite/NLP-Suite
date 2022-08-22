@@ -9,7 +9,7 @@ import GUI_util
 import IO_libraries_util
 import config_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "SVO extractor",
+if IO_libraries_util.install_all_packages(GUI_util.window, "SVO main",
                                           ['subprocess', 'os', 'tkinter', 'csv']) == False:
     sys.exit(0)
 
@@ -150,6 +150,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         wordcloud_var,
         google_earth_var):
 
+    global error
+    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    language_var = language
+
     # pull the widget names from the GUI since the scripts change the IO values
     inputFilename = GUI_util.inputFilename.get()
     inputDir = GUI_util.input_main_dir_path.get()
@@ -161,7 +165,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     filesToOpen = []
 
-    if package_display_area == '':
+    if package_display_area_value == '':
         mb.showwarning(title='No setup for NLP package and language',
                        message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
         return
@@ -169,7 +173,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # the merge option refers to merging the txt files into one
     merge_txt_file_option = False
 
-    if Coref == False and package_display_area == '':
+    if Coref == False and package_display_area_value == '':
         mb.showwarning(title='No option selected',
                        message="No option has been selected.\n\nPlease, select an option and try again.")
         return
@@ -795,14 +799,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 
 # NLP packages & languages ------------------------------------------------------------------------------------------------------
 
-package_button = tk.Button(window, text='Setup NLP package and corpus language', width=50, state='normal',command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,package_button, True)
+# package_button = tk.Button(window, text='Setup NLP package and corpus language', width=50, state='normal',command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,package_button, True)
 
 error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
-
-package_display_area = tk.Label(width=80, height=1, text=str(package_display_area_value), state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+200,
-                                               y_multiplier_integer, package_display_area)
 
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
@@ -938,6 +938,14 @@ def changed_filename(tracedInputFile):
     activateCoRefOptions()
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
 
+package_var.set('Stanford CoreNLP')
+package_lb = tk.Label(window, text='SVO package')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               package_lb, True)
+package_menu = tk.OptionMenu(window, package_var, 'spaCy','Stanford CoreNLP', 'Stanza', 'OpenIE', 'SENNA')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 120, y_multiplier_integer,
+                                               package_menu)
+
 def activate_filter_dictionaries(*args):
     if not filter_subjects_var.get():
         subjects_dict_var.set('')
@@ -968,7 +976,6 @@ def getDictFile(checkbox_var, dict_var, checkbox_value, dictFile):
         if len(filePath) == 0:
             checkbox_var.set(0)
     dict_var.set(filePath)
-
 
 filter_subjects_var.set(1)
 subjects_checkbox = tk.Checkbutton(window, text='Filter Subject', variable=filter_subjects_var, onvalue=1, offvalue=0,
@@ -1090,6 +1097,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                google_earth_checkbox)
 
 def activateFilters(*args):
+    if package_var.get()=='spaCy' or package_var.get()=='Stanza':
+        mb.showwarning(title='Warning',
+                       message="The selected package " + package_var.get() + " is not available yet on this GUI. It is available as a special annotator in the NLP_parsers_annotators_main GUI.")
+        return
     gephi_var.set(1)
     wordcloud_var.set(1)
     google_earth_var.set(1)
@@ -1176,8 +1187,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, click on the 'Setup' button to open the GUI that will allow you to select the NLP package to be used (e.g., spaCy, Stanford CoreNLP, Stanza).\n\nDifferent NLP packages support a different range of languages. The Setup GUI will also allow you to select the language of your input txt file(s).\n\nTHE CURRENT NLP PACKAGE AND LANGUAGE SELECTION IS DISPLAYED IN THE TEXT WIDGET."+GUI_IO_util.msg_Esc)
+    # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+    #                               "Please, click on the 'Setup' button to open the GUI that will allow you to select the NLP package to be used (e.g., spaCy, Stanford CoreNLP, Stanza).\n\nDifferent NLP packages support a different range of languages. The Setup GUI will also allow you to select the language of your input txt file(s).\n\nTHE CURRENT NLP PACKAGE AND LANGUAGE SELECTION IS DISPLAYED IN THE TEXT WIDGET."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                                          "The performance of different NLP tools (e.g., Stanford CoreNLP) is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
@@ -1188,6 +1199,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, tick the checkbox if you wish to resolve manually cases of unresolved or wrongly resolved coreferences.\n\nThe option is not available when processing a directory of files. You can always use the 'Stanford_CoreNLP_coreference_main' GUI to\n   1. open a merged coreferenced file;\n   2. split merged coreferenced files.\n\nIf manual edit is selected, the script will also display a split-screen file for manual editing. On the left-hand side, pronouns cross-referenced by CoreNLP are tagged in YELLOW; pronouns NOT cross-referenced by CoreNLP are tagged in BLUE. On the right-hand side, pronouns cross-referenced by CoreNLP are tagged in RED, with the pronouns replaced by the referenced nouns.\n\nMANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file \'social-actor-list.csv\', created via WordNet with keyword person and saved in the \'lib/wordLists\' subfolder, will be automatically loaded as the DEFAULT dictionary file (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly automatically loaded as the DEFAULT dictionary file for verbs.\n\nDictionary filter files can be created via WordNet and saved in the \'lib/wordLists\' subfolder. You can edit that list, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries.\n\nThe Lemmatize options will produce lemmatized subjects, verbs, or objects. When verbs are lemmatized, the algorithm will aggregate the verbs into WordNet top synset verb categories."+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Please, using the dropdown menu, select the NLP package to be used to extract SVOs from your corpus."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that).\n\nThe filter file social-actor-list, created via WordNet with person as keyword and saved in the \'lib/wordLists\' subfolder, will be automatically set as the DEFAULT filter for subjects (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly set as the DEFAULT dictionary file for verbs.\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be prompted to select a new file."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -1204,8 +1217,8 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordi
 
 # change the value of the readMe_message
 readMe_message = "This set of Python 3 scripts extract automatically most of the elements of a story grammar and visualize the results in network graphs and GIS maps. A story grammar – basically, the 5Ws + H of modern journalism: Who, What, When, Where, Why, and How – provides the basic building blocks of narrative.\n\nThe set of scripts assembled here for this purpose ranges from testing for utf-8 compliance of the input text, to resolution for pronominal coreference, extraction of normalized NER dates (WHEN), visualized in various Excel charts, extraction, geocoding, and mapping in Google Earth Pro of NER locations.\n\nAt the heart of the SVO approach are several NLP packages to choose from. For passive sentences, the pipeline swaps S and O to transform the triplet into active voice. Thus, the WHO, WHAT (WHOM) are extracted from a text. Each component of the SVO triplet can be filtered via specific dictionaries (e.g., filtering for social actors and social actions, only). The set of SVO triplets are then visualized in dynamic network graphs (via Gephi).\n\nThe WHY and HOW of narrative are still beyond the reach of the current set of SVO scripts.\n\nIn INPUT the scripts expect a txt file to run utf-8 check, coreference resolution, date extraction, and CoreNLP. You can also enter a csv file, the output of a previous run with any of the NLP packages (_svo.csv/_SVO_Result) marked file) if all you want to do is to visualize results.\n\nIn OUTPUT, the scripts will produce several files (txt, csv, png, HTML, KML), depending upon the options selected."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName, False, package_display_area_value)
 
 def warnUser(*args):
     reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_default,
@@ -1223,6 +1236,6 @@ warnUser()
 
 if error:
     mb.showwarning(title='Warning',
-               message="The config file 'default_NLP_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup NLP package button.")
+               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
 
 GUI_util.window.mainloop()

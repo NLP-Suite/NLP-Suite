@@ -4,12 +4,11 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "Stanford_CoreNLP.py", ['tkinter', 'subprocess']) == False:
+if IO_libraries_util.install_all_packages(GUI_util.window, "NLP_parsers_annotators_main", ['tkinter', 'subprocess']) == False:
     sys.exit(0)
 
 import os
 import tkinter as tk
-from tkinter import ttk
 import tkinter.messagebox as mb
 from subprocess import call
 
@@ -20,6 +19,7 @@ import reminders_util
 import Stanford_CoreNLP_util
 import Stanford_CoreNLP_coreference_util
 import Stanza_util
+import spaCy_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -35,21 +35,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         document_length_var,
         limit_sentence_length_var,
         manual_Coref, open_GUI,
-        dateInclude, sep, date_field_position, dateFormat, single_quote,
+        dateInclude, sep, date_field_position, dateFormat,
+        parser_var,
+        single_quote,
         CoNLL_table_analyzer_var, annotators_var, annotators_menu_var):
 
     filesToOpen = []
     outputCoNLLfilePath = ''
 
-    # if open_GUI:
-    #     call("python Stanford_CoreNLP_coreference_main.py", shell=True)
-    #     return
+    display_available_options()
+    #changed_NLP_package_set_parsers()
 
-    # check internet connection
-    # if not IO_internet_util.check_internet_availability_warning("Stanford CoreNLP"):
-    #     return
-
-    if package_display_area == '':
+    if package_display_area_value == '':
         mb.showwarning(title='No setup for NLP package and language',
                        message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
         return
@@ -141,17 +138,63 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
 # spaCy ---------------------------------------------------------------------------
     if package == 'spaCy':
-        mb.showwarning('Warning',
-                       'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
-        return
-
         if parser_var or (annotators_var and annotators_menu_var != ''):
-
             if IO_libraries_util.check_inputPythonJavaProgramFile(
                     'spaCy_util.py') == False:
                 return
+        if annotators_var:
+            if annotators_menu_var == '':
+                mb.showwarning('Warning',
+                               'The option of running a spaCy annotator has been selected but no annotaor has been selected.\n\nPlease, select an annotator option and try again.')
+                return
+            if 'Sentence splitter (with sentence length)' in annotators_menu_var:
+                annotator = 'Sentence'
+            elif 'Lemma annotator' in annotators_menu_var:
+                annotator = 'Lemma'
+            elif 'POS annotator' in annotators_menu_var:
+                annotator = 'All POS'
+            elif 'NER annotator' in annotators_menu_var:  # NER annotator
+                annotator = 'NER'
+            elif 'Sentiment analysis' in annotators_menu_var:
+                annotator = 'sentiment'
+            elif 'SVO extraction' in annotators_menu_var:
+                annotator = 'SVO'
+            elif 'Gender' in annotators_menu_var or 'Quote' in annotators_menu_var or 'Normalized NER' in annotators_menu_var or 'Gender' in annotators_menu_var or 'OpenIE' in annotators_menu_var:
+                mb.showwarning(title='Option not available in spaCy',
+                               message='The ' + annotators_menu_var + ' is not available in spaCy.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the NLP setup option and select Stanford CoreNLP as your default package and try again.')
+                return
+            else:
+                mb.showwarning('Warning',
+                               'The selected option ' + annotators_menu_var + ' is not available in spaCy (yet).\n\nPlease, select another annotator and try again.')
+                return
+
+        document_length_var = 1
+        limit_sentence_length_var = 1000
+        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+                                                    outputDir,
+                                                    openOutputFiles,
+                                                    createCharts, chartPackage,
+                                                    annotator, False,
+                                                    language,
+                                                    memory_var, document_length_var, limit_sentence_length_var,
+                                                    extract_date_from_filename_var=dateInclude,
+                                                    date_format=dateFormat,
+                                                    date_separator_var=sep,
+                                                    date_position_var=date_field_position)
+
+        if tempOutputFiles == None:
+            return
+
+        if len(tempOutputFiles) > 0:
+            filesToOpen.extend(tempOutputFiles)
+            if 'parser' in annotator:
+                reminders_util.checkReminder(config_filename,
+                                             reminders_util.title_options_CoreNLP_NER_tags,
+                                             reminders_util.message_CoreNLP_NER_tags,
+                                             True)
 
 # Stanza ---------------------------------------------------------------------------
+
     if package == 'Stanza':
         if parser_var or (annotators_var and annotators_menu_var != ''):
 
@@ -182,10 +225,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 annotator = 'sentiment'
             elif 'SVO extraction' in annotators_menu_var:
                 annotator = 'SVO'
-            elif 'Gender' in annotators_menu_var or 'Normalized NER' in annotators_menu_var or 'Gender' in annotators_menu_var:
-                mb.showwarning(title='Option not available n Stanza',
-                               message='The ' + annotators_menu_var + ' is not available in Stanza.\n\nTh annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, open the Stanford CoreNLP GUI and run the annotator.')
+            elif 'Gender' in annotators_menu_var or 'Quote' in annotators_menu_var or 'Normalized NER' in annotators_menu_var or 'Gender' in annotators_menu_var or 'OpenIE' in annotators_menu_var:
+                mb.showwarning(title='Option not available in Stanza',
+                               message='The ' + annotators_menu_var + ' is not available in Stanza.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the NLP setup option and select Stanford CoreNLP as your default package and try again.')
+                return
             else:
+                mb.showwarning('Warning',
+                               'The selected option ' + annotators_menu_var + ' is not available in Stanza (yet).\n\nPlease, select another annotator and try again.')
                 return
 
         document_length_var = 1
@@ -250,6 +296,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  date_separator_var.get(),
                                  date_position_var.get(),
                                  date_format.get(),
+                                 parser_var.get(),
                                  quote_var.get(),
                                  CoNLL_table_analyzer_var.get(),
                                  annotators_var.get(),
@@ -264,12 +311,11 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=520, # height at brief display
-                             GUI_height_full=600, # height at full display
+                             GUI_height_brief=480, # height at brief display
+                             GUI_height_full=560, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
-
 
 GUI_label = 'Graphical User Interface (GUI) for NLP parsers & annotators'
 # The 4 values of config_option refer to:
@@ -296,8 +342,8 @@ inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
 def clear(e):
-    package.set('Stanford CoreNLP')
-    language.set("English")
+    # package.set('Stanford CoreNLP')
+    # language.set("English")
     parser_var.set(1)
     parser_menu_var.set("Probabilistic Context Free Grammar (PCFG)")
     annotators_var.set(0)
@@ -337,20 +383,6 @@ y_multiplier_integer_SV=0 # used to set the quote_var widget on the proper GUI l
 pre_processing_button = tk.Button(window, width=50, text='Pre-processing tools (Open file checking & cleaning GUI)',command=lambda: call('python file_checker_converter_cleaner_main.py'))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                pre_processing_button)
-
-# NLP packages & languages ------------------------------------------------------------------------------------------------------
-
-package_button = tk.Button(window, text='Setup NLP package and corpus language', width=50, state='normal',command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,package_button, True)
-
-error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
-
-if len(parsers)>0:
-    parser_menu_var.set(parsers[0])
-
-package_display_area = tk.Label(width=80, height=1, text=str(package_display_area_value), state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+200,
-                                               y_multiplier_integer, package_display_area)
 
 # memory options
 
@@ -444,27 +476,47 @@ def check_CoreNLP_dateFields(*args):
         date_position_menu.config(state="disabled")
 fileName_embeds_date.trace('w', check_CoreNLP_dateFields)
 
+y_multiplier_integer_SV1=y_multiplier_integer
 
-parser_var.set(1)
-parser_checkbox = tk.Checkbutton(window, text='Parsers', variable=parser_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               parser_checkbox, True)
 
-if len(parsers) == 0:
-    parser_menu = tk.OptionMenu(window, parser_menu_var, parsers)
-else:
-    parser_menu = tk.OptionMenu(window, parser_menu_var, *parsers)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate(),
-                                               y_multiplier_integer,
-                                               parser_menu)
+def display_available_options(*args):
+    global y_multiplier_integer, y_multiplier_integer_SV1, error, package, parsers, language, package_display_area_value, language_list
+    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    language_list=[language]
+    parser_var.set(1)
+    if package!='':
+        available_parsers = 'Parsers for ' + package +'                          '
+    else:
+        available_parsers='Parsers'
+    if len(parsers)>0:
+        parser_menu_var.set(parsers[0])
 
-# package.trace('w',changed_NLP_package)
-#
-# changed_NLP_package()
-#
-# parser_menu_var.trace('w',changed_NLP_package)
+    parser_checkbox = tk.Checkbutton(window, text=available_parsers, variable=parser_var, onvalue=1, offvalue=0)
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer_SV1,
+                                                   parser_checkbox, True, False, False, False, 90,
+                                                   GUI_IO_util.get_labels_x_coordinate(),
+                                                   "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+
+    # if package == 'spaCy':
+    #     parsers = ['Dependency parser']
+    # if package=='Stanford CoreNLP':
+    #     parsers = ['Neural Network', 'Probabilistic Context Free Grammar (PCFG)']
+    # if package == 'Stanza':
+    #     parsers = ['Constituency parser', 'Dependency parser']
+    if len(parsers) == 0:
+        parser_menu = tk.OptionMenu(window, parser_menu_var, parsers)
+    else:
+        parser_menu = tk.OptionMenu(window, parser_menu_var, *parsers)
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate(),
+                                                   y_multiplier_integer,
+                                                   parser_menu)
+    return y_multiplier_integer
+
+parser_var.trace('w',display_available_options())
 
 def activate_SentenceTable(*args):
+    global parser_menu
     if parser_var.get() == 0:
         parser_menu_var.set('')
         parser_menu.configure(state='disabled')
@@ -500,6 +552,7 @@ Annotators_checkbox = tk.Checkbutton(window, text='Annotators', variable=annotat
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                Annotators_checkbox, True)
 
+annotators_menu_var.set("")
 annotators_menu_var.set("")
 annotators_menu = tk.OptionMenu(window, annotators_menu_var,
         'Sentence splitter (with sentence length)',
@@ -632,8 +685,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, click on the 'Setup' button to open the GUI that will allow you to select the NLP package to be used (e.g., spaCy, Stanford CoreNLP, Stanza).\n\nDifferent NLP packages support a different range of languages. The Setup GUI will also allow you to select the language of your input txt file(s).\n\nTHE CURRENT NLP PACKAGE AND LANGUAGE SELECTION IS DISPLAYED IN THE TEXT WIDGET."+GUI_IO_util.msg_Esc)
+    # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+    #                               "Please, click on the 'Setup' button to open the GUI that will allow you to select the NLP package to be used (e.g., spaCy, Stanford CoreNLP, Stanza).\n\nDifferent NLP packages support a different range of languages. The Setup GUI will also allow you to select the language of your input txt file(s).\n\nTHE CURRENT NLP PACKAGE AND LANGUAGE SELECTION IS DISPLAYED IN THE TEXT WIDGET."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "The Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -653,12 +706,21 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordi
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script will perform different types of textual operations using a selected NLP package (e.g., spaCy, Stanford CoreNLP, Stanza). The main operation is text parsing to produce the CoNLL table (CoNLL U format).\n\nYOU MUST BE CONNETED TO THE INTERNET TO RUN THE SCRIPTS.\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce different file types: txt-format copies of the same input txt files for co-reference, csv for annotators (HTML for gender annotator)."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName, False, package_display_area_value)
+
+def activate_parsers(*args):
+    global package_display_area_value
+    if GUI_util.setup_dropdown_field.get() == 'NLP setup':
+        package_display_area_value_new = GUI_util.setup_NLP_package_language(scriptName,GUI_util.setup_dropdown_field.get())
+        if package_display_area_value_new!=package_display_area_value:
+            y_multiplier_integer = display_available_options()
+            # y_multiplier_integer = changed_NLP_package_set_parsers()
+GUI_util.setup_dropdown_field.trace('w', activate_parsers)
 
 if error:
     mb.showwarning(title='Warning',
-               message="The config file 'NLP_setup_package_language_main_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup NLP package button.")
+               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
 
 GUI_util.window.mainloop()

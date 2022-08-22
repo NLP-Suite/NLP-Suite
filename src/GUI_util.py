@@ -326,7 +326,7 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
     y_multiplier_integer=1
     # temp_config_filename is used to check the existence of the default or GUI specific config
     if 'Default' in IO_setup_menu_var.get():
-        temp_config_filename='default_config.csv'
+        temp_config_filename='NLP_default_IO_config.csv'
     else:
         temp_config_filename=config_filename
     silent=False
@@ -483,7 +483,7 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
 
     def openConfigFile(scriptName):
         if 'Default' in IO_setup_menu_var.get():  # GUI_util.GUI_util.IO_setup_menu_var.get()
-            temp_config_filename = 'default_config.csv'
+            temp_config_filename = 'NLP_default_IO_config.csv'
         else:
             temp_config_filename = config_filename
         IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + temp_config_filename)
@@ -500,7 +500,7 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
 
 def IO_config_setup_full (window, y_multiplier_integer):
     if 'Default' in IO_setup_menu_var.get():
-        config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file('default_config.csv', config_input_output_numeric_options)
+        config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file('NLP_default_IO_config.csv', config_input_output_numeric_options)
     else:
         config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file(config_filename, config_input_output_numeric_options)
 
@@ -597,7 +597,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
 
 def setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent):
     if 'Default' in IO_setup_menu_var.get(): # GUI_util.GUI_util.IO_setup_menu_var.get()
-        temp_config_filename = 'default_config.csv'
+        temp_config_filename = 'NLP_default_IO_config.csv'
     else:
         temp_config_filename=config_filename
     # 2 arguments are passed to python NLP_setup_IO_main.py:
@@ -701,12 +701,24 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
         global noLicenceError
         noLicenceError=True
 
+def setup_NLP_package_language(scriptName,setup_dropdown_field):
+    global package_display_area_value
+    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    if setup_dropdown_field=='NLP setup':
+        call("python NLP_setup_package_language_main.py", shell=True)
+        error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+        return package_display_area_value
+    # currently not used
+    if setup_dropdown_field == 'I/O configuration':
+        import GUI_util
+        GUI_util.setup_IO_configuration_options(False, scriptName, True)
+    return package_display_area_value
 #__________________________________________________________________________________________________________________
 # GUI bottom buttons widgets (ReadMe, Videos, TIPS, RUN, CLOSE)
 # silent is set to True in those GUIs where the selected default I/O configuration does not confirm to the expected input
 #   For example, you need a csv file but the default is a Directory, e.g., data_manager_main
 def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
-               videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName='', silent=False):
+               videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName='', silent=False, package_display_area_value=''):
 
     # No bottom lines (README, TIPS, RUN, CLOSE) displayed when opening the license agreement GUI
     if config_filename=='license_config.csv':
@@ -717,7 +729,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     #   display options for opening more specialized GUIs
     #   do NOT display the next two sets of widgets
     #   since there is no output to display
-    # if config_input_output_numeric_options!=[0,0,0,0] and config_filename!='default_config.csv':
+    # if config_input_output_numeric_options!=[0,0,0,0] and config_filename!='NLP_default_IO_config.csv':
 
     # "IO_setup_main" has no Excel display
     # GUIs that serve only as frontend GUIs for more specialized GUIs should NOT display Open ooutput and Excel tickboxes
@@ -799,7 +811,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # get the list of titles available for a given GUI
     if 'NLP_menu_main' in scriptName:
         # config_filename='NLP_config.csv'
-        config_filename = 'default_config.csv'
+        config_filename = 'NLP_default_IO_config.csv'
     reminder_options = reminders_util.getReminders_list(config_filename, True)
     # None returned for a faulty reminders.csv
     reminders_error = False
@@ -830,18 +842,17 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             reminders_util.resetReminder(config_filename,reminders_dropdown_field.get())
     reminders_dropdown_field.trace('w', trace_reminders_dropdown)
 
-    if not 'package_language' in config_filename:
+    if not 'package_language' in config_filename and not 'NLP_menu_main' in scriptName:
         setup_dropdown_field.set('Setup')
-        setup_menu_lb = tk.OptionMenu(window, setup_dropdown_field,"NLP setup")
+        setup_menu_lb = tk.OptionMenu(window, setup_dropdown_field,"NLP setup") #,"I/O configuration","External software")
         # place widget with hover-over info
+        if package_display_area_value !='':
+            hover_over_info="Current settings - " + package_display_area_value + "\nTo change settings, use dropdown menu, select 'NLP setup' to open GUI and enter new values for preferred NLP package (spaCy, CoreNLP, Stanza) and corpus language"
+        else:
+            hover_over_info = "Using the dropdown menu, select 'NLP setup' option to open the GUI where you can enter default values for preferred NLP package (spaCy, CoreNLP, Stanza) and corpus language"
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                                        setup_menu_lb, True, False, False, False, 90, GUI_IO_util.get_help_button_x_coordinate(),
-                                                       "Using the dropdown menu, select the 'NLP setup' option to open the GUI 'NLP package and language setup' where you can enter default values for preferred NLP package (spaCy, CoreNLP, Stanza) and corpus language")
-
-        def setup_NLP_package_language(*args):
-            if setup_dropdown_field.get()=='NLP setup':
-                call("python NLP_setup_package_language_main.py", shell=True)
-        setup_dropdown_field.trace('w',setup_NLP_package_language)
+                                                       hover_over_info)
 
     # there is no RUN button when setting up IO information in NLP_setup_IO_main.py
     if not "IO_setup_main" in scriptName and not "package_language" in scriptName:
@@ -850,7 +861,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     def _close_window():
         if 'Default' in IO_setup_menu_var.get(): #GUI_util.IO_setup_menu_var.get()
-            temp_config_filename = 'default_config.csv'
+            temp_config_filename = 'NLP_default_IO_config.csv'
         else:
             temp_config_filename = config_filename
         config_input_output_alphabetic_options=[]
@@ -904,7 +915,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         sys.exit()
 
     if 'Default' in IO_setup_menu_var.get():  # GUI_util.IO_setup_menu_var.get()
-        temp_config_filename = 'default_config.csv'
+        temp_config_filename = 'NLP_default_IO_config.csv'
     else:
         temp_config_filename = config_filename
 
@@ -947,4 +958,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # check_GitHub_release(local_release_version)
 
     window.protocol("WM_DELETE_WINDOW", _close_window)
+
+    return package_display_area_value
+
 

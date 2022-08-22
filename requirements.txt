@@ -66,7 +66,7 @@ nltk~=3.5
 # stanza used by wordcloud script (the new StanfordCoreNLP Python approach) and YAGO
 # stanza
 # stanfordnlp is used by SVO 
-stanfordnlp
+# stanfordnlp now called stanza
 # stanza requires torch and torchvision; they are installed by STEP2 of setup
 # pip install torch===1.7.1 torchvision===0.8.2 -f https://download.pytorch.org/whl/torch_stable.html
 # torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
@@ -90,6 +90,7 @@ gensim
 pyLDAvis~=2.1.2
 IPython # THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA; but... not!
 spacy
+spacytextblob
 # pprint #THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA
 # matplotlib #THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA
 

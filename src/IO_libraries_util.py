@@ -445,8 +445,10 @@ def delete_software_config(existing_software_config, software):
             break
     return existing_software_config
 
-def get_existing_software_config():
-    software_config = GUI_IO_util.configPath + os.sep + 'software_config.csv'
+def get_existing_software_config(external_software_config_file=''):
+    if external_software_config_file=='':
+        external_software_config_file='NLP_setup_external_software_config.csv'
+    software_config = GUI_IO_util.configPath + os.sep + external_software_config_file
     # FIXED: must insert the new package into software-config.csv when the package is missing in the user csv file
     try:
         csv_file = open(software_config, 'r', newline='')
@@ -457,17 +459,18 @@ def get_existing_software_config():
     return existing_software_config
 
 # gets a list of the external software: CoreNLP, SENNA, WordNet, MALLET, Google Earth Pro, Gephi
-def get_missing_external_software_list(calling_script, existing_software_config):
-    if existing_software_config=='':
-        existing_software_config=get_existing_software_config()
+def get_missing_external_software_list(calling_script, external_software_config_file):
+    print("calling_script, existing_software_config",calling_script, external_software_config_file)
+    if external_software_config_file=='':
+        external_software_config_file=get_existing_software_config(external_software_config_file)
     index = 0
     missing_index = 0
     missing_software=''
-    for row in existing_software_config[1:]:  # skip header line
+    for row in external_software_config_file[1:]:  # skip header line
         software_name = row[0]
         software_dir = row[1]
         index = index + 1
-        if existing_software_config[index][1]=='' or os.path.isdir(software_dir) == False or check_inputExternalProgramFile(calling_script, software_dir, software_name) == False:
+        if external_software_config_file[index][1]=='' or os.path.isdir(software_dir) == False or check_inputExternalProgramFile(calling_script, software_dir, software_name) == False:
             missing_index = missing_index +1
             print("MISSING SOFTWARE", str(software_name).upper())
             missing_software = missing_software + '  ' + str(missing_index) + '. ' + str(software_name).upper() + '\n\n'
@@ -497,6 +500,8 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
     Cancel = False
 
     missing_software = get_missing_external_software_list(calling_script, existing_software_config)
+
+    print("in IO_libraries missing_software",missing_software)
 
     archive_location_warning = '\n\nDO NOT MOVE THE EXTERNAL SOFTWARE FOLDER INSIDE THE NLP SUITE FOLDER OR IT MAY BE OVERWRITTEN IN CASE YOU NEED TO RE-INSTALL THE SUITE.'
     if package == '':
