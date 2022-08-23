@@ -916,6 +916,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # do not lay Setup widget in NLP_menu_main and in NLP_setup_package_language_main
     if not 'package_language' in config_filename and not 'NLP_menu_main' in scriptName:
         setup_menu.set('Setup')
+
         setup_menu_lb = tk.OptionMenu(window, setup_menu,"Setup NLP package and corpus language",
                                       "Setup external software")
         window.nametowidget(setup_menu_lb)
