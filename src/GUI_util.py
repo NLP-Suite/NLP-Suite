@@ -919,7 +919,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         setup_menu_lb = tk.OptionMenu(window, setup_menu,"Setup NLP package and corpus language",
                                       "Setup external software")
         window.nametowidget(setup_menu_lb)
-        #@@
+
         error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
 
         # place widget with hover-over info
