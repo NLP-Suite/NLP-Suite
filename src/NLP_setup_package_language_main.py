@@ -142,7 +142,7 @@ show_language_button = tk.Button(window, text='Show', width=5,height=1,state='no
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 660,y_multiplier_integer,show_language_button)
 
 def save_NLP_config(parsers):
-    currently_selected_package_language= {"NLP PACKAGE": package_var.get(), "NLP BASIC PACKAGE": package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
+    currently_selected_package_language= {"NLP PACKAGE": package_var.get(), "LEMMATIZER": package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
     print("parsers_display_area",parsers_display_area['text'])
     config_util.save_NLP_package_language_config(window, currently_selected_package_language, parsers_display_area['text'])
     display_available_options()

@@ -161,7 +161,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 annotator = 'SVO'
             elif 'Gender' in annotators_menu_var or 'Quote' in annotators_menu_var or 'Normalized NER' in annotators_menu_var or 'Gender' in annotators_menu_var or 'OpenIE' in annotators_menu_var:
                 mb.showwarning(title='Option not available in spaCy',
-                               message='The ' + annotators_menu_var + ' is not available in spaCy.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the NLP setup option and select Stanford CoreNLP as your default package and try again.')
+                               message='The ' + annotators_menu_var + ' is not available in spaCy.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the Setup NLP package and corpus language option and select Stanford CoreNLP as your default package and try again.')
                 return
             else:
                 mb.showwarning('Warning',
@@ -227,7 +227,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 annotator = 'SVO'
             elif 'Gender' in annotators_menu_var or 'Quote' in annotators_menu_var or 'Normalized NER' in annotators_menu_var or 'Gender' in annotators_menu_var or 'OpenIE' in annotators_menu_var:
                 mb.showwarning(title='Option not available in Stanza',
-                               message='The ' + annotators_menu_var + ' is not available in Stanza.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the NLP setup option and select Stanford CoreNLP as your default package and try again.')
+                               message='The ' + annotators_menu_var + ' is not available in Stanza.\n\nThe annotator is available in Stanford CoreNLP. If you wish to run the annotator, please, using the Setup dropdown menu at the bottom of this GUI, select the Setup NLP package and corpus language option and select Stanford CoreNLP as your default package and try again.')
                 return
             else:
                 mb.showwarning('Warning',
@@ -712,12 +712,12 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 def activate_parsers(*args):
     global package_display_area_value
-    if GUI_util.setup_dropdown_field.get() == 'NLP setup':
-        package_display_area_value_new = GUI_util.setup_NLP_package_language(scriptName,GUI_util.setup_dropdown_field.get())
+    if GUI_util.setup_menu.get() == 'Setup NLP package and corpus language':
+        package_display_area_value_new, language = GUI_util.handle_setup_options(scriptName,GUI_util.setup_menu.get())
         if package_display_area_value_new!=package_display_area_value:
             y_multiplier_integer = display_available_options()
             # y_multiplier_integer = changed_NLP_package_set_parsers()
-GUI_util.setup_dropdown_field.trace('w', activate_parsers)
+GUI_util.setup_menu.trace('w', activate_parsers)
 
 if error:
     mb.showwarning(title='Warning',

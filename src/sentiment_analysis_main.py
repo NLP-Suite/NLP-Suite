@@ -96,7 +96,10 @@ def run(inputFilename,inputDir,outputDir,
         hedonometer_var=1
     elif 'VADER' in SA_algorithm_var:
         vader_var=1
-
+    else:
+        mb.showwarning('Warning',
+                SA_algorithm_var.lstrip() + " is not available yet. Sorry!\n\nPlease, select another option and try again.")
+        return
     #ANEW _______________________________________________________
     if anew_var==1 and (mean_var or median_var):
         if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'EnglishShortenedANEW.csv', 'sentiment_analysis_ANEW')==False:
@@ -349,7 +352,7 @@ def display_reminder(*args):
         return
 SA_algorithm_var.trace('w',display_reminder)
 
-SA_algorithms=['*','Neural networks:','   spaCy','   Stanford CoreNLP','   Stanza','','Dictionaries:','   ANEW','   hedonometer','   SentiWordNet','   VADER']
+SA_algorithms=['*','Neural networks:','   BERT','   spaCy','   Stanford CoreNLP','   Stanza','','Dictionaries:','   ANEW','   hedonometer','   SentiWordNet','   VADER']
 
 SA_algorithm_var.set('*')
 SA_algorithm_lb = tk.Label(window, text='Select sentiment analysis algorithm')

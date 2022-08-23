@@ -111,6 +111,49 @@ def save_IO_config(window, config_filename, config_input_output_numeric_options,
             write_config_file(window, config_filename, config_input_output_numeric_options,
                                           current_config_input_output_alphabetic_options)
 
+
+def write_external_software_config_file(window, config_filename, currently_selected_options, currently_selected_parsers):
+    # check that the config directory exists inside the NLP main directory
+    if os.path.isdir(GUI_IO_util.configPath) is False:
+        try:
+            os.mkdir(GUI_IO_util.configPath)
+        except:
+            mb.showwarning(title='Permission error?',
+                           message="The command failed to create the Config directory.\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
+            return
+
+    config_filename_path=os.path.join(GUI_IO_util.configPath, config_filename)
+    try:
+        csv_file = pd.DataFrame()
+        csv_file.at[0, 'Software'] = currently_selected_options['NLP PACKAGE']
+        csv_file.at[0, 'Path'] = {currently_selected_parsers}
+        csv_file.at[0, 'Download_link)'] = currently_selected_options['LEMMATIZER']
+
+        csv_file.to_csv(config_filename_path, index=False)
+
+        IO_user_interface_util.timed_alert(window, 2000, 'Warning',
+                                           'NLP external software options have been saved to\n\n  ' + config_filename_path,
+                                           False)
+    except:
+        mb.showwarning(title='Permission error?',
+                       message="The command failed to save the config file\n\n" + config_filename + "\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
+
+def save_external_software_config(window, currently_selected_options, currently_selected_parsers):
+    config_filename = GUI_IO_util.configPath + os.sep + 'NLP_setup_external_software_config.csv'
+    # package, parsers, package_basics, language = read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value = read_NLP_package_language_config()
+    if error or len(parsers)==0:
+        saved_NLP_package_language_options = ''
+        save_config = True
+    else:
+        saved_NLP_package_language_options= {"NLP PACKAGE": package, "LEMMATIZER": package_basics, "LANGUAGE(S)": language}
+        save_config=False
+    if saved_NLP_package_language_options!='' and currently_selected_options!=saved_NLP_package_language_options:
+        save_config = mb.askyesno("Save external software options",
+                                  'The selected external software options are different from the values previously saved in\n\n' + config_filename + '\n\nDo you want to replace the previously saved values with the current ones?')
+    if save_config:
+        write_NLP_package_language_config_file(window, config_filename, currently_selected_options, currently_selected_parsers)
+
 def read_NLP_package_language_config():
     package = ''
     parsers = []
@@ -125,7 +168,7 @@ def read_NLP_package_language_config():
         parsers = dataset.iat[0, 1].split(',')
         basics_package = dataset.iat[0, 2]
         language = dataset.iat[0, 3]
-        package_display_area_value = f"NLP PACKAGE: {package}, NLP BASIC PACKAGE: {basics_package}, LANGUAGE(S): {language}"
+        package_display_area_value = f"NLP PACKAGE: {package}, LEMMATIZER: {basics_package}, LANGUAGE(S): {language}"
     except:
         error = True
         # error must be set to true to display the next message after the entire GUI has been displayed
@@ -149,7 +192,7 @@ def write_NLP_package_language_config_file(window, config_filename, currently_se
         csv_file = pd.DataFrame()
         csv_file.at[0, 'Parser & annotators'] = currently_selected_options['NLP PACKAGE']
         csv_file.at[0, 'Parsers'] = {currently_selected_parsers}
-        csv_file.at[0, 'Basic functions (tokenizer/lemmatizer)'] = currently_selected_options['NLP BASIC PACKAGE']
+        csv_file.at[0, 'Basic functions (tokenizer/lemmatizer)'] = currently_selected_options['LEMMATIZER']
         csv_file.at[0, 'Corpus language'] = currently_selected_options['LANGUAGE(S)']
 
         csv_file.to_csv(config_filename_path, index=False)
@@ -170,7 +213,7 @@ def save_NLP_package_language_config(window, currently_selected_options, current
         saved_NLP_package_language_options = ''
         save_config = True
     else:
-        saved_NLP_package_language_options= {"NLP PACKAGE": package, "NLP BASIC PACKAGE": package_basics, "LANGUAGE(S)": language}
+        saved_NLP_package_language_options= {"NLP PACKAGE": package, "LEMMATIZER": package_basics, "LANGUAGE(S)": language}
         save_config=False
     if saved_NLP_package_language_options!='' and currently_selected_options!=saved_NLP_package_language_options:
         save_config = mb.askyesno("Save NLP package and language options",

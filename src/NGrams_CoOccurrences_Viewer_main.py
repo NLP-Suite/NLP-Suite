@@ -18,7 +18,7 @@ import IO_user_interface_util
 import GUI_IO_util
 import IO_files_util
 import charts_util
-import statistics_txt_util
+import config_util
 import reminders_util
 import IO_csv_util
 import NGrams_CoOccurrences_Viewer_util
@@ -555,7 +555,7 @@ TIPS_lookup = {'N-Grams (word & character)':"TIPS_NLP_Ngram (word & character).p
     #,'Java download install run':'TIPS_NLP_Java download install run.pdf'}
 TIPS_options='N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis','Excel smoothing data series','csv files - Problems & solutions','Statistical measures'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
@@ -593,7 +593,21 @@ The NGrams_CoOccurrences script allows searches for Ngrams or word co-occurrence
 \n\nNGRAMS and CO-OCCURRING words DO NOT MAKE MUCH SENSE WITH A SINGLE FILE!
 """
 
+error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+language_list = [language]
+
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName, False, package_display_area_value)
+
+def activate_parsers(*args):
+    global package_display_area_value, language
+    if GUI_util.setup_menu.get() == 'Setup NLP package and corpus language':
+        package_display_area_value, language = GUI_util.handle_setup_options(scriptName,GUI_util.setup_menu.get())
+    print("in Ngrams",package_display_area_value, language)
+GUI_util.setup_menu.trace('w', activate_parsers)
+
+if error:
+    mb.showwarning(title='Warning',
+               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
 
 GUI_util.window.mainloop()

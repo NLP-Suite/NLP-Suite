@@ -92,8 +92,9 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
 
     def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info):
         e.widget.config(background='red')
-        display_window_lb = tk.Label(window, text=text_info, name='display_window_lb', foreground='blue')
-        display_window_lb.place(x=x_coordinate_hover_over, y=y_coordinate)
+        # TODO Must left justify rather than center the info displayed
+        display_window_lb = tk.Label(window, anchor='w', text=text_info, name='display_window_lb', foreground='blue')
+        display_window_lb.place(anchor='w', x=x_coordinate_hover_over, y=y_coordinate)
 
     def delete_display_widget_lb(window, e, text_info):
         if text_info != '':
@@ -130,10 +131,17 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
         widget_name.bind('<Enter>', lambda e: e.widget.config(background='#F0F0F0',foreground='red'))
     else:
         if text_info != '':
-            if "\n" in text_info:
-                y_coordinate = y_coordinate - 30
-            else:
+            # these are the y coordinates where the text info is displayed
+            # move up the display if the ino contains line breaks
+            # there should not be more than 2 line breaks
+            number_of_lines = text_info.count('\n')
+            if number_of_lines == 0:
                 y_coordinate = y_coordinate - 20
+            elif number_of_lines == 1:
+                y_coordinate = y_coordinate - 25
+            elif number_of_lines == 2:
+                y_coordinate = y_coordinate - 30
+
             # combobox is the ttk menu object; the regular config breaks
             # https://stackoverflow.com/questions/71733010/ttkcombobox-foreground-color-change-doesnt-work-properly-whats-wrong
             if 'combobox' in str(widget_name):
@@ -177,7 +185,9 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
                          lambda e: delete_display_widget_lb(window, e, text_info))
 
 # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
+# widget_name is the name of the widget that needs to be placed in any of the GUI scripts as defined by tk.
 def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90, x_coordinate_hover_over = 90, text_info=''):
+    # print("widget_name",widget_name,"text_info",text_info)
     #basic_y_coordinate = 90
     y_step = 40 #the line-by-line increment on the GUI
     if centerX:
