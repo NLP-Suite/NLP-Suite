@@ -728,13 +728,11 @@ def handle_setup_options(scriptName,selected_setup_menu):
                       "'Setup external software' to open the GUI to download and instalkl all external software (e.g., Stanford CoreNLP, Gephi)"
     # TODO should run the function hover_over_widget but cannot get the widget_name
 
-    GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer, window.nametowidget('setup_menu_lb'), False,
+    GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer, setup_menu_lb, False,
                       False, hover_over_x_coordinate, hover_over_info)
     #window.nametowidget('setup_menu_lb')
     # package_display_area_value=''
     # language = ''
-
-
 
     print("in GUI_util setup_menu",setup_menu.get(),"selected_setup_menu",selected_setup_menu)
     error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
@@ -742,9 +740,10 @@ def handle_setup_options(scriptName,selected_setup_menu):
         # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
         call("python NLP_setup_package_language_main.py", shell=True)
         setup_menu.set("Setup")
+        display_setup_hover_over(y_multiplier_integer, scriptName)
+
         # need to get the correct hover-over info after the python call, in case options were changed
         # display_setup_hover_over(scriptName)
-        error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
     if selected_setup_menu=='Setup external software':
         call("python NLP_setup_external_software_main.py", shell=True)
         setup_menu.set("Setup")
@@ -772,10 +771,11 @@ def display_setup_hover_over(y_multiplier_integer, scriptName):
     # setup_menu_lb = tk.OptionMenu(window, setup_menu, "Setup NLP package and corpus language",
     #                               "Setup external software")
     hover_over_info = "Using the dropdown menu, select one of these options:\n" \
-                      "'Setup NLP package and corpus language' to open the GUI to enter default NLP package (spaCy, CoreNLP, Stanza) and language. " + NLP_current_settings + "\n" \
+                      "'Setup NLP package and corpus language' to open the GUI to enter default NLP package (spaCy, CoreNLP, Stanza) and language. " + \
+                        NLP_current_settings + "\n" \
                       "'Setup external software' to open the GUI to download and instalkl all external software (e.g., Stanford CoreNLP, Gephi)"
 
-    GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer, window.nametowidget('setup_menu_lb'), False,
+    GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer, setup_menu_lb, False,
                       False, hover_over_x_coordinate, hover_over_info)
 
     # GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer, widget_name, False,
@@ -915,8 +915,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # do not lay Setup widget in NLP_menu_main and in NLP_setup_package_language_main
     if not 'package_language' in config_filename and not 'NLP_menu_main' in scriptName:
+        global setup_menu_lb
         setup_menu.set('Setup')
-
         setup_menu_lb = tk.OptionMenu(window, setup_menu,"Setup NLP package and corpus language",
                                       "Setup external software")
         window.nametowidget(setup_menu_lb)

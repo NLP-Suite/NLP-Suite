@@ -81,8 +81,8 @@ def run(inputFilename, inputDir, outputDir,
             return
 
         if byNER_value_var and len(NER_list) == 0:
-            mb.showwarning(title='Missing NER value',
-                           message='The word similarity script requires a valid NER entry.\n\nPlease, select an NER value and try again.')
+            mb.showwarning(title='Missing NER tag',
+                           message='The word similarity script requires a valid NER entry.\n\nPlease, select an NER tag and try again.')
             return
 
         if inputFilename!='':
@@ -224,12 +224,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_i
                                                by_all_tokens_checkbox)
 
 byNER_value_var.set(0)
-byNER_value_checkbox = tk.Checkbutton(window, state='normal', text='Check by NER value', variable=byNER_value_var,
+byNER_value_checkbox = tk.Checkbutton(window, state='normal', text='Check by NER tag', variable=byNER_value_var,
                                       onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
                                                byNER_value_checkbox)
 
-NER_value_lb = tk.Label(window, text='Select NER value for computing word similarity')
+NER_value_lb = tk.Label(window, text='Select NER tag for computing word similarity')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate() + 20,
                                                y_multiplier_integer, NER_value_lb, True)
 NER_value = tk.OptionMenu(window, NER_value_var, '*', 'CITY', 'COUNTRY', 'STATE_OR_PROVINCE', 'LOCATION',
@@ -249,7 +249,7 @@ def activate_NER_list_entry(*args):
     if NER_value_var.get() != '':
         if '*' in selected_NER_list_var.get():
             mb.showwarning(title='Selection error',
-                           message="You have already selected to process all NER values via *. You cannot select any other NER value.\n\nPress ESCape to clear the current selection.")
+                           message="You have already selected to process all NER values via *. You cannot select any other NER tag.\n\nPress ESCape to clear the current selection.")
             return
         build_NER_list()
         NER_list = [selected_NER_list_var.get()]
@@ -365,7 +365,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, tick the checkbox if you wish to use Levenshtein\' edit distance algorithm.' + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  'Please, tick the checkbox if you wish to find the edit distance of any token (word) in your input document(s), regardless of their NER value.' + GUI_IO_util.msg_Esc)
+                                  'Please, tick the checkbox if you wish to find the edit distance of any token (word) in your input document(s), regardless of their NER tag.' + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, tick the checkbox if you wish to find the edit distance of tokens (words) in your input document(s) by their selected NER values.' + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

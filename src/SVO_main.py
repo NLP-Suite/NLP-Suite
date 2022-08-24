@@ -384,8 +384,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             fName = os.path.join(outputDir, inputFileBase + "-svoResult-woFilter.txt")
             toProcess_list.append(fName)
         else: # directory
-            outputSVODir = inputDir
-            for tmp in os.listdir(outputSVODir):
+            # TODO outputSVODir = inputDir
+            # for tmp in os.listdir(outputSVODir):
+            for tmp in os.listdir(inputDir):
                 # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
                 # THE SUBSCRIPT _coref_ IS CHECKED BELOW
                 if Coref and "-svoResult-woFilter.txt" in tmp:
@@ -399,7 +400,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             # svo_CoreNLP_merged_file=''
             svo_CoreNLP_merged_file = os.path.join(outputSVODir, "NLP_CoreNLP_SVO_" + inputFileBase + ".csv")
         else:  # input is a directory
-            for tmp in os.listdir(outputSVODir):
+            # for tmp in os.listdir(outputSVODir):
+            for tmp in os.listdir(inputDir):
                 # ANY CHANGES IN THE COREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
                 # THE SUBSCRIPT _coref_ IS CHECKED BELOW
                 # "-svoResult-woFilter.txt"  is the filename produced by JAVA

@@ -120,7 +120,8 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
     # background='#F0F0F0' sets the widget in grey
     # foreground='red' (or any color) sets the color of a widget wording to a selected color
     # activeforeground='red' it sets to red the wording in the currently active widget wordings
-    if (text_info == '') and ('scale' in str(widget_name) or 'entry' in str(widget_name) or ('button' in str(widget_name) and not 'checkbutton' in str(widget_name) and text_info =='')):
+    if (text_info == '') and ('scale' in str(widget_name) or 'entry' in str(widget_name)
+                              or ('button' in str(widget_name) and not 'checkbutton' in str(widget_name) and text_info =='')):
         # background='red' sets the whole widget in red
         widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
     # combobox is the ttk menu object
@@ -156,6 +157,7 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
                                                     x_coordinate_hover_over,
                                                     text_info)))
             else:
+                # TODO code breaks when widget_name is optionmenu
                 widget_name.bind('<Enter>',
                      lambda e: (e.widget.config(activeforeground='red', text=label), display_widget_info(window, e, x_coordinate,
                                                    y_coordinate,

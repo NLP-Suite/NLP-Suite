@@ -151,7 +151,7 @@ def run(inputFilename,
             # if IO_csv_util.rename_header(inputFilename, "Word", "Location") == False:
             #     return
             location_menu_var.set('Location')
-            # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
+            # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
             # Fill in empty dates with most recent valid date and save to the locations file
             saved_date = ""
             for index, row in df.iterrows():
@@ -166,12 +166,12 @@ def run(inputFilename,
             #     return
             df = pd.read_csv(locations[0]).rename(columns={"Word": "Location"})
             location_menu_var.set('Location')
-            # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
+            # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
 
         # Clean dataframe, remove any 'DATE' or non-location rows
         del_list = []
         for index, row in df.iterrows():
-            if df['NER Value'][index] not in ['COUNTRY','STATE_OR_PROVINCE','CITY','LOCATION']:
+            if df['NER Tag'][index] not in ['COUNTRY','STATE_OR_PROVINCE','CITY','LOCATION']:
                 del_list.append(index)
         df = df.drop(del_list)
         df.to_csv(NER_outputFilename, index=False)

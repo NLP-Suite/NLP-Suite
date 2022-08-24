@@ -253,9 +253,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'Lemma': ["ID", "Form", "Lemma", "Record ID", "Sentence ID", "Document ID", "Document"],
         'POS':[['Verbs'],['Nouns']],
         'All POS':["ID", "Form", "POStag", "Record ID", "Sentence ID", "Document ID", "Document"],
-        'NER': ['Word', 'NER Value', 'tokenBegin', 'tokenEnd', 'Sentence ID', 'Sentence', 'Document ID','Document'],
+        'NER': ['Word', 'NER Tag', 'tokenBegin', 'tokenEnd', 'Sentence ID', 'Sentence', 'Document ID','Document'],
         # TODO NER with date for dynamic GIS; modified below
-        # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
+        # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
         'sentiment': ['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
         'quote': ['Speakers', 'Number of Quotes', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
@@ -635,10 +635,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                              'CoreNLP_'+annotator_chosen)
             filesToOpen.append(outputFilename)
             if output_format != 'text' and not isinstance(output_format[0],list): # output is csv file
-                # when NER values (notably, locations) are extracted with the date option
+                # when NER tags (notably, locations) are extracted with the date option
                 #   for dynamic GIS maps (as called from GIS_main with date options)
                 if extract_date_from_text_var or extract_date_from_filename_var:
-                    # output_format=['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document','Date']
+                    # output_format=['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document','Date']
                     output_format.append("Date")
                 # if NER_sentence_var == 1:
                 #     df = charts_Excel_util.add_missing_IDs(df)
@@ -786,15 +786,15 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
 
-                    # NER values
+                    # NER Tags
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
                                                                        columns_to_be_plotted=['NER'],
-                                                                       chartTitle='Frequency Distribution of NER (Named Entity Recognition) Values',
+                                                                       chartTitle='Frequency Distribution of NER (Named Entity Recognition) Tags',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
                                                                        outputFileNameType='NER',
-                                                                       column_xAxis_label='NER values',
+                                                                       column_xAxis_label='NER tags',
                                                                        groupByList=['Document ID', 'Document'],
                                                                        plotList=['Frequency'],
                                                                        chart_title_label='Statistical Measures for Form & Lemma Values')
@@ -855,11 +855,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
 # NER ________________________________________________________________
 
                 elif 'NER' in str(annotator_params) and 'NER' in outputFilename:
-                    if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "NER Value":
+                    if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "NER Tag":
                         # plot NER tag (e.g, LOCATION)
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                            outputDir,
-                                                                           columns_to_be_plotted=['NER'],
+                                                                           columns_to_be_plotted=['NER Tag'],
                                                                            chartTitle='Frequency Distribution of NER Tags',
                                                                            # count_var = 1 for columns of alphabetic values
                                                                            count_var=1, hover_label=[],
@@ -892,7 +892,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                             if len(chart_outputFilename) > 0:
                                 filesToOpen.extend(chart_outputFilename)
 
-# SVO ________________________________________________________________
+                # SVO ________________________________________________________________
 
                 elif ('SVO' in str(annotator_params) and 'SVO' in outputFilename) or ('OpenIE' in str(annotator_params) and 'OpenIE' in outputFilename):
                     # plot Subjects
@@ -930,7 +930,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # plot Objects
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['Object (O'],
+                                                                       columns_to_be_plotted=['Object (O)'],
                                                                        chartTitle='Frequency Distribution of Objects (unfiltered)',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -1251,7 +1251,7 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
             temp = [ner['text'], ner['ner'], ner['tokenBegin'],
                     ner['tokenEnd'],sentenceID, complete_sent,  documentID,
                     IO_csv_util.dressFilenameForCSVHyperlink(document)]
-            # check in NER value column
+            # check in NER tag column
             if temp[1] in request_NER:
                 if extract_date_from_filename_var:
                     temp.append(date_str)
@@ -2051,7 +2051,7 @@ def get_csv_column_unique_val_list(inputFilename, col):
 
 
 def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
-    # columns: Location, NER Value, Sentence ID, Sentence, Document ID, Document
+    # columns: Location, NER Tag, Sentence ID, Sentence, Document ID, Document
     to_write = []
     for sent in locations:
         for locs in sent[2]:
@@ -2064,10 +2064,10 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
             else:
                 to_write.append(
                     [locs[0], locs[1], sent[0], sent[1], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
-    columns = ["Location", "NER Value", "Sentence ID", "Sentence", "Document ID", "Document"]
+    columns = ["Location", "NER Tag", "Sentence ID", "Sentence", "Document ID", "Document"]
     if ("extract_date_from_text_var" in kwargs and kwargs["extract_date_from_text_var"] == True) \
         or ("extract_date_from_filename_var" in kwargs and kwargs["extract_date_from_filename_var"] == True):
-        columns = ["Location", "NER Value", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
+        columns = ["Location", "NER Tag", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
 
     df = pd.DataFrame(to_write, columns=columns)
     if not os.path.exists(kwargs["location_filename"]):

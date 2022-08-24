@@ -561,11 +561,11 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                        software_name.upper() + '.')
                 errorFound=True
                 silent = False
-            # else:
-            #     # if you are checking for a specific package and that is found return the appropriate directory
-            #     # unless called from NLP_menu_main
-            #     if (package.lower()!='') and (package.lower() in software_name.lower()) and (calling_script!='NLP_menu'):
-            #         return software_dir, missing_software
+            else:
+                # if you are checking for a specific package and that is found return the appropriate directory
+                # unless called from NLP_menu_main
+                if (package.lower()!='') and (package.lower() in software_name.lower()) and (calling_script!='NLP_menu'):
+                    return software_dir, missing_software
 
         if errorFound:
             software_dir = ''
