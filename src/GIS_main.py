@@ -207,7 +207,7 @@ def run(inputFilename,
                         [1],[1]) # bold_var_list, italic_var_list)
 
         if len(out_file)>0:
-            filesToOpen.extend(out_file)
+            filesToOpen.append(out_file)
         if kmloutputFilename!='':
             filesToOpen.append(kmloutputFilename)
         if len(filesToOpen)>0:

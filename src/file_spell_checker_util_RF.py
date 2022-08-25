@@ -100,7 +100,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         unusual.sort()
         # unusual = [[documentID, file, word] for word in unusual]
         unusual = [[documentID, IO_csv_util.dressFilenameForCSVHyperlink(file), word] for word in unusual]
-        container.extend(unusual)
+        container.append(unusual)
     container.insert(0, ['Document ID', 'Document', 'Misspelled/unusual word'])
     if len(container)>0:
         if IO_csv_util.list_to_csv(window,container,outputFilename): return
@@ -806,7 +806,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             language=value['language']
             probability=value['score']
             print('   SPACY', language, probability)  # {'language': 'en', 'score': 0.9999978351575265}
-            currentLine.extend(['SPACY', language, probability])
+            currentLine.append(['SPACY', language, probability])
 
             lang_identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
             try:
@@ -821,8 +821,8 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             probability=value[1]
             print('   LANGID', language, probability)  # ('en', 0.999999999999998)
             print()
-            currentLine.extend(['LANGID',  language, probability])
-            currentLine.extend([fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
+            currentLine.append(['LANGID',  language, probability])
+            currentLine.append([fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
 
             writer = csv.writer(csvfile)
             writer.writerows([currentLine])

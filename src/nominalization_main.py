@@ -236,14 +236,14 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
             # result1 contains the sentence and nominalized values for a specific document
             result, result1 = nominalized_verb_detection(docID,doc,fin.read())
             # result2 contains the sentence and nominalized values for all documents
-            result2.extend(result1)
+            result2.append(result1)
             fin.close()
 
             # list all verbs as TRUE/FALSE if nominalized
             for word, verb, boolean in result:
                 result_dir.append([word, verb, boolean, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
-            result_dir2.extend(result_dir)
+            result_dir2.append(result_dir)
 
             if len(inputDir) > 0:
                 fname = os.path.basename(os.path.normpath(inputDir))+"_dir"

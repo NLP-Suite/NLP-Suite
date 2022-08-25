@@ -102,7 +102,7 @@ def run(inputFilename, inputDir, outputDir,
 																 by_all_tokens_var)
 
         if outputFiles!=None:
-            filesToOpen.extend(outputFiles)
+            filesToOpen.append(outputFiles)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

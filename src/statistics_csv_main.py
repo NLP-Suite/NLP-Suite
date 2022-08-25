@@ -43,7 +43,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
     elif all_csv_stats:
         tempOutputFiles=statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,createCharts, chartPackage)
         if tempOutputFiles != None:
-            filesToOpen.extend(tempOutputFiles)
+            filesToOpen.append(tempOutputFiles)
     elif csv_field_stats:
         if len(csv_list) == 0:
             mb.showwarning(title='Warning', message='You have selected to compute the frequency of a csv file field but no field has been selected.\n\nPlease, select a csv file field and try again.')
@@ -56,7 +56,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
                                                            csv_list,hover_over_list,groupBy_list,
                                                            'CSV')
         if tempOutputFiles != None:
-            filesToOpen.extend(tempOutputFiles)
+            filesToOpen.append(tempOutputFiles)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

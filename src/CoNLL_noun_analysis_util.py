@@ -271,7 +271,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                             chartPackage=chartPackage,
                                                             chartTitle="Frequency Distribution of Noun POS Tags")
         if len(outputFiles)>0:
-            filesToOpen.extend(outputFiles)
+            filesToOpen.append(outputFiles)
 
         outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=noun_deprel_file_name,
 															outputDir=outputDir,
@@ -280,7 +280,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                             chartPackage=chartPackage,
                                                             chartTitle="Frequency Distribution of Noun DEPREL Tags")
         if len(outputFiles)>0:
-            filesToOpen.extend(outputFiles)
+            filesToOpen.append(outputFiles)
 
 
         outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=noun_ner_file_name,
@@ -290,7 +290,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                             chartPackage=chartPackage,
                                                             chartTitle="Frequency Distribution of Noun NER Tags")
         if len(outputFiles)>0:
-            filesToOpen.extend(outputFiles)
+            filesToOpen.append(outputFiles)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running NOUN ANALYSES at', True, '', True, startTime, True)
 

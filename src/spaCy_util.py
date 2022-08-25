@@ -123,7 +123,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     # save SVO dataframe
     if "SVO" in annotator_params:
         svo_df.to_csv(svo_df_outputFilename, index=False, encoding = language_encoding)
-        filesToOpen.extend(svo_df_outputFilename)
+        filesToOpen.append(svo_df_outputFilename)
 
     return filesToOpen
 
@@ -217,7 +217,6 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
     # csv output columns
     svo_df['Document ID'] = docID
     svo_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
-
     # replace NaN values accordingly
     for index, row in svo_df.iterrows():
         svo_df.at[index, 'Subject (S)'] = '?' if pd.isna(row['Subject (S)']) else row['Subject (S)']

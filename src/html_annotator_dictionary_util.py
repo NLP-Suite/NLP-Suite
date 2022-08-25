@@ -21,7 +21,7 @@ from csv import reader
 import IO_csv_util
 
 # the function associates specific values of a csv file to a specific color
-# extend the function to allow multiple wordColNum and catColNum
+# append the function to allow multiple wordColNum and catColNum
 def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
     dictionary = []
     number_of_items = len(csvValue_color_list)

@@ -109,7 +109,7 @@ def run(inputFilename, inputDir, outputDir,
             mb.showwarning("Output directory",
                            "All output files have been saved to a subdirectory of the selected output directory at\n\n" + str(
                                outputCorefedDir))
-            filesToOpen.extend(file_open)
+            filesToOpen.append(file_open)
 
     # split merged coreferenced file  --------------------------------------------------------------------------------------------------------
     # split <@# #@> --------------------------------------------------------------------------------------

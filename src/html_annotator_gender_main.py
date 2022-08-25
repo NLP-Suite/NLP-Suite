@@ -44,7 +44,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
         # the gender annotator returns 2 Excel charts in addition to the csv file
         if len(output)>0:
             # output=output[0]
-            filesToOpen.extend(output)
+            filesToOpen.append(output)
 
     #dict annotate
     elif annotator_dictionary_var==True:
@@ -55,7 +55,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
         output= annotator_gender_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, annotator_dictionary_file_var,personal_pronouns_var)
         if len(output)>0:
             # output=output[0]
-            filesToOpen.extend(output)
+            filesToOpen.append(output)
 
     #plot annotate
     elif plot_var==True:
@@ -75,7 +75,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
             output = annotator_gender_dictionary_util.SSA_annotate(year_state_var,firstName_entry_var,outputDir)
             if len(output)>0:
                 # output=output[0]
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
     if openOutputFiles==True:
         nFile=len(filesToOpen)

@@ -103,7 +103,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         #sort the list
         unusual.sort()
         unusual = [[word,documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)] for word in unusual]
-        container.extend(unusual)
+        container.append(unusual)
     container.insert(0, ['Misspelled/unusual word','Document ID', 'Document'])
     if len(container)>0:
         if IO_csv_util.list_to_csv(window,container,outputFilename): return
@@ -133,7 +133,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
 
         if chart_outputFilename != None:
             if len(chart_outputFilename)> 0:
-                filesToOpen.extend(chart_outputFilename)
+                filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -192,7 +192,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+                filesToOpen.append(chart_outputFilename)
 
         if openOutputFiles == True:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -495,7 +495,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                                chart_title_label='')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
+                    filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -889,7 +889,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             # probability=round(value['score'],2)
             #
             print('   SPACY', language, probability)  # {'language': 'en', 'score': 0.9999978351575265}
-            currentLine.extend(['SPACY', language, probability])
+            currentLine.append(['SPACY', language, probability])
 
             lang_identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
             try:
@@ -921,7 +921,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             # sr, sv, sw, ta, te, th, tl, tr, ug, uk,
             # ur, vi, vo, wa, xh, zh, zu
             print('   LANGID', language, probability)  # ('en', 0.999999999999998)
-            currentLine.extend(['LANGID',  language, probability])
+            currentLine.append(['LANGID',  language, probability])
 
 # Stanza  ----------------------------------------------------------
 
@@ -930,9 +930,9 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             language = lang_dict.get(language)
             probability = ''
             print('   Stanza', language, probability)
-            currentLine.extend(['Stanza',  language, probability])
+            currentLine.append(['Stanza',  language, probability])
 
-            currentLine.extend([fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
+            currentLine.append([fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
 
             writer = csv.writer(csvfile)
             writer.writerows([currentLine])

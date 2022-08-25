@@ -5,8 +5,8 @@ Created on Wed Jun 10 21:37:40 2020
 
 @author: claude
 rewritten by Roberto October 2021
-extended by Austin Cai October 2021
-extended by Mino Cha April 2022
+appended by Austin Cai October 2021
+appended by Mino Cha April 2022
 
 """
 
@@ -332,7 +332,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+                filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end",
                                        "Finished running the file search script at", True)

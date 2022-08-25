@@ -80,7 +80,7 @@ def run(inputFilename,inputDir, outputDir,
             func(GUI_util.window,inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPackage)
 
         if len(outputFile)>0:
-            filesToOpen.extend(outputFile)
+            filesToOpen.append(outputFile)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

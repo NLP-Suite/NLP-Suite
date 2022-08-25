@@ -325,7 +325,7 @@ def getReminders_list(config_filename,silent=False):
     # now check among the specific routines
     temp=df[df["Routine"] == routine]['Title'].tolist()
     if len(temp)>0:
-        title_options.extend(temp)
+        title_options.append(temp)
     if len(title_options)==0:
         title_options = ['Open reminders']
     return title_options

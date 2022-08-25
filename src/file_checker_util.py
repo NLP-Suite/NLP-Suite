@@ -63,7 +63,7 @@ _surrogates = re.compile(r"[\uDC80-\uDCFF]")
 #[\uDC80-\uDCFF]") #the map of unicode private code characters
 #0 to 127    "\u0000" to "\u007F"   Basic Latin or U.S. ASCII  "A", "\n", "7", "&"
 #128 to 247 "\u0080" to "\u00FF"    Latin 1 supplement Most Latinic alphabets* "ę", "±", "ƌ", "ñ"
-#           "\u0080" to "\u07FF"    Latin Extended A, Latin Extended B
+#           "\u0080" to "\u07FF"    Latin appended A, Latin appended B
 #                                   + Greek, coptyc, cyrrilic, armenian, hebrew, arabic, siriac
 # Chinese characters are utf-8
 

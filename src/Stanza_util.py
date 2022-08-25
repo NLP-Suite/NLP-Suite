@@ -149,8 +149,17 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
 
     df = pd.DataFrame()
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                             'Stanza_' + annotator_params)
+    # different outputFilename if SVO is selected
+    if "SVO" in annotator_params:
+        svo_df = pd.DataFrame()
+        svo_df_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                        'Stanza_' + 'SVO')
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                'Stanza_')
+    else:
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                'Stanza_' + annotator_params)
+
     for docName in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(docName)
@@ -212,18 +221,19 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
             temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, inputDir, tail, docID, annotator_params, lang_list)
             df = pd.concat([df, temp_df], ignore_index=True, axis=0)
+            
+            # extract SVO
+            if "SVO" in annotator_params:
+                temp_svo_df = extractSVO(Stanza_output, docID, inputFilename, inputDir, tail) if len(language)==1 and 'multilingual' not in language else extractSVOMultilingual(Stanza_output, docID, inputFilename, inputDir, tail)
+                svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
 
     df.to_csv(outputFilename, index=False, encoding = language_encoding)
     filesToOpen.append(outputFilename)
 
     # SVO extraction
     if "SVO" in annotator_params:
-        # extract SVO
-        svo_df = extractSVO(Stanza_output, docID, inputFilename) if len(language)==1 and 'multilingual' not in language else extractSVOMultilingual(Stanza_output, docID, inputFilename)
-        svo_df_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                    'Stanza_' + 'SVO')
         svo_df.to_csv(svo_df_outputFilename, index=False, encoding = language_encoding)
-        filesToOpen.extend(svo_df_outputFilename)
+        filesToOpen.append(svo_df_outputFilename)
 
     # Filter + Visualization.
     language_list=IO_csv_util.get_csv_field_values(outputFilename, 'Language')
@@ -240,14 +250,14 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         selected_lang_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                             'Stanza_' + f'{selected_language}' + '_' + annotator_params)
         selected_lang_df.to_csv(selected_lang_outputFilename, index=False, encoding = language_encoding)
-        filesToOpen.extend(selected_lang_outputFilename)
+        filesToOpen.append(selected_lang_outputFilename)
 
     if "Lemma" in str(annotator_params) and 'Lemma' in outputFilename:
         vocab_df = excludePOS(df)
         vocab_df_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                     'Stanza_' + 'Lemma_Vocab')
         vocab_df.to_csv(vocab_df_outputFilename, index=False, encoding = language_encoding)
-        filesToOpen.extend(vocab_df_outputFilename)
+        filesToOpen.append(vocab_df_outputFilename)
 
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
@@ -264,7 +274,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+                filesToOpen.append(chart_outputFilename)
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
@@ -280,7 +290,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+                filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, False)
 
@@ -298,7 +308,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
 
     # check if more than one language has been annotated
     # Stanza doc to Pandas DataFrame conversion logic for multilingual annotation
-    if len(language) > 1 or language[0]=='multilingual':
+    if len(language) > 1 or language[0]=='multilingual' or type(stanza_doc) is list:
         try:
             dicts = []
             for doc in stanza_doc:
@@ -381,7 +391,11 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
 
 # extract SVO from Stanza doc (depparse)
 # input: Stanza Document
-def extractSVO(doc, docID, inputFilename):
+def extractSVO(doc, docID, inputFilename, inputDir, tail):
+    # check if the input is a single file or directory
+    if inputDir != '':
+        inputFilename = inputDir + os.sep + tail
+        
     # output: svo_df
     svo_df = pd.DataFrame(columns={'Subject (S)','VERB (V)','Object (O)'})
 
@@ -416,13 +430,13 @@ def extractSVO(doc, docID, inputFilename):
     return svo_df
 
 # extract SVO from multilingual doc
-def extractSVOMultilingual(stanza_doc, docID, inputFilename):
+def extractSVOMultilingual(stanza_doc, docID, inputFilename, inputDir, tail):
     # output dataframe
     out_df = pd.DataFrame()
 
     # stanza doc to dict
     for doc in stanza_doc:
-        temp_svo = extractSVO(doc, docID, inputFilename)
+        temp_svo = extractSVO(doc, docID, inputFilename, inputDir, tail)
         out_df = out_df.append(temp_svo)
 
     return out_df

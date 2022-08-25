@@ -77,7 +77,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         #                                          csv_file_field_list=csv_file_field_list)
         outputFiles: list = IO_csv_util.extract_from_csv(inputFilename,outputDir, data_files,csv_file_field_list)
         if outputFiles != None:
-            filesToOpen.extend(outputFiles)
+            filesToOpen.append(outputFiles)
 
     if k_sentences_var:
         outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename,outputDir)
@@ -273,7 +273,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                     #                                                       ['SEARCHED TOKEN (LEMMA)', 'Sentence ID','Sentence'],
                     #                                                       ['Document ID', 'Document'],
                     #                                                       openOutputFiles, createCharts, chartPackage, 'QC', 'line')
-                filesToOpen.extend(tempFiles)
+                filesToOpen.append(tempFiles)
 
                 columns_to_be_plotted=[[0,1]]
                 count_var=0

@@ -98,18 +98,18 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         if "*" in corpus_statistics_options_menu_var or 'frequencies' in corpus_statistics_options_menu_var:
             tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,False,createCharts, chartPackage, stopwords_var, lemmatize_var)
             if tempOutputFiles!=None:
-                filesToOpen.extend(tempOutputFiles)
+                filesToOpen.append(tempOutputFiles)
 
         if "Compute sentence length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
             tempOutputFiles = statistics_txt_util.compute_sentence_length(config_filename, inputFilename, inputDir, outputDir, createCharts, chartPackage)
             if tempOutputFiles!=None:
-                filesToOpen.extend(tempOutputFiles)
+                filesToOpen.append(tempOutputFiles)
 
         if "Compute line length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
             tempOutputFiles=statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir,
                                                           False, createCharts, chartPackage)
             if tempOutputFiles!=None:
-                filesToOpen.extend(tempOutputFiles)
+                filesToOpen.append(tempOutputFiles)
 
     if complexity_readability_analysis_var == True:
         if '*' in complexity_readability_analysis_menu_var or 'Sentence' in complexity_readability_analysis_menu_var:
@@ -150,13 +150,13 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'unigrams')
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'Hapax legomena' in vocabulary_analysis_menu_var:
             output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'Hapax legomena')
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'Stanza' in vocabulary_analysis_menu_var:
             annotator = 'Lemma'
@@ -172,44 +172,44 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                                                           language_list,
                                                           memory_var, document_length_var, limit_sentence_length_var)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'capital' in vocabulary_analysis_menu_var:
             output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'capital')
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
         if '*' in vocabulary_analysis_menu_var or 'Short' in vocabulary_analysis_menu_var:
             output =statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Short')
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
         if '*' in vocabulary_analysis_menu_var or 'Vowel' in vocabulary_analysis_menu_var:
             output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Vowel')
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
         if '*' in vocabulary_analysis_menu_var or 'Punctuation' in vocabulary_analysis_menu_var:
             output =statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Punctuation')
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
             output =file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, False, createCharts, chartPackage)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
         if '*' == vocabulary_analysis_menu_var or 'Abstract' in vocabulary_analysis_menu_var:
             mode = "both" # mean, median, both (calculates both mean and median)
             output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage, processType='')
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
             output =statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
         if '*' in vocabulary_analysis_menu_var or 'detection' in vocabulary_analysis_menu_var:
                 output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style,
                                                                          openOutputFiles, createCharts, chartPackage)
                 if output != None:
-                    filesToOpen.extend(output)
+                    filesToOpen.append(output)
 
     if ngrams_analysis_var == True:
         if '*' in ngrams_analysis_menu_var or 'Character' in ngrams_analysis_menu_var or 'Word' in ngrams_analysis_menu_var:

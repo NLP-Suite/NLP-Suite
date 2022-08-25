@@ -338,7 +338,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                                                chartPackage)
 
             if tempOutputfile != None:
-                filesToOpen.extend(tempOutputfile)
+                filesToOpen.append(tempOutputfile)
 
     return filesToOpen
 

@@ -153,7 +153,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, createCharts, chartPackage, language_var)
                 if output != None:
-                    filesToOpen.extend(output)
+                    filesToOpen.append(output)
 
             if nouns_var == True:
                 temp_csv_file = files[1]  # Nouns but... double check
@@ -164,7 +164,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, createCharts, chartPackage, language_var)
                 if output != None:
-                    filesToOpen.extend(output)
+                    filesToOpen.append(output)
 
     if aggregate_bySentenceID_var==1:
         # check that input file is a CoNLL table
@@ -174,7 +174,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         filesToOpen.append(outputFilename)
         temp_outputfiles = knowledge_graphs_WordNet_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,createCharts, chartPackage)
         if temp_outputfiles!=None:
-            filesToOpen.extend(temp_outputfiles)
+            filesToOpen.append(temp_outputfiles)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

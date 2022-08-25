@@ -601,7 +601,7 @@ def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFil
                     # clear the input file; for some bizarre reason it appends the search word otherwise
                     file.truncate(0)
                     file.write(fullText)
-                    changed_values.extend([[string_IN[i],string_OUT[i],index, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
+                    changed_values.append([[string_IN[i],string_OUT[i],index, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
             file.close()
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'find_replace')

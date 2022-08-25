@@ -179,7 +179,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             return
         ngram_list = processSearchWords(search_words)
         ngram_list = ['-checkNGrams'] + ngram_list
-        # cmd.extend(ngram_list)
+        # cmd.append(ngram_list)
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences start',
                         'Started running N-Grams Word Co-Occurrences Viewer at', True,
@@ -260,7 +260,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                chart_title_label='')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
+                    filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences end',
                         'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime,True)

@@ -53,7 +53,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                         date_position_var=date_position_var)
 
     if len(tempOutputFiles)>0:
-        filesToOpen.extend(tempOutputFiles)
+        filesToOpen.append(tempOutputFiles)
 
     # TODO Excel charts; the basic bar charts are carried out in the _annotator_util
 

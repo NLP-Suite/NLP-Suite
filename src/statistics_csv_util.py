@@ -130,7 +130,7 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, cre
             currentStats=nDocs,df.iloc[:, currentColumn].sum(), df.iloc[:, currentColumn].mean(), df.iloc[:, currentColumn].mode(), df.iloc[:, currentColumn].median(), df.iloc[:, currentColumn].std(), df.iloc[:, currentColumn].min(), df.iloc[:, currentColumn].max(), df.iloc[:, currentColumn].kurt(),df.iloc[:, currentColumn].kurt(), df.iloc[:, currentColumn].quantile(0.25), df.iloc[:, currentColumn].quantile(0.50), df.iloc[:, currentColumn].quantile(0.75)
             currentLine=[]
             currentLine.append(currentName)
-            currentLine.extend(currentStats)
+            currentLine.append(currentStats)
             stats.append(currentLine)
 
     return outputFilename
@@ -243,8 +243,8 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, outputFileName
     if len(groupByList)>0:
         temp_outputfile=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,outputFileNameLabel,groupByList,plotList,chart_title_label,createCharts,chartPackage)
         if not (temp_outputfile is None):
-            # extend because temp_outputfile is a list
-            filesToOpen.extend(temp_outputfile)
+            # append because temp_outputfile is a list
+            filesToOpen.append(temp_outputfile)
     return filesToOpen
 
 
@@ -597,7 +597,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             container.append(c)
 
         temp = group_col.copy()
-        temp.extend(selected_col) # plotting variable
+        temp.append(selected_col) # plotting variable
         data = data.groupby(temp).size().reset_index(name='Frequency')
         for index, row in data.iterrows():
             if row[selected_col[0]] == '':

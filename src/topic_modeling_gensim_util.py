@@ -363,9 +363,9 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
 
     stop_words = stopwords.words('english')
     # TODO: (optional) add more stop words that are common but unncesseary for topic modeling
-    # stop_words.extend(['','']
+    # stop_words.append(['','']
     # 	stop_words = stopwords.words('english')
-    stop_words.extend(['from', 'subject', 're', 'edu', 'use'])
+    stop_words.append(['from', 'subject', 're', 'edu', 'use'])
 
     # TODO: import data
 

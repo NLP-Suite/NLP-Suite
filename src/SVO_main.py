@@ -37,6 +37,7 @@ import Stanza_util
 import Stanford_CoreNLP_coreference_util
 import Stanford_CoreNLP_util
 import SENNA_util
+import spaCy_util
 import reminders_util
 import knowledge_graphs_WordNet_util
 
@@ -150,9 +151,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         wordcloud_var,
         google_earth_var):
 
-    global error
+    global error, language
     error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
     language_var = language
+    language_list = language
 
     # pull the widget names from the GUI since the scripts change the IO values
     inputFilename = GUI_util.inputFilename.get()
@@ -251,7 +253,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         inputDir = ""
 
         if len(file_open) > 0:
-            filesToOpen.extend(file_open)
+            filesToOpen.append(file_open)
 
  # Date extractor _____________________________________________________
 
@@ -259,7 +261,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                                  openOutputFiles, createCharts, chartPackage,
                                                                  'normalized-date', False, language_var,  memory_var, document_length_var, limit_sentence_length_var)
-        filesToOpen.extend(files)
+        filesToOpen.append(files)
 
     if package_var:
         # create a subdirectory of the output directory
@@ -332,7 +334,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 output = SVO_compare_packages_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
-                    filesToOpen.extend(output)
+                    filesToOpen.append(output)
 
                 if lemmatize_verbs:
                     # tempOutputFiles[0] is the filename with lemmatized SVO values
@@ -344,17 +346,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
-                            filesToOpen.extend(output)
+                            filesToOpen.append(output)
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'NOUN',
                                                                openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
-                            filesToOpen.extend(output)
+                            filesToOpen.append(output)
                     else:
                         reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
                                                      reminders_util.message_no_SVO_records, True)
-            filesToOpen.extend(tempOutputFiles)
+            filesToOpen.append(tempOutputFiles)
             if gender_var:
                 filesToOpen.append(gender_filename)
             if quote_var:
@@ -431,10 +433,32 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                        date_separator_var=date_separator_var,
                                                                        date_position_var=date_position_var)
 
-        if tempOutputFiles == None:
-            return
+        if tempOutputFiles != None:
+            filesToOpen.append(tempOutputFiles)
 
-# SENNA _____________________________________________________
+# spaCY _____________________________________________________
+
+    if package_var == 'spaCy':
+
+        document_length_var = 1
+        limit_sentence_length_var = 1000
+        annotator = 'SVO'
+        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+                                                    outputDir,
+                                                    openOutputFiles,
+                                                    createCharts, chartPackage,
+                                                    annotator, False,
+                                                    language,
+                                                    memory_var, document_length_var, limit_sentence_length_var,
+                                                    extract_date_from_filename_var=extract_date_from_filename_var,
+                                                    date_format=date_format_var,
+                                                    date_separator_var=date_separator_var,
+                                                    date_position_var=date_position_var)
+
+        if tempOutputFiles != None:
+            filesToOpen.append(tempOutputFiles)
+
+    # SENNA _____________________________________________________
 
     if package_var=='SENNA':
         if language_var != 'English':
@@ -460,7 +484,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         else:
             svo_SENNA_files = [svo_SENNA_file]
 
-        filesToOpen.extend(svo_SENNA_files)
+        filesToOpen.append(svo_SENNA_files)
 
         # Filtering SVO
 
@@ -469,7 +493,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 output = SVO_compare_packages_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
-                    filesToOpen.extend(output)
+                    filesToOpen.append(output)
 
         for file in svo_SENNA_files:
             svo_result_list.append(file)
@@ -487,7 +511,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     #             CoreNLP_PlusPlus_file = svo_CoreNLP_merged_file
     #             freq_csv, compare_outout_name = SVO_compare_packages_util.count_frequency_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
     #             combined_csv = SVO_compare_packages_util.combine_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
-    #             filesToOpen.extend(freq_csv)
+    #             filesToOpen.append(freq_csv)
     #             filesToOpen.append(combined_csv)
 
 # CoreNLP OpenIE _____________________________________________________
@@ -522,7 +546,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 output = SVO_compare_packages_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
-                    filesToOpen.extend(output)
+                    filesToOpen.append(output)
 
             if lemmatize_verbs:
                 # tempOutputFiles[0] is the filename with lemmatized SVO values
@@ -535,18 +559,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                              openOutputFiles, createCharts, chartPackage, language_var)
                     os.remove(outputFilename)
                     if output != None:
-                        filesToOpen.extend(output)
+                        filesToOpen.append(output)
                     outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
                                                                              config_filename, 'NOUN',
                                                                              openOutputFiles, createCharts, chartPackage, language_var)
                     os.remove(outputFilename)
                     if output != None:
-                        filesToOpen.extend(output)
+                        filesToOpen.append(output)
                 else:
                     reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
                                                  reminders_util.message_no_SVO_records, True)
-            filesToOpen.extend(tempOutputFiles)
+            filesToOpen.append(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
     reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_someone,
@@ -805,6 +829,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,package_button, True)
 
 error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+language_var.set(language)
+language_list=language
 
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
@@ -1052,7 +1078,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                gender_checkbox, True)
 
 def activateGender(*args):
-    if gender_var.get() and (package_var.get() != 'Stanford CoreNLP' or language_var.get() != 'English' or 'English' not in str(language_list)):
+
+    if gender_var.get() and ((package_var.get() != 'Stanford CoreNLP') or (package_var.get() == 'Stanford CoreNLP' and 'English' not in str(language_list))):
         reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_gender,
                                      reminders_util.message_CoreNLP_gender, True)
 gender_var.trace('w', activateGender)
@@ -1066,7 +1093,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                quote_checkbox, True)
 
 def activateQuote(*args):
-    if quote_var.get() and (package_var.get() != 'Stanford CoreNLP' or language_var.get() != 'English' or 'English' not in str(language_list)):
+    if quote_var.get() and ((package_var.get() != 'Stanford CoreNLP') or (package_var.get() == 'Stanford CoreNLP' and 'English' not in str(language_list))):
         reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_quote,
                                      reminders_util.message_CoreNLP_quote, True)
 quote_var.trace('w', activateQuote)
@@ -1099,10 +1126,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                google_earth_checkbox)
 
 def activateFilters(*args):
+
     if package_var.get()=='spaCy' or package_var.get()=='Stanza':
         mb.showwarning(title='Warning',
-                       message="The selected package " + package_var.get() + " is not available yet on this GUI. It is available as a special annotator in the NLP_parsers_annotators_main GUI.")
-        return
+                       message="The selected package " + package_var.get() + " will currently not produce visualization output.\n\nSorry!")
     gephi_var.set(1)
     wordcloud_var.set(1)
     google_earth_var.set(1)
@@ -1118,7 +1145,7 @@ def activateFilters(*args):
         filter_objects_var.set(0)
         activate_filter_dictionaries()
 
-    if package_var.get()!='':
+    if package_var.get()=='':
         filter_subjects_var.set(0)
         filter_verbs_var.set(0)
         filter_objects_var.set(0)
@@ -1235,6 +1262,19 @@ def warnUser(*args):
 GUI_util.input_main_dir_path.trace('w', warnUser)
 
 warnUser()
+
+def activate_NLP_options(*args):
+    global error, package, language_list
+    # if GUI_util.setup_menu.get() == 'Setup NLP package and corpus language':
+    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = language
+    package_var.set(package)
+    # if package=='spaCy' or package=='Stanza':
+    #     mb.showwarning(title='Warning',
+    #                    message="The selected package " + package + " is not available yet on this GUI as an SVO extractor. It is available as a special annotator in the NLP_parsers_annotators_main GUI.")
+GUI_util.setup_menu.trace('w', activate_NLP_options)
+activate_NLP_options()
 
 if error:
     mb.showwarning(title='Warning',

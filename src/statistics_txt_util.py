@@ -277,7 +277,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                                                            chart_title_label='Statistical Measures for Number of Sentences')
 
         if chart_outputFilename != None:
-            filesToOpen.extend(chart_outputFilename)
+            filesToOpen.append(chart_outputFilename)
 
         # number of words in input
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
@@ -291,7 +291,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                                                            chart_title_label='Statistical Measures for Number of Words')
 
         if chart_outputFilename != None:
-            filesToOpen.extend(chart_outputFilename)
+            filesToOpen.append(chart_outputFilename)
 
         # number of syllables in input
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
@@ -306,7 +306,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                                                            chart_title_label='Statistical Measures for Number of Syllables')
 
         if chart_outputFilename != None:
-            filesToOpen.extend(chart_outputFilename)
+            filesToOpen.append(chart_outputFilename)
 
         # TODO
         #   we should create 10 classes of values by distance to the median of
@@ -397,7 +397,7 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
                                                        plotList=['Sentence length (in words)'], chart_title_label='Statistical Measures for Sentence Lenghts')
 
     if chart_outputFilename != None:
-        filesToOpen.extend(chart_outputFilename)
+        filesToOpen.append(chart_outputFilename)
 
     return filesToOpen
 
@@ -469,7 +469,7 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
                                               plotList=['Line length (in words)'], chart_title_label='Statistical Measures for Line Length')
 
     if chart_outputFilename != None:
-        filesToOpen.extend(chart_outputFilename)
+        filesToOpen.append(chart_outputFilename)
 
     return filesToOpen
 
@@ -635,7 +635,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                 document_tokens=[]
                 for tk in word_tokenize_stanza(stanzaPipeLine(text)):
                     document_tokens.append([tk, documentID, file])
-                corpus_tokens.extend(document_tokens)
+                corpus_tokens.append(document_tokens)
 
                 ngrams=[]
                 ngrams = [document_tokens[i:i+gram] for i in range(len(document_tokens)-(gram-1))]
@@ -648,8 +648,8 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                 # process hapax
                 document_ngramsList = process_hapax(document_ngramsList, frequency, excludePunctuation)
 
-                ngramsList.extend(ngrams)
-                corpus_ngramsList.extend(document_ngramsList)
+                ngramsList.append(ngrams)
+                corpus_ngramsList.append(document_ngramsList)
 
         if excludePunctuation:
             corpus_freq_pos = 2  # corpus frequency position
@@ -714,7 +714,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                                                                chart_title_label='Statistical Measures for ' + str(gram) + '-gram')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
+                    filesToOpen.append(chart_outputFilename)
         gram += 1
 
     return filesToOpen
@@ -948,7 +948,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     column_xAxis_label = 'Punctuation symbols of pathos (?!)'
                     if word != '!' and word != '?':
                         continue
-                    word_list.extend([[word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
+                    word_list.append([[word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
                     if doc not in punctuation_docs:
                         punctuation_docs.append(doc)
                     if '!' in word and '?' in word:
@@ -1000,7 +1000,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                                                chart_title_label='Statistical Measures for ' + column_xAxis_label)
 
     if chart_outputFilename != None:
-        filesToOpen.extend(chart_outputFilename)
+        filesToOpen.append(chart_outputFilename)
 
     # ngrams already display the started running... No need to duplicate
     if not 'unigrams' in processType:
@@ -1331,7 +1331,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                                                                    chart_title_label='')
                 if chart_outputFilename != None:
                     if len(chart_outputFilename) > 0:
-                        filesToOpen.extend(chart_outputFilename)
+                        filesToOpen.append(chart_outputFilename)
 
                 # 0 (Flesch Reading Ease) has a different scale and 3 (SMOG) is often 0
                 #	do NOT plot on the same chart these two measures
@@ -1353,7 +1353,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                                                                    chart_title_label='')
                 if chart_outputFilename != None:
                     if len(chart_outputFilename) > 0:
-                        filesToOpen.extend(chart_outputFilename)
+                        filesToOpen.append(chart_outputFilename)
 
                 # overall numeric grade level
                 hover_label = []
@@ -1369,7 +1369,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                                                                    chart_title_label='Statistical Measures for Readability Grade Level')
                 if chart_outputFilename != None:
                     if len(chart_outputFilename) > 0:
-                        filesToOpen.extend(chart_outputFilename)
+                        filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Text Readability at',
                                        True, '', True, startTime)
@@ -1565,7 +1565,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
                                                        chart_title_label='Statistical Measures for Complexity Scores')
     if chart_outputFilename != None:
         if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
+            filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Sentence Complexity at', True, '', True, startTime)

@@ -67,7 +67,7 @@ def missing_character(CoreNLPdir, inputDir, input_secondary_dir_path, outputDir,
         return
     Excel_outputFile=file_summary_checker_util.main(CoreNLPdir, inputDir,input_secondary_dir_path,outputDir,openOutputFiles, createCharts, chartPackage, checkNER)
     if Excel_outputFile!="":
-        filesToOpen.extend(Excel_outputFile)
+        filesToOpen.append(Excel_outputFile)
 
 def intruder(CoreNLPdir,inputDir, outputDir, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var):
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_find_non_related_documents_util.py') == False:
@@ -78,7 +78,7 @@ def intruder(CoreNLPdir,inputDir, outputDir, openOutputFiles, createCharts, char
     outputFiles=file_find_non_related_documents_util.main(CoreNLPdir, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var)
 
     if outputFiles!='':
-        filesToOpen.extend(outputFiles)
+        filesToOpen.append(outputFiles)
     # Nothing to plot; only one line in the output csv file
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running INTRUDER at', True, '', True, startTime, True)
 

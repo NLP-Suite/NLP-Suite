@@ -124,7 +124,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
             #                                                              ['PRONOUNS'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
             if len(outputFiles) > 0:
-                filesToOpen.extend(outputFiles)
+                filesToOpen.append(outputFiles)
 
     # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running PRONOUN Analysis at', True, '', True, startTime, True)
     return filesToOpen
@@ -207,7 +207,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
             #                                                              ['PREPOSITIONS'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
             if len(outputFiles) > 0:
-                filesToOpen.extend(outputFiles)
+                filesToOpen.append(outputFiles)
 
     return filesToOpen
 
@@ -293,7 +293,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
             #                                                              [[1,4]],['ARTICLES'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
             if len(outputFiles) > 0:
-                filesToOpen.extend(outputFiles)
+                filesToOpen.append(outputFiles)
 
     return filesToOpen
 
@@ -378,7 +378,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
             #                                                              ['CONJUNCTIONS'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
             if len(outputFiles) > 0:
-                filesToOpen.extend(outputFiles)
+                filesToOpen.append(outputFiles)
 
     return filesToOpen
 
@@ -460,7 +460,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
             #                                                              ['AUXILIARIES'],['FORM','Sentence'], ['Sentence ID','Document ID','Document'],
             #                                                              'FW','line')
             if len(outputFiles) > 0:
-                filesToOpen.extend(outputFiles)
+                filesToOpen.append(outputFiles)
 
             return filesToOpen
 
@@ -576,29 +576,29 @@ def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openO
     outputFiles = article_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                    openOutputFiles, createCharts, chartPackage)
     if outputFiles != None:
-        filesToOpen.extend(outputFiles)
+        filesToOpen.append(outputFiles)
 
     outputFiles = auxiliary_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                      openOutputFiles, createCharts, chartPackage)
     if outputFiles != None:
-        filesToOpen.extend(outputFiles)
+        filesToOpen.append(outputFiles)
 
     outputFiles = conjunction_stats(inputFilename, outputDir, data,
                                                                        data_divided_sents, openOutputFiles,
                                                                        createCharts, chartPackage)
     if outputFiles != None:
-        filesToOpen.extend(outputFiles)
+        filesToOpen.append(outputFiles)
 
     outputFiles = preposition_stats(inputFilename, outputDir, data,
                                                                        data_divided_sents, openOutputFiles,
                                                                        createCharts, chartPackage)
     if outputFiles != None:
-        filesToOpen.extend(outputFiles)
+        filesToOpen.append(outputFiles)
 
     outputFiles = pronoun_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                    openOutputFiles, createCharts, chartPackage)
     if outputFiles != None:
-        filesToOpen.extend(outputFiles)
+        filesToOpen.append(outputFiles)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running FUNCTION WORDS ANALYSES at', True, '', True, startTime, True)
 

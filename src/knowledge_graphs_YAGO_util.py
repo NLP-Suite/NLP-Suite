@@ -133,7 +133,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
             #   in IO_csv_util there is a function def dressFilenameForCSVHyperlink(fileName) that does that for a regular file
             #csvname = outFilename.replace(".html","_")+str(annotationTypes).replace("[", "").replace("]", "").replace("'", "").replace(",", "_")
             diff = len(Document) - len(DocumentID)
-            if diff>0:DocumentID.extend([docID]*diff)
+            if diff>0:DocumentID.append([docID]*diff)
             docID = docID + 1
     # save csv output file
     df = pd.DataFrame(list(zip(phrase,ont, link,sentID,Sentence,DocumentID, Document, Html_Doc)),

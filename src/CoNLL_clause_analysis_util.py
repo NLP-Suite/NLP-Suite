@@ -202,7 +202,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         #                                                                 ['Sentence ID','Document ID'],
         #                                                                 'CA','line')
         if len(chart_outputFilename)>0:
-            filesToOpen.extend(chart_outputFilename)
+            filesToOpen.append(chart_outputFilename)
 
         # output_df= charts_Excel_util.add_missing_IDs(clausal_analysis_file_name)
         # # overwrite original file having added any missing document ID and sentence ID

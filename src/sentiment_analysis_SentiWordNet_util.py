@@ -224,7 +224,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
 
         if chart_outputFilename != None:
             if len(chart_outputFilename)> 0:
-                filesToOpen.extend(chart_outputFilename)
+                filesToOpen.append(chart_outputFilename)
 
     return filesToOpen
 

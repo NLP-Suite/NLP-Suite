@@ -69,14 +69,14 @@ def gatherAnnotations(inputFile, tags, mustInclude='<p>', cleanMultiples=True):
                 print("starts",tag.start())
             for i in range(0, min(len(ends),len(starts))):
                 #words.append(line[starts[i]:ends[i]])
-                words.extend([Sentence_ID,sentence_cleaned, sentence[starts[i]:ends[i]]])
+                words.append([Sentence_ID,sentence_cleaned, sentence[starts[i]:ends[i]]])
         starts, ends = [],[]
     words = [w for w in words if w!='']
     if openingTag!='">' and closingTag!='</a':
         result=[]
         for word in words:
             #result.append(word.split('>',1)[1])
-            result.extend([Sentence_ID,sentence_cleaned,word.split('>',1)[1]])
+            result.append([Sentence_ID,sentence_cleaned,word.split('>',1)[1]])
             print('result',result)
     else:
         result=words,Sentence_ID,sentence_cleaned

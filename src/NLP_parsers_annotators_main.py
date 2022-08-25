@@ -112,7 +112,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                             mb.showinfo("Coreference Resolution Error",
                                         "Since Stanford CoreNLP Co-Reference Resolution throws error, " +
                                         "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.")
-                        filesToOpen.extend(file_open)
+                        filesToOpen.append(file_open)
                     else:
                         return
 
@@ -129,7 +129,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                                single_quote_var = single_quote)
 
                 if len(tempOutputFiles)>0:
-                    filesToOpen.extend(tempOutputFiles)
+                    filesToOpen.append(tempOutputFiles)
                     if 'parser' in annotator:
                         reminders_util.checkReminder(config_filename,
                                                      reminders_util.title_options_CoreNLP_NER_tags,
@@ -186,7 +186,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             return
 
         if len(tempOutputFiles) > 0:
-            filesToOpen.extend(tempOutputFiles)
+            filesToOpen.append(tempOutputFiles)
             if 'parser' in annotator:
                 reminders_util.checkReminder(config_filename,
                                              reminders_util.title_options_CoreNLP_NER_tags,
@@ -252,7 +252,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             return
 
         if len(tempOutputFiles) > 0:
-            filesToOpen.extend(tempOutputFiles)
+            filesToOpen.append(tempOutputFiles)
             if 'parser' in annotator:
                 reminders_util.checkReminder(config_filename,
                                              reminders_util.title_options_CoreNLP_NER_tags,

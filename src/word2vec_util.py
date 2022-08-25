@@ -144,8 +144,8 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         doc = nlp(" ".join(word_in_sent))
         if lemmatize_var == True:
             sentences_out.append([token.lemma_ for token in doc])
-            unlemmatized_word.extend([token for token in doc])
-            lemmatized_word.extend([token.lemma_ for token in doc])
+            unlemmatized_word.append([token for token in doc])
+            lemmatized_word.append([token.lemma_ for token in doc])
         else:
             sentences_out.append([token for token in doc])
 
@@ -225,7 +225,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                                                    '"' + keyword + '" keyword not in the corpus. Keyword skipped...')
                 continue
             sim_words = append_list(sim_words, keyword)
-            result_word.extend(sim_words)
+            result_word.append(sim_words)
         if len(result_word)==0:
             mb.showwarning(title="No words found",message="None of the keywords entered were found in the corpus.\n\nRoutine aborted.")
             return

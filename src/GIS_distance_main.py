@@ -51,7 +51,7 @@ def run(inputFilename,outputDir, openOutputFiles, createCharts, chartPackage,
     # compute geodesic distances
     # compute geodesic distances from specific location
 
-    # this will check the extended country names and short name
+    # this will check the appended country names and short name
     # from iso3166 import countries
     # for c in countries:
     #     print(c)

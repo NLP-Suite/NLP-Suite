@@ -66,7 +66,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 							break
 						else:
 							continue
-				container.extend(In)
+				container.append(In)
 
 			ctr = collections.Counter(Extract(container))
 			for word in container:
@@ -105,7 +105,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 							break
 						else:
 							continue
-				container.extend(In)
+				container.append(In)
 
 			ctr = collections.Counter(Extract(container))
 			for word in container:

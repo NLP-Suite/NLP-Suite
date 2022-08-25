@@ -493,17 +493,17 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
 								   openOutputFiles, createCharts, chartPackage)
 
 	if outputFiles != None:
-		filesToOpen.extend(outputFiles)
+		filesToOpen.append(outputFiles)
 
 	outputFiles = verb_modality_stats(config_filename, inputFilename, outputDir, data, data_divided_sents,
 									  openOutputFiles, createCharts, chartPackage)
 	if outputFiles != None:
-		filesToOpen.extend(outputFiles)
+		filesToOpen.append(outputFiles)
 
 	outputFiles = verb_tense_stats(inputFilename, outputDir, data, data_divided_sents,
 								   openOutputFiles, createCharts, chartPackage)
 	if outputFiles != None:
-		filesToOpen.extend(outputFiles)
+		filesToOpen.append(outputFiles)
 
 	IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running VERB ANALYSES at', True,
 									   '', True, startTime, True)

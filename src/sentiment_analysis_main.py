@@ -112,7 +112,7 @@ def run(inputFilename,inputDir,outputDir,
         outputFiles=sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
         if len(outputFiles)>0:
-            filesToOpen.extend(outputFiles)
+            filesToOpen.append(outputFiles)
 
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running ANEW Sentiment Analysis at', True, '', True, startTime)
 
@@ -156,7 +156,7 @@ def run(inputFilename,inputDir,outputDir,
                                                                           memory_var)
         # outputFilename=outputFilename[0] # annotators return a list and not a string
         if SA_algorithm_var!='*' and len(outputFilename)>0:
-            filesToOpen.extend(outputFilename)
+            filesToOpen.append(outputFilename)
 
 # Stanza  _______________________________________________________
 
@@ -196,7 +196,7 @@ def run(inputFilename,inputDir,outputDir,
         outputFiles = sentiment_analysis_hedonometer_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
         if SA_algorithm_var!='*' and len(outputFiles)>0:
-            filesToOpen.extend(outputFiles)
+            filesToOpen.append(outputFiles)
 
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running HEDONOMETER Sentiment Analysis at', True, '', True, startTime)
 
@@ -211,7 +211,7 @@ def run(inputFilename,inputDir,outputDir,
         outputFiles = sentiment_analysis_SentiWordNet_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
         if SA_algorithm_var!='*' and len(outputFiles)>0:
-            filesToOpen.extend(outputFiles)
+            filesToOpen.append(outputFiles)
 
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running SentiWordNet Sentiment Analysis at', True, '', True, startTime)
 
@@ -227,7 +227,7 @@ def run(inputFilename,inputDir,outputDir,
         outputFiles = sentiment_analysis_VADER_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
         if len(outputFiles)>0:
-            filesToOpen.extend(outputFiles)
+            filesToOpen.append(outputFiles)
 
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running VADER Sentiment Analysis at', True, '', True, startTime)
 
