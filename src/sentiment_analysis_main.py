@@ -521,3 +521,4 @@ message="Some of the algorithms behind this GUI rely on a specific NLP package t
 reminders_util.checkReminder(config_filename, title, message)
 
 GUI_util.window.mainloop()
+reminders_util.checkReminder
