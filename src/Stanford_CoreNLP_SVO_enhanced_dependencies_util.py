@@ -192,8 +192,8 @@ def advcl_building(token, sent_data, ner, p_s, p_o, v_obj_obl_json, v_prep_json)
         negation_result.append(negation)
         #extract the modifer's modifier by recursion
         second_result, second_negation_result = advcl_extraction(advcl_token, sent_data, s, o, v_obj_obl_json, v_prep_json)
-        result.append(second_result)
-        negation_result.append(second_negation_result)
+        result.extend(second_result)
+        negation_result.extend(second_negation_result)
     return result, negation_result
         
 
@@ -204,8 +204,8 @@ def advcl_extraction(token, sent_data, p_s, p_o, v_obj_obl_json, v_prep_json):
     for dep in gov_dict.keys():
         if "advcl" in dep or "xcomp" in dep or dep == "dep":# find clausal modifers of a verb
             advcl_svo, advcl_negation = advcl_building(token, sent_data, dep, p_s, p_o, v_obj_obl_json, v_prep_json)
-            result.append(advcl_svo)
-            negation_result.append(advcl_negation)
+            result.extend(advcl_svo)
+            negation_result.extend(advcl_negation)
 
     return result, negation_result
         
@@ -354,8 +354,8 @@ def verb_root(verb_list, conj_word, token, sent_data):#extract subject, object, 
         verb_token = sent_data[verb]
         #extracting the subject and object of the modifier of verbs
         advcl_svo, advcl_negation = advcl_extraction(verb_token, sent_data, s, o, v_obj_obl_json, v_prep_json)
-        svo.append(advcl_svo)
-        negation_list.append(advcl_negation)
+        svo.extend(advcl_svo)
+        negation_list.extend(advcl_negation)
         
     return svo, negation_list
 
@@ -524,7 +524,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                 verb_list, conj_word = verb_index_conj(key, token, gov_dict, sent_data)
                 #verb_list will contain the other verbs in this sentence that are the current verb's conjunct
                 #verb_index_conj is the conjunct token (and, or, nor, etc.)
-                CollectedVs.append(verb_list)
+                CollectedVs.extend(verb_list)
                 svo_verb, negation_verb = verb_root(verb_list, conj_word, token, sent_data)#processing
                 for i in range(len(svo_verb)):
                     s = svo_verb[i][0]
@@ -580,8 +580,8 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                         if svo_acl[0][0] == "Someone?":
                             #if the subject is missing in the dependency, the subject of the clausal modifier is the token that it modifies (syntactical head)
                             svo_acl[0][0] = token["word"]
-                    SVO.append(svo_acl)
-                    N.append(negation_acl)
+                    SVO.extend(svo_acl)
+                    N.extend(negation_acl)
  
     return SVO, L, NER_value, T, T_S, P, N
             

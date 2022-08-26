@@ -3,7 +3,7 @@ import GUI_util
 import IO_libraries_util
 
 if not IO_libraries_util.install_all_packages(GUI_util.window, "spell-checker_main.py",
-                                              ['os', 're', 'stanfordcorenlp', 'nltk', 'pandas',
+                                              ['os', 're', 'nltk', 'pandas',
                                                'collections','subprocess', 'time', 'tkinter']):
     sys.exit(0)
 

@@ -221,7 +221,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
             temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, inputDir, tail, docID, annotator_params, lang_list)
             df = pd.concat([df, temp_df], ignore_index=True, axis=0)
-            
+
             # extract SVO
             if "SVO" in annotator_params:
                 temp_svo_df = extractSVO(Stanza_output, docID, inputFilename, inputDir, tail) if len(language)==1 and 'multilingual' not in language else extractSVOMultilingual(Stanza_output, docID, inputFilename, inputDir, tail)
@@ -395,9 +395,11 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
     # check if the input is a single file or directory
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
-        
+
     # output: svo_df
-    svo_df = pd.DataFrame(columns={'Subject (S)','VERB (V)','Object (O)'})
+    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)'})
+    # TODO MINO
+    empty_verb_idx = []
 
     # object and subject constants
     OBJECT_DEPS = {"obj", "iobj", "dobj", "dative", "attr", "oprd"}
@@ -411,7 +413,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
             if word.deprel in SUBJECT_DEPS or tmp_head in SUBJECT_DEPS:
                 svo_df.at[c, 'Subject (S)'] = word.text
             if word.pos=='VERB':
-                svo_df.at[c, 'VERB (V)'] = word.text
+                svo_df.at[c, 'Verb (V)'] = word.text
             if word.deprel in OBJECT_DEPS or tmp_head in OBJECT_DEPS:
                 svo_df.at[c, 'Object (O)'] = word.text
             svo_df.at[c, 'Sentence ID'] =  c
@@ -424,8 +426,17 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
     # replace NaN values accordingly
     for index, row in svo_df.iterrows():
         svo_df.at[index, 'Subject (S)'] = '?' if pd.isna(row['Subject (S)']) else row['Subject (S)']
-        svo_df.at[index, 'VERB (V)'] = '' if pd.isna(row['VERB (V)']) else row['VERB (V)']
+        svo_df.at[index, 'Verb (V)'] = '' if pd.isna(row['Verb (V)']) else row['Verb (V)']
         svo_df.at[index, 'Object (O)'] = '' if pd.isna(row['Object (O)']) else row['Object (O)']
+        # TODO MINO
+        # save empty verb indices
+        if pd.isna(row['Verb (V)']):
+            empty_verb_idx.append(index)
+    # TODO MINO
+    # drop empty Verb rows
+    svo_df = svo_df.drop(empty_verb_idx)
+    # set the S-V-O sequence in order
+    svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Document ID', 'Document']]
 
     return svo_df
 

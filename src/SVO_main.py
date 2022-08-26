@@ -270,17 +270,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         label = ''
         if package_var=='Stanford CoreNLP':
-            label='SVO'
-        if package_var=='OpenIE':
-            if label!='':
-                label=label+'_'+ 'OpenIE'
-            else:
-                label='OpenIE'
-        if package_var=='SENNA':
-            if label!='':
-                label=label+'_'+ 'SENNA'
-            else:
-                label='SENNA'
+            label='SVO_CoreNLP'
+        else:
+            label = 'SVO_' + package_var
 
         outputSVODir = IO_files_util.make_output_subdirectory(inputFilename.replace("NLP_CoreNLP_", ""), inputDir, outputDir, label=label,
                                                             silent=True)
@@ -435,7 +427,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if tempOutputFiles != None:
             filesToOpen.append(tempOutputFiles)
+            # TODO MINO
+            svo_result_list.append(tempOutputFiles[1])
 
+        # Filtering SVO
+        # TODO MINO
+        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
+            for file in svo_result_list:
+                output = SVO_compare_packages_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
+                if output != None:
+                    filesToOpen.append(output)
 # spaCY _____________________________________________________
 
     if package_var == 'spaCy':
@@ -457,6 +459,20 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if tempOutputFiles != None:
             filesToOpen.append(tempOutputFiles)
+            # TODO MINO
+            svo_result_list.append(tempOutputFiles[1])
+
+        # Filtering SVO
+        # TODO MINO
+        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
+            for file in svo_result_list:
+                output = SVO_compare_packages_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
+                if output != None:
+                    filesToOpen.append(output)
+
+        # for file in tempOutputFiles:
+        #     svo_result_list.append(file)
 
     # SENNA _____________________________________________________
 
@@ -1129,7 +1145,7 @@ def activateFilters(*args):
 
     if package_var.get()=='spaCy' or package_var.get()=='Stanza':
         mb.showwarning(title='Warning',
-                       message="The selected package " + package_var.get() + " will currently not produce visualization output.\n\nSorry!")
+                       message="The selected package " + package_var.get() + " does not currently\n   1. filter SVOs for social actors and social actions;\n   2. produce geographic maps in output.\n\nSorry! But... Watch this space...")
     gephi_var.set(1)
     wordcloud_var.set(1)
     google_earth_var.set(1)
@@ -1263,18 +1279,38 @@ GUI_util.input_main_dir_path.trace('w', warnUser)
 
 warnUser()
 
+
 def activate_NLP_options(*args):
-    global error, package, language_list
-    # if GUI_util.setup_menu.get() == 'Setup NLP package and corpus language':
-    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
-    language_var = language
-    language_list = language
+    global error, package, language_list, y_multiplier_integer
+    # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    # language_var = language
+    # language_list = [language]
+    # package_var.set(package)
+    # y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value_new = GUI_util.display_setup_hover_over(
+    #     y_multiplier_integer)
+    # language_list = [language]
+    # package_var.set(package)
+
+    # global error, parsers, available_parsers, parser_lb, package, package_display_area_value, language_list
+    # error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new = GUI_util.handle_setup_options(y_multiplier_integer, scriptName, GUI_util.setup_menu.get())
+
+    # after update no display
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new=GUI_util.handle_setup_options(y_multiplier_integer, scriptName, GUI_util.setup_menu.get())
+    if package_display_area_value_new != package_display_area_value:
+        print("different")
+    language_list = [language]
     package_var.set(package)
-    # if package=='spaCy' or package=='Stanza':
-    #     mb.showwarning(title='Warning',
-    #                    message="The selected package " + package + " is not available yet on this GUI as an SVO extractor. It is available as a special annotator in the NLP_parsers_annotators_main GUI.")
 GUI_util.setup_menu.trace('w', activate_NLP_options)
-activate_NLP_options()
+
+# def activate_NLP_options(*args):
+#     global error, package, language_list
+#     # if GUI_util.setup_menu.get() == 'Setup NLP package and corpus language':
+#     error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+#     language_var = language
+#     language_list = language
+#     package_var.set(package)
+# GUI_util.setup_menu.trace('w', activate_NLP_options)
+# activate_NLP_options()
 
 if error:
     mb.showwarning(title='Warning',

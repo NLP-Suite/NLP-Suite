@@ -541,7 +541,7 @@ YAGO_ontology_class_menu= 'BioChemEntity','Gene','MolecularEntity','Taxon','Bran
 
 NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: Geocoding & maps', \
 'Geographic maps: Google Earth Pro', 'Geographic distances between locations', \
-'HTML annotator - dictionary, gender, DBpedia, YAGO - (All options GUI)', 'Network graphs (Gephi)', \
+'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', 'Network graphs (Gephi)', \
 'Sentence visualization: Dependency tree viewer (png graphs)', 'Word clouds'
 
 NLP_Suite_data_file_handling_tools_menu = 'Data manager (csv files via Pandas)', \

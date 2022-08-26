@@ -194,22 +194,25 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
         inputFilename = inputDir + os.sep + tail
 
     # output: svo_df
-    svo_df = pd.DataFrame(columns={'Subject (S)','VERB (V)','Object (O)'})
+    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)'})
 
     # subject,verb and object constants
     SUBJECT_DEPS = {"nsubj", "nsubjpass", "csubj", "agent", "expl"}
     VERB_POS = {"VERB", "AUX"}
     OBJECT_DEPS = {"obj", "iobj", "dobj", "dative", "attr", "oprd"}
 
-    # extract SVOs
+    # set-ups to extract SVOs
     c = 0
-    svo_df = pd.DataFrame(columns={'Subject (S)','VERB (V)','Object (O)'})
+    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)'})
+    # TODO MINO
+    empty_verb_idx = []
+    # extract SVOs
     for sent in doc.sents:
         for token in sent:
             if token.dep_ in SUBJECT_DEPS or token.head.dep_ in SUBJECT_DEPS:
                 svo_df.at[c, 'Subject (S)'] = token.text
             if token.pos_ in VERB_POS:
-                svo_df.at[c, 'VERB (V)'] = token.text
+                svo_df.at[c, 'Verb (V)'] = token.text
             if token.dep_ in OBJECT_DEPS or token.head.dep_ in OBJECT_DEPS:
                 svo_df.at[c, 'Object (O)'] = token.text
         c+=1
@@ -220,8 +223,17 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
     # replace NaN values accordingly
     for index, row in svo_df.iterrows():
         svo_df.at[index, 'Subject (S)'] = '?' if pd.isna(row['Subject (S)']) else row['Subject (S)']
-        svo_df.at[index, 'VERB (V)'] = '' if pd.isna(row['VERB (V)']) else row['VERB (V)']
+        svo_df.at[index, 'Verb (V)'] = '' if pd.isna(row['Verb (V)']) else row['Verb (V)']
         svo_df.at[index, 'Object (O)'] = '' if pd.isna(row['Object (O)']) else row['Object (O)']
+        # save empty verb indices
+        #TODO MINO
+        if pd.isna(row['Verb (V)']):
+            empty_verb_idx.append(index)
+    # TODO MINO
+    # drop empty Verb rows
+    svo_df = svo_df.drop(empty_verb_idx)
+    # set the S-V-O sequence in order
+    svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Document ID', 'Document']]
 
     return svo_df
 

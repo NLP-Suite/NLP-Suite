@@ -43,7 +43,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     filesToOpen = []
     outputCoNLLfilePath = ''
 
-    display_available_options()
+    # display_available_options()
     #changed_NLP_package_set_parsers()
 
     if package_display_area_value == '':
@@ -478,42 +478,68 @@ fileName_embeds_date.trace('w', check_CoreNLP_dateFields)
 
 y_multiplier_integer_SV1=y_multiplier_integer
 
+# if package != '':
+#     available_parsers = 'Parsers for ' + package + '                          '
+# else:
+#     available_parsers = 'Parsers'
+#
+parser_checkbox = tk.Checkbutton(window, variable=parser_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer_SV1,
+                                               parser_checkbox, True, False, False, False, 90,
+                                               GUI_IO_util.get_labels_x_coordinate(),
+                                               "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
 
-def display_available_options(*args):
-    global y_multiplier_integer, y_multiplier_integer_SV1, error, package, parsers, language, package_display_area_value, language_list
-    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
-    language_list=[language]
-    parser_var.set(1)
-    if package!='':
-        available_parsers = 'Parsers for ' + package +'                          '
-    else:
-        available_parsers='Parsers'
-    if len(parsers)>0:
-        parser_menu_var.set(parsers[0])
+available_parsers=''
+parser_lb = tk.Label(window, text=available_parsers)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+40, y_multiplier_integer,
+                                               parser_lb, True)
+parser_var.set(1)
 
-    parser_checkbox = tk.Checkbutton(window, text=available_parsers, variable=parser_var, onvalue=1, offvalue=0)
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer_SV1,
-                                                   parser_checkbox, True, False, False, False, 90,
-                                                   GUI_IO_util.get_labels_x_coordinate(),
-                                                   "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+parsers=[]
 
-    # if package == 'spaCy':
-    #     parsers = ['Dependency parser']
-    # if package=='Stanford CoreNLP':
-    #     parsers = ['Neural Network', 'Probabilistic Context Free Grammar (PCFG)']
-    # if package == 'Stanza':
-    #     parsers = ['Constituency parser', 'Dependency parser']
-    if len(parsers) == 0:
-        parser_menu = tk.OptionMenu(window, parser_menu_var, parsers)
-    else:
-        parser_menu = tk.OptionMenu(window, parser_menu_var, *parsers)
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate(),
-                                                   y_multiplier_integer,
-                                                   parser_menu)
-    return y_multiplier_integer
+if len(parsers) == 0:
+    parser_menu = tk.OptionMenu(window, parser_menu_var, parsers)
+else:
+    parser_menu = tk.OptionMenu(window, parser_menu_var, *parsers)
+#     # place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate(),
+                                               y_multiplier_integer,
+                                               parser_menu, False, False, False, False, 90,
+                                               GUI_IO_util.get_labels_x_coordinate(),
+                                               "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+if len(parsers) > 0:
+    parser_menu_var.set(parsers[0])
 
-parser_var.trace('w',display_available_options())
+
+# def display_available_options(*args):
+#     global y_multiplier_integer, y_multiplier_integer_SV1, error, package, parsers, language, package_display_area_value, language_list
+#     error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+#     language_list=[language]
+#     parser_var.set(1)
+#     if package!='':
+#         available_parsers = 'Parsers for ' + package +'                          '
+#     else:
+#         available_parsers='Parsers'
+#     if len(parsers)>0:
+#         parser_menu_var.set(parsers[0])
+#
+#     parser_checkbox = tk.Checkbutton(window, text=available_parsers, variable=parser_var, onvalue=1, offvalue=0)
+#     # place widget with hover-over info
+#     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer_SV1,
+#                                                    parser_checkbox, True, False, False, False, 90,
+#                                                    GUI_IO_util.get_labels_x_coordinate(),
+#                                                    "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+#     if len(parsers) == 0:
+#         parser_menu = tk.OptionMenu(window, parser_menu_var, parsers)
+#     else:
+#         parser_menu = tk.OptionMenu(window, parser_menu_var, *parsers)
+#     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate(),
+#                                                    y_multiplier_integer,
+#                                                    parser_menu)
+#     return y_multiplier_integer
+# parser_menu_var.trace('w',display_available_options())
+# display_available_options()
 
 def activate_SentenceTable(*args):
     global parser_menu
@@ -708,16 +734,21 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordi
 readMe_message = "This Python 3 script will perform different types of textual operations using a selected NLP package (e.g., spaCy, Stanford CoreNLP, Stanza). The main operation is text parsing to produce the CoNLL table (CoNLL U format).\n\nYOU MUST BE CONNETED TO THE INTERNET TO RUN THE SCRIPTS.\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce different file types: txt-format copies of the same input txt files for co-reference, csv for annotators (HTML for gender annotator)."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName, False, package_display_area_value)
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName, False)
 
-def activate_parsers(*args):
-    global package_display_area_value
-    if GUI_util.setup_menu.get() == 'Setup NLP package and corpus language':
-        package_display_area_value_new, language = GUI_util.handle_setup_options(scriptName,GUI_util.setup_menu.get())
-        if package_display_area_value_new!=package_display_area_value:
-            y_multiplier_integer = display_available_options()
-            # y_multiplier_integer = changed_NLP_package_set_parsers()
-GUI_util.setup_menu.trace('w', activate_parsers)
+def activate_NLP_options(*args):
+    global error, parsers, available_parsers, parser_lb, package, package_display_area_value, language_list
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new = GUI_util.handle_setup_options(y_multiplier_integer, scriptName, GUI_util.setup_menu.get())
+    if package != '':
+        available_parsers = 'Parsers for ' + package + '                          '
+    else:
+        available_parsers = 'Parsers'
+    if package_display_area_value_new != package_display_area_value:
+        language_list = [language]
+        parser_menu_var.set(parsers[0])
+        parser_lb.config(text=available_parsers)
+GUI_util.setup_menu.trace('w', activate_NLP_options)
+activate_NLP_options()
 
 if error:
     mb.showwarning(title='Warning',

@@ -569,7 +569,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                             for j in sub_result[i]:
                                 run_output[i].append(j)
                     else:
-                        run[3].append(sub_result)
+                        run[3].extend(sub_result)
             try:
                 if errorFound:
                     errorFound=False
@@ -677,7 +677,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 # All POS ________________________________________________________________
 
                 elif 'All POS' in str(annotator_params) and 'All POS' in outputFilename:
@@ -694,7 +694,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        chart_title_label='POS Tag Values')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 
 # date ________________________________________________________________
 
@@ -712,7 +712,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        chart_title_label='Normalized Dates')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
@@ -727,7 +727,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        chart_title_label='Date Types')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 
 # gender ________________________________________________________________
 
@@ -745,12 +745,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        chart_title_label='Statistical Measures for Gender')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 
                     chart_outputFilename = visualize_html_file(inputFilename, inputDir, outputDir, filesToVisualize[j])
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 # parser ________________________________________________________________
 
                 elif 'parse' in str(annotator_params) and 'parse' in outputFilename:
@@ -768,7 +768,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        chart_title_label='Statistical Measures for Form & Lemma Values')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 
                     # POStag values
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
@@ -784,7 +784,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        chart_title_label='Statistical Measures for POS Tags')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 
                     # NER Tags
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
@@ -800,7 +800,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        chart_title_label='Statistical Measures for Form & Lemma Values')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 
                     # DEPrel values
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
@@ -816,7 +816,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        chart_title_label='Statistical Measures for DEPRel Values')
                     if chart_outputFilename!=None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 
 # quote ________________________________________________________________
 
@@ -833,7 +833,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        chart_title_label='Statistical Measures for Quotes')
                     if chart_outputFilename != None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 # sentiment ________________________________________________________________
 
                 elif 'sentiment' in str(annotator_params) and 'sentiment' in outputFilename:
@@ -850,7 +850,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                            chart_title_label='Sentiment Statistics')
                         if chart_outputFilename != None:
                             if len(chart_outputFilename) > 0:
-                                filesToOpen.append(chart_outputFilename)
+                                filesToOpen.extend(chart_outputFilename)
 
 # NER ________________________________________________________________
 
@@ -870,7 +870,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                            chart_title_label='NER tag')
                         if chart_outputFilename != None:
                             if len(chart_outputFilename) > 0:
-                                filesToOpen.append(chart_outputFilename)
+                                filesToOpen.extend(chart_outputFilename)
 
                         if len(kwargs['NERs'])>1:
                             ner_tags = 'Multi-tags'
@@ -890,7 +890,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                            chart_title_label='NER Words')
                         if chart_outputFilename != None:
                             if len(chart_outputFilename) > 0:
-                                filesToOpen.append(chart_outputFilename)
+                                filesToOpen.extend(chart_outputFilename)
 
                 # SVO ________________________________________________________________
 
@@ -909,7 +909,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        chart_title_label='')
                     if chart_outputFilename != None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 
                     # plot Verbs
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
@@ -925,7 +925,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        chart_title_label='')
                     if chart_outputFilename != None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 
                     # plot Objects
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
@@ -941,7 +941,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                        chart_title_label='')
                     if chart_outputFilename != None:
                         if len(chart_outputFilename) > 0:
-                            filesToOpen.append(chart_outputFilename)
+                            filesToOpen.extend(chart_outputFilename)
 
                     if 'SVO' in str(annotator_params):
                         for key, value in kwargs.items():
@@ -950,7 +950,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                   genderCol=["S Gender", "O Gender"], wordCol=["Subject (S)", "Object (O)"])
                                 if chart_outputFilename!=None:
                                     if len(chart_outputFilename) > 0:
-                                        filesToOpen.append(chart_outputFilename)
+                                        filesToOpen.extend(chart_outputFilename)
 # coref ________________________________________________________________
 
                 if "coref table" in str(annotator_params) or "parser" in str(annotator_params) or "SVO" in str(annotator_params):
@@ -967,7 +967,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                              outputDir, filesToOpen,
                                              createCharts,chartPackage, param, corefed_pronouns, all_pronouns)
                     # if len(pronoun_files)>0:
-                    #     filesToOpen.append(pronoun_files)
+                    #     filesToOpen.extend(pronoun_files)
 
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))
@@ -1623,12 +1623,15 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
     # merge gender information with SVO information
     if gender_var:
         SVO_df = pd.DataFrame(SVO_brief, columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
-        gender_df = pd.DataFrame(gender_info, columns=["Subject (S)", "S Gender", "Sentence ID", "Document ID"])
-        merge_df = pd.merge(SVO_df, gender_df, on=["Subject (S)", "Sentence ID", "Document ID"], how='left')
-        gender_df = pd.DataFrame(gender_info, columns=["Object (O)", "O Gender", "Sentence ID", "Document ID"])
-        merge_df = pd.merge(merge_df, gender_df, on=["Object (O)", "Sentence ID", "Document ID"], how='left')
+        gender_df = pd.DataFrame(gender_info, columns=["Subject (S)", "S Gender", "Sentence Set", "Document ID"])
+        merge_df = pd.merge(SVO_df, gender_df, on=["Subject (S)", "Document ID"], how='left')
+
+        gender_df = pd.DataFrame(gender_info, columns=["Object (O)", "O Gender", "Sentence Set", "Document ID"])        
+        merge_df = pd.merge(merge_df, gender_df, on=["Object (O)", "Document ID"], how='left')
+        
         merge_df = merge_df[['Subject (S)', 'S Gender', 'Verb (V)', 'Object (O)', 'O Gender', 'Sentence ID','Sentence', 'Document ID', 'Document']]
         merge_df = merge_df.drop_duplicates()
+        
         merge_df.to_csv(kwargs["gender_filename"], index=False, mode="a", encoding = language_encoding)
 
     if quote_var:
@@ -2180,4 +2183,4 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
         #                                                        chart_title_label='')
         #     if chart_outputFilename != None:
         #         if len(chart_outputFilename) > 0:
-        #             filesToOpen.append(chart_outputFilename)
+        #             filesToOpen.extend(chart_outputFilename)

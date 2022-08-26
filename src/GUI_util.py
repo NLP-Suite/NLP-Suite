@@ -708,57 +708,8 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
 # silent is set to True in those GUIs where the selected default I/O configuration does not confirm to the expected input
 #   For example, you need a csv file but the default is a Directory, e.g., data_manager_main
 
-def handle_setup_options(scriptName,selected_setup_menu):
-    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+def get_hover_over_info(package_display_area_value):
 
-    # package_display_area_value, language = handle_setup_options(scriptName, setup_menu.get())
-    if package_display_area_value != '':
-        NLP_current_settings = "Current settings - " + package_display_area_value
-    else:
-        NLP_current_settings = ''
-    if NLP_current_settings == '':
-        hover_over_x_coordinate = GUI_IO_util.read_button_x_coordinate + 300
-    else:
-        hover_over_x_coordinate = GUI_IO_util.read_button_x_coordinate
-
-    # setup_menu_lb = tk.OptionMenu(window, setup_menu, "Setup NLP package and corpus language",
-    #                               "Setup external software")
-    hover_over_info = "Using the dropdown menu, select one of these options:\n" \
-                      "'Setup NLP package and corpus language' to open the GUI to enter default NLP package (spaCy, CoreNLP, Stanza) and language. " + NLP_current_settings + "\n" \
-                      "'Setup external software' to open the GUI to download and instalkl all external software (e.g., Stanford CoreNLP, Gephi)"
-    # TODO should run the function hover_over_widget but cannot get the widget_name
-
-    GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer, setup_menu_lb, False,
-                      False, hover_over_x_coordinate, hover_over_info)
-    #window.nametowidget('setup_menu_lb')
-    # package_display_area_value=''
-    # language = ''
-
-    print("in GUI_util setup_menu",setup_menu.get(),"selected_setup_menu",selected_setup_menu)
-    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
-    if selected_setup_menu=='Setup NLP package and corpus language':
-        # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
-        call("python NLP_setup_package_language_main.py", shell=True)
-        setup_menu.set("Setup")
-        display_setup_hover_over(y_multiplier_integer, scriptName)
-
-        # need to get the correct hover-over info after the python call, in case options were changed
-        # display_setup_hover_over(scriptName)
-    if selected_setup_menu=='Setup external software':
-        call("python NLP_setup_external_software_main.py", shell=True)
-        setup_menu.set("Setup")
-    # currently not used
-    if selected_setup_menu == 'I/O configuration':
-        import GUI_util
-        GUI_util.setup_IO_configuration_options(False, scriptName, True)
-    print("In GUI_util package_display_area_value, language",package_display_area_value, language)
-    return package_display_area_value, language
-
-def display_setup_hover_over(y_multiplier_integer, scriptName):
-    setup_menu.set('Setup')
-    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
-
-    # package_display_area_value, language = handle_setup_options(scriptName, setup_menu.get())
     if package_display_area_value != '':
         NLP_current_settings = "Current settings - " + package_display_area_value
     else:
@@ -774,20 +725,49 @@ def display_setup_hover_over(y_multiplier_integer, scriptName):
                       "'Setup NLP package and corpus language' to open the GUI to enter default NLP package (spaCy, CoreNLP, Stanza) and language. " + \
                         NLP_current_settings + "\n" \
                       "'Setup external software' to open the GUI to download and instalkl all external software (e.g., Stanford CoreNLP, Gephi)"
+    return hover_over_x_coordinate, hover_over_info
+
+def display_setup_hover_over(y_multiplier_integer):
+    global setup_menu_lb
+    setup_menu.set('Setup')
+    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+
+    hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
 
     GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer, setup_menu_lb, False,
                       False, hover_over_x_coordinate, hover_over_info)
 
-    # GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer, widget_name, False,
-    #                   False, hover_over_x_coordinate, hover_over_info)
+    return y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value
 
-    # place widget with hover-over info
-    # y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
-    #                                                setup_menu_lb, True, False, False, False, 90,
-    #                                                hover_over_x_coordinate,
-    #                                                hover_over_info)
-    # handle_setup_options(scriptName, setup_menu.get())
-    return y_multiplier_integer
+def handle_setup_options(y_multiplier_integer, scriptName, selected_setup_menu):
+    package_display_area_value_new=''
+    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+
+    # hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
+    #
+    display_setup_hover_over(y_multiplier_integer)
+    # GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer,
+    #                 setup_menu_lb, False, False, hover_over_x_coordinate, hover_over_info)
+    #window.nametowidget('setup_menu_lb')
+    # package_display_area_value=''
+    # language = ''
+
+    # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    if selected_setup_menu=='Setup NLP package and corpus language':
+        # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+        call("python NLP_setup_package_language_main.py", shell=True)
+        setup_menu.set("Setup")
+        # this will display the correct hover-over info after the python call, in case options were changed
+        y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value_new = display_setup_hover_over(y_multiplier_integer)
+    if selected_setup_menu=='Setup external software':
+        call("python NLP_setup_external_software_main.py", shell=True)
+        setup_menu.set("Setup")
+    # currently not used
+    if selected_setup_menu == 'I/O configuration':
+        import GUI_util
+        GUI_util.setup_IO_configuration_options(False, scriptName, True)
+    return error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new
+
 def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
                videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName='', silent=False, package_display_area_value=''):
 
@@ -923,7 +903,6 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
         error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
 
-        # place widget with hover-over info
         NLP_current_settings=''
         if package_display_area_value !='':
             NLP_current_settings="Current settings - " + package_display_area_value
@@ -934,11 +913,10 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         hover_over_info = "Using the dropdown menu, select one of these options:\n" \
                           "'Setup NLP package and corpus language' to open the GUI to enter default NLP package (spaCy, CoreNLP, Stanza) and language. " + NLP_current_settings + "\n" \
                           "'Setup external software' to open the GUI to download and instalkl all external software (e.g., Stanford CoreNLP, Gephi)"
+        # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                                        setup_menu_lb, True, False, False, False, 90, hover_over_x_coordinate,
                                                        hover_over_info)
-
-        # display_setup_hover_over(y_multiplier_integer,scriptName)
 
     # there is no RUN button when setting up IO information in NLP_setup_IO_main.py
     if not "IO_setup_main" in scriptName and not "package_language" in scriptName:
@@ -1019,9 +997,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     setup_IO_menu_var.trace("w",changed_setup_IO_config)
     changed_setup_IO_config()
 
-
-    setup_menu.trace('w',lambda x, y, z: handle_setup_options(y_multiplier_integer, setup_menu.get()))
-    # display_setup_hover_over(y_multiplier_integer, scriptName)
+    # setup_menu.trace('w',lambda x, y, z: handle_setup_options(y_multiplier_integer, scriptName, setup_menu.get()))
 
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
     # run_button_state, answer = activateRunButton(temp_config_filename, IO_setup_display_brief, scriptName, silent)

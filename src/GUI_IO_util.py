@@ -89,11 +89,12 @@ def display_help_button_info(text_title,text_info):
 def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_over_widget=False, whole_widget_red=False, x_coordinate_hover_over= 90, text_info=''):
     if no_hover_over_widget:
         return
-
     def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info):
+        # background = 'red' sets the whole widget in red
         e.widget.config(background='red')
         # TODO Must left justify rather than center the info displayed
-        display_window_lb = tk.Label(window, anchor='w', text=text_info, name='display_window_lb', foreground='blue')
+        display_window_lb = tk.Label(window, anchor='w', text=text_info, name='display_window_lb',
+                                     foreground='blue')
         display_window_lb.place(anchor='w', x=x_coordinate_hover_over, y=y_coordinate)
 
     def delete_display_widget_lb(window, e, text_info):
@@ -146,7 +147,7 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
             # combobox is the ttk menu object; the regular config breaks
             # https://stackoverflow.com/questions/71733010/ttkcombobox-foreground-color-change-doesnt-work-properly-whats-wrong
             if 'combobox' in str(widget_name):
-                # TODO thea widget should be turned red but it is in blue
+                # TODO the widget should be turned red but it is in blue
                 widget_name.bind('<Enter>',
                      lambda e: (e.widget.config(ttk.Style().map(
                             'Red.TCombobox',
@@ -163,6 +164,7 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
                                                    y_coordinate,
                                                    x_coordinate_hover_over,
                                                    text_info)))
+
         else: # no text info to be displayed
             widget_name.bind('<Enter>', lambda e: e.widget.config(activeforeground='red', text=label))
 
