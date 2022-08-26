@@ -5,8 +5,6 @@
 import sys
 import GUI_util
 import IO_libraries_util
-# import knowledge_graphs_DBpedia_util_chen
-
 if IO_libraries_util.install_all_packages(GUI_util.window,"knowledge_graphs_DBpedia_YAGO_main.py",['os','tkinter','subprocess'])==False:
     sys.exit(0)
 
@@ -37,6 +35,17 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPa
     # if not DBpedia_YAGO_color_map:
     #     mb.showwarning(title='Warning', message="You haven't selected any ontology classes, by default we will annotated everything we could.")
 
+    # check file number, if too many file pop the warning.
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    fileNum = len(inputDocs)
+    if fileNum > 10:
+        res = mb.askokcancel("File Number Warning",
+                             "Your input directory contains more than 10 files. The annotation will take a significantly longer time (especially for YAGO), and the output will contain " +
+                             str(fileNum) + " html files.\n\n Do you want to proceed? ")
+        # stop the process if user click cancel
+        if not res:
+            return
+
     if knowledge_graphs_DBpedia_var==True or knowledge_graphs_YAGO_var==True:
         import IO_internet_util
         if knowledge_graphs_DBpedia_var:
@@ -53,7 +62,6 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPa
         #     return
 
     ontology_list = list(DBpedia_YAGO_color_map.keys())
-    # print(DBpedia_YAGO_color_map)
     colorls = list(DBpedia_YAGO_color_map.values())
 
     def final_check():
@@ -75,6 +83,8 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPa
         if not ontology_list: # if nothing selected, annotate everything
             ontology_list.append('Thing')
             colorls.append('blue')
+
+
 
     if knowledge_graphs_DBpedia_var==True:
         if not IO_internet_util.check_internet_availability_warning('knowledge_graphs_DBpedia_YAGO_main.py'):
@@ -583,7 +593,7 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide ways of annotating text files for matching terms found in the knowledge graphs DBpedia or YAGO.\n\nDBpedia and YAGO tags can be selected from the class dropdown menu containing the DBpedia and YAGO ontology. The menu only includes the main classes in the ontology. For specific sub-classes, please, get the values from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org) ontology classes.pdf and enter them in the Ontology sub-class field."
-readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

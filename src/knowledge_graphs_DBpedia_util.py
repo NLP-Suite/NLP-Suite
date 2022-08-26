@@ -91,7 +91,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
     if nFile == 0:
         return
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                    'Started running DBpedia Knowledge Graph at', True,
                                                    'Annotating types: ' + str(
                                                        annotationTypes) + '\nConfidence level: ' + str(
@@ -179,7 +179,6 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
                 # url_certificate = ssl.SSLContext()  # Only for url
                 HTML_HEADERS = {'Accept': 'text/html'}
                 content = requests.get(url=REQUEST, headers=HTML_HEADERS).text
-                # content = urlopen(url, context=url_certificate).read().decode('utf-8', errors='ignore')
                 if has_annotation:
                     for res in resources:
                         all_urls.append(res['@URI'])
@@ -280,7 +279,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
 
     # add charts
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running DBpedia Knowledge Graph at',
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running DBpedia Knowledge Graph at',
                                        True, '', True, startTime)
 
     return filesToOpen
@@ -314,7 +313,7 @@ def map_color_ont(colors, ont_list):
     for idx, ont in enumerate(ont_list):
         colormap[ont] = colors[idx]
 
-
+# Return spotlight query string
 def spotlight_request(contents, annotationOpts, confidence_level):
     BASE_URL = 'http://api.dbpedia-spotlight.org/en/annotate?text={text}&confidence={confidence}&support={support}&types={annotationOpts}'
     CONFIDENCE = confidence_level
@@ -331,7 +330,7 @@ def spotlight_request(contents, annotationOpts, confidence_level):
     return REQUEST, HEADERS
 
 
-
+# extract links from the entire html string so we can save links into csv files later
 def extract_html(content, annotationTypes, doc, url_num):
     a_start = content.find('<a')
     a_end = content.find('</a>')
