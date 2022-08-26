@@ -397,9 +397,9 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
         inputFilename = inputDir + os.sep + tail
 
     # output: svo_df
-    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)'})
-    # TODO MINO
+    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Sentence ID'})
     empty_verb_idx = []
+    SVO_found = False
 
     # object and subject constants
     OBJECT_DEPS = {"obj", "iobj", "dobj", "dative", "attr", "oprd"}
@@ -412,11 +412,17 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
             tmp_head = sentence.words[word.head-1].deprel if word.head > 0 else "root"
             if word.deprel in SUBJECT_DEPS or tmp_head in SUBJECT_DEPS:
                 svo_df.at[c, 'Subject (S)'] = word.text
+                SVO_found = True
             if word.pos=='VERB':
                 svo_df.at[c, 'Verb (V)'] = word.text
+                SVO_found = True
             if word.deprel in OBJECT_DEPS or tmp_head in OBJECT_DEPS:
                 svo_df.at[c, 'Object (O)'] = word.text
+                SVO_found = True
+        # check if SVO is found, then add Sentence ID
+        if SVO_found:
             svo_df.at[c, 'Sentence ID'] =  c
+            SVO_found = False
         c+=1
 
     # csv output columns
@@ -428,15 +434,13 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
         svo_df.at[index, 'Subject (S)'] = '?' if pd.isna(row['Subject (S)']) else row['Subject (S)']
         svo_df.at[index, 'Verb (V)'] = '' if pd.isna(row['Verb (V)']) else row['Verb (V)']
         svo_df.at[index, 'Object (O)'] = '' if pd.isna(row['Object (O)']) else row['Object (O)']
-        # TODO MINO
         # save empty verb indices
         if pd.isna(row['Verb (V)']):
             empty_verb_idx.append(index)
-    # TODO MINO
     # drop empty Verb rows
     svo_df = svo_df.drop(empty_verb_idx)
     # set the S-V-O sequence in order
-    svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Document ID', 'Document']]
+    svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Document ID', 'Document']]
 
     return svo_df
 

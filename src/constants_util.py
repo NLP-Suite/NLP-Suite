@@ -542,7 +542,7 @@ YAGO_ontology_class_menu= 'BioChemEntity','Gene','MolecularEntity','Taxon','Bran
 NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: Geocoding & maps', \
 'Geographic maps: Google Earth Pro', 'Geographic distances between locations', \
 'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', 'Network graphs (Gephi)', \
-'Sentence visualization: Dependency tree viewer (png graphs)', 'Word clouds'
+'Sentence visualization: Dependency tree viewer (png graphs)', 'Wordclouds (ALL options GUI)'
 
 NLP_Suite_data_file_handling_tools_menu = 'Data manager (csv files via Pandas)', \
 'File checker (file name)', \
@@ -557,7 +557,7 @@ NLP_Suite_pre_processing_tools_menu = 'File checker (file content)', \
 'File checker (file content utf-8 encoding)', 'File checker (file name)', \
 'File cleaner (Change to ASCII non-ASCII apostrophes & quotes and % to percent)', \
 'File cleaner (Find & Replace string)', 'File cleaner (Remove blank lines from txt file(s))', \
-'File cleaner (Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation)', \
+'File cleaner (Add full stop . at the end of paragraphs without end-of-paragraph punctuation)', \
 'File cleaner (Pronominal resolution via CoreNLP)', 'File finder (file name)', \
 'File merger (file content)', 'File splitter (file content)', 'File splitter (file name)', \
 'Search (ALL options GUI)', 'File search (file content for n-grams & co-occurrences; N-grams viewer)', \
@@ -590,7 +590,7 @@ NLP_Suite_corpus_document_tools_menu = 'WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SW
 'Search text file(s) for n-grams & co-occurrences (N-grams viewer)', 'Search text file(s) for words/collocations', 'Sentence complexity', \
 'Sentence/text readability (via textstat)', 'Similarities between words (Levenshtein distance)', 'Spelling checkers', \
 'Spelling checker cleaner (Find & Replace string)', 'Semantic analysis (via TensorFlow)', 'SRL Semantic Role Labeling', \
-'Word clouds (ALL options GUI)', 'WordNet', 'Word2Vec (via Gensim)'
+'Wordclouds (ALL options GUI)', 'WordNet', 'Word2Vec (via Gensim)'
 
 # 'Spelling checker/Unusual words (via NLTK)',
 # 'Spelling checker (via autocorrect)',

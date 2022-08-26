@@ -85,8 +85,12 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                             'SpaCy_')
     else:
+        if len(annotator_params)>1:
+            annotator_string=''
+        else:
+            annotator_string = annotator_params[0]
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                             'SpaCy_' + annotator_params)
+                                                             'SpaCy_' + annotator_string)
     # create output df
     df = pd.DataFrame()
 
@@ -149,8 +153,8 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
         out_df.at[i,'DepRel'] = token.dep_
         out_df.at[i, 'is_sent_start'] = token.is_sent_start
         if "sentiment" in annotator_params:
-            out_df.at[i,'sentiment_score_token'] = round(token._.blob.polarity,2)
-            out_df.at[i,'sentiment_score_sent'] = 0 # will be replaced later
+            out_df.at[i,'Sentiment score (token)'] = round(token._.blob.polarity,2)
+            out_df.at[i,'Sentiment score (sentence)'] = 0 # will be replaced later
         if hasattr(token, 'ent_type_'): # check if NER is annotated for each token
             out_df.at[i,'NER'] = token.ent_type_
 
@@ -171,7 +175,7 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
         if i != 0 and row[1]['is_sent_start'] == True:
             sidx+=1
         if "sentiment" in annotator_params:
-            out_df.at[i, 'sentiment_score_sent'] = sentence_sentiment[sidx-1]
+            out_df.at[i, 'Sentiment score (sentence)'] = sentence_sentiment[sidx-1]
         out_df.at[i, 'Record ID'] = row[1]['ID']
         out_df.at[i, 'Sentence ID'] = sidx
         i+=1
@@ -194,7 +198,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
         inputFilename = inputDir + os.sep + tail
 
     # output: svo_df
-    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)'})
+    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Sentence ID'})
 
     # subject,verb and object constants
     SUBJECT_DEPS = {"nsubj", "nsubjpass", "csubj", "agent", "expl"}
@@ -203,18 +207,24 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
 
     # set-ups to extract SVOs
     c = 0
-    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)'})
-    # TODO MINO
+    SVO_found = False
     empty_verb_idx = []
     # extract SVOs
     for sent in doc.sents:
         for token in sent:
             if token.dep_ in SUBJECT_DEPS or token.head.dep_ in SUBJECT_DEPS:
                 svo_df.at[c, 'Subject (S)'] = token.text
+                SVO_found = True
             if token.pos_ in VERB_POS:
                 svo_df.at[c, 'Verb (V)'] = token.text
+                SVO_found = True
             if token.dep_ in OBJECT_DEPS or token.head.dep_ in OBJECT_DEPS:
                 svo_df.at[c, 'Object (O)'] = token.text
+                SVO_found = True
+        # check if SVO is found, then add Sentence ID
+        if SVO_found:
+            svo_df.at[c, 'Sentence ID'] = c
+            SVO_found = False
         c+=1
 
     # csv output columns
@@ -226,14 +236,12 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
         svo_df.at[index, 'Verb (V)'] = '' if pd.isna(row['Verb (V)']) else row['Verb (V)']
         svo_df.at[index, 'Object (O)'] = '' if pd.isna(row['Object (O)']) else row['Object (O)']
         # save empty verb indices
-        #TODO MINO
         if pd.isna(row['Verb (V)']):
             empty_verb_idx.append(index)
-    # TODO MINO
     # drop empty Verb rows
     svo_df = svo_df.drop(empty_verb_idx)
     # set the S-V-O sequence in order
-    svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Document ID', 'Document']]
+    svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Document ID', 'Document']]
 
     return svo_df
 

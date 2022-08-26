@@ -270,7 +270,7 @@ pydict["Style analysis (ALL options GUI)"] = ["style_analysis_main.py", 1]
 pydict["Narrative analysis (ALL options GUI)"] = ["narrative_analysis_main.py", 1]
 pydict["WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW"] = ["whats_in_your_corpus_main.py", 1]
 pydict["Corpus/document(s) statistics (Sentences, words, lines)"] = ["style_analysis_main.py", 1]
-pydict["Word clouds (ALL options GUI)"] = ["wordclouds_main.py", 1]
+pydict["Wordclouds (ALL options GUI)"] = ["wordclouds_main.py", 1]
 pydict["WordNet"] = ["knowledge_graphs_WordNet_main.py", 1]
 pydict["Word2Vec (via Gensim)"] = ["word2vec_main.py", 1]
 
@@ -373,7 +373,7 @@ open_setup_button = tk.Button(window, width=GUI_IO_util.open_file_directory_butt
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_setup_software_button, y_multiplier_integer,
                                                open_setup_button, False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button-300, "Open the NLP_setup_external_software_config.csv file containing all external software installation paths")
 
-general_tools_lb = tk.Label(window, text='General Tools', foreground="red",font=("Courier", 12, "bold"))
+general_tools_lb = tk.Label(window, text='General Utility Tools', foreground="red",font=("Courier", 12, "bold"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                general_tools_lb)
 

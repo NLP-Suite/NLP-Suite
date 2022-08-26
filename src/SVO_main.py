@@ -326,7 +326,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 output = SVO_compare_packages_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
-                    filesToOpen.append(output)
+                    for op in output:
+                        if type(op) is list:
+                            for tmp in op:
+                                filesToOpen.append(tmp)
+                        else:
+                            filesToOpen.append(op)
 
                 if lemmatize_verbs:
                     # tempOutputFiles[0] is the filename with lemmatized SVO values
@@ -338,17 +343,27 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
-                            filesToOpen.append(output)
+                            for op in output:
+                                if type(op) is list:
+                                    for tmp in op:
+                                        filesToOpen.append(tmp)
+                                else:
+                                    filesToOpen.append(op)
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'NOUN',
                                                                openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
-                            filesToOpen.append(output)
+                            for op in output:
+                                if type(op) is list:
+                                    for tmp in op:
+                                        filesToOpen.append(tmp)
+                                else:
+                                    filesToOpen.append(op)
                     else:
                         reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
                                                      reminders_util.message_no_SVO_records, True)
-            filesToOpen.append(tempOutputFiles)
+            filesToOpen.extend(tempOutputFiles)
             if gender_var:
                 filesToOpen.append(gender_filename)
             if quote_var:
@@ -426,18 +441,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                        date_position_var=date_position_var)
 
         if tempOutputFiles != None:
-            filesToOpen.append(tempOutputFiles)
-            # TODO MINO
+            filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[1])
 
         # Filtering SVO
-        # TODO MINO
         if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_result_list:
                 output = SVO_compare_packages_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
-                    filesToOpen.append(output)
+                    for op in output:
+                        filesToOpen.extend(op)
+
 # spaCY _____________________________________________________
 
     if package_var == 'spaCy':
@@ -458,18 +473,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     date_position_var=date_position_var)
 
         if tempOutputFiles != None:
-            filesToOpen.append(tempOutputFiles)
-            # TODO MINO
+            filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[1])
 
         # Filtering SVO
-        # TODO MINO
         if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_result_list:
                 output = SVO_compare_packages_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
-                    filesToOpen.append(output)
+                    for op in output:
+                        filesToOpen.extend(op)
 
         # for file in tempOutputFiles:
         #     svo_result_list.append(file)
@@ -614,13 +628,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     if IO_csv_util.GetNumberOfRecordInCSVFile(f) > 1:  # including headers; file is empty
                         gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], outputDir, f, "Subject (S)", "Verb (V)", "Object (O)",
                                                            "Sentence ID")
-                        if "CoreNLP" in f or "SENNA_SVO" in f:
+                        if "CoreNLP" in f or "SENNA_SVO" in f or "SpaCy" in f or "Stanza" in f:
                             filesToOpen.append(gexf_file)
                         if not save_intermediate_file:
                             gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if
                                           f.endswith('.gexf')]
                             for f in gexf_files:
-                                if "CoreNLP" not in f and "SENNA_SVO" not in f: #CoreNLP accounts for both ++ and OpenIE
+                                if "CoreNLP" not in f and "SENNA_SVO" not in f and "SpaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
                                     os.remove(f)
 
 # wordcloud  _________________________________________________

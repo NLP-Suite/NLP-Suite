@@ -16,7 +16,7 @@ import file_merger_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(input_main_dir_path, output_dir_path, 
+def run(input_main_dir_path, output_dir_path,
     openOutputFiles,
     createCharts,
     merge_processSubdir,
@@ -32,9 +32,9 @@ def run(input_main_dir_path, output_dir_path,
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', "Started running 'File Merger' at",
 												 True, '', True,'',True)
-  
+
     file_merger_util.file_merger(GUI_util.window,
-                                input_main_dir_path, 
+                                input_main_dir_path,
                                 output_dir_path,
                                 openOutputFiles,
                                 merge_processSubdir,
@@ -213,12 +213,13 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 		y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,GUI_IO_util.msg_anyData)
 		y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,GUI_IO_util.msg_outputDirectory)
 	else:
-		y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, basic_y_coordinate, "NLP Suite Help",
+		y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
 									  GUI_IO_util.msg_IO_setup)
 
 	y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to save the filenames in the merged output file.\n\nTo make it easy to find files in the merged output, embed the filenames in unique start/end strings. Filenames will be saved with their path. WHEN SELECTING THE OPTION OF EMBEDDING THE SUBDIRECTORY NAME IN THE FILENAME, THE FILENAME WILL BE SAVED WITHOUT PATH.\n\nThe option of saving the subdirectory name when saving the file is only available when processing subdirectories.")
 	y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to process files in subdirectories.\n\nWhen processing subdirectories, if the filename is saved in the merged output, the filename will be saved without a path. You will, however, have the option to save the filename with the suffix of the subdirectory name.")
 	y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+	return y_multiplier_integer - 1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
 
 # change the value of the readMe_message
