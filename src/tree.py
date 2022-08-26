@@ -35,7 +35,7 @@ def make_tree(s):
 def getLeavesAsList(node):
     result = []
     for child in node.children:
-        result.extend(getLeavesAsList(child))
+        result.append(getLeavesAsList(child))
     if not result:
         return [node]
 

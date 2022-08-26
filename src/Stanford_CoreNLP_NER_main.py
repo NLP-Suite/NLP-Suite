@@ -13,7 +13,7 @@ import tkinter.messagebox as mb
 from subprocess import call
 
 import GUI_IO_util
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
 import IO_files_util
 import IO_user_interface_util
 
@@ -37,7 +37,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                        message='The Stanford CoreNLP NER annotator is not available for Arabic.')
         return
 
-    tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
+    tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                         openOutputFiles, createCharts, chartPackage,
                                                         'NER',
                                                         language=language_var,
@@ -53,7 +53,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                         date_position_var=date_position_var)
 
     if len(tempOutputFiles)>0:
-        filesToOpen.extend(tempOutputFiles)
+        filesToOpen.append(tempOutputFiles)
 
     # TODO Excel charts; the basic bar charts are carried out in the _annotator_util
 
@@ -314,7 +314,7 @@ def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
-def changed_input_filename(*args):
+def changed_inputFilenamename(*args):
     # display the date widgets
     if inputFilename.get().endswith('.txt') or len(input_main_dir_path.get()) > 0:
         extract_date_from_text_checkbox.config(state='normal')
@@ -322,8 +322,8 @@ def changed_input_filename(*args):
     else:
         extract_date_from_text_checkbox.config(state='disabled')
         extract_date_from_filename_checkbox.config(state='disabled')
-inputFilename.trace('w', changed_input_filename)
-input_main_dir_path.trace('w', changed_input_filename)
+inputFilename.trace('w', changed_inputFilenamename)
+input_main_dir_path.trace('w', changed_inputFilenamename)
 
 def add_NER_tag(*args):
     global NER_list
@@ -461,7 +461,7 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script will extract NER tags from either tetxt file(s) using the Stanford CoreNLP NER annotator.\n\nIn INPUT the algorith expects a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the algorithm exports a csv file of extracted NER values and 2 Excel bar charts (if the checkbox 'Automatically compute Excel chart(s)' is not ticked off)."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

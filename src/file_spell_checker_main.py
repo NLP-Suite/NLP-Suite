@@ -3,7 +3,7 @@ import GUI_util
 import IO_libraries_util
 
 if not IO_libraries_util.install_all_packages(GUI_util.window, "spell-checker_main.py",
-                                              ['os', 're', 'stanfordcorenlp', 'nltk', 'pandas',
+                                              ['os', 're', 'nltk', 'pandas',
                                                'collections','subprocess', 'time', 'tkinter']):
     sys.exit(0)
 
@@ -81,8 +81,8 @@ def run(inputFilename, inputDir, outputDir,
             return
 
         if byNER_value_var and len(NER_list) == 0:
-            mb.showwarning(title='Missing NER value',
-                           message='The word similarity script requires a valid NER entry.\n\nPlease, select an NER value and try again.')
+            mb.showwarning(title='Missing NER tag',
+                           message='The word similarity script requires a valid NER entry.\n\nPlease, select an NER tag and try again.')
             return
 
         if inputFilename!='':
@@ -91,7 +91,6 @@ def run(inputFilename, inputDir, outputDir,
             return
 
         if check_withinSubDir and (not spelling_checker_var):
-            # TODO files need t be added to filesToOpen
             outputFiles = file_spell_checker_util.check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles,
 																		 createCharts, NER_list, similarity_value,
 																		 by_all_tokens_var,
@@ -103,8 +102,7 @@ def run(inputFilename, inputDir, outputDir,
 																 by_all_tokens_var)
 
         if outputFiles!=None:
-            filesToOpen.extend(outputFiles)
-
+            filesToOpen.append(outputFiles)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -226,12 +224,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_i
                                                by_all_tokens_checkbox)
 
 byNER_value_var.set(0)
-byNER_value_checkbox = tk.Checkbutton(window, state='normal', text='Check by NER value', variable=byNER_value_var,
+byNER_value_checkbox = tk.Checkbutton(window, state='normal', text='Check by NER tag', variable=byNER_value_var,
                                       onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
                                                byNER_value_checkbox)
 
-NER_value_lb = tk.Label(window, text='Select NER value for computing word similarity')
+NER_value_lb = tk.Label(window, text='Select NER tag for computing word similarity')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate() + 20,
                                                y_multiplier_integer, NER_value_lb, True)
 NER_value = tk.OptionMenu(window, NER_value_var, '*', 'CITY', 'COUNTRY', 'STATE_OR_PROVINCE', 'LOCATION',
@@ -251,7 +249,7 @@ def activate_NER_list_entry(*args):
     if NER_value_var.get() != '':
         if '*' in selected_NER_list_var.get():
             mb.showwarning(title='Selection error',
-                           message="You have already selected to process all NER values via *. You cannot select any other NER value.\n\nPress ESCape to clear the current selection.")
+                           message="You have already selected to process all NER values via *. You cannot select any other NER tag.\n\nPress ESCape to clear the current selection.")
             return
         build_NER_list()
         NER_list = [selected_NER_list_var.get()]
@@ -367,7 +365,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, tick the checkbox if you wish to use Levenshtein\' edit distance algorithm.' + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  'Please, tick the checkbox if you wish to find the edit distance of any token (word) in your input document(s), regardless of their NER value.' + GUI_IO_util.msg_Esc)
+                                  'Please, tick the checkbox if you wish to find the edit distance of any token (word) in your input document(s), regardless of their NER tag.' + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, tick the checkbox if you wish to find the edit distance of tokens (words) in your input document(s) by their selected NER values.' + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -384,7 +382,7 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordi
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a way of checking for word similarieties (or dissimilarities) using the Levenshtein's distance (also popularly called the edit distance). The algorithm can also be used to check word spelling.\n\nIn INPUT the scripts expect a directory where the software Stanford CoreNLP has been downloaded and a main drectory where txt files to be analyzed are stored.\n\nIn OUTPUT, the scripts will save the csv files and Excel charts written by the various scripts. The csv output list contains words with a frequency greater than 1."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

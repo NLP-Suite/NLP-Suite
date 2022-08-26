@@ -73,7 +73,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     nFile = len(files)
     if nFile == 0:
         return
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running YAGO Knowledge Graph at', True,
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running YAGO Knowledge Graph at', True,
                         '\nAnnotating types: ' + str(categories) + " with associated colors: " + str(colorls),
                                                  True, '', False)
     i=0
@@ -133,7 +133,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
             #   in IO_csv_util there is a function def dressFilenameForCSVHyperlink(fileName) that does that for a regular file
             #csvname = outFilename.replace(".html","_")+str(annotationTypes).replace("[", "").replace("]", "").replace("'", "").replace(",", "_")
             diff = len(Document) - len(DocumentID)
-            if diff>0:DocumentID.extend([docID]*diff)
+            if diff>0:DocumentID.append([docID]*diff)
             docID = docID + 1
     # save csv output file
     df = pd.DataFrame(list(zip(phrase,ont, link,sentID,Sentence,DocumentID, Document, Html_Doc)),
@@ -145,7 +145,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     csvname = os.path.join(outputDir,csvname)
     df.to_csv((csvname),index=False)
     filesToOpen.append(csvname)
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running YAGO Knowledge Graph at',
                                        True, '', True, startTime, False)
     dict.clear()

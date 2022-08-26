@@ -27,7 +27,6 @@ import CoNLL_util
 import IO_user_interface_util
 import GUI_IO_util
 import IO_csv_util
-import IO_files_util
 
 # There are 3 methods and a 2 constants present:
 # abspath returns absolute path of a path
@@ -153,14 +152,14 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False):
 def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outputFileVar=None,
                initialFolder=''):
     inputFilename = ""
-    # print(fileType, extension, GUI_util.output_dir_path.get())
+    # print(fileType, extension, GUI_util.outputDir.get())
     if initialFolder == '':
         # initialFolder = os.path.dirname(os.path.abspath(__file__)) # this sets itself on NLP\src
         if extension == '.txt':
             initialFolder = GUI_IO_util.sampleData_libPath
         else:
             if GUI_util.output_dir_path.get()!='' and extension == '.csv':
-                initialFolder = GUI_util.output_dir_path.get()
+                initialFolder = GUI_util.input_main_dir_path.get()
     if IsInputFile == True:  # as opposed to output file
         # when the file string is blank, the directory option should always also be available
         inputFilename = tk.filedialog.askopenfilename(initialdir=initialFolder, title=title, filetypes=fileType)
@@ -356,7 +355,7 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir):
     if len(filesToOpen)>10:
         mb.showwarning(title='Too many files to open',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files.\n\nFor your convenience, you will be placed next in the output directory\n\n'+outputDir+'\n\nYou can select there the files you want/need to open.')
         # open outputDir
-        IO_files_util.openExplorer(window, outputDir)
+        openExplorer(window, outputDir)
         return
     if len(filesToOpen) == 1:
         singularPlural = 'file'
@@ -401,7 +400,7 @@ def getFilename(passed_string):
     if os.path.isfile(passed_string):
         head, tail = os.path.split(passed_string)
         tail_noExtension = tail.replace(getFileExtension(tail),'')
-    return tail, tail_noExtension
+    return tail, tail_noExtension, passed_string
 
 
 # def getFilename(inputFilename):
@@ -424,7 +423,7 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
         inputfile='Dir_' + Dir
         inputfile_noExtension=''
     else:
-        inputfile, inputfile_noExtension = getFilename(inputFilename)
+        inputfile, inputfile_noExtension, filename_no_hyperlink = getFilename(inputFilename)
         # use inputfile_noExtension for json
         inputfile = inputfile_noExtension
     default_outputFilename_str =''
@@ -573,21 +572,21 @@ def getScript(pydict,script):
 
     return script_to_run, IO_values
 
-def run_jar_script(scriptName, inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage):
+def run_jar_script(scriptName, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
     filesToOpen = []
     if IO_libraries_util.check_inputPythonJavaProgramFile(scriptName) == False:
         return
     # if scriptName=='Sentence_Complexity.jar':
-    #     outputFilename=IO_util.generate_output_file_name(inputFilename,output_dir_path,'.csv','SCo','','')
+    #     outputFilename=IO_util.generate_output_file_name(inputFilename,outputDir,'.csv','SCo','','')
     #     filesToOpen.append(outputFilename)
     #     temp_outputFilename=ntpath.basename(outputFilename)
     #     IO_util.timed_alert(GUI_util.window,2000,'Analysis start','Started running Sentence Complexity at',True,'\n\nYou can follow Sentence Complexity in command line.')
-    #     subprocess.call(['java', '-jar', 'Sentence_Complexity.Jar', inputFilename, output_dir_path, temp_outputFilename])
+    #     subprocess.call(['java', '-jar', 'Sentence_Complexity.Jar', inputFilename, outputDir, temp_outputFilename])
     #     IO_util.timed_alert(GUI_util.window,2000,'Analysis end','Finished running Sentence Complexity at',True)
     #     if createCharts:
-    #         columns_to_be_plotted = [[1,3], [1,4], [1,6], [1,7]]
+    #         columns_to_be_plotted=[[1,3], [1,4], [1,6], [1,7]]
     #         hover_label=['Sentence','Sentence','Sentence','Sentence']
-    #         outputFilenameXLSM_1 = charts_util.run_all(columns_to_be_plotted,inputFilename,output_dir_path, outputFilename, chart_type_list = ["line"], chart_title= "Sentence complexity", column_xAxis_label_var = 'Sentence ID',column_yAxis_label_var = 'Complexity',outputExtension = '.xlsm',label1='Scomp',label2='line',label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=0, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
+    #         outputFilenameXLSM_1 = charts_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputFilename, chart_type_list = ["line"], chart_title= "Sentence complexity", column_xAxis_label_var = 'Sentence ID',column_yAxis_label_var = 'Complexity',outputExtension = '.xlsm',label1='Scomp',label2='line',label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=0, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
     #         if outputFilenameXLSM_1 != "":
     #             filesToOpen.append(outputFilenameXLSM_1)
 
@@ -595,7 +594,7 @@ def run_jar_script(scriptName, inputFilename, input_main_dir_path, output_dir_pa
     #     #inputFilename must include the file full path with txt extension
     #     #inputFilename must be a txt file
     #     IO_util.timed_alert(GUI_util.window,2000,'Analysis start','Started running Sentence visualization: Dependency tree viewer (png graphs) at',True,'\n\nYou can follow Sentence Complexity in command line.')
-    #     subprocess.call(['java', '-jar', 'DependenSee.Jar', inputFilename, output_dir_path])
+    #     subprocess.call(['java', '-jar', 'DependenSee.Jar', inputFilename, outputDir])
     #     IO_util.timed_alert(GUI_util.window,2000,'Analysis end','Finished running Sentence visualization: Dependency tree viewer (png graphs) at',True,'\n\nMake sure to open the png files in output, one graph for each sentence.')
     if visualization_tools == "Sentence visualization: Dynamic sentence network viewer (Gephi graphs)":
         # TODO the script does not work even in command line using the arguments in the ReadMe file; it seems to want two more parameters
@@ -606,17 +605,17 @@ def run_jar_script(scriptName, inputFilename, input_main_dir_path, output_dir_pa
         args2 = "outputinputFilename.gexf"
         args3 = true or false
         args4 = $$$
-        # if checkIO_Filename_InputDir ("Sentence Visualization: Dynamic Sentence Network Viewer (Gephi graphs)",inputFilename, input_main_dir_path, output_dir_path):
-        #     subprocess.call(['java', '-jar', 'DynamicSentenceViewer.jar', inputFilename, output_dir_path])
+        # if checkIO_Filename_InputDir ("Sentence Visualization: Dynamic Sentence Network Viewer (Gephi graphs)",inputFilename, inputDir, outputDir):
+        #     subprocess.call(['java', '-jar', 'DynamicSentenceViewer.jar', inputFilename, outputDir])
         """
         return
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
 # The NLP script and sentence_analysis script use pydict dictionaries to run the script selected in a menu
 # the dict can contain a python file, a jar file or a combination of python file + function
-def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_main_dir_path, output_dir_path,
+def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, inputDir, outputDir,
                               openOutputFiles, createCharts, chartPackage, processType=''):
     filesToOpen = []
     if len(script_to_run) == 0:
@@ -632,7 +631,7 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
             return filesToOpen
         call("python " + script_to_run, shell=True)
     elif script_to_run.endswith('.jar'):  # with GUI
-        run_jar_script(script_to_run, inputFilename, input_main_dir_path, output_dir_path, openOutputFiles,
+        run_jar_script(script_to_run, inputFilename, inputDir, outputDir, openOutputFiles,
                        createCharts, chartPackage)
     else:  # with NO GUI; does not end with py
         script = script_to_run.split(".", 1)
@@ -645,11 +644,11 @@ def runScript_fromMenu_option(script_to_run, IO_values, inputFilename, input_mai
         func = getattr(pythonFile, script[1])
         # # correct values are checked in NLP_GUI
         if IO_values == 1: # no inputDir
-            filesToOpen = func(GUI_util.window, inputFilename, output_dir_path, openOutputFiles, createCharts, chartPackage, processType)
+            filesToOpen = func(GUI_util.window, inputFilename, outputDir, openOutputFiles, createCharts, chartPackage, processType)
         elif IO_values == 2: # no inputFilename
-            filesToOpen = func(GUI_util.window, input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage, processType)
+            filesToOpen = func(GUI_util.window, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, processType)
         else: # both inputFilename and inputDir
-            filesToOpen = func(GUI_util.window, inputFilename, input_main_dir_path, output_dir_path,
+            filesToOpen = func(GUI_util.window, inputFilename, inputDir, outputDir,
                  openOutputFiles,createCharts,chartPackage, processType)
 
         return filesToOpen

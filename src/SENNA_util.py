@@ -53,7 +53,7 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
         return filesToOpen
 
     # record the time consumption before annotating text in each file
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                        'Started running SENNA to extract SVOs at',
                                                  True, '', True)
 
@@ -101,7 +101,7 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
     SENNA_output_file_name = convert_to_svo(senna_df, SENNA_output_file_name)
     if SENNA_output_file_name!='' and SENNA_output_file_name!=None:
         filesToOpen.append(SENNA_output_file_name)
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running SENNA to extract SVOs at', True)
     return filesToOpen
 
@@ -392,10 +392,10 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
                 SVO['O(NP)'] = ' '.join(SVO['O(NP)'])
                 # print(SVO)
 
-                formatted_input_file_name = IO_csv_util.dressFilenameForCSVHyperlink(df.iloc[sentence_index, 1])
+                formatted_inputFilename_name = IO_csv_util.dressFilenameForCSVHyperlink(df.iloc[sentence_index, 1])
                 new_row = pd.DataFrame(
                     [[SVO['Subject (S)'], SVO['Verb (V)'], SVO['Object (O)'], SVO['S(NP)'],
-                      SVO['O(NP)'], SVO['Negation'], SVO['Location'], SVO['Person'], SVO['Time'], sent_id, sentence, document_id, formatted_input_file_name]],
+                      SVO['O(NP)'], SVO['Negation'], SVO['Location'], SVO['Person'], SVO['Time'], sent_id, sentence, document_id, formatted_inputFilename_name]],
                     columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'S(NP)', 'O(NP)', 'Negation', 'Location',
                              'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
                 new_df = new_df.append(new_row, ignore_index=True)

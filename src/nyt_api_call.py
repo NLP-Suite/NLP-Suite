@@ -23,7 +23,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 
 json_output_dir = "/Users/jack/Desktop/chong_analysis/times_json"
 review_output_dir = "/Users/jack/Desktop/chong_analysis/times_reviews"
-api_key = "oGlL9LOFvAQg9fhGsmrd2AKqaAqzJ0uC"
+api_key = ""
 
 # uncomment one or both of these to run things
 download=False
@@ -88,7 +88,7 @@ def download_url(review_url):
     except:
         print('error downloading at: ', review_url)
         pass
-    
+
 
 if download==True:
     for i in range(0, int(33361/20)+1): # this number came from the number of books found #(https://developer.nytimes.com/docs/books-product/1/routes/lists/best-sellers/history.json/get)
@@ -102,7 +102,7 @@ if download==True:
         with open(filename, 'wb') as f:
             f.write(datatowrite)
         f.close()
-        
+
 if extract_reviews == True:
     for f in os.listdir(json_output_dir):
         with open(os.path.join(json_output_dir, f)) as json_file:
@@ -147,5 +147,5 @@ if extract_reviews == True:
                                 download_url(book_rev_link)
                             time.sleep(6)
         json_file.close()
-         
+
 #download_isbn10('9781524763138')

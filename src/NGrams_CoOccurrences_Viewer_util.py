@@ -7,7 +7,7 @@ import pandas as pd
 import csv
 import numpy as np
 import pprint
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 from nltk.tokenize import sent_tokenize, word_tokenize
 
 import IO_files_util
@@ -337,7 +337,7 @@ def run(inputDir="relative_path_here",
     # pprint.pprint(coOcc_results_binary)
     NgramsFileName, coOccFileName = save(NgramsFileName, coOccFileName, ngram_results, coOcc_results_binary, aggregateBy, temporal_aggregation)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Word/Characters N-Grams at', True, '', True, startTime, False)
 
     return NgramsFileName, coOccFileName

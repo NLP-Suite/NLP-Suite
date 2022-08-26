@@ -266,6 +266,7 @@ def export_csv_to_csv_txt(outputDir,operation_results_text_list,export_type='.cs
 
         if sign == "''" and value == "''":
             df_list.append(df[[header]])
+            # queryStr = header + '==' + '\'' + '*' + '\''
         else:
             if sign == '':
                 mb.showwarning(title='Missing sign condition',

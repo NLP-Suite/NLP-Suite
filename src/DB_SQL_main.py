@@ -72,7 +72,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,SQL_quer
             mb.showwarning(title='Alert',
                            message='Your DB has been created and is selected for use. You may now input and run queries.')
     elif select_SQLite_DB_var.get() != "":
-        # IO_util.timed_alert(GUI_util.window,3000,'Analysis start','Started running Nominalization at',True)
+        # IO_util.timed_alert(GUI_util.window,2000,'Analysis start','Started running Nominalization at',True)
         print("SQL_query_var", SQL_query_var)
         dbVar = select_SQLite_DB_var.get()
         conn = sqlite3.connect(dbVar)
@@ -192,6 +192,7 @@ select_SQLite_DB_button=tk.Button(window, width=23, text='Select SQLite database
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,select_SQLite_DB_button,True)
 
 openInputFile_button = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, select_SQLite_DB_var.get()))
+# place widget with hover-over info
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,openInputFile_button,True, False, True,False, 90, GUI_IO_util.get_labels_x_coordinate()+190, "Open INPUT SQLite database")
 
@@ -394,7 +395,7 @@ y_multiplier_integer = y_multiplier_integer = help_buttons(window,GUI_IO_util.ge
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script can construct an SQLite relational database from a set of input csv files characterized by the presence of overlapping relational fields.\n\nThe script allows to perform SQL queries on any sqlite databases thus constructed."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

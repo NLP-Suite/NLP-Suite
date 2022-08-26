@@ -3,11 +3,18 @@
 
 #lines preceded by # are comments
 
+# ~= (e.g., ~= 0.6.10)
+# it will select the latest version of the package, greater than or equal to 0.6.10, but still in # the 0.6.* version, so it won't download 0.7.0 for example. It ensures you will get security
+# fixes but keep backward-compatibility, if the package maintainer respects the semantic
+# versioning (which states that breaking changes should occur only in major versions).
+
 #used in NLP_setup_update_util for the automatic update to the latest release available on GitHub using git
 pygit2
 
 #used to parse arguments that are passed to a script via command line
 argparse~=1.4.0
+
+# sqlite comes bundled with Python
 
 #used by wordclouds.py (also uses stanza; see below)
 wordcloud~=1.8.1
@@ -59,7 +66,7 @@ nltk~=3.5
 # stanza used by wordcloud script (the new StanfordCoreNLP Python approach) and YAGO
 # stanza
 # stanfordnlp is used by SVO 
-stanfordnlp
+# stanfordnlp now called stanza
 # stanza requires torch and torchvision; they are installed by STEP2 of setup
 # pip install torch===1.7.1 torchvision===0.8.2 -f https://download.pytorch.org/whl/torch_stable.html
 # torch===1.4.0 torchvision===0.5.0 -f https://download.pytorch.org/whl/torch_stable.html
@@ -83,6 +90,7 @@ gensim
 pyLDAvis~=2.1.2
 IPython # THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA; but... not!
 spacy
+spacytextblob
 # pprint #THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA
 # matplotlib #THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA
 

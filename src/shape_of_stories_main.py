@@ -26,7 +26,7 @@ import IO_files_util
 import IO_csv_util
 import reminders_util
 
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
 
 import sentiment_analysis_ANEW_util as ANEW
 import sentiment_analysis_VADER_util as VADER
@@ -86,7 +86,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     filesToOpen = []
 
     # utf.check_utf8_compliance(GUI_util.window, "", inputDir, outputDir, openOutputFiles)
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                         'Started running Shape of Stories at', True)
 
     # check corpus statistics
@@ -109,7 +109,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 computeSAScores=mb.askyesno("Sentiment Analysis","You have selected to run sentiment analysis on your corpus. But there already exists a csv file of sentiment scores for this corpus saved in the default output directory:\n\n"+outputFilename+"\n\nAre you sure you want to recompute the scores?")
                 if not computeSAScores:
                     return
-            tempOutputfile=Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles, createCharts, chartPackage,'sentiment',False, memory_var)
+            tempOutputfile=Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles, createCharts, chartPackage,'sentiment',False, memory_var)
             if tempOutputfile==None:
                 return
             sentiment_scores_input=tempOutputfile[0]
@@ -209,13 +209,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     # best topic estimate
     if best_topic_estimation:
-        startTime1=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+        startTime1=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                            'Started running estimate_best_k at', True,'You can follow the progress bar in command line.')
         filesToOpen = cl.estimate_best_k(sentiment_vectors, outputDir, filesToOpen)
-        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                             'Finished running estimate_best_k at', True, '', True, startTime1)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                         'Finished running Shape of Stories at', True, '', True, startTime)
 
     if openOutputFiles == True:
@@ -608,7 +608,7 @@ readMe_message="The Python 3 scripts provide ways of analyzing the emotional arc
 "   WINDOW SIZE: the number of sentences that will be averaged to obtain one point of the story arc.\n   Lower bound: At least one sentence must be take average to get the values in sentiment score vector.\n   Upper bound: minimum document length-1. Window size should be less than the minimum document length, i.e, number of sentences in the shortest document.\n" \
 "\n   SENTIMENT VECTOR SIZE: the number of values that each document will be represented with.\n   Lower bound: Each document should be represented by at least one value.\n   Upper bound: minimum document length. Each document should be represented by at most [minimum document length] values.\n" \
 "\n   CLUSTER (MODE) SIZE: the number of clusters that users want the documents to be grouped into.\n   The recommended cluster size is calculated using Principal Component Analysis (PCA, via the Python sklearn library). A cluster size is considered good if documents in the same cluster are similar to one another, and dissimilar from the documents in other clusters.\n   Lower bound: All documents should be clustered into at least one cluster.\n   Upper bound: sentiment vector size. The number of clusters should not exceed the sentiment vector size."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 check_IO_requirements(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get())

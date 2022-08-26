@@ -97,8 +97,8 @@ def get_hover_column_numbers(withHeader_var, headers, hover_info_column_list):
 #   more series: ..........
 #chartTitle is the name of the sheet
 # the title_series is displayed to the right of the chart as the title of the series
-#num_label number of bars, for instance, that will be displayed in a bar chart 
-#second_y_var is a boolean that tells the function whether a second y axis is needed 
+#num_label number of bars, for instance, that will be displayed in a bar chart
+#second_y_var is a boolean that tells the function whether a second y axis is needed
 #   because it has a different scale and plotted values would otherwise be "masked"
 #   ONLY 2 y-axes in a single chart are allowed by openpyxl
 #chart_type_list is in form ['line', 'line','bar']... one for each of n series plotted
@@ -176,7 +176,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         return
     if 'bar' in chart_type_list or 'line' in chart_type_list:
         if nRecords > 70:
-            IO_user_interface_util.timed_alert(window, 2000, 'Warning',
+            IO_user_interface_util.timed_alert(window, 3000, 'Warning',
                                                'The input file\n\n' + inputFilename + '\n\ncontains ' + str(nRecords) + ' records, way too many to be displayed clearly in an Excel line chart.\n\nYOU SHOULD USE PLOTLY WHICH GIVES YOU THE OPTION TO DYNAMICALLY FILTER THE DATA ZOOMING IN ON SPECIFIC DATA SEGMENTS.',
                                                False, '', True, '', True)
 
@@ -185,14 +185,14 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     else:
         outputExtension = '.xlsx'
 
-    if "_" + scriptType + "_" in inputFilename: # do not repeat the same name
+    if "NLP" in scriptType and "_" + scriptType + "_" in inputFilename: # do not repeat the same name
         scriptType=''
     chart_outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, outputExtension, scriptType, chart_type_list[0],'chart')
 
     n = len(data_to_be_plotted)
 
     #while the chart_type_list is complete in the Excel_charts GUI,
-    #   when calling this function from other scripts only one chartType is typically passed 
+    #   when calling this function from other scripts only one chartType is typically passed
     if len(chart_type_list) != n:
         for i in range(n-1):
             chart_type_list.append(chart_type_list[0])
@@ -290,14 +290,14 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         for i in range(len(series_label_list)):
             if len(series_label_list[i]) > 0:
                 data_to_be_plotted[i][0][1]=series_label_list[i]
-           
-       
+
+
         for i in range(max(lengths)): # find the largest length of all series
             row = []
             index = 0
             for stats_list in data_to_be_plotted: # Iterate through all the lists
                 if i < len(stats_list): # if i is smaller than the length of the current series
-                    tail, tail_noExtension = IO_files_util.getFilename(str(stats_list[i][0]))
+                    tail, tail_noExtension, filename_no_hyperlink = IO_files_util.getFilename(str(stats_list[i][0]))
                     stats_list[i][0] = tail
                     if index > 0:
                         row.append(stats_list[i][1]) # then we append the data
@@ -354,7 +354,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 # when X-axis values contain a document dressed for hyperlink and with full path
                 #   undressed the hyperlink and only display the tail of the document
                 if i < len(stats_list): # if i is smaller than the length of the current series
-                    tail, tail_noExtension = IO_files_util.getFilename(str(stats_list[i][0]))
+                    tail, tail_noExtension, filename_no_hyperlink = IO_files_util.getFilename(str(stats_list[i][0]))
                     stats_list[i][0] = tail
                     # if index > 0:
                     #     row.append(stats_list[i][1]) # then we append the data
@@ -388,14 +388,14 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 chartName = RadarChart()
             elif chart_type_list[0]=="scatter":
                 chartName = ScatterChart()
-        
+
             if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
 
                 if len(column_xAxis_label)>0:
                     chartName.x_axis.title = column_xAxis_label+insertLines
                 # else:
                 #     chartName.x_axis.title = " X_AXIS"
-                
+
                 if len(column_yAxis_label)>0:
                     chartName.y_axis.title = str(column_yAxis_label) # displayed on the y-axis
                 # else:
@@ -446,7 +446,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             if len(chart_type_list)>2:
                 mb.showwarning(title='Number of series error', message="When creating a chart with two y axis, you can ONLY choose two series of data. Here more than two series of data were specified. The chart could not be created.\n\nPlease, select a new pair of series and try again!")
                 return True
-                
+
             if chart_type_list[0]=="bar":
                 chartName1 = BarChart()
             elif chart_type_list[0]=="bubble":
@@ -468,19 +468,19 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 chartName2 = ScatterChart()
             else:
                 mb.showwarning(title='Chart type 2 error', message="Wrong chart type selected. Only bar, bubble, line and scatter chart are allowed to have y axis")
-            
+
             # TODO must center the X-axis label
             if len(column_xAxis_label)>0:
                 chartName1.x_axis.title = str(column_xAxis_label+insertLines)
             # else:
             #     chartName1.x_axis.title = " X_AXIS"
-            
+
             if len(column_yAxis_label)>0:
                 chartName1.y_axis.title = str(column_yAxis_label)
             # else:
             #     chartName1.y_axis.title = " Y_AXIS"
 
-            #second y-axis label 
+            #second y-axis label
             if len(second_yAxis_label)>0:
                 chartName2.y_axis.title = str(second_yAxis_label)
             # else:
@@ -519,7 +519,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                     title_series = [t[1] for t in data_to_be_plotted[1]]
                 else:
                     title_series = [t[0] for t in data_to_be_plotted[1]]
-                chartName2.series.append(Series(data, title=title_series[0]))    
+                chartName2.series.append(Series(data, title=title_series[0]))
                 chartName2.y_axis.title = title_series[0]
             chartName2.set_categories(hover_over_values)
             chartName2.y_axis.axId = 200
@@ -566,30 +566,3 @@ def list_to_df(tag_list):
     header = tag_list[0]
     df = pd.DataFrame(tag_list[1:], columns=header)
     return df
-
-
-def header_check(inputFile):
-    sentenceID_pos=''
-    docID_pos=''
-    docName_pos=''
-
-    if isinstance(inputFile, pd.DataFrame):
-        header = list(inputFile.columns)
-    else:
-        header = IO_csv_util.get_csvfile_headers(inputFile)
-    if 'Sentence ID' in header:
-        sentenceID_pos = header.index('Sentence ID')
-    else:
-        pass
-
-    if 'Document ID' in header:
-        docID_pos = header.index('Document ID')
-    else:
-        pass
-
-    if 'Document' in header:
-        docName_pos = header.index('Document')
-    else:
-        pass
-    return sentenceID_pos, docID_pos, docName_pos, header
-

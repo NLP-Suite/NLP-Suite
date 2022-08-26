@@ -33,17 +33,17 @@ import IO_user_interface_util
 #   TIS-620 (Thai)
 
 # Predict a file's encoding using chardet
-def predict_encoding(file_path, input_dir_path, n_lines=20):
-    if file_path=='' and input_dir_path!='':
+def predict_encoding(window, inputFilename, inputDir, outputDir, n_lines=20):
+    if inputFilename=='' and inputDir!='':
         mb.showwarning(title='Input inputFilename',
                        message="The predict encoding script only works with single files in input, rather than a directory. The input inputFilename is blank.\n\nPlease, select a file and try again.")
         return
     # Open the file as binary data
-    with open(file_path, 'rb') as f:
+    with open(inputFilename, 'rb') as f:
         # Join binary lines for specified number of lines
         rawdata = b''.join([f.readline() for _ in range(n_lines)])
     encoding=chardet.detect(rawdata)['encoding']
-    mb.showwarning(title='Predicted encoding', message=encoding + '\n\nis the predicted encoding, using first ' + str(n_lines) + ' lines, of the file\n\n' + file_path )
+    mb.showwarning(title='Predicted encoding', message=encoding + '\n\nis the predicted encoding, using first ' + str(n_lines) + ' lines, of the file\n\n' + inputFilename )
     return encoding
 
 
@@ -63,7 +63,7 @@ _surrogates = re.compile(r"[\uDC80-\uDCFF]")
 #[\uDC80-\uDCFF]") #the map of unicode private code characters
 #0 to 127    "\u0000" to "\u007F"   Basic Latin or U.S. ASCII  "A", "\n", "7", "&"
 #128 to 247 "\u0080" to "\u00FF"    Latin 1 supplement Most Latinic alphabets* "ę", "±", "ƌ", "ñ"
-#           "\u0080" to "\u07FF"    Latin Extended A, Latin Extended B
+#           "\u0080" to "\u07FF"    Latin appended A, Latin appended B
 #                                   + Greek, coptyc, cyrrilic, armenian, hebrew, arabic, siriac
 # Chinese characters are utf-8
 
@@ -82,7 +82,7 @@ def detect_decoding_errors_line(l, _s=_surrogates.finditer):
 #https://stackoverflow.com/questions/19771751/how-to-use-unidecode-in-python-3-3
 #convert a non utf-8 to the closest ASCII value 
 #   https://pypi.python.org/pypi/Unidecode
-def check_utf8_compliance(window,inputFilename,inputDir,outputDir,openOutputFiles,silent=False):
+def check_utf8_compliance(window,inputFilename,inputDir,outputDir,openOutputFiles=False,silent=False):
     if len(inputDir)>0:
         silent=True
         inputDocs = [os.path.join(inputDir,f) for f in os.listdir(inputDir) if f[:2]!='~$' and f[-4:]=='.txt']
@@ -96,7 +96,7 @@ def check_utf8_compliance(window,inputFilename,inputDir,outputDir,openOutputFile
     if len(inputDocs) == 0:
         mb.showwarning(title='Input error', message='There are no files of type txt in the selected input directory to be checked for utf-8 compliance.\n\nPlease, select a different directory (or file) and try again.')
         return
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                        'Started running utf8 compliance test at',
                                         True, '', True, '', True)
 
@@ -142,7 +142,7 @@ def check_utf8_compliance(window,inputFilename,inputDir,outputDir,openOutputFile
             else:
                 tk.messagebox.showinfo("Warning", "All " + str(numberOfDocs) + " files in the directory\n\n" + inputDir + "\n\nare utf-8 compliant.",False,'',True,'',True)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running utf-8 compliance test at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running utf-8 compliance test at', True, '', True, startTime, True)
 
 
 def check_empty_file(inputFilename, inputDir):

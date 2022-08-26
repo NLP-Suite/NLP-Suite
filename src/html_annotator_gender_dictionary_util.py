@@ -8,13 +8,13 @@ if not IO_libraries_util.install_all_packages(GUI_util.window,"Stanford_CoreNLP_
 import os
 import pandas as pd
 from tkinter import messagebox as mb
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import csv
 
 import GUI_IO_util
 import IO_files_util
 import IO_csv_util
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
 
 # put the script of generate two big csvs into this file
 
@@ -59,7 +59,7 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
     date_separator_var = ''
     date_position_var = ''
 
-    tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
+    tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                         openOutputFiles, createCharts, chartPackage,
                                                         'NER',
                                                         NERs=['PERSON'],

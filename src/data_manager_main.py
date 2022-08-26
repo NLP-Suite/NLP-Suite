@@ -275,6 +275,7 @@ if __name__ == '__main__':
     openInputFile_button = tk.Button(window, width=3, text='',
                                      command=lambda: IO_files_util.openFile(window,
                                                                             selectedCsvFile_var.get()))
+    # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                    openInputFile_button,True, False, True, False, 90, GUI_IO_util.open_file_directory_coordinate, "Open displayed file")
 
@@ -1141,7 +1142,7 @@ if __name__ == '__main__':
 
     # change the value of the readMe_message
     readMe_message = "The Python 3 scripts provide several ways of handling data from csv files.\n\nIn INPUT, the script takes one or more csv files depending upon the selected operation.\n\nIn OUTPUT, the script creates a new csv file.\n\nThe following operation are possible.\n\n   1. MERGE different csv files using one or more overlapping common field(s) as a way to JOIN the files together;\n   2. CONCATENATE into a single field the values of different fields from one csv file;\n   3. APPEND the content of different fields from one csv file after the content of a selected target field;\n   4. EXTRACT fields from one csv file, perhaps by specific field values (the equivalent of an SQL WHERE clause);\n   4. PURGE dulicate rows from one csv file."
-    readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+    readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
     GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,'data_manager_main.py',True)
 
     GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))

@@ -21,7 +21,7 @@ import IO_csv_util
 import IO_user_interface_util
 import charts_util
 
-from stanza_functions import stanzaPipeLine, lemmatize_stanza
+from Stanza_functions import stanzaPipeLine, lemmatize_stanza
 
 #This fuction reads the social actor list from the same directory
 #and save that into a set called "my_soc_actors"
@@ -172,7 +172,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
     if CoreNLPdir==None:
         return filesToOpen
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                        'Started running the File Classifier by NER values at', True,
                                        '\n\nThe script will first build a dictionary of NER values for the documents in each subfolder, then process each unclassified document.  Please, be patient.',True)
 
@@ -220,7 +220,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
     f.close()
 
     if createCharts == True:
-        columns_to_be_plotted = [[3, 3]]
+        columns_to_be_plotted=[[3, 3]]
         hover_label=''
         inputFilename = outputFilename
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,

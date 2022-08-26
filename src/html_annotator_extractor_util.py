@@ -78,7 +78,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCha
         return
     i=0
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running html annotator extractor at', True, "",True,'',True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running html annotator extractor at', True, "",True,'',True)
 
     csvFile=os.path.join(outputDir, outputFilename)
     writeCSV = IO_files_util.openCSVFile(csvFile, 'w')
@@ -123,7 +123,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCha
     #     if chart_outputFilename_1 != "":
     #         filesToOpen.append(chart_outputFilename_1)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running html annotator extractor at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running html annotator extractor at', True, '', True, startTime)
     
     if openOutputFiles==True :
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

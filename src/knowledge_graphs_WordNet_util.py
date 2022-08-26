@@ -74,7 +74,7 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
                        # message="Some keyword(s) in your search list do not exist in Wordnet for " + noun_verb + ".\n\nPlease, edit your keyword list and try again.\n\nPlease, check the terminal/command line prompt to see the details.")
     filesToOpen.append(os.path.join(outputDir, "NLP_WordNet_DOWN_" + fileName + ".csv"))
     filesToOpen.append(os.path.join(outputDir, "NLP_WordNet_DOWN_" + fileName + "-verbose.csv"))
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet (Zoom IN/DOWN) at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running WordNet (Zoom IN/DOWN) at', True, '', True, startTime)
     return filesToOpen
 
 # the header does not matter, it can be NUN or VERB or anything else
@@ -157,9 +157,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     filesToOpen.append(outputFilenameCSV2_new)
 
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilenameCSV1_new, outputDir,
-                                                       columns_to_be_plotted_bar=[[1, 1]],
-                                                       columns_to_be_plotted_bySent=[[]],
-                                                       columns_to_be_plotted_byDoc=[[]],  # there is no document field
+                                                       columns_to_be_plotted=['WordNet Category'],
                                                        chartTitle='Frequency of WordNet Aggregate Categories for ' + noun_verb,
                                                        count_var=1,  # to be used for byDoc, 0 for numeric field
                                                        hover_label=[],
@@ -170,7 +168,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
                                                        chart_title_label='')
     if chart_outputFilename != None:
         if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
+            filesToOpen.append(chart_outputFilename)
 
     if noun_verb == 'VERB':
         operation_results_text_list=[]
@@ -188,9 +186,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilenameCSV3_new,
                                                            outputDir,
-                                                           columns_to_be_plotted_bar=[[1, 1]],
-                                                           columns_to_be_plotted_bySent=[[]],
-                                                           columns_to_be_plotted_byDoc=[[]], # there is no document field
+                                                           columns_to_be_plotted=['WordNet Category'],
                                                            chartTitle='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)',
                                                            count_var=1,  # to be used for byDoc, 0 for numeric field
                                                            hover_label=[],
@@ -201,12 +197,12 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+                filesToOpen.append(chart_outputFilename)
 
         if outputFilenameCSV3_new != "":
             os.remove(outputFilenameCSV3_new)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running WordNet (Zoom OUT/UP) at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running WordNet (Zoom OUT/UP) at', True, '', True, startTime, True)
 
     return filesToOpen
 
@@ -216,7 +212,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
 def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, noun_verb, openOutputFiles,
                          createCharts, chartPackage):
     filesToOpen = []
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running WordNet charts by sentence index at',
                                                    True, '', True, '', False)
 
@@ -271,8 +267,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
                     Row_list.insert(index + 1, ['', '', '', '', i, Row_list[index][5], Row_list[index][6]])
     df = pd.DataFrame(Row_list,
                       index=['Form', 'Lemma', 'POStag', 'WordNet Category', 'Sentence ID', 'Document ID', 'Document'])
-    df = statistics_csv_util.add_missing_IDs(df)
-    df.to_csv(outputFilename, index=False)
+    outputFilename = charts_util.add_missing_IDs(df,outputFilename)
 
     if createCharts:
         outputFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
@@ -287,8 +282,8 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
                                                                        ['Sentence ID', 'Document ID', 'Document'],
                                                                        )
         if len(outputFiles) > 0:
-            filesToOpen.extend(outputFiles)
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+            filesToOpen.append(outputFiles)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running WordNet charts by sentence index at', True, '', True,
                                        startTime)
 

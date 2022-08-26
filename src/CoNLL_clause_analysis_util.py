@@ -32,7 +32,7 @@ documentID_position = 11 # NEW CoNLL_U
 
 # Following are used if running all analyses to prevent redundancy
 # filesToOpen = []  # Store all files that are to be opened once finished
-input_file_name = ''
+inputFilename_name = ''
 output_dir = ''
 
 # def compute_stats(CoNLL_table):
@@ -121,7 +121,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CLAUSE ANALYSES at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running CLAUSE ANALYSES at',
                                                  True, '', True, '', True)
 
     #output file names
@@ -202,12 +202,12 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         #                                                                 ['Sentence ID','Document ID'],
         #                                                                 'CA','line')
         if len(chart_outputFilename)>0:
-            filesToOpen.extend(chart_outputFilename)
+            filesToOpen.append(chart_outputFilename)
 
         # output_df= charts_Excel_util.add_missing_IDs(clausal_analysis_file_name)
         # # overwrite original file having added any missing document ID and sentence ID
         # output_df.to_csv(clausal_analysis_file_name,index=False)
-        # columns_to_be_plotted = [[1, 8]]
+        # columns_to_be_plotted=[[1, 8]]
         # hover_label = ['CLAUSAL TAG-DESCRIPTION']
         # inputFilename = clausal_analysis_file_name
         # chart_outputFilename = charts_util.run_all(columns_to_be_plotted,
@@ -221,6 +221,6 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         # if chartPackage=='Excel' and chart_outputFilename!='':
         #     filesToOpen.append(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime, True)
     return filesToOpen
 

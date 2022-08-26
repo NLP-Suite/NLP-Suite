@@ -21,7 +21,7 @@ import re
 import os
 import csv
 import ntpath
-from stanza_functions import stanzaPipeLine, sent_tokenize_stanza
+from Stanza_functions import stanzaPipeLine, sent_tokenize_stanza
 
 import GUI_util
 
@@ -69,14 +69,14 @@ def gatherAnnotations(inputFile, tags, mustInclude='<p>', cleanMultiples=True):
                 print("starts",tag.start())
             for i in range(0, min(len(ends),len(starts))):
                 #words.append(line[starts[i]:ends[i]])
-                words.extend([Sentence_ID,sentence_cleaned, sentence[starts[i]:ends[i]]])
+                words.append([Sentence_ID,sentence_cleaned, sentence[starts[i]:ends[i]]])
         starts, ends = [],[]
     words = [w for w in words if w!='']
     if openingTag!='">' and closingTag!='</a':
         result=[]
         for word in words:
             #result.append(word.split('>',1)[1])
-            result.extend([Sentence_ID,sentence_cleaned,word.split('>',1)[1]])
+            result.append([Sentence_ID,sentence_cleaned,word.split('>',1)[1]])
             print('result',result)
     else:
         result=words,Sentence_ID,sentence_cleaned
@@ -86,7 +86,7 @@ def gatherAnnotations(inputFile, tags, mustInclude='<p>', cleanMultiples=True):
 
 def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCharts, chartPackage):
     filesToOpen=[]
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running html annotator extractor at', True, "You can follow html annotation extractor in command line.")
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running html annotator extractor at', True, "You can follow html annotation extractor in command line.")
 
     outputFilename=IO_files_util.generate_output_file_name('DBpedia annotations', outputDir, '.csv', 'html extractor', '', '')
     filesToOpen.append(outputFilename)
@@ -154,7 +154,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCha
     #     if chart_outputFilename_1 != "":
     #         filesToOpen.append(chart_outputFilename_1)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running html annotator extractor at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running html annotator extractor at', True, '', True, startTime, True)
     
     if openOutputFiles==True :
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

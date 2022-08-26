@@ -114,12 +114,10 @@ def check_CoreNLP_language(config_filename,annotator,language):
             IO_libraries_util.open_url(website_name, url, ask_to_open=True, message_title=message_title, message=message)
     return not(not_available) # failed
 
-import GUI_IO_util
 # from operator import itemgetter, attrgetter
 # central CoreNLP_annotator function that pulls together our approach to processing many files,
 # splitting them if necessary, and, depending upon annotator (NER date, quote, gender, sentiment)
 # perhaps call different subfunctions, and pulling together the output
-
 
 # CHOOSE YOUR OPTION FOR variable: annotator_params in option below
 # tokenize: tokenize
@@ -167,7 +165,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # check available memory
     IO_libraries_util.check_avaialable_memory('Stanford CoreNLP')
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True)
 
     # decide on directory or single file
     if inputDir != '':
@@ -207,8 +205,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
         language_encoding = 'utf-8-sig'
 
     produce_split_files=False
-    
-    
+
+
 
     params_option = {
         'Sentence': {'annotators':['ssplit']},
@@ -255,9 +253,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'Lemma': ["ID", "Form", "Lemma", "Record ID", "Sentence ID", "Document ID", "Document"],
         'POS':[['Verbs'],['Nouns']],
         'All POS':["ID", "Form", "POStag", "Record ID", "Sentence ID", "Document ID", "Document"],
-        'NER': ['Word', 'NER Value', 'tokenBegin', 'tokenEnd', 'Sentence ID', 'Sentence', 'Document ID','Document'],
+        'NER': ['Word', 'NER Tag', 'tokenBegin', 'tokenEnd', 'Sentence ID', 'Sentence', 'Document ID','Document'],
         # TODO NER with date for dynamic GIS; modified below
-        # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
+        # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
         'sentiment': ['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
         'quote': ['Speakers', 'Number of Quotes', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
@@ -275,7 +273,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         # neural network parser does not contain clause tags
         'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
     }
-    
+
     lang_models = language_models(CoreNLPdir, language)
     if lang_models == None:
         return ''
@@ -379,7 +377,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer','-props', language.lower(),
                  '-parse.maxlen' + str(sentence_length), '-timeout', '999999'])
-        
+
     else:
         # CoreNLP_nlp = subprocess.Popen(
         #     ['java', '-mx' + str(memory_var) + "g", '-d64', '-cp',  os.path.join(CoreNLPdir, '*'),
@@ -388,7 +386,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
-        else: 
+        else:
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-props', language.lower(),
@@ -415,7 +413,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
             reminders_util.title_options_CoreNLP_quote_annotator,
             reminders_util.message_CoreNLP_quote_annotator,
             True)
-        
+
     # record the number of pronouns
     all_pronouns = 0
     # annotating each input file
@@ -637,10 +635,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                                              'CoreNLP_'+annotator_chosen)
             filesToOpen.append(outputFilename)
             if output_format != 'text' and not isinstance(output_format[0],list): # output is csv file
-                # when NER values (notably, locations) are extracted with the date option
+                # when NER tags (notably, locations) are extracted with the date option
                 #   for dynamic GIS maps (as called from GIS_main with date options)
                 if extract_date_from_text_var or extract_date_from_filename_var:
-                    # output_format=['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document','Date']
+                    # output_format=['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document','Date']
                     output_format.append("Date")
                 # if NER_sentence_var == 1:
                 #     df = charts_Excel_util.add_missing_IDs(df)
@@ -652,7 +650,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # print("Length of Files to Open after generating files: ", len(filesToOpen))
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, '', True, startTime)
 
 # generate visualization output ----------------------------------------------------------------
 
@@ -667,9 +665,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 if "Lemma" in str(annotator_params) and 'Lemma' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[2,2]],
-                                                                       columns_to_be_plotted_byDoc=[[2], [5, 6]],
-                                                                       columns_to_be_plotted_bySent=[[4,2]],
+                                                                       columns_to_be_plotted=['Lemma'],
                                                                        chartTitle='Frequency Distribution of Lemma Values',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -687,9 +683,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 elif 'All POS' in str(annotator_params) and 'All POS' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[2,2]],
-                                                                       columns_to_be_plotted_byDoc=[[2], [5, 6]],
-                                                                       columns_to_be_plotted_bySent=[[4,2]],
+                                                                       columns_to_be_plotted=['POStag'],
                                                                        chartTitle='Frequency Distribution of POS Tag Values',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -707,14 +701,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 elif 'date' in str(annotator_params) and 'date' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[1, 1]],
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[6, 7]],
+                                                                       columns_to_be_plotted=['Normalized date'],
                                                                        chartTitle='Frequency Distribution of Normalized Dates',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
                                                                        outputFileNameType='', #'NER_date_bar',
-                                                                       column_xAxis_label='Normalized date type',
+                                                                       column_xAxis_label='Normalized date',
                                                                        groupByList=['Document ID','Document'],
                                                                        plotList=['Frequency'],
                                                                        chart_title_label='Normalized Dates')
@@ -724,11 +716,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[3, 3]],
-                                                                       # columns_to_be_plotted_bySent=[[3, 1]],
-                                                                       # the fields must be numeric?
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[6, 7]],
+                                                                       columns_to_be_plotted=['Date type'],
                                                                        chartTitle='Frequency Distribution of Date Types',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -746,10 +734,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 elif 'gender' in str(annotator_params) and 'gender' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[1, 1]],
-                                                                       # columns_to_be_plotted_bySent=[[3,1]],
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[4, 5]],
+                                                                       columns_to_be_plotted=['Gender'],
                                                                        chartTitle='Frequency Distribution of Gender Values',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -772,10 +757,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # Form & Lemma values
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[1, 1],[2, 2]],
-                                                                       # columns_to_be_plotted_bySent=[[3,1]],
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[]],
+                                                                       columns_to_be_plotted=['Form','Lemma'],
                                                                        chartTitle='Frequency Distribution of FORM & LEMMA Values',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -791,10 +773,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # POStag values
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[3, 3]],
-                                                                       # columns_to_be_plotted_bySent=[[3,1]],
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[]],
+                                                                       columns_to_be_plotted=['POStag'],
                                                                        chartTitle='Frequency Distribution of POS (Part of Speech) Tags',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -807,18 +786,15 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         if len(chart_outputFilename) > 0:
                             filesToOpen.extend(chart_outputFilename)
 
-                    # NER values
+                    # NER Tags
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[4, 4]],
-                                                                       # columns_to_be_plotted_bySent=[[3,1]],
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[]],
-                                                                       chartTitle='Frequency Distribution of NER (Named Entity Recognition) Values',
+                                                                       columns_to_be_plotted=['NER'],
+                                                                       chartTitle='Frequency Distribution of NER (Named Entity Recognition) Tags',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
                                                                        outputFileNameType='NER',
-                                                                       column_xAxis_label='NER values',
+                                                                       column_xAxis_label='NER tags',
                                                                        groupByList=['Document ID', 'Document'],
                                                                        plotList=['Frequency'],
                                                                        chart_title_label='Statistical Measures for Form & Lemma Values')
@@ -829,10 +805,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # DEPrel values
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[6, 6]],
-                                                                       # columns_to_be_plotted_bySent=[[3,1]],
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[]],
+                                                                       columns_to_be_plotted=['DepRel'],
                                                                        chartTitle='Frequency Distribution of DEP Rel (Dependency Relations) Values',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -850,9 +823,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 elif 'quote' in str(annotator_params) and 'quote' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[1, 1]],
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[4, 5]],
+                                                                       columns_to_be_plotted=['Speakers'],
                                                                        chartTitle='Frequency Distribution of Speakers',
                                                                        count_var=1, hover_label=[],
                                                                        outputFileNameType='', #'quote_bar',
@@ -869,9 +840,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[0] == "Sentiment score":
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                            outputDir,
-                                                                           columns_to_be_plotted_bar=[[1, 1]], # sentiment score
-                                                                           columns_to_be_plotted_bySent=[[2,0]],
-                                                                           columns_to_be_plotted_byDoc=[[4,5]],
+                                                                           columns_to_be_plotted=['Sentiment label'], # sentiment score
                                                                            chartTitle='Frequency Distribution of Sentiment Scores',
                                                                            count_var=1, hover_label=[],
                                                                            outputFileNameType='', #'senti_bar',
@@ -886,15 +855,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
 # NER ________________________________________________________________
 
                 elif 'NER' in str(annotator_params) and 'NER' in outputFilename:
-                    if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "NER Value":
+                    if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "NER Tag":
                         # plot NER tag (e.g, LOCATION)
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                            outputDir,
-                                                                           columns_to_be_plotted_bar=[[1, 1]],
-                                                                           # columns_to_be_plotted_bySent=[[3, 1]],
-                                                                           # the fields must be numeric?
-                                                                           columns_to_be_plotted_bySent=[[]],
-                                                                           columns_to_be_plotted_byDoc=[[6, 7]],
+                                                                           columns_to_be_plotted=['NER Tag'],
                                                                            chartTitle='Frequency Distribution of NER Tags',
                                                                            # count_var = 1 for columns of alphabetic values
                                                                            count_var=1, hover_label=[],
@@ -914,9 +879,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         # plot the words contained in each NER tag (e.g, the word 'Rome' in NER tag LOCATION)
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                            outputDir,
-                                                                           columns_to_be_plotted_bar=[[0, 0]],
-                                                                           columns_to_be_plotted_bySent=[[]],
-                                                                           columns_to_be_plotted_byDoc=[[6, 7]],
+                                                                           columns_to_be_plotted=['Word'],
                                                                            chartTitle='Frequency Distribution of Words by NER Tag' +ner_tags,
                                                                            # count_var = 1 for columns of alphabetic values
                                                                            count_var=1, hover_label=[],
@@ -929,21 +892,17 @@ def CoreNLP_annotate(config_filename,inputFilename,
                             if len(chart_outputFilename) > 0:
                                 filesToOpen.extend(chart_outputFilename)
 
-# SVO ________________________________________________________________
+                # SVO ________________________________________________________________
 
                 elif ('SVO' in str(annotator_params) and 'SVO' in outputFilename) or ('OpenIE' in str(annotator_params) and 'OpenIE' in outputFilename):
                     # plot Subjects
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[0, 0]],
-                                                                       # columns_to_be_plotted_bySent=[[3, 1]],
-                                                                       # the fields must be numeric?
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[]],
+                                                                       columns_to_be_plotted=['Subject (S)'],
                                                                        chartTitle='Frequency Distribution of Subjects (unfiltered)',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
-                                                                       outputFileNameType='', #'S_bar',
+                                                                       outputFileNameType='S', #'S_bar',
                                                                        column_xAxis_label='Subjects (unfiltered)',
                                                                        groupByList=[],
                                                                        plotList=[],
@@ -955,15 +914,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # plot Verbs
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[1, 1]],
-                                                                       # columns_to_be_plotted_bySent=[[3, 1]],
-                                                                       # the fields must be numeric?
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[]],
+                                                                       columns_to_be_plotted=['Verb (V)'],
                                                                        chartTitle='Frequency Distribution of Verbs (unfiltered)',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
-                                                                       outputFileNameType='', #'V_bar',
+                                                                       outputFileNameType='V', #'V_bar',
                                                                        column_xAxis_label='Verbs (unfiltered)',
                                                                        groupByList=[],
                                                                        plotList=[],
@@ -975,15 +930,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # plot Objects
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted_bar=[[2, 2]],
-                                                                       # columns_to_be_plotted_bySent=[[3, 1]],
-                                                                       # the fields must be numeric?
-                                                                       columns_to_be_plotted_bySent=[[]],
-                                                                       columns_to_be_plotted_byDoc=[[]],
+                                                                       columns_to_be_plotted=['Object (O)'],
                                                                        chartTitle='Frequency Distribution of Objects (unfiltered)',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
-                                                                       outputFileNameType='', #'O_bar',
+                                                                       outputFileNameType='O', #'O_bar',
                                                                        column_xAxis_label='Objects (unfiltered)',
                                                                        groupByList=[],
                                                                        plotList=[],
@@ -1064,7 +1015,7 @@ def language_models(CoreNLPdir, language: str):
     result['pcfg'] = pcfg_model
     result['nn'] = nn_model
     return result
-    
+
 
 def check_sentence_length(sentence_length, sentenceID, config_filename):
     # WARNING for sentences with > 100 tokens
@@ -1300,7 +1251,7 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
             temp = [ner['text'], ner['ner'], ner['tokenBegin'],
                     ner['tokenEnd'],sentenceID, complete_sent,  documentID,
                     IO_csv_util.dressFilenameForCSVHyperlink(document)]
-            # check in NER value column
+            # check in NER tag column
             if temp[1] in request_NER:
                 if extract_date_from_filename_var:
                     temp.append(date_str)
@@ -1515,9 +1466,9 @@ def process_json_gender(config_filename,documentID, document, start_sentenceID, 
                 # get complete sentence
                 complete = sent_dict[elmt['sentNum']]
                 if extract_date_from_filename_var:
-                    result.append([elmt['text'], elmt['gender'], complete, elmt['sentNum'] + start_sentenceID, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str])
+                    result.append([elmt['text'], elmt['gender'], elmt['sentNum'] + start_sentenceID, complete, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str])
                 else:
-                    result.append([elmt['text'], elmt['gender'], complete, elmt['sentNum'] + start_sentenceID, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                    result.append([elmt['text'], elmt['gender'], elmt['sentNum'] + start_sentenceID, complete, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
 
     # return result
     return sorted(result, key=lambda x:x[3]) # this function did not add each row in order of sentence, so the output needs sorting by sentenceID
@@ -1672,12 +1623,15 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
     # merge gender information with SVO information
     if gender_var:
         SVO_df = pd.DataFrame(SVO_brief, columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
-        gender_df = pd.DataFrame(gender_info, columns=["Subject (S)", "S Gender", "Sentence ID", "Document ID"])
-        merge_df = pd.merge(SVO_df, gender_df, on=["Subject (S)", "Sentence ID", "Document ID"], how='left')
-        gender_df = pd.DataFrame(gender_info, columns=["Object (O)", "O Gender", "Sentence ID", "Document ID"])
-        merge_df = pd.merge(merge_df, gender_df, on=["Object (O)", "Sentence ID", "Document ID"], how='left')
+        gender_df = pd.DataFrame(gender_info, columns=["Subject (S)", "S Gender", "Sentence Set", "Document ID"])
+        merge_df = pd.merge(SVO_df, gender_df, on=["Subject (S)", "Document ID"], how='left')
+
+        gender_df = pd.DataFrame(gender_info, columns=["Object (O)", "O Gender", "Sentence Set", "Document ID"])        
+        merge_df = pd.merge(merge_df, gender_df, on=["Object (O)", "Document ID"], how='left')
+        
         merge_df = merge_df[['Subject (S)', 'S Gender', 'Verb (V)', 'Object (O)', 'O Gender', 'Sentence ID','Sentence', 'Document ID', 'Document']]
         merge_df = merge_df.drop_duplicates()
+        
         merge_df.to_csv(kwargs["gender_filename"], index=False, mode="a", encoding = language_encoding)
 
     if quote_var:
@@ -1696,7 +1650,7 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
         if key == 'extract_date_from_filename_var' and value == True:
             extract_date_from_filename_var = True
     date_str = date_in_filename(document, **kwargs)
-    
+
     openIE = []
     locations = [] # a list of [sentence, sentence id, [location_text, ner_value]]
     for sentence in json['sentences']:
@@ -2078,17 +2032,6 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
                 temp.append(date_str)
             result.append(temp)
 
-            # print("Row in the CSV: ")
-            # print(temp)
-            # if dateInclude == 1 and dateStr!='DATE ERROR!!!':
-            #     temp.append(d
-            #         check_sentence_length(len(tokens), sentenceID, config_filename)
-            #
-            #         # print("The result after adding the ", sentenceID, "th sentence: ")
-            #         # pprint.pprint(result)
-            #
-            #     return result, recordIDateStr)
-
     return result, recordID
 
 
@@ -2111,7 +2054,7 @@ def get_csv_column_unique_val_list(inputFilename, col):
 
 
 def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
-    # columns: Location, NER Value, Sentence ID, Sentence, Document ID, Document
+    # columns: Location, NER Tag, Sentence ID, Sentence, Document ID, Document
     to_write = []
     for sent in locations:
         for locs in sent[2]:
@@ -2124,10 +2067,10 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
             else:
                 to_write.append(
                     [locs[0], locs[1], sent[0], sent[1], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
-    columns = ["Location", "NER Value", "Sentence ID", "Sentence", "Document ID", "Document"]
+    columns = ["Location", "NER Tag", "Sentence ID", "Sentence", "Document ID", "Document"]
     if ("extract_date_from_text_var" in kwargs and kwargs["extract_date_from_text_var"] == True) \
         or ("extract_date_from_filename_var" in kwargs and kwargs["extract_date_from_filename_var"] == True):
-        columns = ["Location", "NER Value", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
+        columns = ["Location", "NER Tag", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
 
     df = pd.DataFrame(to_write, columns=columns)
     if not os.path.exists(kwargs["location_filename"]):
@@ -2152,66 +2095,6 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, gender
     # the annotator returns a list rather than a string
     return chart_outputFilename
 
-# # columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc
-# #   all double lists [[]]
-# # the variable groupByList,plotList, chart_title_label are used to compute column statistics
-# def charts_util.visualize_chart(createCharts,chartPackage,inputFilename,outputDir,filesToOpen, columns_to_be_plotted_bar, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc, chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,groupByList,plotList, chart_title_label):
-#     if createCharts == True:
-#         # standard bar chart
-#         chart_outputFilename = charts_util.run_all(columns_to_be_plotted_bar, inputFilename, outputDir,
-#                                                   outputFileLabel=outputFileNameType,
-#                                                   chartPackage=chartPackage,
-#                                                   chart_type_list=['bar'],
-#                                                   chart_title=chartTitle,
-#                                                   column_xAxis_label_var=column_xAxis_label,
-#                                                   hover_info_column_list=hover_label,
-#                                                   count_var=count_var)
-#         if chart_outputFilename!=None:
-#             if len(chart_outputFilename) > 0:
-#                 filesToOpen.append(chart_outputFilename)
-#
-#         # bar charts by document
-#         # # document value comes second in [[]]
-#         chart_outputFilename = charts_util.run_all(columns_to_be_plotted_byDoc, inputFilename, outputDir,
-#                                                   outputFileLabel='ByDoc',
-#                                                   chartPackage=chartPackage,
-#                                                   chart_type_list=['bar'],
-#                                                   chart_title=chartTitle + ' by Document',
-#                                                   column_xAxis_label_var='',
-#                                                   hover_info_column_list=hover_label,
-#                                                   count_var=1,
-#                                                   remove_hyperlinks=True)
-#
-#         if chart_outputFilename!=None:
-#             if len(chart_outputFilename) > 0:
-#                 filesToOpen.append(chart_outputFilename)
-#
-#         # line plots by sentence index
-#         chart_outputFilename = charts_util.run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
-#                                                   outputFileLabel='BySent',
-#                                                   chartPackage=chartPackage,
-#                                                   chart_type_list=['line'],
-#                                                   chart_title=chartTitle + ' by Sentence Index',
-#                                                   column_xAxis_label_var='Sentence index',
-#                                                   hover_info_column_list=hover_label,
-#                                                   count_var=0,
-#                                                   complete_sid=True)
-#
-#         if chart_outputFilename!=None:
-#             if len(chart_outputFilename) > 0:
-#                 filesToOpen.append(chart_outputFilename)
-#
-#         # compute field statistics
-#         if len(groupByList)>0:
-#             tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, inputFilename, outputDir,
-#                                                                                groupByList, plotList, chart_title_label,
-#                                                                                createCharts,
-#                                                                                chartPackage)
-#
-#             if tempOutputfile != None:
-#                 filesToOpen.extend(tempOutputfile)
-#
-#     return filesToOpen
 
 def count_pronouns(json):
     result = 0
@@ -2221,7 +2104,7 @@ def count_pronouns(json):
             if token["pos"] == "PRP$" or token["pos"] == "PRP":
                 result += 1
     return result
-    
+
 
 def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, createCharts,chartPackage, option, corefed_pronouns, all_pronouns: int):
     return_files = []
@@ -2244,7 +2127,7 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
     #                 total_count += 1
     #                 pronouns_count[token["originalText"].lower()] += 1
     # else:
-        
+
     for _, row in df.iterrows():
         if option == "SVO":
             if (not pd.isna(row["Subject (S)"])) and (str(row["Subject (S)"]).lower() in pronouns):
@@ -2272,7 +2155,7 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
     pronouns_count["I"] = pronouns_count.pop("i")
     if total_count > 0:
         if option != "coref table":
-            
+
             reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_pronouns,
                                          reminders_util.message_CoreNLP_pronouns, True)
         else:
@@ -2289,9 +2172,7 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
         # if createCharts:
         #     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
         #                                                        outputDir,
-        #                                                        columns_to_be_plotted_bar=[[0, 0]],
-        #                                                        columns_to_be_plotted_bySent=[[]],
-        #                                                        columns_to_be_plotted_byDoc=[[10,11]],
+        #                                                        columns_to_be_plotted=[[0, 0]],
         #                                                        chartTitle='Frequency Distribution of Pronouns',
         #                                                        # count_var = 1 for columns of alphabetic values
         #                                                        count_var=1, hover_label=[],

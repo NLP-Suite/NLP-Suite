@@ -39,13 +39,14 @@ import numpy as np #np
 import time
 import argparse
 
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import pandas as pd
 import tkinter.messagebox as mb
 
 import IO_csv_util
 import IO_files_util
 import GUI_IO_util
+import charts_util
 
 fin = open('../lib/wordLists/stopwords.txt', 'r')
 stops = set(fin.read().splitlines())
@@ -59,7 +60,7 @@ data_dict = {col: list(data[col]) for col in data.columns}
 
 
 # performs sentiment analysis on inputFile using the ANEW database, outputting results to a new CSV file in outputDir
-def analyzefile(inputFilename, outputFilename, output_file, csvfile, mode, Document_ID, Document):
+def analyzefile(inputFilename, outputDir, outputFilename, csvfile, mode, Document_ID, Document):
     """
     Performs sentiment analysis on the text file given as input using the ANEW database.
     Outputs results to a new CSV file in outputFilename.
@@ -70,9 +71,9 @@ def analyzefile(inputFilename, outputFilename, output_file, csvfile, mode, Docum
     """
     #TODO
     #the output filename is reset in the specific script; must be passed as a parameter
-    #cannot use time in the filename or when re-generated n the main sentimen_concreteness_analysis.py it will have a different time stamp and the file will not be found    
-    # if output_file == '':
-    #     output_file = IO_files_util.generate_output_file_name(inputFilename, outputFilename, '.csv', 'SC', 'ANEW', '', '', '', False, True)
+    #cannot use time in the filename or when re-generated n the main sentimen_concreteness_analysis.py it will have a different time stamp and the file will not be found
+    # if outputFilename == '':
+    #     outputFilename = IO_files_util.generate_outputFilename_name(inputFilename, outputFilename, '.csv', 'SC', 'ANEW', '', '', '', False, True)
 
     # read file into string
     with open(inputFilename, 'r',encoding='utf-8',errors='ignore') as myfile:
@@ -86,30 +87,10 @@ def analyzefile(inputFilename, outputFilename, output_file, csvfile, mode, Docum
     # otherwise, split into sentences
     # sentences = tokenize.sent_tokenize(fulltext)
     sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
-    # # check each word in sentence for sentiment and write to output_file
-    # with open(output_file, 'w', encoding='utf-8',errors='ignore', newline='') as csvfile:
-
-    # if mode == 'mean':
-    #     fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence',
-    #                   'Sentiment (Mean score)', 'Sentiment (Mean value)',
-    #                   'Arousal (Mean score)', 'Arousal (Mean value)',
-    #                   'Dominance (Mean score)','Dominance (Mean value)','Found Words', 'Word List']
-    # elif mode == 'median':
-    #     fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence',
-    #                   'Sentiment (Median score)', 'Sentiment (Median value)',
-    #                   'Arousal (Median score)', 'Arousal (Median value)',
-    #                   'Dominance (Median score)','Dominance (Median value)','Found Words', 'Word List']
-    # elif mode == 'both':
-    #     fieldnames = ['Document ID', 'Document', 'Sentence ID', 'Sentence',
-    #                   'Sentiment (Mean score)', 'Sentiment (Mean value)', 'Sentiment (Median score)', 'Sentiment (Median value)',
-    #                   'Arousal (Mean score)', 'Arousal (Mean value)', 'Arousal (Median score)', 'Arousal (Median value)',
-    #                   'Dominance (Mean score)','Dominance (Mean value)','Dominance (Median score)','Dominance (Median value)','Found Words', 'Word List']
-    #
-    # writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-    # writer.writeheader()
+    # # check each word in sentence for sentiment and write to outputFilename
 
     # analyze each sentence for sentiment
-    i=0
+    i=1
     for s in sentences:
         # print("S" + str(i) +": " + s)
         found_words = []
@@ -159,13 +140,12 @@ def analyzefile(inputFilename, outputFilename, output_file, csvfile, mode, Docum
         if len(found_words) == 0:  # no words found in ANEW for this sentence
             # writer.writerow({'Document ID': Document ID, 'Document': IO_util.dressFilenameForCSVHyperlink(Document), 'Sentence ID': i,
             #                 'Sentence': s,
-            #                 Sentiment (Mean score): 0,
+            #                 Sentiment score (Mean): 0,
             #                 sentiment_label: "",
             #                 })
             i += 1
             pass
         else:  # output sentiment info for this sentence
-
             # get values
             if mode == 'mean' or mode == 'both':
                 Sentiment_mean_score = np.mean(v_list)
@@ -177,7 +157,6 @@ def analyzefile(inputFilename, outputFilename, output_file, csvfile, mode, Docum
                 Dominance_median_score = np.median(d_list)
 
             if neg:  # reverse polarity
-
                 if mode == 'mean' or mode == 'both':
                     Sentiment_mean_score = 5 - (Sentiment_mean_score-5)
                     Arousal_mean_score = 5 - (Arousal_mean_score-5)
@@ -190,52 +169,91 @@ def analyzefile(inputFilename, outputFilename, output_file, csvfile, mode, Docum
             # set sentiment label
 
             sentiment_label = 'neutral'
-            if Sentiment_mean_score < 3:
-                sentiment_label = 'very unpleasant'
-            elif Sentiment_mean_score >= 3 and Sentiment_mean_score < 5:
-                sentiment_label = 'unpleasant'
-            elif Sentiment_mean_score  == 5:
-                sentiment_label = 'neutral'
-            elif Sentiment_mean_score > 5 and Sentiment_mean_score < 8:
-                sentiment_label = 'pleasant'
-            elif Sentiment_mean_score >=8 and Sentiment_mean_score <=9:
-                sentiment_label = 'very pleasant'
+            if mode == 'median' or mode == 'both':
+                if Sentiment_median_score < 3:
+                    sentiment_label = 'very unpleasant'
+                elif Sentiment_median_score >= 3 and Sentiment_median_score < 5:
+                    sentiment_label = 'unpleasant'
+                elif Sentiment_median_score  == 5:
+                    sentiment_label = 'neutral'
+                elif Sentiment_median_score > 5 and Sentiment_median_score < 8:
+                    sentiment_label = 'pleasant'
+                elif Sentiment_median_score >=8 and Sentiment_median_score <=9:
+                    sentiment_label = 'very pleasant'
 
-
-            # set arousal label
-            arousal_label = 'neutral'
-            if Arousal_mean_score < 3:
-                arousal_label = 'very calm'
-            elif Arousal_mean_score >= 3 and Arousal_mean_score < 5:
-                arousal_label = 'calm'
-            elif Arousal_mean_score == 5:
+                # set arousal label
                 arousal_label = 'neutral'
-            elif Arousal_mean_score > 5 and Arousal_mean_score < 8:
-                arousal_label = 'excited'
-            elif Arousal_mean_score >=8 and Arousal_mean_score <=9:
-                arousal_label = 'very excited'
+                if Arousal_median_score < 3:
+                    arousal_label = 'very calm'
+                elif Arousal_median_score >= 3 and Arousal_median_score < 5:
+                    arousal_label = 'calm'
+                elif Arousal_median_score == 5:
+                    arousal_label = 'neutral'
+                elif Arousal_median_score > 5 and Arousal_median_score < 8:
+                    arousal_label = 'excited'
+                elif Arousal_median_score >=8 and Arousal_median_score <=9:
+                    arousal_label = 'very excited'
 
-            # set dominance label
-            dominance_label = 'neutral'
-            if Dominance_mean_score < 3:
-                dominance_label = 'very controlled'
-            elif Dominance_mean_score >= 3 and Dominance_mean_score < 5:
-                dominance_label = 'controlled'
-            elif Dominance_mean_score == 5:
+                # set dominance label
                 dominance_label = 'neutral'
-            elif Dominance_mean_score > 5 and Dominance_mean_score < 8:
-                dominance_label = 'in control'
-            elif Dominance_mean_score >=8 and Dominance_mean_score <=9:
-                dominance_label = 'very much in control'
+                if Dominance_median_score < 3:
+                    dominance_label = 'very controlled'
+                elif Dominance_median_score >= 3 and Dominance_median_score < 5:
+                    dominance_label = 'controlled'
+                elif Dominance_median_score == 5:
+                    dominance_label = 'neutral'
+                elif Dominance_median_score > 5 and Dominance_median_score < 8:
+                    dominance_label = 'in control'
+                elif Dominance_median_score >=8 and Dominance_median_score <=9:
+                    dominance_label = 'very much in control'
+
+            sentiment_label = 'neutral'
+            if mode == 'mean' or mode == 'both':
+                if Sentiment_mean_score < 3:
+                    sentiment_label = 'very unpleasant'
+                elif Sentiment_mean_score >= 3 and Sentiment_mean_score < 5:
+                    sentiment_label = 'unpleasant'
+                elif Sentiment_mean_score == 5:
+                    sentiment_label = 'neutral'
+                elif Sentiment_mean_score > 5 and Sentiment_mean_score < 8:
+                    sentiment_label = 'pleasant'
+                elif Sentiment_mean_score >= 8 and Sentiment_mean_score <= 9:
+                    sentiment_label = 'very pleasant'
+
+                # set arousal label
+                arousal_label = 'neutral'
+                if Arousal_mean_score < 3:
+                    arousal_label = 'very calm'
+                elif Arousal_mean_score >= 3 and Arousal_mean_score < 5:
+                    arousal_label = 'calm'
+                elif Arousal_mean_score == 5:
+                    arousal_label = 'neutral'
+                elif Arousal_mean_score > 5 and Arousal_mean_score < 8:
+                    arousal_label = 'excited'
+                elif Arousal_mean_score >= 8 and Arousal_mean_score <= 9:
+                    arousal_label = 'very excited'
+
+                # set dominance label
+                dominance_label = 'neutral'
+                if Dominance_mean_score < 3:
+                    dominance_label = 'very controlled'
+                elif Dominance_mean_score >= 3 and Dominance_mean_score < 5:
+                    dominance_label = 'controlled'
+                elif Dominance_mean_score == 5:
+                    dominance_label = 'neutral'
+                elif Dominance_mean_score > 5 and Dominance_mean_score < 8:
+                    dominance_label = 'in control'
+                elif Dominance_mean_score >= 8 and Dominance_mean_score <= 9:
+                    dominance_label = 'very much in control'
 
             if mode == 'mean':
                 writer.writerow({
-                                 'Sentiment (Mean score)': Sentiment_mean_score,
-                                 'Sentiment (Mean value)': sentiment_label,
-                                 'Arousal (Mean score)': Arousal_mean_score,
-                                 'Arousal (Mean value)': arousal_label,
-                                 'Dominance (Mean score)': Dominance_mean_score,
-                                 'Dominance (Mean value)': dominance_label,
+                                 'Sentiment score (Mean)': Sentiment_mean_score,
+                                 'Sentiment label (Mean)': sentiment_label,
+                                 'Arousal score (Mean)': Arousal_mean_score,
+                                 'Arousal label (Mean)': arousal_label,
+                                 'Dominance score (Mean)': Dominance_mean_score,
+                                 'Dominance label (Mean)': dominance_label,
                                  'Found Words': ("%d out of %d" % (len(found_words), total_words)),
                                  'Word List': ', '.join(found_words),
                                 'Sentence ID': i,
@@ -244,12 +262,12 @@ def analyzefile(inputFilename, outputFilename, output_file, csvfile, mode, Docum
                 })
             elif mode == 'median':
                 writer.writerow({
-                                 'Sentiment (Median score)':Sentiment_median_score,
-                                 'Sentiment (Median value)': sentiment_label,
-                                 'Arousal (Median score)':Arousal_median_score,
-                                 'Arousal (Median value)': arousal_label,
-                                 'Dominance (Median score)':Dominance_median_score,
-                                 'Dominance (Median value)': dominance_label,
+                                 'Sentiment score (Median)':Sentiment_median_score,
+                                 'Sentiment label (Median)': sentiment_label,
+                                 'Arousal score (Median)':Arousal_median_score,
+                                 'Arousal label (Median)': arousal_label,
+                                 'Dominance score (Median)':Dominance_median_score,
+                                 'Dominance label (Median)': dominance_label,
                                  'Found Words': ("%d out of %d" % (len(found_words), total_words)),
                                  'Word List': ', '.join(found_words),
                                  'Sentence ID': i,
@@ -258,18 +276,18 @@ def analyzefile(inputFilename, outputFilename, output_file, csvfile, mode, Docum
                                   })
             elif mode == 'both':
                 writer.writerow({
-                                 'Sentiment (Mean score)': Sentiment_mean_score,
-                                 'Sentiment (Mean value)': sentiment_label,
-                                 'Arousal (Mean score)': Arousal_mean_score,
-                                 'Arousal (Mean value)': arousal_label,
-                                 'Dominance (Mean score)': Dominance_mean_score,
-                                 'Dominance (Mean value)': dominance_label,
-                                 'Sentiment (Median score)': Sentiment_median_score,
-                                 'Sentiment (Median value)': sentiment_label,
-                                 'Arousal (Median score)':Arousal_median_score,
-                                 'Arousal (Median value)': arousal_label,
-                                 'Dominance (Median score)':Dominance_median_score,
-                                 'Dominance (Median value)': dominance_label,
+                                 'Sentiment score (Mean)': Sentiment_mean_score,
+                                 'Sentiment label (Mean)': sentiment_label,
+                                 'Arousal score (Mean)': Arousal_mean_score,
+                                 'Arousal label (Mean)': arousal_label,
+                                 'Dominance score (Mean)': Dominance_mean_score,
+                                 'Dominance label (Mean)': dominance_label,
+                                 'Sentiment score (Median)': Sentiment_median_score,
+                                 'Sentiment label (Median)': sentiment_label,
+                                 'Arousal score (Median)':Arousal_median_score,
+                                 'Arousal label (Median)': arousal_label,
+                                 'Dominance score (Median)':Dominance_median_score,
+                                 'Dominance label (Median)': dominance_label,
                                  'Found Words': ("%d out of %d" % (len(found_words), total_words)),
                                  'Word List': ', '.join(found_words),
                                  'Sentence ID': i,
@@ -277,13 +295,10 @@ def analyzefile(inputFilename, outputFilename, output_file, csvfile, mode, Docum
                                  'Document ID': Document_ID,
                                  'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document)
                                  })
-
                 i += 1
-    i = 1 # to store sentence index
-    return output_file #LINE ADDED
+    return outputFilename
 
-fileNamesToPass = [] #LINE ADDED
-def main(inputFilename, inputDir, outputFilename,output_file, mode):
+def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPackage='Excel'):
     """
     Runs analyzefile on the appropriate files, provided that the input paths are valid.
     :param inputFilename:
@@ -292,40 +307,46 @@ def main(inputFilename, inputDir, outputFilename,output_file, mode):
     :param mode:
     :return:
     """
+
+    filesToOpen = []
+
     # startTime = time.localtime()
     # print("Started running ANEW at " + str(startTime[3]) + ':' + str(startTime[4]))
 
-    if len(outputFilename) < 0 or not os.path.exists(outputFilename):  # empty output
-        print('No output directory specified, or path does not exist')
-        sys.exit(0)
-    elif len(inputFilename) == 0 and len(inputDir)  == 0:  # empty input
-        print('No input specified. Please give either a single file or a directory of files to analyze.')
+    if len(outputDir) < 0 or not os.path.exists(outputDir):
+        print('No output directory specified, or path does not exist.')
         sys.exit(1)
-    if output_file == '':
-        output_file = IO_files_util.generate_output_file_name(inputFilename, outputFilename, '.csv', 'SC', 'ANEW', '',
-                                                              '', '', False, True)
-    fileNamesToPass.append(output_file)
-    with open(output_file, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
+    elif len(inputFilename) == 0 and len(inputDir)  == 0:
+        print('No input specified. Please, provide either a single file -- file or a directory of files to be analyzed --dir.')
+        sys.exit(1)
+
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,  outputDir, '.csv', 'ANEW', '', '', '', '', False, True)
+
+    filesToOpen.append(outputFilename)
+    with open(outputFilename, 'w', encoding='utf-8', errors='ignore', newline='') as csvfile:
         if mode == 'mean':
             fieldnames = [
-                          'Sentiment (Mean score)', 'Sentiment (Mean value)',
-                          'Arousal (Mean score)', 'Arousal (Mean value)',
-                          'Dominance (Mean score)', 'Dominance (Mean value)', 'Found Words', 'Word List',
-                           'Sentence ID', 'Sentence', 'Document ID', 'Document']
+                          'Sentiment score (Mean)', 'Sentiment label (Mean)',
+                          'Arousal score (Mean)', 'Arousal label (Mean)',
+                          'Dominance score (Mean)', 'Dominance label (Mean)',
+                          'Found Words', 'Word List',
+                          'Sentence ID', 'Sentence', 'Document ID', 'Document']
         elif mode == 'median':
             fieldnames = [
-                          'Sentiment (Median score)', 'Sentiment (Median value)',
-                          'Arousal (Median score)', 'Arousal (Median value)',
-                          'Dominance (Median score)', 'Dominance (Median value)', 'Found Words', 'Word List',
+                          'Sentiment score (Median)', 'Sentiment label (Median)',
+                          'Arousal score (Median)', 'Arousal label (Median)',
+                          'Dominance score (Median)', 'Dominance label (Median)',
+                          'Found Words', 'Word List',
                           'Sentence ID', 'Sentence', 'Document ID', 'Document']
         elif mode == 'both':
             fieldnames = [
-                          'Sentiment (Mean score)', 'Sentiment (Mean value)', 'Sentiment (Median score)',
-                          'Sentiment (Median value)',
-                          'Arousal (Mean score)', 'Arousal (Mean value)', 'Arousal (Median score)',
-                          'Arousal (Median value)',
-                          'Dominance (Mean score)', 'Dominance (Mean value)', 'Dominance (Median score)',
-                          'Dominance (Median value)', 'Found Words', 'Word List',
+                          'Sentiment score (Mean)', 'Sentiment label (Mean)',
+                          'Sentiment score (Median)', 'Sentiment label (Median)',
+                          'Arousal score (Mean)', 'Arousal label (Mean)',
+                          'Arousal score (Median)', 'Arousal label (Median)',
+                          'Dominance score (Mean)', 'Dominance label (Mean)',
+                          'Dominance score (Median)', 'Dominance label (Median)',
+                           'Found Words', 'Word List',
                            'Sentence ID', 'Sentence','Document ID', 'Document']
         global writer
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -333,7 +354,7 @@ def main(inputFilename, inputDir, outputFilename,output_file, mode):
 
         if len(inputFilename) > 0:  # handle single file
             if os.path.exists(inputFilename):
-                analyzefile(inputFilename, outputFilename, output_file, csvfile, mode, 1, inputFilename)
+                filesToOpen.append(analyzefile(inputFilename, outputDir, outputFilename, csvfile, mode, 1, inputFilename))
             else:
                 print('Input file "' + inputFilename + '" is invalid.')
                 sys.exit(0)
@@ -341,23 +362,52 @@ def main(inputFilename, inputDir, outputFilename,output_file, mode):
             if os.path.isdir(inputDir):
                 directory = os.fsencode(inputDir)
                 Document_ID = 0
-                # check each word in sentence for sentiment and write to output_file
+                # check each word in sentence for sentiment and write to outputFilename
                 for file in os.listdir(directory):
                     filename = os.path.join(inputDir, os.fsdecode(file))
                     if filename.endswith(".txt"):
                         start_time = time.time()
-                        print("Started ANEW sentiment analysis of " + filename + "...")
+                        # print("Started ANEW sentiment analysis of " + filename + "...")
                         Document_ID += 1
-                        analyzefile(filename, outputFilename, output_file,csvfile, mode, Document_ID, filename)
-                        print("Finished ANEW sentiment analysis of " + filename + " in " + str((time.time() - start_time)) + " seconds")
+                        filesToOpen.append(analyzefile(filename, outputDir, outputFilename,csvfile, mode, Document_ID, filename))
+                        # print("Finished ANEW sentiment analysis of " + filename + " in " + str((time.time() - start_time)) + " seconds")
             else:
                 print('Input directory "' + inputDir + '" is invalid.')
                 sys.exit(1)
     csvfile.close()
-    return fileNamesToPass #LINE ADDED
+
+    if createCharts == True:
+        if mode == "both":
+            columns_to_be_plotted=['Sentiment score (Mean)', 'Arousal score (Mean)', 'Dominance score (Mean)',
+                                'Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
+            # hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
+        elif mode == "mean":
+            columns_to_be_plotted=['Sentiment score (Mean)', 'Arousal score (Mean)', 'Dominance score (Mean)']
+            # hover_label = ['Sentence', 'Sentence', 'Sentence']
+        elif mode == "median":
+            columns_to_be_plotted=['Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
+            # hover_label = ['Sentence', 'Sentence', 'Sentence']
+
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                   columns_to_be_plotted=columns_to_be_plotted,
+                                                   chartTitle='Frequency of ANEW Sentiment Scores',
+                                                   count_var=0, hover_label=[],
+                                                   outputFileNameType='',
+                                                   column_xAxis_label='Sentiment score',
+                                                   column_yAxis_label='Scores',
+                                                   groupByList=['Document ID', 'Document'],
+                                                   plotList=columns_to_be_plotted,
+                                                   chart_title_label='Measures of ANEW Sentiment Scores')
+
+        if chart_outputFilename != None:
+            if len(chart_outputFilename)> 0:
+                filesToOpen.append(chart_outputFilename)
 
     # endTime = time.localtime()
     # print("Finished running ANEW at " + str(endTime[3]) + ':' + str(endTime[4]))
+
+    return filesToOpen
+
 
 if __name__ == '__main__':
     # get arguments from command line
@@ -368,13 +418,13 @@ if __name__ == '__main__':
                         help='a string to hold the path of a directory of files to process')
     parser.add_argument('--out', type=str, dest='outputFilename', default='',
                         help='a string to hold the path of the output directory')
-    parser.add_argument('--outfile', type=str, dest='output_file', default='',
+    parser.add_argument('--outfile', type=str, dest='outputFilename', default='',
                         help='output file')
     parser.add_argument('--mode', type=str, dest='mode', default='mean',
                         help='mode with which to calculate sentiment in the sentence: mean or median')
     args = parser.parse_args()
 
     # run main
-    sys.exit(main(args.inputFilename, args.inputDir, args.outputFilename, args.output_file, args.mode))
+    sys.exit(main(args.inputFilename, args.inputDir, args.outputFilename, args.outputFilename, args.mode))
     #sys.exit(main('','./in','./out',''))
     #python SentimentAnalysisAnew.py --file "C:\Users\rfranzo\Documents\ACCESS Databases\PC-ACE\NEW\DATA\CORPUS DATA\MURPHY\Murphy Miracles thicker than fog CORENLP.txt" --out C:\Users\rfranzo\Desktop\NLP_output --mode mean

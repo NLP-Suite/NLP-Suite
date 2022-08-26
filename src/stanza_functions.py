@@ -4,7 +4,7 @@ Written by Mino Cha February 2022
 Examples of Usage:
 
 1. Instantiation
-    from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+    from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 2. sent_tokenize_stanza
     sentences = sent_tokenize_stanza(stanzaPipeLine(text))

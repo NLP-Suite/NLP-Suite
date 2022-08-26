@@ -16,8 +16,8 @@ output_dir='C:\\Users\\rfranzo\\Documents\\My Publications\\My Papers\\IN PROGRE
 
 # groom residence and bride residence distance from each other, all 22K records
 # comment/uncomment the next 7 lines
-# input_filename = 'NLP_GIS_la_stampa_groom_bride_waypoints_distance_gis_groom_res_gis_bride_res_ALL.csv'
-# input_filename=os.path.join(input_dir,input_filename)
+# inputFilenamename = 'NLP_GIS_la_stampa_groom_bride_waypoints_distance_gis_groom_res_gis_bride_res_ALL.csv'
+# inputFilenamename=os.path.join(input_dir,inputFilenamename)
 # # titles to be displayed in the chart
 # chartTitle1='Geodesic distance in miles (Groom\'s residence distance to bride\'s residence)'
 # chartTitle2='Geodesic distance in Km (Groom\'s residence distance to bride\'s residence)'
@@ -26,8 +26,8 @@ output_dir='C:\\Users\\rfranzo\\Documents\\My Publications\\My Papers\\IN PROGRE
 
 # groom residence distance from Torino, all 22K records
 # comment/uncomment the next 7 lines
-# input_filename = 'NLP_GIS_la_stampa_groom_bride_waypoints_distance_gis_groom_res_gis_bride_res_ALL.csv'
-# input_filename=os.path.join(input_dir,input_filename)
+# inputFilenamename = 'NLP_GIS_la_stampa_groom_bride_waypoints_distance_gis_groom_res_gis_bride_res_ALL.csv'
+# inputFilenamename=os.path.join(input_dir,inputFilenamename)
 # # titles to be displayed in the chart
 # chartTitle1='Geodesic distance in miles (Groom\'s residence distance to Turin)'
 # chartTitle2='Geodesic distance in Km (Groom\'s residence distance to Turin)'
@@ -36,8 +36,8 @@ output_dir='C:\\Users\\rfranzo\\Documents\\My Publications\\My Papers\\IN PROGRE
 
 # bride residence distance from Torino, all 22K records
 # comment/uncomment the next 7 lines
-input_filename = 'NLP_GIS_la_stampa_groom_bride_waypoints_distance_Torino_gis_bride_res_ALL.csv'
-input_filename=os.path.join(input_dir,input_filename)
+inputFilenamename = 'NLP_GIS_la_stampa_groom_bride_waypoints_distance_Torino_gis_bride_res_ALL.csv'
+inputFilenamename=os.path.join(input_dir,inputFilenamename)
 # titles to be displayed in the chart
 chartTitle1='Geodesic distance in miles (Bride\'s residence distance to Turin)'
 chartTitle2='Geodesic distance in Km (Bride\'s residence distance to Turin)'
@@ -47,7 +47,7 @@ chartTitle4='Great circle distance in Km (Bride\'s residence distance to Turin)'
 encodingValue='latin-1'
 
 #import data
-df = pd.read_csv(input_filename, encoding=encodingValue, low_memory=False)
+df = pd.read_csv(inputFilenamename, encoding=encodingValue, low_memory=False)
 
 # setup all variabels #################################################################
 

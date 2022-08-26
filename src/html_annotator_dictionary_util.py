@@ -21,7 +21,7 @@ from csv import reader
 import IO_csv_util
 
 # the function associates specific values of a csv file to a specific color
-# extend the function to allow multiple wordColNum and catColNum
+# append the function to allow multiple wordColNum and catColNum
 def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
     dictionary = []
     number_of_items = len(csvValue_color_list)
@@ -70,7 +70,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
     nFile=len(files)
     if nFile==0:
         return
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Dictionary annotator at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Dictionary annotator at',
                                                  True, '', True, '', True)
     i=0
     wordColNum = [0]
@@ -200,6 +200,6 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
         f.write('\n</div>\n</body>\n</html>')
     f.close()
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Dictionary annotator at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Dictionary annotator at', True, '', True, startTime)
     return filesToOpen
 

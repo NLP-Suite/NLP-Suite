@@ -178,7 +178,7 @@ def purge_partial_matches(window, inputFilename, outputDir, openOutputFiles, nam
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
-def writeOutput(inputPath, input_filename, outputPath, output_filename, fieldnames,
+def writeOutput(inputPath, inputFilenamename, outputPath, output_filename, fieldnames,
                 by_creation_date_var, creation_date, modification_date,
                 by_author_var, author,
                 string_entry_var,
@@ -187,14 +187,14 @@ def writeOutput(inputPath, input_filename, outputPath, output_filename, fieldnam
                 fileName_embeds_date, date, dateStr,
                 split_string):
 
-    if not os.path.isdir(os.path.join(inputPath, input_filename)):
+    if not os.path.isdir(os.path.join(inputPath, inputFilenamename)):
         printLine = {}
         with open(outputPath + os.sep + output_filename, 'a', errors='ignore', newline='') as csvfile:
             # write file headers
             writer = csv.DictWriter(csvfile, fieldnames)
-            head, tail = os.path.split(input_filename)
+            head, tail = os.path.split(inputFilenamename)
             printLine = {'File_Name': tail, 'Path_To_File': IO_csv_util.dressFilenameForCSVHyperlink(inputPath),
-                         'File_Name_With_Path': IO_csv_util.dressFilenameForCSVHyperlink(input_filename)}
+                         'File_Name_With_Path': IO_csv_util.dressFilenameForCSVHyperlink(inputFilenamename)}
             if by_creation_date_var == 1:
                 printLine['Creation_date'] = creation_date
                 printLine['Modification_date'] = modification_date

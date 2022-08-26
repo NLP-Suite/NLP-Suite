@@ -10,8 +10,8 @@ import csv
 import tkinter.messagebox as mb
 import pandas as pd
 import os
-import stat
 import IO_files_util
+import IO_user_interface_util
 
 #if any column header contains just numbers the function will return FALSE
 def csvFile_has_header(file_path):
@@ -25,21 +25,21 @@ def csvFile_has_header(file_path):
 
 # Take in file name, output is a list of rows each with columns 1->11 in the conll table
 # Used to divide sentences etc.
-def get_csv_data(file_name,withHeader):
+def get_csv_data(inputFilename,withHeader):
     data=[]
     headers=''
     delimiter=','
-    filename, file_extension = os.path.splitext(file_name)
+    filename, file_extension = os.path.splitext(inputFilename)
     # file_extension will return any extension .xlsx, .csv, …
-    if file_name=='' or file_extension!='.csv':
-        mb.showwarning(title='File type error', message='The file\n\n' + file_name + '\n\nis not an expected csv file. Please, check the file and try again.')
+    if filename=='' or file_extension!='.csv':
+        mb.showwarning(title='File type error', message='The file\n\n' + inputFilename + '\n\nis not an expected csv file. Please, check the file and try again.')
         return data, headers
     #numColumns=get_csvfile_numberofColumns(file_name)
-    withHeader=csvFile_has_header(file_name)
+    withHeader=csvFile_has_header(inputFilename)
     #print("io IO delimiter ",get_csvfile_numberofColumns(file_name))
     #TODO does not work; gives an error
     #print ("\n\n\n\ndetectCsvHeader(file_name) ",detectCsvHeader(file_name))
-    with open(file_name,encoding='utf-8',errors='ignore') as f:
+    with open(inputFilename,encoding='utf-8',errors='ignore') as f:
         reader = csv.reader(f,delimiter=delimiter)
         if withHeader == True:
             headers = next(reader, None) #ADDED to skip header in new .csv CoNLL
@@ -47,7 +47,7 @@ def get_csv_data(file_name,withHeader):
         data = [r for r in reader]
         #f.close()
     if len(data)==0:
-        mb.showwarning(title='Empty csv file', message='The csv file\n\n' + file_name + '\n\nis empty. Please, check the file and try again.')
+        mb.showwarning(title='Empty csv file', message='The csv file\n\n' + inputFilename + '\n\nis empty. Please, check the file and try again.')
     return data, headers
 
 # csv file contains headers,
@@ -59,14 +59,23 @@ def get_csvfile_headers (csvFile,ask_Question=False):
         answer=mb.askyesno("File headers","Does the selected input file\n\n"+csvFile+"\n\nhave headers?")
     if csvFile!='' and answer ==True:
         with open(csvFile,'r',encoding="utf-8",errors='ignore') as f:
-            reader = csv.reader(f)
+            reader = csv.DictReader(f)
             try:
-                headers=next(reader)
+                headers=reader.fieldnames
             except: # empty files will break the next
                 # mb.showwarning("Warning","The selected csv file has no records.\n\nPlease, check the file content and select a different file.")
                 # headers=''
                 return headers
-            f.seek(0)
+            # f.seek(0)
+    return headers
+
+def get_csvfile_headers_pandas(inputFilename):
+    # index_col = 0 excludes the first column, an ID column; but... we need that column
+    # headers = pd.read_csv(inputFilename, index_col=0, nrows=0).columns.tolist()
+    try:
+        headers = pd.read_csv(inputFilename, nrows=0).columns.tolist()
+    except:
+        headers=[]
     return headers
 
 # convert header alphabetic value for CSV files with or without headers to its numeric column value
@@ -78,7 +87,8 @@ def get_columnNumber_from_headerValue(headers,header_value):
             column_number = i
             break
     if column_number==None:
-        mb.showwarning(title='Wrong header value',message='The header value "' + str(header_value) + '" was not found among the csv file headers ' + str(headers))
+        IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Wrong header value',
+                                           'The header value "' + str(header_value) + '" was not found among the csv file headers ' + str(headers))
     return column_number
 
 # convert header alphabetic value for CSV files with or without headers to its numeric column value
@@ -105,6 +115,8 @@ def get_csv_field_values(inputFilename, column_name):
         fields = next(csvreader)
         # from the column header get the column number that we want to extract
         col_num = get_columnNumber_from_headerValue(fields, column_name)
+        if col_num==None:
+            return ['']
         for row in csvreader:
             unique_values.add(row[col_num])
         sorted_unique_values=sorted(unique_values)
@@ -135,6 +147,7 @@ def GetNumberOfRecordInCSVFile(inputFilename,encodingValue='utf-8'):
 # inputFile has path
 def GetNumberOfDocumentsInCSVfile(inputFilename,algorithm='',columnHeader='Document ID',encodingValue='utf-8'):
     msg = ""
+    maxnum = 0
     with open(inputFilename,encoding=encodingValue,errors='ignore') as f:
         reader = csv.reader(f)
         next(reader) # skip header row
@@ -153,9 +166,10 @@ def GetNumberOfDocumentsInCSVfile(inputFilename,algorithm='',columnHeader='Docum
                 val_list.append(int(float(column[columnNumber].replace(',', ''))))
             except:
                 pass
-        maxnum = max(val_list)
-        # the following line would break in the presence of a blank field in column
-        # maxnum = max(int(column[columnNumber].replace(',', '')) for column in reader)
+        if len(val_list)>0:
+            maxnum = max(val_list)
+            # the following line would break in the presence of a blank field in column
+            # maxnum = max(int(column[columnNumber].replace(',', '')) for column in reader)
         f.close()
     return maxnum
 
@@ -249,14 +263,14 @@ def openCSVOutputFile(outputCSVFilename, IO='w', encoding='utf-8',errors='ignore
         return True
 
 
-def extract_from_csv(inputFilename, outputDir, data_files, columns_to_exported=None):
+def extract_from_csv(inputFilename, outputDir, data_files, columns_to_export=None):
     import IO_files_util
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
                                                              'extract',
                                                              '', '', '', '', False, True)
 
     df = pd.DataFrame(pd.read_csv(inputFilename))
-    df.to_csv(outputFilename, columns=columns_to_exported, index=False)
+    df.to_csv(outputFilename, columns=columns_to_export, index=False)
     return outputFilename
 
 
@@ -309,7 +323,8 @@ def undressFilenameForCSVHyperlink(fileName):
     fileName=fileName.replace('")','')
     return fileName
 
-# given a csv file containing a document field with filenames with hyperlinks, the function will remove the hyperlinks from every col & row
+# given a csv file containing a document field with filenames with hyperlinks,
+#   the function will remove the hyperlinks from every col & row
 def remove_hyperlinks(inputFilename):
     try:
         data = pd.read_csv(inputFilename, encoding='utf-8')
@@ -317,12 +332,12 @@ def remove_hyperlinks(inputFilename):
         data = pd.read_csv(inputFilename, encoding='utf-8', sep='delimiter')
     except:
         print("Error: failed to read the csv file named: "+inputFilename)
-        return False
-    data = pd.read_csv(inputFilename)
+        return False, ''
+    # data = pd.read_csv(inputFilename)
     document = data['Document']
     new_document = []
     for i in document:
-        new_document.append(IO_files_util.getFilename(i)[0])
+        new_document.append(IO_files_util.getFilename(i)[2]) #0 for tail; 2 for full path
     data['Document'] = new_document
     no_hyperlink_filename = os.path.join(os.path.split(inputFilename)[0],os.path.split(inputFilename)[1])[:-4] +"_no_hyperlinks.csv"
     data.to_csv(no_hyperlink_filename, encoding='utf-8',index=0)

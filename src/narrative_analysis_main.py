@@ -63,9 +63,9 @@ def run(inputFilename,inputdirname, outdirname,
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
 
-    # if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_main.py')==False:
+    # if IO_libraries_util.check_inputPythonJavaProgramFile('NLP_parsers_annotators_main.py')==False:
     #     return
-    #     call("python Stanford_CoreNLP_main.py", shell=True)
+    #     call("python NLP_parsers_annotators_main.py", shell=True)
 
     if characters_NER_var==True or time_NER_var==True or space_NER_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_NER_main.py')==False:
@@ -88,9 +88,9 @@ def run(inputFilename,inputdirname, outdirname,
         call("python annotator_gender_main.py", shell=True)
 
     if story_plot_var==True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_main.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('NLP_parsers_annotators_main.py') == False:
             return
-        call("Stanford_CoreNLP_main.py", shell=True)
+        call("NLP_parsers_annotators_main.py", shell=True)
 
     if space_GIS_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('GIS_main.py')==False:
@@ -98,9 +98,9 @@ def run(inputFilename,inputdirname, outdirname,
         call("python GIS_main.py", shell=True)
 
     if SVO_var==True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_SVO_main.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('SVO_main.py')==False:
             return
-        call("python Stanford_CoreNLP_SVO_main.py", shell=True)
+        call("python SVO_main.py", shell=True)
 
     if shape_stories_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py')==False:
@@ -325,7 +325,7 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 
 # change the value of the readMe_message
 readMe_message="The GUI brings together various Python 3 scripts to buil a pipeline for the analysis of stories, automatically extracting the Who, What, Whom, When, and Where from texts and visualiziing the results.\n\nEach tool performs all required computations then saves results as csv files and visualizes them in various ways (word clouds, network graphs, geographic maps, Excel charts)."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

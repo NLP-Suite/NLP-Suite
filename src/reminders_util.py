@@ -68,6 +68,15 @@ message_SVO_someone = 'The SVO algorithms convert passive sentences into active 
 title_options_CoreNLP_pronouns = ['CoreNLP pronouns']
 message_CoreNLP_pronouns = 'The CoreNLP algorithms have detected the presence of pronouns (e.g., he, she). You should run the coreference annotator to resolve the coreferences.'
 
+title_options_CoreNLP_gender = ['CoreNLP gender annotator']
+message_CoreNLP_gender = 'The gender annotator is only available for the Stanford CoreNLP package and the English language.'
+
+title_options_CoreNLP_quote = ['CoreNLP quote/speaker annotator']
+message_CoreNLP_quote = 'The quote/speaker annotator is only available for the Stanford CoreNLP package and the English language.'
+
+title_options_Stanza_languages = ['Stanza languages']
+message_Stanza_languages = 'Pressing + with the default language option "English" displayed in the dropdown menu, will add "English" to the list of languages processed by Stanza. If you do not wish to include "English," please, click the Reset button first then add the languages to be processed one at a time.'
+
 title_options_GIS_Nominatim = ['GIS Nominatim geocoder']
 message_GIS_Nominatim = "If the Nominatim geocoder service exits with the error 'too many requests', you can break up the csv location file and process each subfile for geocoding as normal csv files."
 
@@ -80,8 +89,8 @@ message_VADER = 'VADER heavily relies on a number of NLTK libraries. If VADER fa
 title_options_WordNet_system_requirements = ['WordNet system requirements']
 message_WordNet_system_requirements = 'The scripts in this GUI require the FREEWARE WordNet on your machine. You can download WordNet at https://wordnet.princeton.edu/download/current-version.'
 
-title_options_WordNet_input_file_button = ['WordNet input file button']
-message_WordNet_input_file_button = 'The Select INPUT file button is disabled (grayed out) when you open WordNet. Different options require either no file or different file types.\n\nPlease, tick a checkbox to activate the button.'
+title_options_WordNet_inputFilename_button = ['WordNet input file button']
+message_WordNet_inputFilename_button = 'The Select INPUT file button is disabled (grayed out) when you open WordNet. Different options require either no file or different file types.\n\nPlease, tick a checkbox to activate the button.'
 
 title_options_WordNet_verb_aggregation = ['WordNet VERB aggregation']
 message_WordNet_verb_aggregation = "CAVEAT!\n\nFor VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.\n\nThe WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts."
@@ -316,7 +325,7 @@ def getReminders_list(config_filename,silent=False):
     # now check among the specific routines
     temp=df[df["Routine"] == routine]['Title'].tolist()
     if len(temp)>0:
-        title_options.extend(temp)
+        title_options.append(temp)
     if len(title_options)==0:
         title_options = ['Open reminders']
     return title_options

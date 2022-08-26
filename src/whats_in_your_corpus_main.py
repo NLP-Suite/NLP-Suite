@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"what\'s in your corpus",['os','tkinter'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"what\'s in your corpus",['os','tkinter','subprocess'])==False:
     sys.exit(1)
 
 import os
@@ -17,7 +17,7 @@ import IO_user_interface_util
 import IO_files_util
 import statistics_txt_util
 import knowledge_graphs_WordNet_util
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
 import wordclouds_util
 import GIS_pipeline_util
 import topic_modeling_gensim_util
@@ -138,9 +138,9 @@ def run(inputFilename,inputDir, outputDir,
             output = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir, False,
                                   createCharts, chartPackage,
                                   stopwords, lemmatize)
-            # extend because output contains a list of files rather than a single file string
+            # append because output contains a list of files rather than a single file string
             if output!=None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         # compute ngrams ----------------------------------------------------
 
@@ -161,7 +161,7 @@ def run(inputFilename,inputDir, outputDir,
             output = statistics_txt_util.compute_sentence_length(config_filename, inputFilename,inputDir, outputDir, createCharts, chartPackage)
 
             if output!=None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         # compute line length ----------------------------------------------------
 
@@ -169,64 +169,64 @@ def run(inputFilename,inputDir, outputDir,
             output = statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir, False,
                                                    createCharts, chartPackage)
             if output!=None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if '*' == corpus_statistics_options_menu_var:
             output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir,
                                                                    openOutputFiles, createCharts, chartPackage)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
         if '*' == corpus_statistics_options_menu_var:
             output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir,
                                                                    openOutputFiles, createCharts, chartPackage)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
         if 'detection' in corpus_statistics_options_menu_var:
             output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir,
                                                                          openOutputFiles, createCharts, chartPackage)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
         if 'capital' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir,
                                                                    openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
         if 'Short' in corpus_statistics_options_menu_var:
             output=statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if 'Vowel' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if 'Punctuation' in corpus_statistics_options_menu_var:
             output=statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if '*' == corpus_statistics_options_menu_var or 'Yule' in corpus_statistics_options_menu_var:
             filesToOpen=statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if '*' == corpus_statistics_options_menu_var or 'Unusual' in corpus_statistics_options_menu_var:
-            tempFiles=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, False, createCharts, chartPackage)
+            output=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, False, createCharts, chartPackage)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
         if '*' == corpus_statistics_options_menu_var or 'Abstract' in corpus_statistics_options_menu_var:
             # ABSTRACT/CONCRETENESS _______________________________________________________
             output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, processType='')
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if '*' in corpus_statistics_options_menu_var or 'complexity' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.compute_sentence_complexity(GUI_util.window, inputFilename,
                                                                      inputDir, outputDir,
                                                                      openOutputFiles, createCharts, chartPackage)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
 
         # compute ngrams ----------------------------------------------------
@@ -247,7 +247,7 @@ def run(inputFilename,inputDir, outputDir,
                                                               openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_var)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
     # wordclouds --------------------------------------------------------------
 
@@ -272,7 +272,7 @@ def run(inputFilename,inputDir, outputDir,
 
             output=wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, selectedImage="", use_contour_only=use_contour_only, prefer_horizontal=prefer_horizontal, font=font, max_words=max_words, lemmatize=lemmatize, exclude_stopwords=exclude_stopwords, exclude_punctuation=exclude_punctuation, lowercase=lowercase, differentPOS_differentColors=differentPOS_differentColors, differentColumns_differentColors=differentColumns_differentColors, csvField_color_list=csvField_color_list, doNotListIndividualFiles=doNotListIndividualFiles,openOutputFiles=False, collocation=collocation)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
 # topic modeling ---------------------------------------------------------------------------------
     if topics_var==True:
@@ -304,7 +304,7 @@ def run(inputFilename,inputDir, outputDir,
                     output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir_TM, num_topics=20,
                                                           remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createCharts=createCharts, chartPackage=chartPackage)
                     if output!=None:
-                        filesToOpen.extend(output)
+                        filesToOpen.append(output)
 
         if topics_Mallet_var==True:
             if open_tm_GUI_var == True:
@@ -320,7 +320,7 @@ def run(inputFilename,inputDir, outputDir,
                     # running with default values
                     output = topic_modeling_mallet_util.run(inputDir, outputDir_TM, openOutputFiles=openOutputFiles, createCharts=createCharts, chartPackage=chartPackage, OptimizeInterval=True, numTopics=20)
                     if output != None:
-                        filesToOpen.extend(output)
+                        filesToOpen.append(output)
 
 #  what else ---------------------------------------------------------------------------------
     nouns_var=False
@@ -359,7 +359,7 @@ def run(inputFilename,inputDir, outputDir,
     inputFilenameSV=inputFilename #inputFilename value is changed in the WordNet function
 
     if (what_else_var and what_else_menu_var == '*') or nouns_var==True or verbs_var==True or people_organizations_var==True or gender_var==True or dialogues_var==True or times_var==True or locations_var==True or sentiments_var==True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py')==False:
             return
         if what_else_var and what_else_menu_var == '*':
             outputDir_what_else = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
@@ -378,7 +378,7 @@ def run(inputFilename,inputDir, outputDir,
                         True)
                 else:
                     annotator = ['POS']
-                    files = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+                    files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                 outputDir_what_else, openOutputFiles, createCharts, chartPackage,
                                                 annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
                     if len(files) > 0:
@@ -392,7 +392,7 @@ def run(inputFilename,inputDir, outputDir,
                                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
                                                                             openOutputFiles, createCharts, chartPackage, language_var)
                                 if output!=None:
-                                    filesToOpen.extend(output)
+                                    filesToOpen.append(output)
 
                             if nouns_var == True:
                                 inputFilename = files[1]  # Nouns but... double check
@@ -403,7 +403,7 @@ def run(inputFilename,inputDir, outputDir,
                                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
                                                                             openOutputFiles, createCharts, chartPackage, language_var)
                                 if output!=None:
-                                    filesToOpen.extend(output)
+                                    filesToOpen.append(output)
                     else:
                         if (what_else_var and what_else_menu_var == '*'):
                             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Missing WordNet',
@@ -414,20 +414,20 @@ def run(inputFilename,inputDir, outputDir,
 
             annotator_list = ['NER', 'gender', 'quote', 'normalized-date']
             NER_list=['PERSON','ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator_list, False,
                                                                       language_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if people_organizations_var == True:
             annotator = 'NER'
             NER_list=['PERSON','ORGANIZATION']
 
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
@@ -435,59 +435,59 @@ def run(inputFilename,inputDir, outputDir,
                                                                       limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if gender_var == True:
             annotator = 'gender'
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
 
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if dialogues_var==True:
             annotator = 'quote'
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       single_quote_var = single_quote)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if times_var==True:
             annotator='normalized-date'
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir_what_else,
+            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir_what_else,
                         openOutputFiles, createCharts, chartPackage,
                         annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if locations_var == True:
             annotator = 'NER'
             NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
 
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
                                                                       language_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
         if sentiments_var == True:
             annotator = 'sentiment'
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
                                                                       memory_var, document_length_var,
                                                                       limit_sentence_length_var)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 # GIS --------------------------------------------------------------------------------
     if GIS_var==True:
         if open_GIS_GUI_var == True:
@@ -501,7 +501,7 @@ def run(inputFilename,inputDir, outputDir,
             date_format = ''
             date_separator_var = ''
             date_position_var = 0
-            locations = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            locations = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                          outputDir_what_else, openOutputFiles,
                                                                          createCharts, chartPackage, 'NER',
                                                                          False,
@@ -547,7 +547,7 @@ def run(inputFilename,inputDir, outputDir,
                         [1],[1]) # bold_var_list, italic_var_list)
 
         if len(out_file)>0:
-            filesToOpen.extend(out_file)
+            filesToOpen.append(out_file)
         if kmloutputFilename!='':
             filesToOpen.append(kmloutputFilename)
 
@@ -562,7 +562,7 @@ def run(inputFilename,inputDir, outputDir,
 
         outputLocations = []
         if open_SVO_GUI_var == True:
-            call("python Stanford_CoreNLP_SVO_main.py", shell=True)
+            call("python SVO_main.py", shell=True)
         else:
             # run with all default values;
             location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir_SVO, '.csv',
@@ -583,7 +583,7 @@ def run(inputFilename,inputDir, outputDir,
             gender_filename = gender_filename
             quote_var = True
             quote_filename = quote_filename
-            output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                                outputDir_SVO, openOutputFiles,
                                                                                createCharts, chartPackage,
                                                                                'SVO', False,
@@ -603,7 +603,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                                quote_var=quote_var,
                                                                                quote_filename=quote_filename)
             if output != None:
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
     openOutputFiles=openOutputFilesSV
     if openOutputFiles == True:
@@ -1025,7 +1025,7 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 
 # change the value of the readMe_message
 readMe_message="The GUI brings together various Python 3 scripts to buil a pipeline for the analysis of a corpus, automatically extracting all relevant data from texts and visualizing the results.\n\nEach tool performs all required computations then saves results as csv files and visualizes them in various ways (word clouds, Excel charts, and HTML files)."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 

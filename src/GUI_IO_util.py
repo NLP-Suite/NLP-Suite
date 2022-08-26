@@ -17,7 +17,6 @@ import IO_libraries_util
 
 NLP_Suite_website_name = 'NLP Suite GitHub'
 # HELP messages
-text_msg=''
 
 introduction_main = "Welcome to this Python 3 script.\nFor brief general information about this script, click on the \"Read Me\" button.\nFor brief information on specific lines click on any of the \"?HELP\" buttons.\nFor longer information on various aspects of the script, click on the \"Open TIPS files\" button and select the pdf help file to view.\nAfter selecting an option, click on \"RUN\" (the RUN button is disabled until all I/O information has been entered).   Click on \"CLOSE\" to exit."
 # msg_fileButtonDisabled="\n\nIf the Select INPUT file button is greyed out because you previously selected an INPUT directory but you now wish to use a file as input, click on the Select INPUT directory button and press ESCape to make all INPUT options available."
@@ -77,80 +76,122 @@ videosPath = os.path.join(NLPPath,'videos')
 remindersPath = os.path.join(NLPPath, 'reminders')
 
 # The function places and displays a message for each ? HELP button in the GUIs
-def place_help_button(window,x_coordinate,y_coordinate,text_title,text_msg):
-    help_button = tk.Button(window, text='? HELP', command=lambda: display_button_info(text_title, text_msg))
+def place_help_button(window,x_coordinate,y_coordinate,text_title,text_info):
+    help_button = tk.Button(window, text='? HELP', command=lambda: display_help_button_info(text_title, text_info))
     y_multiplier_integer = placeWidget(window,x_coordinate,y_coordinate,help_button,False,False,True)
     return y_multiplier_integer
 
 # The function displays the info for any bottom (e.g., ? HELP and ReadMe) in the GUIs
-def display_button_info(text_title,text_msg):
-    mb.showinfo(title=text_title, message=text_msg)
+def display_help_button_info(text_title,text_info):
+    mb.showinfo(title=text_title, message=text_info)
 
 # https://stackoverflow.com/questions/20399243/display-message-when-hovering-over-something-with-mouse-cursor-in-python
-def hover_over_widget(window,x_coordinate,y_coordinate,widget_name,no_hover_over_widget=False,whole_widget_red=False, x_coordinate_hover_over= 90, text_info=''):
+def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_over_widget=False, whole_widget_red=False, x_coordinate_hover_over= 90, text_info=''):
     if no_hover_over_widget:
         return
-
-    def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_msg):
+    def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info):
+        # background = 'red' sets the whole widget in red
         e.widget.config(background='red')
-        display_window_lb = tk.Label(window, text=text_msg, name='display_window_lb', foreground='blue')
-        display_window_lb.place(x=x_coordinate_hover_over, y=y_coordinate - 20)
+        # TODO Must left justify rather than center the info displayed
+        display_window_lb = tk.Label(window, anchor='w', text=text_info, name='display_window_lb',
+                                     foreground='blue')
+        display_window_lb.place(anchor='w', x=x_coordinate_hover_over, y=y_coordinate)
 
-    def delete_display_widget_lb(window, e, x_coordinate, y_coordinate, text_msg):
-        if text_msg == '':  # <Leave> widget event
-            e.widget.config(background='#F0F0F0')
+    def delete_display_widget_lb(window, e, text_info):
+        if text_info != '':
             window.nametowidget('display_window_lb').place_forget()
+        # #f0f0f0 is a very light shade of gray
+        # foreground='red' (or any color) sets the color of a widget wording to a selected color
+        # e.widget.config(background='#F0F0F0', foreground='black', text=label)
+        e.widget.config(background='#F0F0F0', foreground='black')
+
+    # scale and text widgets do not have a label and code would break below
+    # if 'scale' in str(widget_name) or 'text' in str(widget_name):
+    if 'scale' in str(widget_name) or 'text' in str(widget_name) or 'combobox' in str(widget_name):
+            label = ''
+    else:
+        # label is the wording of the text value displayed in a widget (e.g, RUN, CLOSE,
+        #   or, for a menu, the item currently displayed in the menu, e.g., mm/dd/yyyy for a date menu)
+        label = widget_name.cget('text')
+
+# Enter the widget ----------------------------------------------------------
 
     # hover-over effect
-    if widget_name.cget('foreground')!='red':     # do not overwrite in red if the background is already in red
-        if 'scale' in str(widget_name) or 'text' in str(widget_name):
-            label = ''
-        else:
-            label = widget_name.cget('text') # this gives the text value displayed as the label
-        # print('widget_name',widget_name,'  label',label)
-        # all buttons for opening files/dir are little boxes with no text
-        if 'button' in str(widget_name) and label == '':
-                whole_widget_red=True
-        if 'optionmenu' in str(widget_name):
-            # https://stackoverflow.com/questions/6178153/how-to-change-menu-background-color-of-tkinters-optionmenu-widget
-            if label=='': # if no menu options are displayed, turn red the whole widget
-                widget_name.bind('<Enter>', lambda e: e.widget.config(activebackground='red'))
-            else:
-                widget_name.bind('<Enter>', lambda e: e.widget.config(activeforeground='red',text=label))
-        # elif 'combobox' in str(widget_name): # cannot get the combobox option to work
-        #   https://www.tutorialspoint.com/how-to-set-the-background-color-of-a-ttk-combobox-in-tkinter
-        #     widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
-        else:
-            if 'scale' in str(widget_name):
-                # background sets the whole widget in red
-                widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
-            elif 'text' in str(widget_name):
-                # for text widgets do not set the whole widget to red
-                widget_name.bind('<Enter>', lambda e: e.widget.config(background='#F0F0F0'))
-            else:
-                # foreground sets only the widget wording in red
-                if whole_widget_red:
-                    widget_name.bind('<Enter>',
-                                     lambda e: display_widget_info(window, e, x_coordinate,
-                                                                   y_coordinate,
-                                                                   x_coordinate_hover_over,
-                                                                   text_info))
-                else:
-                    widget_name.bind('<Enter>', lambda e: e.widget.config(foreground='red',text=label))
+    # background = 'red' sets the whole widget in red
+    # background='#F0F0F0' sets the widget in grey
+    # foreground='red' (or any color) sets the color of a widget wording to a selected color
+    # activeforeground='red' it sets to red the wording in the currently active widget wordings
+    if (text_info == '') and ('scale' in str(widget_name) or 'entry' in str(widget_name)
+                              or ('button' in str(widget_name) and not 'checkbutton' in str(widget_name) and text_info =='')):
+        # background='red' sets the whole widget in red
+        widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
+    # combobox is the ttk menu object
+    elif (text_info == '') and ('label' in str(widget_name) or 'text' in str(widget_name) or 'checkbutton' in str(widget_name) \
+            or 'combobox' in str(widget_name)):
+        # foreground='red' sets a widget wording to red
+        # #f0f0f0 is a very light shade of gray
+        widget_name.bind('<Enter>', lambda e: e.widget.config(background='#F0F0F0',foreground='red'))
+    else:
+        if text_info != '':
+            # these are the y coordinates where the text info is displayed
+            # move up the display if the ino contains line breaks
+            # there should not be more than 2 line breaks
+            number_of_lines = text_info.count('\n')
+            if number_of_lines == 0:
+                y_coordinate = y_coordinate - 20
+            elif number_of_lines == 1:
+                y_coordinate = y_coordinate - 25
+            elif number_of_lines == 2:
+                y_coordinate = y_coordinate - 30
 
-        # widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
-        if 'scale' in str(widget_name) or 'text' in str(widget_name):
-            widget_name.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
-        else:
-            if whole_widget_red:
-                widget_name.bind('<Leave>',
-                                 lambda e: delete_display_widget_lb(window, e, x_coordinate, y_coordinate,
-                                                               ''))
+            # combobox is the ttk menu object; the regular config breaks
+            # https://stackoverflow.com/questions/71733010/ttkcombobox-foreground-color-change-doesnt-work-properly-whats-wrong
+            if 'combobox' in str(widget_name):
+                # TODO the widget should be turned red but it is in blue
+                widget_name.bind('<Enter>',
+                     lambda e: (e.widget.config(ttk.Style().map(
+                            'Red.TCombobox',
+                            foreground=[('readonly', 'red')],
+                            selectforeground=[('readonly', 'red')])),
+                                display_widget_info(window, e, x_coordinate,
+                                                    y_coordinate,
+                                                    x_coordinate_hover_over,
+                                                    text_info)))
             else:
-                widget_name.bind('<Leave>', lambda e: e.widget.config(foreground='black',text=label))
+                # TODO code breaks when widget_name is optionmenu
+                widget_name.bind('<Enter>',
+                     lambda e: (e.widget.config(activeforeground='red', text=label), display_widget_info(window, e, x_coordinate,
+                                                   y_coordinate,
+                                                   x_coordinate_hover_over,
+                                                   text_info)))
 
-# when a widget has hover-over effects, thea parameter no_hover_over_widget is set to False
+        else: # no text info to be displayed
+            widget_name.bind('<Enter>', lambda e: e.widget.config(activeforeground='red', text=label))
+
+# Leave the widget ----------------------------------------------------------
+    # TODO does not work
+    # https://stackoverflow.com/questions/69549437/combobox-foreground-color-setting-is-lost-when-navigating-out-through-tab-key
+    # if "combobox" in str(widget_name):
+    #     if label != "":
+    #         widget_name.bind('<Leave>',
+    #                     lambda e: ttk.Style().map("myCombobox.TCombobox",
+    #                         selectforeground=[('readonly', 'red')],
+    #                         foreground=[('readonly', 'red')]),
+    #                     lambda e: delete_display_widget_lb(window, e, text_info))
+    #     else:
+    #         widget_name.bind('<Leave>',
+    #                     lambda e: ttk.Style().map("myCombobox.TCombobox",
+    #                         selectforeground=[('readonly', '!focus', 'black'), ('readonly', 'focus', 'white')],
+    #                         foreground=[('readonly', '!focus', 'black'), ('readonly', 'focus', 'white')]),
+    #                     lambda e: delete_display_widget_lb(window, e, text_info))
+    # else:
+    widget_name.bind('<Leave>',
+                         lambda e: delete_display_widget_lb(window, e, text_info))
+
+# when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
+# widget_name is the name of the widget that needs to be placed in any of the GUI scripts as defined by tk.
 def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False, no_hover_over_widget=False, whole_widget_red=False, centerX=False, basic_y_coordinate=90, x_coordinate_hover_over = 90, text_info=''):
+    # print("widget_name",widget_name,"text_info",text_info)
     #basic_y_coordinate = 90
     y_step = 40 #the line-by-line increment on the GUI
     if centerX:
@@ -185,10 +226,12 @@ if sys.platform == 'darwin': #Mac OS
     watch_videos_x_coordinate = 200
     open_TIPS_x_coordinate = 370
     open_reminders_x_coordinate = 570
-    run_button_x_coordinate = 850
-    close_button_x_coordinate = 980
+    open_setup_x_coordinate = 770
+    run_button_x_coordinate = 970
+    close_button_x_coordinate = 1070
 
     open_IO_config_button = 650
+    open_NLP_package_language_config_button = 650
     open_setup_software_button = 650
 
     open_file_button_brief = 700
@@ -224,10 +267,12 @@ else: #windows and anything else
     watch_videos_x_coordinate = 170
     open_TIPS_x_coordinate = 350
     open_reminders_x_coordinate = 550
-    run_button_x_coordinate = 840
-    close_button_x_coordinate = 960
+    open_setup_x_coordinate = 750
+    run_button_x_coordinate = 950
+    close_button_x_coordinate = 1050
 
     open_IO_config_button = 820
+    open_NLP_package_language_config_button = 820
     open_setup_software_button = 820
 
     open_file_button_brief = 760
@@ -260,7 +305,7 @@ def get_GUI_width(size_type=1):
             return 1400
     elif sys.platform == 'win32': # for now we have two basic sizes
         if size_type == 1:
-            return 1100
+            return 1200 # increased from 1100 to account for the new SETUP widget on the last line of any GUI
         if size_type == 2:
                 return 1200
         elif size_type==3:
@@ -360,7 +405,7 @@ def exit_window(window,config_filename, scriptName, config_input_output_numeric_
                 # import inspect
                 # inspect.stack() will return the stack information
                 # ScriptName = inspect.stack()
-                # if not "IO_setup_main.py" in ScriptName:
+                # if not "NLP_setup_IO_main.py" in ScriptName:
                 #     print("ScriptName", ScriptName)
                 print(
                     '\nYour NLP Suite is up-to-date with the latest release available on GitHub (' + GitHub_release_version + ').')
@@ -370,22 +415,9 @@ def exit_window(window,config_filename, scriptName, config_input_output_numeric_
     atexit.register(exit_handler)
 
     if not 'NLP_menu_main' in scriptName and 'NLP_welcome_main' not in scriptName:
-        saved_config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file(config_filename, config_input_output_numeric_options)
-        if saved_config_input_output_alphabetic_options!=current_config_input_output_alphabetic_options:
-            if current_config_input_output_alphabetic_options==['','','',''] or current_config_input_output_alphabetic_options==['', '', '', '']:
-                saveGUIconfig = False
-            else:
-                if saved_config_input_output_alphabetic_options==['','','',''] or saved_config_input_output_alphabetic_options==['', '', '', '']:
-                    saveGUIconfig = True
-                else:
-                    if 'default' in config_filename:
-                        saveGUIconfig = mb.askyesno("Save I/O values to 'Default I/O configuration': " + config_filename,
-                                                    'The selected Input/Output options are different from the I/O values previously saved in "' + config_filename + '"' + ' listed below in succinct form for readability:\n\n' + str(config_input_output_full_options) + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
-                    else:
-                        saveGUIconfig = mb.askyesno("Save I/O values to 'GUI-specific I/O configuration': " + config_filename,
-                                                        'The selected Input/Output options are different from the I/O values previously saved in "' + config_filename + '"' + ' listed below in succinct form for readability:\n\n' + str(config_input_output_full_options) + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
-            if saveGUIconfig == True:
-                config_util.write_config_file(window,config_filename, config_input_output_numeric_options, current_config_input_output_alphabetic_options)
+        # check and save IO config on CLOSE
+        config_util.save_IO_config(window, config_filename, config_input_output_numeric_options,
+                           current_config_input_output_alphabetic_options)
     window.destroy()
     sys.exit(0)
 
@@ -401,6 +433,7 @@ def dropdown_menu_widget(window,textCaption, menu_values, default_value, callbac
         def __init__(self,master):
             top = self.top = Toplevel()
             top.wm_title(textCaption)
+            top.focus_force()
             self.menuButton = ttk.Combobox(top, width=len(textCaption)+30)
             self.menuButton['values'] = menu_values
             self.menuButton.pack()
@@ -417,6 +450,32 @@ def dropdown_menu_widget(window,textCaption, menu_values, default_value, callbac
             callback(val)
 
     App(window)
+
+# modified dropdown_menu_widget that will stay open without command=lambda:
+def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callback):
+    def get_value():
+        global val
+        val = menuButton.get()
+        top.destroy()
+        callback(val)
+        # top.update()
+
+    top = Toplevel()
+    top.wm_title(textCaption)
+    top.focus_force()
+    menuButton = ttk.Combobox(top, width=len(textCaption)+30)
+    menuButton['values'] = menu_values
+    menuButton.pack()
+
+    menuButton.grid(row=0, column=1) # , sticky=W)
+    callback = callback
+
+    ok_button = tk.Button(top, text='OK', command=get_value)
+    ok_button.grid(row=0, column=1)
+
+    window.wait_window(top)
+
+    return val
 
 def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
     top = tk.Toplevel(window)
@@ -498,3 +557,5 @@ def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue=''
     # if value1!='':
     #     value1=list(value1.split(" "))
     return value1, value2
+
+

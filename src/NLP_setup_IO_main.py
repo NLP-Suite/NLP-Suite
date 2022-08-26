@@ -21,7 +21,7 @@ if __name__ == '__main__':
     parser.add_argument('--config_option', type=str, dest='config_option', default='',
                         help='a string to hold the I/O configuration for the GUI, e.g., [1,0,0,1]')
     parser.add_argument('--config_filename', type=str, dest='config_filename', default='',
-                        help='a string to hold the config filename containing the selected I/O options, e.g., default_config.csv')
+                        help='a string to hold the config filename containing the selected I/O options, e.g., NLP_default_IO_config.csv')
     args = parser.parse_args()
 
     config_input_output_numeric_options = args.config_option
@@ -42,7 +42,7 @@ if __name__ == '__main__':
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
 if config_filename == 'NLP_menu_config.csv':
-    config_filename = 'default_config.csv'
+    config_filename = 'NLP_default_IO_config.csv'
 config_file_label=config_filename
 if 'default' in config_file_label:
     config_file_label='Default I/O configuration, to be saved to: ' + config_file_label
@@ -68,27 +68,28 @@ GUI_label = 'Graphical User Interface (GUI) for Setting Up Input/Output, I/O, Op
 
 # define variables
 y_multiplier_integer = 0
-GUI_size = '1100x240'
+# GUI_size is reset many times in the script
+GUI_size = '1200x240'
 
 # either input file or dir (for corpus) and no secondary dir
 if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric_options[1] != 0)
     or (config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] == 0)) \
         and config_input_output_numeric_options[2] == 0:
-    GUI_size = '1100x240'
+    GUI_size = '1200x240'
 
 # either input file or dir (for corpus) and secondary dir
 if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric_options[1] != 0)
     or (config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] == 0)) \
         and config_input_output_numeric_options[2] != 0:
-    GUI_size = '1100x280'
+    GUI_size = '1200x280'
 
 # both input file and dir (for corpus) and no secondary dir
 if config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] != 0 and config_input_output_numeric_options[2] == 0:
-    GUI_size = '1100x280'
+    GUI_size = '1200x280'
 
 # both input file and dir (for corpus) and secondary dir
 if config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] != 0 and config_input_output_numeric_options[2] != 0:
-    GUI_size = '1100x320'
+    GUI_size = '1200x320'
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -96,7 +97,7 @@ window = GUI_util.window
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, False)
 
-# check the GUI specific IO options against the default options in default_config.csv
+# check the GUI specific IO options against the default options in NLP_default_IO_config.csv
 #	warning the user for any discrepancy
 
 # the selection of files and directories is done in GUI_util, which in turn calls
@@ -115,7 +116,7 @@ if config_input_output_numeric_options[3] != 0:
         GUI_util.output_dir_path.set(config_input_output_alphabetic_options[3])
 
 msg = ""
-if config_filename == 'default_config.csv':
+if config_filename == 'NLP_default_IO_config.csv':
     if (config_input_output_alphabetic_options[0]!='') or config_input_output_alphabetic_options[1]!='':
         # check the input filename
         if (config_input_output_alphabetic_options[0]!='') and config_input_output_numeric_options[0]==0:
@@ -128,7 +129,7 @@ if config_filename == 'default_config.csv':
         if msg!="":
             msg=msg + \
                 "If you change the Default I/O configuration, the new I/O configuration will be used by all scripts in the NLP Suite.\n\n" \
-                "If this is not what you wish to do, you should CLOSE the I/O Setup GUI w/o saving any changes and use theGUI-specific I/O configuration for this specific script."
+                "If this is not what you wish to do, you should CLOSE the I/O Setup GUI w/o saving any changes and use the GUI-specific I/O configuration for this specific script."
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -185,8 +186,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
 y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
 
 # change the value of the readMe_message
-readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the Input/Output information necessary to run the NLP-Suite scripts, namely the INPUT files to be used - a single file or a set of files in a directory - and the OUTPUT directory where the files produced by the NLP Suite scripts will be saved - txt, csv, html, kml, jpg.\n\nThe selected I/O configuration will be saved in config files in the config subdirectory. The default_config.csv file will be used for all NLP Suite scripts unless a different configuraton is selected for a specific script by selecting the 'Alternative I/O configuation'. When opening the GUI with the option 'Alternative I/O configuation' a configuration file will be saved under the config subdirectory with the specif name of the calling script (e.g., Stanford-CoreNLP_config.csv).\n\nWhen clicking the CLOSE button, the script will give the option to save the currently selected configuration IF different from the previously saved configuration."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the Input/Output information necessary to run the NLP-Suite scripts, namely the INPUT files to be used - a single file or a set of files in a directory - and the OUTPUT directory where the files produced by the NLP Suite scripts will be saved - txt, csv, html, kml, jpg.\n\nThe selected I/O configuration will be saved in config files in the config subdirectory. The NLP_default_IO_config.csv file will be used for all NLP Suite scripts unless a different configuraton is selected for a specific script by selecting the 'Alternative I/O configuation'. When opening the GUI with the option 'Alternative I/O configuation' a configuration file will be saved under the config subdirectory with the specif name of the calling script (e.g., Stanford-CoreNLP_config.csv).\n\nWhen clicking the CLOSE button, the script will give the option to save the currently selected configuration IF different from the previously saved configuration."
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, False, 'IO_setup_main')
 
 if msg!="":

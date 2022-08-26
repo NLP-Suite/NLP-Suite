@@ -96,7 +96,8 @@ Useful Anaconda & pip commands
 
 		3. Delete an environment
 
-			conda env remove --name NLP Suite
+			conda deactive
+			conda env remove --name NLP
 
 			  will delete an environment (i.e., NLP Suite) wrongly created or no longer necessary. 
 
@@ -135,6 +136,10 @@ Useful Anaconda & pip commands
 			pip install pandas
 
 			will install the pandas package
+
+			To force a re-installment of a package with all its dependencies, use the command
+			
+			pip install --upgrade --force-reinstall pandas
 
 		3. uninstall a Python packages
 		

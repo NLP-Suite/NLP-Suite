@@ -34,7 +34,7 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
     # if we need to remove the hyperlinks, we need to make a temporary data for plotting
     if remove_hyperlinks:
         remove_hyperlinks,inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
-    
+
     try:
         data = pd.read_csv(inputFilename, encoding='utf-8')
     except pd.errors.ParserError:
@@ -111,12 +111,15 @@ def save_chart(fig, outputDir, chartTitle, static_flag, x_label = '', y_label = 
         savepath = os.path.join(outputDir, chartTitle + '.png')
         fig.write_image(savepath)
     else:
+        # if the chat title has double lines, keep only the last line
+        if "\n" in chartTitle:
+            chartTitle=chartTitle.split("\n")[1]
         savepath = os.path.join(outputDir, chartTitle + '.html')
         fig.write_html(savepath)
     return savepath
 
 #plot bar chart with plotly
-#fileName is a csv file with data to be plotted 
+#fileName is a csv file with data to be plotted
 #x_label indicates the column name of x axis from the data
 #height indicates the column name of y axis from the data
 #the output file would be a html file with hover over effect names by the chart title
@@ -136,7 +139,7 @@ def plot_bar_chart_px(x_label, fileName, chartTitle, height = ''):
     return fig
 
 #plot pie chart with plotly
-#fileName is a csv file with data to be plotted 
+#fileName is a csv file with data to be plotted
 #x_label indicates the column name of x axis from the data
 #height indicates the column name of y axis from the data
 #the output file would be a html file with hover over effect names by the chart title
@@ -237,7 +240,7 @@ def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, se
 #     outputDir = 'C:/Users/Tony Chen/Desktop/NLP_working'
 
 #     #plot_bar_chart(x_label, height, fileName, outputDir, chartTitle, hover_label)
-    
+
 #     #plot_radar_chart_px(x_label, height, fileName, outputDir, chartTitle)
 #     plot_multi_line_chart_w_slider_px(fileName,outputDir,chartTitle)
 
