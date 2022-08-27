@@ -210,7 +210,7 @@ def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, lang
 # list_output has the following type format [['PRONOUN ANALYSIS','FREQUENCY'], ['PRP', 105], ['PRP$', 11], ['WP', 5], ['WP$', 0]]
 # path_output is the name of the outputfile with path
 # returns True when an error is found
-def list_to_csv(window,list_output,path_output,colnum=0):
+def list_to_csv(window,list_output,path_output,colnum=0, encoding='utf-8'):
     if not isinstance(list_output, list):
         return True
     try:
@@ -219,7 +219,7 @@ def list_to_csv(window,list_output,path_output,colnum=0):
             list_output = [i[:colnum] for i in list_output]
         #when writing a csv file newline='' prevents writing an extra blank line after every record
         #bad non utf-8 characters may be exported in lines when checking for non utf-8 characters
-        with open(path_output,'w',newline='', encoding='utf-8',errors='surrogateescape') as csvFile:
+        with open(path_output,'w',newline='', encoding=encoding,errors='surrogateescape') as csvFile:
         # with open(path_output,'w',newline='', encoding='utf-8',errors='ignore') as csvFile: #bad non utf-8 characters may be exported in lines when checking for non utf-8 characters
             writer = csv.writer(csvFile)
             # saving the case of a single list, for example
