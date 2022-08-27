@@ -997,7 +997,9 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     setup_IO_menu_var.trace("w",changed_setup_IO_config)
     changed_setup_IO_config()
 
-    # setup_menu.trace('w',lambda x, y, z: handle_setup_options(y_multiplier_integer, scriptName, setup_menu.get()))
+    # the trace for these cases is done at the end of those scripts
+    if scriptName!='SVO_main.py' and scriptName!='NLP_parsers_annotators_main.py':
+        setup_menu.trace('w',lambda x, y, z: handle_setup_options(y_multiplier_integer, scriptName, setup_menu.get()))
 
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
     # run_button_state, answer = activateRunButton(temp_config_filename, IO_setup_display_brief, scriptName, silent)
