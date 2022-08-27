@@ -25,7 +25,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
 
-GUI_label = 'Graphical User Interface (GUI) for setting up external software used in the NLP Suite (e.g., Stanford CoreNLP, Stanza, Gephi)'
+GUI_label = 'Graphical User Interface (GUI) for setting up external software used in the NLP Suite (e.g., Stanford CoreNLP, Gephi)'
 config_filename = 'NLP_setup_external_software_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
 
@@ -80,7 +80,7 @@ software_download_lb = tk.Label(window,text='Software download & install')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                y_multiplier_integer, software_download_lb, True)
 software_download_var.set('')
-software_download_menu = tk.OptionMenu(window, software_download_var, '*','Stanford CoreNLP','Stanza','Gephi','Google Earth Pro','MALLET','SENNA','WordNet')
+software_download_menu = tk.OptionMenu(window, software_download_var, '*','Stanford CoreNLP', 'Gephi','Google Earth Pro','MALLET','SENNA','WordNet')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200,
                                                y_multiplier_integer, software_download_menu,True)
 
@@ -98,8 +98,6 @@ def activate_software_website(*args):
     software_website_url=''
     if 'CoreNLP' in software_download_var.get():
         software_website_url="https://stanfordnlp.github.io/CoreNLP/download.html"
-    if 'Stanza' in software_download_var.get():
-        software_website_url="https://stanfordnlp.github.io/stanza/download_models.html"
     if 'Gephi' in software_download_var.get():
         software_website_url="https://gephi.org/users/download/"
     if 'MALLET' in software_download_var.get():
@@ -172,9 +170,8 @@ else:
 
 software_dir, missing_software = IO_libraries_util.get_external_software_dir(scriptName, software_download_var.get(), False,
                                                                              False, True)
-
-mb.showwarning(title='Warning',
-               message='The following external software has not been installed in the NLP Suite:\n\n' + str(missing_external_software) + '\n\nSome of the algorithms that require the software will not run.\n\nPlease, using the dropdown menu Software download & install, select the software to download/install.')
-
+if missing_software!="":
+    mb.showwarning(title='Warning',
+                   message='The following external software has not been installed in the NLP Suite:\n\n' + str(missing_external_software) + '\n\nSome of the algorithms that require the software will not run.\n\nPlease, using the dropdown menu Software download & install, select the software to download/install.')
 
 GUI_util.window.mainloop()

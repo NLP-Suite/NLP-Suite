@@ -284,7 +284,6 @@ def check_inputPythonJavaProgramFile(programName, subdirectory='src'):
     return True
 
 CoreNLP_download = "https://stanfordnlp.github.io/CoreNLP/download.html"
-Stanza_download = "https://stanfordnlp.github.io/stanza/download_models.html"
 # 'https://nlp.stanford.edu/software/stanford-corenlp-latest.archive'
 Gephi_download = "https://gephi.org/users/download/"
 Google_Earth_download = "https://www.google.com/earth/download/gep/agree.html?hl=en-GB"
@@ -334,13 +333,6 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName):
             if 'stanford-corenlp' in str(item):
                 return True
         directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, many files with \'stanford-corenlp\' in the filename.'
-        message = directory_content + select_directory_msg + unarchive_msg
-
-# Check Stanza
-    if programName == 'Stanza':
-        if 'dict' in fileList and 'src' in fileList:
-            return True
-        directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, the subdirectories \'dict\' and \'src\''
         message = directory_content + select_directory_msg + unarchive_msg
 
     # Check Gephi
@@ -435,7 +427,6 @@ def initialize_software_config_fields(existing_software_config: list) -> list:
     """
     sample_csv = [['Software', 'Path', 'Download_link'],
                   ['Stanford CoreNLP', '', CoreNLP_download],
-                  ['Stanza', '', Stanza_download],
                   ['Gephi', '', Gephi_download],
                   ['Google Earth Pro', '', Google_Earth_download],
                   ['Mallet', '', MALLET_download],
@@ -512,7 +503,8 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
 
     missing_software = get_missing_external_software_list(calling_script, existing_software_config)
 
-    missing_software=missing_software.replace('\n\n','') + "\n\n"
+    if missing_software!='':
+        missing_software=missing_software.replace('\n\n','') + "\n\n"
 
     archive_location_warning = '\n\nDO NOT MOVE THE EXTERNAL SOFTWARE FOLDER INSIDE THE NLP SUITE FOLDER OR IT MAY BE OVERWRITTEN IN CASE YOU NEED TO RE-INSTALL THE SUITE.'
     if package == '':
