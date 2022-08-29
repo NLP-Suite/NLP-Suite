@@ -738,7 +738,7 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 def activate_NLP_options(*args):
     global error, parsers, available_parsers, parser_lb, package, package_display_area_value, language_list
-    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new = GUI_util.handle_setup_options(y_multiplier_integer, scriptName, GUI_util.setup_menu.get())
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new = GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
     if package != '':
         available_parsers = 'Parsers for ' + package + '                          '
     else:

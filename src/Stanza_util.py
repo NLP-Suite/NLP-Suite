@@ -274,7 +274,8 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.append(chart_outputFilename)
+                # chart_outputFilename is a list must use extend and not append
+                filesToOpen.extend(chart_outputFilename)
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
@@ -290,7 +291,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.append(chart_outputFilename)
+                filesToOpen.extend(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, False)
 

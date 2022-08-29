@@ -251,7 +251,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.append(chart_outputFilename)
+                filesToOpen.extend(chart_outputFilename)
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
                                                            outputDir,
@@ -265,7 +265,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.append(chart_outputFilename)
+                filesToOpen.extend(chart_outputFilename)
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
                                                            outputDir,
@@ -279,7 +279,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.append(chart_outputFilename)
+                filesToOpen.extend(chart_outputFilename)
 
     return filesToOpen
 

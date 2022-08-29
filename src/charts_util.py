@@ -94,7 +94,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 
     headers = IO_csv_util.get_csvfile_headers_pandas(inputFilename)
     if len(headers)==0:
-        mb.showwarning(title='Empty file', message='The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced.\n\nPlease, check the file and try again.')
+        mb.showwarning(title='Empty file', message='The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.')
+        print('The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.')
         return filesToOpen
     for i in range(0,len(columns_to_be_plotted)):
         # get numeric value of header, necessary for run_all
@@ -196,15 +197,17 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                         if chartPackage=="Excel":
                             column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,1)
                             number_column_entries = len(IO_csv_util.get_csv_field_values(new_inputFilename, column_name))
-                            if number_column_entries > 1:
-                                answer = tk.messagebox.askyesno("Warning", "For the chart of '" + sel_column_name + "' by document, do you want to:\n\n  (Y) sum the values across all " + str(number_column_entries) + " '" + column_name + "';\n  (N) use all " + str(number_column_entries) + " distinct column values.")
-                                if answer:
-                                    # [[1, 3]] will give one bar for each doc, the sum of all values in selected_column to be plotted
-                                    columns_to_be_plotted_byDoc = [[1, 3]]
-                                else:
-                                    # [[1, 3, 2]] will give different bars for each value
-                                    # Document, Field to be plotted (e.g., POStag), Sentence ID
-                                    columns_to_be_plotted_byDoc = [[1, 3, 2]]
+                            columns_to_be_plotted_byDoc = [[1, 3]]
+                            # TODO temporarily disconnected until we figure out a way to not repeat this questions several times
+                            # if number_column_entries > 1:
+                            #     answer = tk.messagebox.askyesno("Warning", "For the chart of '" + sel_column_name + "' by document, do you want to:\n\n  (Y) sum the values across all " + str(number_column_entries) + " '" + column_name + "';\n  (N) use all " + str(number_column_entries) + " distinct column values.")
+                            #     if answer:
+                            #         # [[1, 3]] will give one bar for each doc, the sum of all values in selected_column to be plotted
+                            #         columns_to_be_plotted_byDoc = [[1, 3]]
+                            #     else:
+                            #         # [[1, 3, 2]] will give different bars for each value
+                            #         # Document, Field to be plotted (e.g., POStag), Sentence ID
+                            #         columns_to_be_plotted_byDoc = [[1, 3, 2]]
                         else:
                             # [[1, 3, 2]] will give different bars for each value
                             # Document, Field to be plotted (e.g., POStag), Sentence ID
@@ -338,7 +341,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                                                chartPackage)
 
             if tempOutputfile != None:
-                filesToOpen.append(tempOutputfile)
+                # tempOutputfile is a list must use extend and not append
+                filesToOpen.extend(tempOutputfile)
 
     return filesToOpen
 

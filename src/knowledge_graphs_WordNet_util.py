@@ -168,7 +168,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
                                                        chart_title_label='')
     if chart_outputFilename != None:
         if len(chart_outputFilename) > 0:
-            filesToOpen.append(chart_outputFilename)
+            filesToOpen.extend(chart_outputFilename)
 
     if noun_verb == 'VERB':
         operation_results_text_list=[]
@@ -197,7 +197,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.append(chart_outputFilename)
+                filesToOpen.extend(chart_outputFilename)
 
         if outputFilenameCSV3_new != "":
             os.remove(outputFilenameCSV3_new)
@@ -282,7 +282,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
                                                                        ['Sentence ID', 'Document ID', 'Document'],
                                                                        )
         if len(outputFiles) > 0:
-            filesToOpen.append(outputFiles)
+            filesToOpen.extend(outputFiles)
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running WordNet charts by sentence index at', True, '', True,
                                        startTime)

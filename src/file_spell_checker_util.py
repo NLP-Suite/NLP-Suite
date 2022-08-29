@@ -133,7 +133,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
 
         if chart_outputFilename != None:
             if len(chart_outputFilename)> 0:
-                filesToOpen.append(chart_outputFilename)
+                filesToOpen.extend(chart_outputFilename)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -192,7 +192,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.append(chart_outputFilename)
+                filesToOpen.extend(chart_outputFilename)
 
         if openOutputFiles == True:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -495,7 +495,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                                chart_title_label='')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
-                    filesToOpen.append(chart_outputFilename)
+                    filesToOpen.extend(chart_outputFilename)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

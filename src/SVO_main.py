@@ -1309,7 +1309,7 @@ def activate_NLP_options(*args):
     # error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new = GUI_util.handle_setup_options(y_multiplier_integer, scriptName, GUI_util.setup_menu.get())
 
     # after update no display
-    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new=GUI_util.handle_setup_options(y_multiplier_integer, scriptName, GUI_util.setup_menu.get())
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new=GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
     if package_display_area_value_new != package_display_area_value:
         print("different")
     language_list = [language]

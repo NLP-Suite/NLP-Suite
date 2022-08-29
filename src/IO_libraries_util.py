@@ -321,12 +321,14 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName):
     select_directory_msg = '\n\nPlease, select the appropriate ' + programName.upper() + ' directory and try again!'
     directory_content = '' # initialize variable
     Mac_msg = '\n\nOnce you have downloaded ' + programName.upper() + ' click on the downloaded .dmg file and drag the ' + programName.upper() + ' application in your Mac Applications folder.'
+    message=''
 
     fileList = []
     for file in os.listdir(software_dir):
         # if file.endswith(".txt"):
         # print(os.path.join(software_dir, file))
         fileList.append(file)
+
 # Check Stanford CoreNLP
     if programName == 'Stanford CoreNLP':
         for item in fileList:
@@ -390,10 +392,13 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName):
         message = directory_content + select_directory_msg + unarchive_msg
 
     # display error messages ----------------------------------------------------------------
-
-    mb.showwarning(title=programName.upper() + ' installation error',
-            message=message)
-    get_external_software_dir(calling_script, programName)
+    # it gets here only if there ws an error and with a specific message return True for all software options
+    # if the user has tinkered with the config file adding an extra line, for whatever reason,
+    #   it would not be marked with an error message; if message is '' we do not want to display the warning; all is OK
+    if message!='':
+        mb.showwarning(title=programName.upper() + ' installation error',
+                message=message)
+        get_external_software_dir(calling_script, programName)
     return False
 
 def open_url(website_name, url, ask_to_open = False, message_title='', message='', config_filename='', reminder_title='', reminder_message=''):

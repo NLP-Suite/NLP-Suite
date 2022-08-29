@@ -55,8 +55,8 @@ def set_window(size, label, config, config_option):
 # scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 # listbox = tk.Listbox(window, yscrollcommand=scrollbar.set)
 # for line in range(1000):
-# 	# listbox.insert(tk.END, "This is line number " + str(line))
-# 	listbox.insert(tk.END)
+#   # listbox.insert(tk.END, "This is line number " + str(line))
+#   listbox.insert(tk.END)
 # #listbox.pack(side=tk.LEFT, fill=tk.BOTH)
 # scrollbar.config(command=listbox.yview)
 
@@ -115,13 +115,14 @@ offText = None
 # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI; changed below
 answer = True
 run_button_state='disabled'
+y_multiplier_integer_SV=0
 
 # tracer when the checkbox has a separate label widget (label_local) attached to the checkbox widget (checkbox_local)
 #For the labels to change the text with the ON/OFF value of the checkbox the command=lambda must be included in the definition of the tk.button
-#	For example (see the example in this script):
-#	create_Excel_chart_output_label = tk.Checkbutton(window, variable= create_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label,  create_chart_output_checkbox, "Automatically compute Excel charts", "NOT automatically compute Excel charts"))
-#	The next line must always be included to dsplay te label the first time the GUI is opened
-#	create_Excel_chart_output_label.configure(text="Automatically open output Excel charts for inspection")
+#   For example (see the example in this script):
+#   create_Excel_chart_output_label = tk.Checkbutton(window, variable= create_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label,  create_chart_output_checkbox, "Automatically compute Excel charts", "NOT automatically compute Excel charts"))
+#   The next line must always be included to display te label the first time the GUI is opened
+#   create_Excel_chart_output_label.configure(text="Automatically open output Excel charts for inspection")
 
 def trace_checkbox(label_local, checkbox_local, local_onText, local_offText):
     if checkbox_local.get() == 1:
@@ -131,16 +132,16 @@ def trace_checkbox(label_local, checkbox_local, local_onText, local_offText):
 
 # tracer when the checkbox has a separate label widget (label_local) attached to the checkbox widget (checkbox_local)
 # an example is in geocoder_Google_Earth and file_handling; here are the lines from file_handling
-# 	matching_checkbox = tk.Checkbutton(window, variable=matching_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(matching_var, matching_checkbox, "Exact match", "Partial match"))
-# 	matching_checkbox.config(text="Exact match",state='disabled')
+#   matching_checkbox = tk.Checkbutton(window, variable=matching_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(matching_var, matching_checkbox, "Exact match", "Partial match"))
+#   matching_checkbox.config(text="Exact match",state='disabled')
 # checkbox_var and checkbox_text are the var and checkbox widgets
 # onText, offText the texts to be displayed on 1 or 0
 
 #For the labels to change the text with the ON/OFF value of the checkbox the command=lambda must be included in the definition of the tk.button
-#	For example (see the example in geocoder_Google_eart_GUI or in WordNet_GUI):
-#	geoCodedFile_checkbox = tk.Checkbutton(window, variable=geoCodedFile_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(geoCodedFile_var, geoCodedFile_checkbox, "File contains geocoded data with Latitude and Longitude", "File does NOT contain geocoded data with Latitude and Longitude"))
-#	The next line must always be included to display the label the first time the GUI is opened
-#	geoCodedFile_checkbox.config(text="File does NOT contain geocoded data with Latitude and Longitude")
+#   For example (see the example in geocoder_Google_eart_GUI or in WordNet_GUI):
+#   geoCodedFile_checkbox = tk.Checkbutton(window, variable=geoCodedFile_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(geoCodedFile_var, geoCodedFile_checkbox, "File contains geocoded data with Latitude and Longitude", "File does NOT contain geocoded data with Latitude and Longitude"))
+#   The next line must always be included to display the label the first time the GUI is opened
+#   geoCodedFile_checkbox.config(text="File does NOT contain geocoded data with Latitude and Longitude")
 
 def trace_checkbox_NoLabel(checkbox_var, checkbox_text, onText, offText):
     if checkbox_var.get() == 1:
@@ -435,7 +436,7 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName,silent =
     return run_button_state, answer
 
 #GUI top widgets ALL IO widgets
-#	 input filename, input dir, secondary input dir, output dir
+#    input filename, input dir, secondary input dir, output dir
 #__________________________________________________________________________________________________________________
 
 def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
@@ -671,7 +672,7 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     #__________________________________________________________________________________________________________________
     # INPUT options widgets
     # config_input_output_alphabetic_options contains the .get() value for each IO widget
-    #	e.g.,  ['C:/Program Files (x86)/NLP_backup/WordNet-3.0', '', '', '', '', 'C:/Program Files (x86)/NLP_backup/Output']
+    #   e.g.,  ['C:/Program Files (x86)/NLP_backup/WordNet-3.0', '', '', '', '', 'C:/Program Files (x86)/NLP_backup/Output']
     # config_input_output_alphabetic_options will contain the specific user SAVED values for the script
 
     # there should only be one case of
@@ -679,12 +680,12 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     #   in NLP_GUI (NLP_config.csv) since no IO lines are displayed
 
     #file input file option ______________________________________________
-    #	1 for CoNLL file,
-    #	2 for txt file,
-    #	3 for csv file,
-    #	4 for any type file
-    #	5 for txt, html (used in annotator)
-    #	6 for txt, csv (used in SVO)
+    #   1 for CoNLL file,
+    #   2 for txt file,
+    #   3 for csv file,
+    #   4 for any type file
+    #   5 for txt, html (used in annotator)
+    #   6 for txt, csv (used in SVO)
 
     if not 'NLP_menu_main' in scriptName and config_input_output_numeric_options!=[0,0,0,0]:
         if not IO_setup_display_brief:
@@ -719,53 +720,74 @@ def get_hover_over_info(package_display_area_value):
     else:
         hover_over_x_coordinate = GUI_IO_util.read_button_x_coordinate
 
-    # setup_menu_lb = tk.OptionMenu(window, setup_menu, "Setup NLP package and corpus language",
-    #                               "Setup external software")
     hover_over_info = "Using the dropdown menu, select one of these options:\n" \
                       "'Setup NLP package and corpus language' to open the GUI to enter default NLP package (spaCy, CoreNLP, Stanza) and language. " + \
                         NLP_current_settings + "\n" \
-                      "'Setup external software' to open the GUI to download and instalkl all external software (e.g., Stanford CoreNLP, Gephi)"
+                      "'Setup external software' to open the GUI to download and install all external software (e.g., Stanford CoreNLP, Gephi)"
     return hover_over_x_coordinate, hover_over_info
 
 def display_setup_hover_over(y_multiplier_integer):
-    global setup_menu_lb
-    setup_menu.set('Setup')
+    global y_multiplier_integer_SV
+
     error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
 
     hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
 
-    GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer, setup_menu_lb, False,
-                      False, hover_over_x_coordinate, hover_over_info)
+    # lay the setup widget
+    setup_menu_lb = tk.OptionMenu(window, setup_menu, "Setup NLP package and corpus language",
+                                  "Setup external software")
 
+    if y_multiplier_integer_SV==0:
+        print("LAY WIDGET hover_over_info",hover_over_info)
+        # the widget has not been placed yet on the GUI
+        y_multiplier_integer_SV=y_multiplier_integer
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate,
+                                                       y_multiplier_integer_SV,
+                                                       setup_menu_lb, True, False, False, False, 90,
+                                                       hover_over_x_coordinate,
+                                                       hover_over_info)
+    else:
+        print("NO LAY WIDGET hover_over_info",hover_over_info)
+        GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer_SV, setup_menu_lb, False,
+                          False, 90, hover_over_info)
+        # setup_menu.set('Setup')
+        # setup_menu_lb.place_forget()
+
+    # # place widget with hover-over info
+    # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer_SV,
+    #                                                 setup_menu_lb, True, False, False, False, 90, hover_over_x_coordinate,
+    #                                                 hover_over_info)
+
+    # y_multiplier_integer=y_multiplier_integer-1
     return y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value
 
-def handle_setup_options(y_multiplier_integer, scriptName, selected_setup_menu):
+def handle_setup_options(y_multiplier_integer, scriptName):
+    global setup_menu_lb
     package_display_area_value_new=''
     error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
 
-    # hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
-    #
-    display_setup_hover_over(y_multiplier_integer)
-    # GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer,
-    #                 setup_menu_lb, False, False, hover_over_x_coordinate, hover_over_info)
-    #window.nametowidget('setup_menu_lb')
-    # package_display_area_value=''
-    # language = ''
+    y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value = display_setup_hover_over(y_multiplier_integer)
 
     # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
-    if selected_setup_menu=='Setup NLP package and corpus language':
+    if setup_menu.get()=='Setup NLP package and corpus language':
         # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
         call("python NLP_setup_package_language_main.py", shell=True)
-        setup_menu.set("Setup")
         # this will display the correct hover-over info after the python call, in case options were changed
         y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value_new = display_setup_hover_over(y_multiplier_integer)
-    if selected_setup_menu=='Setup external software':
+        setup_menu.set('Setup')
+        # unfortunately the next lines do not Enter/Leave the previous Setup
+        # hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
+        # GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer_SV, setup_menu_lb, False,
+        #                               False, 90, hover_over_info)
+    if setup_menu.get()=='Setup external software':
         call("python NLP_setup_external_software_main.py", shell=True)
-        setup_menu.set("Setup")
     # currently not used
-    if selected_setup_menu == 'I/O configuration':
+    if setup_menu.get() == 'I/O configuration':
         import GUI_util
         GUI_util.setup_IO_configuration_options(False, scriptName, True)
+
+    setup_menu.set("Setup")
     return error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new
 
 def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
@@ -894,29 +916,12 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     reminders_dropdown_field.trace('w', trace_reminders_dropdown)
 
     # do not lay Setup widget in NLP_menu_main and in NLP_setup_package_language_main
+
+    y_multiplier_integer_SV = y_multiplier_integer
     if not 'package_language' in config_filename and not 'NLP_menu_main' in scriptName:
-        global setup_menu_lb
-        setup_menu.set('Setup')
-        setup_menu_lb = tk.OptionMenu(window, setup_menu,"Setup NLP package and corpus language",
-                                      "Setup external software")
-        window.nametowidget(setup_menu_lb)
-
-        error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
-
-        NLP_current_settings=''
-        if package_display_area_value !='':
-            NLP_current_settings="Current settings - " + package_display_area_value
-        if NLP_current_settings=='':
-            hover_over_x_coordinate=GUI_IO_util.read_button_x_coordinate+300
-        else:
-            hover_over_x_coordinate = GUI_IO_util.read_button_x_coordinate
-        hover_over_info = "Using the dropdown menu, select one of these options:\n" \
-                          "'Setup NLP package and corpus language' to open the GUI to enter default NLP package (spaCy, CoreNLP, Stanza) and language. " + NLP_current_settings + "\n" \
-                          "'Setup external software' to open the GUI to download and instalkl all external software (e.g., Stanford CoreNLP, Gephi)"
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
-                                                       setup_menu_lb, True, False, False, False, 90, hover_over_x_coordinate,
-                                                       hover_over_info)
+        # window.nametowidget(setup_menu_lb)
+        # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+        handle_setup_options(y_multiplier_integer, scriptName)
 
     # there is no RUN button when setting up IO information in NLP_setup_IO_main.py
     if not "IO_setup_main" in scriptName and not "package_language" in scriptName:
@@ -997,9 +1002,9 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     setup_IO_menu_var.trace("w",changed_setup_IO_config)
     changed_setup_IO_config()
 
-    # the trace for these cases is done at the end of those scripts
+    # avoid tracing again since tracing is already done at the bottom of those scripts
     if scriptName!='SVO_main.py' and scriptName!='NLP_parsers_annotators_main.py':
-        setup_menu.trace('w',lambda x, y, z: handle_setup_options(y_multiplier_integer, scriptName, setup_menu.get()))
+        setup_menu.trace('w',lambda x, y, z: handle_setup_options(y_multiplier_integer, scriptName))
 
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
     # run_button_state, answer = activateRunButton(temp_config_filename, IO_setup_display_brief, scriptName, silent)

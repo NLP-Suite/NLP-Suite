@@ -123,10 +123,10 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
                         tokens_ = [token.text.lower() for token in sentences_[sentence_index-1].tokens]
                     else:
                         tokens_ = [token.text for token in sentences_[sentence_index-1].tokens]
-                    
+
                     frequency = 0
                     isCollocation = False
-                    keyword = search_keyword[0] 
+                    keyword = search_keyword[0]
 
                     if keyword in sent:
                         if isFirstOcc:
@@ -332,7 +332,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.append(chart_outputFilename)
+                filesToOpen.extend(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end",
                                        "Finished running the file search script at", True)

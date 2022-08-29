@@ -24,6 +24,9 @@ import config_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPackage,
+    ngrams_analysis_var,
+    n_grams_menu_var,
+    n_grams_options_menu_var,
     corpus_statistics_var,
     corpus_statistics_options_menu_var,
     corpus_text_options_menu_var,
@@ -38,6 +41,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     outputDir_style=outputDir
 
     if (corpus_statistics_var==False and
+        ngrams_analysis_var == False and
         complexity_readability_analysis_var == False and
         vocabulary_analysis_var == False and
         gender_guesser_var==False):
@@ -46,7 +50,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
 
     # COMPUTE Ngrams ______________________________________________________________________________
 
-    if n_grams_var:
+    if ngrams_analysis_var:
         n_grams_word_var = False
         n_grams_character_var = False
         normalize = False
@@ -100,8 +104,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         if "*" in corpus_statistics_options_menu_var or 'frequencies' in corpus_statistics_options_menu_var:
             tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,False,createCharts, chartPackage, stopwords_var, lemmatize_var)
             if tempOutputFiles!=None:
-                filesToOpen.append(tempOutputFiles)
-
+                # chart_outputFilename is a list [] must use extend
+                filesToOpen.extend(tempOutputFiles)
         if "Compute sentence length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
             tempOutputFiles = statistics_txt_util.compute_sentence_length(config_filename, inputFilename, inputDir, outputDir, createCharts, chartPackage)
             if tempOutputFiles!=None:
@@ -174,35 +178,35 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                                                           language_list,
                                                           memory_var, document_length_var, limit_sentence_length_var)
             if output != None:
-                filesToOpen.append(output)
+                filesToOpen.extend(output)
 
         if '*' in vocabulary_analysis_menu_var or 'capital' in vocabulary_analysis_menu_var:
             output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'capital')
             if output != None:
-                filesToOpen.append(output)
+                filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Short' in vocabulary_analysis_menu_var:
             output =statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Short')
             if output != None:
-                filesToOpen.append(output)
+                filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Vowel' in vocabulary_analysis_menu_var:
             output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Vowel')
             if output != None:
-                filesToOpen.append(output)
+                filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Punctuation' in vocabulary_analysis_menu_var:
             output =statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Punctuation')
             if output != None:
-                filesToOpen.append(output)
+                filesToOpen.extend(output)
 
         if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
             output =file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, False, createCharts, chartPackage)
             if output != None:
-                filesToOpen.append(output)
+                filesToOpen.extend(output)
         if '*' == vocabulary_analysis_menu_var or 'Abstract' in vocabulary_analysis_menu_var:
             mode = "both" # mean, median, both (calculates both mean and median)
             output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage, processType='')
             if output != None:
-                filesToOpen.append(output)
+                filesToOpen.extend(output)
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
             output =statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
             if output != None:
@@ -214,8 +218,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                     filesToOpen.append(output)
 
     if ngrams_analysis_var == True:
-        if '*' in ngrams_analysis_menu_var or 'Character' in ngrams_analysis_menu_var or 'Word' in ngrams_analysis_menu_var:
-            if 'Character' in ngrams_analysis_menu_var:
+        if '*' in ngrams_menu_var or 'Character' in ngrams_menu_var or 'Word' in ngrams_menu_var:
+            if 'Character' in ngrams_menu_var:
                 ngramType=0
             else:
                 ngramType = 1
@@ -232,12 +236,12 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                                                               openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_var)
 
-        if '*' in ngrams_analysis_menu_var or 'Hapax' in ngrams_analysis_menu_var:
+        if '*' in ngrams_menu_var or 'Hapax' in ngrams_menu_var:
             ngramsNumber=1
             ngramType = 1
             normalize = False
             excludePunctuation = True
-            if 'Hapax' in ngrams_analysis_menu_var:
+            if 'Hapax' in ngrams_menu_var:
                 frequency = 1
             else:
                 frequency = None
@@ -247,12 +251,12 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                                                               excludePunctuation, ngramType, frequency,
                                                               openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_var)
-        if '*' in ngrams_analysis_menu_var or 'Repetition' in ngrams_analysis_menu_var or 'POSTAG' in ngrams_analysis_menu_var or 'DEPREL' in ngrams_analysis_menu_var or 'NER' in ngrams_analysis_menu_var:
+        if '*' in ngrams_menu_var or 'Repetition' in ngrams_menu_var or 'POSTAG' in ngrams_menu_var or 'DEPREL' in ngrams_menu_var or 'NER' in ngrams_menu_var:
             mb.showwarning('Warning','The selected option is not available yet.\n\nSorry!')
-            if 'Repetition' in ngrams_analysis_menu_var:
+            if 'Repetition' in ngrams_menu_var:
                 mb.showwarning('Warning','Do check out the repetition finder algorithm in the CoNLL Table Analyzer GUI.')
             return
-        if ngrams_analysis_menu_var=='':
+        if ngrams_menu_var=='':
             mb.showwarning('Warning', 'No option has been selected for N-grams analysis.\n\nPlease, select an option and try again.')
             return
 
@@ -274,6 +278,9 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_dropdown_field.get(),
+                                ngrams_analysis_var.get(),
+                                n_grams_menu_var.get(),
+                                n_grams_options_menu_var.get(),
                                 corpus_statistics_var.get(),
                                 corpus_statistics_options_menu_var.get(),
                                 corpus_text_options_menu_var.get(),
@@ -344,7 +351,7 @@ window.bind("<Escape>", clear)
 # GUI CHANGES cut/paste special GUI widgets from GUI_util
 
 n_grams_list=[]
-n_grams_var= tk.IntVar()
+ngrams_analysis_var= tk.IntVar()
 n_grams_menu_var= tk.StringVar()
 n_grams_options_menu_var= tk.StringVar()
 
@@ -357,7 +364,7 @@ gender_guesser_var=tk.IntVar()
 # CoNLL_table_analysis_menu_var=tk.StringVar()
 complexity_readability_analysis_menu_var=tk.StringVar()
 vocabulary_analysis_menu_var=tk.StringVar()
-ngrams_analysis_menu_var=tk.StringVar()
+ngrams_menu_var=tk.StringVar()
 
 corpus_statistics_var = tk.IntVar()
 corpus_statistics_options_menu_var = tk.StringVar()
@@ -375,8 +382,8 @@ nominalization_button = tk.Button(window, width=50, text='Nominalization (Open G
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                nominalization_button)
 
-n_grams_var.set(0)
-n_grams_checkbox = tk.Checkbutton(window, text='Compute n-grams', variable=n_grams_var, onvalue=1, offvalue=0)
+ngrams_analysis_var.set(0)
+n_grams_checkbox = tk.Checkbutton(window, text='Compute n-grams', variable=ngrams_analysis_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,n_grams_checkbox,True)
 
 n_grams_menu_var.set('Word')
@@ -390,7 +397,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 n_grams_options_menu = tk.OptionMenu(window, n_grams_options_menu_var, 'Hapax legomena (once-occurring words/unigrams)','Normalize n-grams', 'Exclude punctuation (word n-grams only)','By sentence index','Repetition of words (last N words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,n_grams_options_menu,True)
 
-add_n_grams_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_n_grams_var())
+add_n_grams_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_ngrams_analysis_var())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+300,y_multiplier_integer,add_n_grams_button, True)
 
 reset_n_grams_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_n_grams_list())
@@ -410,7 +417,7 @@ def show_n_grams_list():
     else:
         mb.showwarning(title='Warning', message='The currently selected n-grams options are:\n\n' + ','.join(n_grams_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
-def activate_n_grams_var():
+def activate_ngrams_analysis_var():
     # Disable the + after clicking on it and enable the class menu
     add_n_grams_button.configure(state='disabled')
     n_grams_options_menu.configure(state='normal')
@@ -502,7 +509,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 gender_guesser_checkbox.configure(state='normal')
 
 def activate_options(*args):
-    if n_grams_var.get() == True:
+    if ngrams_analysis_var.get() == True:
         corpus_statistics_checkbox.configure(state='disabled')
         corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='disabled')
@@ -552,7 +559,7 @@ def activate_options(*args):
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
 
-n_grams_var.trace('w',activate_options)
+ngrams_analysis_var.trace('w',activate_options)
 corpus_statistics_var.trace('w',activate_options)
 complexity_readability_analysis_var.trace('w',activate_options)
 vocabulary_analysis_var.trace('w',activate_options)
