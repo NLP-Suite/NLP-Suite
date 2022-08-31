@@ -220,7 +220,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 														 hover_info_column_list=[],
 														 count_var=count_var)
 
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
         # chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
@@ -239,7 +239,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 														 hover_info_column_list=[],
 														 count_var=count_var)
 
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
         # chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
@@ -258,7 +258,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 														 hover_info_column_list=[],
 														 count_var=count_var)
 
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
         # return filesToOpen # to avoid code breaking in plot by sentence index

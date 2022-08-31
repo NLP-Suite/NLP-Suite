@@ -207,6 +207,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     svo_CoreNLP_merged_file = ""
     svo_SENNA_file = ''
     svo_CoreNLP_single_file = ''
+    location_filename=''
 
     if len(inputFilename) > 0:
         isFile = True
@@ -450,8 +451,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 output = SVO_compare_packages_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
-                    for op in output:
-                        filesToOpen.extend(op)
+                    filesToOpen.extend(output)
 
 # spaCY _____________________________________________________
 
@@ -482,11 +482,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 output = SVO_compare_packages_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
-                    for op in output:
-                        filesToOpen.extend(op)
-
-        # for file in tempOutputFiles:
-        #     svo_result_list.append(file)
+                    filesToOpen.extend(output)
 
     # SENNA _____________________________________________________
 
@@ -514,7 +510,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         else:
             svo_SENNA_files = [svo_SENNA_file]
 
-        filesToOpen.append(svo_SENNA_files)
+        filesToOpen.extend(svo_SENNA_files)
 
         # Filtering SVO
 
@@ -523,7 +519,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 output = SVO_compare_packages_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
-                    filesToOpen.append(output)
+                    filesToOpen.extend(output)
 
         for file in svo_SENNA_files:
             svo_result_list.append(file)
@@ -576,7 +572,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 output = SVO_compare_packages_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
-                    filesToOpen.append(output)
+                    filesToOpen.extend(output)
 
             if lemmatize_verbs:
                 # tempOutputFiles[0] is the filename with lemmatized SVO values
@@ -589,18 +585,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                              openOutputFiles, createCharts, chartPackage, language_var)
                     os.remove(outputFilename)
                     if output != None:
-                        filesToOpen.append(output)
+                        filesToOpen.extend(output)
                     outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
                                                                              config_filename, 'NOUN',
                                                                              openOutputFiles, createCharts, chartPackage, language_var)
                     os.remove(outputFilename)
                     if output != None:
-                        filesToOpen.append(output)
+                        filesToOpen.extend(output)
                 else:
                     reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
                                                  reminders_util.message_no_SVO_records, True)
-            filesToOpen.append(tempOutputFiles)
+            filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
     reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_someone,
@@ -670,35 +666,38 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             # for f in svo_result_list:
                 # SENNA and OpenIE do not have a location field
             if (package_var=='OpenIE' or package_var=='SENNA') and os.path.isfile(location_filename):
+                reminders_util.checkReminder(config_filename, reminders_util.title_options_GIS_OpenIE_SENNA,
+                                             reminders_util.message_GIS_OpenIE_SENNA, True)
+            else:
+                if (package_var != 'OpenIE' and package_var != 'SENNA') and os.path.isfile(location_filename):
+                    reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
+                                                 reminders_util.message_geocoder, True)
+                    # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
+                    date_present = (extract_date_from_text_var == True) or (extract_date_from_filename_var == True)
+                    country_bias = ''
+                    area_var = ''
+                    restrict = False
+                    for location_filename in outputLocations:
+                        out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
+                                     config_filename, location_filename,
+                                     outputDir,
+                                     'Nominatim', 'Google Earth Pro & Google Maps',
+                                     date_present,
+                                     country_bias,
+                                     area_var,
+                                     restrict,
+                                     'Location',
+                                     'utf-8',
+                                     0, 1, [''], [''], # group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
+                                     ['Pushpins'], ['red'], # icon_var_list, specific_icon_var_list,
+                                     [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
+                                     [1], [1]) # bold_var_list, italic_var_list
 
-                reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
-                                             reminders_util.message_geocoder, True)
-                # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
-                date_present = (extract_date_from_text_var == True) or (extract_date_from_filename_var == True)
-                country_bias = ''
-                area_var = ''
-                restrict = False
-                for location_filename in outputLocations:
-                    out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
-                                 config_filename, location_filename,
-                                 outputDir,
-                                 'Nominatim', 'Google Earth Pro & Google Maps',
-                                 date_present,
-                                 country_bias,
-                                 area_var,
-                                 restrict,
-                                 'Location',
-                                 'utf-8',
-                                 0, 1, [''], [''], # group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
-                                 ['Pushpins'], ['red'], # icon_var_list, specific_icon_var_list,
-                                 [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
-                                 [1], [1]) # bold_var_list, italic_var_list
-
-                    if len(out_file) > 0:
-                        # since out_file produced by KML is a list cannot use append
-                        filesToOpen = filesToOpen + out_file
-                    if len(kmloutputFilename) > 0:
-                        filesToOpen.append(kmloutputFilename)
+                        if len(out_file) > 0:
+                            # since out_file produced by KML is a list cannot use append
+                            filesToOpen = filesToOpen + out_file
+                        if len(kmloutputFilename) > 0:
+                            filesToOpen.append(kmloutputFilename)
 
     if openOutputFiles == True and len(filesToOpen) > 0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

@@ -122,6 +122,9 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     #     columns_to_be_plotted_bySent.append([0, i])
     count_var_SV = count_var
 
+    nRecords = IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename)
+
+    print("\n\n\n\nnRecords in inputfile",nRecords, '  ', inputFilename)
 # standard bar chart ------------------------------------------------------------------------------
     if len(columns_to_be_plotted_numeric[0])>0: # compute only if the double list is not empty
         chart_outputFilename = run_all(columns_to_be_plotted_numeric, inputFilename, outputDir,
@@ -138,7 +141,10 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
             chart_outputFilenameSV=chart_outputFilename
             if len(chart_outputFilename) > 0:
                 filesToOpen.append(chart_outputFilename)
-
+        else:
+            # no point continuing to process more Excel charts if an error was encountered and None was returned
+            #   typically because of too many rows for Excel to handle
+            return
 
 # bar charts by DOCUMENT ------------------------------------------------------------------------
         # columns_to_be_plotted_byDoc is a double list [[][]] with
@@ -276,7 +282,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 else:
                     # Using the output from statistics_csv_util.compute_csv_column_frequencies_with_aggregation
                     #   Document, Frequency, Sentence ID, Field to be plotted (e.g., POStag)
-                    columns_to_be_plotted_bySent = [[1, 4, 2, 3]]
+                    # columns_to_be_plotted_bySent = [[1, 4, 2, 3]]
+                    columns_to_be_plotted_bySent = [[2, 4]]
             else: # numeric values of field(s) to be plotted
                 columns_to_be_plotted_bySent = []
                 if n_documents > 1:
@@ -394,7 +401,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
                                 chart_type_list,count_var,
                                 column_yAxis_field_list)
     if data_to_be_plotted==None:
-            return ''
+            return
 
     transform_list = []
     # the following is deciding which type of data is returned from prepare_data_to_be_plotted_inExcel
@@ -409,7 +416,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             transform_list.append(data)
             data_to_be_plotted=transform_list
     if data_to_be_plotted==None:
-            chart_outputFilename = ""
+            return
     else:
         chart_title = chart_title
         chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window, data_to_be_plotted, inputFilename, outputDir,
@@ -444,8 +451,11 @@ def get_dataRange(columns_to_be_plotted, data):
     dataRange = []
     for i in range(len(columns_to_be_plotted)):
         for row in data:
-            rowValues = list(row[w] for w in columns_to_be_plotted[i])
-            dataRange.append(rowValues)
+            try:
+                rowValues = list(row[w] for w in columns_to_be_plotted[i])
+                dataRange.append(rowValues)
+            except IndexError:
+                continue
     dataRange = [ dataRange [i:i + len(data)] for i in range(0, len(dataRange), len(data)) ]
     return dataRange
 
@@ -488,7 +498,10 @@ def get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,colu
             if len(specific_column_value_list)>0:
                 specific_column_value=specific_column_value_list[k]
             #get all the values in the selected column
-            column_list = [i[1] for i in data_list[k]] # here is the problem   TODO TONY the datalist is like [['NN','NN'], ...]
+            try:
+                column_list = [i[1] for i in data_list[k]] # here is the problem   TODO TONY the datalist is like [['NN','NN'], ...]
+            except IndexError:
+                continue
             counts = Counter(column_list).most_common()
             if len(headers) > 0:
                 id_name_num = columns_to_be_plotted[k][0]
@@ -563,20 +576,22 @@ def header_check(inputFile):
     # Frequenc to capture Frequency and Frequencies
     # str added since the header may contain several instances of the searched item (e.g., Mean score, Median score)
     #   in which case it would not be found
-    if 'Frequenc' in str(header) or 'Number of' in str(header) or 'score' in str(header) or 'Score' in str(header):
+    str_header=str(', '.join(header))
+    if 'Frequenc' in str_header or 'Number of' in str_header or 'score' in str_header or 'Score' in str_header:
         # the code would break with the wrong header item (e.g., no Frequency in header to get the index
         # TODO 2 things:
         #   1. get the right header value (e.g., Number of words, or Score, instead of Frequency)
         #   2. Loop through the header containing a specific value (e.g., score) and get all its positions (e.g., Mean score, Median score)
         #   frequency_pos needs to be a list [] rather than a string to accommodate for multiple instances
         # https://stackoverflow.com/questions/64127075/how-to-retrieve-partial-matches-from-a-list-of-strings
-        if 'score' in str(header) or 'Score' in str(header):
-            result = list(filter(lambda x: 'Score' in x or 'score' in x, header))
-        try:
-            for i in range(0,len(result)):
-                frequency_pos.append(header.index(result[i]))
-        except:
-            pass
+        # TODO MINO it is not just score/Score that can be repeated in different columns of a header
+        #   but also Frequency/Frequencies, as for Number of I am not
+            result = list(filter(lambda x: 'Frequenc' in x or 'Number of' in x or 'Score' in x or 'score' in x, header))
+            try:
+                for i in range(0,len(result)):
+                    frequency_pos.append(header.index(result[i]))
+            except:
+                pass
     else:
         pass
     return sentenceID_pos, docCol_pos, docName_pos, frequency_pos, header

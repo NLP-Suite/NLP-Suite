@@ -102,8 +102,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         unusual=list(unusual)
         #sort the list
         unusual.sort()
-        unusual = [[word,documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)] for word in unusual]
-        container.append(unusual)
+        [container.append([word, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)]) for word in unusual]
     container.insert(0, ['Misspelled/unusual word','Document ID', 'Document'])
     if len(container)>0:
         if IO_csv_util.list_to_csv(window,container,outputFilename): return
@@ -495,7 +494,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                                chart_title_label='')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
+                    filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -776,6 +775,7 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
 # function implements three different approaches to language detection: langdetect, spacy, langid
 # https://towardsdatascience.com/benchmarking-language-detection-for-nlp-8250ea8b67c
 # TODO print all languages and their probabilities in a csv file, with Language, Probability, Document ID, Document (with hyperlink)
+
 def language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
 
     folderID = 0
@@ -792,16 +792,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
     if IO_csv_util.openCSVOutputFile(outputFilenameCSV):
         return
 
-    fieldnames = ['LANGDETECT',
-                  'Language',
-                  'Probability',
-                  'SPACY',
-                  'Language',
-                  'Probability',
-                  'LANGID',
-                  'Language',
-                  'Probability',
-                  'Stanza',
+    fieldnames = ['NLP Language Package',
                   'Language',
                   'Probability',
                   'Document ID',
@@ -867,40 +858,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             # ISO codes https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
             print('   LANGDETECT', language, probability)
             # print('   LANGDETECT',value[0],value[1])  # [cs:0.7142840957132709, pl:0.14285810606233737, sk:0.14285779665739756]
-            currentLine = ['LANGDETECT', language, probability]
-
-# spaCY ----------------------------------------------------------
-            nlp_spacy = spacy.load('en_core_web_sm')
-            Language.factory("language_detector", func=get_lang_detector)
-            nlp_spacy.add_pipe('language_detector', last=True)
-            try:
-                doc = nlp_spacy(text)
-            except:
-                if filename!=filenameSV: # do not count the same document twice in this and the other algorithm that follows
-                    docErrors_unknown = docErrors_unknown + 1
-                    filenameSV=filename
-                print("  spaCy Unknown file read error.")
-                break # continue
-            value = doc._.language
-            language=value['language']
-            # TODO MINO get the value from the list in constants_util
-            language = lang_dict.get(language)
-            probability=round(float(value['score']),2)
-            # probability=round(value['score'],2)
-            #
-            print('   SPACY', language, probability)  # {'language': 'en', 'score': 0.9999978351575265}
-            currentLine.append(['SPACY', language, probability])
-
-            lang_identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
-            try:
-                value=lang_identifier.classify(text)
-            except:
-                if filename!=filenameSV:
-                    docErrors_unknown = docErrors_unknown + 1
-                    filenameSV=filename
-                print("  spaCy Unknown file read error.")
-                break # continue
-            # TODO MINO get the value from the list in constants_util
+            currentLine = [['LANGDETECT', language, probability, fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)]]
 
 # LANGID ----------------------------------------------------------
 
@@ -921,21 +879,51 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             # sr, sv, sw, ta, te, th, tl, tr, ug, uk,
             # ur, vi, vo, wa, xh, zh, zu
             print('   LANGID', language, probability)  # ('en', 0.999999999999998)
-            currentLine.append(['LANGID',  language, probability])
+            currentLine.append(['LANGID',  language, probability, fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
+
+# spaCY ----------------------------------------------------------
+            nlp_spacy = spacy.load('en_core_web_sm')
+            Language.factory("language_detector", func=get_lang_detector)
+            nlp_spacy.add_pipe('language_detector', last=True)
+            try:
+                doc = nlp_spacy(text)
+            except:
+                if filename!=filenameSV: # do not count the same document twice in this and the other algorithm that follows
+                    docErrors_unknown = docErrors_unknown + 1
+                    filenameSV=filename
+                print("  spaCy Unknown file read error.")
+                break # continue
+            value = doc._.language
+            language=value['language']
+            language = lang_dict.get(language)
+            probability=round(float(value['score']),2)
+            # probability=round(value['score'],2)
+            #
+            print('   SPACY', language, probability)  # {'language': 'en', 'score': 0.9999978351575265}
+            currentLine.append(['spaCy', language, probability, fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
+
+            lang_identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
+            try:
+                value=lang_identifier.classify(text)
+            except:
+                if filename!=filenameSV:
+                    docErrors_unknown = docErrors_unknown + 1
+                    filenameSV=filename
+                print("  spaCy Unknown file read error.")
+                break # continue
 
 # Stanza  ----------------------------------------------------------
 
             doc = nlp_stanza(text)
             language = doc.lang
             language = lang_dict.get(language)
-            probability = ''
+            probability = float(1)
             print('   Stanza', language, probability)
-            currentLine.append(['Stanza',  language, probability])
+            currentLine.append(['Stanza',  language, probability, fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
 
-            currentLine.append([fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
-
+            # currentLine.append([fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
             writer = csv.writer(csvfile)
-            writer.writerows([currentLine])
+            writer.writerows(currentLine)
             filenameSV=filename
     csvfile.close()
     msg=''
@@ -957,9 +945,9 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                                        'Finished running Language Detection at', True,'Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.', True, startTime, True)
     print('Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.')
     if createCharts:
-        columns_to_be_plotted=[[1, 1],[4,4],[7,7]]
-        chart_title='Frequency of Languages Detected by 3 Algorithms'
-        hover_label=['LANGDETECT', 'SPACY', 'LANGID']
+        columns_to_be_plotted=[[1, 1]]
+        chart_title='Frequency of Languages Detected by LANGDETECT, LANGID, spaCy, and Stanza'
+        hover_label=[]
         inputFilename = outputFilenameCSV
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                                   outputFileLabel='_bar_chart',
@@ -975,6 +963,5 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
     # if openOutputFiles:
     #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
     return filesToOpen
-
 def get_lang_detector(nlp, name):
     return LanguageDetector()

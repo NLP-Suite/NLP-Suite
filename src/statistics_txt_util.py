@@ -648,9 +648,14 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                 # process hapax
                 document_ngramsList = process_hapax(document_ngramsList, frequency, excludePunctuation)
 
-                ngramsList.append(ngrams)
-                corpus_ngramsList.append(document_ngramsList)
-
+                if len(ngrams)>1 and isinstance(ngrams[0], list):
+                    ngramsList.extend(ngrams)
+                else:
+                    ngramsList.append(ngrams)
+                if len(document_ngramsList)>1 and isinstance(document_ngramsList[0], list):
+                    corpus_ngramsList.extend(document_ngramsList)
+                else:
+                    corpus_ngramsList.append(document_ngramsList)
         if excludePunctuation:
             corpus_freq_pos = 2  # corpus frequency position
         else:
@@ -658,7 +663,12 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
 
         if inputDir != '':
             # n-grams frequencies must be computed by entire corpus
-            ctr_corpus = collections.Counter(Extract(ngramsList))
+            try:
+                # n-grams frequencies must be computed by entire corpus
+                ctr_corpus = collections.Counter(Extract(ngramsList))
+            except:
+                temp = Extract(ngramsList)
+                ctr_corpus = collections.Counter(Extract(temp))
             # loop through the distinct values of every token in the corpus to get their frequencies
             for item in ctr_corpus:
                 # loop through all values of the ngramsList organized by documents
@@ -672,7 +682,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
         # ngramsList = sorted(ngramsList, key=lambda x: x[1])
 
         # insert headers
-        if excludePunctuation:
+        if excludePunctuation: # exclude punctuation header
             if inputDir == '':
                 corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Frequency in Document',
                                      'Document ID', 'Document'])
@@ -680,7 +690,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                 corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Frequency in Document', 'Frequency in Corpus',
                                              'Document ID', 'Document'])
             columns_to_be_plotted = [str(gram) + '-grams' + hapax_header]
-        else:
+        else: # include punctuation header
             if inputDir == '':
                 corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Punctuation',
                                      'Frequency in Document',
@@ -689,7 +699,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                 corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Punctuation',
                                              'Frequency in Document', 'Frequency in Corpus',
                                              'Document ID', 'Document'])
-            # columns_to_be_plotted = ['Punctuation']
+            columns_to_be_plotted = [str(gram) + '-grams' + hapax_header]
 
         # save output file after each n-gram value in the range
         # code in next line breaks
@@ -948,7 +958,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     column_xAxis_label = 'Punctuation symbols of pathos (?!)'
                     if word != '!' and word != '?':
                         continue
-                    word_list.append([[word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
+                    word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
                     if doc not in punctuation_docs:
                         punctuation_docs.append(doc)
                     if '!' in word and '?' in word:
@@ -960,11 +970,11 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
 
 # N-GRAMS & HAPAX --------------------------------------------------------------------------
                 if processType == '' or "N-grams" in processType or \
-                        "hapax" in processType.lower() or "Vocabulary (via unigrams)" in processType.lower():
+                        "hapax" in processType.lower() or "unigrams" in processType.lower():
                     if "hapax" in processType.lower():
                         ngramsNumber = 1
                         frequency = 1  # hapax
-                    elif "Vocabulary (via unigrams)" in processType.lower():
+                    elif "unigrams" in processType.lower():
                         ngramsNumber = 1
                         frequency = 0
                     else:

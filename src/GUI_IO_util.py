@@ -157,22 +157,23 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
                                                     y_coordinate,
                                                     x_coordinate_hover_over,
                                                     text_info)))
-            elif 'optionmenu' in str(widget_name):
-                try:
-                    widget_name.bind('<Enter>',
-                         lambda e: e.widget.config(activeforeground='red', text=label))
-                except:
-                    print("error 1")
-                try:
-                    # TODO if widget_name is optionmenu it does not enter display_widget_info
-                    widget_name.bind('<Enter>',
-                         lambda e: display_widget_info(window, e, x_coordinate,
-                                                       y_coordinate,
-                                                       x_coordinate_hover_over,
-                                                       text_info))
-                except:
-                    print("error 2")
-                # this does the above in one go; once we get it to work, we should eliminate the above
+            # elif 'optionmenu' in str(widget_name):
+            #     try:
+            #         widget_name.bind('<Enter>',
+            #              lambda e: e.widget.config(activeforeground='red', text=label))
+            #     except:
+            #         print("error 1")
+            #     try:
+            #         # TODO if widget_name is optionmenu it does not enter display_widget_info
+            #         widget_name.bind('<Enter>',
+            #              lambda e: display_widget_info(window, e, x_coordinate,
+            #                                            y_coordinate,
+            #                                            x_coordinate_hover_over,
+            #                                            text_info))
+            #     except:
+            #         print("error 2")
+            #     # this does the above in one go; once we get it to work, we should eliminate the above
+            else:
                 # TODO code breaks when widget_name is optionmenu
                 widget_name.bind('<Enter>',
                      lambda e: (e.widget.config(activeforeground='red', text=label), display_widget_info(window, e, x_coordinate,

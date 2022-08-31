@@ -277,7 +277,7 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
                                                   count_var=0,
                                                   column_yAxis_label_var=yAxis)
 
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
         columns_to_be_plotted=[[0, 1]]
@@ -296,7 +296,7 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
                                                   count_var=0,
                                                   column_yAxis_label_var=yAxis)
 
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles:

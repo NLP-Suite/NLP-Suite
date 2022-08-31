@@ -1626,12 +1626,12 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         gender_df = pd.DataFrame(gender_info, columns=["Subject (S)", "S Gender", "Sentence Set", "Document ID"])
         merge_df = pd.merge(SVO_df, gender_df, on=["Subject (S)", "Document ID"], how='left')
 
-        gender_df = pd.DataFrame(gender_info, columns=["Object (O)", "O Gender", "Sentence Set", "Document ID"])        
+        gender_df = pd.DataFrame(gender_info, columns=["Object (O)", "O Gender", "Sentence Set", "Document ID"])
         merge_df = pd.merge(merge_df, gender_df, on=["Object (O)", "Document ID"], how='left')
-        
+
         merge_df = merge_df[['Subject (S)', 'S Gender', 'Verb (V)', 'Object (O)', 'O Gender', 'Sentence ID','Sentence', 'Document ID', 'Document']]
         merge_df = merge_df.drop_duplicates()
-        
+
         merge_df.to_csv(kwargs["gender_filename"], index=False, mode="a", encoding = language_encoding)
 
     if quote_var:
@@ -2161,10 +2161,15 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
         else:
             #for coref, total count = number of resolved pronouns, the all_pronouns in the input is the number
             #of all pronouns in the text
-            mb.showwarning(title='Coreference results', message="Number of pronouns: " + str(
+            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Coreference results',
+                "Number of pronouns: " + str(
                 all_pronouns) + "\nNumber of coreferenced pronouns: " + str(
                 corefed_pronouns) + "\nPronouns coreference rate: " + str(
                 round((corefed_pronouns / all_pronouns) * 100, 2)) + "%")
+            # mb.showwarning(title='Coreference results', message="Number of pronouns: " + str(
+            #     all_pronouns) + "\nNumber of coreferenced pronouns: " + str(
+            #     corefed_pronouns) + "\nPronouns coreference rate: " + str(
+            #     round((corefed_pronouns / all_pronouns) * 100, 2)) + "%")
             print("Number of pronouns: ", all_pronouns)
             print("Number of coreferenced pronouns: ", corefed_pronouns)
             print("Pronouns coreference rate: ", str(round((corefed_pronouns / all_pronouns) * 100, 2)) + "%")

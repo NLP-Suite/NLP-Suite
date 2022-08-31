@@ -231,7 +231,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
                                                   column_xAxis_label_var='',
                                                   hover_info_column_list=hover_label,
                                                   count_var=1)
-    if chart_outputFilename != "":
+    if chart_outputFilename != None:
         filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles == True:

@@ -738,7 +738,6 @@ def display_setup_hover_over(y_multiplier_integer):
                                   "Setup external software")
 
     if y_multiplier_integer_SV==0:
-        print("LAY WIDGET hover_over_info",hover_over_info)
         # the widget has not been placed yet on the GUI
         y_multiplier_integer_SV=y_multiplier_integer
         # place widget with hover-over info
@@ -748,7 +747,6 @@ def display_setup_hover_over(y_multiplier_integer):
                                                        hover_over_x_coordinate,
                                                        hover_over_info)
     else:
-        print("NO LAY WIDGET hover_over_info",hover_over_info)
         GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer_SV, setup_menu_lb, False,
                           False, 90, hover_over_info)
         # setup_menu.set('Setup')

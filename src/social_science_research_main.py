@@ -197,7 +197,7 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
                                                   chart_title='Frequency of Plagiarism by Classes of % Duplication',
                                                   column_xAxis_label_var='Classes of percentage duplication',
                                                   hover_info_column_list=hover_label)
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
         # Plot Lucene_classes_time_freq.csv line plot (temporal plot); outputFilenameCSV_2
@@ -214,7 +214,7 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
                                                       chart_title='Frequency of Plagiarism by Year',
                                                       column_xAxis_label_var='Year',
                                                       hover_info_column_list=hover_label)
-            if chart_outputFilename != "":
+            if chart_outputFilename != None:
                 filesToOpen.append(chart_outputFilename)
 
         # No plot for Lucene_document_classes_freq.csv
@@ -233,7 +233,7 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
                                                   chart_title='Frequency of Plagiarism by Document Name & Classes',
                                                   column_xAxis_label_var='',
                                                   hover_info_column_list=hover_label)
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running PLAGIARIST at', True, '', True, startTime)

@@ -78,16 +78,18 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
 
+        # word n-grams
         if n_grams_word_var or bySentenceIndex_word_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, n_grams_size, normalize,
-                                                              excludePunctuation, 1, openOutputFiles,
+                                                              excludePunctuation, 1, 0, openOutputFiles,
                                                               createCharts, chartPackage,
                                                               bySentenceIndex_word_var)
+        # character n-grams
         if n_grams_character_var or bySentenceIndex_character_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, n_grams_size, normalize,
-                                                              excludePunctuation, 0, openOutputFiles,
+                                                              excludePunctuation, 0, 0, openOutputFiles,
                                                               createCharts, chartPackage,
                                                               bySentenceIndex_character_var)
 
@@ -210,12 +212,13 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
             output =statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
             if output != None:
-                filesToOpen.append(output)
+                # output is a list must use extend
+                filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'detection' in vocabulary_analysis_menu_var:
                 output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style,
                                                                          openOutputFiles, createCharts, chartPackage)
                 if output != None:
-                    filesToOpen.append(output)
+                    filesToOpen.extend(output)
 
     if ngrams_analysis_var == True:
         if '*' in ngrams_menu_var or 'Character' in ngrams_menu_var or 'Word' in ngrams_menu_var:
@@ -332,10 +335,12 @@ inputFilename=GUI_util.inputFilename
 GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 
 def clear(e):
+    n_grams_checkbox.configure(state='normal')
     corpus_statistics_checkbox.configure(state='normal')
     complexity_readability_analysis_checkbox.configure(state='normal')
     vocabulary_analysis_checkbox.configure(state='normal')
 
+    ngrams_analysis_var.set(0)
     corpus_statistics_var.set(0)
     complexity_readability_analysis_var.set(0)
     vocabulary_analysis_var.set(0)

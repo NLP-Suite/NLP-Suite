@@ -213,7 +213,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     #                                           column_xAxis_label_var='Topic number',
     #                                           hover_info_column_list=hover_label)
     #
-    # if chart_outputFilename != "":
+    # if chart_outputFilename != None:
     #     filesToOpen.append(chart_outputFilename)
 
     # Find the most representative document for each topic
@@ -248,7 +248,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
                                               column_xAxis_label_var='Topic number',
                                               hover_info_column_list=hover_label)
 
-    if chart_outputFilename != "":
+    if chart_outputFilename != None:
         filesToOpen.append(chart_outputFilename)
 
     # Topic distribution across documents
@@ -314,7 +314,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     #                                           column_xAxis_label_var='Topic number',
     #                                           hover_info_column_list=hover_label)
     #
-    # if chart_outputFilename != "":
+    # if chart_outputFilename != None:
     #     filesToOpen.append(chart_outputFilename)
 
 

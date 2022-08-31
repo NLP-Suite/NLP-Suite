@@ -10,10 +10,12 @@ from typing import List
 import requests
 import webbrowser
 
+import GUI_util
 import GUI_IO_util
 import reminders_util
 import TIPS_util
 import IO_internet_util
+import IO_user_interface_util
 
 # import pip not used
 # def install(package):
@@ -135,7 +137,6 @@ def install_all_packages(window, calling_script, modules_to_try):
 #   'corpora/stopwords','stopwords'
 
 def import_nltk_resource(window, resource_path, resource):
-    import IO_user_interface_util
     try:
         import nltk.data
         nltk.data.find(resource_path)
@@ -306,8 +307,12 @@ def check_CoreNLPVersion(CoreNLPdir,calling_script=''):
         if f.startswith("stanford-corenlp-"):
             local_version = f[:-4].split("-")[2]
             if github_version != local_version:
-                mb.showwarning("Warning", "Oops! Your local Stanford CoreNLP version is " + local_version +
-                               ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nYour current version of Stanford CoreNLP will run anyway, but you should update to the latest release.")
+                IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Stanford CoreNLP version',
+                               "Oops! Your local Stanford CoreNLP version is " + local_version +
+                               ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nYour current version of Stanford CoreNLP will run anyway, but you should update to the latest release.",
+                                                   False,'',True)
+                # mb.showwarning("Warning", "Oops! Your local Stanford CoreNLP version is " + local_version +
+                #                ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nYour current version of Stanford CoreNLP will run anyway, but you should update to the latest release.")
                 if calling_script != 'NLP_menu_main':
                     get_external_software_dir('calling_script', 'Stanford CoreNLP', silent=False, only_check_missing=False)
                 return False
@@ -577,7 +582,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
 
         if (not errorFound) and (package!='') and ((calling_script=='NLP_menu') or (calling_script=='NLP_setup_external_software_main.py')):
             if package == 'Stanford CoreNLP':
-                check_CoreNLPVersion(software_dir, calling_script)
+                check_CoreNLPVersion(GUI_util.window,software_dir, calling_script)
                 # software_dir = ''
                 # missing_software = package
             answer = tk.messagebox.askyesno(title=package, message='The external software ' + package + ' is already installed at ' + software_dir + '\n\nDo you want to re-install the software, in case you moved it to a different location?')

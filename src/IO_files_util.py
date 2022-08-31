@@ -1,4 +1,5 @@
 # Written by Roberto Franzosi Fall 2020
+# Written by Roberto Franzosi Fall 2020
 
 import sys
 import GUI_util
@@ -12,7 +13,7 @@ from sys import platform
 import tkinter.messagebox as mb
 import tkinter as tk
 from tkinter import filedialog
-# import nltk
+import math
 import webbrowser
 import re
 import datetime
@@ -347,7 +348,8 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir):
         return
     if len(filesToOpen) == 0:
         return
-    if filesToOpen != list:
+    # if filesToOpen != list:
+    if not isinstance(filesToOpen, list):
         if isinstance(filesToOpen, set):
             filesToOpen = list(set(filesToOpen))
         else:
@@ -371,6 +373,8 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir):
         routine_options = reminders_util.getReminders_list('*')
         IO_user_interface_util.timed_alert(window, 2000, 'Warning',
                     'Opening ' + str(len(filesToOpen)) + ' output ' + singularPlural + '... Please wait...', False,'',True,'',True)
+        if isinstance(filesToOpen[0], list):
+            filesToOpen = filesToOpen[0]
         for file in filesToOpen:
             if file == None or file == '':
                 continue
@@ -395,12 +399,17 @@ def getFilename(passed_string):
     #   undressed the hyperlink and only display the tail of the document
     tail=passed_string
     tail_noExtension=''
-    if '=hyperlink' in passed_string:
-        passed_string=IO_csv_util.undressFilenameForCSVHyperlink(passed_string)
-    if os.path.isfile(passed_string):
-        head, tail = os.path.split(passed_string)
-        tail_noExtension = tail.replace(getFileExtension(tail),'')
-    return tail, tail_noExtension, passed_string
+
+
+    if isinstance(passed_string, str): # and math.isnan(passed_string) is False
+        if '=hyperlink' in passed_string:
+            passed_string=IO_csv_util.undressFilenameForCSVHyperlink(passed_string)
+        if os.path.isfile(passed_string):
+            head, tail = os.path.split(passed_string)
+            tail_noExtension = tail.replace(getFileExtension(tail),'')
+        return tail, tail_noExtension, passed_string
+    elif math.isnan(passed_string):
+        return '', '', passed_string
 
 
 # def getFilename(inputFilename):
