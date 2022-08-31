@@ -105,7 +105,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
                                                             count_var=count_var)
 
 
-            if chart_outputFilename != "":
+            if chart_outputFilename != None:
                 filesToOpen.append(chart_outputFilename)
 
             # line plot by sentence index
@@ -187,7 +187,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
                                                             hover_info_column_list=[],
                                                             count_var=count_var)
 
-            if chart_outputFilename != "":
+            if chart_outputFilename != None:
                 filesToOpen.append(chart_outputFilename)
             
             outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
@@ -271,7 +271,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
                                                             hover_info_column_list=[],
                                                             count_var=count_var)
 
-            if chart_outputFilename != "":
+            if chart_outputFilename != None:
                 filesToOpen.append(chart_outputFilename)
 
 
@@ -355,7 +355,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
                                                             count_var=count_var)
 
 
-            if chart_outputFilename != "":
+            if chart_outputFilename != None:
                 filesToOpen.append(chart_outputFilename)
 
             # function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, outputDir, '.xlsx', 'FW', 'Conjunctions', 'stats_pie_chart')
@@ -439,7 +439,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
                                                             hover_info_column_list=[],
                                                             count_var=count_var)
 
-            if chart_outputFilename != "":
+            if chart_outputFilename != None:
                 filesToOpen.append(chart_outputFilename)
 
             # return filesToOpen  # to avoid code breaking in plot by sentence index

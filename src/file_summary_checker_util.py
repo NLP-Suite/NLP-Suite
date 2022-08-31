@@ -405,7 +405,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
                                                   chart_title='Missing Character (File Summaries in Error)',
                                                   column_xAxis_label_var='Type of Error',
                                                   hover_info_column_list=hover_label)
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
 

@@ -101,7 +101,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         # unusual = [[documentID, file, word] for word in unusual]
         unusual = [[documentID, IO_csv_util.dressFilenameForCSVHyperlink(file), word] for word in unusual]
         container.append(unusual)
-    container.insert(0, ['Document ID', 'Document', 'Misspelled/unusual word'])
+    container.insert(0, ['Misspelled/unusual word', 'Document ID', 'Document'])
     if len(container)>0:
         if IO_csv_util.list_to_csv(window,container,outputFilename): return
     else:
@@ -127,7 +127,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                                                    column_xAxis_label_var='',
                                                    hover_info_column_list=hover_label,
                                                    count_var=1)
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
              filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles==True:
@@ -443,7 +443,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
             if createCharts:
                 chart_outputFilename=createChart(outputFileName_simple, outputDir, [[10, 10]], '')
 
-                if chart_outputFilename != "":
+                if chart_outputFilename != None:
                     filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles == True:
@@ -480,7 +480,7 @@ def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutp
            input_original.append(original[i])
            input_corrected.append(corrected[i])
     file_cleaner_util.find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFiles,input_original,input_corrected,False)
-        
+
 
 
 def spellchecking_autocorrect(text: str, inputFilename) -> (str, DataFrame):
@@ -646,7 +646,7 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
     fileID = 0
 
     autocorrect_df = pd.DataFrame({'Original': [],
-                                    'Corrected': [],      
+                                    'Corrected': [],
                                     "Document ID":[],
                                     "Document": []})
 

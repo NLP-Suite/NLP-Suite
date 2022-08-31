@@ -16,13 +16,6 @@ from collections import Counter
 import string
 from nltk.stem.porter import PorterStemmer
 
-import statistics_csv_util
-import IO_user_interface_util
-
-import csv
-import nltk
-import GUI_IO_util
-
 # from nltk import tokenize
 # from nltk import word_tokenize
 from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
@@ -47,9 +40,12 @@ import ast
 import textstat
 import subprocess
 import spacy
+import csv
+import nltk
 from nltk.tree import Tree
 from nltk.draw import TreeView
 from PIL import Image
+
 
 #whether stopwordst were already downloaded can be tested, see stackoverflow
 #   https://stackoverflow.com/questions/23704510/how-do-i-test-whether-an-nltk-resource-is-already-installed-on-the-machine-runni
@@ -69,7 +65,8 @@ from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize
 from itertools import groupby
 import textstat
 
-import charts_util
+import IO_user_interface_util
+import GUI_IO_util
 import charts_util
 import IO_files_util
 import IO_csv_util
@@ -277,7 +274,8 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                                                            chart_title_label='Statistical Measures for Number of Sentences')
 
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            # chart_outputFilename is a list [] must use extend
+            filesToOpen.extend(chart_outputFilename)
 
         # number of words in input
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
@@ -291,7 +289,8 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                                                            chart_title_label='Statistical Measures for Number of Words')
 
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            # chart_outputFilename is a list [] must use extend
+            filesToOpen.extend(chart_outputFilename)
 
         # number of syllables in input
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
@@ -306,7 +305,8 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                                                            chart_title_label='Statistical Measures for Number of Syllables')
 
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            # chart_outputFilename is a list [] must use extend
+            filesToOpen.extend(chart_outputFilename)
 
         # TODO
         #   we should create 10 classes of values by distance to the median of
@@ -397,7 +397,7 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
                                                        plotList=['Sentence length (in words)'], chart_title_label='Statistical Measures for Sentence Lenghts')
 
     if chart_outputFilename != None:
-        filesToOpen.append(chart_outputFilename)
+        filesToOpen.extend(chart_outputFilename)
 
     return filesToOpen
 
@@ -469,7 +469,7 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
                                               plotList=['Line length (in words)'], chart_title_label='Statistical Measures for Line Length')
 
     if chart_outputFilename != None:
-        filesToOpen.append(chart_outputFilename)
+        filesToOpen.extend(chart_outputFilename)
 
     return filesToOpen
 
@@ -648,9 +648,14 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                 # process hapax
                 document_ngramsList = process_hapax(document_ngramsList, frequency, excludePunctuation)
 
-                ngramsList.append(ngrams)
-                corpus_ngramsList.append(document_ngramsList)
-
+                if len(ngrams)>1 and isinstance(ngrams[0], list):
+                    ngramsList.extend(ngrams)
+                else:
+                    ngramsList.append(ngrams)
+                if len(document_ngramsList)>1 and isinstance(document_ngramsList[0], list):
+                    corpus_ngramsList.extend(document_ngramsList)
+                else:
+                    corpus_ngramsList.append(document_ngramsList)
         if excludePunctuation:
             corpus_freq_pos = 2  # corpus frequency position
         else:
@@ -658,7 +663,12 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
 
         if inputDir != '':
             # n-grams frequencies must be computed by entire corpus
-            ctr_corpus = collections.Counter(Extract(ngramsList))
+            try:
+                # n-grams frequencies must be computed by entire corpus
+                ctr_corpus = collections.Counter(Extract(ngramsList))
+            except:
+                temp = Extract(ngramsList)
+                ctr_corpus = collections.Counter(Extract(temp))
             # loop through the distinct values of every token in the corpus to get their frequencies
             for item in ctr_corpus:
                 # loop through all values of the ngramsList organized by documents
@@ -672,7 +682,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
         # ngramsList = sorted(ngramsList, key=lambda x: x[1])
 
         # insert headers
-        if excludePunctuation:
+        if excludePunctuation: # exclude punctuation header
             if inputDir == '':
                 corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Frequency in Document',
                                      'Document ID', 'Document'])
@@ -680,7 +690,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                 corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Frequency in Document', 'Frequency in Corpus',
                                              'Document ID', 'Document'])
             columns_to_be_plotted = [str(gram) + '-grams' + hapax_header]
-        else:
+        else: # include punctuation header
             if inputDir == '':
                 corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Punctuation',
                                      'Frequency in Document',
@@ -689,7 +699,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                 corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Punctuation',
                                              'Frequency in Document', 'Frequency in Corpus',
                                              'Document ID', 'Document'])
-            # columns_to_be_plotted = ['Punctuation']
+            columns_to_be_plotted = [str(gram) + '-grams' + hapax_header]
 
         # save output file after each n-gram value in the range
         # code in next line breaks
@@ -714,7 +724,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                                                                chart_title_label='Statistical Measures for ' + str(gram) + '-gram')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
-                    filesToOpen.append(chart_outputFilename)
+                    filesToOpen.extend(chart_outputFilename)
         gram += 1
 
     return filesToOpen
@@ -948,7 +958,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     column_xAxis_label = 'Punctuation symbols of pathos (?!)'
                     if word != '!' and word != '?':
                         continue
-                    word_list.append([[word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
+                    word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
                     if doc not in punctuation_docs:
                         punctuation_docs.append(doc)
                     if '!' in word and '?' in word:
@@ -960,11 +970,11 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
 
 # N-GRAMS & HAPAX --------------------------------------------------------------------------
                 if processType == '' or "N-grams" in processType or \
-                        "hapax" in processType.lower() or "Vocabulary (via unigrams)" in processType.lower():
+                        "hapax" in processType.lower() or "unigrams" in processType.lower():
                     if "hapax" in processType.lower():
                         ngramsNumber = 1
                         frequency = 1  # hapax
-                    elif "Vocabulary (via unigrams)" in processType.lower():
+                    elif "unigrams" in processType.lower():
                         ngramsNumber = 1
                         frequency = 0
                     else:
@@ -1000,7 +1010,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                                                chart_title_label='Statistical Measures for ' + column_xAxis_label)
 
     if chart_outputFilename != None:
-        filesToOpen.append(chart_outputFilename)
+        filesToOpen.extend(chart_outputFilename)
 
     # ngrams already display the started running... No need to duplicate
     if not 'unigrams' in processType:
@@ -1331,7 +1341,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                                                                    chart_title_label='')
                 if chart_outputFilename != None:
                     if len(chart_outputFilename) > 0:
-                        filesToOpen.append(chart_outputFilename)
+                        filesToOpen.extend(chart_outputFilename)
 
                 # 0 (Flesch Reading Ease) has a different scale and 3 (SMOG) is often 0
                 #	do NOT plot on the same chart these two measures
@@ -1353,7 +1363,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                                                                    chart_title_label='')
                 if chart_outputFilename != None:
                     if len(chart_outputFilename) > 0:
-                        filesToOpen.append(chart_outputFilename)
+                        filesToOpen.extend(chart_outputFilename)
 
                 # overall numeric grade level
                 hover_label = []
@@ -1369,7 +1379,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                                                                    chart_title_label='Statistical Measures for Readability Grade Level')
                 if chart_outputFilename != None:
                     if len(chart_outputFilename) > 0:
-                        filesToOpen.append(chart_outputFilename)
+                        filesToOpen.extend(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Text Readability at',
                                        True, '', True, startTime)
@@ -1565,7 +1575,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
                                                        chart_title_label='Statistical Measures for Complexity Scores')
     if chart_outputFilename != None:
         if len(chart_outputFilename) > 0:
-            filesToOpen.append(chart_outputFilename)
+            filesToOpen.extend(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Sentence Complexity at', True, '', True, startTime)

@@ -220,7 +220,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
                                                   column_yAxis_label_var=column_name_to_be_plotted,
                                                   hover_info_column_list=hover_label,
                                                   remove_hyperlinks = True)
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
     return filesToOpen
@@ -244,7 +244,7 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, outputFileName
         temp_outputfile=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,outputFileNameLabel,groupByList,plotList,chart_title_label,createCharts,chartPackage)
         if not (temp_outputfile is None):
             # append because temp_outputfile is a list
-            filesToOpen.append(temp_outputfile)
+            filesToOpen = temp_outputfile #.append(temp_outputfile)
     return filesToOpen
 
 
@@ -520,7 +520,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     data.to_csv(inputFilename,index=False)
     removed_hyperlinks, inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
     data = pd.read_csv(inputFilename,encoding='utf-8')
-
+    # TODO check if data is empty exit
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'col-freq')
 
     if len(selected_col) == 0:

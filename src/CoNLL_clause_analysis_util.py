@@ -178,7 +178,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
                                                         column_xAxis_label_var='Clause Type',
                                                         hover_info_column_list=[],
                                                         count_var=count_var)
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
         # return filesToOpen # to avoid code breaking in plot by sentence index

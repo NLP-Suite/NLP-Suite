@@ -235,6 +235,9 @@ message_GIS_GUI = 'The options available on the GUI have been automatically set 
 title_options_GIS_default = ['GIS default visualization options']
 message_GIS_default = 'The Google Earth Pro visualization options in the GIS GUI are set by default. If you want to customize Google Earth Pro, please, use the GIS Google Earth GUI with the list of locations or of geocoded locations produced by the GIS pipeline as csv files.'
 
+title_options_GIS_OpenIE_SENNA = ["GIS with OpenIE & SENNA"]
+message_GIS_OpenIE_SENNA = 'OpenIE and SENNA do not extract geocodable locations that can be mapped. Please, use another option if you want to produce maps.'
+
 title_options_geocoder = ["GIS geocoder"]
 message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.'
 

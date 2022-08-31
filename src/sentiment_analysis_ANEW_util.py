@@ -401,7 +401,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
 
         if chart_outputFilename != None:
             if len(chart_outputFilename)> 0:
-                filesToOpen.append(chart_outputFilename)
+                filesToOpen.extend(chart_outputFilename)
 
     # endTime = time.localtime()
     # print("Finished running ANEW at " + str(endTime[3]) + ':' + str(endTime[4]))

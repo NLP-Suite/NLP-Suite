@@ -108,6 +108,7 @@ def get_hover_column_numbers(withHeader_var, headers, hover_info_column_list):
 
 # when NO hover-over data are displayed the Excel filename extension MUST be xlsx and NOT xlsm (becauuse no macro VBA is enabled in this case)
 
+# returns None if an error is encountered
 def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptType,
                        chartTitle,
                        chart_type_list,
@@ -171,7 +172,10 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     # https://stackoverflow.com/questions/33775423/how-to-set-a-data-type-for-a-column-with-closedxml
     nRecords = IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename)
     if nRecords > 1048575:
-        mb.showwarning(title='Excel chart error',message="Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.'")
+        IO_user_interface_util.timed_alert(window, 3000, 'Warning',
+                                           "Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.",
+                                           False, '', True, '', True)
+        # mb.showwarning(title='Excel chart error',message="Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.'")
         print("Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.")
         return
     if 'bar' in chart_type_list or 'line' in chart_type_list:
@@ -219,7 +223,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     if len(hover_info_column_list)>0: # hover-over effects are invoked and the Excel filename extension MUST be xlsm
         if len(chart_type_list)==0:
             mb.showwarning(title='Chart type error', message="No chart type was specified (e.g., line, bubble). The chart could not be created.\n\nPlease, select a chart type and try again!")
-            return True
+            return
         #scriptPath = os.path.dirname(os.path.realpath(__file__))
         fpath = ''
         first_chart_type = chart_type_list[0]
@@ -234,7 +238,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 chartFile = "piechartsample.xlsm"
                 if len(chart_type_list) > 1:
                     mb.showwarning(title='Pie Chart error', message="If you selected pie chart as the intended chart type for display data, only one group of data can be displayed. The system indicates more than one group of data are selected.\n\nPlease, check your input and try again!")
-                    return True
+                    return
             elif first_chart_type=="line":
                 chartName = LineChart()
                 fpath = GUI_IO_util.Excel_charts_libPath + os.sep + "linechartsample.xlsm"
@@ -258,17 +262,17 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                                 new_data_to_be_plotted[l].append((x,y))
                         except:
                             mb.showwarning(title='Scatter Chart error', message="If you selected a scatter chart as the intended chart type to display data, both X-axis and Y-axis can only contain numeric values. Among the columns selected, at least one contains non-numeric values.\n\nPlease, check your input and try again!")
-                            return True
+                            return
                 data_to_be_plotted = new_data_to_be_plotted
             else:
                 mb.showwarning(title='Chart type error', message="The hover-over feature is only available for Bar, Line, Pie, and Scatter charts. The selected chart type is not allowed.\n\nPlease, check your input and try again!")
-                return True
+                return
         else:
             mb.showwarning(title='Chart type error', message="The hover-over feature for multiple groups of data requires that all  groups have the same chart type. The system indicated more than one chart type.\n\nPlease, check your input and try again!")
-            return True
+            return
 
         if IO_libraries_util.check_inputPythonJavaProgramFile(chartFile,'lib'+os.sep+'sampleCharts') == 0:
-            return True
+            return
 
         wb = openpyxl.load_workbook(fpath, read_only=False, keep_vba=True)
         ws1 = wb["Data"]
@@ -375,7 +379,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         if second_y_var==0: #we are NOT plotting with 2 y axes with different scales
             if len(chart_type_list)==0:
                 mb.showwarning(title='Chart type error', message="No chart type was specified (e.g., line, bubble). The chart could not be created.\n\nPlease, select a chart type and try again!")
-                return True
+                return
             if chart_type_list[0]=="bar":
                 chartName = BarChart()
             elif chart_type_list[0]=="bubble":
@@ -441,11 +445,11 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             # if there is no chart at all
             if len(chart_type_list)==0:
                 mb.showwarning(title='Chart type error', message="No chart type was specified (e.g., line, bubble). The chart could not be created.\n\nPlease, select a chart type and try again!")
-                return True
+                return
             # if there are more than two charts
             if len(chart_type_list)>2:
                 mb.showwarning(title='Number of series error', message="When creating a chart with two y axis, you can ONLY choose two series of data. Here more than two series of data were specified. The chart could not be created.\n\nPlease, select a new pair of series and try again!")
-                return True
+                return
 
             if chart_type_list[0]=="bar":
                 chartName1 = BarChart()
@@ -468,6 +472,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 chartName2 = ScatterChart()
             else:
                 mb.showwarning(title='Chart type 2 error', message="Wrong chart type selected. Only bar, bubble, line and scatter chart are allowed to have y axis")
+                return
 
             # TODO must center the X-axis label
             if len(column_xAxis_label)>0:
@@ -533,14 +538,15 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             chartName1 += chartName2
 
             ws_chart.add_chart(chartName1, "A1")
-    errorFound=False
+    # errorFound=False
     try:
         wb.save(chart_outputFilename)
     except IOError:
         mb.showwarning(title='Output file error', message="Could not write the Excel chart file " + chart_outputFilename + "\n\nA file with the same name is already open. Please close the Excel file and try again!")
-        errorFound=True
-    if errorFound==True:
-        chart_outputFilename=''
+        return
+    #     errorFound=True
+    # if errorFound==True:
+    #     chart_outputFilename=''
     return chart_outputFilename
 
 def df_to_list_w_header(df):

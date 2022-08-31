@@ -226,7 +226,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 													   chart_title_label='Concreteness Statistics')
 	if chart_outputFilename != None:
 		if len(chart_outputFilename) > 0:
-			filesToOpen.append(chart_outputFilename)
+			filesToOpen.extend(chart_outputFilename)
 
 
 	IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
