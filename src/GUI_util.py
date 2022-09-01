@@ -248,7 +248,7 @@ def display_release():
 
     release_version_var.set(local_release_version)
 
-    y_multiplier_integer=-.7
+    y_multiplier_integer=-.9
 
     # get the release version available on GitHub
     GitHub_newest_release = get_GitHub_release()
