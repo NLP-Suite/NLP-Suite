@@ -379,11 +379,11 @@ CoNLL_table_analysis_button = tk.Button(window, width=50, text='CoNLL table anal
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                CoNLL_table_analysis_button)
 
-n_grams_button = tk.Button(window, width=50, text='N-Grams/Co-occurrences VIEWER (Open GUI)',command=lambda: call('NGrams_CoOccurrences_Viewer_main.py'))
+n_grams_button = tk.Button(window, width=50, text='N-Grams/Co-occurrences VIEWER (Open GUI)',command=lambda: call('python NGrams_CoOccurrences_Viewer_main.py'))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                n_grams_button)
 
-nominalization_button = tk.Button(window, width=50, text='Nominalization (Open GUI)',command=lambda: call('nominalization_main.py'))
+nominalization_button = tk.Button(window, width=50, text='Nominalization (Open GUI)',command=lambda: call('python nominalization_main.py'))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                nominalization_button)
 

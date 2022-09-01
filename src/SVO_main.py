@@ -32,7 +32,7 @@ import Gephi_util
 import GIS_pipeline_util
 import wordclouds_util
 import IO_csv_util
-import SVO_compare_packages_util
+import SVO_util
 import Stanza_util
 import Stanford_CoreNLP_coreference_util
 import Stanford_CoreNLP_util
@@ -324,15 +324,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                output = SVO_compare_packages_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
-                    for op in output:
-                        if type(op) is list:
-                            for tmp in op:
-                                filesToOpen.append(tmp)
-                        else:
-                            filesToOpen.append(op)
+                    filesToOpen.extend(output)
 
                 if lemmatize_verbs:
                     # tempOutputFiles[0] is the filename with lemmatized SVO values
@@ -344,23 +339,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
-                            for op in output:
-                                if type(op) is list:
-                                    for tmp in op:
-                                        filesToOpen.append(tmp)
-                                else:
-                                    filesToOpen.append(op)
+                            filesToOpen.append(output)
+
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'NOUN',
                                                                openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
-                            for op in output:
-                                if type(op) is list:
-                                    for tmp in op:
-                                        filesToOpen.append(tmp)
-                                else:
-                                    filesToOpen.append(op)
+                            filesToOpen.append(output)
                     else:
                         reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
                                                      reminders_util.message_no_SVO_records, True)
@@ -448,7 +434,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # Filtering SVO
         if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_result_list:
-                output = SVO_compare_packages_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+                output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
@@ -479,7 +465,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # Filtering SVO
         if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_result_list:
-                output = SVO_compare_packages_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+                output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
@@ -516,7 +502,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_SENNA_files:
-                output = SVO_compare_packages_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+                output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
@@ -535,8 +521,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     #     if len(os.listdir(outputSVODir)) > 0:
     #         if svo_CoreNLP_merged_file and svo_SENNA_file:
     #             CoreNLP_PlusPlus_file = svo_CoreNLP_merged_file
-    #             freq_csv, compare_outout_name = SVO_compare_packages_util.count_frequency_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
-    #             combined_csv = SVO_compare_packages_util.combine_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
+    #             freq_csv, compare_outout_name = SVO_util.count_frequency_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
+    #             combined_csv = SVO_util.combine_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
     #             filesToOpen.append(freq_csv)
     #             filesToOpen.append(combined_csv)
 
@@ -569,7 +555,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if len(tempOutputFiles)>0:
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                output = SVO_compare_packages_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
+                output = SVO_util.filter_svo(window,tempOutputFiles[0], subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)

@@ -307,7 +307,7 @@ def check_CoreNLPVersion(CoreNLPdir,calling_script=''):
         if f.startswith("stanford-corenlp-"):
             local_version = f[:-4].split("-")[2]
             if github_version != local_version:
-                IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Stanford CoreNLP version',
+                IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'Stanford CoreNLP version',
                                "Oops! Your local Stanford CoreNLP version is " + local_version +
                                ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nYour current version of Stanford CoreNLP will run anyway, but you should update to the latest release.",
                                                    False,'',True)

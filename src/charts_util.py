@@ -579,13 +579,11 @@ def header_check(inputFile):
     str_header=str(', '.join(header))
     if 'Frequenc' in str_header or 'Number of' in str_header or 'score' in str_header or 'Score' in str_header:
         # the code would break with the wrong header item (e.g., no Frequency in header to get the index
-        # TODO 2 things:
+        # We do 2 things here:
         #   1. get the right header value (e.g., Number of words, or Score, instead of Frequency)
         #   2. Loop through the header containing a specific value (e.g., score) and get all its positions (e.g., Mean score, Median score)
         #   frequency_pos needs to be a list [] rather than a string to accommodate for multiple instances
         # https://stackoverflow.com/questions/64127075/how-to-retrieve-partial-matches-from-a-list-of-strings
-        # TODO MINO it is not just score/Score that can be repeated in different columns of a header
-        #   but also Frequency/Frequencies, as for Number of I am not
             result = list(filter(lambda x: 'Frequenc' in x or 'Number of' in x or 'Score' in x or 'score' in x, header))
             try:
                 for i in range(0,len(result)):
