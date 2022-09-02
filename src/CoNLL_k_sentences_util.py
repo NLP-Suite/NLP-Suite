@@ -13,10 +13,10 @@ def k_sent(inputFilename, outputDir):
     k_str, useless = GUI_IO_util.enter_value_widget("Enter the number of sentences, K, to be analyzed", 'K',
                                                            1, '', '', '')
     k = int(k_str)
-    conll = pd.read_csv(inputFilename)
+    conll = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
     head = ["K value", "Words Count","Nouns Count","Nouns Proportion", "Verbs Count", "Verbs Proportion", "Adjectives Count","Adjectives Proportion","Proper-Nouns Count","Proper-Nouns Proportion", "Document ID", "Document"]
     result = []
-    
+
     for i in range(1, max(conll["Document ID"])+1):
         doc_conll = conll.loc[conll["Document ID"] == i]
         if max(doc_conll['Sentence ID']) <= 2 * k:
@@ -42,7 +42,7 @@ def k_sent(inputFilename, outputDir):
         for doc in ksentences['Document']:
             DOC = doc # as doc is in CoNLL table, doc already as the hyperlink
             break
-        
+
         temp =[k, word_count, noun_count, noun_count / word_count,
                       verb_count, verb_count / word_count, adj_count, adj_count / word_count,pp_count, pp_count / word_count, i, DOC]
         result.append(temp)
@@ -62,7 +62,7 @@ def k_sent(inputFilename, outputDir):
 # inputFilename = '/Users/claude/Desktop/ClaudeCase/Emory/Trabajo/NLP_CoreNLP_Dir_ksent_CoNLL.csv'
 # df = k_sent(inputFilename, 5)
 # df.to_csv("/Users/claude/Desktop/ClaudeCase/Emory/Trabajo/k_sentTest.csv", index=False)
-    
+
 # # inputFilename = '/Users/claude/Desktop/ClaudeCase/Emory/Trabajo/NLP_CoreNLP_Dir_Date_embeds_CoNLL.csv'
 # conll = pd.read_csv(inputFilename)
 
@@ -87,7 +87,7 @@ def k_sent(inputFilename, outputDir):
 #         ksentences = doc_conll
 #     else:
 #         ksentences = doc_conll.loc[doc_conll["Sentence ID"] <= k or doc_conll["Sentence ID"] > max(doc_conll['Sentence ID']) - k]
-    
+
 #     word_count = len(ksentences['POStag']) - ksentences['DepRel'].count("punct")
 #     verb_count = 0
 #     noun_count = 0
@@ -99,5 +99,5 @@ def k_sent(inputFilename, outputDir):
 #             verb_count +=1
 #         elif "JJ" in pos:
 #             adj_count +=1
-#     result.append([ksentences['Document'][0]], word_count, noun_count, noun_count / word_count, 
+#     result.append([ksentences['Document'][0]], word_count, noun_count, noun_count / word_count,
 #                   verb_count, verb_count / word_count, adj_count, adj_count / word_count)

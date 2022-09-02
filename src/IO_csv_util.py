@@ -39,7 +39,7 @@ def get_csv_data(inputFilename,withHeader):
     #print("io IO delimiter ",get_csvfile_numberofColumns(file_name))
     #TODO does not work; gives an error
     #print ("\n\n\n\ndetectCsvHeader(file_name) ",detectCsvHeader(file_name))
-    with open(inputFilename,encoding='utf-8',errors='ignore') as f:
+    with open(inputFilename,encoding='utf-8-sig',errors='ignore') as f:
         reader = csv.reader(f,delimiter=delimiter)
         if withHeader == True:
             headers = next(reader, None) #ADDED to skip header in new .csv CoNLL
@@ -58,7 +58,7 @@ def get_csvfile_headers (csvFile,ask_Question=False):
     if ask_Question:
         answer=mb.askyesno("File headers","Does the selected input file\n\n"+csvFile+"\n\nhave headers?")
     if csvFile!='' and answer ==True:
-        with open(csvFile,'r',encoding="utf-8",errors='ignore') as f:
+        with open(csvFile,'r',encoding="utf-8-sig",errors='ignore') as f:
             reader = csv.DictReader(f)
             try:
                 headers=reader.fieldnames
@@ -73,7 +73,7 @@ def get_csvfile_headers_pandas(inputFilename):
     # index_col = 0 excludes the first column, an ID column; but... we need that column
     # headers = pd.read_csv(inputFilename, index_col=0, nrows=0).columns.tolist()
     try:
-        headers = pd.read_csv(inputFilename, nrows=0).columns.tolist()
+        headers = pd.read_csv(inputFilename, nrows=0, encoding='utf-8',error_bad_lines=False).columns.tolist()
     except:
         headers=[]
     return headers
@@ -248,7 +248,7 @@ def list_to_csv(window,list_output,path_output,colnum=0, encoding='utf-8'):
 def openCSVOutputFile(outputCSVFilename, IO='w', encoding='utf-8',errors='ignore', newline=''):
 
     try:
-        with open(outputCSVFilename,'w') as csvfile:
+        with open(outputCSVFilename,'w', encoding='utf-8', errors='ignore') as csvfile:
             csvfile.close()
             return False
     except OSError as e:
@@ -269,7 +269,7 @@ def extract_from_csv(inputFilename, outputDir, data_files, columns_to_export=Non
                                                              'extract',
                                                              '', '', '', '', False, True)
 
-    df = pd.DataFrame(pd.read_csv(inputFilename))
+    df = pd.DataFrame(pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False))
     df.to_csv(outputFilename, columns=columns_to_export, index=False)
     return outputFilename
 
@@ -288,7 +288,7 @@ def convert_Excel_to_csv(inputFilename,outputDir, headers=None):
                      header=True)
 
     # read csv file and convert into a dataframe object
-    df = pd.DataFrame(pd.read_csv(outputFilename))
+    df = pd.DataFrame(pd.read_csv(outputFilename, encoding='utf-8', error_bad_lines=False))
     df.to_csv(outputFilename, columns=headers, index=False)
     return outputFilename
 
@@ -297,7 +297,7 @@ def convert_Excel_to_csv(inputFilename,outputDir, headers=None):
 # sort a csv file by a set of columns
 # headers_tobe_sorted is a list of type ['Document ID','Sentence ID']
 def sort_csvFile_by_columns(inputFilename, outputFilename, headers_tobe_sorted):
-    df = pd.read_csv(inputFilename)
+    df = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
     df = df.sort_values(by=headers_tobe_sorted)
     df.to_csv(outputFilename,index=False)
 
@@ -327,7 +327,7 @@ def undressFilenameForCSVHyperlink(fileName):
 #   the function will remove the hyperlinks from every col & row
 def remove_hyperlinks(inputFilename):
     try:
-        data = pd.read_csv(inputFilename, encoding='utf-8')
+        data = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
     except pd.errors.ParserError:
         data = pd.read_csv(inputFilename, encoding='utf-8', sep='delimiter')
     except:
@@ -387,7 +387,7 @@ def export_csv_to_text(inputFilename, outputDir, column=None, column_list=[]):
         text = ' '.join([i for i in text])
         # replacing ',' by space
         text = text.replace(",", " ")
-        with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w") as text_file:
+        with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w", encoding='utf-8', errors='ignore') as text_file:
             text_file.write(text)
 
     elif len(column_list) == 0:
@@ -400,7 +400,7 @@ def export_csv_to_text(inputFilename, outputDir, column=None, column_list=[]):
         a = list(df[column])
         # converting list into string and then joining it with space
         text = '\n'.join(str(e) for e in a)
-        with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w") as text_file:
+        with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w", encoding='utf-8', errors='ignore') as text_file:
             text_file.write(text)
     else:
         df = pd.read_csv(inputFilename)
@@ -414,7 +414,7 @@ def export_csv_to_text(inputFilename, outputDir, column=None, column_list=[]):
         text = df[column_list].to_csv(index=False)
         # replacing ',' by space
         text = text.replace(",", " ")
-        with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w") as text_file:
+        with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w", encoding='utf-8', errors='ignore') as text_file:
             text_file.write(text)
 
 def df_to_list_w_header(df):

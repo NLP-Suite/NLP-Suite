@@ -314,12 +314,12 @@ def complete_csv_header(inputFilename, padding_base_name):
     max_length = 0
     new_header = []
     # find the longest row
-    with open(inputFilename, newline='') as f:
+    with open(inputFilename, newline='', encoding='utf-8', errors='ignore') as f:
         reader = csv.reader(f)
         for row in reader:
             if max_length < len(row):
                 max_length = len(row)
-    with open(inputFilename, newline='') as f:
+    with open(inputFilename, newline='', encoding='utf-8', errors='ignore') as f:
         reader = csv.reader(f)
         # only read the first line
         for row in reader:
@@ -330,7 +330,7 @@ def complete_csv_header(inputFilename, padding_base_name):
             break
     tempFile = os.path.splitext(inputFilename)[0] + "_modified.csv"
     os.rename(inputFilename, tempFile)
-    with open(tempFile, newline='') as fr, open(inputFilename,"w", newline='') as fw:
+    with open(tempFile, newline='') as fr, open(inputFilename,"w", newline='', encoding='utf-8', errors='ignore') as fw:
         r = csv.reader(fr)
         w = csv.writer(fw)
         w.writerow(new_header)

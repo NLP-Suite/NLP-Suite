@@ -147,12 +147,12 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                           noun_postag_file_name)
     if errorFound == True:
         return filesToOpen
-    df = pd.read_csv(noun_postag_file_name, header=None)
+    df = pd.read_csv(noun_postag_file_name, header=None, encoding='utf-8',error_bad_lines=False)
     df.to_csv(noun_postag_file_name,
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "Noun POS Tags"])
     filesToOpen.append(noun_postag_file_name)
-    
+
     # errorFound = IO_csv_util.list_to_csv(GUI_util.window,
     #                                      CoNLL_util.sort_output_list('Noun DEPREL Tags', noun_deprel),
     #                                      noun_deprel_file_name)
@@ -161,7 +161,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                           noun_deprel_file_name)
     if errorFound == True:
         return filesToOpen
-    df = pd.read_csv(noun_deprel_file_name, header=None)
+    df = pd.read_csv(noun_deprel_file_name, header=None, encoding='utf-8',error_bad_lines=False)
     df.to_csv(noun_deprel_file_name,
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "Noun DEPREL Tags"])
@@ -175,7 +175,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                           noun_ner_file_name)
     if errorFound == True:
         return filesToOpen
-    df = pd.read_csv(noun_ner_file_name, header=None)
+    df = pd.read_csv(noun_ner_file_name, header=None, encoding='utf-8',error_bad_lines=False)
     df.to_csv(noun_ner_file_name,
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "Noun NER Tags"])

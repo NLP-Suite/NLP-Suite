@@ -50,10 +50,10 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
         # IO_csv_util.list_to_csv(GUI_util.window, data_to_be_plotted[0], outputFilename)
     else:
         try:
-            data = pd.read_csv(inputFilename,encoding='utf-8')
+            data = pd.read_csv(inputFilename,encoding='utf-8',error_bad_lines=False)
         except:
             try:
-                data = pd.read_csv(inputFilename,encoding='ISO-8859-1')
+                data = pd.read_csv(inputFilename,encoding='ISO-8859-1', error_bad_lines=False)
                 IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
                                                    'Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 in reading into pandas the csv file ' + inputFilename)
                 print("Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 encoding in reading into pandas the csv file " + inputFilename)
@@ -77,11 +77,13 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     columns_to_be_plotted,
                     chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,
                     groupByList,plotList, chart_title_label, column_yAxis_label='Frequencies', pivot = False):
-    if createCharts == True:
-        chart_outputFilenameSV=''
-
     filesToOpen=[]
     columns_to_be_plotted_numeric=[]
+
+    if createCharts == True:
+        chart_outputFilenameSV=''
+    else:
+        return
 
 # pivot = True will list for every document all the separate values of the selected item to be plotted
 #       = False will sum all the individual values
@@ -634,7 +636,7 @@ def add_missing_IDs(input, outputFilename):
     if isinstance(input, pd.DataFrame):
         df = input
     else:
-        df = pd.read_csv(input)
+        df = pd.read_csv(input, encoding='utf-8', error_bad_lines=False)
     # define variables
     start_sentence = 1 # first sentence in loop
     end_sentence = 1 # last sentence in loop
@@ -716,7 +718,7 @@ def add_missing_IDs(input, outputFilename):
 # use instead add_missing_IDs
 
 def complete_sentence_index(file_path):
-    data = pd.read_csv(file_path)
+    data = pd.read_csv(file_path, encoding='utf-8', error_bad_lines=False)
     if not 'Sentence ID' in data:
         head, tail = os.path.split(file_path)
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Wrong csv file',

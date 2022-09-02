@@ -243,7 +243,7 @@ def display_release():
     release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
 
     if os.path.isfile(release_version_file):
-        with open(release_version_file,'r') as file:
+        with open(release_version_file,'r', encoding='utf-8', errors='ignore') as file:
             local_release_version = file.read()
 
     release_version_var.set(local_release_version)

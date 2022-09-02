@@ -406,7 +406,7 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
         newdf.to_csv(NgramsFileName, encoding='utf-8', index=False)
     if len(coOcc_results)>0:
         # with open(os.path.join(WCOFileName, outputDir), 'w', encoding='utf-8') as f:
-        with open(coOccFileName, 'w', newline='', encoding='utf-8') as f:
+        with open(coOccFileName, 'w', newline='', encoding='utf-8', errors='ignore') as f:
             writer = csv.writer(f)
             writer.writerow(["Search Word(s)", "CO-Occurrence", "Document ID", "Document"])
             for label, res in coOcc_results.items():

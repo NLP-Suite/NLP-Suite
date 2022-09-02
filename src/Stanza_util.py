@@ -187,7 +187,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                 print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
 
             if len(language) > 1 or 'multilingual' in language: # if language detection + annotation, need to open a txt file into a list
-                with open(doc, encoding=language_encoding) as f:
+                with open(doc, encoding=language_encoding, errors='ignore') as f:
                     text = f.read()
                     if text == '':
                         mb.showinfo("Warning",

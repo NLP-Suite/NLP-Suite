@@ -92,6 +92,8 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
     # 	inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(
     # 		inputFilename)
 
+    filesToOpen=[]
+
     split_locations_prefix="south, north, west, east, los, new, san, las, la, hong"
     split_locations_suffix="city, island"
 
@@ -106,20 +108,18 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
     locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName)
 
     if locationColumnNumber == None:
-        return
+        return [],''
 
     dateColumnNumber = -1
     if datePresent == True:
         dateColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,"Date")
-
-    filesToOpen=[]
 
     outputCsvLocationsOnly = ''
 
     software=config_filename.replace('_config.csv','')
     GoogleEarthProDir, missing_external_software = IO_libraries_util.get_external_software_dir(software + ', with the option of mappping locations,','Google Earth Pro')
     if GoogleEarthProDir == None:
-        return '', ''
+        return [], ''
 
     startTime = IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS pipeline at',
                                                    True, '', True, '', False)
@@ -142,7 +142,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
         locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnNumber,encodingValue, datePresent, dateColumnNumber)
 
     if locations == None or len(locations) == 0:
-        return '', ''  # empty output files
+        return [], ''  # empty output files
 
     #
     # ------------------------------------------------------------------------------------
@@ -166,7 +166,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
         geocodedLocationsoutputFilename, locationsNotFoundoutputFilename = GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
                                                                                     locationColumnName,geocoder,country_bias,area_var,restrict,encodingValue,split_locations_prefix,split_locations_suffix)
         if geocodedLocationsoutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
-            return '', ''
+            return [], ''
     else:
         geocodedLocationsoutputFilename = inputFilename
         locationsNotFoundoutputFilename = ''
@@ -232,7 +232,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                                                                         geocoder, locationColumnName, '', '',
                                                                         False, True)
         coordList = []
-        df = pd.read_csv(geocodedLocationsoutputFilename)
+        df = pd.read_csv(geocodedLocationsoutputFilename, encoding='utf-8', error_bad_lines=False)
         if 'Latitude' in df and 'Longitude' in df:
             lat = df.Latitude
             lon = df.Longitude
@@ -242,11 +242,11 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
         else:
             mb.showwarning('Warning',
                            'The input csv file\n\n' + geocodedLocationsoutputFilename + '\n\ndoes not contain geocoded data with Latitude or Longitude columns required for Google Maps to produce heat maps.\n\nPlease, select a geocoded csv file in input and try again.')
-            return
+            return [],''
 
         Google_Maps_API = getGoogleAPIkey('Google-Maps-API_config.csv')
         if Google_Maps_API == '':
-            return
+            return [],''
 
         GIS_Google_Maps_util.create_js(heatMapoutputFilename, coordList, geocoder, True)
         filesToOpen.append(heatMapoutputFilename)
