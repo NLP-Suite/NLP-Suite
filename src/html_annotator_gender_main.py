@@ -18,6 +18,7 @@ import GUI_IO_util
 import IO_files_util
 import reminders_util
 import Stanford_CoreNLP_util
+import html_annotator_gender_dictionary_util
 import html_annotator_dictionary_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -48,31 +49,31 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
 
     #dict annotate
     elif annotator_dictionary_var==True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('annotator_gender_dictionary_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_gender_dictionary_util.py')==False:
             return
         import annotator_gender_dictionary_util
         # csvValue_color_list, bold_var, tagAnnotations, '.txt'
-        output= annotator_gender_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, annotator_dictionary_file_var,personal_pronouns_var)
+        fileSubsc='gender'
+        output= html_annotator_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, annotator_dictionary_file_var,personal_pronouns_var,fileSubsc)
         if len(output)>0:
             # output=output[0]
             filesToOpen.append(output)
 
     #plot annotate
     elif plot_var==True:
-        import annotator_gender_dictionary_util
         if len(new_SS_folders)>0:
             print(new_SS_folders)
             try:
-                annotator_gender_dictionary_util.build_dictionary_state_year(new_SS_folders[0])
-                annotator_gender_dictionary_util.build_dictionary_yob(new_SS_folders[1])
+                html_annotator_gender_dictionary_util.build_dictionary_state_year(new_SS_folders[0])
+                html_annotator_gender_dictionary_util.build_dictionary_yob(new_SS_folders[1])
             except:
-                annotator_gender_dictionary_util.build_dictionary_state_year(new_SS_folders[1])
-                annotator_gender_dictionary_util.build_dictionary_yob(new_SS_folders[0])
+                html_annotator_gender_dictionary_util.build_dictionary_state_year(new_SS_folders[1])
+                html_annotator_gender_dictionary_util.build_dictionary_yob(new_SS_folders[0])
         if (year_state_var=='' or firstName_entry_var==''):
             mb.showwarning(title='Warning', message="The plot option requires both 'By year/state' value and first name(s) in the 'Enter firt name(s)' widget.\n\nPlease, enter the required information and try again.")
             return
         else:
-            output = annotator_gender_dictionary_util.SSA_annotate(year_state_var,firstName_entry_var,outputDir)
+            output = html_annotator_gender_dictionary_util.SSA_annotate(year_state_var,firstName_entry_var,outputDir)
             if len(output)>0:
                 # output=output[0]
                 filesToOpen.append(output)

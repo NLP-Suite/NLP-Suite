@@ -121,7 +121,7 @@ def transform_format(val):
     val = np.where(val == 0, 255 , val)
     return val
 '''
-    
+
 class GroupedColorFunc(object):
     """Create a color function object which assigns DIFFERENT SHADES of
        specified colors to certain words based on the color to words mapping.
@@ -168,7 +168,7 @@ class GroupedColorFunc(object):
 # CYNTHIA: wordcloud function particularly designed for SVO
 def SVOWordCloud(svoFile, doc, outputDir, transformed_image_mask, prefer_horizontal):
     # read SVO result in
-    svo_df = pd.read_csv(svoFile)
+    svo_df = pd.read_csv(svoFile, encoding='utf-8',error_bad_lines=False)
     svo_df = svo_df.fillna("")
     words_list = []
     # red for S, blue for V, green for O
@@ -293,7 +293,7 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
     c_wid = 0 if bg_image_flag else 3
     if len(transformed_image_mask)!=0:
         wordcloud = WordCloud(width = 800, height = 800,
-                        background_color ='white', 
+                        background_color ='white',
                         max_words=100,
                         mask=transformed_image_mask,
                         prefer_horizontal=prefer_horizontal,
@@ -306,7 +306,7 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
                         font_path = font).generate(textToProcess)
     else:
         wordcloud = WordCloud(width = 800, height = 800,
-                        background_color ='white', 
+                        background_color ='white',
                         max_words=max_words,
                         prefer_horizontal=prefer_horizontal,
                         # stopwords = stopwords,
@@ -422,7 +422,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
         numberImages=len(image_mask.shape)
         # if i==1: #only print once
         print("\n\n\nnumberImages",numberImages)
-        
+
         # Transform your mask into a new one that will work with the function:
         if numberImages==1:
             transformed_image_mask = np.ndarray((image_mask.shape[0]), np.int32)
@@ -511,7 +511,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
         print("Processing file " + str(i) + "/" + str(nDocs) + ' ' + tail)
         if doc[-4:]=='.csv':#processing CoNLL table that contains pos values
             try:
-                df = pd.read_csv(doc)
+                df = pd.read_csv(doc, encoding='utf-8',error_bad_lines=False)
                 postags_ = df['POStag']
                 forms_ = df['Form']
                 lemmas_ = df['Lemma']

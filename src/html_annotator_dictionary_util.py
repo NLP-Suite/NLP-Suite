@@ -8,7 +8,7 @@ import sys
 import IO_libraries_util
 import GUI_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_dictionary_util",['os','re','csv','tkinter'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"html_annotator_dictionary_util",['os','re','csv','tkinter'])==False:
     sys.exit(0)
 
 import os
@@ -62,7 +62,8 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
 # returns list of a list of terms with appropriate annotations for each file
 # annotation allows custom tagging style (via csv, etc.)
 # NOTICE: csv_field1_var and first entry of csvValue_color_list should be a list
-def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt'):
+def dictionary_annotate(inputFile, inputDir, outputDir, dict_file,
+                        csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt', fileSubc=''):
     writeout = []
     filesToOpen = []
 
@@ -189,9 +190,9 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
             outputFilename=file
     else:
         if inputDir!='':
-            outputFilename=os.path.join(outputDir,"NLP_dict_annotated_" + os.path.basename(os.path.normpath(inputDir)) + '.html')
+            outputFilename=os.path.join(outputDir,"NLP_dict_annotated_" + fileSubc + "_" + os.path.basename(os.path.normpath(inputDir)) + '.html')
         else:
-            outputFilename=os.path.join(outputDir,"NLP_dict_annotated_" + os.path.basename(os.path.normpath(file))[:-4] + '.html')
+            outputFilename=os.path.join(outputDir,"NLP_dict_annotated_" + fileSubc + "_" + os.path.basename(os.path.normpath(file))[:-4] + '.html')
     filesToOpen.append(outputFilename)
     with open(outputFilename, 'w+',encoding='utf-8',errors='ignore') as f:
         f.write('<html>\n<body>\n<div>\n')

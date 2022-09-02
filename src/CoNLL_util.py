@@ -180,13 +180,13 @@ def sort_output_list(label, _voice_sorted_):
 
 # Cynthia Dong & Roberto Franzosi 11/28/2019
 # compute a whole sentence from an input CoNLL table for a specific sentenceID and documentID
-# called by the geocoder 
+# called by the geocoder
 def compute_sentence(CoNLL_table, recordID, sentenceID, documentID):
     """
     :type documentID: object
     """
     # Open ConLL
-    df = pd.read_csv(io.open(CoNLL_table, 'rb'), sep=',', index_col=False)
+    df = pd.read_csv(io.open(CoNLL_table, 'rb'), sep=',', index_col=False, encoding='utf-8',error_bad_lines=False)
     df = df[df["Sentence ID"] == sentenceID]
     df = df[df["Document ID"] == documentID]
     rows = []  # Store data
@@ -219,7 +219,7 @@ def compute_sentence_table(CoNLL_table, output_path):
         IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started computing the Sentence table at', True)
     # tk.messagebox.showinfo("Stanford CoreNLP has finished", "Started computing the Sentence table at " + str(startTime[3]) + ':' + str(startTime[4]))
     # df = pd.read_csv(io.open(os.path.join(output_path,CoNLL_table), 'rb'), sep='\t', header=None, index_col=False) # Open ConLL
-    df = pd.read_csv(io.open(os.path.join(output_path, CoNLL_table), 'rb'), sep=',', index_col=False)  # Open ConLL
+    df = pd.read_csv(io.open(os.path.join(output_path, CoNLL_table), 'rb'), sep=',', index_col=False, encoding='utf-8',error_bad_lines=False)  # Open ConLL
     rows = []  # Store data
     sent_str = ""  # Build string
     # Keep track of variables
@@ -248,7 +248,7 @@ def compute_sentence_table(CoNLL_table, output_path):
     df2 = pd.DataFrame(columns=col_names, data=rows)
 
     output_fileName = os.path.join(output_path, CoNLL_table[:-4] + "_sentence" + ".csv")
-    df2.to_csv(output_fileName, encoding='utf-8', 
+    df2.to_csv(output_fileName, encoding='utf-8',
                index=False)  # os.path.join(output_path,output_fileName), sep='\t', encoding='utf-8')
     if RunningCoreNLPFromCommandLine != True:
         IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis end', 'Finished computing the Sentence table at', True)
@@ -261,7 +261,7 @@ def compute_sentence_table(CoNLL_table, output_path):
 # inputFilename contains path
 def get_nouns_verbs_CoNLL(inputFilename,output_dir):
 
-    conll_table = pd.read_csv(inputFilename)
+    conll_table = pd.read_csv(inputFilename, encoding='utf-8',error_bad_lines=False)
 
     verb_form_set = set()
     verb_lemma_set = set()

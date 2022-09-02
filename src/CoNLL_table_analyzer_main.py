@@ -70,7 +70,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         filesToOpen.append(tempOutputFile)
 
     if extract_var.get():
-        df = pd.read_csv(inputFilename)
+        df = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
         data_files = [df]
         # print(csv_file_field_list)
         # outputFiles: list = IO_csv_util.extract_from_csv(path=[inputFilename], output_path=outputDir, data_files=data_files,
@@ -312,7 +312,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                 #                                                       "QueryCoNLL_DepRel",
                 #                                                       "Searched token DEPrel Values (" + searchField_kw + ")",
                 #                                                       ["pie"])
-                
+
                 chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
                                                                 outputFileLabel='QueryCoNLL_DepRel (' + searchField_kw + ')',
                                                                 chartPackage=chartPackage,

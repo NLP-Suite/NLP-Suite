@@ -37,7 +37,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 			return
 
 	if IO_csv_util.get_csvfile_numberofColumns(input_dictionary_file) == 2:
-		dic = pd.read_csv(input_dictionary_file)
+		dic = pd.read_csv(input_dictionary_file, encoding='utf-8', error_bad_lines=False)
 		dic_value = dic.iloc[:, 0].tolist()
 		dic_sec_value = dic.iloc[:, 1].tolist()
 		dic = [(dic_value[i], dic_sec_value[i]) for i in range(len(dic_value))]
@@ -78,7 +78,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 			DictionaryList.insert(0, ['Dict_value', 'Dict_second_value', 'Frequency', 'Sentence ID', 'Sentence',
 									  'Document ID', 'Document'])
 	else:
-		dic = pd.read_csv(input_dictionary_file)
+		dic = pd.read_csv(input_dictionary_file, encoding='utf-8', error_bad_lines=False)
 		dic_value = dic.iloc[:, 0].tolist()
 		if chartTitle == '':
 			chartTitle = "Dictionary value"

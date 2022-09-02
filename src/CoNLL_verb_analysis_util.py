@@ -176,7 +176,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 	# modified by Siyan Pu November 2021
 	# temporary headers added, not sure why the verb_voice_list doesn't have headers
-	df = pd.read_csv(verb_file_name, header=None)
+	df = pd.read_csv(verb_file_name, header=None, encoding='utf-8', error_bad_lines=False)
 	df.to_csv(verb_file_name,
 				header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 						"Verb Voice"])
@@ -325,7 +325,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 				filesToOpen.append(chart_outputFilename)
 
 		# temporary headers added, not sure why the verb_voice_list doesn't have headers
-		df = pd.read_csv(verb_file_name, header=None)
+		df = pd.read_csv(verb_file_name, header=None, encoding='utf-8', error_bad_lines=False)
 		df.to_csv(verb_file_name,
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "Verb Modality"])
@@ -337,7 +337,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 															group_col=['Sentence ID'],
 															chartTitle="Frequency Distribution of Verb Modality",
 															chartPackage=chartPackage)
-		
+
 		if chart_outputFilename != None:
 			if len(chart_outputFilename) > 0:
 				filesToOpen.append(chart_outputFilename)
@@ -357,7 +357,7 @@ def verb_tense_data_preparation(data):
 	vbp_counter = 0
 	vb_counter = 0
 	verb_tense_list = ['VBG', 'VBD', 'VB', 'VBN', 'VBP']
-	
+
 	for i in data:
 		if(i[3] in verb_tense_list):
 			tense = i[3]
@@ -422,7 +422,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	# 			   ['Past', postag_counter['VBD']],
 	# 			   ['Past Principle/Passive', postag_counter['VBN']],
 	# 			   ['Present', postag_counter['VBP']]]
-	
+
 	verb_tense_list, verb_tense_stats = verb_tense_data_preparation(data)
 
 	# output file names
@@ -462,11 +462,11 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 				filesToOpen.append(chart_outputFilename)
 
 		# # temporary headers added, not sure why the verb_voice_list doesn't have headers
-		df = pd.read_csv(verb_file_name, header=None)
+		df = pd.read_csv(verb_file_name, header=None, encoding='utf-8', error_bad_lines=False)
 		df.to_csv(verb_file_name,
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "Verb Tense"])
-		
+
 		# line plots by sentence index
 		chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=verb_file_name,
 													outputDir=outputDir,
@@ -474,7 +474,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 													group_col=['Sentence ID'],
 													chartTitle="Frequency Distribution of Verb Tense",
 													chartPackage=chartPackage)
-		
+
 		if chart_outputFilename != None:
 			if len(chart_outputFilename) > 0:
 				filesToOpen.append(chart_outputFilename)

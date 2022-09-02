@@ -20,6 +20,7 @@ import IO_files_util
 import IO_csv_util
 import reminders_util
 import constants_util
+import html_annotator_dictionary_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -72,11 +73,11 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
             return
         if csv_field2_var=='':
             csvValue_color_list=[]
-        filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.txt')
+        filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.txt')
     elif html_annotator_add_dictionary_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_dictionary_util.py')==False:
             return
-        filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.html')
+        filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.html')
     elif html_annotator_extractor==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_extractor_util.py')==False:
             return

@@ -10,7 +10,7 @@
 
 # Command promp commands
 # cd C:\Program Files (x86)\PC-ACE\NLP\Miscellaneous
-# python Function_Words_GUI.py 
+# python Function_Words_GUI.py
 
 
 import sys
@@ -55,18 +55,18 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
     # filesToOpen.append(function_words_list_file_name)
     # not necessary to open stats since these stats are included in the pie chart
     # filesToOpen.append(function_words_stats_file_name)
-    
+
     #obtain data
     #data  = get_data(inputFilename)
     #data_divided_sents = CoNLL_util.sentence_division(data)
-    
+
     if 0:
         stats_pronouns(data)
     else:
         if not os.path.isdir(outputDir):
             mb.showwarning(title='output file path error', message='Please check OUTPUT DIRECTORY PATH and try again')
             return filesToOpen
-        
+
         pronouns_list,pronouns_stats, pronouns_data = stats_pronouns_output(data,data_divided_sents)
         pronouns_list = pronouns_data
         errorFound=IO_csv_util.list_to_csv(GUI_util.window,pronouns_list, function_words_list_file_name)
@@ -80,11 +80,11 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
             return filesToOpen
         filesToOpen.append(function_words_stats_file_name)
 
-        df = pd.read_csv(function_words_list_file_name, header=None)
+        df = pd.read_csv(function_words_list_file_name, header=None, encoding='utf-8', error_bad_lines=False)
         df.to_csv(function_words_list_file_name,
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "PRONOUNS"])
-        
+
         if createCharts==True:
             # chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
             #                               data_to_be_plotted=[pronouns_stats],
@@ -138,18 +138,18 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
     # filesToOpen.append(function_words_list_file_name)
     # not necessary to open stats since these stats are included in the pie chart
     # filesToOpen.append(function_words_stats_file_name)
-    
+
     #data  = get_data(inputFilename)
     #data_divided_sents = CoNLL_util.sentence_division(data)
-    
-    
+
+
     if 0:
         stats_prepositions(data)
     else:
         if not os.path.isdir(outputDir):
             mb.showwarning(title='output file path error', message='Please check OUTPUT DIRECTORY PATH and try again')
             return filesToOpen
-       
+
         prepositions_list,prepositions_stats, preposition_data = stats_prepositions_output(data,data_divided_sents)
         prepositions_list = preposition_data
         errorFound=IO_csv_util.list_to_csv(GUI_util.window,prepositions_list, function_words_list_file_name)
@@ -163,7 +163,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
             return filesToOpen
         filesToOpen.append(function_words_stats_file_name)
 
-        df = pd.read_csv(function_words_list_file_name, header=None)
+        df = pd.read_csv(function_words_list_file_name, header=None, encoding='utf-8', error_bad_lines=False)
         df.to_csv(function_words_list_file_name,
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "PREPOSITIONS"])
@@ -189,14 +189,14 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
 
             if chart_outputFilename != None:
                 filesToOpen.append(chart_outputFilename)
-            
+
             outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=function_words_list_file_name,
 															outputDir=outputDir,
 															select_col=['PREPOSITIONS'],
 															group_col=['Sentence ID'],
                                                             chartPackage=chartPackage,
                                                             chartTitle="Frequency Distribution of Prepositions")
-            
+
             # line plot by sentence index
             # outputFiles=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                              function_words_list_file_name,
@@ -223,8 +223,8 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
 
     #data  = get_data(inputFilename)
     #data_divided_sents = CoNLL_util.sentence_division(data)
-    
-    
+
+
     if 0:
         stats_articles(data)
         return filesToOpen
@@ -247,7 +247,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
             return filesToOpen
         filesToOpen.append(function_words_stats_file_name)
 
-        df = pd.read_csv(function_words_list_file_name, header=None)
+        df = pd.read_csv(function_words_list_file_name, header=None, encoding='utf-8', error_bad_lines=False)
         df.to_csv(function_words_list_file_name,
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "ARTICLES"])
@@ -308,7 +308,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
 
     #data  = get_data(inputFilename)
     #data_divided_sents = CoNLL_util.sentence_division(data)
-    
+
     if 0:
         stats_conjunctions(data)
         return filesToOpen
@@ -330,7 +330,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
             return filesToOpen
         filesToOpen.append(function_words_stats_file_name)
 
-        df = pd.read_csv(function_words_list_file_name, header=None)
+        df = pd.read_csv(function_words_list_file_name, header=None, encoding='utf-8', error_bad_lines=False)
         df.to_csv(function_words_list_file_name,
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "CONJUNCTIONS"])
@@ -394,7 +394,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
 
     #data  = get_data(inputFilename)
     #data_divided_sents = CoNLL_util.sentence_division(data)
-    
+
     if 0:
         stats_auxiliaries(data)
         return filesToOpen
@@ -415,7 +415,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
             return filesToOpen
         filesToOpen.append(function_words_stats_file_name)
 
-        df = pd.read_csv(function_words_list_file_name, header=None)
+        df = pd.read_csv(function_words_list_file_name, header=None, encoding='utf-8', error_bad_lines=False)
         df.to_csv(function_words_list_file_name,
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "AUXILIARIES"])
@@ -490,7 +490,7 @@ def data_preperation(data, tag_list, name_list, tag_pos):
 
 #pronouns with output
 def stats_pronouns_output(data,data_divided_sents):
-    
+
     list_pronouns_postag = []
     postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
     # must be sorted in descending order
@@ -499,7 +499,7 @@ def stats_pronouns_output(data,data_divided_sents):
            ['Possessive pronoun (PRP$)',postag_counter['PRP$']],
            ['WH-pronoun (WP)',postag_counter['WP']],
            ['Possessive WH-pronoun (WP$)',postag_counter['WP$']]]
-    
+
     pronouns_data = data_preperation(data, ['PRP','PRP$','WP','WP$'], ['Personal pronouns','Possessive pronouns','WH-pronouns','Possessive WH-pronouns'], 3)
 
     return list_pronouns_postag, pronouns_postag_stats, pronouns_data
@@ -507,7 +507,7 @@ def stats_pronouns_output(data,data_divided_sents):
 
 #PREPOSITIONS with output
 def stats_prepositions_output(data,data_divided_sents):
-        
+
     list_prepositions_postag = []
     postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
     # must be sorted in descending order
@@ -535,7 +535,7 @@ def stats_articles_output(data,data_divided_sents):
 
 #CONJUNCTIONS with output
 def stats_conjunctions_output(data,data_divided_sents):
-        
+
     list_conjunctions_postag = []
     postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
     # must be sorted in descending order
@@ -553,14 +553,14 @@ def stats_conjunctions_output(data,data_divided_sents):
 
 #AUXILIARIES with output
 def stats_auxiliaries_output(data,data_divided_sents):
-        
+
     list_auxiliaries_deprel = []
     postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
     # must be sorted in descending order
     auxiliaries_deprel_stats = [['AUXILIARY ANALYSIS','FREQUENCY'],
            ['Auxiliary (AUX)',deprel_counter['aux']],
            ['Passive auxiliary (AUXPASS)',deprel_counter['auxpass']]]
-    
+
     auxiliaries_data = data_preperation(data, ['aux', 'auxpass'], ['Auxiliary (AUX)','Passive auxiliary (AUXPASS)'], 6)
 
     return list_auxiliaries_deprel, auxiliaries_deprel_stats, auxiliaries_data

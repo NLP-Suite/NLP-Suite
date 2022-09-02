@@ -1,11 +1,11 @@
 #coding=utf-8
 
-#Edited by Elaine Dong, Feb 2, 2020. 
-#Edited by Roberto Franzosi, November 2, 2019. 
+#Edited by Elaine Dong, Feb 2, 2020.
+#Edited by Roberto Franzosi, November 2, 2019.
 
 # The command line should be:
 #ArgumentL: 1. path of the lynching folder 2.output path 3. path of stanfordcorenlp
-########### 4. the base line for similarity. Below which value of similarity would you consider the file to be an intruder? Recommand around 0.15. 
+########### 4. the base line for similarity. Below which value of similarity would you consider the file to be an intruder? Recommand around 0.15.
 
 import sys
 import GUI_util
@@ -34,21 +34,21 @@ def load_soc_actors():
         print("The file "+fileName+" could not be found. The routine expects a csv dictionary file 'social-actor-list.csv' in a directory 'lib' expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again.")
         mb.showerror(title='File not found', message='The routine expects a csv dictionary file "social-actor-list.csv" in a directory "lib" expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again')
         sys.exit()
-    with open(fName) as fin:
+    with open(fName, encoding='utf-8', errors='ignore') as fin:
         for line in fin:
                 # save the list of "social actors"
                 my_soc_actors.add(line.strip().split(',')[0])
     return my_soc_actors
 
 #CM soc_acts is the input. I filtered out all social actors in dir_path
-# Version 2: when we need to filter out NERs. 
+# Version 2: when we need to filter out NERs.
 def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, num_doc):
     my_files = glob(dir_path+'*.txt')
     for file in my_files:
         num_doc+=1
         with open(file, encoding='utf-8',errors='ignore') as fin:
-            fcontent = fin.read() 
-        # store the file name 
+            fcontent = fin.read()
+        # store the file name
         fileName = file.split(os.path.sep)[-1]
         keywords[fileName] = {}
         postag_seen = set()
@@ -60,7 +60,7 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, num_doc):
                 # lemma_word = lemmatizer.lemmatize(word.lower())
                 lemma_word = lemmatize_stanza(stanzaPipeLine(word.lower()))
                 if lemma_word in soc_acts:
-                    #add into the list. 
+                    #add into the list.
                     if lemma_word in keywords[fileName]:
                         keywords[fileName][lemma_word] = keywords[fileName][lemma_word] + 1
                         # reduce the size that is needed to detect NER. save time
@@ -98,9 +98,9 @@ def percent_belongs(one_doc, all_doc):
 
 #if the document is an intruder
 def check(dir_path, soc_acts,nlp, intruder_list,id_list, has_intruder, similarityIndex_base,freq_intruder, num_doc, terminal_output, f):
-    parts = dir_path.split(os.path.sep) 
+    parts = dir_path.split(os.path.sep)
     id = parts[-2]
-    # keywords are a dictionary, with keys being the name of each article; values being a set of all social actors (NNP, NNPS) and NERs. 
+    # keywords are a dictionary, with keys being the name of each article; values being a set of all social actors (NNP, NNPS) and NERs.
     compare = {}
     keywords, num_doc = get_article_soc_actors_NER(dir_path, soc_acts, nlp, {}, num_doc)
     # when there is only one document in one folder
@@ -113,7 +113,7 @@ def check(dir_path, soc_acts,nlp, intruder_list,id_list, has_intruder, similarit
         print("    Processing document: ",doc_name)
         sys.stdout = f
         compare[doc_name] = {}
-    # create another dictionary. Structure: key is the filename, value is list of keywords that is from all the other files. 
+    # create another dictionary. Structure: key is the filename, value is list of keywords that is from all the other files.
     for doc_name in keywords.keys():
         for this_doc in compare.keys():
             if this_doc != doc_name:
@@ -129,10 +129,10 @@ def check(dir_path, soc_acts,nlp, intruder_list,id_list, has_intruder, similarit
     my_files = glob(dir_path + '*.txt')
     #the local intruder in this folder
     this_intrude = []
-    #print out the results. 
+    #print out the results.
     #my_files = '\n'.join(map(lambda x: x.split(os.path.sep)[-1], my_files))
     for doc, similarity in similar.items():
-        #We set the minimum index to 0.1 now. 
+        #We set the minimum index to 0.1 now.
         if similarity < similarityIndex_base:
             freq_intruder +=1
             has_intruder = True
@@ -176,8 +176,8 @@ def main(CoreNLPDir, inputDir, outputDir,openOutputFiles, createCharts, chartPac
     sys.stdout = f
     print("Group identifier (Folder name),Documents in group,Intruder document,Group path,Document path,Similarity index ( <"+str(similarityIndex_base)+")")
     actors = load_soc_actors()
-    dirs = glob(inputDir+'/*/')   
-    nlp = StanfordCoreNLP(CoreNLPDir) 
+    dirs = glob(inputDir+'/*/')
+    nlp = StanfordCoreNLP(CoreNLPDir)
     num_folder = 0
     num_doc = 0
     for dir in dirs:
@@ -196,7 +196,7 @@ def main(CoreNLPDir, inputDir, outputDir,openOutputFiles, createCharts, chartPac
     ##
     outputFilename = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'SSR', 'Intrud', 'freq', '', '', False, True)
     filesToOpen.append(outputFilename)
-    
+
     f_e = open(outputFilename, 'w')
     sys.stdout = f_e
     if(len(intruder_list)<= 320):

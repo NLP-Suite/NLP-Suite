@@ -40,9 +40,9 @@ def select_csv(files,cols=None):
     for file in files:
         try:
             if cols==None:
-                df = pd.read_csv(file) # gives error on CoNLL table ,on_bad_lines='error')
+                df = pd.read_csv(file, encoding='utf-8', error_bad_lines=False) # gives error on CoNLL table ,on_bad_lines='error')
             else:
-                df = pd.read_csv(file,usecols=cols)
+                df = pd.read_csv(file,usecols=cols, encoding='utf-8', error_bad_lines=False)
         except:
             # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
             mb.showwarning(title='Missing field(s)',
@@ -111,13 +111,13 @@ def merge(outputDir, operation_results_text_list):
 
     size = len(csv_lst)
     try:
-        df1 = pd.read_csv(csv_lst[0])
-        df2 = pd.read_csv(csv_lst[1])
+        df1 = pd.read_csv(csv_lst[0], encoding='utf-8', error_bad_lines=False)
+        df2 = pd.read_csv(csv_lst[1], encoding='utf-8', error_bad_lines=False)
         df = pd.merge(df1, df2, on=param_lst, how='inner', suffixes=('', '_'))
         df = drop_suffixCol(df)
         if (size > 2):
             for i in range(2, size):
-                tdf = pd.read_csv(csv_lst[i])
+                tdf = pd.read_csv(csv_lst[i], encoding='utf-8', error_bad_lines=False)
                 df = pd.merge(df, tdf, on=param_lst, how='inner', suffixes=('', '_'))
                 df = drop_suffixCol(df)
     except (ValueError, TypeError) as err:

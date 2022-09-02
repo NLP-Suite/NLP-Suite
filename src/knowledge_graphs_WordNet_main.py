@@ -21,6 +21,7 @@ import knowledge_graphs_WordNet_util
 import sentence_analysis_util
 import Stanford_CoreNLP_util
 import reminders_util
+import html_annotator_dictionary_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -67,7 +68,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
             csv_file_var.set(str(filesToOpen[0]))
 
     if annotate_file_var:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('annotator_dictionary_util.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_dictionary_util.py') == False:
             return
         csvValue_color_list = []
         bold_var=True
@@ -75,9 +76,9 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
 
         tagAnnotations = ['<span style=\"color: ' + color_palette_dict_var + '; font-weight: bold\">', '</span>']
 
-        filesToOpen = annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
+        filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
                                                                     csv_file, 'Term', csvValue_color_list,
-                                                                    bold_var, tagAnnotations, '.txt')
+                                                                    bold_var, tagAnnotations, '.txt','WordNet_'+noun_verb)
 
     if extract_proper_nouns==1 or extract_improper_nouns==1:
         if noun_verb!='NOUN':
@@ -182,14 +183,14 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
 #the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
-                            GUI_util.output_dir_path.get(), 
+                            GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_dropdown_field.get(),
                             csv_file_var.get(),
                             aggregate_POS_var.get(),
                             noun_verb_menu_var.get(),
-                            disaggregate_var.get(), 
+                            disaggregate_var.get(),
                             wordNet_keyword_list,
                             annotate_file_var.get(),
                             extract_proper_nouns_var.get(),

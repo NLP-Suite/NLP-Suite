@@ -44,7 +44,7 @@ class Vectorizer:
             with codecs.open(narrativeFile, mode='r', encoding='utf-8', errors='ignore') as csv_file:
                 reader = csv.DictReader(csv_file)
                 readerList = list(reader)
-                df = pd.read_csv(narrativeFile, encoding='utf-8') #ANGEL
+                df = pd.read_csv(narrativeFile, encoding='utf-8', error_bad_lines=False) #ANGEL
                 if len(readerList) == 0 or "Sentiment score" not in df.columns:
                     messagebox.showwarning(title='Sentiment Analysis Score Error',
                                    message= "The file " + narrativeFile + " doesn't have any sentiment score.\n\n"
@@ -149,7 +149,7 @@ class Vectorizer:
         scoresFile_list = {}
         #Create a list of input dataframes to standardize inputDir and inputFile
         with codecs.open(self.narrative_file_paths[0], mode='r', encoding='utf-8', errors='ignore') as nF1:
-            merged_df = pd.read_csv(nF1,encoding='utf-8')
+            merged_df = pd.read_csv(nF1,encoding='utf-8', error_bad_lines=False)
         #Add sentimentscores Filenames as a column
         merged_df["scoresFilename"] = [self.narrative_file_paths[0]]*merged_df.shape[0]
         if 'Document' not in merged_df.columns and 'Document Name' in merged_df.columns:# sometimes "Document" sometimes "Document Name"
@@ -161,7 +161,7 @@ class Vectorizer:
             for narrativeNum, narrativeFile in enumerate(self.narrative_file_paths, start=1):
                 if narrativeNum>1:
                     with codecs.open(narrativeFile, mode='r', encoding='utf-8', errors='ignore') as narrativeFile1:
-                        dfff=pd.read_csv(narrativeFile1,encoding='utf-8')
+                        dfff=pd.read_csv(narrativeFile1,encoding='utf-8', error_bad_lines=False)
                         dfff["scoresFilename"] =[narrativeFile]*dfff.shape[0]
                         if 'Document' not in dfff.columns:  #sometimes "Document" sometimes "Document Name"
                             dfff["Document"] = dfff["Document Name"]

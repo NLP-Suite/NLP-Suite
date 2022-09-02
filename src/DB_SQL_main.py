@@ -49,7 +49,7 @@ def dbFromCSV(inpath, outpath):
         # Replace dashes with underscore, SQLite bug.
         tableName = t.replace("-", "_")
         # Read in fullpath of csv file
-        df = pd.read_csv(inpath + os.sep + t + ".csv")
+        df = pd.read_csv(inpath + os.sep + t + ".csv", encoding='utf-8', error_bad_lines=False)
         df.to_sql(name=tableName, con=conn, index=False)
 
     print("Database saved as", dbOutput)

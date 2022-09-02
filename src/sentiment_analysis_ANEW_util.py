@@ -55,7 +55,7 @@ anew = GUI_IO_util.sentiment_libPath + os.sep + "EnglishShortenedANEW.csv"
 if not os.path.isfile(anew):
     print("The file "+anew+" could not be found. The ANEW sentiment analysis routine expects a csv dictionary file 'EnglishShortenedANEW.csv' in a directory 'lib' expected to be a subdirectory of the directory where the sentiment_analysis_ANEW.py script is stored.\n\nPlease, check your lib directory and try again.")
     sys.exit()
-data = pd.read_csv(anew)
+data = pd.read_csv(anew, encoding='utf-8',error_bad_lines=False)
 data_dict = {col: list(data[col]) for col in data.columns}
 
 

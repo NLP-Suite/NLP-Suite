@@ -50,7 +50,7 @@ def download_isbn10(isbn):
         except:
             review_title = "REV_TITLE_ERR"
         download_title = reviewer +"_"+ review_title +"_"+ author +"_"+ book_title +"_"+ rev_date +".txt"
-        with open(os.path.join(review_output_dir,download_title),'w+') as f:
+        with open(os.path.join(review_output_dir,download_title),'w+', encoding='utf-8', errors='ignore') as f:
             for a in soup.findAll('p', {'class': 'css-axufdj evys1bk0'}):
                 f.write(str(a.text))
                 f.write("\n")
@@ -80,7 +80,7 @@ def download_url(review_url):
         except:
             rev_date="REV_DATE_ERR"
         download_title = reviewer +"_"+ review_title +"_"+ "BOOK_AUTHOR_ERR" +"_"+ "BOOK_TITLE_ERR" +"_"+ rev_date +".txt"
-        with open(os.path.join(review_output_dir,download_title),'w+') as f:
+        with open(os.path.join(review_output_dir,download_title),'w+', encoding='utf-8', errors='ignore') as f:
             for a in soup.findAll('p', {'class': 'css-axufdj evys1bk0'}):
                 f.write(str(a.text))
                 f.write("\n")
@@ -99,7 +99,7 @@ if download==True:
         filedata = urllib2.urlopen(url)
         datatowrite = filedata.read()
         filename = os.path.join(json_output_dir, ("books_"+str(i)+".json"))
-        with open(filename, 'wb') as f:
+        with open(filename, 'wb', encoding='utf-8', errors='ignore') as f:
             f.write(datatowrite)
         f.close()
 
