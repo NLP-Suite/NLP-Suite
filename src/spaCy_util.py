@@ -24,6 +24,13 @@ import constants_util
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+# list available languages of spaCy
+def list_all_languages():
+    languages = ['ca', 'zh', 'hr', 'da', 'nl', 'en', 'fi', 'fr', 'de', 'el', 'it', 'ja', 'ko', 'lt', 'mk', 'xx', 'nb', 'pl', 'pt', 'ro', 'ru', 'es', 'sv', 'uk']
+    languages = sorted(languages)
+    langs_full = sorted([dict(constants_util.languages)[x] for x in languages])
+    return langs_full
+
 # spaCy annotate functions
 def spaCy_annotate(config_filename, inputFilename, inputDir,
                     outputDir,

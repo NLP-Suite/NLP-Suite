@@ -9,6 +9,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window,"charts_Excel_util",['csv','tkinter','os','collections','openpyxl'])==False:
     sys.exit(0)
 
+
 import tkinter.messagebox as mb
 import openpyxl
 from openpyxl import Workbook
@@ -201,8 +202,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         for i in range(n-1):
             chart_type_list.append(chart_type_list[0])
 
-    IO_user_interface_util.timed_alert(window, 2000, 'Warning', 'Started preparing Excel chart ' + tail + '. Please wait...',
-                                       False,'',True,'',True)
+    startTime = IO_user_interface_util.timed_alert(window, 2000, 'Excel charts', 'Started preparing Excel chart ' + str(chart_type_list) + ' at',
+                                       True,'Chart: ' + tail + '. Please wait...',True,'',True)
 
     # lengths is the list of the number of values for each series (e.g. 5 for series 1, 18 for series 2......)
     # lengths = [5, 18, ......]
@@ -547,6 +548,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     #     errorFound=True
     # if errorFound==True:
     #     chart_outputFilename=''
+    IO_user_interface_util.timed_alert(window, 2000, 'Excel charts', 'Finished preparing Excel chart at', True, '',
+                                       True, startTime, silent=True)
     return chart_outputFilename
 
 def df_to_list_w_header(df):

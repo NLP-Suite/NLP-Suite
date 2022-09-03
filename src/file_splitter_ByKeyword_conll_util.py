@@ -17,7 +17,7 @@ import csv
 import os
 import pandas as pd
 
-from Stanza_functions import stanzaPipeLine, word_tokenize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza
 
 
 

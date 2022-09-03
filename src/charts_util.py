@@ -36,6 +36,9 @@ import IO_files_util
 # TODO ROBY
 def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, chart_type_list,
                                count_var=0, column_yAxis_field_list = []):
+    # TODO temporary to measure process time
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Excel prepare_data_to_be_plotted_inExcel at',
+                                                 True, '', True, '', True)
     withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
     data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
     if len(data)==0:
@@ -64,6 +67,8 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
                        message=str(err))
                 return
         data_to_be_plotted = get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,data)
+    # TODO temporary to measure process time
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Excel prepare_data_to_be_plotted_inExcel at', True, '', True, startTime, True)
     return data_to_be_plotted
 
 
@@ -632,7 +637,10 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
 # input can be a csv filename or a dataFrame
 # output is a csv file
 def add_missing_IDs(input, outputFilename):
-    from Stanza_functions import stanzaPipeLine, sent_tokenize_stanza
+    from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+    # TODO temporary to measure process time
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Excel Add missing IDs at',
+                                                 True, '', True, '', True)
     if isinstance(input, pd.DataFrame):
         df = input
     else:
@@ -709,6 +717,8 @@ def add_missing_IDs(input, outputFilename):
     df = pd.DataFrame(Row_list_new,columns=header)
     df.sort_values(by=['Document ID', 'Sentence ID'], ascending=True, inplace=True)
     df.to_csv(outputFilename, index = False)
+    # TODO temporary to measure process time
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Excel Add missing IDs at', True, '', True, startTime, True)
     return outputFilename
 
 

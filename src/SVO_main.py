@@ -664,7 +664,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     area_var = ''
                     restrict = False
                     for location_filename in outputLocations:
-                        out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
+                        out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
                                      config_filename, location_filename,
                                      outputDir,
                                      'Nominatim', 'Google Earth Pro & Google Maps',
@@ -679,17 +679,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                      [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
                                      [1], [1]) # bold_var_list, italic_var_list
 
-                        if len(out_file) > 0:
-                            # since out_file produced by KML is a list cannot use append
-                            filesToOpen = filesToOpen + out_file
-                        if len(kmloutputFilename) > 0:
-                            filesToOpen.append(kmloutputFilename)
+                        if out_file!=None:
+                            if len(out_file) > 0:
+                                # since out_file produced by KML is a list cannot use append
+                                filesToOpen = filesToOpen + out_file
 
     if openOutputFiles == True and len(filesToOpen) > 0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-        # if google_earth_var == True:
-        #     if kmloutputFilename != '':
-        #         IO_files_util.open_kmlFile(kmloutputFilename)
 
     if len(inputDir) > 1 and len(filesToOpen) > 0 and outputSVODir!='':  # when processing a directory, the output changes
         # not a good idea to change the IO widget output because if you run the script again without first closing the GUI

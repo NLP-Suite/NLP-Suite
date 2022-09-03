@@ -531,7 +531,7 @@ def run(inputFilename,inputDir, outputDir,
 
         # locationColumnName where locations to be geocoded (or geocoded) are stored in the csv file;
         #   any changes to the columns will result in error
-        out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
+        out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
                         NER_outputFilename,outputDir_what_else,
                         geocoder,
                         GIS_package_var,
@@ -546,10 +546,9 @@ def run(inputFilename,inputDir, outputDir,
                         [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
                         [1],[1]) # bold_var_list, italic_var_list)
 
-        if len(out_file)>0:
-            filesToOpen.append(out_file)
-        if kmloutputFilename!='':
-            filesToOpen.append(kmloutputFilename)
+        if out_file != None:
+            if len(out_file) > 0:
+                filesToOpen.extend(out_file)
 
 # SVO ------------------------------------------------------------------------------------
 

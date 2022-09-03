@@ -91,7 +91,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 	index = 0
 	j = 0
 	# index_list = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile, encodingValue, locationColumnName)
-	index_list, data, headers = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile, encodingValue,
+	index_list, data, headers, locationColumnNumber = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile, encodingValue,
 																locationColumnName)
 	# Icon selection
 	icon_url = GIS_Google_pin_util.pin_icon_select(icon_var_list[j], specific_icon_var_list[j])
@@ -254,7 +254,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 																 icon_var_list, specific_icon_var_list, icon_url,
 																 name_var_list, scale_var_list,
 																 color_var_list, color_style_var_list,
-																 description_location_var_name, description_var_list,
+																 description_var_list, description_csv_field_var_list,
 																 description_csv_field_var_list,
 																 bold_var_list, italic_var_list, group_number_var, j=0)
 				index = index + 1

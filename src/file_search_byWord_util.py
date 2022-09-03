@@ -22,7 +22,7 @@ import os
 import csv
 import tkinter.messagebox as mb
 import stanza
-from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import collections
 
 import IO_user_interface_util

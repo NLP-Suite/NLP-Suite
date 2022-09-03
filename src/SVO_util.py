@@ -1,7 +1,7 @@
 import pandas as pd
 import IO_libraries_util
 import GUI_util
-from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 # import stanza
 # stanza.download('en')

@@ -6,6 +6,7 @@ import os
 import GUI_IO_util
 import GUI_util
 import Stanza_util
+import spaCy_util
 import reminders_util
 import config_util
 
@@ -119,9 +120,8 @@ global language_menu
 def get_available_languages():
     if package_var.get() == 'Stanford CoreNLP':
         languages_available=['Arabic','Chinese','English', 'German','Hungarian','Italian','Spanish']
-    # TODO MINO there is function list_all_languages() in spaCy_util like in Stanza_util
     if package_var.get() == 'spaCy':
-        languages_available = 'English'
+        languages_available = spaCy_util.list_all_languages()
     if package_var.get() == 'Stanza':
         languages_available = Stanza_util.list_all_languages()
     return languages_available

@@ -17,7 +17,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"file_splitter_ByKeywo
 import os
 import pandas as pd
 import csv
-from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 from nltk.corpus import wordnet#lemmatization
 #https://wordnet.princeton.edu/documentation/morphy7wn

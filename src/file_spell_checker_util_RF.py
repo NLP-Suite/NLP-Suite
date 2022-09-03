@@ -18,7 +18,7 @@ import os
 #from nltk.stem import WordNetLemmatizer
 from tkinter import filedialog
 #from nltk import tokenize
-from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import nltk
 # IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
 import pandas
