@@ -163,7 +163,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
         return None
     # reading csv file
     try:
-        df = pd.read_csv(inputFilename, encoding="utf-8", errors = 'ignore', squeeze=True)
+        df = pd.read_csv(inputFilename, encoding="utf-8", error_bad_lines=False, squeeze=True)
     except:
         mb.showwarning(title='Data encoding error',
                        message="The input file\n\n" + inputFilename + "\n\nhas character encoding that breaks the code. The statistical function only works with utf-8 compliant files.\n\nPlease, check your input file encoding and try again!")

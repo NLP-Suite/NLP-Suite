@@ -37,6 +37,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         manual_Coref, open_GUI,
         dateInclude, sep, date_field_position, dateFormat,
         parser_var,
+        parser_menu_var,
         single_quote,
         CoNLL_table_analyzer_var, annotators_var, annotators_menu_var):
 
@@ -66,10 +67,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
                 return
 
-            if parser_var and 'PCFG' in parser_menu_var.get():
-                annotator='parser (pcfg)'
-            elif parser_menu_var == 'Neural Network':
-                annotator='parser (nn)'
+            if parser_var:
+                if 'PCFG' in parser_menu_var:
+                    annotator='parser (pcfg)'
+                elif parser_menu_var == 'Neural Network':
+                    annotator='parser (nn)'
             else:
                 if annotators_var and annotators_menu_var != '':
                     if 'NER (GUI)' in annotators_menu_var: # NER annotator
@@ -297,6 +299,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  date_position_var.get(),
                                  date_format.get(),
                                  parser_var.get(),
+                                 parser_menu_var.get(),
                                  quote_var.get(),
                                  CoNLL_table_analyzer_var.get(),
                                  annotators_var.get(),
@@ -737,7 +740,7 @@ readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName, False)
 
 def activate_NLP_options(*args):
-    global error, parsers, available_parsers, parser_lb, package, package_display_area_value, language_list
+    global error, parsers, available_parsers, parser_lb, package, package_display_area_value, language, language_list
     error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new = GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
     if package != '':
         available_parsers = 'Parsers for ' + package + '                          '
@@ -746,6 +749,11 @@ def activate_NLP_options(*args):
     if package_display_area_value_new != package_display_area_value:
         language_list = [language]
         parser_menu_var.set(parsers[0])
+        m = parser_menu["menu"]
+        m.delete(0, "end")
+        for s in parsers:
+            s=s.lstrip() # remove leading blanks since parsers are separated by ,blank
+            m.add_command(label=s, command=lambda value=s: parser_menu.append(value))
         parser_lb.config(text=available_parsers)
 GUI_util.setup_menu.trace('w', activate_NLP_options)
 activate_NLP_options()

@@ -203,7 +203,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             chart_type_list.append(chart_type_list[0])
 
     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Excel charts', 'Started preparing Excel chart ' + str(chart_type_list) + ' at',
-                                       True,'Chart: ' + tail + '. Please wait...',True,'',True)
+                                       True,'Input file: ' + tail,True,'',True)
 
     # lengths is the list of the number of values for each series (e.g. 5 for series 1, 18 for series 2......)
     # lengths = [5, 18, ......]
@@ -548,8 +548,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     #     errorFound=True
     # if errorFound==True:
     #     chart_outputFilename=''
-    IO_user_interface_util.timed_alert(window, 2000, 'Excel charts', 'Finished preparing Excel chart at', True, '',
-                                       True, startTime, silent=True)
+    IO_user_interface_util.timed_alert(window, 2000, 'Excel charts', 'Finished preparing Excel chart at',
+                                       True, '', True, startTime, silent=True)
     return chart_outputFilename
 
 def df_to_list_w_header(df):

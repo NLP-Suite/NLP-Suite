@@ -88,7 +88,7 @@ def get_columnNumber_from_headerValue(headers,header_value):
             break
     if column_number==None:
         IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Wrong header value',
-                                           'The header value "' + str(header_value) + '" was not found among the csv file headers ' + str(headers))
+                                           'The header value "' + str(header_value) + '" was not found among the csv file headers ' + str(headers),False,'',True)
     return column_number
 
 # convert header alphabetic value for CSV files with or without headers to its numeric column value
@@ -337,7 +337,11 @@ def remove_hyperlinks(inputFilename):
     document = data['Document']
     new_document = []
     for i in document:
-        new_document.append(IO_files_util.getFilename(i)[2]) #0 for tail; 2 for full path
+        try:
+            new_document.append(IO_files_util.getFilename(i)[2]) #0 for tail; 2 for full path
+        except:
+            print('ERROR document',document)
+            continue
     data['Document'] = new_document
     no_hyperlink_filename = os.path.join(os.path.split(inputFilename)[0],os.path.split(inputFilename)[1])[:-4] +"_no_hyperlinks.csv"
     data.to_csv(no_hyperlink_filename, encoding='utf-8',index=0)

@@ -24,6 +24,7 @@ import constants_util
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+# TODO MINO
 # list available languages of spaCy
 def list_all_languages():
     languages = ['ca', 'zh', 'hr', 'da', 'nl', 'en', 'fi', 'fr', 'de', 'el', 'it', 'ja', 'ko', 'lt', 'mk', 'xx', 'nb', 'pl', 'pt', 'ro', 'ru', 'es', 'sv', 'uk']
@@ -204,17 +205,24 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
 
+    # TODO MINO
     # output: svo_df
-    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Sentence ID'})
+    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID'})
 
     # subject,verb and object constants
     SUBJECT_DEPS = {"nsubj", "nsubjpass", "csubj", "agent", "expl"}
     VERB_POS = {"VERB", "AUX"}
     OBJECT_DEPS = {"obj", "iobj", "dobj", "dative", "attr", "oprd"}
+    # TODO MINO
+    # NER tags dictionary for location, person and time
+    NER_LOCATION = {"GPE", "LOC"}
+    NER_PERSON = {"PERSON"}
+    NER_TIME = {"TIME", "DATE"}
 
     # set-ups to extract SVOs
     c = 0
     SVO_found = False
+    NER_found = False # TODO MINO
     empty_verb_idx = []
     # extract SVOs
     for sent in doc.sents:
@@ -228,9 +236,17 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
             if token.dep_ in OBJECT_DEPS or token.head.dep_ in OBJECT_DEPS:
                 svo_df.at[c, 'Object (O)'] = token.text
                 SVO_found = True
+            # TODO MINO: extract NER tags
+            if SVO_found is True or NER_found is True:
+                if token.ent_type_ in  NER_LOCATION:
+                    svo_df, NER_found = extractNER(token, svo_df, c, 'Location', NER_found)
+                elif token.ent_type_ in  NER_PERSON:
+                    svo_df, NER_found = extractNER(token, svo_df, c, 'Person', NER_found)
+                elif token.ent_type_ in  NER_TIME:
+                    svo_df, NER_found = extractNER(token, svo_df, c, 'Time', NER_found)
         # check if SVO is found, then add Sentence ID
         if SVO_found:
-            svo_df.at[c, 'Sentence ID'] = c
+            svo_df.at[c, 'Sentence ID'] = c+1
             SVO_found = False
         c+=1
 
@@ -248,9 +264,21 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
     # drop empty Verb rows
     svo_df = svo_df.drop(empty_verb_idx)
     # set the S-V-O sequence in order
-    svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Document ID', 'Document']]
+    svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Document ID', 'Document']]
 
     return svo_df
+
+# TODO MINO
+# extract NERs
+def extractNER(word, df, idx, column, NER_bool):
+    if isinstance(df.at[idx, column], str):
+        tempNER = df.at[idx, column]
+        currentNER = word.text
+        df.at[idx, column] = tempNER + '; ' + currentNER
+    else:
+        df.at[idx, column] = word.text
+    
+    return df, NER_bool
 
 # Python dictionary of language (values) and their acronyms (keys)
 lang_dict  = dict(constants_util.languages)
