@@ -112,6 +112,10 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         if field_number==None:
             return filesToOpen
         columns_to_be_plotted_numeric.append(field_number)
+    # the run_all always expects a double list with 2 values, e.g., [[0,0]]
+    #   so, when only one field is passed, we add the same field twice
+    if len(columns_to_be_plotted_numeric)==1:
+        columns_to_be_plotted_numeric.append(field_number)
     columns_to_be_plotted_numeric=[columns_to_be_plotted_numeric]
     if "Document ID" in headers:
         docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID')

@@ -132,8 +132,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                Gephi_checkbox)
 
 if GUI_util.inputFilename.get() != '':
-    if selectedCsvFile_var.get() == '':
-        selectedCsvFile_var.set(GUI_util.inputFilename.get())
     numColumns = IO_csv_util.get_csvfile_numberofColumns(GUI_util.inputFilename.get())
     if IO_csv_util.csvFile_has_header(GUI_util.inputFilename.get()) == False:
         menu_values = range(1, numColumns + 1)

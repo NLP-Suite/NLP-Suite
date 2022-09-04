@@ -182,7 +182,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename, outputDir,
                                                            columns_to_be_plotted=['Typo?'],
                                                            chartTitle='Frequency of Potential Typos',
-                                                           count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                           count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                            hover_label=[],
                                                            outputFileNameType='Leven_spell',
                                                            column_xAxis_label='Typo',
@@ -485,7 +485,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFileName_simple, outputDir,
                                                                columns_to_be_plotted=['Typo?'],
                                                                chartTitle='Frequency of Potential Typos',
-                                                               count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                               count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                                hover_label=[],
                                                                outputFileNameType='Leven_spell',
                                                                column_xAxis_label='Typo',

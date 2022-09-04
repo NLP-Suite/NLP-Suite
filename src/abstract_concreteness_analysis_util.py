@@ -217,7 +217,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 													   columns_to_be_plotted=['Concreteness (Mean score)'],
 													   # columns_to_be_plotted_bySent= [[10, 7, 0]],
 													   chartTitle='Frequency Distribution of Abstract/Concrete Scores',
-													   count_var=0, # to be used for byDoc, 0 for numeric field
+													   count_var=0, # 0 for numeric field
 													   hover_label=[],
 													   outputFileNameType='',
 													   column_xAxis_label='Concreteness scores',

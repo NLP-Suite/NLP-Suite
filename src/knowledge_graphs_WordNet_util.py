@@ -159,7 +159,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilenameCSV1_new, outputDir,
                                                        columns_to_be_plotted=['WordNet Category'],
                                                        chartTitle='Frequency of WordNet Aggregate Categories for ' + noun_verb,
-                                                       count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                       count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                        hover_label=[],
                                                        outputFileNameType='',
                                                        column_xAxis_label='WordNet ' + noun_verb + ' category',
@@ -188,7 +188,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
                                                            outputDir,
                                                            columns_to_be_plotted=['WordNet Category'],
                                                            chartTitle='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)',
-                                                           count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                           count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                            hover_label=[],
                                                            outputFileNameType='',
                                                            column_xAxis_label='WordNet ' + noun_verb + ' category',
