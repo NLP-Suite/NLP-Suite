@@ -1566,7 +1566,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                        columns_to_be_plotted=['Yngve score', 'Frazier score'],
                                                        chartTitle='Frequency Distribution of Complexity Scores',
-                                                       count_var=0, # to be used for byDoc, 0 for numeric field
+                                                       count_var=0, # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                        hover_label=[],
                                                        outputFileNameType='', #'' #'complexity_bar',
                                                        column_xAxis_label='Complexity scores',

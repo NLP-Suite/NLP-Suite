@@ -323,7 +323,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted=['Search word(s)'],
                                                            chartTitle=chartTitle,
-                                                           count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                           count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                            hover_label=[],
                                                            outputFileNameType='',
                                                            column_xAxis_label='Search word',
