@@ -36,6 +36,9 @@ import IO_files_util
 # TODO ROBY
 def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, chart_type_list,
                                count_var=0, column_yAxis_field_list = []):
+    # TODO temporary to measure process time
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Excel prepare_data_to_be_plotted_inExcel at',
+                                                 True, '', True, '', True)
     withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
     data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
     if len(data)==0:
@@ -64,6 +67,9 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
                        message=str(err))
                 return
         data_to_be_plotted = get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,data)
+    # TODO temporary to measure process time
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Excel prepare_data_to_be_plotted_inExcel at',
+                                       True, '', True, startTime, True)
     return data_to_be_plotted
 
 
@@ -73,6 +79,7 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
 #   groupByList is typically the list ['Document ID', 'Document']
 #   plotList is the list of fields that want to be plotted
 #   chart_title_label is used as part of the chart_title when plotting the fields statistics
+# TODO columns_to_be_plotted comes in a single list to be exported to run_all as double list
 def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     columns_to_be_plotted,
                     chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,
@@ -102,7 +109,10 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     for i in range(0,len(columns_to_be_plotted)):
         # get numeric value of header, necessary for run_all
         field_number = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted[i])
-        columns_to_be_plotted_numeric.append([field_number, field_number])
+        if field_number==None:
+            return filesToOpen
+        columns_to_be_plotted_numeric.append(field_number)
+    columns_to_be_plotted_numeric=[columns_to_be_plotted_numeric]
     if "Document ID" in headers:
         docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID')
         columns_to_be_plotted_byDoc = [[docCol, docCol + 1]]
@@ -137,7 +147,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                   column_xAxis_label_var=column_xAxis_label,
                                                   column_yAxis_label_var=column_yAxis_label,
                                                   hover_info_column_list=hover_label,
-                                                  count_var=1) #always 1 to get frequencies of values
+                                                  count_var=count_var) #always 1 to get frequencies of values, except for n-grams where we already pass stats
 
         if chart_outputFilename!=None:
             chart_outputFilenameSV=chart_outputFilename
@@ -262,7 +272,12 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         #   plot values are the second item in the list [[7,2]] i.e. 2
         count_var = count_var_SV
         # not all csv output contain the Sentence ID (e.g., line length function)
+        bySent=False
         if bySent:
+            # TODO temporary to measure process time
+            startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                           'Started running Excel bySent at',
+                                                           True, '', True, '', True)
             # inputFilename = data_pivot(inputFilename, 'Sentence ID', 'Yngve score')
             # columns_to_be_plotted_bySent = [[columns_to_be_plotted_bySent[0][0]]]
             if count_var == 1:  # for alphabetic fields that need to be counted for display in a chart
@@ -333,8 +348,12 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
+            # TODO temporary to measure process time
+            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                               'Finished running Excel bySent at',
+                                               True, '', True, startTime, True)
 
-# compute field STATISTICS ---------------------------------------------------------------------------
+        # compute field STATISTICS ---------------------------------------------------------------------------
         # TODO THE FIELD MUST CONTAIN NUMERIC VALUES
         # plotList (a list []) contains the columns headers to be used to compute their stats
         if len(groupByList)>0: # compute only if list is not empty
@@ -397,7 +416,6 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
                                                                         remove_hyperlinks = remove_hyperlinks,
                                                                         static_flag = static_flag)
         return Plotly_outputFilename
-    # TODO
     data_to_be_plotted = prepare_data_to_be_plotted_inExcel(inputFilename,
                                 columns_to_be_plotted,
                                 chart_type_list,count_var,
@@ -632,7 +650,10 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
 # input can be a csv filename or a dataFrame
 # output is a csv file
 def add_missing_IDs(input, outputFilename):
-    from Stanza_functions import stanzaPipeLine, sent_tokenize_stanza
+    from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+    # TODO temporary to measure process time
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Excel Add missing IDs at',
+                                                 True, '', True, '', True)
     if isinstance(input, pd.DataFrame):
         df = input
     else:
@@ -709,6 +730,9 @@ def add_missing_IDs(input, outputFilename):
     df = pd.DataFrame(Row_list_new,columns=header)
     df.sort_values(by=['Document ID', 'Sentence ID'], ascending=True, inplace=True)
     df.to_csv(outputFilename, index = False)
+    # TODO temporary to measure process time
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Excel Add missing IDs at',
+                                       True, '', True, startTime, True)
     return outputFilename
 
 

@@ -18,7 +18,7 @@ from nltk.stem.porter import PorterStemmer
 
 # from nltk import tokenize
 # from nltk import word_tokenize
-from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
 import ast
 import textstat
@@ -61,7 +61,7 @@ from nltk.corpus import stopwords
 # from nltk.stem import WordNetLemmatizer
 # from nltk.util import ngrams
 from nltk.corpus import wordnet
-from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 from itertools import groupby
 import textstat
 
@@ -514,7 +514,8 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
         else:
             bySentenceID=0
 
-    filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber, wordgram, excludePunctuation, frequency, bySentenceID)
+    filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber, wordgram, excludePunctuation, frequency,
+                                bySentenceID,  createCharts, chartPackage)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Word/Characters N-Grams at', True, '', True, startTime, False )
@@ -574,7 +575,7 @@ def process_hapax(ngramsList, frequency, excludePunctuation):
 # re-written by Roberto June 2022
 
 # return a list for each document
-def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1, excludePunctuation=True, frequency = None, bySentenceID=False, isdir=False, createCharts=True,chartPackage='Excel'):
+def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1, excludePunctuation=True, frequency = None, bySentenceID=False, createCharts=True,chartPackage='Excel'):
 
     # the function combines each token with the next token in the list
     def combine_tokens_in_ngrams(ngrams_list):
@@ -689,7 +690,6 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
             else:
                 corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Frequency in Document', 'Frequency in Corpus',
                                              'Document ID', 'Document'])
-            columns_to_be_plotted = [str(gram) + '-grams' + hapax_header]
         else: # include punctuation header
             if inputDir == '':
                 corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Punctuation',
@@ -699,8 +699,10 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                 corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Punctuation',
                                              'Frequency in Document', 'Frequency in Corpus',
                                              'Document ID', 'Document'])
-            columns_to_be_plotted = [str(gram) + '-grams' + hapax_header]
-
+        if inputDir == '':
+            columns_to_be_plotted = [str(gram) + '-grams' + hapax_header,'Frequency in Document']
+        else:
+            columns_to_be_plotted = [str(gram) + '-grams' + hapax_header, 'Frequency in Document'], [str(gram) + '-grams' + hapax_header, 'Frequency in Corpus']
         # save output file after each n-gram value in the range
         # code in next line breaks
         # corpus_ngramsList = sorted(corpus_ngramsList, key=lambda x: x[1])
@@ -711,7 +713,6 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
         errorFound = IO_csv_util.list_to_csv(GUI_util.window, corpus_ngramsList, csv_outputFilename)
         if not errorFound:
             filesToOpen.append(csv_outputFilename)
-
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, csv_outputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted=columns_to_be_plotted,

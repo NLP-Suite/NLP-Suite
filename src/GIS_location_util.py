@@ -60,7 +60,7 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 					break
 		index_list[index] = True
 
-	return [i + 1 for i in index_list.keys()], data, headers
+	return [i + 1 for i in index_list.keys()], data, headers, location_num
 
 #the CoNLL table includes the filename; the position in the table varies with old and new CoNLL
 # returns filename, location, sentence, date (if present)

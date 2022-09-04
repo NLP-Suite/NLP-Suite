@@ -39,7 +39,7 @@ import numpy as np #np
 import time
 import argparse
 
-from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import pandas as pd
 import tkinter.messagebox as mb
 

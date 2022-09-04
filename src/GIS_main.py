@@ -192,7 +192,8 @@ def run(inputFilename,
 
         # locationColumnName where locations to be geocoded (or geocoded) are stored in the csv file;
         #   any changes to the columns will result in error
-        out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
+        # out_file includes both kml file and Google Earth files
+        out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
                         NER_outputFilename,outputDir,
                         'Nominatim', GIS_package_var,
                         datePresent,
@@ -206,10 +207,9 @@ def run(inputFilename,
                         [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
                         [1],[1]) # bold_var_list, italic_var_list)
 
-        if len(out_file)>0:
-            filesToOpen.append(out_file)
-        if kmloutputFilename!='':
-            filesToOpen.append(kmloutputFilename)
+        if out_file!=None:
+            if len(out_file)>0:
+                filesToOpen.extend(out_file)
         if len(filesToOpen)>0:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
     else:

@@ -127,6 +127,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             processors='tokenize,mwt,pos,lemma,depparse'
             if "SVO" in annotator_params:
                 annotator_params = "DepRel_SVO"
+                processors='tokenize,mwt,pos,ner,lemma,depparse' # TODO MINO: add NER when SVO in annotator_params
         elif "sentiment" in annotator_params:
             processors='tokenize,sentiment'
 
@@ -187,7 +188,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                 print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
 
             if len(language) > 1 or 'multilingual' in language: # if language detection + annotation, need to open a txt file into a list
-                with open(doc, encoding=language_encoding, errors='ignore') as f:
+                with open(doc, encoding=language_encoding) as f:
                     text = f.read()
                     if text == '':
                         mb.showinfo("Warning",
@@ -398,17 +399,26 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
         inputFilename = inputDir + os.sep + tail
 
     # output: svo_df
-    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Sentence ID'})
+    # TODO MINO add NER tags to columns
+    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID'})
     empty_verb_idx = []
     SVO_found = False
+    NER_found = False # TODO MINO: add boolean value for NER tags
 
     # object and subject constants
     OBJECT_DEPS = {"obj", "iobj", "dobj", "dative", "attr", "oprd"}
     SUBJECT_DEPS = {"nsubj", "nsubj:pass", "csubj", "agent", "expl"}
+    # TODO MINO:
+    # NER tags dictionary for location, person and time
+    NER_LOCATION = {"S-GPE", "B-GPE", "I-GPE", "E-GPE", "S-LOC", "B-LOC", "I-LOC", "E-LOC"}
+    NER_PERSON = {"S-PERSON", "B-PERSON", "I-PERSON", "E-PERSON"}
+    NER_TIME = {"S-TIME", "B-TIME", "I-TIME", "E-TIME", "S-DATE", "B-DATE", "I-DATE", "E-DATE",}
 
     # extraction of SVOs
     c = 0
     for sentence in doc.sentences:
+        sent_dict = sentence.to_dict()
+        w = 0 # TODO MINO: count word index for NER
         for word in sentence.words:
             tmp_head = sentence.words[word.head-1].deprel if word.head > 0 else "root"
             if word.deprel in SUBJECT_DEPS or tmp_head in SUBJECT_DEPS:
@@ -420,6 +430,16 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
             if word.deprel in OBJECT_DEPS or tmp_head in OBJECT_DEPS:
                 svo_df.at[c, 'Object (O)'] = word.text
                 SVO_found = True
+            # TODO MINO: extract NER values
+            if SVO_found is True or NER_found is True:
+                token = sent_dict[w]
+                if token['ner'] in NER_LOCATION:
+                    svo_df, NER_found = extractNER(token, svo_df, c, 'Location', NER_found)
+                elif token['ner'] in NER_PERSON:
+                    svo_df, NER_found = extractNER(token, svo_df, c, 'Person', NER_found)
+                elif token['ner'] in NER_TIME:
+                    svo_df, NER_found = extractNER(token, svo_df, c, 'Time', NER_found)
+            w+=1
         # check if SVO is found, then add Sentence ID
         if SVO_found:
             svo_df.at[c, 'Sentence ID'] =  c
@@ -441,9 +461,30 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
     # drop empty Verb rows
     svo_df = svo_df.drop(empty_verb_idx)
     # set the S-V-O sequence in order
-    svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Document ID', 'Document']]
+    svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Document ID', 'Document']]
 
     return svo_df
+
+# TODO MINO: create a function
+# extract NERs
+def extractNER(word, df, idx, column, NER_bool):
+    if word['ner'].startswith("B"):
+        NER_bool = True
+        df.at[idx, column] = word['text']
+    elif word['ner'].startswith("I") or word['ner'].startswith("E"):
+        tempNER = df.at[idx, column]
+        currentNER = word['text']
+        df.at[idx, column] = tempNER + '; ' + currentNER
+        if word['ner'].startswith("E"):
+            NER_bool = False
+    elif isinstance(df.at[idx, column], str):
+        tempNER = df.at[idx, column]
+        currentNER = word['text']
+        df.at[idx, column] = tempNER + '; ' + currentNER
+    else:
+        df.at[idx, column] = word['text']
+    
+    return df, NER_bool
 
 # extract SVO from multilingual doc
 def extractSVOMultilingual(stanza_doc, docID, inputFilename, inputDir, tail):

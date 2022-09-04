@@ -39,7 +39,7 @@ from nltk.corpus import wordnet as wn
 from nltk.corpus import sentiwordnet as swn
 # from nltk import tokenize
 from nltk import word_tokenize, pos_tag
-from Stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 # if SentiWordNet fails, run: "python -m nltk.downloader all"
 

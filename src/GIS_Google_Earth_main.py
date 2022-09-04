@@ -35,8 +35,8 @@ import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-# ISO 3166-1 defines two-letter, three-letter, and three-digit country codes. 
-# python-iso3166 is a self-contained module that converts between these codes 
+# ISO 3166-1 defines two-letter, three-letter, and three-digit country codes.
+# python-iso3166 is a self-contained module that converts between these codes
 #   and the corresponding country name.
 # import iso3166 #pip install
 # from iso3166 import countries
@@ -93,7 +93,7 @@ def run(inputFilename, outputDir, openOutputFiles,
     country_bias = ''
     area_var = ''
     restrict = False
-    filesToOpen, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,config_filename,
+    filesToOpen = GIS_pipeline_util.GIS_pipeline(GUI_util.window,config_filename,
                                        inputFilename, outputDir,
                                        geocoder, 'Google Earth Pro',
                                        datePresent,
@@ -108,9 +108,9 @@ def run(inputFilename, outputDir, openOutputFiles,
                                        bold_var_list, italic_var_list,
                                        description_var_list, description_csv_field_var_list)
 
-    filesToOpen.append(kmloutputFilename)
-    if len(filesToOpen) == 0:
-            return
+    if filesToOpen!=None:
+        if len(filesToOpen) == 0:
+                return
 
     # # always open the kml file
     # IO_files_util.open_kmlFile(kmloutputFilename)
@@ -161,9 +161,9 @@ config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
-        # 1 for CoNLL file 
-        # 2 for TXT file 
-        # 3 for csv file 
+        # 1 for CoNLL file
+        # 2 for TXT file
+        # 3 for csv file
         # 4 for any type of file
         # 5 for txt or html
         # 6 for txt or csv

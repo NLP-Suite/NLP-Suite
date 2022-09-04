@@ -22,7 +22,7 @@ import GUI_IO_util
 import IO_files_util
 import IO_csv_util
 
-from Stanza_functions import stanzaPipeLine, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza
 filesToOpen = []
 
 #This fuction reads the social actor list from the same directory
