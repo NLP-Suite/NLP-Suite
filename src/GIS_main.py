@@ -164,7 +164,7 @@ def run(inputFilename,
             # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
             # if IO_csv_util.rename_header(inputFilename, "Word", "Location") == False:
             #     return
-            df = pd.read_csv(locations[0]).rename(columns={"Word": "Location"}, encoding='utf-8', error_bad_lines=False)
+            df = pd.read_csv(locations[0], encoding='utf-8', error_bad_lines=False).rename(columns={"Word": "Location"})
             location_menu_var.set('Location')
             # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
 

@@ -113,9 +113,7 @@ def run(inputDir="relative_path_here",
             f.close()
             if not case_sensitive:
                 docText = docText.lower()
-            # TODO MINO: replaced with stanza
             tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
-            # tokens_ = word_tokenize(docText)
             for collocationIndex in range(len(tokens_)):
                 token = tokens_[collocationIndex]
                 for search_word in search_word_list:
@@ -199,7 +197,6 @@ def run(inputDir="relative_path_here",
             f.close()
             if not case_sensitive:
                 docText = docText.lower()
-            # TODO MINO: replaced with stanza
             tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
             for collocationIndex in range(len(tokens_)):
                 token = tokens_[collocationIndex]
@@ -313,7 +310,6 @@ def run(inputDir="relative_path_here",
                                     coOcc_results[search_word] = 2
                             else:
                                 if search_word == token:
-                                    # print(search_word, 'FOUND!!!!!', file)
                                     coOcc_results[search_word] = 1
                         co_occurrence_checker = True
                         for word in search_word_list:

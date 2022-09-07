@@ -216,20 +216,21 @@ def geocode(window,locations, inputFilename, outputDir,
 	geowriter = csv.writer(csvfile)
 	geowriterNotFound = csv.writer(csvfileNotFound)
 
+	# TODO MINO: add NER Tag columns to geowriter and notfound
 	if inputIsCoNLL==True: #the filename, sentence, date were exported
 		if datePresent==True:
 			# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
-			geowriter.writerow(['Location','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document','Date'])
+			geowriter.writerow(['Location','NER Tag','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document','Date'])
 		else:
 			# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
-			geowriter.writerow(['Location','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document'])
+			geowriter.writerow(['Location','NER Tag','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document'])
 	else:
 		# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
 		if datePresent==True:
-			geowriter.writerow(['Location','Latitude','Longitude','Address', 'Date'])
+			geowriter.writerow(['Location','NER Tag','Latitude','Longitude','Address', 'Date'])
 		else:
-			geowriter.writerow(['Location', 'Latitude', 'Longitude', 'Address'])
-
+			geowriter.writerow(['Location','NER Tag','Latitude', 'Longitude', 'Address'])		
+	geowriterNotFound.writerow(['Location','NER Tag'])
 	# CYNTHIA
 	# ; added in SVO list of locations in SVO output (e.g., Los Angeles; New York; Washington)
 	tmp_loc = []
@@ -258,9 +259,17 @@ def geocode(window,locations, inputFilename, outputDir,
 				if datePresent==True:
 					date = item[5]
 			else:
-				# itemToGeocode =[item[0]]
 				itemToGeocode =item[0]
 				NER_Tag = item[len(item)-1] # TODO MINO: add NER_Tag
+				if NER_Tag == 'COUNTRY':
+					NER_Tag_nominatim = 'country'
+				elif NER_Tag == 'STATE_OR_PROVINCE':
+					NER_Tag_nominatim = 'state'
+				elif NER_Tag == 'CITY':
+					NER_Tag_nominatim = 'city'
+				elif NER_Tag == 'LOCATION':
+					NER_Tag_nominatim = 'settlement'
+
 				if datePresent==True:
 					date=item[1]
 
@@ -272,7 +281,7 @@ def geocode(window,locations, inputFilename, outputDir,
 				distinctGeocodedList.append(itemToGeocode)
 				if geocoder=='Nominatim':
 					# TODO MINO: add NER_Tag as input for featuretype parameter
-					location = nominatim_geocode(geolocator,loc=itemToGeocode,country_bias=country_bias,box_tuple=area,restrict=restrict,featuretype=NER_Tag.lower())
+					location = nominatim_geocode(geolocator,loc=itemToGeocode,country_bias=country_bias,box_tuple=area,restrict=restrict,featuretype=NER_Tag_nominatim)
 				else:
 					location = google_geocode(geolocator,itemToGeocode,country_bias)
 				if geocoder=='Nominatim':
@@ -281,7 +290,7 @@ def geocode(window,locations, inputFilename, outputDir,
 					except Exception as e:
 						lat, lng, address = 0, 0, " LOCATION NOT FOUND BY " + geocoder
 						locationsNotFound=locationsNotFound+1
-						geowriterNotFound.writerow([itemToGeocode])
+						geowriterNotFound.writerow([itemToGeocode, NER_Tag]) # TODO MINO: add NER Tag
 						print(currRecord,"     LOCATION NOT FOUND BY " + geocoder,itemToGeocode)
 				else: #Google
 					try: #use a try/except in case requests do not give results
@@ -289,7 +298,7 @@ def geocode(window,locations, inputFilename, outputDir,
 					except:
 						lat, lng, address = 0, 0, " LOCATION NOT FOUND BY " + geocoder
 						locationsNotFound=locationsNotFound+1
-						geowriterNotFound.writerow([itemToGeocode])
+						geowriterNotFound.writerow([itemToGeocode, NER_Tag]) # TODO MINO: add NER Tag
 						print(currRecord,"     LOCATION NOT FOUND BY " + geocoder,itemToGeocode)
 				if lat!=0 and lng!=0:
 					distinctGeocodedLocations[itemToGeocode] = (lat, lng, address)
@@ -300,14 +309,14 @@ def geocode(window,locations, inputFilename, outputDir,
 			if lat!=0 and lng!=0:
 				if inputIsCoNLL==True:
 					if datePresent==True:
-						geowriter.writerow([itemToGeocode, lat, lng, address, sentenceID, sentence, documentID, filename, date])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, sentenceID, sentence, documentID, filename, date]) # TODO MINO: add NER Tag
 					else:
-						geowriter.writerow([itemToGeocode, lat, lng, address, sentenceID, sentence, documentID, filename])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, sentenceID, sentence, documentID, filename]) # TODO MINO: add NER Tag
 				else:
 					if datePresent==True:
-						geowriter.writerow([itemToGeocode, lat, lng, address, date])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, date]) # TODO MINO: add NER Tag
 					else:
-						geowriter.writerow([itemToGeocode, lat, lng, address])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address]) # TODO MINO: add NER Tag
 	csvfile.close()
 	csvfileNotFound.close()
 	
