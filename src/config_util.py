@@ -129,7 +129,7 @@ def write_external_software_config_file(window, config_filename, currently_selec
         csv_file.at[0, 'Path'] = {currently_selected_parsers}
         csv_file.at[0, 'Download_link)'] = currently_selected_options['LEMMATIZER']
 
-        csv_file.to_csv(config_filename_path, index=False)
+        csv_file.to_csv(config_filename_path, encoding='utf-8', index=False)
 
         IO_user_interface_util.timed_alert(window, 2000, 'Warning',
                                            'NLP external software options have been saved to\n\n  ' + config_filename_path,
@@ -195,7 +195,7 @@ def write_NLP_package_language_config_file(window, config_filename, currently_se
         csv_file.at[0, 'Basic functions (tokenizer/lemmatizer)'] = currently_selected_options['LEMMATIZER']
         csv_file.at[0, 'Corpus language'] = currently_selected_options['LANGUAGE(S)']
 
-        csv_file.to_csv(config_filename_path, index=False)
+        csv_file.to_csv(config_filename_path, encoding='utf-8', index=False)
 
         IO_user_interface_util.timed_alert(window, 2000, 'Warning',
                                            'NLP package and language options have been saved to\n\n  ' + config_filename_path,

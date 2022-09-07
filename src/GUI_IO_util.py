@@ -405,7 +405,12 @@ def GUI_settings(IO_setup_display_brief,GUI_width,GUI_height_brief,GUI_height_fu
 # config_input_output_numeric_options is set to [0 0,0,0] for GUIs that are placeholders for more specialized GUIs
 #   in these cases (e.g., narrative_analysis_main, there are no I/O options to save
 def exit_window(window,config_filename, scriptName, config_input_output_numeric_options,current_config_input_output_alphabetic_options, local_release_version, GitHub_release_version):
-    import atexit
+    import atexit # a Python module
+
+    if IO_libraries_util.install_all_packages(window, "GUI_IO_util.py",
+                                              ['pygit2']) == False:
+        sys.exit(0)
+
     def exit_handler():
         from NLP_setup_update_util import update_self
         try:

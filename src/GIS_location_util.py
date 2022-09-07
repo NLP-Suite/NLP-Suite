@@ -23,7 +23,7 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 	index = 0
 	index_list = {}
 
-	inputfile = csv.reader(open(InputCodedCsvFile,'r',encoding = encodingValue,errors='ignore'))
+	inputfile = csv.reader(open(InputCodedCsvFile,'r',encoding=encodingValue,errors='ignore'))
 	input_coded_csv_file = [line for line in inputfile] # reminder to skip the header here
 	# first_row = next(inputfile) #skip header
 
@@ -74,7 +74,7 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 	split_locations_prefix = re.sub("[^\w]", " ",  split_locations_prefix).split()
 	if encodingValue=='':
 		encodingValue = 'utf-8'
-	dt = pd.read_csv(conllFile,encoding = encodingValue)
+	dt = pd.read_csv(conllFile,encoding=encodingValue)
 	numDocs=dt['Document ID'].max()
 	numRecords=dt['Record ID'].max()
 	currentRecord=0
@@ -166,7 +166,7 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 	locList = []
 	#latin-1 for the Italian or the code will break
 	try:
-		dt = pd.read_csv(inputFilename,encoding = encodingValue)
+		dt = pd.read_csv(inputFilename,encoding=encodingValue)
 		count_row = dt.shape[0]  # gives number of row count
 		#count_col = dt.shape[1]  # gives number of col count
 	except:
@@ -178,9 +178,10 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 			print("Processing record " + str(index)+"/"+str(count_row)+ " in csv file; location: " + str(row[locationColumnNumber]))
 			if str(row[locationColumnNumber])!='' and str(row[locationColumnNumber])!='nan':
 				if datePresent == True:
-					locList.append([row[locationColumnNumber], row[dateColumnNumber]])
+					locList.append([row[locationColumnNumber], row[dateColumnNumber], row['NER Tag']])
 				else:
-					locList.append([row[locationColumnNumber],[index],[0]])
+					locList.append([row[locationColumnNumber],[index],[0], row['NER Tag']])
+
 	if len(locList)==0:
 		mb.showwarning(title='Locations', message="There are no locations in your input file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.\n\nNo map via Google Earth Pro can be done.")
 		return

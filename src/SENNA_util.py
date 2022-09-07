@@ -403,7 +403,7 @@ def convert_to_svo(input_df: pd.DataFrame, output_file_name: str) -> str:
 
     # save SVO data frame as csv file
     try:
-        new_df.to_csv(output_file_name, index=False)
+        new_df.to_csv(output_file_name, encoding='utf-8', index=False)
     except:
         print("The SENNA SVO script encountered an error in saving the csv file output. Depending upon the size of your corpus, you may not have enough memory on your machine.")
         output_file_name =''

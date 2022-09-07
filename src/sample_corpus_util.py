@@ -33,7 +33,7 @@ def sample_corpus_by_document_id(table, inputDir, outputDir):
         except FileNotFoundError:
             not_found.append(doc)
     if len(not_found)>0:
-        pd.DataFrame(not_found).to_csv(os.path.join(target_dir, "unmatched files.csv"), index=False)
+        pd.DataFrame(not_found).to_csv(os.path.join(target_dir, "unmatched files.csv"), encoding='utf-8', index=False)
         extra_msg = "\n\n" + str(len(not_found)) + " files were not found in the input directory and were not copied."
     else:
         extra_msg = ""

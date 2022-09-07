@@ -46,7 +46,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
                     **kwargs):
 
     # instantiate variables for input/output handling settings
-    language_encoding = 'utf-8'
+    language_encoding='utf-8'
     filesToOpen = []
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running spaCy at',
                                             True, '', True, '', False)
@@ -129,12 +129,12 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
             svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
 
     # save dataframe to csv
-    df.to_csv(outputFilename, index=False, encoding = language_encoding)
+    df.to_csv(outputFilename, index=False, encoding=language_encoding)
     filesToOpen.append(outputFilename)
 
     # save SVO dataframe
     if "SVO" in annotator_params:
-        svo_df.to_csv(svo_df_outputFilename, index=False, encoding = language_encoding)
+        svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(svo_df_outputFilename)
 
     return filesToOpen

@@ -200,7 +200,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
 
     # Save csv file
     fileName=os.path.join(outputDir, "NLP_Gensim_dominant_topic.csv")
-    df_dominant_topic.to_csv(fileName, index=False)
+    df_dominant_topic.to_csv(fileName, encoding='utf-8', index=False)
     filesToOpen.append(fileName)
 
     # columns_to_be_plotted=[[1, 3]]
@@ -235,7 +235,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
 
     # Save csv file
     fileName=os.path.join(outputDir, "NLP_Gensim_representative_document.csv")
-    sent_topics_sorteddf_mallet.to_csv(fileName,index=False)
+    sent_topics_sorteddf_mallet.to_csv(fileName,encoding='utf-8', index=False)
     filesToOpen.append(fileName)
 
     columns_to_be_plotted=[[1, 2]]
@@ -301,7 +301,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     print("Number of columns of topic_distribution.csv: ", df_dominant_topics.shape[1])
     # Save csv file
     fileName=os.path.join(outputDir, "NLP_Gensim_topic_distribution.csv")
-    df_dominant_topics.to_csv(fileName, index=False)
+    df_dominant_topics.to_csv(fileName, encoding='utf-8', index=False)
     filesToOpen.append(fileName)
 
     # columns_to_be_plotted=[[1, 2]]

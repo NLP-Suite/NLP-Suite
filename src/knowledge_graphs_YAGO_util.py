@@ -143,7 +143,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
     from datetime import date
     csvname= "YAGO_output_"+date.today().strftime("%b_%d_%Y")+"_"+datetime.now().strftime("%H_%M_%S")+".csv"
     csvname = os.path.join(outputDir,csvname)
-    df.to_csv((csvname),index=False)
+    df.to_csv((csvname),encoding='utf-8', index=False)
     filesToOpen.append(csvname)
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running YAGO Knowledge Graph at',

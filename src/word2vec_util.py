@@ -303,7 +303,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     # write csv file
     outputFilename = outputFilename.replace(".html", ".csv")
-    result_df.to_csv(outputFilename, index=False)
+    result_df.to_csv(outputFilename, encoding='utf-8', index=False)
     filesToOpen.append(outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',

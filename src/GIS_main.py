@@ -147,7 +147,7 @@ def run(inputFilename,
         if extract_date_from_text_var or extract_date_from_filename_var:
             datePresent = True
             # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
-            df = pd.read_csv(locations[0]).rename(columns={"Word": "Location"}, encoding='utf-8', error_bad_lines=False)
+            df = pd.read_csv(locations[0], encoding='utf-8', error_bad_lines=False).rename(columns={"Word": "Location"})
             # if IO_csv_util.rename_header(inputFilename, "Word", "Location") == False:
             #     return
             location_menu_var.set('Location')
@@ -174,7 +174,7 @@ def run(inputFilename,
             if df['NER Tag'][index] not in ['COUNTRY','STATE_OR_PROVINCE','CITY','LOCATION']:
                 del_list.append(index)
         df = df.drop(del_list)
-        df.to_csv(NER_outputFilename, index=False)
+        df.to_csv(NER_outputFilename, encoding='utf-8', index=False)
         csv_file_var.set(NER_outputFilename)
         filesToOpen.append(NER_outputFilename)
         locationColumnName = 'Location'

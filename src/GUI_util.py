@@ -393,7 +393,7 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
             # check input directory
             if str(config_input_output_alphabetic_options[1]) != '':
                 inputDirName = config_input_output_alphabetic_options[1]
-                IO_setup_display_string = "INPUT DIR: " + str(inputDirName)
+                IO_setup_display_string = "INPUT DIR: " + str(os.path.basename(os.path.normpath(inputDirName)))
 
         # both filename [1] and input Dir [2] are empty
         if (config_input_output_alphabetic_options[0] == '') and (
@@ -402,7 +402,7 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
 
         outputDirName = config_input_output_alphabetic_options[3]
 
-        IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(outputDirName)
+        IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(outputDirName)))
         IO_setup_brief_display_area = tk.Text(width=60, height=2)
         # place the display area for brief
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+250,

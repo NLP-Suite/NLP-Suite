@@ -199,9 +199,9 @@ def GetNumberOfSentencesInCSVfile(inputFilename,algorithm,columnHeader='Sentence
 
 
 # triggered by a df.to_csv
-def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, language_encoding = 'utf-8'):
+def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, language_encoding='utf-8'):
     try:
-        data_frame.to_csv(outputFilename, columns=headers, index=False, encoding = language_encoding)
+        data_frame.to_csv(outputFilename, columns=headers, index=False, encoding=language_encoding)
         return outputFilename
     except IOError:
         mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
@@ -270,7 +270,7 @@ def extract_from_csv(inputFilename, outputDir, data_files, columns_to_export=Non
                                                              '', '', '', '', False, True)
 
     df = pd.DataFrame(pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False))
-    df.to_csv(outputFilename, columns=columns_to_export, index=False)
+    df.to_csv(outputFilename, encoding='utf-8', columns=columns_to_export, index=False)
     return outputFilename
 
 
@@ -283,13 +283,13 @@ def convert_Excel_to_csv(inputFilename,outputDir, headers=None):
     # Write the dataframe object
     # into csv file
     outputFilename=outputDir + os.sep + "Test.csv"
-    read_file.to_csv(outputFilename,
+    read_file.to_csv(outputFilename, encoding='utf-8',
                      index=None,
                      header=True)
 
     # read csv file and convert into a dataframe object
     df = pd.DataFrame(pd.read_csv(outputFilename, encoding='utf-8', error_bad_lines=False))
-    df.to_csv(outputFilename, columns=headers, index=False)
+    df.to_csv(outputFilename, encoding='utf-8', columns=headers, index=False)
     return outputFilename
 
     # show the dataframe
@@ -299,7 +299,7 @@ def convert_Excel_to_csv(inputFilename,outputDir, headers=None):
 def sort_csvFile_by_columns(inputFilename, outputFilename, headers_tobe_sorted):
     df = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
     df = df.sort_values(by=headers_tobe_sorted)
-    df.to_csv(outputFilename,index=False)
+    df.to_csv(outputFilename,encoding='utf-8', index=False)
 
 # the function dresses a filename as an hyperlink
 #   to be used in a csv file;
@@ -329,7 +329,7 @@ def remove_hyperlinks(inputFilename):
     try:
         data = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
     except pd.errors.ParserError:
-        data = pd.read_csv(inputFilename, encoding='utf-8', sep='delimiter')
+        data = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False, sep='delimiter')
     except:
         print("Error: failed to read the csv file named: "+inputFilename)
         return False, ''
@@ -340,7 +340,6 @@ def remove_hyperlinks(inputFilename):
         try:
             new_document.append(IO_files_util.getFilename(i)[2]) #0 for tail; 2 for full path
         except:
-            print('ERROR document',document)
             continue
     data['Document'] = new_document
     no_hyperlink_filename = os.path.join(os.path.split(inputFilename)[0],os.path.split(inputFilename)[1])[:-4] +"_no_hyperlinks.csv"
@@ -363,7 +362,7 @@ def rename_header(inputFilename, header1, header2):
             temp = pd.read_csv(inputFilename)
             if temp.columns[ID] == header1:
                 temp = temp.rename(columns={header1: header2})
-                temp.to_csv(inputFilename, index=False)
+                temp.to_csv(inputFilename, encoding='utf-8', index=False)
                 headerFound = True
                 break
     if headerFound==False:
@@ -415,7 +414,7 @@ def export_csv_to_text(inputFilename, outputDir, column=None, column_list=[]):
                                message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + column)
                 return
 
-        text = df[column_list].to_csv(index=False)
+        text = df[column_list].to_csv(encoding='utf-8', index=False)
         # replacing ',' by space
         text = text.replace(",", " ")
         with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w", encoding='utf-8', errors='ignore') as text_file:

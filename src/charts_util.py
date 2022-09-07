@@ -733,7 +733,7 @@ def add_missing_IDs(input, outputFilename):
 
     df = pd.DataFrame(Row_list_new,columns=header)
     df.sort_values(by=['Document ID', 'Sentence ID'], ascending=True, inplace=True)
-    df.to_csv(outputFilename, index = False)
+    df.to_csv(outputFilename, encoding='utf-8', index = False)
     # TODO temporary to measure process time
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Excel Add missing IDs at',
                                        True, '', True, startTime, True)
@@ -763,7 +763,7 @@ def complete_sentence_index(file_path):
     data = data.fillna(0)
     # headers=IO_csv_util.get_csvfile_headers_pandas(file_path)
     data.sort_values(by=['Document ID','Sentence ID'], ascending=True, inplace=True)
-    data.to_csv(file_path, index = False)
+    data.to_csv(file_path, encoding='utf-8', index = False)
     return
 
 #data_to_be_plotted contains the values to be plotted

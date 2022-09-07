@@ -60,7 +60,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                     print_json = True,
                     **kwargs):
 
-    language_encoding = 'utf-8'
+    language_encoding='utf-8'
     filesToOpen = []
 
     if len(language)==0:
@@ -228,12 +228,12 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                 temp_svo_df = extractSVO(Stanza_output, docID, inputFilename, inputDir, tail) if len(language)==1 and 'multilingual' not in language else extractSVOMultilingual(Stanza_output, docID, inputFilename, inputDir, tail)
                 svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
 
-    df.to_csv(outputFilename, index=False, encoding = language_encoding)
+    df.to_csv(outputFilename, index=False, encoding=language_encoding)
     filesToOpen.append(outputFilename)
 
     # SVO extraction
     if "SVO" in annotator_params:
-        svo_df.to_csv(svo_df_outputFilename, index=False, encoding = language_encoding)
+        svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(svo_df_outputFilename)
 
     # Filter + Visualization.
@@ -250,14 +250,14 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         selected_lang_df = df.loc[df['Language']==selected_language]
         selected_lang_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                             'Stanza_' + f'{selected_language}' + '_' + annotator_params)
-        selected_lang_df.to_csv(selected_lang_outputFilename, index=False, encoding = language_encoding)
+        selected_lang_df.to_csv(selected_lang_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(selected_lang_outputFilename)
 
     if "Lemma" in str(annotator_params) and 'Lemma' in outputFilename:
         vocab_df = excludePOS(df)
         vocab_df_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                     'Stanza_' + 'Lemma_Vocab')
-        vocab_df.to_csv(vocab_df_outputFilename, index=False, encoding = language_encoding)
+        vocab_df.to_csv(vocab_df_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(vocab_df_outputFilename)
 
 

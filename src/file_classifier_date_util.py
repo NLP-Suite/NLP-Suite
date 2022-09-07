@@ -41,7 +41,7 @@ def classifier(input_first_dir, input_sec_dir,outputDir,openOutputFiles, date_fo
     duration = create_timedelta(int(date_distance_value), date_type)
     # split duration that returns such values as 5 days, 0:00:00
     splitDuration=str(duration).split(",", 1)[0]
-    
+
     # find all dirs in 2
     for i in os.scandir(input_sec_dir):
         if i.is_dir():
@@ -82,14 +82,14 @@ def classifier(input_first_dir, input_sec_dir,outputDir,openOutputFiles, date_fo
     output_filename = IO_files_util.generate_output_file_name('', input_first_dir, outputDir, '.csv')
     filesToOpen.append(output_filename)
     df = pd.DataFrame(data, columns= ['Source_file_path', 'Target_directory','File_status','Date_range'])
-    df.to_csv(output_filename,index=False)
+    df.to_csv(output_filename,encoding='utf-8', index=False)
 
     print("\n\nNumber of SOURCE input documents processed:",nDocs)
     print("Number of TARGET input documents processed:",nTargetDocs)
     print("Number of TARGET input sub-directories:",len(folders))
     print("Number of SOURCE documents COPIED to TARGET sub-directories:",nCopies)
     print("Number of finenames with wrong embedded date:",nDateErrors,'\n\n')
-    
+
     mb.showwarning("Warning", "Results of the classifier script:\n\n"
             + "\nNumber of SOURCE input documents processed: " + str(nDocs)
             + "\nNumber of TARGET input documents processed: " + str(nTargetDocs)

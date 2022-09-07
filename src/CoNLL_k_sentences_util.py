@@ -55,7 +55,7 @@ def k_sent(inputFilename, outputDir):
                                                                                       '', '', '', '',
                                                                                       False,
                                                                                       True)
-            df.to_csv(outputFilename, index=False)
+            df.to_csv(outputFilename, encoding='utf-8', index=False)
     return outputFilename
 
 

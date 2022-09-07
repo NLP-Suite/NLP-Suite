@@ -86,7 +86,7 @@ def pdf_converter(window,fileName, inputDir, outputDir,openOutputFiles,createCha
                 except OSError as exc:
                     if exc.errno != errno.EEXIST:
                         raise
-            f = open(output_fileName, "w+", encoding = "utf-8")
+            f = open(output_fileName, "w+", encoding="utf-8")
             for page in PDFPage.get_pages(fp):
                 interpreter.process_page(page)
                 data = retstr.getvalue()
