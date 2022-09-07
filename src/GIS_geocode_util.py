@@ -72,8 +72,9 @@ def get_geolocator(geocoder,Google_API=''):
 		geolocator = GoogleV3(api_key=Google_API, domain='maps.google.com')
 	return geolocator
 
+# TODO MINO: add featuretype parameter
 # Country specification; uses 2-digit lowercase ISO_3166 country codes
-def nominatim_geocode(geolocator,loc,country_bias='',box_tuple='',restrict=False,timeout=4):
+def nominatim_geocode(geolocator,loc,country_bias='',box_tuple='',restrict=False,timeout=4, featuretype=None):
 	# https://geopy.readthedocs.io/en/stable/#geopy.geocoders.options
 	# this will renew the SSL certificate indefinitely
 	# pip install pyOpenSSL
@@ -120,17 +121,21 @@ def nominatim_geocode(geolocator,loc,country_bias='',box_tuple='',restrict=False
 		# 					30.770444751951388, -81.5219744485591 (lower right)
 
 	try:
-		return geolocator.geocode(loc,language='en',country_codes=country_bias,viewbox=box_tuple, bounded=restrict, timeout=timeout)
+		# TODO MINO: add featuretype parameter
+		return geolocator.geocode(loc,language='en',country_codes=country_bias,viewbox=box_tuple, bounded=restrict, timeout=timeout, featuretype=featuretype) # TODO MINO: add country restriction
 		# https: // gis.stackexchange.com / questions / 173569 / avoid - time - out - error - nominatim - geopy - openstreetmap
-	except GeocoderTimedOut:
+	except:
 		print("********************************************TIMEOUT",timeout)
 		if timeout<20:
 			# try again, adding timeout
-			return nominatim_geocode(geolocator,loc,country_bias,box_tuple,restrict,timeout + 2)# add 2 second for the next round
+			try:
+				# TODO MINO: add featuretype parameter
+				return nominatim_geocode(geolocator,loc=loc,country_codes=country_bias,box_tuple=box_tuple,bounded=restrict,timeout=timeout + 2, featuretype=featuretype)# add 2 second for the next round
+			except:
+				return None
 		else:
 			print("Maximum number of retries to access Nominatim server exceeded in geocoding " + loc)
-		raise
-		# return None
+			raise
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
 # console.developers.google.com/apis
@@ -255,6 +260,7 @@ def geocode(window,locations, inputFilename, outputDir,
 			else:
 				# itemToGeocode =[item[0]]
 				itemToGeocode =item[0]
+				NER_Tag = item[len(item)-1] # TODO MINO: add NER_Tag
 				if datePresent==True:
 					date=item[1]
 
@@ -265,7 +271,8 @@ def geocode(window,locations, inputFilename, outputDir,
 				print("   Geocoding DISTINCT location: " + itemToGeocode)
 				distinctGeocodedList.append(itemToGeocode)
 				if geocoder=='Nominatim':
-					location = nominatim_geocode(geolocator,itemToGeocode,country_bias,area,restrict)
+					# TODO MINO: add NER_Tag as input for featuretype parameter
+					location = nominatim_geocode(geolocator,loc=itemToGeocode,country_bias=country_bias,box_tuple=area,restrict=restrict,featuretype=NER_Tag.lower())
 				else:
 					location = google_geocode(geolocator,itemToGeocode,country_bias)
 				if geocoder=='Nominatim':

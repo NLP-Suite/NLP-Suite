@@ -126,7 +126,7 @@ class Vectorizer:
         for f in filesToDelete:
             self.narrative_file_paths.remove(f)
         for a in addedFiles:#A
-            a[1].to_csv(a[0],index=False)#A
+            a[1].to_csv(a[0], encoding='utf-8', index=False)#A
             self.narrative_file_paths.append(a[0])#A
         return min(doclengths), max(doclengths), np.mean(np.array(doclengths)), len(doclengths)
 

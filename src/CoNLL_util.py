@@ -291,9 +291,9 @@ def get_nouns_verbs_CoNLL(inputFilename,output_dir):
     verbs_form_csv=os.path.join(output_dir,os.path.basename(inputFilename[:-4])+"_verbs_form.csv")
     verbs_lemma_csv=os.path.join(output_dir,os.path.basename(inputFilename[:-4])+"_verbs_lemma.csv")
 
-    nouns_form_df.to_csv(nouns_form_csv, index=False)
-    nouns_lemma_df.to_csv(nouns_lemma_csv, index=False)
-    verbs_form_df.to_csv(verbs_form_csv, index=False)
-    verbs_lemma_df.to_csv(verbs_lemma_csv, index=False)
+    nouns_form_df.to_csv(nouns_form_csv, encoding='utf-8', index=False)
+    nouns_lemma_df.to_csv(nouns_lemma_csv, encoding='utf-8', index=False)
+    verbs_form_df.to_csv(verbs_form_csv, encoding='utf-8', index=False)
+    verbs_lemma_df.to_csv(verbs_lemma_csv, encoding='utf-8', index=False)
 
     return nouns_form_csv, nouns_lemma_csv, verbs_form_csv, verbs_lemma_csv

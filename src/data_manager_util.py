@@ -130,7 +130,7 @@ def merge(outputDir, operation_results_text_list):
                                                              '.csv', 'merge',
                                                              '', '', '', '', False, True)
 
-    df.to_csv(outputFilename, index=False)
+    df.to_csv(outputFilename, encoding='utf-8', index=False)
 
     return outputFilename
 
@@ -162,7 +162,7 @@ def append(outputDir, operation_results_text_list):
         return ''
     sep = ','
     df_append = pd.concat(data_cols, axis=0)
-    df_append.to_csv(outputFilename, header=[listToString(headers, sep)],index=False)
+    df_append.to_csv(outputFilename, encoding='utf-8', header=[listToString(headers, sep)],index=False)
     return outputFilename
 
 # filePath = [s.split(',')[0] for s in operation_results_text_list]  # file filePath
@@ -213,7 +213,7 @@ def concatenate(outputDir,operation_results_text_list):
     if data_cols == []:
         return ''
     df_concat = concat(data_cols, sep)
-    df_concat.to_csv(outputFilename, header=[listToString(headers, sep)],index=False)
+    df_concat.to_csv(outputFilename, header=[listToString(headers, sep)],encoding='utf-8', index=False)
     return outputFilename
 
 # extract/export csv/txt ---------------------------------------------------------------------------------------------
@@ -305,11 +305,11 @@ def export_csv_to_csv_txt(outputDir,operation_results_text_list,export_type='.cs
         else:
             pass
     if export_type == '.csv':
-        df_extract.to_csv(outputFilename, index=False)
+        df_extract.to_csv(outputFilename, encoding='utf-8', index=False)
     else: # .txt
-        text = df_extract.to_csv(index=False)
+        text = df_extract.to_csv(encoding='utf-8', index=False)
         text = text.replace(",", " ")
-        with open(outputFilename, "w", newline='') as text_file:
+        with open(outputFilename, "w", encoding='utf-8', errors='ignore', newline='') as text_file:
             text_file.write(text)
     return outputFilename
 

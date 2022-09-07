@@ -194,8 +194,8 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
     headers_stats=['Count','Mean','Mode','Median','Standard deviation','Minimum','Maximum',
                    'Skewness','Kurtosis','25% quantile','50% quantile','75% quantile']
     df_group.columns = headers_stats
-    df_group.to_csv(outputFilename)
-    filesToOpen.append(outputFilename)
+    df_group.to_csv(outputFilename, encoding='utf-8')
+    filesToOpen.append(outputFilename, encoding='utf-8')
 
     if createCharts==True:
         column_name_to_be_plotted=headers_stats[1] # Mean
@@ -431,17 +431,17 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         print("Please select the correct csv file, with correct columns")
         return
     name = outputDir + os.sep + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
-    data.to_csv(name)
+    data.to_csv(name, encoding='utf-8')
     Excel_outputFilename=name
     # group by both group col and select cols and get a row named count to count the number of frequencies
     data = data.groupby(cols).size().to_frame("count")
-    data.to_csv(name)
+    data.to_csv(name, encoding='utf-8')
     data = pd.read_csv(name, encoding='utf-8',error_bad_lines=False)
     # transform the data by the select columns
     # Reshape data (produce a “pivot” table) based on column values. Uses unique values from specified index / columns to form axes of the resulting DataFrame.
     data = data.pivot(index = group_col, columns = select_col, values = "count")
     print(data)
-    data.to_csv(name)
+    data.to_csv(name, encoding='utf-8')
     # complete sentence id if needed
     if(complete_sid):
         print("Completing sentence index...")
@@ -482,7 +482,7 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
     data = pd.read_csv(no_hyperlinks_filename, encoding='utf-8',error_bad_lines=False)
     # data = data.pivot(index = 'Sentence ID', columns = 'Document', values = "Yngve score")
     data = data.pivot(index = index, columns = 'Document', values = values)
-    data.to_csv(no_hyperlinks_filename)
+    data.to_csv(no_hyperlinks_filename, encoding='utf-8')
     # end of function and pass the document forward
     return no_hyperlinks_filename
 
@@ -517,7 +517,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
 
 
     # remove hyperlink before processing
-    data.to_csv(inputFilename,index=False)
+    data.to_csv(inputFilename,encoding='utf-8', index=False)
     removed_hyperlinks, inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
     data = pd.read_csv(inputFilename,encoding='utf-8',error_bad_lines=False)
     # TODO check if data is empty exit
@@ -543,7 +543,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
                 data.drop(hover_col, axis=1, inplace=True)
             else:
                 data.columns = hdr
-            data.to_csv(outputFilename,index=False)
+            data.to_csv(outputFilename,encoding='utf-8', index=False)
     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
         # aggregation by group_col NO hover over ----------------------------------------
         for col in selected_col:
@@ -582,10 +582,10 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
                 data = data.pivot(index = group_column_names[1:], columns = group_column_names[0], values = "Frequency")
                 data.fillna(0, inplace=True)
                 #data.reset_index("Document")
-                data.to_csv(outputFilename,index=False)
+                data.to_csv(outputFilename,encoding='utf-8', index=False)
             # end add
             else:
-                data.to_csv(outputFilename,index=False)
+                data.to_csv(outputFilename,encoding='utf-8', index=False)
             filesToOpen.append(outputFilename)
     else: # aggregation by group_col & hover over -----------------------------------------------
         for col_hover in hover_col:
@@ -614,7 +614,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
         temp_str = '%s'+'\n%s'* (len(hover_col)-1)
         data['Hover_over: ' + hover_header] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1)
         data.drop(hover_col, axis=1, inplace=True)
-        data.to_csv(outputFilename, index=False)
+        data.to_csv(outputFilename, encoding='utf-8', index=False)
         filesToOpen.append(outputFilename)
     # if createCharts:
     #     columns_to_be_plotted = get_columns_to_be_plotted(outputFilename,col)

@@ -3,7 +3,7 @@ import GUI_util
 import IO_libraries_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "Ngrams-CoOccurrence_Viewer",
-                                ['subprocess', 'os', 'tkinter', 'datetime','pandas','csv','glob','nltk','numpy']) == False:
+                                ['subprocess', 'os', 'tkinter', 'datetime','pandas','csv','glob','numpy']) == False:
     sys.exit(0)
 
 import os
@@ -110,7 +110,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         df = pd.DataFrame(error_filenames, columns=['File with date not in position ' + str(date_position_var)])
         error_output = IO_files_util.generate_output_file_name('',inputDir, outputDir, '.csv',
                                                          'Date_position_errors_file')
-        df.to_csv(error_output, index=False)
+        df.to_csv(error_output, encoding='utf-8', index=False)
         mb.showwarning(title='Warning',
                        message='There are ' + str(error_file_number) + ' files out of ' + str(
                            total_file_number) + ' processed in the selected input directory with errors in either the date format or the date position. \n\nThe selected date format is '+ str(date_format)+' and the selected date position is ' + str(date_position_var) + '.\n\nClick OK to open a csv file with a list of files with erroneous dates. Check carefully, both date format and date position. Any erroneous file will need to be fixed or removed from the input directory before processing. You may also simply need to select a different date format and/or date position.')

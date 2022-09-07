@@ -144,7 +144,7 @@ message_TIPS_file = "You will be asked next if you want to open a TIPS file for 
 title_options_CoreNLP_POS_NER_maxlen = ['CoreNLP POS/NER max sentence length']
 message_CoreNLP_POS_NER_maxlen = "The CoreNLP POS/NER annotators set a maximum sentence length for processing.\n\nSentences longer than your selected max length will be cut and some POS/NER tags in those long sentences may be lost."
 
-title_options_CoreNLP_nn_parser = ['CoreNLP neural network parser']
+title_options_CoreNLP_nn_parser = ['Clause tags with CoreNLP neural network parser']
 message_CoreNLP_nn_parser = "The CoreNLP neural network parser does not produce clause tags. The column 'Clause Tag' in the output csv file will be blank."
 
 title_options_CoreNLP_quote_annotator = ['CoreNLP quote annotator']
@@ -487,7 +487,7 @@ def saveReminder(df,row_num, message, event, status):
     df.at[row_num, "Message"] = message # change it to yes or no
     df.at[row_num, "Event"] = event # change it to yes or no
     df.at[row_num, "Status"] = status # change it to yes or no
-    df.to_csv(remindersFile, index=False, header=True)
+    df.to_csv(remindersFile, encoding='utf-8', index=False, header=True)
 
 def insertReminder(routine,title, message, event, status):
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')

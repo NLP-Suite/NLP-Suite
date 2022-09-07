@@ -8,7 +8,6 @@ import csv
 import numpy as np
 import pprint
 from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-from nltk.tokenize import sent_tokenize, word_tokenize
 
 import IO_files_util
 import IO_csv_util
@@ -114,7 +113,9 @@ def run(inputDir="relative_path_here",
             f.close()
             if not case_sensitive:
                 docText = docText.lower()
-            tokens_ = word_tokenize(docText)
+            # TODO MINO: replaced with stanza
+            tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
+            # tokens_ = word_tokenize(docText)
             for collocationIndex in range(len(tokens_)):
                 token = tokens_[collocationIndex]
                 for search_word in search_word_list:
@@ -198,7 +199,8 @@ def run(inputDir="relative_path_here",
             f.close()
             if not case_sensitive:
                 docText = docText.lower()
-            tokens_ = word_tokenize(docText)
+            # TODO MINO: replaced with stanza
+            tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
             for collocationIndex in range(len(tokens_)):
                 token = tokens_[collocationIndex]
                 for search_word in search_word_list:
@@ -279,7 +281,8 @@ def run(inputDir="relative_path_here",
                 f.close()
                 if not case_sensitive:
                     docText = docText.lower()
-                tokens_ = word_tokenize(docText)
+                # TODO MINO: replaced with stanza
+                tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
                 coOcc_results = {}
                 for collocationIndex in range(len(tokens_)):
                     if coOcc_results_binary[file]["CO-Occurrence"] == "YES":

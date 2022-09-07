@@ -302,7 +302,7 @@ def get_case_initial_row(inputFilename,outputDir,check_column, firstLetterCapita
     else:
         regex = '^[a-z].*'
     data = data[data[check_column].str.contains(regex, regex= True, na=False)] # select by regular expression
-    data.to_csv(outputFilename,index=False)
+    data.to_csv(outputFilename,encoding='utf-8', index=False)
     return filesToOpen
 
 # The output file returned by the JAVA script WordNet_Search_UP.jar contains

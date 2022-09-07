@@ -21,7 +21,7 @@ def split_NLP_Suite_csv_output_by_document_id(inputFilename,outputDir):
         return
     for name, group in grouped:
         outFilename = os.path.join(outputDir, base_name + str(name) + '.csv')
-        group.to_csv(outFilename, index=False)
+        group.to_csv(outFilename, encoding='utf-8', index=False)
     mb.showwarning(title='Warning',
                    message="The 'split by Document ID' function created " + str(grouped.ngroups) + ' split csv files in the output directory ' + outputDir)
     return

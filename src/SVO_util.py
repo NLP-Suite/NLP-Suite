@@ -100,7 +100,7 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
                                          'Total SV']), ignore_index=True)
     freq_output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                'SENNA_CoreNLP_SVO_FREQ')
-    df.to_csv(freq_output_name, index=False)
+    df.to_csv(freq_output_name, encoding='utf-8', index=False)
 
     # Listing all same and diff SV and SVOs
     compare_df = pd.DataFrame(columns=['Same', 'S', 'V', 'O', 'Different', 'S', 'V', 'O'])
@@ -134,7 +134,7 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
     # Outputting the file
     compare_outout_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                   'SENNA_CoreNLP_SVO_COMPARE')
-    compare_df.to_csv(compare_outout_name, index=False)
+    compare_df.to_csv(compare_outout_name, encoding='utf-8', index=False)
 
     return [freq_output_name, compare_outout_name]
 
@@ -163,7 +163,7 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
     combined_df.sort_values(by=['Document ID', 'Sentence ID'], inplace=True)
     output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                           'SENNA_CoreNLP_SVO_COMBINE')
-    combined_df.to_csv(output_name, index=False)
+    combined_df.to_csv(output_name, encoding='utf-8', index=False)
 
     return output_name
 
@@ -181,7 +181,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                    'Started running the SVO filter algorithm at',
                                                    True, '', True)
 
-    df = pd.read_csv(svo_file_name)
+    df = pd.read_csv(svo_file_name, encoding='utf-8',error_bad_lines=False)
     unfiltered_svo = df.to_dict('index')
     filtered_svo = {}
     num_rows = df.shape[0]
@@ -233,7 +233,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                        startTime, True)
 
     # Replacing the original csv file
-    pd.DataFrame.from_dict(filtered_svo, orient='index').to_csv(svo_file_name, index=False)
+    pd.DataFrame.from_dict(filtered_svo, orient='index').to_csv(svo_file_name, encoding='utf-8', index=False)
 
     filesToOpen = []
 

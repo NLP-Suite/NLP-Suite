@@ -66,7 +66,7 @@ def run(inputFilename, outputPath, keyword, first_occurrence, lemmatization = Tr
             writer.writerow(["Document ID", "Document", 'SPLIT_Document', "SEARCH_WORD", "SENTENCE", "Sentence ID of FIRST_OCCURRENCE", "RELATIVE_POSITION", "FREQUENCY of OCCURRENCE"])
             docIndex = 1
         else: 
-             df = pd.read_csv(csvtitle, encoding = "ISO-8859-1")
+             df = pd.read_csv(csvtitle, encoding="ISO-8859-1")
              if len(df) == 0:
                  docIndex = 1
              else:

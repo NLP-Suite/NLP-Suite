@@ -54,15 +54,15 @@ def run(inputFilename, inputDir, outputDir,
             autocorrect_df, pyspellchecker_df,textblob_df = file_spell_checker_util.spellcheck(inputFilename, inputDir, checker_value_var, check_withinSubDir_spell_checker_var)
         if checker_value_var == '*' or 'autocorrect' in checker_value_var:
             autocorrect_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'spell_autocorrect')
-            autocorrect_df.to_csv(autocorrect_file_name,index=False)
+            autocorrect_df.to_csv(autocorrect_file_name,encoding='utf-8', index=False)
             filesToOpen.append(autocorrect_file_name)
         if checker_value_var == '*' or 'pyspellchecker' in checker_value_var:
             pyspellchecker_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'spell_pyspellchecker')
-            pyspellchecker_df.to_csv(pyspellchecker_file_name,index=False)
+            pyspellchecker_df.to_csv(pyspellchecker_file_name,encoding='utf-8', index=False)
             filesToOpen.append(pyspellchecker_file_name)
         if checker_value_var == '*' or 'textblob' in checker_value_var:
             textblob_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'spell_textblob')
-            textblob_df.to_csv(textblob_file_name,index=False)
+            textblob_df.to_csv(textblob_file_name,encoding='utf-8', index=False)
             filesToOpen.append(textblob_file_name)
         if 'Replace' in checker_value_var:
             file_spell_checker_util.spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutputFiles)

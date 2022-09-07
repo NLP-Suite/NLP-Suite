@@ -172,8 +172,8 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
         df_simple_list = [df[1] for df in df_list]
         df_complete = pd.concat(df_complete_list, ignore_index=True)
         df_simple = pd.concat(df_simple_list, ignore_index=True)
-        df_simple.to_csv(outputFileName_simple, index=False)
-        df_complete.to_csv(outputFileName_complete, index=False)
+        df_simple.to_csv(outputFileName_simple, encoding='utf-8', index=False)
+        df_complete.to_csv(outputFileName_complete, encoding='utf-8', index=False)
 
         filesToOpen.append(outputFileName_simple)
         filesToOpen.append(outputFileName_complete)
@@ -471,8 +471,8 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                                         str(similarity_value), 'Edit_dist_algo', 'NERs',
                                                                             'Concise-table')
     if len(df_simple) > 0 and len(df_complete) > 0:
-            df_simple.to_csv(outputFileName_simple, index=False)
-            df_complete.to_csv(outputFileName_complete, index=False)
+            df_simple.to_csv(outputFileName_simple, encoding='utf-8', index=False)
+            df_complete.to_csv(outputFileName_complete, encoding='utf-8', index=False)
             filesToOpen.append(outputFileName_simple)
             filesToOpen.append(outputFileName_complete)
 

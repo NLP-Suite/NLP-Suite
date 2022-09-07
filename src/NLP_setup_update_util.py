@@ -3,26 +3,16 @@ Author: David Dai December 22nd, 2021
 Edited Roberto Franzosi February 2022
 """
 
-import sys
-import requests
-import webbrowser
-import tkinter as tk
-import subprocess
-
-import GUI_util
-import IO_libraries_util
-
-if IO_libraries_util.install_all_packages(GUI_util.window,"NLP_setup_update_util.py",['os','pygit2'])==False:
-    sys.exit(0)
-
 import os
-import stat
 from pygit2 import Repository
+import stat
 import tkinter.messagebox as mb
 import shutil
+import subprocess
 
 import IO_user_interface_util
 
+# called by exit_window
 # returns True when error found
 def update_self(window,GitHub_release_version):
     """
