@@ -182,10 +182,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         ngram_list = ['-checkNGrams'] + ngram_list
         # cmd.append(ngram_list)
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences start',
-                        'Started running N-Grams Word Co-Occurrences Viewer at', True,
-                        'VIEWER options: ' + str(viewer_options_list)+'\nSEARCH words: '+search_words,True,'',True)
-
+    # startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences start',
+    #                     'Started running N-Grams Word Co-Occurrences Viewer at', True,
+    #                     'VIEWER options: ' + str(viewer_options_list)+'\nSEARCH words: '+search_words,True,'',True)
+    #
     reminders_util.checkReminder(config_filename,
                                  reminders_util.title_options_NGrams,
                                  reminders_util.message_NGrams,
@@ -263,8 +263,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences end',
-                        'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime,True)
+    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences end',
+    #                     'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime,True)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -472,7 +472,7 @@ def activate_viewer_options(*args):
         if viewer_options_menu_var.get() in viewer_options_list:
             mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
             return
-        if 'match' in viewer_options_menu_var.get() or \
+        if 'Partial match' in viewer_options_menu_var.get() or \
                 'Lemmatize' in viewer_options_menu_var.get() or \
                 'Normalize' in viewer_options_menu_var.get() or \
                 'Scale' in viewer_options_menu_var.get():
@@ -570,7 +570,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer Java script.\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer Java script.\n\nYou can run both Viewers at the same time.\n\nThe NGrams part of the algorithm requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872).\n\nFor both viewers, results will be visualized in Excel line plots.\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, enter the comma-separated list of words for which you want to know N-Gram statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
+                                                         'Please, enter the comma-separated list of single words or collocations (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences.\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: group of years, year, quarter, month.\n\nPlease, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2).')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",

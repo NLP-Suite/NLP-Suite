@@ -32,7 +32,7 @@ import charts_util
 import constants_util
 
 def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_search_keywords, search_keywords_list,
-        search_options_list, language_var, createCharts, chartPackage):
+        search_options_list, lang, createCharts, chartPackage):
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        "Started running the Word search function at",
@@ -67,12 +67,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
     for w in range(len(search_keyword)):
         search_keyword[w] = search_keyword[w].lstrip()
 
-    # get language acronym to call corresponding Stanza language model
-    lang = ''
-    for k,v in lang_dict.items():
-        if v == language_var:
-            lang = k
-            break
     nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'search')
     docIndex = 0
@@ -427,72 +421,3 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputSt
                                        True, '', True, startTime,  False)
 
 
-# Python dictionary of language (values) and their acronyms (keys)
-lang_dict  = dict(constants_util.languages)
-
-# Available Stanza models for languages
-available_ud = [
-    "af",
-    "grc",
-    "ar",
-    "hy",
-    "eu",
-    "be",
-    "bg",
-    "ca",
-    "zh",
-    "zh-hant",
-    "lzh",
-    "cop",
-    "hr",
-    "cs",
-    "da",
-    "nl",
-    "en",
-    "et",
-    "fi",
-    "fr",
-    "gl",
-    "de",
-    "got",
-    "el",
-    "he",
-    "hi",
-    "hu",
-    "id",
-    "ga",
-    "it",
-    "ja",
-    "ko",
-    "la",
-    "lv",
-    "lt",
-    "mt",
-    "mr",
-    "sme",
-    "no",
-    "nb",
-    "nn",
-    "cu",
-    "fro",
-    "orv",
-    "fa",
-    "pl",
-    "pt",
-    "ro",
-    "ru",
-    "gd",
-    "sr",
-    "sk",
-    "sl",
-    "es",
-    "sv",
-    "ta",
-    "te",
-    "tr",
-    "uk",
-    "ur",
-    "ug",
-    "vi",
-    "wo",
-]
