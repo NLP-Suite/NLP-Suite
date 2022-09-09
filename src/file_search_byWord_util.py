@@ -318,11 +318,11 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputSt
         outputDir_sentences = os.path.join(outputDir, "sentences_Dir_" + inputDirBase)
 
     # create a subdirectory in the output directory
-    outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract', silent=True)
+    outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_with_searchword', silent=True)
     if outputDir_sentences_extract == '':
         return
-    outputDir_sentences_extract_minus = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_minus', silent=True)
-    if outputDir_sentences_extract_minus == '':
+    outputDir_sentences_extract_wo_searchword = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_wo_searchword', silent=True)
+    if outputDir_sentences_extract_wo_searchword == '':
         return
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
@@ -331,7 +331,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputSt
 
     fileID = 0
     file_extract_written = False
-    file_extract_minus_written = False
+    file_extract_wo_searchword_written = False
     nDocsExtractOutput = 0
     nDocsExtractMinusOutput = 0
 
@@ -342,14 +342,14 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputSt
         print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
         with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
             text = inputFile.read().replace("\n", " ")
-        outputFilename_extract = os.path.join(outputDir_sentences_extract,tail[:-4]) + "_extract.txt"
-        outputFilename_extract_minus = os.path.join(outputDir_sentences_extract_minus,tail[:-4]) + "_extract_minus.txt"
+        outputFilename_extract = os.path.join(outputDir_sentences_extract,tail[:-4]) + "_extract_with_searchword.txt"
+        outputFilename_extract_wo_searchword = os.path.join(outputDir_sentences_extract_wo_searchword,tail[:-4]) + "_extract_wo_searchword.txt"
         with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
-                outputFilename_extract_minus, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_minus:
+                outputFilename_extract_wo_searchword, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_wo_searchword:
             sentences_tokens = sent_tokenize_stanza(stanzaPipeLine(text), False)
             sentences = [s.text for s in sentences_tokens]
             n_sentences_extract = 0
-            n_sentences_extract_minus = 0
+            n_sentences_extract_wo_searchword = 0
             sentence_index = 0
             for sentence in sentences:
                 if len(sentence) == 0:
@@ -376,12 +376,12 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputSt
                         n_sentences_extract += 1
                         outputFile_extract.write(sentenceSV + " ")  # write out original sentence
                         file_extract_written = True
-                        # if none of the words in wordList are found in a sentence write the sentence to the extract_minus file
+                        # if none of the words in wordList are found in a sentence write the sentence to the extract_wo_searchword file
 
                 if wordFound == False:
-                    n_sentences_extract_minus += 1
-                    outputFile_extract_minus.write(sentenceSV + " ")  # write out original sentence
-                    file_extract_minus_written = True
+                    n_sentences_extract_wo_searchword += 1
+                    outputFile_extract_wo_searchword.write(sentenceSV + " ")  # write out original sentence
+                    file_extract_wo_searchword_written = True
         if file_extract_written == True:
             # filesToOpen.append(outputFilename_extract)
             nDocsExtractOutput += 1
@@ -389,13 +389,13 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputSt
         outputFile_extract.close()
         if n_sentences_extract == 0: # remove empty file
             os.remove(outputFilename_extract)
-        if file_extract_minus_written:
-            # filesToOpen.append(outputFilename_extract_minus)
+        if file_extract_wo_searchword_written:
+            # filesToOpen.append(outputFilename_extract_wo_searchword)
             nDocsExtractMinusOutput += 1
-            file_extract_minus_written = False
-        outputFile_extract_minus.close()
-        if n_sentences_extract_minus == 0: # remove empty file
-            os.remove(outputFilename_extract_minus)
+            file_extract_wo_searchword_written = False
+        outputFile_extract_wo_searchword.close()
+        if n_sentences_extract_wo_searchword == 0: # remove empty file
+            os.remove(outputFilename_extract_wo_searchword)
     if Ndocs == 1:
         msg1 = str(Ndocs) + " file was"
     else:
@@ -409,10 +409,10 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputSt
     else:
         msg3 = str(nDocsExtractMinusOutput) + " files were"
     mb.showwarning("Warning", msg1 + " processed in input.\n\n" +
-                   msg2 + " written with _extract in the filename.\n\n" +
-                   msg3 + " written with _extract_minus in the filename.\n\n" +
-                   "Files were written to the subdirectories " + outputDir_sentences_extract + " and " + outputDir_sentences_extract_minus + " of the output directory." +
-                   "\n\nPlease, check the output subdirectories for filenames ending with _extract.txt and _extract_minus.txt.")
+                   msg2 + " written with _extract_with_searchword in the filename.\n\n" +
+                   msg3 + " written with _extract_wo_searchword in the filename.\n\n" +
+                   "Files were written to the subdirectories " + outputDir_sentences_extract + " and " + outputDir_sentences_extract_wo_searchword + " of the output directory." +
+                   "\n\nPlease, check the output subdirectories for filenames ending with _extract_with_searchword.txt and _extract_wo_searchword.txt.")
 
     IO_files_util.openExplorer(window, outputDir_sentences_extract)
 

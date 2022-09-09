@@ -105,12 +105,10 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 			index = index + 1
 			currRecord = str(index + 1) + "/" + str(numberOfRecords)
 			print("Processing geocoded record for kml:", currRecord)
-			# if inputIsCoNLL==True:
-			curr_filename = row[0]
 			GGPdateFormat = ''
 			# if inputIsCoNLL==True:
 			if datePresent == True:
-				date = row[4]
+				date = row[5]
 				if date != 'nan' and date != '':
 					# if dates are present they MUST be converted to Google Earth Pro expected date format yyyy-mm-dd
 					# get format of your date
@@ -155,11 +153,13 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 
 			# Mapping with one group
 			# we do not want to print the name of the location or the map becomes unreadable
-			# pnt = kml.newpoint(name=row[0], coords=[(row[2],row[1])])  # wants to be read in in lng, lat order
+			# pnt = kml.newpoint(name=row[0], coords=[(row[3],row[2])])  # wants to be read in in lng, lat order
 			# print(currRecord,row[0]) #document name
-			if row[2] != 0 and row[1] != 0:
-				pnt = kml.newpoint(coords=[(row[2], row[1])])  # wants to be read in in lng, lat order
+			if row[3] != 0 and row[2] != 0:
+				pnt = kml.newpoint(coords=[(row[3], row[2])])  # wants to be read in in lng, lat order
 				pnt.style.iconstyle.icon.href = icon_url
+				# TODO Mino GIS if we process South America exported by CoreNLP as 2 separate records
+				#	we would need to process inputfile rather inputFilename
 				pnt = GIS_Google_pin_util.pin_customizer(inputFilename, pnt, index, index_list, locationColumnName,
 														 group_var, group_number_var, group_values_entry_var_list,
 														 group_label_entry_var_list,
@@ -243,8 +243,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 						currRecord = str(index - 1) + "/" + str(
 							IO_csv_util.GetNumberOfRecordInCSVFile(inputGeocodedCsvFile, encodingValue))
 						# we do not want to print the name of the location or the map becomes unreadable
-						# pnt = kml.newpoint(name=row[0], coords=[(row[2],row[1])])  # wants to be read in in lng, lat order
-						# print(currRecord,row[0]) #document name
+						# pnt = kml.newpoint(name=row[0], coords=[(row[3],row[2])])  # wants to be read in in lng, lat order
 						pnt = kml.newpoint(coords=[(row[locationColumnNumber + 2], row[
 							locationColumnNumber + 1])])  # wants to be read in in lng, lat order
 						pnt.style.iconstyle.icon.href = icon_url

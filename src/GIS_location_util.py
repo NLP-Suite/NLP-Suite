@@ -156,6 +156,7 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 		print("NER locations extraction from CoNLL table finished.")
 	# returns filename, location, sentence, date (if present)
 	# return sorted(locList)
+	# do not sort locations so that you can check from wrong CoreNLP NER tag, e.g., South America as South = LOCATION, America = COUNTRY
 	return locList
 
 # called from GIS_Google_util
@@ -186,4 +187,6 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 		mb.showwarning(title='Locations', message="There are no locations in your input file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.\n\nNo map via Google Earth Pro can be done.")
 		return
 	IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Finished extracting locations from csv file at", True, '', True, startTime, True)
-	return sorted(locList)
+	# return sorted(locList)
+	# do not sort locations so that you can check from wrong CoreNLP NER tag, e.g., South America as South = LOCATION, America = COUNTRY
+	return locList
