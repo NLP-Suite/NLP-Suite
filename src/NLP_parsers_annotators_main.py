@@ -753,7 +753,7 @@ def activate_NLP_options(*args):
         m.delete(0, "end")
         for s in parsers:
             s=s.lstrip() # remove leading blanks since parsers are separated by ,blank
-            m.add_command(label=s, command=lambda value=s: parser_menu.append(value))
+            m.add_command(label=s, command=lambda value=s: parser_menu_var.set(value))
         parser_lb.config(text=available_parsers)
 GUI_util.setup_menu.trace('w', activate_NLP_options)
 activate_NLP_options()
