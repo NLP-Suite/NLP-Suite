@@ -173,14 +173,14 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
 
     if len(locations) > 0 and inputIsCoNLL == True:
         # locations contains the following values:
-        #	filename, location, sentence, date (if present)
+        #	location, sentence, filename, date (if present)
         filesToOpen.append(outputCsvLocationsOnly)
         if datePresent == True:
             # always use the location_var variable passed by algorithms to make sure locations are then matched
-            locations.insert(0, ['Location', 'Sentence ID', 'Sentence', 'Document ID', 'Document',  'Date'])
+            locations.insert(0, ['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document',  'Date'])
         else:
             # always use the location_var variable passed by algorithms to make sure locations are then matched
-            locations.insert(0, ['Location', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+            locations.insert(0, ['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
         IO_csv_util.list_to_csv(window, locations, outputCsvLocationsOnly)
 
     if locationsNotFoundoutputFilename != '':

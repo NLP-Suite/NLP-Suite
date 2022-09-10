@@ -508,6 +508,10 @@ def GetNumberOfDocumentsInDirectory(inputDirectory, extension=''):
 # open_type: "r" for read, "w" for write
 # return csvfile if opened up properly, or empty string if error occurs
 def openCSVFile(inputfile, open_type, encoding_type='utf-8'):
+    if inputfile=='':
+        mb.showwarning(title='File error',
+                       message="The input file is blank.")
+        return ""
     try:
         csvfile = open(inputfile, open_type, newline='', encoding=encoding_type, errors='ignore')
         return csvfile

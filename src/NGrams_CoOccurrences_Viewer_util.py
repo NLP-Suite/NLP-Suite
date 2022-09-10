@@ -278,7 +278,6 @@ def run(inputDir="relative_path_here",
                 f.close()
                 if not case_sensitive:
                     docText = docText.lower()
-                # TODO MINO: replaced with stanza
                 tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
                 coOcc_results = {}
                 for collocationIndex in range(len(tokens_)):
