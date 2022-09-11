@@ -79,7 +79,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 open_rhetoric_GUI_button = tk.Button(window, text='Open GUI for Vocabulary Analysis (punctuation and repetition)',width=60,command=lambda: call("python style_analysis_main.py", shell=True))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_rhetoric_GUI_button)
 
-search_GUI_button = tk.Button(window, text='Open GUI for searching corpus for words of emotions/sentiment',width=60,command=lambda: call("python search_ALL_main.py", shell=True))
+search_GUI_button = tk.Button(window, text='Open GUI for searching corpus for words of emotions/sentiment',width=60,command=lambda: call("python file_search_ALL_main.py", shell=True))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,search_GUI_button)
 
 videos_lookup = {'No videos available':''}

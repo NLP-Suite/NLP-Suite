@@ -273,7 +273,6 @@ def check_java_installation(script):
                         if answer:
                             TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
                         errorFound = True
-
     return errorFound, error_code, system_output
 
 

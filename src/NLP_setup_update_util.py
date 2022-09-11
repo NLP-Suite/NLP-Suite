@@ -3,6 +3,7 @@ Author: David Dai December 22nd, 2021
 Edited Roberto Franzosi February 2022
 """
 
+import sys
 import os
 from pygit2 import Repository
 import stat
