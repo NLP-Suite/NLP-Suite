@@ -268,7 +268,6 @@ def geocode(window,locations, inputFilename, outputDir,
 				# elif NER_Tag == 'LOCATION':
 				# 	NER_Tag_nominatim = 'settlement'
 
-				# TODO Mino GIS see above line 258 date=item[5]
 				if datePresent==True:
 					date=item[1]
 

@@ -144,6 +144,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if IO_libraries_util.check_inputPythonJavaProgramFile(
                     'spaCy_util.py') == False:
                 return
+
+        if parser_var:
+            # if parser_menu_var == 'Dependency parser':
+            #     mb.showwarning('Warning',
+            #                    'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
+            #     return
+            annotator = 'depparse'
+
         if annotators_var:
             if annotators_menu_var == '':
                 mb.showwarning('Warning',
@@ -206,7 +214,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if parser_var:
             if parser_menu_var == 'Constituency parser':
                 mb.showwarning('Warning',
-                               'The selected option is not available yet. Sorry!\n\nPlease, select a different option and try again.')
+                               'The selected option "' + parser_menu_var + '" is not available yet in the NLP Suite implementation of ' + package +'. Sorry!\n\nPlease, select a different option and try again.')
                 return
             annotator = 'depparse'
 
